@@ -1,8 +1,78 @@
-# /dev/null Destination
+# End-to-End Testing (/dev/null) Destination
 
-This destination is for testing of Airbyte connections. It can be set up as a source message logger, a `/dev/null`, or to mimic specific behaviors (e.g. exception during the sync). Please use it with discretion. This destination may log your data, and expose sensitive information.
+The `/dev/null` destination is a testing destination. It accepts every record from the source and,
+by default, discards it. Use it to benchmark a source connector, validate that a connection can
+complete, or reproduce specific destination behaviors (slow processing or a failure after N
+messages) without writing data anywhere.
 
-## Supported sync modes
+:::danger
+In **Logging** mode this destination writes source records into the sync logs. Anyone with access
+to the Airbyte logs can read that data. Don't use Logging mode with production or sensitive data.
+:::
+
+## Prerequisites
+
+None. The destination has no external dependencies and the connection check always succeeds if the
+configuration is valid.
+
+## Setup guide
+
+1. In the Airbyte UI, go to **Destinations**, click **New destination**, and select
+   **End-to-End Testing (/dev/null)**.
+2. Enter a **Destination name**.
+3. Under **Test Destination**, choose a mode (see [Modes](#modes)) and fill in its options.
+4. Click **Set up destination**.
+
+## Modes
+
+The available modes depend on where Airbyte runs:
+
+| Mode | Self-Managed | Airbyte Cloud |
+| :--- | :---: | :---: |
+| [Silent](#silent) | Yes | Yes |
+| [Logging](#logging) | Yes | No |
+| [Throttled](#throttled) | Yes | No |
+| [Failing](#failing) | Yes | No |
+
+### Silent
+
+Silent mode is a true `/dev/null`: every record is accepted and discarded. State messages are still
+acknowledged, so the source advances its cursor as it would with a real destination. Use it for
+source performance testing or to confirm a sync completes end to end.
+
+**This is the only mode available on Airbyte Cloud.**
+
+### Logging
+
+Logging mode discards records after writing a subset of them to the sync log at `INFO` level. Each
+log line includes the stream, the record index, and the record's fields:
+
+```text
+Logging Destination(stream=public.users, recordIndex=0, logEntry=1/100): {...}
+```
+
+Each stream is logged independently, and the destination never logs more than **1,000 entries per
+stream**, whichever logging type you choose.
+
+| Logging type | Behavior | Options |
+| :--- | :--- | :--- |
+| **First N Entries** | Log the first N records of each stream. | **N**: number of records to log (default `100`, maximum `1000`). |
+| **Every N-th Entry** | Log every N-th record of each stream. `N = 1` logs every record, `N = 2` every other record, and so on. | **N**: the interval. **Max Log Entries**: cap on the number of records logged (default `100`, maximum `1000`). |
+| **Random Sampling** | Log each record with a given probability. | **Sampling Ratio**: a number between `0` and `1` (default `0.001`). **Random Number Generator Seed** (optional): fix the seed for reproducible sampling; defaults to the current time. **Max Log Entries**: cap on the number of records logged (default `100`, maximum `1000`). |
+
+### Throttled
+
+Throttled mode discards records but sleeps for a configurable number of milliseconds
+(`millis_per_record`) before processing each one. Use it to simulate a slow destination
+and observe how the source and the platform behave under back-pressure.
+
+### Failing
+
+Failing mode discards records until a stream has received the configured number of messages
+(`num_messages`), then throws an exception, which fails the sync. Use it to test failure
+handling, retries, and alerting.
+
+## Sync modes
 
 | Sync mode | Supported? |
 | :--- | :--- |
@@ -12,37 +82,19 @@ This destination is for testing of Airbyte connections. It can be set up as a so
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-## Mode
-
-### Silent (`/dev/null`)
-
-**This is the only mode allowed on Airbyte Cloud.**
-
-This mode works as `/dev/null`. It does nothing about any data from the source connector. This is usually only useful for performance testing of the source connector.
-
-### Logging
-
-This mode logs the data from the source connector. It will log at most 1,000 data entries.
-
-There are the different logging modes to choose from:
-
-| Mode             | Notes                                                                                                                       | Parameters                                                                                                                                 |
-| :--------------- | :-------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| First N entries  | Log the first N number of data entries for each data stream.                                                                | N: how many entries to log.                                                                                                                |
-| Every N-th entry | Log every N-th entry for each data stream. When N=1, it will log every entry. When N=2, it will log every other entry. Etc. | N: the N-th entry to log. Max entry count: max number of entries to log.                                                                   |
-| Random sampling  | Log a random percentage of the entries for each data stream.                                                                | Sampling ratio: a number in range of `[0, 1]`. Optional seed: default to system epoch time. Max entry count: max number of entries to log. |
-
-### Throttling
-
-This mode mimics a slow data sync. You can specify the time (in millisecond) of delay between each message from the source is processed.
-
-### Failing
-
-This mode throws an exception after receiving a configurable number of messages.
+Every sync mode is accepted because no data is stored; deduplication and overwrite have no visible
+effect. The destination also accepts file-based (file transfer) streams and discards the files.
 
 ## Namespace support
 
-This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+Namespaces have no effect on this destination. The stream namespace appears only in Logging mode
+output as part of the stream identifier.
+
+## Limitations
+
+- No data is persisted. There is nothing to inspect after a sync other than the logs.
+- Logging mode caps output at 1,000 entries per stream and may expose source data in logs.
+- On Airbyte Cloud only Silent mode is offered.
 
 ## Changelog
 
@@ -53,6 +105,11 @@ The self-managed and Cloud variants have the same version number starting from v
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.9.9 | 2026-10-30 | [90277](https://github.com/airbytehq/airbyte/pull/90277) | Promote to certified (GA). Logging/Failing modes count records per stream instead of per internal batch; `FAILING` now fails on exactly the Nth record. |
+| 0.9.8 | 2026-10-22 | [89655](https://github.com/airbytehq/airbyte/pull/89655) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139 |
+| 0.9.7 | 2026-10-16 | [89066](https://github.com/airbytehq/airbyte/pull/89066) | Bump Bulk CDK to base 1.0.6 / load 1.1.7 (Kotlin 2.4 / K2 toolchain, Micronaut 4.10.31, Jackson 2.21.7). |
+| 0.9.6 | 2026-10-09 | [88426](https://github.com/airbytehq/airbyte/pull/88426) | Upgrade to Bulk CDK 1.1.1. |
+| 0.9.5 | 2026-09-15 | [86330](https://github.com/airbytehq/airbyte/pull/86330) | Version bump to republish the Cloud-specific connector spec. |
 | 0.9.4 | 2026-05-19 | [78228](https://github.com/airbytehq/airbyte/pull/78228) | Upgrade CDK to 1.0.13 |
 | 0.9.3 | 2026-02-04 | [72856](https://github.com/airbytehq/airbyte/pull/72856) | Upgrade CDK to 0.2.8 |
 | 0.9.2 | 2026-01-21 | [72291](https://github.com/airbytehq/airbyte/pull/72291) | Upgrade CDK to 0.2.0 |

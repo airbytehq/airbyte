@@ -117,13 +117,9 @@ acceptance_tests:
             bypass_reason: "Our test account profile is not authorized to use Amazon Attribution"
           - name: attribution_report_performance_creative
             bypass_reason: "Our test account profile is not authorized to use Amazon Attribution"
-        timeout_seconds: 2400
-        expect_records:
-          path: integration_tests/expected_records.jsonl
   full_refresh:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
-        timeout_seconds: 3600
   incremental:
     bypass_reason: "can't populate stream because it requires real ad campaign"

@@ -70,14 +70,15 @@ object JavaBaseConstants {
             COLUMN_NAME_AB_RAW_ID,
             COLUMN_NAME_AB_EXTRACTED_AT,
             COLUMN_NAME_AB_META,
-            COLUMN_NAME_AB_GENERATION_ID
+            COLUMN_NAME_AB_GENERATION_ID,
         )
 
     const val DEFAULT_AIRBYTE_INTERNAL_NAMESPACE: String = "airbyte_internal"
+
     enum class DestinationColumns(val rawColumns: List<String>) {
         V2_WITH_META(V2_RAW_TABLE_COLUMN_NAMES),
         V2_WITHOUT_META(V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META),
         V2_WITH_GENERATION(V2_RAW_TABLE_COLUMN_NAMES_WITH_GENERATION),
-        LEGACY(LEGACY_RAW_TABLE_COLUMNS)
+        LEGACY(LEGACY_RAW_TABLE_COLUMNS),
     }
 }

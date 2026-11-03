@@ -250,5 +250,41 @@
       },
       "stream_descriptor": { "name": "vendors" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:35:37-08:00"
+      },
+      "stream_descriptor": { "name": "attachables" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:35:37-08:00"
+      },
+      "stream_descriptor": { "name": "credit_card_payments" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:35:37-08:00"
+      },
+      "stream_descriptor": { "name": "exchange_rates" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbyte_cursor": "2050-03-04T14:35:37-08:00"
+      },
+      "stream_descriptor": { "name": "reimburse_charges" }
+    }
   }
 ]

@@ -8,8 +8,16 @@ dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
 
-    // Hadoop Configuration class used by Iceberg
-    implementation 'org.apache.hadoop:hadoop-common:3.4.1'
+    // Floor for the netty that hadoop and zookeeper pull in: CVE-2026-75595 (netty-handler, critical 9.1)
+    // and the 4.1.135/136 codec fixes. Micronaut's BOM resolves higher (4.2.x) when it is on the graph.
+    api platform('io.netty:netty-bom:4.1.139.Final')
+
+    // Hadoop Configuration class used by Iceberg. Hadoop's embedded Jetty HTTP server is never started,
+    // so its 9.4 line (CVE-2024-13009, CVE-2026-2332, CVE-2026-10050) is dropped.
+    implementation('org.apache.hadoop:hadoop-common:3.4.3') {
+        exclude group: 'org.eclipse.jetty'
+        exclude group: 'org.eclipse.jetty.websocket'
+    }
 
     api "org.apache.iceberg:iceberg-core:${project.ext.apacheIcebergVersion}"
     api "org.apache.iceberg:iceberg-api:${project.ext.apacheIcebergVersion}"
@@ -18,8 +26,30 @@ dependencies {
     api "org.apache.iceberg:iceberg-orc:${project.ext.apacheIcebergVersion}"
     api "org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}"
 
+    constraints {
+        api('org.apache.zookeeper:zookeeper:3.8.6') {
+            because('CVE-2026-24281/-24308: hadoop-common 3.4.3 -> curator 5.2.0 still declares 3.8.4')
+        }
+        api('org.apache.httpcomponents.core5:httpcore5:5.4.4') {
+            because('CVE-2026-54399: iceberg-core -> httpclient5 5.6.1 declares httpcore5 5.4')
+        }
+        api('org.apache.httpcomponents.core5:httpcore5-h2:5.4.4') {
+            because('CVE-2026-54428: iceberg-core -> httpclient5 5.6.1 declares httpcore5-h2 5.4')
+        }
+        // iceberg-parquet 1.11.0 declares parquet 1.17.1, whose shaded parquet-jackson carries jackson 2.21.3
+        // (CVE-2026-68494/-68497/-89407/-89425/-91776/-91777); 1.18.x is the first line shading a fixed 2.22.x.
+        api('org.apache.parquet:parquet-avro:1.18.1') {
+            because('shaded jackson 2.21.3 in parquet-jackson 1.17.1 (CVE-2026-68497 and five more)')
+        }
+        api('org.apache.parquet:parquet-hadoop:1.18.1') {
+            because('shaded jackson 2.21.3 in parquet-jackson 1.17.1 (CVE-2026-68497 and five more)')
+        }
+    }
+
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
 
-    testImplementation "io.mockk:mockk:1.13.12"
-    testImplementation "org.assertj:assertj-core:3.26.3"
+    // KGP >= 2.0.10 (KT-68278): test no longer inherits testFixturesImplementation deps
+    // (kotlin.test came through core-load -> core-base testFixtures). A bare kotlin-test would
+    // make KGP infer the JUnit 5 variant and clash with core-base's kotlin-test-junit.
+    testImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
 }

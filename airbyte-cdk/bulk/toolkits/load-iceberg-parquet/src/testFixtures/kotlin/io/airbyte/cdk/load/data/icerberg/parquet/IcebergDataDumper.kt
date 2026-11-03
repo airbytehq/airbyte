@@ -43,8 +43,8 @@ class IcebergDataDumper(
                                 else -> AirbyteValue.from(value)
                             }
                         name to airbyteValue
-                    }
-            )
+                    },
+            ),
         )
     }
 
@@ -59,26 +59,25 @@ class IcebergDataDumper(
             airbyteMeta.getField("changes") as? List<Record>
                 ?: throw IllegalStateException("Received no changes in the metadata.")
 
-        val metaChanges =
-            inputChanges.map { change ->
-                val field = change.getField("field") as String
-                val changeValue =
-                    AirbyteRecordMessageMetaChange.Change.fromValue(
-                        change.getField("change") as String
-                    )
-                val reason =
-                    AirbyteRecordMessageMetaChange.Reason.fromValue(
-                        change.getField("reason") as String
-                    )
-                Meta.Change(field, changeValue, reason)
-            }
+        val metaChanges = inputChanges.map { change ->
+            val field = change.getField("field") as String
+            val changeValue =
+                AirbyteRecordMessageMetaChange.Change.fromValue(
+                    change.getField("change") as String,
+                )
+            val reason =
+                AirbyteRecordMessageMetaChange.Reason.fromValue(
+                    change.getField("reason") as String,
+                )
+            Meta.Change(field, changeValue, reason)
+        }
 
         return OutputRecord.Meta(syncId = syncId, changes = metaChanges)
     }
 
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val catalog = getCatalog(spec)
         val table = catalog.loadTable(tableIdGenerator.toTableIdentifier(stream.mappedDescriptor))
@@ -92,13 +91,13 @@ class IcebergDataDumper(
                             UUID.fromString(record.getField(Meta.COLUMN_NAME_AB_RAW_ID).toString()),
                         extractedAt =
                             Instant.ofEpochMilli(
-                                record.getField(Meta.COLUMN_NAME_AB_EXTRACTED_AT) as Long
+                                record.getField(Meta.COLUMN_NAME_AB_EXTRACTED_AT) as Long,
                             ),
                         loadedAt = null,
                         generationId = record.getField(Meta.COLUMN_NAME_AB_GENERATION_ID) as Long,
                         data = toAirbyteValue(record, isRoot = true),
-                        airbyteMeta = getMetaData(record)
-                    )
+                        airbyteMeta = getMetaData(record),
+                    ),
                 )
             }
         }
@@ -112,7 +111,7 @@ class IcebergDataDumper(
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw NotImplementedError("Iceberg doesn't support universal file transfer")
     }

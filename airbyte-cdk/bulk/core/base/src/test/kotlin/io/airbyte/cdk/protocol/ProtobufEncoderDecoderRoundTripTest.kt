@@ -36,7 +36,7 @@ class ProtobufEncoderDecoderRoundTripTest {
     private fun <T> testRoundTrip(
         value: T,
         expectedValue: T,
-        schemaType: io.airbyte.cdk.data.AirbyteSchemaType
+        schemaType: io.airbyte.cdk.data.AirbyteSchemaType,
     ) {
         val encoded = encoder.encode(value, schemaType)
         val decoded = decoder.decode(encoded.build())
@@ -124,7 +124,7 @@ class ProtobufEncoderDecoderRoundTripTest {
                 BigDecimal.ONE,
                 BigDecimal("-123.456"),
                 BigDecimal("123456789.987654321"),
-                BigDecimal("0.123456789012345678901234567890")
+                BigDecimal("0.123456789012345678901234567890"),
             )
         bigDecValues.forEach { value -> testRoundTrip(value, LeafAirbyteSchemaType.NUMBER) }
     }
@@ -157,7 +157,7 @@ class ProtobufEncoderDecoderRoundTripTest {
         testRoundTrip(LocalTime.of(14, 30, 45), LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
         testRoundTrip(
             LocalTime.of(14, 30, 45, 123456789),
-            LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+            LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
         )
         testRoundTrip(LocalTime.of(0, 0, 0, 1), LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
 
@@ -184,27 +184,27 @@ class ProtobufEncoderDecoderRoundTripTest {
                 ZoneOffset.ofHoursMinutes(-5, -45),
                 ZoneOffset.ofHoursMinutesSeconds(1, 30, 30),
                 ZoneOffset.MIN,
-                ZoneOffset.MAX
+                ZoneOffset.MAX,
             )
 
         offsets.forEach { offset ->
             testRoundTrip(
                 OffsetTime.of(14, 30, 45, 0, offset),
-                LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
             )
             testRoundTrip(OffsetTime.MIN, LeafAirbyteSchemaType.TIME_WITH_TIMEZONE)
             testRoundTrip(OffsetTime.MAX, LeafAirbyteSchemaType.TIME_WITH_TIMEZONE)
             testRoundTrip(
                 OffsetTime.of(14, 30, 45, 123456789, offset),
-                LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
             )
             testRoundTrip(
                 OffsetTime.of(0, 0, 0, 0, offset),
-                LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
             )
             testRoundTrip(
                 OffsetTime.of(23, 59, 59, 999999999, offset),
-                LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
             )
         }
     }
@@ -213,27 +213,27 @@ class ProtobufEncoderDecoderRoundTripTest {
     fun testTimestampWithoutTimezoneRoundTrip() {
         testRoundTrip(
             LocalDateTime.of(2025, 10, 6, 14, 30, 45),
-            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
         )
         testRoundTrip(
             LocalDateTime.of(2025, 10, 6, 14, 30, 45, 123456789),
-            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
         )
         testRoundTrip(
             LocalDateTime.of(1970, 1, 1, 0, 0, 0, 0),
-            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
         )
         testRoundTrip(
             LocalDateTime.of(2025, 10, 6, 0, 0, 0, 0),
-            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
         )
         testRoundTrip(
             LocalDateTime.of(2024, 2, 29, 12, 0, 0),
-            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
         )
         testRoundTrip(
             LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999999999),
-            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
         )
         testRoundTrip(LocalDateTime.MIN, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
         testRoundTrip(LocalDateTime.MAX, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
@@ -263,23 +263,23 @@ class ProtobufEncoderDecoderRoundTripTest {
                 ZoneOffset.ofHoursMinutes(-4, -30),
                 ZoneOffset.ofHoursMinutes(9, 30),
                 ZoneOffset.MIN,
-                ZoneOffset.MAX
+                ZoneOffset.MAX,
             )
 
         offsets.forEach { offset ->
             testRoundTrip(
                 OffsetDateTime.of(2025, 10, 6, 14, 30, 45, 0, offset),
-                LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
             )
             testRoundTrip(OffsetDateTime.MIN, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
             testRoundTrip(OffsetDateTime.MAX, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
             testRoundTrip(
                 OffsetDateTime.of(2025, 10, 6, 14, 30, 45, 123456789, offset),
-                LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
             )
             testRoundTrip(
                 OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0, offset),
-                LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
             )
         }
 
@@ -299,7 +299,7 @@ class ProtobufEncoderDecoderRoundTripTest {
                 """{"key": "value"}""",
                 """[1, 2, 3, "test"]""",
                 """{"nested": {"object": true}}""",
-                """{"unicode": "你好 مرحبا 😀"}"""
+                """{"unicode": "你好 مرحبا 😀"}""",
             )
 
         jsonStrings.forEach { json -> testRoundTrip(json, LeafAirbyteSchemaType.JSONB) }
@@ -321,7 +321,7 @@ class ProtobufEncoderDecoderRoundTripTest {
             testRoundTrip(
                 binary.toByteArray(),
                 Base64.getEncoder().encodeToString(binary.toByteArray()),
-                LeafAirbyteSchemaType.BINARY
+                LeafAirbyteSchemaType.BINARY,
             )
         }
 
@@ -330,7 +330,7 @@ class ProtobufEncoderDecoderRoundTripTest {
             listOf(
                 byteArrayOf(0x01, 0x02, 0x03),
                 byteArrayOf(0xFF.toByte(), 0xFE.toByte()),
-                byteArrayOf()
+                byteArrayOf(),
             )
 
         byteArrays.forEach { bytes ->
@@ -349,7 +349,7 @@ class ProtobufEncoderDecoderRoundTripTest {
                 ZoneOffset.ofHours(-8), // PST
                 ZoneOffset.ofHours(5), // IST (approximately)
                 ZoneOffset.ofHours(9), // JST
-                ZoneOffset.ofHoursMinutes(-4, -30) // VET
+                ZoneOffset.ofHoursMinutes(-4, -30), // VET
             )
 
         timezones.forEach { offset ->
@@ -374,7 +374,7 @@ class ProtobufEncoderDecoderRoundTripTest {
                 OffsetDateTime.of(2025, 3, 9, 3, 0, 0, 0, ZoneOffset.ofHours(-7)),
                 // Fall back
                 OffsetDateTime.of(2025, 11, 2, 1, 0, 0, 0, ZoneOffset.ofHours(-7)),
-                OffsetDateTime.of(2025, 11, 2, 1, 0, 0, 0, ZoneOffset.ofHours(-8))
+                OffsetDateTime.of(2025, 11, 2, 1, 0, 0, 0, ZoneOffset.ofHours(-8)),
             )
 
         dstTestCases.forEach { timestamp ->

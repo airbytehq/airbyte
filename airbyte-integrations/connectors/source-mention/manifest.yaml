@@ -462,12 +462,8 @@ definitions:
     type: HttpRequester
     url_base: https://api.mention.net/api
     authenticator:
-      type: ApiKeyAuthenticator
+      type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
-      inject_into:
-        type: RequestOption
-        field_name: Authorization
-        inject_into: header
 
 streams:
   - $ref: "#/definitions/streams/alert"
