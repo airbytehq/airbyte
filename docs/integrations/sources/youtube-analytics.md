@@ -10,6 +10,8 @@ For Airbyte Open Source, you need a Google Cloud project with the YouTube Report
 
 YouTube partners may also provide a **Content Owner ID** to retrieve data on behalf of that content owner.
 
+For the optional historical channel daily stream, also enable the [YouTube Analytics API](https://console.cloud.google.com/apis/api/youtubeanalytics.googleapis.com/overview) and grant `https://www.googleapis.com/auth/youtube.readonly` in addition to `yt-analytics.readonly`, as required by the [query endpoint](https://developers.google.com/youtube/analytics/reference/reports/query). Managed OAuth consent also requests `youtube.readonly`. Existing tokens continue to work for bulk reports; re-authenticate before using historical queries if the token lacks the additional scope.
+
 ## Setup guide
 
 Follow these steps to prepare YouTube access and then add the source in Airbyte.
@@ -62,7 +64,8 @@ The YouTube Analytics source connector supports the following [sync modes](https
 
 ## Supported Streams
 
-- [report_types](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/reportTypes/list) - The report types available to your channel or content owner. Full refresh only. The connection check uses this stream because it returns data with valid credentials alone and requires no reporting job.
+- `analytics_channel_daily` (opt-in) - Historical channel/day activity from the [YouTube Analytics query API](https://developers.google.com/youtube/analytics/reference/reports/query). See [Historical channel daily reports](#historical-channel-daily-reports).
+- [report_types](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/reportTypes/list) - The report types available to your channel or content owner. Full refresh only. The connection check uses this stream without requiring a reporting job. Query API permissions and channel access are verified when `analytics_channel_daily` is read; a successful connection check alone does not establish query access.
 - [channel_annotations_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-annotations)
 - [channel_basic_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-user-activity)
 - [channel_cards_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-cards)
@@ -84,7 +87,35 @@ The YouTube Analytics source connector supports the following [sync modes](https
 - [playlist_province_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-province)
 - [playlist_traffic_source_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-traffic-sources)
 
-Each report stream provides one YouTube bulk report. Incremental syncs download only report files YouTube created since the previous sync and also pick up files YouTube re-issues with corrected data. A re-issued file replaces an earlier report for the same days, so use **Incremental | Append + Deduped** for report streams. With **Incremental | Append**, the original rows and the corrected rows are both kept in the destination.
+Each bulk report stream provides one YouTube bulk report. Incremental syncs download only report files YouTube created since the previous sync and also pick up files YouTube re-issues with corrected data. A re-issued file replaces an earlier report for the same days, so use **Incremental | Append + Deduped** for report streams. With **Incremental | Append**, the original rows and the corrected rows are both kept in the destination.
+
+## Historical channel daily reports
+
+The optional `analytics_channel_daily` stream uses targeted queries rather than downloadable bulk files. It can request dates before the bulk Reporting API's initial 30-day window, subject to the historical data YouTube makes available. It does not create reporting jobs or regenerate expired bulk files.
+
+To enable it, configure **Historical Channel Daily Reports** with the authorized owner's **Channel ID** and an inclusive **Start Date**, then refresh the source schema and select `analytics_channel_daily` in the connection. Leave this optional object unset to keep the existing bulk-only catalog. This stream supports channel owners only; do not combine it with **Content Owner ID**.
+
+Example source configuration fragment:
+
+```json
+{
+  "query_reports": {
+    "channel_id": "YOUR_CHANNEL_ID",
+    "start_date": "2025-04-17",
+    "end_date": "2025-08-21",
+    "lookback_days": 7,
+    "data_lag_days": 3
+  }
+}
+```
+
+**End Date** is optional and inclusive. Requests are capped at the earlier of End Date and the current UTC date minus **Data Lag Days** (default 3). Query dates describe YouTube's reporting days; date labels are not converted to UTC timestamps. The lag is a conservative default, not a guarantee that every metric is finalized.
+
+The stream emits one row per `(channel_id, day)` with these nonrevenue metrics: `views`, `engagedViews`, `estimatedMinutesWatched`, `averageViewDuration`, `averageViewPercentage`, `likes`, `dislikes`, `comments`, `shares`, `subscribersGained`, `subscribersLost`, `videosAddedToPlaylists`, and `videosRemovedFromPlaylists`. Field names follow the query API. Watch time is in minutes, average duration in seconds, and average percentage in percent. `views` and `engagedViews` remain separate measures. Averages must not be summed across days.
+
+Full Refresh requests the configured interval. Incremental syncs use independent `day` state and requery **Lookback Days** (default 7) before the saved date to collect revisions. Prefer **Append + Deduped** with the declared key where supported; Append alone retains repeated observations. Successful empty responses emit no records, and the CDK may requery empty historical tails on later syncs because no newer record date advances the cursor. A failed page leaves its window eligible for replay. Lowering Start Date requires refreshing/resetting this stream to retrieve history before saved state; changing Channel ID requires clearing the stream's existing data and state to avoid mixing channel identities.
+
+This is an aggregate channel/day stream, not a replacement for the video/country/live/subscription grain of `channel_basic_a3`. Do not add its totals to bulk report totals for the same channel/day. Historical availability, suppressed rows and metric definitions can differ. Lookback does not capture every correction outside its window, and deduplication cannot delete a key omitted from a later response; use a stream refresh when a complete replacement is required. See [supported query combinations](https://developers.google.com/youtube/analytics/channel_reports).
 
 ## Report availability
 
@@ -137,6 +168,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 1.7.0 | 2026-11-03 | | Add opt-in historical channel daily reports using the YouTube Analytics query API |
 | 1.6.1 | 2026-11-03 | [90800](https://github.com/airbytehq/airbyte/pull/90800) | Update dependencies |
 | 1.6.0 | 2026-10-30 | [89627](https://github.com/airbytehq/airbyte/pull/89627) | Add the `channel_reach_basic_a1` and `channel_reach_combined_a1` streams for video thumbnail impressions and click-through rate |
 | 1.5.0 | 2026-10-27 | [89629](https://github.com/airbytehq/airbyte/pull/89629) | Emit report metrics as numbers, follow pagination on job and report listings, and give clearer errors for credential, permission and missing-file failures |

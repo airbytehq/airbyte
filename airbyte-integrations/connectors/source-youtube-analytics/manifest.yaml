@@ -94,6 +94,100 @@ definitions:
         schema:
           $ref: "#/schemas/report_types"
 
+    analytics_channel_daily:
+      type: DeclarativeStream
+      name: analytics_channel_daily
+      primary_key:
+        - channel_id
+        - day
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.AnalyticsQueryRequester
+          url_base: https://youtubeanalytics.googleapis.com/v2/
+          path: reports
+          authenticator:
+            $ref: "#/definitions/base_requester/authenticator"
+          request_parameters:
+            ids: "{{ 'channel==' ~ config['query_reports']['channel_id'] }}"
+            dimensions: day
+            metrics: views,engagedViews,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,likes,dislikes,comments,shares,subscribersGained,subscribersLost,videosAddedToPlaylists,videosRemovedFromPlaylists
+            sort: day
+            # OffsetIncrement is zero-based; YouTube's startIndex is one-based.
+            startIndex: "{{ (next_page_token or {}).get('next_page_token', 0) + 1 }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: transient_error
+                predicate: >-
+                  {{ (response.get('error') or {}).get('code') in [403, 429] and
+                  ('dailyLimitExceeded' in response|string or 'quotaExceeded' in response|string) }}
+                error_message: YouTube Analytics API project quota is exhausted. Retry after the quota resets.
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                predicate: >-
+                  {{ (response.get('error') or {}).get('code') == 403 and
+                  ('rateLimitExceeded' in response|string or 'userRateLimitExceeded' in response|string) }}
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes: [400, 401, 403]
+                error_message: >-
+                  YouTube Analytics API query failed:
+                  {{ ((response.get('error') or {}).get('message') or 'check API access')[:300] }}.
+                  Enable the YouTube Analytics API and authorize the channel owner with
+                  yt-analytics.readonly and youtube.readonly scopes.
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes: [429]
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes: [500, 502, 503, 504]
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 30
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.AnalyticsQueryExtractor
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 200
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: maxResults
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: day
+        cursor_datetime_formats: ["%Y-%m-%d"]
+        datetime_format: "%Y-%m-%d"
+        start_datetime: "{{ config['query_reports']['start_date'] }}"
+        end_datetime: >-
+          {{ [config['query_reports'].get('end_date', '9999-12-31'),
+          format_datetime(now_utc() - duration('P' ~ config['query_reports'].get('data_lag_days', 3) ~ 'D'), '%Y-%m-%d')] | min }}
+        step: P30D
+        cursor_granularity: P1D
+        lookback_window: "{{ 'P' ~ config['query_reports'].get('lookback_days', 7) ~ 'D' }}"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: startDate
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: endDate
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/analytics_channel_daily"
+
     base_report_stream:
       type: DeclarativeStream
       retriever:
@@ -625,6 +719,10 @@ definitions:
       class_name: source_declarative_manifest.components.CustomDecoder
 
 streams:
+  - type: ConditionalStreams
+    condition: "{{ config.get('query_reports') is not none }}"
+    streams:
+      - $ref: "#/definitions/streams/analytics_channel_daily"
   - $ref: "#/definitions/streams/report_types"
   - $ref: "#/definitions/streams/channel_annotations_a1"
   - $ref: "#/definitions/streams/channel_basic_a3"
@@ -708,6 +806,45 @@ spec:
         minimum: 1
         maximum: 4
         order: 2
+      query_reports:
+        type: object
+        title: Historical Channel Daily Reports
+        description: >-
+          Configure this optional object to discover analytics_channel_daily, a separate
+          channel/day stream using the YouTube Analytics API. Leave unset for bulk reports
+          only. Requires owner authorization and the YouTube Analytics API enabled.
+        order: 3
+        required: [channel_id, start_date]
+        properties:
+          channel_id:
+            type: string
+            title: Channel ID
+            minLength: 1
+            description: The channel ID owned by the authorizing Google account. Content-owner queries are not supported.
+          start_date:
+            type: string
+            title: Start Date
+            format: date
+            pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            description: Earliest reporting day to query (inclusive). Availability depends on YouTube and the selected metrics.
+          end_date:
+            type: string
+            title: End Date
+            format: date
+            pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            description: Optional inclusive stop date. Always capped at the current UTC date minus Data Lag Days.
+          lookback_days:
+            type: integer
+            title: Lookback Days
+            default: 7
+            minimum: 0
+            description: Number of days before the saved cursor to query again for revisions.
+          data_lag_days:
+            type: integer
+            title: Data Lag Days
+            default: 3
+            minimum: 0
+            description: Exclude this many recent days from the current UTC date. Does not guarantee that YouTube has finalized every metric.
   advanced_auth:
     auth_flow_type: oauth2.0
     oauth_config_specification:
@@ -715,6 +852,7 @@ spec:
         scopes:
           - scope: https://www.googleapis.com/auth/yt-analytics.readonly
           - scope: https://www.googleapis.com/auth/yt-analytics-monetary.readonly
+          - scope: https://www.googleapis.com/auth/youtube.readonly
         consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
         access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
         extract_output:
@@ -753,6 +891,7 @@ spec:
 
 metadata:
   autoImportSchema:
+    analytics_channel_daily: false
     report_types: false
     channel_annotations_a1: false
     channel_basic_a3: false
@@ -781,6 +920,43 @@ metadata:
   assist: {}
 
 schemas:
+  analytics_channel_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    required: [channel_id, day]
+    properties:
+      channel_id:
+        type: string
+      day:
+        type: string
+        format: date
+      views:
+        type: ["null", integer]
+      engagedViews:
+        type: ["null", integer]
+      estimatedMinutesWatched:
+        type: ["null", number]
+      averageViewDuration:
+        type: ["null", number]
+      averageViewPercentage:
+        type: ["null", number]
+      likes:
+        type: ["null", integer]
+      dislikes:
+        type: ["null", integer]
+      comments:
+        type: ["null", integer]
+      shares:
+        type: ["null", integer]
+      subscribersGained:
+        type: ["null", integer]
+      subscribersLost:
+        type: ["null", integer]
+      videosAddedToPlaylists:
+        type: ["null", integer]
+      videosRemovedFromPlaylists:
+        type: ["null", integer]
   report_types:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
