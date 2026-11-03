@@ -17816,7 +17816,7 @@ spec:
         description: >-
           UTC date-time in the format YYYY-MM-DDTHH:MM:SSZ. Data last updated
           before this date won't be replicated. If not set, defaults to 1 year
-          before the sync runs.
+          before the connector first runs.
       max_results:
         type: integer
         order: 2
