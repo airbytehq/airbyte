@@ -18,7 +18,10 @@
       "role": "end-user",
       "verified": false,
       "external_id": null,
-      "tags": ["tag", "test"],
+      "tags": [
+        "tag",
+        "test"
+      ],
       "alias": "",
       "active": true,
       "shared": false,
@@ -59,9 +62,13 @@
       "deliverable_state": "deliverable"
     }
   ],
-  "after_url": null,
-  "before_url": null,
-  "after_cursor": null,
-  "before_cursor": null,
-  "end_of_stream": true
+  "meta": {
+    "has_more": false,
+    "after_cursor": "eyJvIjoiLXVwZGF0ZWRfYXQiLCJ2IjoiYVFBQUFBQUFBQUE9In0=",
+    "before_cursor": null
+  },
+  "links": {
+    "next": null,
+    "prev": null
+  }
 }

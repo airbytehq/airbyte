@@ -218,6 +218,21 @@ class UsersRecordBuilder(ZendeskSupportRecordBuilder):
         return self
 
 
+class UserIdentitiesRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def user_identities_record(cls) -> "UserIdentitiesRecordBuilder":
+        record_template = cls.extract_record("users", __file__, NestedPath(["identities", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "UserIdentitiesRecordBuilder":
+        self._record["id"] = id
+        return self
+
+    def with_user_id(self, user_id: int) -> "UserIdentitiesRecordBuilder":
+        self._record["user_id"] = user_id
+        return self
+
+
 class TicketMetricsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
@@ -558,21 +573,19 @@ class GroupsResponseBuilder(HttpResponseBuilder):
 
 
 class UsersResponseBuilder(HttpResponseBuilder):
-    @classmethod
-    def users_response(cls, url: Optional[HttpRequest] = None, cursor: Optional[str] = None) -> "UsersResponseBuilder":
-        return cls(
-            find_template("users", __file__),
-            FieldPath("users"),
-            EndOfStreamPaginationStrategy(http_request_to_str(url), cursor),
-        )
+    """Response of the user list (`GET /api/v2/users`): records under `users`, cursor pagination through
+    `meta.has_more` and `links.next`. With `include=identities` the page also carries an `identities` array."""
 
     @classmethod
-    def identities_response(cls, url: Optional[HttpRequest] = None, cursor: Optional[str] = None) -> "UsersResponseBuilder":
-        return cls(
-            find_template("users", __file__),
-            FieldPath("identities"),
-            EndOfStreamPaginationStrategy(http_request_to_str(url), cursor),
-        )
+    def users_response(cls, next_page_url: Optional[str] = None) -> "UsersResponseBuilder":
+        builder = cls(find_template("users", __file__), FieldPath("users"), CursorBasedPaginationStrategy(next_page_url))
+        builder._response["identities"] = []
+        return builder
+
+    def with_identity(self, identity: UserIdentitiesRecordBuilder) -> "UsersResponseBuilder":
+        """Sideload an identity next to the users of this page (`include=identities`)."""
+        self._response["identities"].append(identity.build())
+        return self
 
 
 class TicketMetricsResponseBuilder(HttpResponseBuilder):
@@ -1358,29 +1371,6 @@ class ArticleCommentVotesResponseBuilder(HttpResponseBuilder):
         return cls(
             find_template("article_comment_votes", __file__),
             FieldPath("votes"),
-            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
-        )
-
-
-class UserIdentitiesRecordBuilder(ZendeskSupportRecordBuilder):
-    @classmethod
-    def user_identities_record(cls) -> "UserIdentitiesRecordBuilder":
-        record_template = cls.extract_record("user_identities", __file__, NestedPath(["identities", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
-
-    def with_id(self, id: int) -> "UserIdentitiesRecordBuilder":
-        self._record["id"] = id
-        return self
-
-
-class UserIdentitiesResponseBuilder(HttpResponseBuilder):
-    @classmethod
-    def user_identities_response(
-        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
-    ) -> "UserIdentitiesResponseBuilder":
-        return cls(
-            find_template("user_identities", __file__),
-            FieldPath("identities"),
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
 

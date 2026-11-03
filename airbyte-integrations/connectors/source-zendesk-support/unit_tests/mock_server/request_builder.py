@@ -176,13 +176,13 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def users_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/users/cursor.json endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/users/cursor.json").with_authenticator(authenticator)
+        """Create a request builder for the first page of the user list (`/users?sort=-updated_at&page[size]=100`)."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "users").with_authenticator(authenticator).with_sort("-updated_at").with_page_size(100)
 
     @classmethod
     def user_identities_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/users/cursor.json endpoint with include=identities (for user_identities stream)."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/users/cursor.json").with_authenticator(authenticator).with_include("identities")
+        """Create a request builder for the user list with `include=identities` (the `user_identities` stream)."""
+        return cls.users_endpoint(authenticator).with_include("identities")
 
     @classmethod
     def ticket_metrics_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":

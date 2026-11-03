@@ -1559,35 +1559,45 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  # `users` reads `GET /api/v2/users?sort=-updated_at` (see `sorted_list_stream`). Unlike the
+  # Incremental User Export it replaced, the list omits deleted users, so `permanently_deleted`
+  # is no longer returned.
   users_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/sorted_list_stream"
     retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/after_url_paginator"
+      $ref: "#/definitions/sorted_list_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort: "-updated_at"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/users"
     $parameters:
       name: "users"
-      path: "incremental/users/cursor.json"
+      path: "users"
       cursor_field: "updated_at"
-      cursor_filter: "start_time"
       primary_key: "id"
 
+  # `user_identities` reads the same user list with `include=identities`, which sideloads the
+  # identities of the users on each page under a page-level `identities` array. The stop condition
+  # therefore looks at `users` (`sorted_path`) while the records come from `identities`. There is
+  # no record filter: an identity's `updated_at` is never later than its user's, so filtering
+  # identities on their own cursor would drop the unchanged identities of recently updated users,
+  # which the export used to return. The last page can re-emit identities of users older than the
+  # slice start; `id` deduplicates them downstream.
   users_identities_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/sorted_list_stream"
     retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/after_url_paginator"
+      $ref: "#/definitions/sorted_list_stream/retriever"
       requester:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
+          sort: "-updated_at"
           include: "identities"
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1595,9 +1605,9 @@ definitions:
     $parameters:
       name: "user_identities"
       data_path: "identities"
-      path: "incremental/users/cursor.json"
+      sorted_path: "users"
+      path: "users"
       cursor_field: "updated_at"
-      cursor_filter: "start_time"
       primary_key: "id"
 
 streams:
