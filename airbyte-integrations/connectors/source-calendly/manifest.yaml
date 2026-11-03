@@ -381,7 +381,7 @@ definitions:
       failure_type: config_error
       error_message: >-
         Calendly personal access token is invalid or revoked (401: {{ (response if response is mapping else {}).get('message', 'Unauthorized') }}).
-        Create a new personal access token under Integrations → API & Webhooks in Calendly and update the API Key in Airbyte.
+        Create a new personal access token under Integrations → API & Webhooks in Calendly and update the Calendly personal access token in the Airbyte connection settings.
     forbidden:
       type: HttpResponseFilter
       http_codes: [403]
@@ -389,7 +389,7 @@ definitions:
       failure_type: config_error
       error_message: >-
         Calendly token lacks a required scope (403: {{ (response if response is mapping else {}).get('message', 'Forbidden') }}).
-        Create a token with users:read, event_types:read, groups:read, organizations:read, and scheduled_events:read scopes and update the API Key in Airbyte.
+        Create a token with users:read, event_types:read, groups:read, organizations:read, and scheduled_events:read scopes and update the Calendly personal access token in the Airbyte connection settings.
     not_found:
       type: HttpResponseFilter
       http_codes: [404]

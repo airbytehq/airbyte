@@ -84,6 +84,7 @@ def test_authentication_error_read_includes_response_and_remediation(status: int
         assert error.failure_type == FailureType.config_error
         assert "Token access denied" in error.message
         assert remediation in error.message
+        assert "update the Calendly personal access token in the Airbyte connection settings" in error.message
         http.assert_number_of_calls(target, 1)
 
 
