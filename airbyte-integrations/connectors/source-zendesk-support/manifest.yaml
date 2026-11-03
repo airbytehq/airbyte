@@ -1265,23 +1265,76 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  # `ticket_metric_events` reads `GET /tickets/{ticket_id}/metric_events` for every ticket the
+  # `tickets` stream returns (`incremental_dependency`), replacing the Incremental Ticket Metric
+  # Event Export. The response is an object keyed by metric name whose values are the event lists,
+  # hence the `["*", "*"]` extractor; it is not paginated. A metric event is written when its
+  # ticket changes, so a changed ticket surfaces its new events; the whole history of the ticket is
+  # read each time and the record filter drops the events older than the slice start. Events the
+  # export returned with `ticket_id: null` are unreachable this way. The cursor stays `time` with
+  # unix-timestamp state (plus a global substream cursor and the parent state), and a 5.x state is a
+  # single value the CDK uses to seed the parent `tickets` cursor, so no migration is needed.
   ticket_metric_events_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/end_of_stream_paginator"
+    type: DeclarativeStream
+    name: "ticket_metric_events"
+    primary_key: "id"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/ticket_metric_events"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%s"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%s"
+      cursor_field: "time"
+      start_datetime:
+        datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else day_delta(-730, '%s') }}"
+      lookback_window: PT1H
+      global_substream_cursor: true
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "tickets/{{ stream_partition.ticket_id }}/metric_events"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          # Keyed on the status code only: Zendesk does not guarantee a JSON body on these
+          # responses, and a refusal is scoped to one ticket, not to the stream. See AGENTS.md §5.
+          response_filters:
+            - $ref: "#/definitions/oauth_token_refresh_response_filter"
+            - http_codes: [403]
+              action: IGNORE
+              error_message: "Skipping metric events for this ticket because Zendesk denied access to it. Other tickets will continue to sync normally."
+            - http_codes: [404]
+              action: IGNORE
+              error_message: "Skipping metric events for this ticket because the ticket no longer exists. This is expected for deleted tickets. Other tickets will continue to sync normally."
+      paginator:
+        type: NoPagination
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["*", "*"]
+        record_filter:
+          condition: "{{ (timestamp(record['time']) | int) >= (stream_interval.get('start_time', 0) | int) }}"
+        schema_normalization: Default
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            partition_field: "ticket_id"
+            stream:
+              $ref: "#/definitions/tickets_stream"
+            incremental_dependency: true
     $parameters:
       name: "ticket_metric_events"
-      path: "incremental/ticket_metric_events"
-      cursor_field: "time"
-      cursor_filter: "start_time"
-      primary_key: "id"
 
   ticket_events_stream:
     $ref: "#/definitions/base_incremental_stream"

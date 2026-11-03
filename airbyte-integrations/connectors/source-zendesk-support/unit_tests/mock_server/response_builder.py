@@ -1097,11 +1097,19 @@ class TicketCommentsRecordBuilder(ZendeskSupportRecordBuilder):
 class TicketMetricEventsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def ticket_metric_events_record(cls) -> "TicketMetricEventsRecordBuilder":
-        record_template = cls.extract_record("ticket_metric_events", __file__, NestedPath(["ticket_metric_events", 0]))
+        record_template = cls.extract_record("ticket_metric_events", __file__, NestedPath(["agent_work_time", 0]))
         return cls(record_template, FieldPath("id"), FieldPath("time"))
 
     def with_id(self, id: int) -> "TicketMetricEventsRecordBuilder":
         self._record["id"] = id
+        return self
+
+    def with_ticket_id(self, ticket_id: int) -> "TicketMetricEventsRecordBuilder":
+        self._record["ticket_id"] = ticket_id
+        return self
+
+    def with_metric(self, metric: str) -> "TicketMetricEventsRecordBuilder":
+        self._record["metric"] = metric
         return self
 
 
@@ -1283,13 +1291,22 @@ class TicketCommentsResponseBuilder(HttpResponseBuilder):
 
 
 class TicketMetricEventsResponseBuilder(HttpResponseBuilder):
+    """Response of `GET /tickets/{ticket_id}/metric_events`: an object keyed by metric name whose values are
+    the lists of events, with no pagination envelope."""
+
     @classmethod
-    def ticket_metric_events_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketMetricEventsResponseBuilder":
-        return cls(
-            find_template("ticket_metric_events", __file__),
-            FieldPath("ticket_metric_events"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
+    def ticket_metric_events_response(cls) -> "TicketMetricEventsResponseBuilder":
+        builder = cls(find_template("ticket_metric_events", __file__), FieldPath("agent_work_time"), None)
+        builder._response = {}
+        return builder
+
+    def with_event(self, record: TicketMetricEventsRecordBuilder) -> "TicketMetricEventsResponseBuilder":
+        event = record.build()
+        self._response.setdefault(event["metric"], []).append(event)
+        return self
+
+    def build(self) -> HttpResponse:
+        return HttpResponse(json.dumps(self._response), self._status_code)
 
 
 class TicketEventsResponseBuilder(HttpResponseBuilder):

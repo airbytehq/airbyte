@@ -1,12 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from datetime import timedelta
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
 
-from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
+from .request_builder import ApiTokenAuthenticator, Authenticator, ZendeskSupportRequestBuilder
 from .response_builder import (
     GroupsRecordBuilder,
     GroupsResponseBuilder,
@@ -125,6 +125,18 @@ def given_tickets(
         TicketsResponseBuilder.tickets_response().with_record(tickets_record_builder).build(),
     )
     return tickets_record_builder
+
+
+def given_ticket_list(http_mocker: HttpMocker, authenticator: Authenticator, tickets: List[Tuple[int, int]]) -> None:
+    """Mock one page of the parent ticket list (`GET /tickets?sort=-updated_at&page[size]=100`) for the
+    per-ticket substreams. Each ticket is `(id, updated_at as a unix timestamp)`, newest first; the builder
+    also sets `generated_timestamp` to that instant. The list request carries no start time: the parent
+    filters client-side, so tickets older than the slice start are dropped before any substream request.
+    """
+    response = TicketsResponseBuilder.tickets_response()
+    for ticket_id, updated_at in tickets:
+        response = response.with_record(TicketsRecordBuilder.tickets_record().with_id(ticket_id).with_cursor(updated_at))
+    http_mocker.get(ZendeskSupportRequestBuilder.tickets_endpoint(authenticator).build(), response.build())
 
 
 def given_tickets_with_state(
