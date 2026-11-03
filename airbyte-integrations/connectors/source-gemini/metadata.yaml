@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 726008ad-34d8-4a52-bedb-d0eebbd3d78a
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-gemini
   githubIssueLabel: source-gemini
   icon: icon.svg
