@@ -12,14 +12,23 @@ reaches the agent. A high score, or an item too large to screen, counts as flagg
 call that keeps failing, a refused Jev key, or screening that runs out of time is an error: nothing
 is held and no prompt is written, so the next sweep tries again. This is a filter, not a security boundary.
 
+Scores, reasons, and digests never go to stdout: airbytehq/airbyte's Actions logs are public, and exact scores
+would let anyone tune text against the screen. They go to --details-file, which the workflow copies only into
+the private oncall ticket.
+
 Usage:
+  intake_snapshot.uv canary
+      Screens a fixed benign sentence. Fails if Jev errors, rejects it, or flags it, so a broken or changed API
+      fails the run once instead of holding every item.
   intake_snapshot.uv select --since YYYY-MM-DD --limit N
-      Prints a JSON list of open community items with no intake/* or ai-intake-started label, oldest first,
-      with items labeled ai-intake-screen-error after the rest.
-  intake_snapshot.uv build NUMBER --dry-run true|false --prompt-file PATH
-      Prints {"url", "flagged", "error", "reason", "scores", "digest"} and, only when neither flagged nor error, writes
-      the prompt. --override DIGEST skips the screen while the item's screened text, and its edit history, still
-      have that digest.
+      Prints {"numbers": [...], "stale": [...]}. `numbers`: open community items with no intake/* or
+      ai-intake-started label, oldest first, with items labeled ai-intake-screen-error after the rest. `stale`:
+      items labeled ai-intake-started more than STALE_HOURS ago that still have no intake/* label.
+  intake_snapshot.uv build NUMBER --dry-run true|false --prompt-file PATH --details-file PATH
+      Prints {"url", "flagged", "error", "skipped", "holds"} and, only when neither flagged nor error, writes the
+      prompt. The details file lists `holds`: the submission when it is flagged, otherwise any flagged linked
+      items, each with its reason, scores, and digest. --override DIGEST skips the screen while the item's
+      screened text, and its edit history, still have that digest.
       --skip-labeled (sweep) returns "skipped" when the item got an intake label after it was selected.
 
 Needs `gh` authenticated (GH_TOKEN), GITHUB_REPOSITORY, and TYPESAFE_API_KEY for `build`.
@@ -54,6 +63,9 @@ MAX_COMMITS = 250  # the commits endpoint returns no more than this
 MAX_DIFF_FILES = 300  # the diff endpoint answers HTTP 406 above this
 MAX_DIFF_CHARS = 300_000
 MAX_LINKED = 5
+# A session that hasn't set an intake/* label this long after it started is reported as stuck.
+STALE_HOURS = 6
+CANARY_TEXT = "source-faker fails with a 401 error when syncing the users stream after upgrading to 6.2.0. Steps: create a connection, run a sync."
 INTAKE_STATES = [
     "pending-human",
     "needs-information",
@@ -146,40 +158,76 @@ def has_write_access(user: str) -> bool:
     return permission in {"admin", "maintain", "write"}
 
 
-def select(since: str, limit: int) -> list[int]:
+def search(query: str) -> list[dict]:
+    found = []
+    for page in range(1, 11):
+        result = json.loads(gh("-X", "GET", "search/issues", "-f", f"q={query}", "-f", "sort=created", "-f", "order=asc", "-f", "per_page=100", "-f", f"page={page}"))
+        items = result.get("items", [])
+        found += items
+        if len(items) < 100:
+            break
+    return found
+
+
+def select(since: str, limit: int) -> dict:
+    return {"numbers": pick(since, limit), "stale": stale_started(since)}
+
+
+def pick(since: str, limit: int) -> list[int]:
     labels = " ".join(f'-label:"{label}"' for label in [*(f"intake/{state}" for state in INTAKE_STATES), STARTED_LABEL])
     query = f"repo:{REPO} is:open created:>={since} {labels}"
     numbers, errored = [], []
-    for page in range(1, 11):
-        found = json.loads(gh("-X", "GET", "search/issues", "-f", f"q={query}", "-f", "sort=created", "-f", "order=asc", "-f", "per_page=100", "-f", f"page={page}"))
-        items = found.get("items", [])
-        for item in items:
-            # Also catches intake/* states the playbook adds later and INTAKE_STATES doesn't list yet.
-            if any(label["name"].startswith("intake/") for label in item.get("labels", [])):
-                continue
-            if is_trusted(item) or has_write_access(login(item)):
-                continue
-            if any(label["name"] == SCREEN_ERROR_LABEL for label in item.get("labels", [])):
-                errored.append(item["number"])
-                continue
-            if linked_to_any(item, numbers):
-                continue
-            numbers.append(item["number"])
-            if len(numbers) == limit:
-                return numbers
-        if len(items) < 100:
+    covered: set[int] = set()  # linked items the picked items' sessions will evaluate
+    for item in search(query):
+        # Also catches intake/* states the playbook adds later and INTAKE_STATES doesn't list yet.
+        if any(label["name"].startswith("intake/") for label in item.get("labels", [])):
+            continue
+        if is_trusted(item) or has_write_access(login(item)):
+            continue
+        # Skipped only when a picked item's own snapshot will include it, which is what its session reads.
+        # Links aren't symmetric (an issue that mentions a PR is linked from the PR's side only).
+        if item["number"] in covered:
+            continue
+        if any(label["name"] == SCREEN_ERROR_LABEL for label in item.get("labels", [])):
+            errored.append(item)
+            continue
+        numbers.append(item["number"])
+        covered |= links_of(item)
+        if len(numbers) == limit:
+            return numbers
+    for item in errored:
+        if len(numbers) == limit:
             break
-    return (numbers + errored)[:limit]
+        if item["number"] not in covered:
+            numbers.append(item["number"])
+            covered |= links_of(item)
+    return numbers
 
 
-def linked_to_any(item: dict, numbers: list[int]) -> bool:
-    """A contributor's linked issue and PR are one intake: the session evaluates both, so start one."""
-    if not numbers:
-        return False
+def links_of(item: dict) -> set[int]:
     try:
-        return bool(set(linked_numbers(item["number"], "pull_request" in item, login(item))) & set(numbers))
+        return set(linked_numbers(item["number"], "pull_request" in item, login(item)))
     except ScreenError:
-        return False
+        return set()
+
+
+def stale_started(since: str) -> list[int]:
+    """Items whose session started STALE_HOURS ago or more and never set an intake/* label: the session failed
+    or died. The sweep doesn't retry them (that could loop on a session that always fails), it reports them."""
+    labels = " ".join(f'-label:"intake/{state}"' for state in INTAKE_STATES)
+    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=STALE_HOURS)
+    stale = []
+    for item in search(f'repo:{REPO} is:open created:>={since} label:"{STARTED_LABEL}" {labels}'):
+        if any(label["name"].startswith("intake/") for label in item.get("labels", [])):
+            continue
+        try:
+            events = gh_pages(f"repos/{REPO}/issues/{item['number']}/timeline")
+        except (ScreenError, Flagged):
+            continue
+        started = [e["created_at"] for e in events if e.get("event") == "labeled" and (e.get("label") or {}).get("name") == STARTED_LABEL]
+        if started and datetime.datetime.fromisoformat(started[-1].replace("Z", "+00:00")) < cutoff:
+            stale.append(item["number"])
+    return stale
 
 
 def bot_safe_body(entry: dict) -> str:
@@ -368,6 +416,16 @@ def screen(sections: list[str], key: str, deadline: float) -> dict:
     return {"flagged": bool(hits), "error": None, "reason": "; ".join(hits), "scores": worst}
 
 
+def canary(key: str) -> None:
+    """Screen a benign sentence. A rejection or a flag here is the API or the questions, not an item."""
+    try:
+        scores = ask_jev(CANARY_TEXT, key, time.monotonic() + 120)
+    except Flagged as e:
+        raise ScreenError(f"Jev rejected the benign canary ({e}); its API may have changed")
+    if any(p >= FLAG_AT for p in scores.values()):
+        raise ScreenError("Jev flagged the benign canary; check the model and questions")
+
+
 def digest_of(sections: list[str], edits: list[str]) -> str:
     """Names the screened text and its edit history, so an override applies only to the text the maintainer
     checked: any edit since, even one that restores the held text, changes it."""
@@ -384,7 +442,7 @@ def screened_snapshot(number: int, key: str, deadline: float, override: str = ""
         if override and override == digest:
             return snap, {"flagged": False, "error": None, "reason": f"screen overridden by a maintainer ({digest})", "scores": {}, "digest": digest}
         if override:
-            note = "override did not match: the item changed since it was checked; "
+            note = "override did not match the current text (a different digest, or the item changed since it was checked); "
         result = screen(sections, key, deadline)
     except Flagged as e:
         # Too large to screen, or Jev rejected the text: nothing was scored, so no override is offered.
@@ -413,35 +471,55 @@ def already_taken(number: int) -> bool:
         if any(name == STARTED_LABEL or name.startswith("intake/") for name in labels_of(item)):
             return True
         for n in linked_numbers(number, "pull_request" in item, login(item)):
-            names = labels_of(json.loads(gh(f"repos/{REPO}/issues/{n}")))
+            linked = json.loads(gh(f"repos/{REPO}/issues/{n}"))
+            names = labels_of(linked)
             if STARTED_LABEL in names and not any(name.startswith("intake/") for name in names):
-                return True
+                # Only if that session's snapshot includes this item: links aren't symmetric.
+                if number in linked_numbers(n, "pull_request" in linked, login(linked)):
+                    return True
     except ScreenError:
         return False
     return False
 
 
-def build(number: int, dry_run: bool, prompt_file: str, override: str = "", skip_labeled: bool = False) -> dict:
+def hold_entry(number: int, url: str, result: dict) -> dict:
+    return {"number": number, "url": url, "reason": result["reason"], "scores": result["scores"], "digest": result["digest"]}
+
+
+def build(number: int, dry_run: bool, prompt_file: str, details_file: str, override: str = "", skip_labeled: bool = False) -> dict:
+    """Returns the public summary (no scores, reasons, or digests) and writes those to details_file."""
     key = os.environ.get("TYPESAFE_API_KEY", "")
     if not key:
         sys.exit("TYPESAFE_API_KEY is not set")
-    if skip_labeled and already_taken(number):
-        return {"url": f"https://github.com/{REPO}/issues/{number}", "flagged": False, "error": None, "skipped": True,
-                "reason": "already has an intake label, or a linked item's session is running", "scores": {}, "digest": None}
-    deadline = time.monotonic() + BUILD_SECONDS
-    snap, result = screened_snapshot(number, key, deadline, override)
-    summary = {"url": snap["url"], **result}
-    if result["flagged"] or result["error"]:
-        return summary
-    linked = []
-    for n in snap["linked"][:MAX_LINKED]:
-        linked_snap, linked_result = screened_snapshot(n, key, deadline)
-        linked_snap.pop("linked", None)
-        held = linked_result["flagged"] or linked_result["error"]
-        linked.append({"url": linked_snap["url"], "held": True} if held else linked_snap)
-    linked += [{"url": f"https://github.com/{REPO}/issues/{n}", "held": True} for n in snap["linked"][MAX_LINKED:]]
-    snap["linked"] = linked
-    summary["linked_held"] = [entry["url"] for entry in linked if entry.get("held")]
+    details: dict = {"holds": []}
+    summary: dict = {"url": f"https://github.com/{REPO}/issues/{number}", "flagged": False, "error": None, "skipped": False}
+    try:
+        if skip_labeled and already_taken(number):
+            summary["skipped"] = True
+            return summary
+        deadline = time.monotonic() + BUILD_SECONDS
+        snap, result = screened_snapshot(number, key, deadline, override)
+        summary.update(url=snap["url"], flagged=result["flagged"], error=result["error"])
+        details.update(reason=result["reason"], scores=result["scores"], digest=result["digest"])
+        if result["flagged"]:
+            details["holds"].append(hold_entry(number, snap["url"], result))
+        if result["flagged"] or result["error"]:
+            return summary
+        linked = []
+        for n in snap["linked"][:MAX_LINKED]:
+            linked_snap, linked_result = screened_snapshot(n, key, deadline)
+            linked_snap.pop("linked", None)
+            if linked_result["flagged"]:
+                # Held like a submission: otherwise nobody hears about it until the sweep reaches it on its own.
+                details["holds"].append(hold_entry(n, linked_snap["url"], linked_result))
+            held = linked_result["flagged"] or linked_result["error"]
+            linked.append({"url": linked_snap["url"], "held": True} if held else linked_snap)
+        linked += [{"url": f"https://github.com/{REPO}/issues/{n}", "held": True} for n in snap["linked"][MAX_LINKED:]]
+        snap["linked"] = linked
+    finally:
+        summary["holds"] = len(details["holds"])
+        with open(details_file, "w") as f:
+            json.dump(details, f)
     # Escaping "<" keeps contributor text from closing the <snapshot> tag.
     payload = json.dumps(snap, indent=1).replace("<", "\\u003c")
     with open(prompt_file, "w") as f:
@@ -459,6 +537,7 @@ def build(number: int, dry_run: bool, prompt_file: str, override: str = "", skip
 def main() -> None:
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("canary")
     p_select = sub.add_parser("select")
     p_select.add_argument("--since", required=True)
     p_select.add_argument("--limit", type=int, required=True)
@@ -466,13 +545,23 @@ def main() -> None:
     p_build.add_argument("number", type=int)
     p_build.add_argument("--dry-run", choices=["true", "false"], required=True)
     p_build.add_argument("--prompt-file", required=True)
+    p_build.add_argument("--details-file", required=True, help="private: reasons, scores, digests, and items to hold")
     p_build.add_argument("--override", default="", help="digest of the text a maintainer checked; skips the screen if it still matches")
     p_build.add_argument("--skip-labeled", action="store_true", help="return skipped if the item already has an intake label")
     args = parser.parse_args()
-    if args.command == "select":
+    if args.command == "canary":
+        key = os.environ.get("TYPESAFE_API_KEY", "")
+        if not key:
+            sys.exit("TYPESAFE_API_KEY is not set")
+        try:
+            canary(key)
+        except ScreenError as e:
+            sys.exit(str(e))
+        print("Jev canary passed")
+    elif args.command == "select":
         print(json.dumps(select(args.since, args.limit)))
     else:
-        print(json.dumps(build(args.number, args.dry_run == "true", args.prompt_file, args.override, args.skip_labeled)))
+        print(json.dumps(build(args.number, args.dry_run == "true", args.prompt_file, args.details_file, args.override, args.skip_labeled)))
 
 
 if __name__ == "__main__":
