@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b928158d-4d2a-4ea6-a9c6-efa90f5c1e5d
-  dockerImageTag: 0.0.66
+  dockerImageTag: 0.0.67
   dockerRepository: airbyte/source-beamer
   githubIssueLabel: source-beamer
   icon: icon.svg
@@ -37,3 +37,11 @@ data:
     - title: API documentation
       url: https://www.getbeamer.com/api
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
