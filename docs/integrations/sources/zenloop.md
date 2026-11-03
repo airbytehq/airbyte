@@ -81,6 +81,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.49-rc.1 | 2026-11-03 | | Enable Python 3.11 support with base image 4.0.2 and CDK 1.2.1 while preserving incremental state compatibility. |
 | 0.1.48 | 2026-11-03 | [90795](https://github.com/airbytehq/airbyte/pull/90795) | Update dependencies |
 | 0.1.47 | 2026-10-27 | [90101](https://github.com/airbytehq/airbyte/pull/90101) | Update dependencies |
 | 0.1.46 | 2026-10-20 | [89457](https://github.com/airbytehq/airbyte/pull/89457) | Update dependencies |
