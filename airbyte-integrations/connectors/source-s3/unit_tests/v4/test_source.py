@@ -111,7 +111,7 @@ class SourceTest(unittest.TestCase):
     def test_when_spec_then_groups_and_sections_are_kept_and_v3_fields_have_no_group(self) -> None:
         schema = self._source.spec().connectionSpecification
 
-        assert [group["id"] for group in schema["groups"]] == ["connection", "advanced", "files", "start_date"]
+        assert [group["id"] for group in schema["groups"]] == ["connection", "advanced_bucket_connection", "files", "start_date"]
         assert [section["id"] for section in schema["sections"]] == ["bucket_connection", "files", "review"]
         assert all("group" not in schema["properties"][field] for field in _V3_FIELDS)
 
@@ -217,7 +217,7 @@ class CheckSectionTest(unittest.TestCase):
     def test_given_section_when_check_section_then_status_is_wrapped(self) -> None:
         self._stream_reader.check_bucket_access.return_value = None
 
-        status = self._source.check_section(self._logger, "bucket", self.BUCKET_CONFIG)
+        status = self._source.check_section(self._logger, "bucket_connection", self.BUCKET_CONFIG)
 
         assert status.status == Status.SUCCEEDED
 

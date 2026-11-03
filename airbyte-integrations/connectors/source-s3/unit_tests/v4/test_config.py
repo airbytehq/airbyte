@@ -149,7 +149,7 @@ def test_config_schema_declares_groups_and_sections():
     schema = Config.schema()
     properties = schema["properties"]
 
-    assert [group["id"] for group in schema["groups"]] == ["connection", "advanced", "files", "start_date"]
+    assert [group["id"] for group in schema["groups"]] == ["connection", "advanced_bucket_connection", "files", "start_date"]
     assert schema["sections"] == SECTIONS
     assert [section["id"] for section in schema["sections"]] == ["bucket_connection", "files", "review"]
     assert [section["order"] for section in schema["sections"]] == [0, 1, 2]
@@ -162,8 +162,8 @@ def test_config_schema_declares_groups_and_sections():
     assert {name: prop["group"] for name, prop in properties.items()} == {
         "bucket": "connection",
         "credentials": "connection",
-        "endpoint": "advanced",
-        "region_name": "advanced",
+        "endpoint": "advanced_bucket_connection",
+        "region_name": "advanced_bucket_connection",
         "delivery_method": "files",
         "streams": "files",
         "start_date": "start_date",

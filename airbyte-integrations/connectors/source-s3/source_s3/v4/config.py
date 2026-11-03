@@ -23,7 +23,7 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 # and SourceS3.check_section_connection). The review section has no check of its own: the full check the platform runs
 # before creating the source covers it.
 GROUP_BUCKET = "connection"
-GROUP_ENDPOINT = "advanced"
+GROUP_ENDPOINT = "advanced_bucket_connection"
 GROUP_FILES = "files"
 GROUP_START_DATE = "start_date"
 

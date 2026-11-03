@@ -530,7 +530,7 @@
         "default": "",
         "examples": ["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
         "order": 2,
-        "group": "advanced",
+        "group": "advanced_bucket_connection",
         "type": "string",
         "pattern": "^(?!http://).*$"
       },
@@ -538,7 +538,7 @@
         "title": "AWS Region",
         "description": "AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
         "order": 3,
-        "group": "advanced",
+        "group": "advanced_bucket_connection",
         "type": "string"
       },
       "dataset": {
@@ -826,7 +826,7 @@
         "id": "connection"
       },
       {
-        "id": "advanced",
+        "id": "advanced_bucket_connection",
         "title": "Advanced"
       },
       {
@@ -843,7 +843,7 @@
         "title": "Connect bucket",
         "order": 0,
         "description": "Which bucket to read from, and how Airbyte gets access.",
-        "groups": ["connection", "advanced"],
+        "groups": ["connection", "advanced_bucket_connection"],
         "check": true
       },
       {
