@@ -34,7 +34,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 
 <!-- env:cloud -->
 
-#### For Airbyte Cloud:
+#### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -53,7 +53,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 
 <!-- env:oss -->
 
-#### For Airbyte Open Source:
+#### For Airbyte Open Source
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
@@ -82,6 +82,7 @@ To get a new refresh token:
 
 - **Airbyte Cloud:** Re-authenticate your Amazon Ads account in the source's settings and save the source.
 - **Airbyte Open Source:** Generate a new refresh token for your Amazon Ads API application using Amazon's [token generation guide](https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens), then replace the **Refresh Token** value in the source's settings and save the source.
+
 :::
 
 ## Supported sync modes
