@@ -22,8 +22,8 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 # connector validates the configuration up to that section only (see the CDK's airbyte_cdk.sources.utils.check_section
 # and SourceS3.check_section_connection). The review section has no check of its own: the full check the platform runs
 # before creating the source covers it.
-GROUP_BUCKET = "bucket"
-GROUP_ENDPOINT = "endpoint"
+GROUP_BUCKET = "connection"
+GROUP_ENDPOINT = "advanced"
 GROUP_FILES = "files"
 GROUP_START_DATE = "start_date"
 
@@ -33,7 +33,7 @@ SECTION_REVIEW = "review"
 
 GROUPS: List[Dict[str, Any]] = [
     {"id": GROUP_BUCKET},
-    {"id": GROUP_ENDPOINT, "title": "More options"},
+    {"id": GROUP_ENDPOINT, "title": "Advanced"},
     {"id": GROUP_FILES},
     {"id": GROUP_START_DATE, "title": "Start date"},
 ]

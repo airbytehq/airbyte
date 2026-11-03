@@ -444,7 +444,7 @@
         "description": "Credentials for connecting to S3.",
         "type": "object",
         "order": 1,
-        "group": "bucket",
+        "group": "connection",
         "oneOf": [
           {
             "title": "IAM User",
@@ -521,7 +521,7 @@
         "title": "Bucket",
         "description": "Name of the S3 bucket where the file(s) exist.",
         "order": 0,
-        "group": "bucket",
+        "group": "connection",
         "type": "string"
       },
       "endpoint": {
@@ -530,7 +530,7 @@
         "default": "",
         "examples": ["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
         "order": 2,
-        "group": "endpoint",
+        "group": "advanced",
         "type": "string",
         "pattern": "^(?!http://).*$"
       },
@@ -538,7 +538,7 @@
         "title": "AWS Region",
         "description": "AWS region where the S3 bucket is located. If not provided, the region will be determined automatically.",
         "order": 3,
-        "group": "endpoint",
+        "group": "advanced",
         "type": "string"
       },
       "dataset": {
@@ -676,7 +676,7 @@
               },
               "batch_size": {
                 "title": "Record batch size",
-                "description": "Maximum number of records per batch read from the input files. Batches may be smaller if there aren\u2019t enough rows in the file. This option can help avoid out-of-memory errors if your data is particularly wide.",
+                "description": "Maximum number of records per batch read from the input files. Batches may be smaller if there aren’t enough rows in the file. This option can help avoid out-of-memory errors if your data is particularly wide.",
                 "default": 65536,
                 "order": 1,
                 "type": "integer"
@@ -823,11 +823,11 @@
     "required": ["streams", "credentials", "bucket"],
     "groups": [
       {
-        "id": "bucket"
+        "id": "connection"
       },
       {
-        "id": "endpoint",
-        "title": "More options"
+        "id": "advanced",
+        "title": "Advanced"
       },
       {
         "id": "files"
@@ -843,7 +843,7 @@
         "title": "Connect bucket",
         "order": 0,
         "description": "Which bucket to read from, and how Airbyte gets access.",
-        "groups": ["bucket", "endpoint"],
+        "groups": ["connection", "advanced"],
         "check": true
       },
       {
