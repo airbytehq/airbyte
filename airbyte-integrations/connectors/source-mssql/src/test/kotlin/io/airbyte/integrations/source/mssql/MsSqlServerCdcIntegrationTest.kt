@@ -61,12 +61,9 @@ class MsSqlServerCdcIntegrationTest {
 
     private fun configuredCatalog(schema: String, table: String): ConfiguredAirbyteCatalog {
         val stream: AirbyteStream? =
-            CliRunner.source("discover", config())
-                .run()
-                .catalogs()
-                .firstOrNull()
-                ?.streams
-                ?.find { it.namespace == schema && it.name == table }
+            CliRunner.source("discover", config()).run().catalogs().firstOrNull()?.streams?.find {
+                it.namespace == schema && it.name == table
+            }
         assertNotNull(stream, "stream $schema.$table not discovered")
         val configuredStream =
             CatalogHelpers.toDefaultConfiguredStream(stream)
