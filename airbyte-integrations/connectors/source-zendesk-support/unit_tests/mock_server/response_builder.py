@@ -1194,12 +1194,10 @@ class ArticleCommentVotesRecordBuilder(ZendeskSupportRecordBuilder):
 
 class OrganizationsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def organizations_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "OrganizationsResponseBuilder":
-        return cls(
-            find_template("organizations", __file__),
-            FieldPath("organizations"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
+    def organizations_response(cls, next_page_url: Optional[str] = None) -> "OrganizationsResponseBuilder":
+        """Response of the organization list (`GET /api/v2/organizations`): records under `organizations`,
+        cursor pagination through `meta.has_more` and `links.next`."""
+        return cls(find_template("organizations", __file__), FieldPath("organizations"), CursorBasedPaginationStrategy(next_page_url))
 
 
 class SatisfactionRatingsResponseBuilder(HttpResponseBuilder):

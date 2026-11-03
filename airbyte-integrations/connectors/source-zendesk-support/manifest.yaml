@@ -735,22 +735,25 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  # `organizations` reads `GET /api/v2/organizations?sort=-updated_at` (see `sorted_list_stream`).
+  # Unlike the Incremental Organization Export it replaced, the list omits deleted organizations
+  # and does not return `deleted_at`.
   organizations_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/sorted_list_stream"
     retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/end_of_stream_paginator"
+      $ref: "#/definitions/sorted_list_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort: "-updated_at"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/organizations"
     $parameters:
       name: "organizations"
-      path: "incremental/organizations"
+      path: "organizations"
       cursor_field: "updated_at"
-      cursor_filter: "start_time"
       primary_key: "id"
 
   posts_stream:

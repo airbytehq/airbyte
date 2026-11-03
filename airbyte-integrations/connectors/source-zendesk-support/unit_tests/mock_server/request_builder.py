@@ -305,8 +305,8 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def organizations_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/organizations endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/organizations").with_authenticator(authenticator)
+        """Create a request builder for the first page of the organization list (`/organizations?sort=-updated_at&page[size]=100`)."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "organizations").with_authenticator(authenticator).with_sort("-updated_at").with_page_size(100)
 
     @classmethod
     def satisfaction_ratings_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
