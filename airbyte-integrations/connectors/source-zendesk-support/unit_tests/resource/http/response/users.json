@@ -18,10 +18,7 @@
       "role": "end-user",
       "verified": false,
       "external_id": null,
-      "tags": [
-        "tag",
-        "test"
-      ],
+      "tags": ["tag", "test"],
       "alias": "",
       "active": true,
       "shared": false,

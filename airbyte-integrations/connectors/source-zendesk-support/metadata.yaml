@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 5.7.0
+  dockerImageTag: 6.0.0
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -61,6 +61,38 @@ data:
       5.0.0:
         message: "This version adds OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate to use the new flow with rotating refresh tokens."
         upgradeDeadline: "2026-01-30"
+      6.0.0:
+        message: >-
+          Zendesk stops serving its Incremental Export APIs to third-party integrations such as Airbyte
+          between 2026-12-02 and 2027-01-19, and versions before 6.0.0 fail on the affected streams once
+          Zendesk enforces this on your account. This version reads `tickets`, `users`, `user_identities`,
+          `organizations` and `articles` from Zendesk's list endpoints and `ticket_comments`,
+          `ticket_events` and `ticket_metric_events` ticket by ticket, as `ticket_metrics`,
+          `side_conversations` and `ticket_audits_per_ticket` already did. The `tickets` cursor changes
+          from `generated_timestamp` to `updated_at`; saved state is migrated automatically and no
+          reset is required. Archived tickets, deleted tickets, deleted users and deleted organizations
+          are no longer replicated by these streams: use `tickets_search` for archived tickets and
+          `deleted_tickets` for deleted tickets. `ticket_events` records now carry the Ticket Audits
+          API shape (`via` holds the channel name such as `web` instead of a label such as `Web form`,
+          `child_events` keep the audit event fields). Syncs of the per-ticket streams make one request
+          per created or updated ticket, and a ticket's metric events are read when the ticket changes.
+          See the migration guide for details.
+        upgradeDeadline: "2026-12-02"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "tickets"
+              - "users"
+              - "user_identities"
+              - "organizations"
+              - "articles"
+              - "ticket_comments"
+              - "ticket_events"
+              - "ticket_metric_events"
+              - "ticket_metrics"
+              - "side_conversations"
+              - "ticket_audits_per_ticket"
   suggestedStreams:
     streams:
       - brands

@@ -1,70 +1,22 @@
-# source-zendesk-support: Unique Behaviors
+# Contributing to source-zendesk-support
 
-## 1. Tickets Incremental Export Uses `generated_timestamp`, Not `updated_at`
+For general guidance on contributing to Airbyte connectors, see the
+[Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
-The tickets stream uses Zendesk's [Time Based Incremental Ticket Export](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) (`GET /api/v2/incremental/tickets.json?start_time={unix_time}`). This endpoint compares `start_time` against each ticket's `generated_timestamp`, **not** its `updated_at` value. The `generated_timestamp` is updated on every ticket change (including silent system updates), while `updated_at` only changes when a [ticket event](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) is generated. This means the API can return tickets whose `updated_at` is earlier than the requested `start_time`, because a system update bumped the `generated_timestamp` after the last user-visible change.
+## Unique behaviors (summary)
 
-**Why this matters:** `updated_at` is not a reliable cursor for this endpoint. If you filter or deduplicate based on `updated_at`, you will misclassify tickets — some will appear "stale" despite being legitimately returned by the API. The connector uses `generated_timestamp` as the true cursor.
+Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
-## 2. StateDelegatingStream for Ticket Metrics — Two Completely Different Sync Paths
+1. **`tickets`, `users`, `organizations` and `articles` Walk Sorted List Endpoints Newest-First and Stop Themselves** -- Zendesk retired its Incremental Export APIs for integrations, so these streams read list endpoints sorted by the cursor descending and a paginator stop condition ends each sync; archived and deleted records are no longer returned, and the `tickets` cursor is `updated_at` with an automatic migration from `generated_timestamp`.
+2. **StateDelegatingStream for Ticket Metrics — Two Completely Different Sync Paths** -- `ticket_metrics` bulk-reads everything when it has no state and reads one ticket at a time once it does, so performance depends on whether state exists.
+3. **Enterprise-Only Streams Disabled at Manifest Level** -- Streams that need an Enterprise plan are commented out of the manifest because the CDK cannot yet hide streams based on endpoint availability.
+4. **`ticket_events`, `ticket_comments` and `ticket_metric_events` Are Per-Ticket Substreams That Rebuild the Export Record Shape** -- Each costs one request per created or updated ticket, re-emits a ticket's records when it changes, and reshapes audits to look like the former export records, with documented differences in `ticket_events`.
+5. **Per-Ticket Substreams Must Key Error Handling on the Status Code, Not the Response Body** -- Zendesk can refuse or lose single tickets with an empty body, so per-ticket streams ignore `403`/`404` by status code to keep the parent cursor advancing.
+6. **`num_workers` Minimum Is 2 — One Thread Leaves No Sibling to Beat the Heartbeat** -- With one worker, a long `tickets` walk emits nothing and the platform cancels the sync, so the floor is enforced in the spec, a config migration and the concurrency clamp.
+7. **`ticket_audits_per_ticket` Is Opt-In, Shares the Per-Ticket Audits Retriever, and No Longer Reaches Archived Tickets** -- The stream costs one request per updated ticket, so it is never suggested by default, and since 6.0.0 its parent list omits archived tickets.
+8. **OAuth Completion Must Extract `expires_in` to Persist Token Expiry** -- Zendesk refresh tokens are single-use, so the OAuth flow must record the token expiry or every run burns a refresh token and the stored credentials stop working.
 
-The `ticket_metrics` stream uses `StateDelegatingStream` to choose between two completely different retrieval strategies based on whether stream state exists:
+## Local testing notes
 
-**Without state (initial sync / full refresh) — `StatelessTicketMetrics`:**
-Queries the bulk `GET /ticket_metrics` endpoint, which returns records sorted by `created_at` descending (newest first). However, the cursor field is `updated_at`, not `created_at`. Because the sort order doesn't match the cursor field, the stream **must read all records** and cannot checkpoint mid-stream (checkpointing would create state, which would switch to the stateful path on the next page). The stream tracks the most recent `updated_at` value across all records and converts it to a unix timestamp saved as `_ab_updated_at` in state:
-```json
-{ "_ab_updated_at": 1728670522 }
-```
-
-**With state (incremental syncs) — `StatefulTicketMetrics`:**
-Uses a two-step approach: first queries `GET /tickets/cursor.json` to get updated ticket IDs (filtered by `generated_timestamp`), then fetches `GET /tickets/{ticket_id}/metrics` for each ticket. This is more efficient for small deltas but makes one API call per updated ticket. The `generated_timestamp` from the tickets endpoint is converted to the `_ab_updated_at` state cursor to maintain consistency with the stateless path.
-
-**Why this matters:** The synthetic `_ab_updated_at` cursor bridges two fundamentally different data flows. The stateless path is efficient for initial bulk loads but cannot checkpoint. The stateful path scales linearly with the number of updated tickets — efficient for small incremental syncs but disastrous if state is reset and it tries to re-read all tickets one by one. Understanding which path is active (based on state presence) is critical for diagnosing performance issues.
-
-## 3. Enterprise-Only Streams Disabled at Manifest Level
-
-Several streams (`ticket_forms`, `account_attributes`, `attribute_definitions`) are commented out in the manifest because they require Zendesk Enterprise plans and the CDK does not yet support `ConditionalStreams` based on API endpoint availability. The `ticket_forms` stream definition exists but will FAIL with a descriptive error on 403/404 rather than being silently skipped.
-
-**Why this matters:** These streams cannot be enabled without CDK changes to support conditional stream availability. If a user on an Enterprise plan expects these streams, they will not appear in the catalog at all despite the stream definitions existing in the manifest.
-
-## 4. Ticket Events Stream — Raw Incremental Ticket Event Export
-
-The `ticket_events` stream uses Zendesk's [Incremental Ticket Event Export](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) (`GET /api/v2/incremental/ticket_events.json`). Unlike the `ticket_comments` stream which also hits this endpoint but extracts only Comment child events, `ticket_events` returns the full top-level ticket event objects (including all child events). The cursor field is `timestamp` (unix epoch), filtered via `start_time`. Pagination uses `end_of_stream` to signal the last page.
-
-**Why this matters:** This stream is distinct from `ticket_comments` — both use the same API endpoint but extract different data. `ticket_comments` uses a custom extractor (`ZendeskSupportExtractorEvents`) to drill into `child_events` and filter for Comment events. `ticket_events` uses the default `DpathExtractor` to return the raw ticket event envelope, giving users access to all event types and metadata.
-
-## 5. OAuth Completion Must Extract `expires_in` to Persist Token Expiry
-
-Zendesk OAuth uses **rotating, single-use refresh tokens** — each refresh returns a new refresh token and invalidates the previous one. The connector authenticates with `DeclarativeSingleUseRefreshTokenOauth2Authenticator` (via `refresh_token_updater`), which decides whether to refresh by comparing `credentials.token_expiry_date` against now. When that field is empty/absent, the CDK treats the token as already expired (`now - 1 day`) and refreshes on the very first `check`.
-
-Because of this, the `oauth_connector_input_specification.extract_output` list **must include `expires_in`**. The platform's declarative OAuth handler only converts the token response into a persisted `token_expiry_date` when `expires_in` is among the extracted fields. Without it, `token_expiry_date` is never written to the config, so every `check`/`discover`/`read` triggers an immediate refresh — consuming the freshly minted single-use refresh token and (in setup/check lifecycles that don't persist the rotated token) leaving the stored config holding an already-invalidated token, which fails with `invalid_grant`.
-
-The authorization-code exchange (`access_token_url`) **must also request `expires_in=172800` explicitly**. Per Zendesk's docs, passing `expires_in` on token creation is what causes a refresh token to be issued at all, so requesting it makes the field's presence in the response a guarantee rather than an assumption — `DeclarativeOAuthSpecHandler.processOAuthOutput` throws `Missing '<key>' field in the OAuth Output` for any `extract_output` field absent from the response. It also pins the access-token lifetime at 48h (matching `refresh_request_body.expires_in` in `oauth_refresh_authenticator`) instead of Zendesk's ~30-minute default for clients created on/after 2026-04-30, closing the setup-time window where a user takes longer than the token lifetime between authorizing and saving the source.
-
-**Why this matters:** Removing `expires_in` from `extract_output` (or from the `access_token_url` request) reintroduces the premature-refresh loop. See `airbytehq/oncall#13130`.
-
-## 6. `num_workers` Minimum Is 2 — One Thread Leaves No Sibling to Beat the Heartbeat
-
-The `num_workers` spec field has `minimum: 2`, a config migration in `spec.config_normalization_rules` raises any stored value of `1` to `2`, and `concurrency_level.default_concurrency` clamps the interpolated value at 2. The clamp is needed because the CDK builds the concurrency level from the pre-migration config, so without it a stored `1` would still run one worker on the first sync after upgrading.
-
-With a single worker thread the concurrent framework runs one stream at a time, and `tickets` is a single unsliced partition against an endpoint capped at 10 requests per minute. The concurrent cursor only emits state when the partition closes, so nothing is emitted for the length of that walk — no records from a sibling stream, no state message — and the platform can cancel the attempt on the heartbeat timeout. Since the partition never closes, no cursor is saved and every retry repeats the same walk, so the connection stays wedged instead of making partial progress. A second thread lets another stream keep the heartbeat alive.
-
-**Why this matters:** do not lower the minimum below 2 or remove the migration. The symptom does not point at concurrency — the heartbeat error names whichever stream was queued behind `tickets`, not `tickets` itself. All wedged connections in `airbytehq/oncall#13250` ran 1 thread; the root cause of the long beat-free `tickets` walk itself is not confirmed, so the floor is a mitigation.
-
-## 7. `ticket_audits_per_ticket` Reads Archived Tickets' Audits
-
-`ticket_audits` reads `GET /api/v2/ticket_audits`, which Zendesk documents as excluding archived tickets. The `ticket_audits_per_ticket` stream reads `GET /api/v2/tickets/{ticket_id}/audits.json` for each ticket the `tickets` incremental export returns, which includes archived tickets, at the cost of one request per created or updated ticket. It is always discovered but not listed in `suggestedStreams`, so users opt in by selecting it. It uses a global substream cursor on `_ab_updated_at` (the parent ticket's `generated_timestamp`), skips `403`/`404` per ticket, and, like the per-ticket `ticket_metrics` calls, has no `api_budget` policy: it relies on Zendesk's `429` responses and the `Retry-After` header.
-
-**Why this matters:** keep the stream out of `suggestedStreams`. A connection that automatically enables new streams will start syncing it after upgrade, and the user docs warn about that cost. `ticket_audits` is intentionally unchanged.
-
-## Incremental Stream Considerations
-
-The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
-
-**Connector type:** Python custom components (hybrid manifest + Python)
-
-**Analysis status:** Streams are Python-defined via custom components. The connector is mature with extensive incremental support already in place via Zendesk's incremental export API.
-
-### Future incremental stream candidates
-
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+- Unit tests: `cd unit_tests && TZ=UTC poetry run pytest -q`. One `tickets_search` lookback test depends on the local time zone, so always set `TZ=UTC`.
+- The OAuth integration-test credentials use single-use rotating refresh tokens. Running `check` or `read` locally with them consumes the shared refresh token; use the API-token credentials for local runs.

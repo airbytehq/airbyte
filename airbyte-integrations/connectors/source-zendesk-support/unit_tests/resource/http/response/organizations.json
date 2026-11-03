@@ -9,15 +9,11 @@
       "external_id": "org123",
       "created_at": "2009-07-20T22:55:29Z",
       "updated_at": "2011-05-05T10:38:52Z",
-      "domain_names": [
-        "example.com"
-      ],
+      "domain_names": ["example.com"],
       "details": "Organization details",
       "notes": "Organization notes",
       "group_id": 98738,
-      "tags": [
-        "enterprise"
-      ],
+      "tags": ["enterprise"],
       "organization_fields": {
         "custom_field": "value"
       }
