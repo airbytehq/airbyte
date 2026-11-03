@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
-  dockerImageTag: 0.6.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-aircall
   githubIssueLabel: source-aircall
   icon: aircall.svg
@@ -18,6 +18,28 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          Version 1.0.0 adds primary keys to `calls` (`id`) and `contacts` (`id`), changes the `webhooks` primary key from `id` to `webhook_id`,
+          makes `numbers` and `teams` full refresh only, removes the unused `teams.webhook_id` column, declares ISO 8601 timestamps on `users`, `calls` and `teams` as `date-time`,
+          retypes `calls.contact`, `calls.assigned_to`, `calls.transferred_by` and `calls.transferred_to` from string to object, and
+          retypes `numbers.priority` and `calls.number.priority` from string to integer. After upgrading, refresh the source schema and
+          clear the `calls`, `contacts`, `webhooks`, `numbers`, `teams` and `users` streams so destinations rebuild them with the new keys,
+          sync modes and column types. Other streams need no action. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/aircall-migrations#upgrading-to-100).
+        upgradeDeadline: "2026-11-17"
+        deadlineAction: disable
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - calls
+              - contacts
+              - webhooks
+              - numbers
+              - teams
+              - users
   documentationUrl: https://docs.airbyte.com/integrations/sources/aircall
   tags:
     - cdk:low-code

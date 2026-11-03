@@ -8,7 +8,7 @@ Aircall limits list queries to 10,000 results. Calls, contacts and conversations
 
 ## 2. Cursor choices account for creation-date filters and edits
 
-Aircall's `from` and `to` filters use creation date, not the record's update time. Calls use an incremental cursor on `started_at` with a three-day lookback so edits to tags, comments, and archived status are re-read. Contacts and users stay full refresh because a creation-date cursor would miss edits; numbers and teams keep incremental mode for compatibility but read all records so edits are not filtered by cursor state. Conversations are the exception: their `from` and `to` filter on `last_engagement_at`, so they are incremental on that field with a three-day lookback, sorted with `order=asc` (the API defaults to `desc`), and start at 2014-01-01 because Aircall publishes no retention limit for them. `start_date` is unused. See the [calls](https://developer.aircall.io/api-references/#list-all-calls), [contacts](https://developer.aircall.io/api-references/#list-all-contacts), [numbers](https://developer.aircall.io/api-references/#list-all-numbers), and [users](https://developer.aircall.io/api-references/#list-all-users-v2) endpoints.
+Aircall's `from` and `to` filters use creation date, not the record's update time. Calls use an incremental cursor on `started_at` with a three-day lookback so edits to tags, comments, and archived status are re-read. Contacts and users stay full refresh because a creation-date cursor would miss edits; Numbers and teams are full refresh only since 1.0.0: neither endpoint filters by update time, so an incremental mode would re-emit every record on every sync and add duplicates in append mode. Conversations are the exception: their `from` and `to` filter on `last_engagement_at`, so they are incremental on that field with a three-day lookback, sorted with `order=asc` (the API defaults to `desc`), and start at 2014-01-01 because Aircall publishes no retention limit for them. `start_date` is unused. See the [calls](https://developer.aircall.io/api-references/#list-all-calls), [contacts](https://developer.aircall.io/api-references/#list-all-contacts), [numbers](https://developer.aircall.io/api-references/#list-all-numbers), and [users](https://developer.aircall.io/api-references/#list-all-users-v2) endpoints.
 
 **Why this matters:** Applying a creation-date filter or an old cursor to these streams can permanently omit records that Aircall later edits.
 
@@ -62,3 +62,9 @@ Several endpoints return 403 when the company lacks an add-on, but a revoked API
 See [List all Conversations](https://developer.aircall.io/api-references/#list-all-conversations), [List all Trackers](https://developer.aircall.io/api-references/#list-all-trackers) and [WhatsApp templates](https://developer.aircall.io/api-references/#list-whatsapp-templates).
 
 **Why this matters:** Skipping on any 403 would hide a revoked key as an empty sync, while failing on the gated body would break every sync for companies without the add-on.
+
+## 8. Primary keys follow Aircall's documented identifiers
+
+`calls`, `contacts`, `numbers`, `teams` and `users` use `id`. `webhooks` uses `webhook_id`, the UUID Aircall documents as the webhook's identifier; Aircall describes the integer `id` as the legacy identifier. `company` has no primary key because `/company` returns one object with no identifier field ([company](https://developer.aircall.io/api-references/#company), [webhooks](https://developer.aircall.io/api-references/#webhook)).
+
+**Why this matters:** Do not add a primary key to `company`; there is no field that identifies it, and it always has exactly one record.

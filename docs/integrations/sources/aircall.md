@@ -53,13 +53,13 @@ The Aircall source connector supports the following [sync modes](https://docs.ai
 | Stream                   | Sync mode                 | Notes                                                                                                                       |
 | :----------------------- | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
 | calls                    | Full refresh, incremental | Incremental calls use `started_at` with a three-day lookback.                                                               |
-| company                  | Full refresh              | Used for connection checks.                                                                                                 |
+| company                  | Full refresh              | Used for connection checks. No primary key; Aircall returns one company object without an identifier.                       |
 | contacts                 | Full refresh              |                                                                                                                             |
-| numbers                  | Full refresh, incremental | Incremental sync rereads all records to capture edits.                                                                      |
+| numbers                  | Full refresh              | Full refresh only since 1.0.0; the endpoint can't filter by update time.                                                    |
 | tags                     | Full refresh              |                                                                                                                             |
 | user_availability        | Full refresh              |                                                                                                                             |
 | users                    | Full refresh              | Uses the Aircall User V2 API.                                                                                               |
-| teams                    | Full refresh, incremental | Incremental sync rereads all records to capture edits.                                                                      |
+| teams                    | Full refresh              | Full refresh only since 1.0.0; the endpoint can't filter by update time.                                                    |
 | webhooks                 | Full refresh              |                                                                                                                             |
 | conversations            | Full refresh, incremental | Incremental on `last_engagement_at` with a three-day lookback. Needs the Conversations API; skipped when it is not enabled. |
 | conversation_engagements | Full refresh              | Engagements of each conversation. Skipped when the Conversations API is not enabled.                                        |
@@ -88,6 +88,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                   | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
+| 1.0.0 | 2026-11-03 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add primary keys to calls, contacts and webhooks, make numbers and teams full refresh only, and correct column types to match the Aircall API |
 | 0.6.0 | 2026-11-03 | [90837](https://github.com/airbytehq/airbyte/pull/90837) | Add conversations, conversation engagements, campaigns, campaign outcomes, trackers, SMS templates and WhatsApp templates streams |
 | 0.5.0 | 2026-11-03 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Add incremental sync for calls, rate-limit handling and request windows that avoid Aircall's 10,000-result limit |
 | 0.4.27 | 2026-10-13 | [88524](https://github.com/airbytehq/airbyte/pull/88524) | Update dependencies |

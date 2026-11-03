@@ -162,6 +162,8 @@ definitions:
     calls:
       type: DeclarativeStream
       name: calls
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -227,6 +229,8 @@ definitions:
     contacts:
       type: DeclarativeStream
       name: contacts
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -275,21 +279,6 @@ definitions:
               - numbers
         paginator:
           $ref: "#/definitions/paginator"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: created_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%f%z"
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "2014-01-01T00:00:00.000000+0000"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -383,21 +372,6 @@ definitions:
               - teams
         paginator:
           $ref: "#/definitions/paginator"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: created_at
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%f%z"
-          - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "2014-01-01T00:00:00.000000+0000"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -406,7 +380,7 @@ definitions:
       type: DeclarativeStream
       name: webhooks
       primary_key:
-        - id
+        - webhook_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -818,7 +792,8 @@ schemas:
       assigned_to:
         type:
           - "null"
-          - string
+          - object
+        additionalProperties: true
       comments:
         type:
           - "null"
@@ -857,6 +832,7 @@ schemas:
                   type:
                     - "null"
                     - string
+                  format: date-time
                 direct_link:
                   type:
                     - "null"
@@ -876,7 +852,8 @@ schemas:
       contact:
         type:
           - "null"
-          - string
+          - object
+        additionalProperties: true
       cost:
         type:
           - "null"
@@ -926,6 +903,7 @@ schemas:
             type:
               - "null"
               - string
+            format: date-time
           digits:
             type:
               - "null"
@@ -957,7 +935,7 @@ schemas:
           priority:
             type:
               - "null"
-              - string
+              - integer
           time_zone:
             type:
               - "null"
@@ -1024,6 +1002,7 @@ schemas:
                   type:
                     - "null"
                     - string
+                  format: date-time
                 direct_link:
                   type:
                     - "null"
@@ -1053,6 +1032,7 @@ schemas:
               type:
                 - "null"
                 - string
+              format: date-time
             direct_link:
               type:
                 - "null"
@@ -1068,11 +1048,13 @@ schemas:
       transferred_by:
         type:
           - "null"
-          - string
+          - object
+        additionalProperties: true
       transferred_to:
         type:
           - "null"
-          - string
+          - object
+        additionalProperties: true
       user:
         type:
           - "null"
@@ -1090,6 +1072,7 @@ schemas:
             type:
               - "null"
               - string
+            format: date-time
           direct_link:
             type:
               - "null"
@@ -1323,7 +1306,7 @@ schemas:
       priority:
         type:
           - "null"
-          - string
+          - integer
       time_zone:
         type:
           - "null"
@@ -1383,6 +1366,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
       direct_link:
         type:
           - "null"
@@ -1446,10 +1430,6 @@ schemas:
         type:
           - "null"
           - number
-      webhook_id:
-        type:
-          - "null"
-          - string
       name:
         type:
           - "null"
@@ -1467,6 +1447,7 @@ schemas:
               type:
                 - "null"
                 - string
+              format: date-time
             direct_link:
               type:
                 - "null"
@@ -1523,6 +1504,10 @@ schemas:
           - "null"
           - string
       url:
+        type:
+          - "null"
+          - string
+      webhook_id:
         type:
           - "null"
           - string
