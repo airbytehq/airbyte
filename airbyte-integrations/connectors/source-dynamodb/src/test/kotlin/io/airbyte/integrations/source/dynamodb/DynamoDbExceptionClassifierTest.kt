@@ -72,7 +72,8 @@ class DynamoDbExceptionClassifierTest {
         /** Builds a DynamoDB service exception the way the AWS SDK does for an error response. */
         @Suppress("UNCHECKED_CAST")
         fun <
-            B : software.amazon.awssdk.services.dynamodb.model.DynamoDbException.Builder, E
+            B : software.amazon.awssdk.services.dynamodb.model.DynamoDbException.Builder,
+            E,
         > throttling(
             builder: B,
             errorCode: String,
@@ -86,7 +87,7 @@ class DynamoDbExceptionClassifierTest {
                         .errorCode(errorCode)
                         .errorMessage(message.substringBefore(" (Service:"))
                         .serviceName("DynamoDb")
-                        .build()
+                        .build(),
                 )
                 .build() as E
     }
