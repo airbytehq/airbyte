@@ -43,23 +43,20 @@ def test_page_insights_sends_configured_period():
     assert query["period"] == ["day"]
 
 
+# A start_date in the config (set for page_insights) must never filter posts: an Overwrite sync
+# that sent `since` would delete every older post from the destination.
+@pytest.mark.parametrize("config", [CONFIG, {**CONFIG, "start_date": "2024-01-01T00:00:00Z"}], ids=["no_start_date", "start_date"])
 @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
-def test_post_reads_whole_feed_without_start_date_or_state(sync_mode):
-    output, query = _read("post", sync_mode, CONFIG, FEED_URL, {"data": [POST], "paging": {}})
+def test_post_reads_whole_feed_without_state(sync_mode, config):
+    output, query = _read("post", sync_mode, config, FEED_URL, {"data": [POST], "paging": {}})
     assert "since" not in query
     assert len(output.records) == 1
-
-
-def test_post_incremental_uses_start_date():
-    config = {**CONFIG, "start_date": "2024-01-01T00:00:00Z"}
-    _, query = _read("post", SyncMode.incremental, config, FEED_URL, {"data": [POST], "paging": {}})
-    assert query["since"] == ["2024-01-01T00:00:00+0000"]
 
 
 def test_post_incremental_resumes_from_state_and_advances_cursor():
     state = StateBuilder().with_stream_state("post", {"created_time": "2024-03-01T00:00:00+0000"}).build()
     output, query = _read("post", SyncMode.incremental, CONFIG, FEED_URL, {"data": [POST], "paging": {}}, state=state)
-    assert query["since"] == ["2024-03-01T00:00:00+0000"]
+    assert query["since"] == ["1709251200"]  # 2024-03-01T00:00:00Z as the Unix timestamp Meta documents
     assert output.state_messages[-1].state.stream.stream_state.__dict__ == {"created_time": "2024-06-01T00:00:00+0000"}
 
 
@@ -94,8 +91,15 @@ def test_backoff_waits_for_meta_estimated_time_to_regain_access():
     throttled.headers["X-Business-Use-Case-Usage"] = '{"123": [{"type": "pages", "call_count": 100, "estimated_time_to_regain_access": 2}]}'
     assert strategy.backoff_time(throttled, 1) == 120
 
+    # Capped at the error handler's 10-minute retry budget.
+    throttled.headers["X-Business-Use-Case-Usage"] = '{"123": [{"estimated_time_to_regain_access": 60}]}'
+    assert strategy.backoff_time(throttled, 1) == 600
+
     plain = requests.Response()
     assert strategy.backoff_time(plain, 1) is None
+    for malformed in ["[1, 2]", '{"123": 5}', '{"123": [3]}', "not json"]:
+        plain.headers["X-Business-Use-Case-Usage"] = malformed
+        assert strategy.backoff_time(plain, 1) is None, malformed
     assert strategy.backoff_time(requests.ConnectionError(), 1) is None
 
 
@@ -123,3 +127,43 @@ def test_rating_stream_requests_recommendation_fields():
         query = parse_qs(urlparse(m.request_history[-1].url).query)
     assert "review_text" in query["fields"][0] and "reviewer" in query["fields"][0]
     assert len(output.records) == 1
+
+
+PERMISSION_ERROR = {"error": {"message": "(#10) This endpoint requires the 'pages_read_user_content' permission", "code": 10}}
+
+
+@pytest.mark.parametrize(
+    "stream,url",
+    [
+        ("rating", "https://graph.facebook.com/v24.0/1/ratings"),
+        ("video_insights", "https://graph.facebook.com/v24.0/1/videos"),
+        ("reel_insights", "https://graph.facebook.com/v24.0/1/video_reels"),
+    ],
+)
+def test_new_streams_skip_missing_permission(stream, url):
+    catalog = CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build()
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(url, status_code=400, json=PERMISSION_ERROR)
+        output = read(SourceFacebookPages(catalog=catalog, config=CONFIG), CONFIG, catalog)
+    assert not output.errors and not output.records
+    assert any("lacks a permission" in log.log.message for log in output.logs)
+
+
+def test_comment_stream_skips_posts_without_permission():
+    catalog = CatalogBuilder().with_stream("comment", SyncMode.full_refresh).build()
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(FEED_URL, json={"data": [{"id": "1_10"}], "paging": {}})
+        m.get("https://graph.facebook.com/v24.0/1_10/comments", status_code=400, json=PERMISSION_ERROR)
+        output = read(SourceFacebookPages(catalog=catalog, config=CONFIG), CONFIG, catalog)
+    assert not output.errors and not output.records
+
+
+def test_existing_streams_still_fail_on_missing_permission():
+    catalog = CatalogBuilder().with_stream("post", SyncMode.full_refresh).build()
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        m.get(FEED_URL, status_code=400, json=PERMISSION_ERROR)
+        output = read(SourceFacebookPages(catalog=catalog, config=CONFIG), CONFIG, catalog, expecting_exception=True)
+    assert output.errors[0].trace.error.failure_type.value == "config_error"

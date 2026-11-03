@@ -25,20 +25,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: batches
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -89,20 +75,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: addresses
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -139,20 +111,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: trackers
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -203,20 +161,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: metadata/carriers
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -238,20 +182,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: end_shippers
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -288,20 +218,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: webhooks
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -352,20 +268,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: users/children
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -416,20 +318,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: carrier_accounts
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -480,26 +368,14 @@ definitions:
           path: api_keys
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 403
-                    error_message: Need Production API key for accessing this stream
+            $ref: "#/definitions/base_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 403
+                error_message: Need Production API key for accessing this stream
+              - $ref: "#/definitions/rate_limit_response_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -524,9 +400,25 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/api_keys"
+  rate_limit_response_filter:
+    type: HttpResponseFilter
+    action: RATE_LIMITED
+    http_codes:
+      - 429
+    error_message: Rate limits hit
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 3
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 2
+    response_filters:
+      - $ref: "#/definitions/rate_limit_response_filter"
   base_requester:
     type: HttpRequester
     url_base: https://api.easypost.com/v2/
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
     authenticator:
       type: BasicHttpAuthenticator
       username: '{{ config["username"] }}'

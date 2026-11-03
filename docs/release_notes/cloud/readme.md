@@ -1,5 +1,22 @@
 # Airbyte Cloud release notes
 
+## November 3, 2026
+
+Connections
+
+- Required fields in source and destination setup forms are now marked with an asterisk, so you can see at a glance which settings you must fill in.
+- Images in a connector's setup guide now load correctly. Previously, some images in the guide appeared broken.
+- When you test a source or destination or refresh a connection's schema, Airbyte now shows the result sooner after the check finishes.
+
+Platform
+
+- You can now replace your workspace's dbt Cloud service token by entering a new token and saving. You no longer need to delete your dbt Cloud configuration first, and the dbt Cloud transformations on your connections keep running with the new token.
+- Airbyte now loads faster when you first open it or refresh a page.
+
+API
+
+- You can now turn schema change notifications on or off for a connection when you create, update, or read it through the public API. If you don't set this when you create a connection, notifications are turned on when your workspace's connection update notifications use email or a webhook.
+
 ## November 2, 2026
 
 Connections

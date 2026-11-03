@@ -84,16 +84,6 @@ connectionSpecification:
         is about three times more data than a single period.
       enum: ["day", "week", "days_28", "month", "lifetime", "total_over_range"]
       order: 7
-    start_date:
-      type: string
-      title: Start Date
-      description: >-
-        Only used when the post stream runs in Incremental mode. Posts created before this date are not
-        synced. Leave empty to sync the full post history on the first incremental sync.
-      format: date-time
-      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-      examples: ["2024-01-01T00:00:00Z"]
-      order: 8
 advanced_auth:
   auth_flow_type: oauth2.0
   oauth_config_specification:
