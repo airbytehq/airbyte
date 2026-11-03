@@ -104,6 +104,8 @@ These are the additional steps required (after following the [quick start](#quic
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
 
+CDC requires PostgreSQL 14 or later. Debezium 3.4, the CDC engine in connector version 3.8.10 and later, no longer supports PostgreSQL 13 and earlier.
+
 For CDC, you may connect to primary/master databases or replicas. To use a replica as a source, Postgres must be at version 16.1 or later and this connector must be at version 3.6.21 or later. You must also enable additional configurations on the database instance (for help, see the [Postgres official documentation](https://www.postgresql.org/docs/current/warm-standby.html#CASCADING-REPLICATION)).
 
 ### Step 2: Provide additional permissions to read-only user
@@ -367,6 +369,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.10 | 2026-10-21 | [89623](https://github.com/airbytehq/airbyte/pull/89623) | Upgrade to Bulk CDK 1.2.1, which brings Debezium 3.4.3 (CDC requires PostgreSQL 14 or later; the JDBC driver's keep-alive no longer advances the replication slot while the captured tables are idle, so configure the Debezium heartbeat query on low-activity databases), CDC records written while Debezium shuts down are counted in the final checkpoint, Kotlin 2.4 / K2 runtime, Micronaut 4.10.31, Jackson 2.21.7. |
 | 3.8.9 | 2026-10-14 | [88485](https://github.com/airbytehq/airbyte/pull/88485) | Cold-start the CDC initial snapshot when the saved stream state is an empty object instead of skipping the stream. |
 | 3.8.8 | 2026-10-12 | [88498](https://github.com/airbytehq/airbyte/pull/88498) | Classify unreachable-host connection errors (connection refused, unknown host, connect timeout) as configuration errors that point to the host and port, the Postgres remote-connection settings and the Airbyte Cloud IP allowlist. Explain the `Discovered zero tables.` connection-test failure: the message now names the schema `USAGE` and table `SELECT` grants to add and asks to check the database name, the Schemas setting and the table filters. On Airbyte Cloud, reject `localhost` without an SSH tunnel and a URL or `host:port` pasted into Host with an explicit message before the connection is attempted. |
 | 3.8.7 | 2026-10-09 | [88431](https://github.com/airbytehq/airbyte/pull/88431) | Upgrade to Bulk CDK 1.1.14. |

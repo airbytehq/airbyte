@@ -105,8 +105,9 @@ class SalesforceErrorHandler(ErrorHandler):
             if response.status_code == 401:
                 error_code, _ = self._extract_error_code_and_message(response)
                 if error_code == "INVALID_SESSION_ID":
+                    refreshed = False
                     if self._token_provider is not None:
-                        self._token_provider.force_refresh()
+                        refreshed = self._token_provider.force_refresh()
                         if self._token_provider.credentials_permanently_failed:
                             # The session is dead and the grant cannot mint a new one; retrying
                             # floods the token endpoint from every stream.
@@ -118,7 +119,8 @@ class SalesforceErrorHandler(ErrorHandler):
                     return ErrorResolution(
                         ResponseAction.RETRY,
                         FailureType.transient_error,
-                        "Salesforce session expired or invalid. Token has been refreshed.",
+                        "Salesforce session expired or invalid. "
+                        + ("Token has been refreshed." if refreshed else "The token could not be refreshed."),
                     )
 
             if not (400 <= response.status_code < 500) or response.status_code in _RETRYABLE_400_STATUS_CODES:
