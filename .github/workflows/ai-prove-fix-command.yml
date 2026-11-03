@@ -79,9 +79,8 @@ jobs:
       # can re-read state and decide the next action. Fires regardless of the
       # Devin session's outcome — hydra assess looks up the session's verdict
       # from Devin's tag index and routes appropriately (prove PROVEN → review,
-      # DISPROVEN → fix rework, etc.). The handoff's own pre-flight exits early
-      # for PRs without `hyd-chain-v2`, so this is a no-op during the parallel
-      # soak for PRs owned by the old workflow.
+      # DISPROVEN → fix rework, etc.).
+      # Only `hyd-chain-v2` PRs are signalled; the handoff's pre-flight re-checks the label.
       - name: Signal handoff v2 (repository_dispatch)
         if: always() && inputs.pr != ''
         env:
@@ -89,7 +88,12 @@ jobs:
           PR_NUMBER: ${{ inputs.pr }}
         run: |
           set -euo pipefail
-          HEAD_SHA=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
+          PR_JSON=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER")
+          if ! jq -e 'any(.labels[]; .name == "hyd-chain-v2")' <<<"$PR_JSON" >/dev/null; then
+            echo "::notice::PR #$PR_NUMBER has no hyd-chain-v2 label; skipping handoff v2 signal"
+            exit 0
+          fi
+          HEAD_SHA=$(jq -r '.head.sha' <<<"$PR_JSON")
           jq -n \
             --arg pr "$PR_NUMBER" \
             --arg head "$HEAD_SHA" \
