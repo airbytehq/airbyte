@@ -28,14 +28,12 @@ definitions:
         request_parameters: {}
         request_headers: {}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - http_codes:
-                    - 499
-                  action: FAIL
-                  error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
+          type: DefaultErrorHandler
+          response_filters:
+            - http_codes:
+                - 499
+              action: FAIL
+              error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
         authenticator:
           class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
@@ -84,14 +82,12 @@ streams:
         request_parameters: {}
         request_headers: {}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - http_codes:
-                    - 499
-                  action: FAIL
-                  error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
+          type: DefaultErrorHandler
+          response_filters:
+            - http_codes:
+                - 499
+              action: FAIL
+              error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
         authenticator:
           class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
@@ -996,14 +992,12 @@ streams:
           sort: "{{ 'submitted_at,asc' if not next_page_token else '' }}"
         request_headers: {}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - http_codes:
-                    - 499
-                  action: FAIL
-                  error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
+          type: DefaultErrorHandler
+          response_filters:
+            - http_codes:
+                - 499
+              action: FAIL
+              error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
         authenticator:
           class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
@@ -1341,14 +1335,12 @@ streams:
         request_parameters: {}
         request_headers: {}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - http_codes:
-                    - 499
-                  action: FAIL
-                  error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
+          type: DefaultErrorHandler
+          response_filters:
+            - http_codes:
+                - 499
+              action: FAIL
+              error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
         authenticator:
           class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
@@ -1437,14 +1429,12 @@ streams:
         request_parameters: {}
         request_headers: {}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - http_codes:
-                    - 499
-                  action: FAIL
-                  error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
+          type: DefaultErrorHandler
+          response_filters:
+            - http_codes:
+                - 499
+              action: FAIL
+              error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
         authenticator:
           class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
@@ -1550,14 +1540,12 @@ streams:
         request_parameters: {}
         request_headers: {}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - http_codes:
-                    - 499
-                  action: FAIL
-                  error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
+          type: DefaultErrorHandler
+          response_filters:
+            - http_codes:
+                - 499
+              action: FAIL
+              error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
         authenticator:
           class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
@@ -1650,14 +1638,12 @@ streams:
         request_parameters: {}
         request_headers: {}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - http_codes:
-                    - 499
-                  action: FAIL
-                  error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
+          type: DefaultErrorHandler
+          response_filters:
+            - http_codes:
+                - 499
+              action: FAIL
+              error_message: "Could not complete the stream: Source Typeform has been waiting for too long for a response from Typeform API. Please try again later."
         authenticator:
           class_name: source_declarative_manifest.components.TypeformAuthenticator
           token_auth:
