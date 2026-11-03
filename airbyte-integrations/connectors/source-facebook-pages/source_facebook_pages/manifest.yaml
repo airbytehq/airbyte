@@ -23,8 +23,10 @@ definitions:
         # The streams added in 3.1.0 need permissions older tokens may lack. Skip them with a log line
         # instead of failing syncs that existed before the streams did. Streams opt in through the
         # `optional_permissions` parameter. Codes: https://developers.facebook.com/docs/graph-api/guides/error-handling/
+        # The `== true` keeps the predicate a real boolean: on older CDKs a missing parameter made the
+        # whole expression `None`, which the filter read as a match and so ignored every error.
         - predicate: >-
-            {{ parameters.get('optional_permissions') and (
+            {{ parameters.get('optional_permissions') == true and (
                response.get('error', {}).get('code') == 10
                or 200 <= (response.get('error', {}).get('code') or 0) <= 299
                or 'permission' in response.get('error', {}).get('message', '').lower()) }}
