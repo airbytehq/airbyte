@@ -17,6 +17,18 @@ def config_pass():
 
 
 @fixture
+def config_pass_until_today_false():
+    return {
+        "ingest_start": "2024-05-20T20:30:40Z",
+        "api_token": "token",
+        "metrics": ["installs", "network_installs", "network_cost", "network_ecpi"],
+        "dimensions": ["app", "partner_name", "campaign", "campaign_id_network", "campaign_network"],
+        "additional_metrics": [],
+        "until_today": False,
+    }
+
+
+@fixture
 def auth_token():
     return {"access_token": "good", "expires_in": 3600}
 
