@@ -3,6 +3,7 @@
 #
 
 import logging
+import re
 import threading
 from dataclasses import InitVar, dataclass, field
 from datetime import timedelta
@@ -45,6 +46,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_format, ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 logger = logging.getLogger("airbyte")
@@ -909,6 +911,23 @@ def _download_recording(requester: Requester, url: str) -> requests.Response:
     return requester.send_request(stream_slice=StreamSlice(partition={}, cursor_slice={}, extra_fields={"download_target": url}))
 
 
+# Same pattern as the manifest's file-name transformation: an extension in the URL path or right before the query.
+_RECORDING_URL_EXTENSION = re.compile(r"[.](mp4|m4a|mp3|wav|webm|ogg|mov)(?:[?#]|$)")
+_RECORDING_CONTENT_TYPE_EXTENSIONS = {
+    "audio/mpeg": "mp3",
+    "audio/mp3": "mp3",
+    "audio/mp4": "m4a",
+    "audio/x-m4a": "m4a",
+    "audio/wav": "wav",
+    "audio/x-wav": "wav",
+    "audio/webm": "webm",
+    "audio/ogg": "ogg",
+    "video/mp4": "mp4",
+    "video/webm": "webm",
+    "video/quicktime": "mov",
+}
+
+
 @dataclass
 class HubspotRecordingDownloadFilter(RecordFilter):
     """
@@ -919,9 +938,18 @@ class HubspotRecordingDownloadFilter(RecordFilter):
     error body. This filter downloads the recording first and drops the record on any other status, so neither
     a file nor a record is emitted for it. The response is handed to HubspotRecordingDownloadRequester, so each
     recording is downloaded once.
+
+    A refusal is only a per-recording event while some downloads succeed. When the first downloads of a sync are
+    all refused with 401 or 403, the token itself lacks access to recordings, so the sync fails with a
+    configuration error instead of succeeding with nothing.
     """
 
+    REFUSAL_GUARD_ATTEMPTS = 25
+
     requester: Optional[Requester] = None
+    _lock: threading.Lock = field(default_factory=threading.Lock, init=False, repr=False, compare=False)
+    _attempts: int = field(default=0, init=False, repr=False, compare=False)
+    _auth_refusals: int = field(default=0, init=False, repr=False, compare=False)
 
     def filter_records(
         self,
@@ -934,13 +962,45 @@ class HubspotRecordingDownloadFilter(RecordFilter):
             url = record["recording_url"]
 
             response = _download_recording(self.requester, url)
+            self._track_refusals(response.status_code)
 
             if not 200 <= response.status_code < 300:
                 logger.warning(f"Skipping recording {record.get('file_name')}: HubSpot responded with HTTP {response.status_code}.")
                 continue
+            self._set_extension_from_content_type(record, url, response)
             _downloaded_recording.url, _downloaded_recording.response = url, response
 
             yield record
+
+    def _track_refusals(self, status_code: int) -> None:
+        with self._lock:
+            self._attempts += 1
+            if status_code in (401, 403):
+                self._auth_refusals += 1
+            all_refused = self._attempts >= self.REFUSAL_GUARD_ATTEMPTS and self._auth_refusals == self._attempts
+        if all_refused:
+            raise AirbyteTracedException(
+                message=(
+                    f"HubSpot refused the first {self._attempts} recording downloads with HTTP 401 or 403. The access "
+                    "token can read calls and meetings but not their recordings. Check that the private app or OAuth "
+                    "app has the `crm.objects.contacts.read` scope and that the token is still valid."
+                ),
+                internal_message=f"{self._attempts} consecutive 401/403 responses while downloading recordings",
+                failure_type=FailureType.config_error,
+            )
+
+    @staticmethod
+    def _set_extension_from_content_type(record: Mapping[str, Any], url: str, response: requests.Response) -> None:
+        """HubSpot's own recording URLs carry no extension, so the transformation falls back to `mp4`; the download's
+        Content-Type knows better."""
+        if _RECORDING_URL_EXTENSION.search(url.lower()):
+            return
+        content_type = response.headers.get("Content-Type", "").split(";")[0].strip().lower()
+        extension = _RECORDING_CONTENT_TYPE_EXTENSIONS.get(content_type)
+        file_name = record.get("file_name")
+        if not extension or not isinstance(record, dict) or not isinstance(file_name, str) or "." not in file_name:
+            return
+        record["file_name"] = f"{file_name.rsplit('.', 1)[0]}.{extension}"
 
 
 @dataclass
@@ -960,7 +1020,16 @@ class HubspotRecordingDownloadRequester:
             response = _downloaded_recording.response
             _downloaded_recording.url = _downloaded_recording.response = None
             return response
-        return self.requester.send_request(stream_slice=stream_slice, **kwargs)
+        # Not expected: the filter downloads every kept recording first. Never store an error body as a file.
+        logger.warning(f"Recording {url} was not pre-downloaded by the record filter; downloading it again.")
+        response = self.requester.send_request(stream_slice=stream_slice, **kwargs)
+        if response is None or not 200 <= response.status_code < 300:
+            status = response.status_code if response is not None else "no response"
+            raise AirbyteTracedException(
+                message=f"HubSpot did not serve the recording {url} (HTTP {status}), so no file was stored.",
+                failure_type=FailureType.system_error,
+            )
+        return response
 
 
 @dataclass

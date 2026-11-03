@@ -25,6 +25,7 @@ Connectors that support file transfers have `supportsFileTransfer: true` in thei
 The following sources support file transfers.
 
 - Zendesk Support
+- HubSpot (`call_recordings` and `meeting_recordings` streams)
 - S3
 - Sharepoint
 - Google Drive

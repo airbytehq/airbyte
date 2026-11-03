@@ -1971,16 +1971,23 @@ definitions:
           - 504
         error_message: >-
           HubSpot server error (5xx) while downloading a recording. Retrying with exponential backoff...
+      # A per-recording refusal. The record filter drops the record, so no file and no record are emitted.
+      # 429 and 5xx are retried above; any other status is skipped the same way rather than failing the sync.
       - type: HttpResponseFilter
         action: IGNORE
         http_codes:
+          - 400
           - 401
           - 403
           - 404
+          - 405
+          - 409
           - 410
+          - 415
+          - 422
         error_message: >-
-          HubSpot refused to serve a recording (HTTP 401/403/404/410). The recording is skipped: no file
-          and no record are emitted for it.
+          HubSpot refused to serve a recording. The recording is skipped: no file and no record are emitted
+          for it.
 
   recording_download_requester:
     type: HttpRequester
@@ -1993,8 +2000,6 @@ definitions:
       User-Agent: Airbyte
     error_handler:
       $ref: "#/definitions/recording_download_error_handler"
-    $parameters:
-      name: recording_download
 
   recording_file_uploader:
     type: FileUploader
@@ -2032,6 +2037,8 @@ definitions:
           - hs_lastmodifieddate
         value: "{{ record['properties'].get('hs_lastmodifieddate') }}"
 
+  # When the URL carries no extension (HubSpot's own recording URLs don't), the record filter replaces the
+  # `mp4` fallback with the extension matching the download's Content-Type.
   recording_file_name_transformation:
     type: AddFields
     fields:

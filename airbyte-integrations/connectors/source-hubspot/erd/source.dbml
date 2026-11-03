@@ -3503,9 +3503,9 @@ Ref {
 }
 
 Ref {
-    "call_recordings"."call_id" - "engagements_calls"."id"
+    "call_recordings"."call_id" <> "engagements_calls"."id"
 }
 
 Ref {
-    "meeting_recordings"."meeting_id" - "engagements_meetings"."id"
+    "meeting_recordings"."meeting_id" <> "engagements_meetings"."id"
 }

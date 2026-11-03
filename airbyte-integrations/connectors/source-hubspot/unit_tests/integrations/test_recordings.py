@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import http
+import importlib
 import json
 from datetime import timedelta
 from pathlib import Path
@@ -10,7 +11,7 @@ import freezegun
 import mock
 import pytest
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 from . import HubspotTestCase
@@ -158,7 +159,7 @@ class TestMeetingRecordingsStream(RecordingsStreamTestCase):
                         self.search_result("102", {"hs_meeting_recording_url": "https://zoom.us/rec/share/102.mp4"}),
                         self.search_result("103", {"hs_meeting_recording_url": "https://api-na1.hubspot.com.evil.example/103.mp4"}),
                         self.search_result("104", {"hs_meeting_recording_url": "http://api-na1.hubspot.com/104.mp4"}),
-                        # HubSpot hosts that do not serve recordings are outside allowedHosts.
+                        # HubSpot hosts that do not serve recordings are rejected by the connector's host check.
                         self.search_result("105", {"hs_meeting_recording_url": "https://app.hubspot.com/105.mp4"}),
                         self.search_result("106", {"hs_meeting_recording_url": "https://api.hubapi.com/106.mp4"}),
                     ]
@@ -248,6 +249,104 @@ class TestMeetingRecordingsStream(RecordingsStreamTestCase):
 
         assert not output.records
         assert any("crm.objects.contacts.read" in error.trace.error.message for error in output.errors)
+
+    def test_given_download_url_without_extension_when_read_then_file_name_from_content_type(self, files_directory: Path):
+        url = HUBSPOT_RECORDING_URL.format(id="101")
+        with HttpMocker() as http_mocker:
+            http_mocker.post(
+                self.search_request(),
+                self.search_response([self.search_result("101", {"hs_meeting_recording_url": url})]),
+            )
+            self.mock_download(http_mocker, url, HttpResponse("mp3-bytes", 200, headers={"Content-Type": "audio/mpeg"}))
+
+            output = self.read(http_mocker)
+
+        records = [message.record for message in output.records]
+        assert [record.data["file_name"] for record in records] == ["101.mp3"]
+        assert [record.file_reference.source_file_relative_path for record in records] == ["meeting_recordings/101.mp3"]
+        assert (files_directory / "meeting_recordings" / "101.mp3").read_text() == "mp3-bytes"
+
+    def test_given_private_app_token_when_read_then_download_carries_token_and_user_agent(self, files_directory: Path):
+        url = HUBSPOT_RECORDING_URL.format(id="101")
+        with HttpMocker() as http_mocker:
+            http_mocker.post(
+                self.search_request(),
+                self.search_response([self.search_result("101", {"hs_meeting_recording_url": url})]),
+            )
+            http_mocker.get(
+                HttpRequest(url=url, headers={"Authorization": f"Bearer {self.ACCESS_TOKEN}", "User-Agent": "Airbyte"}),
+                HttpResponse("mp4-bytes", 200),
+            )
+
+            output = self.read(http_mocker)
+
+        assert [message.record.data["meeting_id"] for message in output.records] == ["101"]
+        assert not output.errors
+
+    @pytest.mark.parametrize("status", [400, 422])
+    def test_given_other_client_error_on_download_when_read_then_skip_record_without_failing(self, status: int, files_directory: Path):
+        refused_url = HUBSPOT_RECORDING_URL.format(id="101")
+        present_url = HUBSPOT_RECORDING_URL.format(id="102")
+        with HttpMocker() as http_mocker:
+            http_mocker.post(
+                self.search_request(),
+                self.search_response(
+                    [
+                        self.search_result("101", {"hs_meeting_recording_url": refused_url}),
+                        self.search_result("102", {"hs_meeting_recording_url": present_url}),
+                    ]
+                ),
+            )
+            self.mock_download(http_mocker, refused_url, HttpResponse(json.dumps({"message": "bad"}), status))
+            self.mock_download(http_mocker, present_url, HttpResponse("mp4-bytes", 200))
+
+            output = self.read(http_mocker)
+
+        assert [message.record.data["meeting_id"] for message in output.records] == ["102"]
+        assert not output.errors
+        assert sorted(path.name for path in (files_directory / "meeting_recordings").iterdir()) == ["102.mp4"]
+
+    def test_given_rate_limited_download_when_read_then_retry_after_header_and_succeed(self):
+        url = HUBSPOT_RECORDING_URL.format(id="101")
+        download = HttpRequest(url=url)
+        with HttpMocker() as http_mocker:
+            http_mocker.post(
+                self.search_request(),
+                self.search_response([self.search_result("101", {"hs_meeting_recording_url": url})]),
+            )
+            http_mocker.get(download, [HttpResponse("", 429, headers={"Retry-After": "1"}), HttpResponse("mp4-bytes", 200)])
+
+            output = self.read(http_mocker)
+
+            http_mocker.assert_number_of_calls(download, 2)
+
+        assert [message.record.data["meeting_id"] for message in output.records] == ["101"]
+        assert not output.errors
+
+    def test_given_every_download_refused_when_read_then_fail_with_config_error(self, files_directory: Path, monkeypatch):
+        """A 401 or 403 on one recording is skipped; on every recording it is the token, so the sync must say so."""
+        # The connector's download budget (10 requests per second) never refills under the frozen clock, so the
+        # guard is exercised with a lower threshold than the production value.
+        monkeypatch.setattr(importlib.import_module("components").HubspotRecordingDownloadFilter, "REFUSAL_GUARD_ATTEMPTS", 3)
+        ids = [str(100 + i) for i in range(3)]
+        with HttpMocker() as http_mocker:
+            http_mocker.post(
+                self.search_request(),
+                self.search_response(
+                    [self.search_result(id_, {"hs_meeting_recording_url": HUBSPOT_RECORDING_URL.format(id=id_)}) for id_ in ids]
+                ),
+            )
+            for id_ in ids:
+                self.mock_download(http_mocker, HUBSPOT_RECORDING_URL.format(id=id_), HttpResponse(json.dumps({"message": "no"}), 403))
+
+            output = self.read(http_mocker, expecting_exception=True)
+
+        assert not output.records
+        assert any(
+            error.trace.error.failure_type == FailureType.config_error and "crm.objects.contacts.read" in error.trace.error.message
+            for error in output.errors
+        )
+        assert not (files_directory / "meeting_recordings").exists() or not any((files_directory / "meeting_recordings").iterdir())
 
 
 class TestCallRecordingsStream(RecordingsStreamTestCase):

@@ -273,7 +273,7 @@ There are two types of incremental sync:
 
 The HubSpot source connector supports the following streams:
 
-- [Call Recordings](https://developers.hubspot.com/docs/api/crm/calls) \(Incremental, file transfer\)
+- [Call Recordings](https://developers.hubspot.com/docs/api/crm/calls) \(Incremental\) \(Supports file transfer\)
 - [Campaigns](https://developers.hubspot.com/docs/api/marketing/campaigns) \(Client-Side Incremental\)
 - [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
 - [Contact Lists](https://developers.hubspot.com/docs/reference/api/crm/lists#post-%2Fcrm%2Fv3%2Flists%2Fsearch) \(Incremental\)
@@ -299,7 +299,7 @@ The HubSpot source connector supports the following streams:
 - [List Memberships](https://developers.hubspot.com/docs/reference/api/crm/lists#retrieve-records-with-list-memberships) \(Full Refresh\)
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 - [Marketing Emails](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3-v3/marketing-emails/get-marketing-v3-emails-) \(Incremental\)
-- [Meeting Recordings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental, file transfer\)
+- [Meeting Recordings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental\) \(Supports file transfer\)
 - [Owners](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental\)
 - [Owners Archived](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental)
 - [Users](https://developers.hubspot.com/docs/api-reference/settings-user-provisioning-v3/users/get-settings-v3-users-) \(Full-Refresh\)
@@ -385,12 +385,15 @@ The `list_memberships` stream reads memberships for every list returned by the `
 
 ### Notes on the `call_recordings` and `meeting_recordings` streams
 
-These streams download the recording files of calls and meetings so a destination that supports file transfer can copy them as raw files. Each record carries the ID of the call or meeting the recording belongs to: `call_id`, which joins to `engagements_calls.id`, or `meeting_id`, which joins to `engagements_meetings.id`. It also carries the `recording_url` the file was downloaded from and the `file_name` of the downloaded file (`<call_id>.<extension>` or `<meeting_id>.<extension>`).
+These streams download the recording files of calls and meetings so a destination that supports file transfer can copy them as raw files. Each record carries the ID of the call or meeting the recording belongs to: `call_id`, which joins to `engagements_calls.id`, or `meeting_id`, which joins to `engagements_meetings.id`. It also carries the `recording_url` the file was downloaded from and the `file_name` of the downloaded file (`<call_id>.<extension>` or `<meeting_id>.<extension>`). The extension comes from the URL when it has one, otherwise from the download's `Content-Type`, and is `mp4` when neither says.
 
-- The streams only return calls and meetings that have a recording URL (`hs_call_recording_url` or `hs_call_video_recording_url` for calls, `hs_meeting_recording_url` for meetings). For calls with both, the audio recording is downloaded.
-- Only recordings served by HubSpot's recording endpoint (`https://api-<hublet>.hubspot.com/...`, for example `api-na1.hubspot.com`) are downloaded. Recordings on any other host, for example Zoom or a calling provider, are skipped, because the HubSpot access token is sent with the download request.
-- If HubSpot refuses to serve a recording (HTTP 401, 403, 404 or 410, for example a deleted or expired recording, or a meeting-bot recording HubSpot never serves), the sync continues. The connector checks the download's HTTP status before storing anything, so no file and no record are emitted for that recording. Because the record is not emitted, the recording is only retried when the call or meeting is modified again in HubSpot.
-- Recordings are held in memory while they are written, so large recordings combined with a high **Number of concurrent threads** setting increase memory usage.
+- The streams only return calls and meetings that have a recording URL (`hs_call_recording_url` or `hs_call_video_recording_url` for calls, `hs_meeting_recording_url` for meetings). For calls with both, the audio recording is downloaded. HubSpot does not document `hs_call_video_recording_url`; the connector reads it when a call carries it.
+- Only recordings served by HubSpot's recording endpoint (`https://api-<hublet>.hubspot.com/...`, for example `api-na1.hubspot.com`) are downloaded, because the HubSpot access token is sent with the download request. Recordings stored elsewhere are skipped: calls recorded through a calling provider whose `hs_call_recording_url` points at the provider (for example a Twilio URL), and meetings whose media stays in Zoom, Google Meet or Microsoft Teams.
+- If HubSpot refuses to serve a recording (for example HTTP 401, 403, 404 or 410 for a deleted, expired or restricted recording, or a meeting-bot recording HubSpot never serves), the sync continues. The connector checks the download's HTTP status before storing anything, so no file and no record are emitted for that recording. A skipped recording is tried again on later syncs until a newer recording from the same stream is synced, and after that only when the call or meeting is modified again in HubSpot.
+- If the first downloads of a sync are all refused with HTTP 401 or 403, the sync fails with a configuration error, because that points at the access token rather than at individual recordings.
+- Meetings recorded before 2026-08-31 may exist in HubSpot as both a call record and a meeting record, so the same recording can appear in both streams.
+- `archived` is always `false`: HubSpot's search endpoint does not return archived records, so deleted calls and meetings are not detected.
+- Each concurrent worker holds one whole recording in memory from download to write, so peak memory is roughly the **Number of concurrent threads** setting multiplied by the size of the largest recording.
 
 ### Notes on the `Custom CRM` Objects
 
