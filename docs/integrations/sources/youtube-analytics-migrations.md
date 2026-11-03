@@ -2,9 +2,13 @@
 
 ## Upgrading to 2.0.0
 
+:::danger Risk of permanent data loss
+Before clearing or rebuilding an affected destination stream, take and verify a backup of its existing data. YouTube makes ordinary report files downloadable for 60 days after generation and historical report files for 30 days. Expired history cannot be restored by re-syncing. Do not clear or overwrite historical data until you have a tested plan to preserve and reconcile it with the new numeric schema.
+:::
+
 ### What changed
 
-Version 2.0.0 corrects the declared types of report metric fields to match YouTube's definitions: counts are now `integer`, and rates and percentages are now `number` (the rates in `channel_province_a3` were previously `integer`). Typed destinations will change the column types for these fields.
+Version 2.0.0 corrects the declared types of report metric fields to match YouTube's definitions: counts are now `integer`, and rates and percentages are now `number` (the rates in `channel_province_a3` were previously `integer`). These fields now have numeric schemas and emitted values. Existing destination columns and downstream consumers may require migration; refreshing the source schema alone does not convert historical data. Preserve historical data before any clear or rebuild.
 
 | Stream | Field | Old type | New type |
 | --- | --- | --- | --- |
@@ -35,21 +39,38 @@ Version 2.0.0 corrects the declared types of report metric fields to match YouTu
 | playlist_province_a2 | playlist_starts | string | integer |
 | playlist_province_a2 | views | string | integer |
 
+### Update downstream consumers
+
+Before resuming production syncs, update SQL views, dbt models, scheduled queries, dashboards, reverse-ETL mappings and exports that depend on the old types of the 26 fields in the table above. Review string parsing and casts for the string-to-numeric fields, and integer assumptions for the four `channel_province_a3` rates. Object-storage and JSON readers must accept numeric values for these fields; in append mode, older string-valued objects may remain alongside new numeric-valued ones. Validate historical and new-data reconciliation and aggregates so replayed records are not double-counted.
+
 ### Migration steps
 
-#### Refresh source schemas and clear data
+Only connections that sync at least one of these seven streams are affected: `channel_annotations_a1`, `channel_cards_a1`, `channel_demographics_a1`, `channel_end_screens_a1`, `channel_sharing_service_a1`, `channel_province_a3` and `playlist_province_a2`. Connections that select none of them need no migration beyond the upgrade.
 
-After upgrading, refresh the source schema and clear data for the affected streams: `channel_annotations_a1`, `channel_cards_a1`, `channel_demographics_a1`, `channel_end_screens_a1`, `channel_sharing_service_a1`, `channel_province_a3`, and `playlist_province_a2`. Follow the steps below:
+For affected connections, refresh the source schema after upgrading so the catalog carries the new types. Refreshing the catalog does not convert data already in your destination. Whether existing columns can be converted in place or the stream must be rebuilt depends on your destination and sync mode, so choose the path below that matches each affected stream.
 
-1. Select **Connections** in the main navbar and select the connection(s) affected by the update.
-2. Select the **Schema** tab.
-   1. Select **Refresh source schema** to bring in the schema changes. Any detected schema changes will be listed for your review.
-   2. Select **OK** to approve changes.
-3. Select **Save changes** at the bottom of the page.
-   1. Ensure the **Clear affected streams** option is checked.
-4. Select **Save connection**.
+#### Full refresh | Overwrite
 
-This will clear the data in the destination for the seven streams with schema changes. After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/platform/operator-guides/clear).
+Refresh the source schema and run a sync. The sync already rebuilds the stream's output from the reports YouTube still makes available, so no extra clear is required.
+
+#### Incremental (Append or Append + Deduped)
+
+These streams can hold history older than YouTube's retention window, so preserve it before changing anything:
+
+1. Take a backup of each affected stream's destination table or files, and verify you can read it back.
+2. Refresh the source schema and approve the changes. Do not select **Clear affected streams** unless you have completed step 1 and have a plan for step 4.
+3. Run a sync and check the affected columns in your destination.
+4. If you have to clear or rebuild a stream, restore the older history from your backup, converting the affected fields to the new numeric types, and reconcile it with the data the new sync replays:
+   - In **Append** mode, replayed records are added again, so the restored history and the replayed window can contain duplicate rows.
+   - In **Append + Deduped** mode, replayed rows replace matching restored rows only if the primary keys are unchanged and deduplication is enabled.
+
+If you don't have a tested way to preserve and reconcile the history, stop before clearing and work out a destination-specific plan first.
+
+#### What a clear cannot recover
+
+After a clear, the destination only receives reports YouTube still makes available: files generated in the last 60 days, and historical report files from the last 30 days. Anything older is gone from the destination, even if the next sync succeeds. Starting a fresh reporting job or using an earlier cursor does not recover expired reports.
+
+For the platform steps to upgrade the connector and refresh the schema, see [Connector upgrade guide](#connector-upgrade-guide) at the end of this page.
 
 ## Upgrading to 1.0.0
 
@@ -101,3 +122,9 @@ Clearing your data is required for the affected streams to continue syncing succ
 
 This will clear the data in your destination for the subset of streams with schema changes. After the clear succeeds,
 trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
+## Connector upgrade guide
+
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
+<MigrationGuide />
