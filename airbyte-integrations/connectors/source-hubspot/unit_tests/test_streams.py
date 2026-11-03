@@ -4,6 +4,7 @@
 
 import datetime
 import json
+from urllib.parse import parse_qs, urlparse
 
 import freezegun
 import pytest
@@ -166,6 +167,13 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
                 f"https://api.hubapi.com/crm/v4/associations/{endpoint}/{association}/batch/read",
                 [{"json": {"results": []}, "status_code": 200}],
             )
+    if stream_class == "contacts":
+        for association in ("contacts", "companies"):
+            requests_mock.register_uri(
+                "POST",
+                f"https://api.hubapi.com/crm/v4/associations/contact/{association}/batch/read",
+                [{"json": {"results": []}, "status_code": 200}],
+            )
     requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_response)
     requests_mock.register_uri("GET", "/contacts/v1/lists/all/contacts/all", contact_lists_v1_response)
     requests_mock.register_uri("GET", "/marketing/v3/forms", responses if not is_form_submission else forms_response)
@@ -177,6 +185,101 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
 
     records = run_read(stream)
     assert records
+
+
+@freezegun.freeze_time("2022-03-10T14:42:00Z")
+def test_contacts_full_refresh_reads_list_endpoint_and_merges_property_chunks(
+    requests_mock, config, fake_properties_list
+):
+    mock_dynamic_schema_requests_with_skip(requests_mock, ["contact"])
+    mock_v3_properties(
+        requests_mock,
+        "contact",
+        [{"name": property_name, "type": "string"} for property_name in fake_properties_list],
+    )
+    requests_mock.get(
+        "https://api.hubapi.com/properties/v2/contact/properties",
+        json=[{"name": "hs_object_id", "type": "number"}],
+    )
+    property_values = {
+        property_name: f"value-{property_name}"
+        for property_name in (fake_properties_list[0], fake_properties_list[-1])
+    }
+
+    def list_response(request, context):
+        requested_properties = parse_qs(urlparse(request.url).query)["properties"][0].split(",")
+        requested_values = {name: property_values[name] for name in requested_properties if name in property_values}
+        return json.dumps(
+            {
+                "results": [
+                    {
+                        "id": "123",
+                        "createdAt": "2022-03-01T00:00:00Z",
+                        "updatedAt": "2022-03-10T14:42:00Z",
+                        "archived": False,
+                        "properties": requested_values,
+                    }
+                ],
+                "paging": {},
+            }
+        )
+
+    requests_mock.get("https://api.hubapi.com/crm/v3/objects/contact", text=list_response)
+    requests_mock.post("https://api.hubapi.com/crm/v3/objects/contact/search", json={"results": []})
+    for association in ("contacts", "companies"):
+        requests_mock.post(
+            f"https://api.hubapi.com/crm/v4/associations/contact/{association}/batch/read",
+            json={"results": [{"from": {"id": "123"}, "to": [{"toObjectId": association}]}]},
+        )
+
+    config["start_date"] = "2022-03-09T14:42:00Z"
+    output = read_from_stream(config, "contacts", SyncMode.full_refresh)
+
+    list_requests = [
+        request
+        for request in requests_mock.request_history
+        if request.method == "GET" and urlparse(request.url).path == "/crm/v3/objects/contact"
+    ]
+    search_requests = [
+        request
+        for request in requests_mock.request_history
+        if request.method == "POST" and urlparse(request.url).path == "/crm/v3/objects/contact/search"
+    ]
+    assert len(list_requests) > 1
+    assert all(parse_qs(urlparse(request.url).query)["archived"] == ["false"] for request in list_requests)
+    assert not search_requests
+    assert len(output.records) == 1
+    record = output.records[0].record.data
+    assert record["updatedAt"] == "2022-03-10T14:42:00Z"
+    assert record["contacts"] == ["contacts"]
+    assert record["companies"] == ["companies"]
+    assert record["properties"][fake_properties_list[0]] == property_values[fake_properties_list[0]]
+    assert record["properties"][fake_properties_list[-1]] == property_values[fake_properties_list[-1]]
+    assert record[f"properties_{fake_properties_list[0]}"] == property_values[fake_properties_list[0]]
+    assert record[f"properties_{fake_properties_list[-1]}"] == property_values[fake_properties_list[-1]]
+
+
+@freezegun.freeze_time("2022-03-10T14:42:00Z")
+def test_contacts_incremental_with_state_uses_search_endpoint(requests_mock, config):
+    mock_dynamic_schema_requests_with_skip(requests_mock, ["contact"])
+    mock_v3_properties(requests_mock, "contact", [{"name": "hs_object_id", "type": "number"}])
+    requests_mock.get(
+        "https://api.hubapi.com/properties/v2/contact/properties",
+        json=[{"name": "hs_object_id", "type": "number"}],
+    )
+    requests_mock.post("https://api.hubapi.com/crm/v3/objects/contact/search", json={"results": []})
+
+    state = StateBuilder().with_stream_state("contacts", {"updatedAt": "2022-03-01T00:00:00Z"}).build()
+    read_from_stream(config, "contacts", SyncMode.incremental, state)
+
+    assert any(
+        request.method == "POST" and urlparse(request.url).path == "/crm/v3/objects/contact/search"
+        for request in requests_mock.request_history
+    )
+    assert not any(
+        request.method == "GET" and urlparse(request.url).path == "/crm/v3/objects/contact"
+        for request in requests_mock.request_history
+    )
 
 
 @pytest.mark.parametrize(
@@ -259,6 +362,13 @@ def test_stream_read_with_legacy_field_transformation(
             requests_mock.register_uri(
                 "POST",
                 f"https://api.hubapi.com/crm/v4/associations/{endpoint}/{association}/batch/read",
+                [{"json": {"results": []}, "status_code": 200}],
+            )
+    if stream_class == "contacts":
+        for association in ("contacts", "companies"):
+            requests_mock.register_uri(
+                "POST",
+                f"https://api.hubapi.com/crm/v4/associations/contact/{association}/batch/read",
                 [{"json": {"results": []}, "status_code": 200}],
             )
 
@@ -714,7 +824,7 @@ def test_cast_record_fields_if_needed(
             "GET",
         ),
         ("workflows", "automation", "https://api.hubapi.com/automation/v3/workflows", "GET"),
-        ("contacts", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/contact/search", "POST"),
+        ("contacts", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/contact", "GET"),
         ("deal_splits", "crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deal_split/search", "POST"),
         (
             "leads",
@@ -740,14 +850,10 @@ def test_streams_raise_error_message_if_scopes_missing(stream, scopes, url, meth
             ]
         }
     )
-    state = (
-        StateBuilder()
-        .with_stream_state(
-            stream,
-            {},
-        )
-        .build()
-    )
+    state_builder = StateBuilder()
+    if stream != "contacts":
+        state_builder.with_stream_state(stream, {})
+    state = state_builder.build()
     source_hubspot = get_source(config)
     output = read(source_hubspot, config=config, catalog=catalog, state=state)
     assert output.errors[0].trace.error.message == (

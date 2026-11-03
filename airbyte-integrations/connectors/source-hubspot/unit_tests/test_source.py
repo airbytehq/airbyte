@@ -3,12 +3,12 @@
 #
 
 
+import json
 import logging
 from datetime import timedelta
 from urllib.parse import urlencode
 
 import freezegun
-import mock
 import pytest
 import requests_cache
 
@@ -57,7 +57,7 @@ def test_check_connection_ok(requests_mock, config):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
     requests_mock.register_uri("GET", "/crm/v3/properties/contact", [{"json": {"results": properties}, "status_code": 200}])
-    requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", {})
+    requests_mock.get("https://api.hubapi.com/crm/v3/objects/contact", json={"results": []})
     connection_status = get_source(config).check(logger, config=config)
 
     assert connection_status.status == ConnectionStatus.SUCCEEDED
@@ -234,12 +234,12 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     ]
     responses = [
         {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
-        {"json": [], "status_code": 200},
+        {"json": {"results": []}, "status_code": 200},
     ]
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
     mock_v3_properties(requests_mock, "contact", [{"name": "hs__migration_soft_delete", "type": "enumeration"}])
-    requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", responses)
+    requests_mock.register_uri("GET", "/crm/v3/objects/contact", responses)
     source = get_source(config)
     connection_status = source.check(logger=logger, config=config)
 
@@ -263,11 +263,11 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     ]
     responses = [
         {"json": {"error": "something bad"}, "status_code": 500},
-        {"json": [], "status_code": 200},
+        {"json": {"results": []}, "status_code": 200},
     ]
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
     mock_v3_properties(requests_mock, "contact", [{"name": "hs__migration_soft_delete", "type": "enumeration"}])
-    requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", responses)
+    requests_mock.register_uri("GET", "/crm/v3/objects/contact", responses)
     source = get_source(config)
     connection_status = source.check(logger=logger, config=config)
 
@@ -398,58 +398,35 @@ class TestSplittingPropertiesFunctionality:
             assert len(properties) == NUMBER_OF_PROPERTIES
 
 
-@freezegun.freeze_time("2022-03-10T14:42:00Z")  # less than one month after state date in test
-def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
+@freezegun.freeze_time("2022-03-10T14:42:00Z")
+def test_search_based_stream_paginates_by_record_id(
     requests_mock, config, fake_properties_list, mock_dynamic_schema_requests
 ):
-    """
-    If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
-    the CRMSearchStream instance should stop at the 10Kth record. 10k changed to 600 for testing purposes.
-    """
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
-    responses = [
+    records = [
         {
-            "json": {
-                "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(200)],
-                "paging": {
-                    "next": {
-                        "after": f"{x * 200}",
-                    }
-                },
-            },
-            "status_code": 200,
+            "id": str(record_id),
+            "updatedAt": "2022-03-01T00:00:00Z" if record_id > 800 else "2022-02-25T16:43:11Z",
+            "properties": {"hs_object_id": str(record_id)},
         }
-        for x in range(1, 3)
+        for record_id in range(1, 1001)
     ]
-    # Last page... it does not have paging->next->after
-    responses.append(
-        {
-            "json": {"results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)], "paging": {}},
-            "status_code": 200,
-        }
-    )
-    # After reaching 1000 records, it performs a new search query.
-    responses.append(
-        {
-            "json": {
-                "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)],
-                "paging": {
-                    "next": {
-                        "after": "200",
-                    }
-                },
-            },
-            "status_code": 200,
-        }
-    )
-    # Last page... it does not have paging->next->after
-    responses.append(
-        {
-            "json": {"results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)], "paging": {}},
-            "status_code": 200,
-        }
-    )
+    request_bodies = []
+
+    def search_response(request, context):
+        body = request.json()
+        request_bodies.append(body)
+        lower_bound = next(
+            filter_value["value"] for filter_value in body["filters"] if filter_value["propertyName"] == "hs_object_id"
+        )
+        matching_records = [record for record in records if int(record["id"]) >= int(lower_bound)]
+        after = int(body["after"])
+        page = matching_records[after : after + body["limit"]]
+        response = {"results": page}
+        if after + body["limit"] < len(matching_records):
+            response["paging"] = {"next": {"after": str(after + body["limit"])}}
+        return json.dumps(response)
 
     properties_response = [
         {
@@ -472,7 +449,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     )
 
     test_stream_url = "https://api.hubapi.com/crm/v3/objects/company/search"
-    requests_mock.register_uri("POST", test_stream_url, responses)
+    requests_mock.register_uri("POST", test_stream_url, text=search_response)
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
     mock_v3_properties(
         requests_mock,
@@ -482,23 +459,18 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
             for property_name in fake_properties_list
         ],
     )
-    requests_mock.register_uri(
-        "POST",
-        "/crm/v4/associations/company/contacts/batch/read",
-        [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
-    )
-    requests_mock.register_uri(
-        "POST",
-        "/crm/v4/associations/company/contacts/batch/read",
-        [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
-    )
+    requests_mock.post("/crm/v4/associations/company/contacts/batch/read", json={"results": []})
 
-    with mock.patch("components.HubspotCRMSearchPaginationStrategy.RECORDS_LIMIT", 600):
-        output = read_from_stream(config, "companies", SyncMode.incremental, state)
-    # The stream should not attempt to get more than 600 records.
-    # Instead, it should use the new state to start a new search query.
+    output = read_from_stream(config, "companies", SyncMode.incremental, state)
     assert len(output.records) == 1000
     assert output.state_messages[1].state.stream.stream_state.updatedAt == "2022-03-01T00:00:00.000000Z"
+    assert all(body["after"] == 0 for body in request_bodies)
+    assert [
+        int(
+            next(filter_value["value"] for filter_value in body["filters"] if filter_value["propertyName"] == "hs_object_id")
+        )
+        for body in request_bodies
+    ] == [0, 201, 401, 601, 801]
 
 
 def test_engagements_stream_pagination_works(requests_mock, config):

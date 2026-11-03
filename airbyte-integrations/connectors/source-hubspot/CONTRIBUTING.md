@@ -23,9 +23,10 @@ APIs.
   `CONTRIBUTING.md` section 1.
 - The engagements stream dynamically selects between two different API endpoints. See `CONTRIBUTING.md`
   section 2.
-- Pagination resets at 10,000 results for search endpoints. See `CONTRIBUTING.md` section 3.
-- Custom objects use `StateDelegatingStream` with two different sub-stream implementations. See
-  `CONTRIBUTING.md` section 4.
+- CRM search pagination uses `hs_object_id` keyset paging with `after` always set to 0. See
+  `CONTRIBUTING.md` section 3.
+- Contacts and custom objects use `StateDelegatingStream` to select full-refresh or incremental
+  implementations. See `CONTRIBUTING.md` section 4.
 - Many streams use character-based property chunking (15,000 char limit). See `CONTRIBUTING.md` section 5.
 - Authentication retries on 401 to handle mid-sync token expiration. See `CONTRIBUTING.md` section 8.
 
@@ -79,37 +80,47 @@ total results per query. This is documented in
 beyond offset 10,000 returns a 400 error. The limit applies per-query, not per-account -- you can
 issue multiple queries with different filters to access more data.
 
-The custom pagination strategy works around this by:
+The custom pagination strategy uses keyset pagination on every page:
 
-1. Tracking the current offset (`after`) and detecting when it approaches 10,000.
-2. When the limit is reached, resetting `after` to 0 and adding an `id` filter using the last
-   record's `hs_object_id + 1` to effectively start a new query window.
-3. The CRM search request body includes a `sorts` clause ordering by `hs_object_id ASCENDING` and a
-   filter `hs_object_id >= {id}` to ensure deterministic ordering and seamless continuation.
+1. It keeps `after` at 0 and adds an `hs_object_id >= {id}` filter, where `id` is the previous
+   page's last record ID plus one.
+2. CRM search requests sort by `hs_object_id ASCENDING`, so each new query starts after the last
+   emitted record without relying on an offset into a changing result set.
+3. Short pages continue when the response has a `paging` entry; an empty page or a response without
+   paging ends the stream.
 
-This is necessary because HubSpot's search endpoint was designed for filtered discovery, not bulk
-export. The 10,000 limit is intentional on HubSpot's side and cannot be increased.
+This keeps each query far below HubSpot's 10,000-result cap and avoids skipped records when a record
+leaves the filtered result set while the sync is running.
 
-**Why this matters:** Without this workaround, any CRM object type with more than 10,000 modified records since the last sync would silently stop paginating and miss data. The pagination token is a dict with two possible shapes (`{"after": N}` or `{"after": N, "id": M}`), not a simple cursor string, so any code touching page tokens must handle both. This affects all CRM search streams: contacts, companies, deals, tickets, leads, all engagement subtypes, deal_splits, and custom objects.
+**Why this matters:** Offset paging over a changing result set can shift later pages and silently skip stable records. The keyset token is always `{"after": 0}` initially and then `{"after": 0, "id": M}`. This strategy affects all CRM search streams: contacts, companies, deals, tickets, leads, all engagement subtypes, deal_splits, and custom objects.
 
 ---
 
-## 4. StateDelegatingStream for Custom Objects
+## 4. StateDelegatingStream for Contacts and Custom Objects
 
-Custom HubSpot objects use `DynamicDeclarativeStream` with `StateDelegatingStream` to select between
-two completely different stream implementations based on whether incoming stream state exists:
+Custom HubSpot objects use `DynamicDeclarativeStream` with `StateDelegatingStream`, and the built-in
+`contacts` stream also uses `StateDelegatingStream` to select between two stream implementations
+based on whether incoming stream state exists:
 
 - **No state (full refresh):** Uses `GET /crm/v3/objects/{entity}` with property chunking and
   `GroupByKeyMergeStrategy` to merge chunked responses by `id`.
 - **Has state (incremental):** Uses `POST /crm/v3/objects/{entity}/search` with the CRM search
   pagination strategy and date range filters.
 
-This split exists because HubSpot's CRM Search API requires filter parameters that depend on knowing a
-cursor position (i.e., state). On first sync with no state, it is more reliable to use the simpler
-list endpoint which returns all objects without needing filter constraints. The search endpoint is more
-efficient for incremental syncs because it supports `lastmodifieddate` filters, avoiding full scans.
+For contacts, the full-refresh stream fetches properties from `/crm/v3/properties/contact`, chunks
+the list endpoint's property requests, and uses the same association extraction and field
+transformations as the search stream. With state, contacts uses the CRM Search endpoint and its
+`lastmodifieddate` filters. The web analytics contacts parent also uses the search stream definition.
 
-**Why this matters:** These are two completely independent stream implementations that happen to share a name. They have different requesters, paginators, and record selectors, so a fix applied to one sub-stream will not carry over to the other. If you change how custom objects sync, you need to verify both the full-refresh and incremental paths separately.
+For custom objects, the split exists because HubSpot's CRM Search API requires filter parameters that
+depend on knowing a cursor position (i.e., state). On first sync with no state, the list endpoint
+returns all objects without needing filter constraints. The search endpoint is more efficient for
+incremental syncs because it supports `lastmodifieddate` filters, avoiding full scans.
+
+**Why this matters:** These are independent stream implementations that happen to share a name. They
+have different requesters, paginators, and record selectors, so a fix applied to one sub-stream will
+not carry over to the other. Verify both full-refresh and incremental paths when changing either
+contacts or custom-object behavior.
 
 When `prefix_colliding_custom_objects` is enabled, custom objects whose name matches a built-in stream are exposed as `custom_object_<name>`. It is opt-in because, with the flag off, a colliding custom object replaces the built-in stream at read time (the CDK resolves streams by name and dynamic streams come last), and some existing connections depend on that. When adding a built-in stream, update the built-in name list in `definitions.custom_object_stream_name` in `manifest.yaml`; `test_custom_objects_never_collide_with_any_builtin_stream` guards it.
 

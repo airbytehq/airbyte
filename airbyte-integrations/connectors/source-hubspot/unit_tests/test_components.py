@@ -2,19 +2,24 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from unittest.mock import Mock, patch
 
+import freezegun
 import pytest
 import requests
 from requests import Response
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+from .conftest import mock_v3_properties, read_from_stream
 
 
 @pytest.mark.parametrize(
@@ -679,35 +684,45 @@ def test_entity_schema_normalization(components_module, original_value, field_sc
     "json_response,last_page_size,last_record,last_page_token_value,expected_next_page_token",
     [
         pytest.param(
-            {"paging": {"next": {"after": 1200}}}, 200, {"id": 5000}, {"after": 1000}, {"after": 1200}, id="test_next_page_on_first_chunk"
+            {"paging": {"next": {"after": 200}}},
+            200,
+            {"id": 5000},
+            {"after": 0},
+            {"after": 0, "id": 5001},
+            id="full_page_continues_by_id",
         ),
         pytest.param(
-            {"paging": {"next": {"after": 1200}}},
+            {"paging": {"next": {"after": 100}}},
             100,
             {"id": 5000},
-            {"after": 1000},
+            {"after": 0},
+            {"after": 0, "id": 5001},
+            id="short_page_with_paging_continues_by_id",
+        ),
+        pytest.param(
+            {"paging": {"next": {"after": 200}}},
+            0,
+            {"id": 5000},
+            {"after": 0},
             None,
-            id="test_stop_paging_when_last_page_is_less_than_page_size",
+            id="empty_page_stops",
         ),
+        pytest.param({}, 200, {"id": 5000}, {"after": 0}, None, id="no_paging_stops"),
         pytest.param(
-            {"paging": {"next": {"after": 1200}}}, 0, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_last_page_size_is_zero"
-        ),
-        pytest.param({}, 200, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_no_after_in_response"),
-        pytest.param(
-            {"paging": {"next": {"after": 10000}}},
+            {"paging": {"next": {"after": 200}}},
             200,
-            {"id": 25000},
-            {"after": 9800},
-            {"after": 0, "id": 25001},
-            id="test_reset_page_and_move_to_next_chunk",
+            {"id": "5000"},
+            {"after": 200},
+            {"after": 0, "id": 5001},
+            id="string_id_is_converted_to_integer",
         ),
         pytest.param(
             {"paging": {"next": {"after": 200}}},
             200,
-            {"id": 30000},
-            {"after": 0, "id": 25001},
-            {"after": 200, "id": 25001},
-            id="test_next_page_on_next_chunk_of_records",
+            None,
+            {"after": 0},
+            None,
+            id="missing_last_record_stops",
         ),
     ],
 )
@@ -727,6 +742,52 @@ def test_crm_search_pagination_strategy(
     )
 
     assert actual_next_page_token == expected_next_page_token
+
+
+@freezegun.freeze_time("2022-03-10T14:42:00Z")
+def test_crm_search_pagination_tracks_last_id_when_result_set_shifts(requests_mock, config):
+    records = [
+        {
+            "id": str(record_id),
+            "createdAt": "2022-02-25T16:43:11Z",
+            "updatedAt": "2022-03-05T16:43:11Z",
+            "properties": {"hs_object_id": str(record_id), "lastmodifieddate": "2022-03-05T16:43:11Z"},
+        }
+        for record_id in range(1, 451)
+    ]
+    request_count = 0
+
+    def search_response(request, context):
+        nonlocal records, request_count
+        body = request.json()
+        lower_bound = next(
+            filter_value["value"] for filter_value in body["filters"] if filter_value["propertyName"] == "hs_object_id"
+        )
+        filtered_records = [record for record in records if int(record["properties"]["hs_object_id"]) >= int(lower_bound)]
+        after = int(body["after"])
+        page = filtered_records[after : after + body["limit"]]
+        response = {"results": page}
+        if after + body["limit"] < len(filtered_records):
+            response["paging"] = {"next": {"after": str(after + body["limit"])}}
+        if request_count == 0:
+            records = [record for record in records if record["id"] != "10"]
+        request_count += 1
+        return json.dumps(response)
+
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    mock_v3_properties(requests_mock, "contact", [{"name": "hs_object_id", "type": "number"}])
+    requests_mock.get(
+        "https://api.hubapi.com/properties/v2/contact/properties", json=[{"name": "hs_object_id", "type": "number"}]
+    )
+    requests_mock.post("https://api.hubapi.com/crm/v3/objects/contact/search", text=search_response)
+    requests_mock.post("/crm/v4/associations/contact/contacts/batch/read", json={"results": []})
+    requests_mock.post("/crm/v4/associations/contact/companies/batch/read", json={"results": []})
+
+    state = StateBuilder().with_stream_state("contacts", {"updatedAt": "2022-02-24T16:43:11Z"}).build()
+    output = read_from_stream(config, "contacts", SyncMode.incremental, state)
+
+    record_ids = [int(message.record.data["id"]) for message in output.records]
+    assert record_ids == list(range(1, 451))
 
 
 def test_build_associations_retriever_uses_rate_limited_for_429():

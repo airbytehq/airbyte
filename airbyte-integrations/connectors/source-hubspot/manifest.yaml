@@ -2168,7 +2168,7 @@ definitions:
         schema:
           $ref: "#/schemas/line_items"
 
-  contacts_stream:
+  contacts_search_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
     transformations:
       - type: CustomTransformation
@@ -2190,6 +2190,90 @@ definitions:
         - companies
       cursor_filter_property_field: lastmodifieddate
       required_scopes: crm.objects.contacts.read
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
+        schema_transformations:
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+            field_mapping:
+              hs_lifecyclestage_: "hs_v2_date_entered_"
+              hs_date_exited_: "hs_v2_date_exited_"
+              hs_time_in_: "hs_v2_latest_time_in_"
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
+
+  contacts_stream:
+    type: StateDelegatingStream
+    name: contacts
+    $parameters:
+      name: contacts
+      entity: contact
+      associations:
+        - contacts
+        - companies
+      cursor_filter_property_field: lastmodifieddate
+      required_scopes: crm.objects.contacts.read
+    full_refresh_stream:
+      name: contacts
+      primary_key:
+        - id
+      $ref: "#/definitions/stream_base"
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/crm/v3/objects/{{ parameters['entity'] }}"
+          request_parameters:
+            archived: "false"
+            properties:
+              type: QueryProperties
+              property_list:
+                type: PropertiesFromEndpoint
+                property_field_path:
+                  - name
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: "/crm/v3/properties/{{ parameters['entity'] }}"
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - results
+              property_chunking:
+                type: PropertyChunking
+                property_limit_type: characters
+                property_limit: 15000
+                record_merge_strategy:
+                  type: GroupByKeyMergeStrategy
+                  key: id
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+        record_selector:
+          $ref: "#/definitions/base_crm_search_incremental_stream/retriever/record_selector"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+          field_mapping:
+            hs_lifecyclestage_: "hs_v2_date_entered_"
+            hs_date_exited_: "hs_v2_date_exited_"
+            hs_time_in_: "hs_v2_latest_time_in_"
+        - type: DpathFlattenFields
+          field_path: ["properties"]
+          key_transformation:
+            type: KeyTransformation
+            prefix: properties_
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync"
+        is_client_side_incremental: true
+    incremental_stream:
+      $ref: "#/definitions/contacts_search_stream"
+      name: contacts
     schema_loader:
       - type: InlineSchemaLoader
         schema:
@@ -2541,7 +2625,7 @@ definitions:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream: "#/definitions/contacts_stream"
+              stream: "#/definitions/contacts_search_stream"
               parent_key: id
               partition_field: parent_id
         - type: ListPartitionRouter
