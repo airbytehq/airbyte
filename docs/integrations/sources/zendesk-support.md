@@ -33,7 +33,7 @@ Zendesk is [removing API tokens as an authentication method](https://support.zen
 
 **For Airbyte Cloud:**
 
-We highly recommend using OAuth to authenticate your Zendesk Support account, as it simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector).
+We highly recommend using OAuth to authenticate your Zendesk Support account, as it simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-connector-in-airbyte).
 
 <!-- /env:cloud -->
 
@@ -82,9 +82,9 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 
 #### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. On the **Set up the source** page, select **Zendesk Support** from the **Source type** dropdown.
 4. Enter a name for the Zendesk Support connector.
    <!-- /env:cloud -->
    <!-- env:oss -->
@@ -92,8 +92,8 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 #### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
+2. Click **Sources** and then click **+ New source**.
+3. On the **Set up the source** page, select **Zendesk Support** from the **Source type** dropdown.
 4. Enter a name for the Zendesk Support connector.
 <!-- /env:oss -->
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
@@ -122,7 +122,7 @@ The Zendesk Support source connector supports the following [sync modes](https:/
 - Full Refresh | Overwrite
 - Full Refresh | Append
 - Incremental Sync | Append
-- Incremental Sync | Deduped History
+- Incremental Sync | Append + Deduped
 
 :::note
 There are two types of incremental sync:
@@ -228,6 +228,8 @@ The `ticket_audits_per_ticket` stream reads [List Audits for a Ticket](https://d
 If your connection's schema change setting is **Propagate all field and stream changes**, the connection starts syncing `ticket_audits_per_ticket` automatically after you upgrade to version 5.7.0, with the costs above. If you don't need audits for archived tickets, deselect `ticket_audits_per_ticket` on the connection's **Schema** tab.
 :::
 
+If Zendesk returns `403` for a ticket (access to that ticket is denied) or `404` (the ticket no longer exists), the connector logs a message, skips that ticket's audits, and keeps syncing the rest of the stream. The `tickets` stream returns deleted tickets, so `404` responses are expected.
+
 `ticket_audits` is unchanged, so you can keep using it, switch to `ticket_audits_per_ticket`, or sync both. Both streams share audit `id` values, so you can combine them downstream.
 
 ## Limitations & Troubleshooting
@@ -294,7 +296,15 @@ Zendesk invalidates a refresh token as soon as it's used, so authentication fail
 
 To recover, upgrade to version 5.5.1 or later, then re-authenticate the source in Airbyte Cloud or replace the refresh token on self-managed Airbyte.
 
-- Check out common troubleshooting issues for the Zendesk Support source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+#### OAuth syncs fail with `401 invalid_token`
+
+Zendesk can reject an OAuth access token with a `401` response whose body contains `"error": "invalid_token"`, even when the token expiry the connector stored hasn't passed yet. Versions before 5.6.3 failed the sync when this happened, which showed up most often on the `ticket_metrics` stream.
+
+As of version 5.6.3, sources that use **OAuth2.0 with Refresh Token** refresh the access token and retry the rejected request once. When several requests are rejected at the same time, the connector refreshes only once, so the single-use refresh token isn't spent twice. If Zendesk rejects the refreshed token as well, the sync fails with `Refreshed OAuth access token is rejected by the API.` If the refresh request itself is rejected, see [OAuth authentication fails with `invalid_grant`](#oauth-authentication-fails-with-invalid_grant). In both cases, re-authenticate the source.
+
+**OAuth2.0 (Legacy)** access tokens can't be refreshed, so the connector retries with the same token. If the error continues, re-authenticate the source with **OAuth2.0 with Refresh Token**. **API Token** sources don't use this retry. A `401` on an API token source means Zendesk couldn't authenticate the email address and API token.
+
+For other issues, search [GitHub Discussions](https://github.com/airbytehq/airbyte/discussions) for the Zendesk Support connector.
 
 </details>
 
@@ -309,7 +319,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.7.0 | 2026-10-20 | [89571](https://github.com/airbytehq/airbyte/pull/89571) | Add the `ticket_audits_per_ticket` stream, which reads audits ticket by ticket so archived tickets are included. It makes one request per created or updated ticket and isn't selected by default; connections that propagate new streams automatically start syncing it. `ticket_audits` is unchanged |
+| 5.7.0 | 2026-10-22 | [89571](https://github.com/airbytehq/airbyte/pull/89571) | Add the `ticket_audits_per_ticket` stream, which reads audits ticket by ticket so archived tickets are included. It makes one request per created or updated ticket and isn't selected by default; connections that propagate new streams automatically start syncing it. `ticket_audits` is unchanged |
 | 5.6.3 | 2026-10-13 | [87513](https://github.com/airbytehq/airbyte/pull/87513) | Refresh the OAuth access token and retry when Zendesk rejects it with `401 invalid_token`, so OAuth connections no longer intermittently fail on `ticket_metrics` and other streams during token rotation |
 | 5.6.2 | 2026-10-13 | [88867](https://github.com/airbytehq/airbyte/pull/88867) | Update dependencies |
 | 5.6.1 | 2026-10-06 | [84185](https://github.com/airbytehq/airbyte/pull/84185) | Update dependencies |
