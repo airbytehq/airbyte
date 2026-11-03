@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 """
 Guards for the 3.0.0 removal of the Zendesk Talk incremental call exports.

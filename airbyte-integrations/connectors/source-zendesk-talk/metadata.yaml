@@ -66,16 +66,17 @@ data:
           and call-leg exports these streams read from, and names no replacement endpoint for
           them. Zendesk blocks third-party integrations from these endpoints between
           December 2, 2026 and January 19, 2027 and deactivates API tokens on April 30, 2027,
-          so version 2.x has no supported way to sync the two streams. Sources whose
-          connections never select `calls` or `call_legs` are upgraded automatically and need
-          no action. A source with any connection that lists the two streams, including
-          paused connections, stays on 2.x until you upgrade it. Before upgrading, remove
-          `calls` and `call_legs` from the stream selection of every connection on that
-          source: a sync on 3.0.0 that still lists them can replace their destination tables
-          with empty ones in overwrite modes, and Zendesk can't provide that call history
-          again. Then upgrade, refresh the source schema so the two streams leave the
-          connection, and turn back on any connection Airbyte disabled; no other stream needs
-          a clear or re-sync, and the call history already synced stays in your destination.
+          so version 2.x has no supported way to sync the two streams. On Airbyte Cloud,
+          sources whose connections never select `calls` or `call_legs` are upgraded
+          automatically and need no action. A source with any connection that lists the two
+          streams, including paused connections, stays on 2.x until you upgrade it. Before
+          upgrading, remove `calls` and `call_legs` from the stream selection of every
+          connection on that source: a sync on 3.0.0 that still lists them can replace their
+          destination tables with empty ones in overwrite modes, and Zendesk can't provide
+          that call history again. Then upgrade, refresh the source schema so the two streams
+          leave the connection, and turn back on any connection Airbyte disabled; no other
+          stream needs a clear or re-sync, and the call history already synced stays in your
+          destination.
           On Airbyte Cloud, every connection on a source kept on 2.x by this change is
           disabled after December 2, 2026 until the source is upgraded. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/zendesk-talk-migrations#upgrading-to-300).
