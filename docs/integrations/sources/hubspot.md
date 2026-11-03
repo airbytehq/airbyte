@@ -218,7 +218,7 @@ Association stream records include:
 - `category`: The association category, such as `HUBSPOT_DEFINED` or `USER_DEFINED`.
 - `label`: The association label. This is `null` for unlabeled associations.
 
-Association streams sync in Full Refresh mode: the stream itself tracks no incremental cursor. Because their parent object stream syncs incrementally, in practice each sync only re-reads associations for parent records modified since the last sync.
+Association streams sync in Full Refresh mode: the stream itself tracks no incremental cursor. Each sync reads every parent record modified since the configured start date and fetches its associations.
 
 If you authenticate with a Private App or Service Key, grant read scopes for both selected objects. For example, a tickets-to-companies association stream needs the `tickets` (or, for a Service Key, `crm.objects.tickets.read`) and `crm.objects.companies.read` scopes.
 
@@ -506,6 +506,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.13.2 | 2026-11-03 | [88157](https://github.com/airbytehq/airbyte/pull/88157) | Fix custom object association streams with a `contacts` `from_object`: use the `lastmodifieddate` parent cursor, as the standard association streams do, instead of `hs_lastmodifieddate`, which contacts do not have and which made the stream emit no records. Document association streams as Full Refresh. |
 | 6.13.1 | 2026-11-03 | [89950](https://github.com/airbytehq/airbyte/pull/89950) | Update dependencies |
 | 6.13.0 | 2026-10-14 | [88415](https://github.com/airbytehq/airbyte/pull/88415) | Add the optional `prefix_colliding_custom_objects` config toggle. When enabled, a custom object whose name matches a built-in stream (e.g. `form_submissions`) is exposed as `custom_object_<name>`, so connections can be created without a duplicate stream name error. Off by default, so existing stream names are unchanged. |
 | 6.12.2 | 2026-10-20 | [89246](https://github.com/airbytehq/airbyte/pull/89246) | Update dependencies |

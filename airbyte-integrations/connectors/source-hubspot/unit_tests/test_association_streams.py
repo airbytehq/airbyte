@@ -468,19 +468,29 @@ class TestCustomObjectAssociationCursorField:
         assert "lastmodifieddate" in cursor_field_mapping["value"]
 
     @freezegun.freeze_time("2024-03-02T00:00:00Z")
-    def test_contacts_custom_association_read_uses_contacts_cursor(self, requests_mock, mock_config):
-        """A resolved contacts custom association stream should query and read with lastmodifieddate."""
+    @pytest.mark.parametrize(
+        "from_object, to_object, expected_cursor",
+        [
+            ("contacts", "p_custom", "lastmodifieddate"),
+            ("p_custom", "contacts", "hs_lastmodifieddate"),
+            ("deals", "p_custom", "hs_lastmodifieddate"),
+        ],
+        ids=["contacts_parent", "custom_parent_to_contacts", "deals_parent"],
+    )
+    def test_custom_association_read_uses_from_object_cursor(self, requests_mock, mock_config, from_object, to_object, expected_cursor):
+        """The parent search of a custom association stream filters on the last-modified property of its
+        from_object: lastmodifieddate for contacts, hs_lastmodifieddate for every other object."""
         config = mock_config | {
             "start_date": "2024-03-01T00:00:00Z",
-            "custom_object_association_streams": [{"from_object": "contacts", "to_object": "p_custom"}],
+            "custom_object_association_streams": [{"from_object": from_object, "to_object": to_object}],
         }
         requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={})
-        contacts_search = requests_mock.post(
-            "https://api.hubapi.com/crm/v3/objects/contacts/search",
-            json={"results": [{"id": "123", "properties": {"lastmodifieddate": "2024-03-01T12:00:00.000Z"}}]},
+        parent_search = requests_mock.post(
+            f"https://api.hubapi.com/crm/v3/objects/{from_object}/search",
+            json={"results": [{"id": "123", "properties": {expected_cursor: "2024-03-01T12:00:00.000Z"}}]},
         )
         requests_mock.post(
-            "https://api.hubapi.com/crm/v4/associations/contacts/p_custom/batch/read",
+            f"https://api.hubapi.com/crm/v4/associations/{from_object}/{to_object}/batch/read",
             json={
                 "results": [
                     {
@@ -496,7 +506,7 @@ class TestCustomObjectAssociationCursorField:
             },
         )
 
-        output = read_from_stream(config, "associations_contacts_p_custom", SyncMode.full_refresh)
+        output = read_from_stream(config, f"associations_{from_object}_{to_object}", SyncMode.full_refresh)
 
         assert not output.errors
         assert [record.record.data for record in output.records] == [
@@ -508,9 +518,11 @@ class TestCustomObjectAssociationCursorField:
                 "label": "test",
             }
         ]
-        request_body = contacts_search.last_request.json()
-        assert [filter_["propertyName"] for filter_ in request_body["filters"][:2]] == ["lastmodifieddate"] * 2
-        assert request_body["properties"] == ["hs_object_id", "lastmodifieddate"]
+        # The frozen clock keeps the P30D-sliced parent to a single window, so there is exactly one search request.
+        assert parent_search.call_count == 1
+        request_body = parent_search.last_request.json()
+        assert [filter_["propertyName"] for filter_ in request_body["filters"][:2]] == [expected_cursor] * 2
+        assert request_body["properties"] == ["hs_object_id", expected_cursor]
 
 
 class TestCustomObjectAssociationExtractor:
