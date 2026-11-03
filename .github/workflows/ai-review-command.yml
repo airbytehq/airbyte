@@ -36,6 +36,7 @@ permissions:
 jobs:
   pr-ai-review:
     runs-on: ubuntu-latest
+    timeout-minutes: 55
     steps:
       - name: Get job variables
         id: job-vars
@@ -53,6 +54,16 @@ jobs:
           repositories: "airbyte,oncall"
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Check for hyd-chain-v2 label
+        id: chain-v2
+        if: inputs.pr != ''
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ inputs.pr }}
+        run: |
+          enabled=$(gh api "repos/${{ github.repository }}/issues/$PR_NUMBER" --jq 'any(.labels[]; .name == "hyd-chain-v2")')
+          echo "enabled=$enabled" >> "$GITHUB_OUTPUT"
 
       - name: Get PR details
         id: pr-details
@@ -118,7 +129,8 @@ jobs:
           github-token: ${{ steps.get-app-token.outputs.token }}
           api-version: v3
           org-id: ${{ vars.DEVIN_AI_ORG_ID }}
-          wait-for-stopped-status: true
+          wait-for-stopped-status: ${{ steps.chain-v2.outputs.enabled == 'true' }}
+          wait-minutes-max: "45"
           start-message: |
             **AI PR Review** starting...
 
@@ -134,21 +146,15 @@ jobs:
       # Devin session's outcome — hydra assess looks up the session's decision
       # from Devin's tag index and routes appropriately (review APPROVE at HEAD
       # → ready, FAIL/CHANGES_REQUESTED → fix rework or escalate).
-      # Only `hyd-chain-v2` PRs are signalled; the handoff's pre-flight re-checks the label.
-      # Skipped when no session started or the wait timed out (devin-action sets status only once the session stops).
+      # Only hyd-chain-v2 PRs wait for the session; skipped if no session started or the wait timed out (devin-action sets status only once the session stops).
       - name: Signal handoff v2 (repository_dispatch)
-        if: always() && inputs.pr != '' && steps.devin.outputs.status != ''
+        if: always() && steps.chain-v2.outputs.enabled == 'true' && steps.devin.outputs.status != ''
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           PR_NUMBER: ${{ inputs.pr }}
         run: |
           set -euo pipefail
-          PR_JSON=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER")
-          if ! jq -e 'any(.labels[]; .name == "hyd-chain-v2")' <<<"$PR_JSON" >/dev/null; then
-            echo "::notice::PR #$PR_NUMBER has no hyd-chain-v2 label; skipping handoff v2 signal"
-            exit 0
-          fi
-          HEAD_SHA=$(jq -r '.head.sha' <<<"$PR_JSON")
+          HEAD_SHA=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
           jq -n \
             --arg pr "$PR_NUMBER" \
             --arg head "$HEAD_SHA" \
