@@ -82,6 +82,19 @@ def test_incremental_read_uses_state(requests_mock) -> None:
     assert output.most_recent_state.stream_state.published == (now - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S%z")
 
 
+def test_incremental_read_accepts_legacy_state_format(requests_mock) -> None:
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    state_value = now - timedelta(hours=2)
+    requests_mock.get(FEED_URL, text=_rss_feed([now - timedelta(hours=3), now - timedelta(hours=1)]))
+    catalog = _catalog(SyncMode.incremental)
+    state = StateBuilder().with_stream_state("items", {"published": state_value.isoformat()}).build()
+
+    output = read(SourceRss(catalog=catalog, config=CONFIG, state=state), CONFIG, catalog, state)
+
+    assert not output.errors
+    assert [record.record.data["guid"] for record in output.records] == ["guid-1"]
+
+
 def test_full_refresh_read_returns_items_from_last_23_hours(requests_mock) -> None:
     now = datetime.now(timezone.utc).replace(microsecond=0)
     requests_mock.get(FEED_URL, text=_rss_feed([now - timedelta(days=2), now - timedelta(hours=1)]))

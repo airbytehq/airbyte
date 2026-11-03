@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.32"
+version = "1.1.0"
 name = "source-rss"
 description = "Source implementation for rss."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -15,9 +15,9 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [ { include = "source_rss" } ]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.14"
+python = "^3.11,<3.14"
 airbyte-cdk = "^7"
-feedparser = "^6.0.11"
+feedparser = "^6.0.14"
 
 [tool.poetry.scripts]
 source-rss = "source_rss.run:run"
