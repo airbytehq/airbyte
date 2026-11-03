@@ -188,9 +188,7 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
 
 
 @freezegun.freeze_time("2022-03-10T14:42:00Z")
-def test_contacts_full_refresh_reads_list_endpoint_and_merges_property_chunks(
-    requests_mock, config, fake_properties_list
-):
+def test_contacts_full_refresh_reads_list_endpoint_and_merges_property_chunks(requests_mock, config, fake_properties_list):
     mock_dynamic_schema_requests_with_skip(requests_mock, ["contact"])
     mock_v3_properties(
         requests_mock,
@@ -201,10 +199,7 @@ def test_contacts_full_refresh_reads_list_endpoint_and_merges_property_chunks(
         "https://api.hubapi.com/properties/v2/contact/properties",
         json=[{"name": "hs_object_id", "type": "number"}],
     )
-    property_values = {
-        property_name: f"value-{property_name}"
-        for property_name in (fake_properties_list[0], fake_properties_list[-1])
-    }
+    property_values = {property_name: f"value-{property_name}" for property_name in (fake_properties_list[0], fake_properties_list[-1])}
 
     def list_response(request, context):
         requested_properties = parse_qs(urlparse(request.url).query)["properties"][0].split(",")
@@ -277,8 +272,7 @@ def test_contacts_incremental_with_state_uses_search_endpoint(requests_mock, con
         for request in requests_mock.request_history
     )
     assert not any(
-        request.method == "GET" and urlparse(request.url).path == "/crm/v3/objects/contact"
-        for request in requests_mock.request_history
+        request.method == "GET" and urlparse(request.url).path == "/crm/v3/objects/contact" for request in requests_mock.request_history
     )
 
 

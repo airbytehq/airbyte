@@ -760,9 +760,7 @@ def test_crm_search_pagination_tracks_last_id_when_result_set_shifts(requests_mo
     def search_response(request, context):
         nonlocal records, request_count
         body = request.json()
-        lower_bound = next(
-            filter_value["value"] for filter_value in body["filters"] if filter_value["propertyName"] == "hs_object_id"
-        )
+        lower_bound = next(filter_value["value"] for filter_value in body["filters"] if filter_value["propertyName"] == "hs_object_id")
         filtered_records = [record for record in records if int(record["properties"]["hs_object_id"]) >= int(lower_bound)]
         after = int(body["after"])
         page = filtered_records[after : after + body["limit"]]
@@ -776,9 +774,7 @@ def test_crm_search_pagination_tracks_last_id_when_result_set_shifts(requests_mo
 
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     mock_v3_properties(requests_mock, "contact", [{"name": "hs_object_id", "type": "number"}])
-    requests_mock.get(
-        "https://api.hubapi.com/properties/v2/contact/properties", json=[{"name": "hs_object_id", "type": "number"}]
-    )
+    requests_mock.get("https://api.hubapi.com/properties/v2/contact/properties", json=[{"name": "hs_object_id", "type": "number"}])
     requests_mock.post("https://api.hubapi.com/crm/v3/objects/contact/search", text=search_response)
     requests_mock.post("/crm/v4/associations/contact/contacts/batch/read", json={"results": []})
     requests_mock.post("/crm/v4/associations/contact/companies/batch/read", json={"results": []})

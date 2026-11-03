@@ -399,9 +399,7 @@ class TestSplittingPropertiesFunctionality:
 
 
 @freezegun.freeze_time("2022-03-10T14:42:00Z")
-def test_search_based_stream_paginates_by_record_id(
-    requests_mock, config, fake_properties_list, mock_dynamic_schema_requests
-):
+def test_search_based_stream_paginates_by_record_id(requests_mock, config, fake_properties_list, mock_dynamic_schema_requests):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
     records = [
@@ -417,9 +415,7 @@ def test_search_based_stream_paginates_by_record_id(
     def search_response(request, context):
         body = request.json()
         request_bodies.append(body)
-        lower_bound = next(
-            filter_value["value"] for filter_value in body["filters"] if filter_value["propertyName"] == "hs_object_id"
-        )
+        lower_bound = next(filter_value["value"] for filter_value in body["filters"] if filter_value["propertyName"] == "hs_object_id")
         matching_records = [record for record in records if int(record["id"]) >= int(lower_bound)]
         after = int(body["after"])
         page = matching_records[after : after + body["limit"]]
@@ -466,9 +462,7 @@ def test_search_based_stream_paginates_by_record_id(
     assert output.state_messages[1].state.stream.stream_state.updatedAt == "2022-03-01T00:00:00.000000Z"
     assert all(body["after"] == 0 for body in request_bodies)
     assert [
-        int(
-            next(filter_value["value"] for filter_value in body["filters"] if filter_value["propertyName"] == "hs_object_id")
-        )
+        int(next(filter_value["value"] for filter_value in body["filters"] if filter_value["propertyName"] == "hs_object_id"))
         for body in request_bodies
     ] == [0, 201, 401, 601, 801]
 
