@@ -6,7 +6,7 @@ import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
 
 
 class ZendeskSupportAuditCommentsExtractor(RecordExtractor):
@@ -89,3 +89,51 @@ class TicketsStateMigration(StateMigration):
         except (KeyError, TypeError, ValueError):
             return {}
         return {"updated_at": str(max(cursor_value - self.REWIND_SECONDS, 0))}
+
+
+class TicketMetricEventsStateMigration(StateMigration):
+    """Migrates a 5.x `ticket_metric_events` state to the per-ticket cursor of 6.0.0.
+
+    Versions before 6.0.0 read the Incremental Ticket Metric Event Export and saved the newest event
+    `time` as a flat `{"time": "<unix timestamp>"}` state. 6.0.0 reads the metric events of every
+    ticket the `tickets` stream returns and cursors on `_ab_updated_at`, the parent ticket's
+    `generated_timestamp`, with the parent `tickets` cursor under `parent_state`. The event `time`
+    cannot bound the stream: Zendesk records SLA `breach` events before the breach happens, dated
+    with the future breach moment, so a saved `time` can lie ahead of the last sync. The migration
+    clamps the value to the migration time, rewinds it by one hour (the rewind `TicketsStateMigration`
+    applies to the parent cursor, on top of the parent's own lookback window) and uses the result as
+    both the global cursor and the parent `updated_at` cursor, so the first 6.0.0 sync walks the
+    tickets changed since the last export. A state that already carries `_ab_updated_at`, `state` or
+    `parent_state` is left alone; an unparsable value drops the state so the next sync re-reads from
+    `start_date`.
+    """
+
+    REWIND_SECONDS = 3600
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return (
+            bool(stream_state)
+            and "time" in stream_state
+            and not any(key in stream_state for key in ("_ab_updated_at", "state", "states", "parent_state"))
+        )
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor_value = self._to_unix_timestamp(stream_state.get("time"))
+        if cursor_value is None:
+            return {}
+        now = int(ab_datetime_now().timestamp())
+        value = str(max(min(cursor_value, now) - self.REWIND_SECONDS, 0))
+        return {"_ab_updated_at": value, "parent_state": {"tickets": {"updated_at": value}}}
+
+    @staticmethod
+    def _to_unix_timestamp(value: Any) -> Optional[int]:
+        if value is None or isinstance(value, bool):
+            return None
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            pass
+        try:
+            return int(ab_datetime_parse(str(value)).timestamp())
+        except (TypeError, ValueError):
+            return None

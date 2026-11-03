@@ -69,14 +69,14 @@ data:
           `organizations` and `articles` from Zendesk's list endpoints and `ticket_comments`,
           `ticket_events` and `ticket_metric_events` ticket by ticket, as `ticket_metrics`,
           `side_conversations` and `ticket_audits_per_ticket` already did. The `tickets` cursor changes
-          from `generated_timestamp` to `updated_at`; saved state is migrated automatically and no
-          reset is required. Archived tickets, deleted tickets, deleted users and deleted organizations
+          from `generated_timestamp` to `updated_at` and the `ticket_metric_events` cursor from `time`
+          to `_ab_updated_at`; saved state is migrated automatically and no reset is required. Archived tickets, deleted tickets, deleted users and deleted organizations
           are no longer replicated by these streams: use `tickets_search` for archived tickets and
           `deleted_tickets` for deleted tickets. `ticket_events` records now carry the Ticket Audits
           API shape (`via` holds the channel name such as `web` instead of a label such as `Web form`,
           `child_events` keep the audit event fields). Syncs of the per-ticket streams make one request
-          per created or updated ticket, and a ticket's metric events are read when the ticket changes.
-          See the migration guide for details.
+          per created or updated ticket, and a changed ticket re-emits its metric events. See the
+          migration guide: https://docs.airbyte.com/integrations/sources/zendesk-support-migrations#upgrading-to-600
         upgradeDeadline: "2026-12-02"
         deadlineAction: "auto_upgrade"
         scopedImpact:

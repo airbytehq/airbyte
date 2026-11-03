@@ -4,7 +4,9 @@
 
 Since 6.0.0 the stream reads `GET /tickets/{ticket_id}/metric_events` for every ticket the `tickets`
 stream returns (an incremental dependency), instead of the Incremental Ticket Metric Event Export.
-The per-ticket response is an object keyed by metric name whose values are the event lists.
+The per-ticket response is an object keyed by metric name whose values are the event lists. The
+cursor is `_ab_updated_at`, the parent ticket's `generated_timestamp`: the event `time` is not a
+usable cursor because Zendesk dates SLA `breach` events with the future breach moment.
 """
 
 from datetime import timedelta
@@ -86,6 +88,9 @@ class TestTicketMetricEventsStreamFullRefresh(TestCase):
         assert set(records) == {1001, 1002, 2001}
         assert records[1002]["metric"] == "reply_time"
         assert records[2001]["ticket_id"] == 102
+        # The cursor is the parent ticket's `generated_timestamp`, added to every record.
+        assert records[1001]["_ab_updated_at"] == start_time + 10
+        assert records[2001]["_ab_updated_at"] == start_time + 20
 
     @HttpMocker()
     def test_given_ticket_without_events_when_read_then_return_nothing_for_it(self, http_mocker: HttpMocker) -> None:
@@ -99,8 +104,9 @@ class TestTicketMetricEventsStreamFullRefresh(TestCase):
         assert len(output.records) == 0
 
     @HttpMocker()
-    def test_given_events_older_than_start_date_when_read_then_drop_them(self, http_mocker: HttpMocker) -> None:
-        """The endpoint returns the whole history of the ticket; the record filter keeps only events in the slice."""
+    def test_given_events_older_than_start_date_when_read_then_keep_the_whole_history_of_the_ticket(self, http_mocker: HttpMocker) -> None:
+        """The endpoint returns the whole history of the ticket and no event is filtered by its `time`: the
+        parent walk decides which tickets are read, and `id` deduplicates the re-emitted events."""
         start_time = int(_START_DATE.timestamp())
         _given_tickets(http_mocker, [(101, start_time + 10)])
         _given_metric_events(
@@ -112,7 +118,7 @@ class TestTicketMetricEventsStreamFullRefresh(TestCase):
         output = read_stream(_STREAM_NAME, SyncMode.full_refresh, _config())
 
         assert len(output.errors) == 0
-        assert [record.record.data["id"] for record in output.records] == [1002]
+        assert sorted(record.record.data["id"] for record in output.records) == [1001, 1002]
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -145,12 +151,11 @@ class TestTicketMetricEventsStreamErrorHandling(TestCase):
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketMetricEventsStreamIncremental(TestCase):
     @HttpMocker()
-    def test_given_no_state_when_read_then_state_follows_the_latest_event_and_the_parent_cursor(self, http_mocker: HttpMocker) -> None:
+    def test_given_no_state_when_read_then_state_follows_the_parent_cursor(self, http_mocker: HttpMocker) -> None:
         start_time = int(_START_DATE.timestamp())
-        latest_event = _START_DATE + timedelta(days=5)
         _given_tickets(http_mocker, [(102, start_time + 20), (101, start_time + 10)])
         _given_metric_events(http_mocker, 101, [_event(1001, 101, _at(_START_DATE, days=1))])
-        _given_metric_events(http_mocker, 102, [_event(2001, 102, datetime_to_string(latest_event))])
+        _given_metric_events(http_mocker, 102, [_event(2001, 102, _at(_START_DATE, days=5))])
 
         output = read_stream(_STREAM_NAME, SyncMode.incremental, _config())
 
@@ -158,14 +163,42 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         assert len(output.records) == 2
         assert output.most_recent_state.stream_descriptor.name == _STREAM_NAME
         state = output.most_recent_state.stream_state.__dict__
-        assert state["state"] == {"time": str(int(latest_event.timestamp()))}
+        assert state["state"] == {"_ab_updated_at": str(start_time + 20)}
         assert state["parent_state"]["tickets"] == {"updated_at": str(start_time + 20)}
         # Global substream cursor: one cursor value, no per-ticket entries.
         assert state["use_global_cursor"] is True
         assert not state.get("states")
 
     @HttpMocker()
-    def test_given_state_when_read_then_parent_resumes_from_parent_state_and_old_events_are_dropped(self, http_mocker: HttpMocker) -> None:
+    def test_given_breach_event_dated_in_the_future_when_read_then_it_is_emitted_and_the_cursor_stays_on_the_parent(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """Zendesk records an SLA `breach` event when the policy is applied, dated with the moment the target
+        will be breached. The event is emitted like any other, and the saved cursor is the parent ticket's
+        `generated_timestamp`, never the event time, so the next sync does not start in the future."""
+        updated_at = int(_NOW.subtract(timedelta(minutes=10)).timestamp())
+        _given_tickets(http_mocker, [(101, updated_at)])
+        _given_metric_events(
+            http_mocker,
+            101,
+            [
+                _event(1001, 101, datetime_to_string(_NOW.subtract(timedelta(minutes=10))), metric="reply_time"),
+                _event(1002, 101, datetime_to_string(_NOW.add(timedelta(days=2))), metric="reply_time"),
+            ],
+        )
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config())
+
+        assert len(output.errors) == 0
+        assert sorted(record.record.data["id"] for record in output.records) == [1001, 1002]
+        state = output.most_recent_state.stream_state.__dict__
+        assert state["state"] == {"_ab_updated_at": str(updated_at)}
+        assert state["parent_state"]["tickets"] == {"updated_at": str(updated_at)}
+
+    @HttpMocker()
+    def test_given_state_when_read_then_parent_resumes_from_parent_state_and_the_changed_ticket_re_emits_its_events(
+        self, http_mocker: HttpMocker
+    ) -> None:
         previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
         latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
         state = (
@@ -174,7 +207,7 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
                 _STREAM_NAME,
                 {
                     "use_global_cursor": True,
-                    "state": {"time": str(previous)},
+                    "state": {"_ab_updated_at": str(previous)},
                     "lookback_window": 0,
                     "parent_state": {"tickets": {"updated_at": str(previous)}},
                 },
@@ -182,7 +215,7 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
             .build()
         )
         # The parent walk resumes from the saved parent cursor, not from start_date; the whole history of a
-        # changed ticket comes back and events older than the lookback window are dropped again.
+        # changed ticket comes back, including events older than the saved cursor.
         _given_tickets(http_mocker, [(101, latest)])
         _given_metric_events(
             http_mocker,
@@ -197,31 +230,78 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
 
         assert len(output.errors) == 0
-        # 1002 is within the one-hour lookback window of the saved cursor, so it is re-emitted.
-        assert sorted(record.record.data["id"] for record in output.records) == [1002, 1003]
+        assert sorted(record.record.data["id"] for record in output.records) == [1001, 1002, 1003]
         new_state = output.most_recent_state.stream_state.__dict__
-        assert new_state["state"] == {"time": str(latest)}
+        assert new_state["state"] == {"_ab_updated_at": str(latest)}
         assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}
 
     @HttpMocker()
-    def test_given_5_x_state_when_read_then_the_parent_walk_starts_from_the_saved_cursor(self, http_mocker: HttpMocker) -> None:
-        """A 5.x state is the flat `{"time": "<unix timestamp>"}` cursor of the export. The CDK seeds the
-        parent `tickets` cursor from that single value, so the first 6.0.0 sync walks the tickets changed
-        since the saved cursor instead of every ticket since `start_date`."""
+    def test_given_5_x_state_when_read_then_the_parent_walk_starts_one_hour_before_the_saved_cursor(self, http_mocker: HttpMocker) -> None:
+        """A 5.x state is the flat `{"time": "<unix timestamp>"}` cursor of the export. The migration turns
+        it into the parent `tickets` cursor, rewound by one hour, so the first 6.0.0 sync walks the tickets
+        changed since the saved cursor instead of every ticket since `start_date`."""
         previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
         latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"time": str(previous)}).build()
-        _given_tickets(http_mocker, [(101, latest)])
-        _given_metric_events(
-            http_mocker,
-            101,
-            [_event(1001, 101, _at(_START_DATE, days=1)), _event(1002, 101, datetime_to_string(_NOW.subtract(timedelta(days=1))))],
-        )
+        # One ticket updated 30 minutes before the saved cursor (inside the one-hour rewind) and one after.
+        _given_tickets(http_mocker, [(102, latest), (101, previous - 1800)])
+        _given_metric_events(http_mocker, 101, [_event(1001, 101, datetime_to_string(_NOW.subtract(timedelta(days=3, minutes=30))))])
+        _given_metric_events(http_mocker, 102, [_event(2001, 102, datetime_to_string(_NOW.subtract(timedelta(days=1))))])
 
         output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
 
         assert len(output.errors) == 0
-        assert [record.record.data["id"] for record in output.records] == [1002]
+        assert sorted(record.record.data["id"] for record in output.records) == [1001, 2001]
         new_state = output.most_recent_state.stream_state.__dict__
-        assert new_state["state"] == {"time": str(latest)}
+        assert new_state["state"] == {"_ab_updated_at": str(latest)}
         assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}
+
+    @HttpMocker()
+    def test_given_5_x_state_dated_in_the_future_when_read_then_the_parent_walk_starts_from_the_clock(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """The export returned SLA `breach` events dated with the future breach moment, so a 5.x `time` can
+        lie ahead of the sync that saved it. Seeded as-is it would leave the parent walk with an empty
+        slice; the migration clamps it to the migration time before the one-hour rewind."""
+        future = int(_NOW.add(timedelta(days=2)).timestamp())
+        updated_at = int(_NOW.subtract(timedelta(minutes=30)).timestamp())
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"time": str(future)}).build()
+        _given_tickets(http_mocker, [(101, updated_at)])
+        _given_metric_events(http_mocker, 101, [_event(1001, 101, datetime_to_string(_NOW.subtract(timedelta(minutes=30))))])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
+
+        assert len(output.errors) == 0
+        assert [record.record.data["id"] for record in output.records] == [1001]
+        new_state = output.most_recent_state.stream_state.__dict__
+        assert new_state["state"] == {"_ab_updated_at": str(updated_at)}
+        assert new_state["parent_state"]["tickets"] == {"updated_at": str(updated_at)}
+
+    @HttpMocker()
+    def test_given_5_x_parent_state_when_read_then_parent_cursor_is_migrated_onto_updated_at(self, http_mocker: HttpMocker) -> None:
+        """A `parent_state` that still carries the parent's old `generated_timestamp` cursor goes through the
+        `tickets` state migration: rewound by one hour onto `updated_at`."""
+        previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "use_global_cursor": True,
+                    "state": {"_ab_updated_at": str(previous)},
+                    "lookback_window": 0,
+                    "parent_state": {"tickets": {"generated_timestamp": str(previous)}},
+                },
+            )
+            .build()
+        )
+        _given_tickets(http_mocker, [(101, previous - 1800)])
+        _given_metric_events(http_mocker, 101, [_event(1001, 101, datetime_to_string(_NOW.subtract(timedelta(days=3, minutes=30))))])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
+
+        assert len(output.errors) == 0
+        assert [record.record.data["id"] for record in output.records] == [1001]
+        new_state = output.most_recent_state.stream_state.__dict__
+        # The parent cursor moves on to the re-read ticket, which is newer than the migrated value.
+        assert new_state["parent_state"]["tickets"] == {"updated_at": str(previous - 1800)}

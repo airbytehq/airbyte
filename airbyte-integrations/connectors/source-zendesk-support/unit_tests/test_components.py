@@ -3,6 +3,7 @@
 from datetime import datetime
 from unittest.mock import MagicMock
 
+import freezegun
 import pytest
 import requests
 
@@ -159,4 +160,48 @@ def test_tickets_state_migration_should_migrate(stream_state, expected, componen
 )
 def test_tickets_state_migration_migrate(stream_state, expected, components_module):
     migration = components_module.TicketsStateMigration()
+    assert migration.migrate(stream_state) == expected
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        # The flat export cursor of 5.x.
+        ({"time": "1780000000"}, True),
+        ({"time": 1780000000}, True),
+        ({"time": "2026-05-28T00:00:00Z"}, True),
+        ({}, False),
+        (None, False),
+        # Already on the 6.0.0 shape, in either of the forms the CDK accepts.
+        ({"_ab_updated_at": "1780000000", "parent_state": {"tickets": {"updated_at": "1780000000"}}}, False),
+        ({"use_global_cursor": True, "state": {"_ab_updated_at": "1780000000"}, "parent_state": {}}, False),
+        ({"time": "1780000000", "parent_state": {"tickets": {"updated_at": "1780000000"}}}, False),
+    ],
+)
+def test_ticket_metric_events_state_migration_should_migrate(stream_state, expected, components_module):
+    migration = components_module.TicketMetricEventsStateMigration()
+    assert migration.should_migrate(stream_state) is expected
+
+
+@freezegun.freeze_time("2026-06-01T00:00:00Z")
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        # Rewound by one hour and used for both the global cursor and the parent `tickets` cursor.
+        ({"time": "1780000000"}, {"_ab_updated_at": "1779996400", "parent_state": {"tickets": {"updated_at": "1779996400"}}}),
+        ({"time": 1780000000}, {"_ab_updated_at": "1779996400", "parent_state": {"tickets": {"updated_at": "1779996400"}}}),
+        # An ISO-8601 value, as older versions wrote it, is parsed first.
+        ({"time": "2026-05-28T00:00:00Z"}, {"_ab_updated_at": "1779922800", "parent_state": {"tickets": {"updated_at": "1779922800"}}}),
+        # The export dated SLA `breach` events with the future breach moment: a value past the migration
+        # time (2026-06-01T00:00:00Z = 1780272000) is clamped to it before the rewind.
+        ({"time": "1790000000"}, {"_ab_updated_at": "1780268400", "parent_state": {"tickets": {"updated_at": "1780268400"}}}),
+        # Never rewinds below the epoch.
+        ({"time": "100"}, {"_ab_updated_at": "0", "parent_state": {"tickets": {"updated_at": "0"}}}),
+        # An unparsable cursor drops the state so the next sync starts from `start_date`.
+        ({"time": "not-a-timestamp"}, {}),
+        ({"time": None}, {}),
+    ],
+)
+def test_ticket_metric_events_state_migration_migrate(stream_state, expected, components_module):
+    migration = components_module.TicketMetricEventsStateMigration()
     assert migration.migrate(stream_state) == expected

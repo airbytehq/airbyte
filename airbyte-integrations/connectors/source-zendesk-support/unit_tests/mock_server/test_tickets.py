@@ -29,7 +29,7 @@ _A_CURSOR = "MTU3NjYxMzUzOS4wfHw0Njd8"
 
 def _next_page_url(after_cursor: str) -> str:
     """`links.next` as Zendesk builds it: the original query plus `page[after]`."""
-    return f"https://d3v-airbyte.zendesk.com/api/v2/tickets?page%5Bafter%5D={after_cursor}&page%5Bsize%5D=100&sort=-updated_at"
+    return f"https://d3v-airbyte.zendesk.com/api/v2/tickets?page%5Bafter%5D={after_cursor}&page%5Bsize%5D=100&sort=-updated_at&support_type_scope=all"
 
 
 def _tickets_config():

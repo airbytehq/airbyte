@@ -1084,10 +1084,11 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
-  # Cursor for the per-ticket substreams that carry a record cursor of their own
-  # (`ticket_metric_events`, `ticket_events`, `ticket_comments`): the parent `tickets` walk is
-  # bounded by `parent_state`, and this cursor tracks the newest record seen. One global value is
-  # kept instead of one entry per ticket.
+  # Cursor for the per-ticket substreams that carry a record cursor of their own (`ticket_events`,
+  # `ticket_comments`, both on the audit's `created_at`): the parent `tickets` walk is bounded by
+  # `parent_state`, and this cursor tracks the newest record seen. One global value is kept instead
+  # of one entry per ticket. Only usable with a record cursor that never lies in the future: a value
+  # past the clock leaves the next sync with an empty slice (see `ticket_metric_events_stream`).
   per_ticket_incremental_sync:
     $ref: "#/definitions/sorted_list_incremental_sync"
     global_substream_cursor: true
@@ -1240,12 +1241,14 @@ definitions:
   # `ticket_metric_events` reads `GET /tickets/{ticket_id}/metric_events` for every ticket the
   # `tickets` stream returns (`incremental_dependency`), replacing the Incremental Ticket Metric
   # Event Export. The response is an object keyed by metric name whose values are the event lists,
-  # hence the `["*", "*"]` extractor; it is not paginated. A metric event is written when its
-  # ticket changes, so a changed ticket surfaces its new events; the whole history of the ticket is
-  # read each time and the record filter drops the events older than the slice start. Events the
-  # export returned with `ticket_id: null` are unreachable this way. The cursor stays `time` with
-  # unix-timestamp state (plus a global substream cursor and the parent state), and a 5.x state is a
-  # single value the CDK uses to seed the parent `tickets` cursor, so no migration is needed.
+  # hence the `["*", "*"]` extractor; it is not paginated. A changed ticket re-emits its whole
+  # metric event history (`id` deduplicates). The cursor is `_ab_updated_at`, the parent ticket's
+  # `generated_timestamp`, as on `ticket_audits_per_ticket`; the event `time` is not usable as a
+  # cursor because Zendesk writes SLA `breach` events ahead of time with the future breach moment,
+  # and a cursor past the clock leaves the next syncs with an empty slice while the parent state
+  # moves on (see AGENTS.md §4). `TicketMetricEventsStateMigration` turns the 5.x `{"time": ...}`
+  # state into the parent cursor. Events the export returned with `ticket_id: null` are unreachable
+  # this way.
   ticket_metric_events_stream:
     type: DeclarativeStream
     name: "ticket_metric_events"
@@ -1255,7 +1258,17 @@ definitions:
       schema:
         $ref: "#/schemas/ticket_metric_events"
     incremental_sync:
-      $ref: "#/definitions/per_ticket_incremental_sync"
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      cursor_field: "_ab_updated_at"
+      start_datetime:
+        datetime: "0" # the parent `tickets` stream applies `start_date`; this cursor only tracks state
+      global_substream_cursor: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TicketMetricEventsStateMigration
     retriever:
       type: SimpleRetriever
       requester:
@@ -1283,8 +1296,6 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["*", "*"]
-        record_filter:
-          condition: "{{ (timestamp(record['time']) | int) >= (stream_interval.get('start_time', 0) | int) }}"
         schema_normalization: Default
       partition_router:
         type: SubstreamPartitionRouter
@@ -1292,12 +1303,21 @@ definitions:
           - type: ParentStreamConfig
             parent_key: "id"
             partition_field: "ticket_id"
+            extra_fields:
+              - ["generated_timestamp"]
             stream:
               $ref: "#/definitions/tickets_stream"
             incremental_dependency: true
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - "_ab_updated_at"
+            value: "{{ stream_slice.extra_fields['generated_timestamp'] }}"
+            value_type: "integer"
     $parameters:
       name: "ticket_metric_events"
-      cursor_field: "time"
+      cursor_field: "_ab_updated_at"
 
   # `ticket_events` reads every audit of the tickets the `tickets` stream returns, replacing the
   # Incremental Ticket Event Export, and maps each audit onto the export's record shape:
@@ -1404,6 +1424,9 @@ definitions:
         $ref: "#/definitions/retriever/requester"
         request_parameters:
           sort: "-updated_at"
+          # The list defaults to tickets handled by agents (`support_type_scope=agent`); `all` adds
+          # the tickets handled by Zendesk AI agents, which the export returned as well.
+          support_type_scope: "all"
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TicketsStateMigration
@@ -5279,6 +5302,13 @@ schemas:
         type:
           - "null"
           - boolean
+      _ab_updated_at:
+        description:
+          Cursor field managed by Airbyte. The `generated_timestamp` of the parent ticket when its
+          metric events were read.
+        type:
+          - "null"
+          - integer
   ticket_events:
     $schema: https://json-schema.org/draft-07/schema#
     type:

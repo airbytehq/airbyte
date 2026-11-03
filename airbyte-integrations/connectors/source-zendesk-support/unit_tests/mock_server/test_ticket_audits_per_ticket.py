@@ -345,5 +345,8 @@ class TestTicketAuditsPerTicketApiBudget(TestCase):
         assert budget.get_matching_policy(self._request("/api/v2/tickets/123/audits.json?page%5Bsize%5D=100")) is None
         assert budget.get_matching_policy(self._request("/api/v2/tickets/123/metrics")) is None
         # The parent walk goes through the ticket list policy, whichever spelling `links.next` uses.
-        assert budget.get_matching_policy(self._request("/api/v2/tickets?sort=-updated_at&page%5Bsize%5D=100")) is not None
+        assert (
+            budget.get_matching_policy(self._request("/api/v2/tickets?sort=-updated_at&support_type_scope=all&page%5Bsize%5D=100"))
+            is not None
+        )
         assert budget.get_matching_policy(self._request("/api/v2/tickets.json?page%5Bafter%5D=abc&page%5Bsize%5D=100")) is not None

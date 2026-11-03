@@ -201,12 +201,21 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def tickets_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the first page of the ticket list (`/tickets?sort=-updated_at&page[size]=100`).
+        """Create a request builder for the first page of the ticket list
+        (`/tickets?sort=-updated_at&support_type_scope=all&page[size]=100`).
 
         The `tickets` stream reads the list newest-first and stops paginating client-side, so the request
         carries no `start_time`; use `with_after_cursor` for the pages that follow `links.next`.
+        `support_type_scope=all` adds the tickets handled by Zendesk AI agents, which the list leaves out
+        by default.
         """
-        return cls(cls.DEFAULT_SUBDOMAIN, "tickets").with_authenticator(authenticator).with_sort("-updated_at").with_page_size(100)
+        return (
+            cls(cls.DEFAULT_SUBDOMAIN, "tickets")
+            .with_authenticator(authenticator)
+            .with_sort("-updated_at")
+            .with_query_param("support_type_scope", "all")
+            .with_page_size(100)
+        )
 
     @classmethod
     def tickets_search_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
