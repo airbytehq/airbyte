@@ -460,6 +460,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.1.1 | 2023-08-29 | [29904](https://github.com/airbytehq/airbyte/pull/29904) | Make `Organizations` stream incremental |
 | 1.1.0 | 2023-08-28 | [29891](https://github.com/airbytehq/airbyte/pull/29891) | Add stream `UserFields` |
 | 1.0.0 | 2023-07-27 | [28774](https://github.com/airbytehq/airbyte/pull/28774) | Fix retry logic & update cursor for `Tickets` stream |
+| 0.12.0 | 2023-08-22 | [29697](https://github.com/airbytehq/airbyte/pull/29697) | Add `manage_team_members` field to the `Custom Roles` stream |
 | 0.11.0 | 2023-08-10 | [27208](https://github.com/airbytehq/airbyte/pull/27208) | Add stream `Topics` |
 | 0.10.7 | 2023-08-09 | [29256](https://github.com/airbytehq/airbyte/pull/29256) | Update tooltip descriptions in spec |
 | 0.10.6 | 2023-08-04 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes |

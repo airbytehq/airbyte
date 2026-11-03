@@ -4,7 +4,7 @@ products: cloud
 
 # Advanced Airbyte MCP configuration
 
-The hosted [Airbyte MCP](readme.md) works without any extra configuration. These optional request headers let you narrow which tools your agent can see and use, or set a default workspace. They apply to the hosted server at `https://mcp.airbyte.com/mcp`.
+The hosted [Airbyte MCP](readme.md) works without any extra configuration. These optional request headers let you narrow which tools your agent can see and use, or set a default workspace. They apply to the hosted server at `https://mcp.airbyte.com/mcp`. If your client can't send custom headers, like Claude, you can turn on read-only mode with a [URL parameter](#url-parameters) instead.
 
 Your MCP client still controls tool approval. Most clients can require your approval before tools that change data, using each tool's read-only, destructive, and open-world annotations.
 
@@ -27,6 +27,18 @@ Add headers to your client's MCP configuration. Configuration syntax can vary by
 ```
 
 Headers can only hide tools and customize tool behaviors. They can't give your agent permissions your Airbyte role doesn't have.
+
+## URL parameters
+
+Some clients, like Claude, can't send custom headers. To use read-only mode with these clients, add the `read-only` parameter to the server URL:
+
+```text
+https://mcp.airbyte.com/mcp?read-only=true
+```
+
+- `read-only` works like the `X-MCP-Readonly-Mode` header and accepts `true`, `false`, `1`, or `0`, in any case. If you set both, the header takes precedence.
+- The Airbyte MCP rejects the request with an error if the value isn't one of these, or if the name is a common misspelling, like `readonly` or `read_only`. An empty value, like `?read-only=`, is ignored and leaves read-only mode off.
+- The Airbyte MCP ignores other URL parameters. All other settings on this page are only available as headers.
 
 ## Tool restrictions
 
