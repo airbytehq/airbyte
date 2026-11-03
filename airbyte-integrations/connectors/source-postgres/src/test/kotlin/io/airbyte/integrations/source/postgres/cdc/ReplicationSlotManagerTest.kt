@@ -10,7 +10,6 @@ import io.airbyte.cdk.output.DefaultExceptionClassifier
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
 import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
-import io.airbyte.integrations.source.postgres.config.InvalidCdcCursorPositionBehavior
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.debezium.connector.postgresql.connection.Lsn
 import io.mockk.every
@@ -41,7 +40,7 @@ class ReplicationSlotManagerTest {
             thrown,
             displayMessage = "Postgres CDC replication slot is missing.",
             internalMessage =
-                "No pgoutput replication slot matched configured replication slot 'configured_slot' in database 'postgres'."
+                "No pgoutput replication slot matched configured replication slot 'configured_slot' in database 'postgres'.",
         )
     }
 
@@ -58,7 +57,7 @@ class ReplicationSlotManagerTest {
             thrown,
             displayMessage = "Postgres CDC replication slot is not unique.",
             internalMessage =
-                "Multiple pgoutput replication slots matched configured replication slot 'configured_slot' in database 'postgres'."
+                "Multiple pgoutput replication slots matched configured replication slot 'configured_slot' in database 'postgres'.",
         )
     }
 
@@ -72,7 +71,7 @@ class ReplicationSlotManagerTest {
         assertEquals(displayMessage, configError.message)
         assertEquals(
             ConfigError(displayMessage),
-            DefaultExceptionClassifier(orderValue = 1).classify(thrown)
+            DefaultExceptionClassifier(orderValue = 1).classify(thrown),
         )
     }
 
@@ -106,7 +105,6 @@ class ReplicationSlotManagerTest {
         val cdcConfig =
             CdcIncrementalConfiguration(
                 initialLoadTimeout = Duration.ofHours(8),
-                invalidCdcCursorPositionBehavior = InvalidCdcCursorPositionBehavior.FAIL_SYNC,
                 shutdownTimeout = Duration.ofSeconds(60),
                 replicationSlot = "configured_slot",
                 publication = "configured_publication",
