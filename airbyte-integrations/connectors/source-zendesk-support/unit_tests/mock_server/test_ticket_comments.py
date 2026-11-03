@@ -70,18 +70,18 @@ def _audit(audit_id: int, ticket_id: int, created_at: str, events: List[Dict[str
     )
 
 
-def _audits_request(ticket_id: int, after_cursor: Optional[str] = None):
-    request = ZendeskSupportRequestBuilder.ticket_comments_endpoint(_AUTHENTICATOR, ticket_id).with_page_size(100)
+def _audits_request(ticket_id: int, after_cursor: Optional[str] = None, page_size: int = 100):
+    request = ZendeskSupportRequestBuilder.ticket_comments_endpoint(_AUTHENTICATOR, ticket_id).with_page_size(page_size)
     if after_cursor:
         request = request.with_after_cursor(after_cursor)
     return request.build()
 
 
-def _given_audits(http_mocker: HttpMocker, ticket_id: int, audits: List[TicketAuditsRecordBuilder]) -> None:
+def _given_audits(http_mocker: HttpMocker, ticket_id: int, audits: List[TicketAuditsRecordBuilder], page_size: int = 100) -> None:
     response = TicketAuditsPerTicketResponseBuilder.ticket_audits_per_ticket_response()
     for audit in audits:
         response = response.with_record(audit)
-    http_mocker.get(_audits_request(ticket_id), response.build())
+    http_mocker.get(_audits_request(ticket_id, page_size=page_size), response.build())
 
 
 def _given_tickets(http_mocker: HttpMocker, tickets: List[Tuple[int, int]]) -> None:
@@ -126,6 +126,28 @@ class TestTicketCommentsStreamFullRefresh(TestCase):
         assert comment["type"] == "Comment"
         assert comment["body"] == "Hello"
         assert comment["public"] is True
+
+    @HttpMocker()
+    def test_given_page_size_in_config_when_read_then_request_audits_with_that_page_size(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, [(101, start_time + 10)])
+        _given_audits(http_mocker, 101, [_audit(1001, 101, _at(_START_DATE, days=1), [_comment(12, 1001)])], page_size=25)
+
+        output = read_stream(_STREAM_NAME, SyncMode.full_refresh, {**_config(), "page_size": 25})
+
+        assert len(output.errors) == 0
+        assert [record.record.data["id"] for record in output.records] == [12]
+
+    @HttpMocker()
+    def test_given_page_size_above_the_endpoint_maximum_when_read_then_clamp_it_to_100(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, [(101, start_time + 10)])
+        _given_audits(http_mocker, 101, [_audit(1001, 101, _at(_START_DATE, days=1), [_comment(12, 1001)])], page_size=100)
+
+        output = read_stream(_STREAM_NAME, SyncMode.full_refresh, {**_config(), "page_size": 500})
+
+        assert len(output.errors) == 0
+        assert [record.record.data["id"] for record in output.records] == [12]
 
     @HttpMocker()
     def test_given_has_more_when_read_then_follow_links_next_until_has_more_is_false(self, http_mocker: HttpMocker) -> None:

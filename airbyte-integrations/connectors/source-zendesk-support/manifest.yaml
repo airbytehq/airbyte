@@ -1018,6 +1018,13 @@ definitions:
         record_filter:
           condition: "{{ (timestamp(record['created_at']) | int) >= (stream_interval.get('start_time', 0) | int) }}"
         schema_normalization: Default
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+        pagination_strategy:
+          $ref: "#/definitions/links_next_paginator/pagination_strategy"
+          # `Page Size (ticket_comments)` applied to the per-ticket audit pages. The audits endpoint
+          # accepts at most 100 per page, so larger configured values are clamped.
+          page_size: "{{ [config.get('page_size', 100), 100] | min }}"
     $parameters:
       name: "ticket_comments"
       cursor_field: "created_at"
@@ -1914,8 +1921,9 @@ spec:
           - 250
           - 500
         description: >-
-          The number of records per page for the ticket_comments stream API requests.
-          Lower values may help prevent timeouts on large datasets. The maximum value is 1000.
+          The number of audits per page when the ticket_comments stream reads a ticket's audits.
+          Lower values may help prevent timeouts on tickets with many audits. Zendesk accepts at
+          most 100 per page, so larger values are clamped to 100.
         order: 4
       ticket_search_lookback_days:
         type: integer
