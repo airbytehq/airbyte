@@ -6,7 +6,7 @@ Manifest-only connector (`manifest.yaml` only; no `components.py`). Base image `
 
 ## Authentication
 
-`credentials` oneOf: `oauth2.0` ("Authenticate via Google (OAuth)" — Cloud OAuth button via `advanced_auth`, Airbyte's app, scopes `https://www.googleapis.com/auth/calendar.readonly` and `https://www.googleapis.com/auth/calendar.acls.readonly`, `extract_output: [refresh_token]`) or `manual` ("Authenticate with custom app (client ID / secret)" — the customer's own Google Cloud OAuth app). `config_normalization_rules` migrates legacy flat `client_id`/`client_secret`/`client_refresh_token_2` configs into `credentials` as `auth_type: manual` at runtime — deliberately not `oauth2.0`, so a Cloud re-authentication can't silently replace a customer-app refresh token with one from Airbyte's app.
+`credentials` oneOf: `oauth2.0` ("Authenticate via Google (OAuth)" — Cloud OAuth button via `advanced_auth`, Airbyte's app, scopes `calendar.calendarlist.readonly`, `calendar.calendars.readonly`, `calendar.events.readonly`, `calendar.settings.readonly`, `calendar.freebusy`, and `calendar.acls.readonly`, `extract_output: [refresh_token]`) or `manual` ("Authenticate with custom app (client ID / secret)" — the customer's own Google Cloud OAuth app). Custom-app tokens may use legacy `calendar.readonly` instead of the five non-ACL scopes; `calendar.acls.readonly` is needed only for `acl`. `config_normalization_rules` migrates legacy flat `client_id`/`client_secret`/`client_refresh_token_2` configs into `credentials` as `auth_type: manual` at runtime — deliberately not `oauth2.0`, so a Cloud re-authentication can't silently replace a customer-app refresh token with one from Airbyte's app.
 
 ## Per-stream reference
 

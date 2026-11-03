@@ -640,7 +640,7 @@ spec:
               refresh_token:
                 type: string
                 title: Refresh Token
-                description: Refresh token obtained from your own Google Cloud OAuth app with the calendar.readonly scope.
+                description: Use a token with calendar.readonly or all five narrow read-only scopes; syncing acl also requires calendar.acls.readonly.
                 airbyte_secret: true
       calendarid:
         type: string
@@ -672,7 +672,11 @@ spec:
     oauth_config_specification:
       oauth_connector_input_specification:
         scopes:
-          - scope: "https://www.googleapis.com/auth/calendar.readonly"
+          - scope: "https://www.googleapis.com/auth/calendar.calendarlist.readonly"
+          - scope: "https://www.googleapis.com/auth/calendar.calendars.readonly"
+          - scope: "https://www.googleapis.com/auth/calendar.events.readonly"
+          - scope: "https://www.googleapis.com/auth/calendar.settings.readonly"
+          - scope: "https://www.googleapis.com/auth/calendar.freebusy"
           - scope: "https://www.googleapis.com/auth/calendar.acls.readonly"
         consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
         access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
