@@ -66,7 +66,7 @@ The list endpoints return less than the export endpoints did. The following reco
   Labels not listed here map to the `via.channel` value the Ticket Audits API returns for the same audit.
 
 - `child_events` holds the audit's `events` array in the shape of the [Ticket Audits API](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#audit-events): each child event has a `type` (for example `Create`, `Change`, `Comment`) and a `field_name` with a `value`, where the export used `event_type` and one key per changed field. The child event types also follow the Ticket Audits API: `VoiceApiComment` becomes `VoiceComment`, and audits include `Notification`, `AgentMacroReference`, `ChatStartedEvent`, `ChatEndedEvent` and `AssociateAttValsEvent` child events that the export left out.
-- `updater_id` holds the audit's `author_id`, which is `-1` for changes Zendesk made itself (for example notifications sent by triggers). The export attributed some of these audits to the user whose action triggered them.
+- `updater_id` holds the audit's `author_id`: the agent or API user who made the change, or `-1` for changes Zendesk made itself (for example an audit a voice or chat integration created). The export sometimes gave the ticket requester instead, notably on the creation, comment and notification events of tickets created through the API, which 6.0.0 attributes to the agent whose credentials made the call.
 
 `ticket_comments` records keep their shape, including `via_reference_id`, which stays null as before.
 
@@ -76,7 +76,7 @@ The list endpoints return less than the export endpoints did. The following reco
 
 The list-based streams save no state until their read completes: the lists are walked newest first, so a cursor can only be saved once the walk reaches the previous cursor. A sync that fails part-way through a stream restarts that stream from the previous state on the next attempt, whereas the export streams saved state after every page. On a large account, run the first sync when it can complete without interruption, and set a `start_date` that bounds it.
 
-The `tickets` stream itself reads 100 tickets per request at up to 100 requests per minute. A new connection, or a cleared `tickets` stream, on a large account reads its whole history at that pace before incremental syncs become short again.
+The `tickets` stream itself reads 100 tickets per request at up to 100 requests per minute, and that budget is shared by every walk of the ticket list in the same sync: the `tickets` stream and each selected per-ticket stream walks the list separately. A new connection, or a cleared `tickets` stream, on a large account reads its whole history at that pace before incremental syncs become short again.
 
 ### Migration steps
 
