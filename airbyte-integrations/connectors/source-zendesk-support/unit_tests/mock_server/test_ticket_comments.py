@@ -257,3 +257,45 @@ class TestTicketCommentsStreamIncremental(TestCase):
         new_state = output.most_recent_state.stream_state.__dict__
         assert new_state["state"] == {"created_at": str(latest)}
         assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}
+
+    @HttpMocker()
+    def test_given_6_0_state_when_read_then_only_changed_tickets_are_visited_and_comments_within_the_lookback_are_re_emitted(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """A second sync from a 6.0.0 global state: the parent walk resumes from `parent_state` (one hour of lookback),
+        unchanged tickets are not visited, and the visited ticket re-emits only the comments newer than the global
+        cursor minus the lookback window."""
+        previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
+        latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "use_global_cursor": True,
+                    "state": {"created_at": str(previous)},
+                    "lookback_window": 0,
+                    "parent_state": {"tickets": {"updated_at": str(previous)}},
+                },
+            )
+            .build()
+        )
+        # 102 is older than the parent cursor minus one hour, so the walk stops before visiting it.
+        _given_tickets(http_mocker, [(101, latest), (102, previous - 7200)])
+        _given_audits(
+            http_mocker,
+            101,
+            [
+                _audit(1001, 101, _at(_START_DATE, days=1), [_comment(11, 1001)]),
+                _audit(1002, 101, datetime_to_string(_NOW.subtract(timedelta(days=3, minutes=30))), [_comment(21, 1002)]),
+                _audit(1003, 101, datetime_to_string(_NOW.subtract(timedelta(days=1))), [_comment(31, 1003)]),
+            ],
+        )
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
+
+        assert len(output.errors) == 0
+        assert sorted(record.record.data["id"] for record in output.records) == [21, 31]
+        new_state = output.most_recent_state.stream_state.__dict__
+        assert new_state["state"] == {"created_at": str(latest)}
+        assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}

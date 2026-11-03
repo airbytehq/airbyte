@@ -1146,8 +1146,10 @@ definitions:
   # `ticket_audits_per_ticket` stream. Always discovered, but not in `suggestedStreams`, so users opt
   # in by selecting it in the connection's catalog. `ticket_audits` reads the account-wide
   # GET /ticket_audits list, which Zendesk documents as excluding archived tickets; this stream
-  # reads GET /tickets/{ticket_id}/audits.json for every ticket the `tickets` stream returns, and
-  # that endpoint does return audits for archived tickets. The cost is one request per created or
+  # reads GET /tickets/{ticket_id}/audits.json for every ticket the `tickets` stream returns. That
+  # endpoint serves archived tickets too, but since 6.0.0 the ticket list never returns an archived
+  # ticket (5.7.0's Incremental Ticket Export did), so the stream reaches the same tickets as
+  # `ticket_audits` and differs in cost and cursor. The cost is one request per created or
   # updated ticket against the account-wide plan limit. Like the per-ticket `ticket_metrics` calls,
   # the endpoint has no `api_budget` policy: it runs at the connector's concurrency and relies on
   # 429 + Retry-After backoff. Each changed ticket re-emits all of its audits; `id` deduplicates
@@ -5367,6 +5369,12 @@ schemas:
             - "null"
             - object
           additionalProperties: true
+      metadata:
+        description: Audit metadata from the Ticket Audits API (system information and custom metadata of the audit)
+        type:
+          - "null"
+          - object
+        additionalProperties: true
       event_type:
         description: The type of the ticket event
         type:
