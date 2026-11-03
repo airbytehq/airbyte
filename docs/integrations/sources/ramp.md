@@ -191,7 +191,8 @@ The connector reports these Ramp errors as configuration errors, so Airbyte does
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 1.2.0 | 2026-10-27 | [88128](https://github.com/airbytehq/airbyte/pull/88128) | Add OAuth authentication; existing client-credentials configs are migrated automatically |
+| 1.2.0 | 2026-11-03 | [88128](https://github.com/airbytehq/airbyte/pull/88128) | Add OAuth authentication; existing client-credentials configs are migrated automatically |
+| 1.1.3 | 2026-11-03 | [90728](https://github.com/airbytehq/airbyte/pull/90728) | Update dependencies |
 | 1.1.2 | 2026-10-27 | [90047](https://github.com/airbytehq/airbyte/pull/90047) | Update dependencies |
 | 1.1.1 | 2026-10-20 | [89387](https://github.com/airbytehq/airbyte/pull/89387) | Update dependencies |
 | 1.1.0 | 2026-10-15 | [88938](https://github.com/airbytehq/airbyte/pull/88938) | Make `vendors` incremental on `updated_at`, declare the `vendors.updated_at` field, show a readable Start Date format hint, and hide the generic Airbyte setup steps from the in-app guide |
