@@ -27,7 +27,7 @@ private fun replicationSlotConfigError(
 @Singleton
 class ReplicationSlotManager(
     val config: PostgresSourceConfiguration,
-    val connectionFactory: PostgresSourceJdbcConnectionFactory
+    val connectionFactory: PostgresSourceJdbcConnectionFactory,
 ) {
 
     private val log = KotlinLogging.logger {}
@@ -100,14 +100,14 @@ class ReplicationSlotManager(
             throw ConfigErrorException(
                 "Replication slot '$slot' is not valid: " +
                     "wal_status = '${slotInfo.walStatus}', " +
-                    "invalidation_reason = '${slotInfo.invalidationReason}'."
+                    "invalidation_reason = '${slotInfo.invalidationReason}'.",
             )
         }
         if (slotInfo.confirmedFlushLsn != null) {
             if (slotInfo.confirmedFlushLsn > lsn) {
                 throw ConfigErrorException(
                     "Replication slot '$slot' has advanced beyond the source's state LSN. " +
-                        "Confirmed flush LSN: ${slotInfo.confirmedFlushLsn}, source LSN: $lsn."
+                        "Confirmed flush LSN: ${slotInfo.confirmedFlushLsn}, source LSN: $lsn.",
                 )
             }
             log.info {
@@ -119,7 +119,7 @@ class ReplicationSlotManager(
             if (slotInfo.restartLsn > lsn) {
                 throw ConfigErrorException(
                     "Replication slot '$slot' has advanced beyond the source's state LSN. " +
-                        "Restart LSN: ${slotInfo.restartLsn}, source LSN: $lsn."
+                        "Restart LSN: ${slotInfo.restartLsn}, source LSN: $lsn.",
                 )
             }
             log.info {
@@ -149,7 +149,8 @@ class ReplicationSlotManager(
             SELECT *
             FROM pg_replication_slots
             WHERE plugin = 'pgoutput' AND slot_name = ? AND database = ?
-        """.trimIndent()
+            """
+                .trimIndent()
         val slot = cdcConfig.replicationSlot
         return querySingleValue(
             jdbcConnectionFactory = connectionFactory,
@@ -184,7 +185,7 @@ class ReplicationSlotManager(
                     displayMessage = MISSING_REPLICATION_SLOT_MESSAGE,
                     internalMessage =
                         "No pgoutput replication slot matched configured replication slot '$slot' " +
-                            "in database '${config.database}'."
+                            "in database '${config.database}'.",
                 )
             },
             multipleResultsCase = {
@@ -192,9 +193,9 @@ class ReplicationSlotManager(
                     displayMessage = MULTIPLE_REPLICATION_SLOTS_MESSAGE,
                     internalMessage =
                         "Multiple pgoutput replication slots matched configured replication slot '$slot' " +
-                            "in database '${config.database}'."
+                            "in database '${config.database}'.",
                 )
-            }
+            },
         )
     }
 }

@@ -63,10 +63,9 @@ abstract class FieldTypeMapperTest {
             DiscoverAndReadAll(IntegrationTestOperations(configSpec), allStreamNamesAndRecordData)
         val discoverAndReadAllTest: DynamicNode =
             DynamicTest.dynamicTest("discover-and-read-all", actual)
-        val testCases: List<DynamicNode> =
-            testCases.map {
-                DynamicContainer.dynamicContainer(it.testName, dynamicTests(actual, it.tableName))
-            }
+        val testCases: List<DynamicNode> = testCases.map {
+            DynamicContainer.dynamicContainer(it.testName, dynamicTests(actual, it.tableName))
+        }
         return listOf(discoverAndReadAllTest) + testCases
     }
 
@@ -104,20 +103,18 @@ abstract class FieldTypeMapperTest {
             Jsons.createArrayNode().apply { addAll(data.sortedBy { it.toString() }) }
 
         val actualRecords: List<AirbyteRecordMessage> = actualRead?.records() ?: listOf()
-        val actualRecordData: List<JsonNode> =
-            actualRecords.mapNotNull {
-                val data: ObjectNode = it.data as? ObjectNode ?: return@mapNotNull null
-                data.deepCopy().apply {
-                    for (fieldName in data.fieldNames()) {
-                        if (
-                            fieldName.uppercase() == "ID" ||
-                                fieldName.startsWith(MetaField.META_PREFIX)
-                        ) {
-                            remove(fieldName)
-                        }
+        val actualRecordData: List<JsonNode> = actualRecords.mapNotNull {
+            val data: ObjectNode = it.data as? ObjectNode ?: return@mapNotNull null
+            data.deepCopy().apply {
+                for (fieldName in data.fieldNames()) {
+                    if (
+                        fieldName.uppercase() == "ID" || fieldName.startsWith(MetaField.META_PREFIX)
+                    ) {
+                        remove(fieldName)
                     }
                 }
             }
+        }
         val actual = Jsons.writeValueAsString(sortedRecordData(actualRecordData))
         log.info { "test case $streamName: emitted records $actual" }
         val expected =
@@ -156,7 +153,7 @@ abstract class FieldTypeMapperTest {
         }
 
         private fun configuredCatalog(
-            streams: Map<String, AirbyteStream>
+            streams: Map<String, AirbyteStream>,
         ): ConfiguredAirbyteCatalog {
             val configuredStreams: List<ConfiguredAirbyteStream> =
                 allStreamNamesAndRecordData.keys
@@ -216,7 +213,7 @@ abstract class FieldTypeMapperTest {
                 .replace("[^a-zA-Z0-9]".toRegex(), " ")
                 .trim()
                 .replace(" +".toRegex(), "_")
-                .uppercase()
+                .uppercase(),
     ) {
         companion object {
             val testAssetResourceNamer = TestAssetResourceNamer()
@@ -237,7 +234,7 @@ abstract class FieldTypeMapperTest {
             get() {
                 return mapOf(
                     tableName.uppercase() to
-                        values.values.map { Jsons.readTree("""{"${columnName}":$it}""") }
+                        values.values.map { Jsons.readTree("""{"${columnName}":$it}""") },
                 )
             }
     }
@@ -381,13 +378,13 @@ object ExtendedSql {
     val xmlValues =
         mapOf(
             "null" to "null",
-            "'<root><node>value</node></root>'" to "\"<root><node>value</node></root>\""
+            "'<root><node>value</node></root>'" to "\"<root><node>value</node></root>\"",
         )
 
     val jsonValues =
         mapOf(
             "'{}'" to "\"{}\"",
             "'{\"k\": null}'" to "\"{\\\"k\\\": null}\"",
-            "'{\"k\": \"v\"}'" to "\"{\\\"k\\\": \\\"v\\\"}\""
+            "'{\"k\": \"v\"}'" to "\"{\\\"k\\\": \\\"v\\\"}\"",
         )
 }

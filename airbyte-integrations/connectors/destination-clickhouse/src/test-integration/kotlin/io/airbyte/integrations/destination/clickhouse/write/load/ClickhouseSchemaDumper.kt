@@ -26,15 +26,16 @@ class ClickhouseSchemaDumper(spec: ConfigurationSpecification) : SchemaDumper {
                     client
                         .query(
                             """
-                        SELECT engine_full FROM system.tables
-                        WHERE database = {database:String} AND name = {name:String}
-                        """.trimIndent(),
+                            SELECT engine_full FROM system.tables
+                            WHERE database = {database:String} AND name = {name:String}
+                            """
+                                .trimIndent(),
                             mapOf(
                                 "database" to tableName.namespace,
                                 "name" to tableName.name,
                             ),
                         )
-                        .await()
+                        .await(),
                 )
                 .use { reader ->
                     reader.next()

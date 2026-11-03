@@ -72,7 +72,10 @@ class ReadOperation(
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             rootReader.read { feedJobs: Collection<Job> ->
                 val rootJob = coroutineContext.job
-                launch(Job()) {
+                // Deliberately detached from the read's job tree (a fresh Job as parent, as
+                // launch(Job()) used to do before coroutines 1.11 deprecated that overload): the
+                // monitor must neither keep the read alive nor be able to cancel it.
+                CoroutineScope(coroutineContext + Job()).launch {
                     var previousJobTree = ""
                     while (feedJobs.any { it.isActive }) {
                         val currentJobTree: String = renderTree(rootJob)
@@ -101,14 +104,13 @@ class ReadOperation(
             var children: List<Job> = job.children.toList()
             // Collapse chains of jobs with identical names.
             while (children.any { label(it) == name }) {
-                children =
-                    children.flatMap {
-                        if (label(it) == name) {
-                            it.children.toList()
-                        } else {
-                            listOf(it)
-                        }
+                children = children.flatMap {
+                    if (label(it) == name) {
+                        it.children.toList()
+                    } else {
+                        listOf(it)
                     }
+                }
             }
             for (child in children) {
                 node.addChild(recursiveBuildTree(child))

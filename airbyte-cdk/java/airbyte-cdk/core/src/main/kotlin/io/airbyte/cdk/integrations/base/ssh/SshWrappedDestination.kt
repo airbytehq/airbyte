@@ -21,6 +21,7 @@ import java.util.*
 import java.util.function.Consumer
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Decorates a Destination with an SSH Tunnel using the standard configuration that Airbyte uses for
  * configuring SSH.
@@ -52,7 +53,7 @@ class SshWrappedDestination : Destination {
         val propNode = originalSpec.connectionSpecification["properties"] as ObjectNode
         propNode.set<JsonNode>(
             "tunnel_method",
-            Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json"))
+            Jsons.deserialize(MoreResources.readResource("ssh-tunnel-spec.json")),
         )
         return originalSpec
     }
@@ -78,7 +79,7 @@ class SshWrappedDestination : Destination {
     override fun getConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): AirbyteMessageConsumer? {
         val tunnel = getTunnelInstance(config)
 
@@ -95,7 +96,7 @@ class SshWrappedDestination : Destination {
         }
         return AirbyteMessageConsumer.Companion.appendOnClose(
             delegateConsumer,
-            VoidCallable { tunnel.close() }
+            VoidCallable { tunnel.close() },
         )
     }
 
@@ -103,7 +104,7 @@ class SshWrappedDestination : Destination {
     override fun getSerializedMessageConsumer(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        outputRecordCollector: Consumer<AirbyteMessage>
+        outputRecordCollector: Consumer<AirbyteMessage>,
     ): SerializedAirbyteMessageConsumer? {
         val clone = Jsons.clone(config)
         val connectionOptionsConfig: Optional<JsonNode> =
@@ -114,11 +115,11 @@ class SshWrappedDestination : Destination {
                 val connectionOptions = clone.putObject(SshTunnel.Companion.CONNECTION_OPTIONS_KEY)
                 connectionOptions.put(
                     SshTunnel.Companion.SESSION_HEARTBEAT_INTERVAL_KEY,
-                    SshTunnel.Companion.SESSION_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS
+                    SshTunnel.Companion.SESSION_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS,
                 )
                 connectionOptions.put(
                     SshTunnel.Companion.GLOBAL_HEARTBEAT_INTERVAL_KEY,
-                    SshTunnel.Companion.GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS
+                    SshTunnel.Companion.GLOBAL_HEARTBEAT_INTERVAL_DEFAULT_IN_MILLIS,
                 )
             }
         }
@@ -129,7 +130,7 @@ class SshWrappedDestination : Destination {
                 delegate.getSerializedMessageConsumer(
                     tunnel.configInTunnel,
                     catalog,
-                    outputRecordCollector
+                    outputRecordCollector,
                 )
         } catch (e: Exception) {
             LOGGER.error(e) {
@@ -140,7 +141,7 @@ class SshWrappedDestination : Destination {
         }
         return SerializedAirbyteMessageConsumer.Companion.appendOnClose(
             delegateConsumer,
-            VoidCallable { tunnel.close() }
+            VoidCallable { tunnel.close() },
         )
     }
 

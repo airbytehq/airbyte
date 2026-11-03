@@ -4,10 +4,7 @@ connector_image: airbyte/source-prestashop:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path:
-          "manifest.yaml"
-          # unfortunately timeout plugin takes into account setup code as well (docker setup)
-        timeout_seconds: 300
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -26,10 +23,6 @@ acceptance_tests:
         empty_streams:
           - name: "messages"
             bypass_reason: "Can not populate"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"

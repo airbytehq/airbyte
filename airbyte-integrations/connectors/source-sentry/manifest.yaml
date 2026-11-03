@@ -8,15 +8,19 @@ check:
     - project_detail
 
 definitions:
+  project_partition_router:
+    type: ListPartitionRouter
+    values: "{{ ([config['project']] if config['project'] is string else config['project']) | unique | list }}"
+    cursor_field: project
   streams:
     events:
       type: DeclarativeStream
       name: events
-      path: projects/{{ config['organization'] }}/{{ config['project'] }}/events/
+      path: projects/{{ config['organization'] }}/{{ stream_partition['project'] }}/events/
       retriever:
         type: SimpleRetriever
         name: events
-        path: projects/{{ config['organization'] }}/{{ config['project'] }}/events/
+        path: projects/{{ config['organization'] }}/{{ stream_partition['project'] }}/events/
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -31,13 +35,12 @@ definitions:
           $ref: "#/definitions/base_requester"
           name: events
           path: >-
-            projects/{{ config['organization'] }}/{{ config['project']
+            projects/{{ config['organization'] }}/{{ stream_partition['project']
             }}/events/
           http_method: GET
           primary_key: id
           cursor_field: dateCreated
-          request_parameters:
-            full: "true"
+          request_parameters: "{{ {'full': 'true'} if config.get('events_full_payload', true) else {} }}"
         primary_key: id
         cursor_field: dateCreated
         record_selector:
@@ -45,6 +48,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          $ref: "#/definitions/project_partition_router"
       primary_key:
         - id
       cursor_field: dateCreated
@@ -63,8 +68,8 @@ definitions:
           inject_into: request_parameter
         start_datetime:
           type: MinMaxDatetime
-          datetime: "1900-01-01T00:00:00.0Z"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+          datetime: "{{ config.get('start_date') or '1900-01-01T00:00:00Z' }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(now_utc(), '%Y-%m-%dT%H:%M:%S.%fZ') }}"
@@ -92,7 +97,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            projects/{{ config['organization'] }}/{{ config['project']
+            projects/{{ config['organization'] }}/{{ stream_partition['project']
             }}/issues/
           http_method: GET
           request_parameters:
@@ -105,6 +110,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          $ref: "#/definitions/project_partition_router"
       primary_key:
         - id
       schema_loader:
@@ -232,13 +239,15 @@ definitions:
             stop_condition: "{{ headers[\"link\"][\"next\"][\"results\"] == \"false\" }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: projects/{{ config['organization'] }}/{{ config['project'] }}/
+          path: projects/{{ config['organization'] }}/{{ stream_partition['project'] }}/
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          $ref: "#/definitions/project_partition_router"
       primary_key:
         - id
       schema_loader:
@@ -289,6 +298,14 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"auth_token\"] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [404]
+          error_message: "Sentry organization or project is missing or invalid. Check the organization and every slug in Projects."
+          failure_type: config_error
 
 streams:
   - $ref: "#/definitions/streams/events"
@@ -309,10 +326,17 @@ spec:
       - project
     properties:
       project:
-        type: string
-        description: The name (slug) of the Project you want to sync.
+        type: array
         order: 3
-        title: Project
+        title: Projects
+        minItems: 1
+        description: >-
+          One or more Sentry project slugs. Events, issues, and project detail
+          are synced for each slug.
+        items:
+          type: string
+          minLength: 1
+          pattern: ^.*\S.*$
       hostname:
         type: string
         description: >-
@@ -334,15 +358,39 @@ spec:
         airbyte_secret: true
       organization:
         type: string
+        minLength: 1
+        pattern: ^.*\S.*$
         description: The slug of the organization the groups belong to.
         order: 2
         title: Organization
+      start_date:
+        type: string
+        title: Events start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2026-01-01T00:00:00Z"
+        order: 4
+        description: >-
+          The earliest date to sync events from, in UTC. Only the first sync of
+          the events stream uses it; later syncs continue from where the
+          previous sync stopped. Other streams always sync their full history.
+          Leave it empty to sync every event Sentry still has.
       discover_fields:
         type: array
         description: Fields to retrieve when fetching discover events
         item: string
-        order: 4
+        order: 5
         title: Discover Event Fields
+      events_full_payload:
+        type: boolean
+        order: 6
+        title: Events full payload
+        default: true
+        description: >-
+          When enabled, the events stream requests full event bodies (stack
+          traces, entries). Sentry caps these pages at 10 events; disable to sync
+          summary events only.
       num_workers:
         type: integer
         title: Number of concurrent workers
@@ -353,8 +401,22 @@ spec:
         minimum: 1
         maximum: 20
         default: 5
-        order: 5
+        order: 7
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: >-
+          Starting from 1.1.0, `project` holds a list of project slugs. This
+          migration wraps an existing single slug in a list.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["project"]
+                value: "{{ [config['project']] }}"
+            condition: "{{ config.get('project') is string }}"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -1646,7 +1708,7 @@ schemas:
               - "null"
           sentry:replay_rage_click_issues:
             type:
-              - integer
+              - boolean
               - "null"
           quotas:spike-protection-disabled:
             type:

@@ -3,16 +3,18 @@
 #
 
 import json
+import logging
 
 import pytest
 import requests_mock as rmock
+from source_shopify.streams.base_streams import ShopifyStream
 from source_shopify.streams.streams import DiscountCodesSync
 
 from airbyte_cdk.utils import AirbyteTracedException
 
 
 def _graphql_url(shop: str = "test-shop") -> str:
-    return f"https://{shop}.myshopify.com/admin/api/2025-10/graphql.json"
+    return f"https://{shop}.myshopify.com/admin/api/{ShopifyStream.api_version}/graphql.json"
 
 
 _EXTENSIONS = {
@@ -367,6 +369,31 @@ def test_null_code_discount_skipped(auth_config, time_sleep_mock):
     assert records[0]["code"] == "VALID"
 
 
+def test_null_child_code_discount_node_skipped(auth_config, time_sleep_mock, caplog):
+    """codeDiscountNode=null on the child request (discount deleted mid-sync) should skip that parent with a warning."""
+    stream = DiscountCodesSync(auth_config)
+    url = _graphql_url()
+
+    deleted_parent = _make_parent_node(100)
+    valid_parent = _make_parent_node(200)
+    code_node = _make_code_node(300, "VALID")
+
+    with rmock.Mocker() as m:
+        m.post(
+            url,
+            [
+                {"json": _parent_response([deleted_parent, valid_parent])},
+                {"json": {"data": {"codeDiscountNode": None}, "extensions": _EXTENSIONS}},
+                {"json": _child_response([code_node])},
+            ],
+        )
+        with caplog.at_level(logging.WARNING, logger="airbyte"):
+            records = list(stream.read_records(sync_mode=None))
+
+    assert [(r["price_rule_id"], r["code"]) for r in records] == [(200, "VALID")]
+    assert "gid://shopify/DiscountCodeNode/100" in caplog.text
+
+
 def test_extract_codes_connection_fallback(auth_config, time_sleep_mock):
     """When the codeDiscount union fragment has no nested `codes` key,
     _extract_codes_connection should fall back to the top-level `codes` key
@@ -472,9 +499,10 @@ def test_graphql_errors_non_throttled_raises(auth_config, time_sleep_mock):
     [
         pytest.param("THROTTLED", id="THROTTLED"),
         pytest.param("MAX_COST_EXCEEDED", id="MAX_COST_EXCEEDED"),
+        pytest.param("INTERNAL_SERVER_ERROR", id="INTERNAL_SERVER_ERROR"),
     ],
 )
-def test_graphql_throttled_retries_then_succeeds(auth_config, time_sleep_mock, error_code):
+def test_graphql_retryable_errors_retry_then_succeed(auth_config, time_sleep_mock, error_code):
     stream = DiscountCodesSync(auth_config)
     url = _graphql_url()
 

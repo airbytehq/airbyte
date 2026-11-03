@@ -10,6 +10,9 @@ on:
     paths:
       - "airbyte-integrations/connectors/**"
 
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 permissions: {}
 
 concurrency:

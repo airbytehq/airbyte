@@ -22,7 +22,7 @@ class NoOpRawTableTDLock : Lock {
     override fun newCondition(): Condition {
         // Always throw exception to avoid callers from using this path
         throw UnsupportedOperationException(
-            "This lock implementation does not support retrieving a Condition"
+            "This lock implementation does not support retrieving a Condition",
         )
     }
 }

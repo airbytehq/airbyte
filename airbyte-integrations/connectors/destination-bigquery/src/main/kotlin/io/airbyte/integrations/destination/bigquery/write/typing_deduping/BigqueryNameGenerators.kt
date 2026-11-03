@@ -13,8 +13,8 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import jakarta.inject.Singleton
 import java.util.Locale
-import javax.inject.Singleton
 
 private val nameTransformer = BigQuerySQLNameTransformer()
 
@@ -27,7 +27,7 @@ class BigqueryRawTableNameGenerator(val config: BigqueryConfiguration) : RawTabl
                 TypingDedupingUtil.concatenateRawTableName(
                     streamDescriptor.namespace ?: config.datasetId,
                     streamDescriptor.name,
-                )
+                ),
             ),
         )
 }
