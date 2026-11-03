@@ -115,17 +115,19 @@ class BansRecordBuilder(ZendeskChatRecordBuilder):
 
 
 class ChatsRecordBuilder(ZendeskChatRecordBuilder):
+    """Builds one chat as returned in the `docs` map of `GET chats?ids=` (the read path since 2.0.0)."""
+
     @classmethod
     def chats_record(cls) -> "ChatsRecordBuilder":
-        record_template = cls.extract_record("chats", __file__, NestedPath(["chats", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("update_timestamp"))
+        record_template = cls.extract_record("chats", __file__, NestedPath(["docs", "2104.10414779.SVhDCJ9flq79a"]))
+        return cls(record_template, FieldPath("id"), FieldPath("timestamp"))
 
     def with_id(self, id: str) -> "ChatsRecordBuilder":
         self._record["id"] = id
         return self
 
-    def with_update_timestamp(self, timestamp: str) -> "ChatsRecordBuilder":
-        self._record["update_timestamp"] = timestamp
+    def with_timestamp(self, timestamp: str) -> "ChatsRecordBuilder":
+        self._record["timestamp"] = timestamp
         return self
 
 
@@ -251,16 +253,6 @@ class BansResponseBuilder(HttpResponseBuilder):
     @classmethod
     def bans_response(cls) -> "BansResponseBuilder":
         return cls(find_template("bans", __file__), FieldPath("ip_address"), SinceIdPaginationStrategy())
-
-
-class ChatsResponseBuilder(HttpResponseBuilder):
-    @classmethod
-    def chats_response(cls, next_page_url: Optional[str] = None) -> "ChatsResponseBuilder":
-        return cls(
-            find_template("chats", __file__),
-            NestedPath(["chats"]),
-            NextPagePaginationStrategy(next_page_url),
-        )
 
 
 class DepartmentsResponseBuilder(HttpResponseBuilder):

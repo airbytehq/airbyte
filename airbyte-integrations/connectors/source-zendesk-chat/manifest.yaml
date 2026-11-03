@@ -22,6 +22,32 @@ definitions:
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
+  # Zendesk stops serving the Incremental Exports API to third-party integrations between
+  # 2026-12-02 and 2027-01-19 and answers blocked requests with HTTP 403. Only streams that
+  # still read `incremental/` paths use this handler.
+  incremental_export_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [404]
+        action: IGNORE
+      - type: HttpResponseFilter
+        http_codes: [401]
+        action: FAIL
+        failure_type: config_error
+        error_message: "Zendesk Chat access token is invalid, expired, or missing the required read and chat scopes."
+      - type: HttpResponseFilter
+        http_codes: [403]
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Zendesk rejected the incremental export request for stream agent_timeline with HTTP 403.
+          Zendesk no longer serves incremental exports to third-party integrations such as Airbyte.
+          Request the 60-day partner extension in Zendesk Admin Center under
+          Apps and integrations > APIs > API configuration, or deselect the agent_timeline stream.
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
   streams:
     accounts:
       type: DeclarativeStream
@@ -120,7 +146,7 @@ definitions:
           request_parameters:
             fields: agent_timeline(*)
           error_handler:
-            $ref: "#/definitions/error_handler"
+            $ref: "#/definitions/incremental_export_error_handler"
         record_selector:
           type: RecordSelector
           description: Base records selector for Full Refresh streams
@@ -226,59 +252,136 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/bans"
+    chats_search:
+      type: DeclarativeStream
+      description: >-
+        Internal parent of the `chats` stream, not exposed in the catalog. Zendesk stops serving
+        the Incremental Exports API to third-party integrations between 2026-12-02 and 2027-01-19,
+        so chats are located with Search Chats in one-day windows of `update_timestamp` and then
+        fetched in full by id (see `chats`). Search results are sorted by `timestamp` and capped
+        at 10,000 results (250 pages of 40) per query:
+        https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#search-chats
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: chats/search
+          http_method: GET
+          request_parameters:
+            q: "update_timestamp:[{{ stream_interval['start_time'] }} TO {{ stream_interval['end_time'] }}]"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                predicate: "{{ response.get('count', 0) > 10000 }}"
+                action: FAIL
+                failure_type: system_error
+                error_message: >-
+                  Zendesk Chat search returned more than 10,000 chats for a one-day window of the
+                  chats stream, which exceeds the Search Chats result limit, so the window cannot be
+                  read completely.
+              - type: HttpResponseFilter
+                http_codes: [404]
+                action: IGNORE
+              - type: HttpResponseFilter
+                http_codes: [401]
+                action: FAIL
+                failure_type: config_error
+                error_message: "Zendesk Chat access token is invalid, expired, or missing the required read and chat scopes."
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next_url') | regex_search('[?&]page=([0-9]+)') }}"
+            stop_condition: "{{ not response.get('next_url') }}"
+      name: chats_search
+      primary_key:
+        - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: timestamp
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_granularity: PT1S
+        step: P1D
+        lookback_window: P1D
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/chats_search"
     chats:
       type: DeclarativeStream
       description: >-
-        Chats Stream:
-        https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-chat-export
+        Chats Stream. Chat ids come from the internal `chats_search` parent (Search Chats in
+        one-day windows of `update_timestamp`); full records are fetched 50 ids per request from
+        List Chats, which returns a `docs` map keyed by chat id:
+        https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#list-chats
       retriever:
         type: SimpleRetriever
-        description: Default Retriever for Full Refresh streams
-        ignore_stream_slicer_parameters_on_paginated_requests: true
         requester:
-          description: Default Base Requester for Full Refresh streams
           $ref: "#/definitions/base_requester"
-          path: incremental/chats
+          path: chats
           http_method: GET
           request_parameters:
-            fields: chats(*)
+            ids: "{{ stream_slice['chat_ids'] | join(',') }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
-          description: Base records selector for Full Refresh streams
           extractor:
             type: DpathExtractor
             field_path:
-              - chats
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: limit
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 1000
-            cursor_value: '{{ response.get("next_page", {}) }}'
-            stop_condition: '{{ response.get("count", 0) < 1000 }}'
+              - docs
+              - "*"
+        partition_router:
+          type: GroupingPartitionRouter
+          group_size: 50
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                stream: "#/definitions/streams/chats_search"
+                parent_key: id
+                partition_field: chat_ids
+                incremental_dependency: true
       name: chats
       primary_key:
         - id
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: update_timestamp
+        cursor_field: timestamp
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%dT%H:%M:%SZ"
-        datetime_format: "%s"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        global_substream_cursor: true
         start_datetime:
-          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
-        start_time_option:
-          field_name: start_time
-          inject_into: "request_parameter"
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.ChatsStateMigration
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -662,10 +765,10 @@ metadata:
         - incrementalSync
         - recordSelector
       chats:
-        - paginator
         - errorHandler
         - incrementalSync
         - recordSelector
+        - partitionRouter
       departments:
         - errorHandler
         - recordSelector
@@ -692,6 +795,32 @@ metadata:
   assist: {}
 
 schemas:
+  chats_search:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      timestamp:
+        type:
+          - "null"
+          - string
+        format: date-time
+      type:
+        type:
+          - "null"
+          - string
+      preview:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
   accounts:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1122,10 +1251,6 @@ schemas:
             type:
               - "null"
               - integer
-      deleted:
-        type:
-          - "null"
-          - boolean
       department_id:
         type:
           - "null"
@@ -1138,109 +1263,6 @@ schemas:
         type:
           - "null"
           - integer
-      engagements:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          additionalProperties: true
-          properties:
-            accepted:
-              type:
-                - "null"
-                - boolean
-            agent_full_name:
-              type:
-                - "null"
-                - string
-            agent_id:
-              type:
-                - "null"
-                - string
-            agent_name:
-              type:
-                - "null"
-                - string
-            assigned:
-              type:
-                - "null"
-                - boolean
-            comment:
-              type:
-                - "null"
-                - string
-            count:
-              type:
-                - "null"
-                - object
-              additionalProperties: true
-              properties:
-                agent:
-                  type:
-                    - "null"
-                    - integer
-                total:
-                  type:
-                    - "null"
-                    - integer
-                visitor:
-                  type:
-                    - "null"
-                    - integer
-            department_id:
-              type:
-                - "null"
-                - integer
-            duration:
-              type:
-                - "null"
-                - number
-            id:
-              type:
-                - "null"
-                - string
-            rating:
-              type:
-                - "null"
-                - string
-            response_time:
-              type:
-                - "null"
-                - object
-              additionalProperties: true
-              properties:
-                avg:
-                  type:
-                    - "null"
-                    - number
-                first:
-                  type:
-                    - "null"
-                    - integer
-                max:
-                  type:
-                    - "null"
-                    - integer
-            skills_fulfilled:
-              type:
-                - "null"
-                - boolean
-            skills_requested:
-              type:
-                - "null"
-                - array
-            started_by:
-              type:
-                - "null"
-                - string
-            timestamp:
-              type:
-                - "null"
-                - string
-              format: date-time
       history:
         type:
           - "null"
@@ -1477,11 +1499,6 @@ schemas:
         type:
           - "null"
           - boolean
-      update_timestamp:
-        type:
-          - "null"
-          - string
-        format: date-time
       visitor:
         type:
           - "null"

@@ -1,27 +1,20 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 from config_builder import ConfigBuilder
-from pagination_strategy import ZendeskChatPaginationStrategy
+from freezegun import freeze_time
 
 from airbyte_cdk import ConfiguredAirbyteCatalog, SyncMode, TState, YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-from airbyte_cdk.test.mock_http.response_builder import (
-    FieldPath,
-    HttpResponseBuilder,
-    RecordBuilder,
-    create_record_builder,
-    create_response_builder,
-    find_template,
-)
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -36,8 +29,19 @@ _SOURCE_FOLDER_PATH = _get_manifest_path()
 _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 _STREAM_NAME = "chats"
 _SUBDOMAIN = "a_subdomain"
-_START_DATETIME = datetime(2015, 10, 1, tzinfo=timezone.utc)
-_NEXT_PAGE_URL = f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&some_page_information=a_pagination_cursor_value"
+_BASE_URL = f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat"
+_SEARCH_URL = f"{_BASE_URL}/chats/search"
+_CHATS_URL = f"{_BASE_URL}/chats"
+
+# The parent search runs in one-day windows between the cursor (or `start_date`) and "now". Freezing "now" keeps
+# the set of windows, and therefore the set of requests to mock, deterministic.
+_NOW = "2021-01-03T12:00:00Z"
+_START_DATETIME = datetime(2021, 1, 1, tzinfo=timezone.utc)
+_WINDOWS = [
+    ("2021-01-01T00:00:00Z", "2021-01-01T23:59:59Z"),
+    ("2021-01-02T00:00:00Z", "2021-01-02T23:59:59Z"),
+    ("2021-01-03T00:00:00Z", _NOW),
+]
 
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
@@ -50,22 +54,54 @@ def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Op
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
-def _response_template() -> Dict[str, Any]:
-    return find_template(_STREAM_NAME, __file__)
+def _chat_id(number: int) -> str:
+    return f"2101.10414779.chat{number:04d}"
 
 
-def _record() -> RecordBuilder:
-    return create_record_builder(
-        _response_template(), FieldPath(_STREAM_NAME), record_id_path=FieldPath("id"), record_cursor_path=FieldPath("update_timestamp")
-    )
+def _search_result(chat_id: str, timestamp: str) -> Dict[str, Any]:
+    return {"id": chat_id, "timestamp": timestamp, "preview": "Hi there!", "type": "offline_msg", "url": f"{_CHATS_URL}/{chat_id}"}
 
 
-def _response() -> HttpResponseBuilder:
-    return create_response_builder(
-        response_template=_response_template(),
-        records_path=FieldPath(_STREAM_NAME),
-        pagination_strategy=ZendeskChatPaginationStrategy("chats", _NEXT_PAGE_URL),
-    )
+def _chat(chat_id: str, timestamp: str) -> Dict[str, Any]:
+    return {
+        "id": chat_id,
+        "type": "offline_msg",
+        "timestamp": timestamp,
+        "unread": False,
+        "message": "Hi there!",
+        "department_id": None,
+        "department_name": None,
+        "visitor": {"id": "3.45678", "name": "Jiny", "email": "visitor@example.com"},
+        "session": {"id": "141109.654464.1KhqS0Nw"},
+        "webpath": [],
+        "zendesk_ticket_id": None,
+    }
+
+
+def _search_request(start: str, end: str, page: Optional[int] = None) -> HttpRequest:
+    query_params = {"q": f"update_timestamp:[{start} TO {end}]"}
+    if page:
+        query_params["page"] = str(page)
+    return HttpRequest(_SEARCH_URL, query_params=query_params)
+
+
+def _search_response(results: List[Dict[str, Any]], count: Optional[int] = None, next_page: Optional[int] = None) -> HttpResponse:
+    next_url = f"{_SEARCH_URL}?q=update_timestamp&page={next_page}" if next_page else None
+    body = {"results": results, "count": count if count is not None else len(results), "prev_url": None, "next_url": next_url}
+    return HttpResponse(body=json.dumps(body), status_code=200)
+
+
+def _chats_request(chat_ids: List[str]) -> HttpRequest:
+    return HttpRequest(_CHATS_URL, query_params={"ids": ",".join(chat_ids)})
+
+
+def _chats_response(chats: List[Dict[str, Any]]) -> HttpResponse:
+    return HttpResponse(body=json.dumps({"docs": {chat["id"]: chat for chat in chats}, "count": len(chats)}), status_code=200)
+
+
+def _mock_empty_windows(http_mocker: HttpMocker, windows: List[tuple]) -> None:
+    for start, end in windows:
+        http_mocker.get(_search_request(start, end), _search_response([]))
 
 
 def read(
@@ -80,118 +116,125 @@ def read(
     return entrypoint_read(_source(catalog, config, state), config, catalog, state, expecting_exception)
 
 
+def _config() -> ConfigBuilder:
+    return ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN)
+
+
+@freeze_time(_NOW)
 class ChatsTest(TestCase):
     @HttpMocker()
-    def test_404_error_is_ignored(self, http_mocker: HttpMocker) -> None:
-        """Test that 404 errors are ignored per manifest error handler."""
-        http_mocker.get(
-            HttpRequest(
-                f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={int(_START_DATETIME.timestamp())}"
-            ),
-            HttpResponse(body='{"error": "Not Found"}', status_code=404),
-        )
+    def test_404_on_search_is_ignored(self, http_mocker: HttpMocker) -> None:
+        http_mocker.get(_search_request(*_WINDOWS[0]), HttpResponse(body='{"error": "Not Found"}', status_code=404))
+        _mock_empty_windows(http_mocker, _WINDOWS[1:])
 
-        output = read(ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN), StateBuilder())
+        output = read(_config())
 
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
 
     @HttpMocker()
-    def test_when_read_then_extract_records(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(
-            HttpRequest(
-                f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={int(_START_DATETIME.timestamp())}"
-            ),
-            _response().with_record(_record()).with_record(_record()).build(),
-        )
-        output = read(ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN), StateBuilder())
-        assert len(output.records) == 2
+    def test_when_read_then_chats_found_by_search_are_fetched_by_id(self, http_mocker: HttpMocker) -> None:
+        """Chats are located with one search per day window and then fetched in full with `chats?ids=`."""
+        chats = [_chat(_chat_id(1), "2021-01-01T10:00:00Z"), _chat(_chat_id(2), "2021-01-01T11:00:00Z")]
+        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([_search_result(c["id"], c["timestamp"]) for c in chats]))
+        _mock_empty_windows(http_mocker, _WINDOWS[1:])
+        http_mocker.get(_chats_request([c["id"] for c in chats]), _chats_response(chats))
+
+        output = read(_config())
+
+        assert sorted(r.record.data["id"] for r in output.records) == [c["id"] for c in chats]
+        # Records are the full chats from `chats?ids=`, not the search summaries.
+        assert all("message" in r.record.data and "preview" not in r.record.data for r in output.records)
 
     @HttpMocker()
-    def test_given_count_is_1000_when_read_then_paginate(self, http_mocker: HttpMocker) -> None:
-        """Test pagination when count reaches 1000 records.
+    def test_given_search_spans_pages_when_read_then_paginate_and_fetch_in_groups_of_50(self, http_mocker: HttpMocker) -> None:
+        """A window with 51 results takes two search pages (40 per page) and two `chats?ids=` requests (50 ids max)."""
+        chats = [_chat(_chat_id(i), f"2021-01-01T{i // 60:02d}:{i % 60:02d}:00Z") for i in range(1, 52)]
+        results = [_search_result(c["id"], c["timestamp"]) for c in chats]
+        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response(results[:40], count=51, next_page=2))
+        http_mocker.get(_search_request(*_WINDOWS[0], page=2), _search_response(results[40:], count=51))
+        _mock_empty_windows(http_mocker, _WINDOWS[1:])
+        http_mocker.get(_chats_request([c["id"] for c in chats[:50]]), _chats_response(chats[:50]))
+        http_mocker.get(_chats_request([c["id"] for c in chats[50:]]), _chats_response(chats[50:]))
 
-        NOTE: This test validates next_page URL pagination which is also used by the 'agent_timeline' stream.
-        Both streams use the same DefaultPaginator configuration with RequestPath page_token_option,
-        so this test provides pagination coverage for both streams.
+        output = read(_config())
 
-        The record count assertion uses == for exact matching. The records are generated from templates
-        with the same ID, so we verify the total count rather than unique IDs. The pagination behavior
-        (fetching page 2 when page 1 has 1000 records) is the key validation here.
-        """
-        response_with_1000_records = _response()
-        for i in range(0, 1000):
-            response_with_1000_records.with_record(_record())
-        http_mocker.get(
-            HttpRequest(
-                f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={int(_START_DATETIME.timestamp())}"
-            ),
-            response_with_1000_records.with_pagination().build(),
-        )
-        http_mocker.get(
-            HttpRequest(_NEXT_PAGE_URL),
-            _response().with_record(_record()).build(),
-        )
+        assert len(output.records) == 51
+        assert len({r.record.data["id"] for r in output.records}) == 51
 
-        output = read(ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN), StateBuilder())
+    @HttpMocker()
+    def test_given_more_than_10000_results_when_read_then_fail(self, http_mocker: HttpMocker) -> None:
+        """Zendesk caps a search at 10,000 results (250 pages), so a bigger window cannot be read completely."""
+        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([_search_result(_chat_id(1), "2021-01-01T10:00:00Z")], count=10001))
+        # The sync stops on the first window, so the later windows are never requested.
 
-        assert len(output.records) == 1001
-        # Verify records have expected structure (id field exists from template)
-        assert all("id" in r.record.data for r in output.records)
+        output = read(_config(), expecting_exception=True)
+
+        assert len(output.records) == 0
+        assert any("more than 10,000 chats" in error.trace.error.message for error in output.errors)
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:
-        """Test incremental sync without prior state (first sync).
+        """The stream cursor is `timestamp`; the state also carries the parent search cursor."""
+        chats = [_chat(_chat_id(1), "2021-01-01T10:00:00Z"), _chat(_chat_id(2), "2021-01-02T08:00:00Z")]
+        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([_search_result(chats[0]["id"], chats[0]["timestamp"])]))
+        http_mocker.get(_search_request(*_WINDOWS[1]), _search_response([_search_result(chats[1]["id"], chats[1]["timestamp"])]))
+        _mock_empty_windows(http_mocker, _WINDOWS[2:])
+        # Ids found in different windows are fetched together: groups of 50 ids span search windows.
+        http_mocker.get(_chats_request([chats[0]["id"], chats[1]["id"]]), _chats_response(chats))
 
-        Uses DatetimeBasedCursor with cursor_field: update_timestamp and datetime_format: %s.
-        The start_time request parameter uses the config's start_date converted to epoch seconds.
-        The state stores the cursor value as epoch seconds string.
-        """
-        update_timestamp_1 = "1609459200"
-        update_timestamp_2 = "1609462800"
-        http_mocker.get(
-            HttpRequest(
-                f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={int(_START_DATETIME.timestamp())}"
-            ),
-            _response()
-            .with_record(_record().with_field(FieldPath("update_timestamp"), update_timestamp_1))
-            .with_record(_record().with_field(FieldPath("update_timestamp"), update_timestamp_2))
-            .build(),
-        )
-
-        output = read(
-            ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN),
-            StateBuilder(),
-            sync_mode=SyncMode.incremental,
-        )
+        output = read(_config(), sync_mode=SyncMode.incremental)
 
         assert len(output.records) == 2
-        assert len(output.state_messages) > 0
-        latest_state = output.most_recent_state.stream_state
-        assert latest_state.__dict__["update_timestamp"] == update_timestamp_2
+        latest_state = output.most_recent_state.stream_state.__dict__
+        assert latest_state["state"] == {"timestamp": "2021-01-02T08:00:00Z"}
+        assert latest_state["parent_state"] == {"chats_search": {"timestamp": "2021-01-02T08:00:00Z"}}
 
-    @HttpMocker()
-    def test_incremental_sync_with_prior_state(self, http_mocker: HttpMocker) -> None:
-        """Test incremental sync with prior state (second sync).
-
-        When state has update_timestamp cursor, the request uses that value for the start_time parameter.
-        Both state and request parameter use epoch seconds format.
+    def _assert_legacy_state_is_migrated(self, http_mocker: HttpMocker, legacy_cursor_value: Any) -> None:
         """
-        prior_cursor_seconds = "1609459200"
-        new_update_timestamp = "1609466400"
-        http_mocker.get(
-            HttpRequest(
-                f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={prior_cursor_seconds}"
-            ),
-            _response().with_record(_record().with_field(FieldPath("update_timestamp"), new_update_timestamp)).build(),
-        )
+        A state written before 2.0.0 (`{"update_timestamp": <epoch seconds or ISO>}`) seeds both cursors. With a cursor of
+        2021-01-02T00:00:00Z the search restarts one day earlier (lookback), so the first window is 2021-01-01, and a chat
+        started before the cursor but updated inside the window is emitted again.
+        """
+        old_chat = _chat(_chat_id(1), "2020-12-15T10:00:00Z")
+        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([]))
+        http_mocker.get(_search_request(*_WINDOWS[1]), _search_response([_search_result(old_chat["id"], old_chat["timestamp"])]))
+        _mock_empty_windows(http_mocker, _WINDOWS[2:])
+        http_mocker.get(_chats_request([old_chat["id"]]), _chats_response([old_chat]))
 
         output = read(
-            ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN),
-            StateBuilder().with_stream_state(_STREAM_NAME, {"update_timestamp": prior_cursor_seconds}),
+            ConfigBuilder().start_date(datetime(2020, 10, 1, tzinfo=timezone.utc)).subdomain(_SUBDOMAIN),
+            StateBuilder().with_stream_state(_STREAM_NAME, {"update_timestamp": legacy_cursor_value}),
             sync_mode=SyncMode.incremental,
         )
 
-        assert len(output.records) == 1
-        latest_state = output.most_recent_state.stream_state
-        assert latest_state.__dict__["update_timestamp"] == new_update_timestamp
+        assert [r.record.data["id"] for r in output.records] == [old_chat["id"]]
+        latest_state = output.most_recent_state.stream_state.__dict__
+        assert latest_state["state"] == {"timestamp": "2021-01-02T00:00:00Z"}
+        assert latest_state["parent_state"] == {"chats_search": {"timestamp": "2021-01-02T00:00:00Z"}}
+
+    @HttpMocker()
+    def test_given_legacy_epoch_state_when_read_then_state_is_migrated(self, http_mocker: HttpMocker) -> None:
+        self._assert_legacy_state_is_migrated(http_mocker, "1609545600")
+
+    @HttpMocker()
+    def test_given_legacy_iso_state_when_read_then_state_is_migrated(self, http_mocker: HttpMocker) -> None:
+        self._assert_legacy_state_is_migrated(http_mocker, "2021-01-02T00:00:00Z")
+
+    @HttpMocker()
+    def test_given_new_state_when_read_then_resume_from_parent_state(self, http_mocker: HttpMocker) -> None:
+        state = {
+            "use_global_cursor": True,
+            "state": {"timestamp": "2021-01-02T00:00:00Z"},
+            "parent_state": {"chats_search": {"timestamp": "2021-01-02T00:00:00Z"}},
+        }
+        _mock_empty_windows(http_mocker, _WINDOWS)
+
+        output = read(
+            ConfigBuilder().start_date(datetime(2020, 10, 1, tzinfo=timezone.utc)).subdomain(_SUBDOMAIN),
+            StateBuilder().with_stream_state(_STREAM_NAME, state),
+            sync_mode=SyncMode.incremental,
+        )
+
+        assert len(output.records) == 0
+        assert output.most_recent_state.stream_state.__dict__["state"] == {"timestamp": "2021-01-02T00:00:00Z"}

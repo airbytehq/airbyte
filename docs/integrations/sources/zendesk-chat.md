@@ -2,6 +2,13 @@
 
 This page contains the setup guide and reference information for the Zendesk Chat source connector.
 
+:::warning Zendesk ends incremental exports for third-party integrations (notice dated 2026-11-03)
+Zendesk [stops serving its Incremental Exports API to third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498) such as Airbyte between December 2, 2026 and January 19, 2027. Blocked requests return HTTP 403.
+
+- The `chats` stream no longer uses incremental exports as of connector version 2.0.0 and keeps working. See the [migration guide](zendesk-chat-migrations.md#upgrading-to-200).
+- The `agent_timeline` stream has no replacement endpoint and still reads the incremental export. Zendesk has not said whether agent timeline exports are included in the shutdown. If the stream fails with a 403 error, request the 60-day partner extension in Zendesk Admin Center under **Apps and integrations > APIs > API configuration**, or deselect the stream.
+:::
+
 ## Prerequisites
 
 - A Zendesk account with the [Chat module](https://www.zendesk.com/chat/) enabled.
@@ -53,8 +60,8 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 
 - [Accounts](https://developer.zendesk.com/api-reference/live-chat/chat-api/accounts/#show-account)
 - [Agents](https://developer.zendesk.com/api-reference/live-chat/chat-api/agents/#list-agents) \(Incremental\)
-- [Agent Timelines](https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-agent-timeline-export) \(Incremental\)
-- [Chats](https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#list-chats) \(Incremental\)
+- [Agent Timelines](https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-agent-timeline-export) \(Incremental\). Still read from the incremental export; see the notice at the top of this page.
+- [Chats](https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#list-chats) \(Incremental\). Chats are found with [Search Chats](https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#search-chats) in one-day windows of their last update time, then fetched in full 50 chats per request. The cursor field is `timestamp`. The fields `deleted`, `update_timestamp` and `engagements` are not available from these endpoints, and deleted chats are not reported.
 - [Shortcuts](https://developer.zendesk.com/api-reference/live-chat/chat-api/shortcuts/#list-shortcuts)
 - [Triggers](https://developer.zendesk.com/api-reference/live-chat/chat-api/triggers/#list-triggers)
 - [Bans](https://developer.zendesk.com/api-reference/live-chat/chat-api/bans/#list-bans) \(Incremental\)
@@ -68,6 +75,8 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 
 The Zendesk Chat API enforces a rate limit of [200 requests per minute](https://developer.zendesk.com/api-reference/live-chat/introduction/) per endpoint. The connector handles rate limiting automatically by respecting the `Retry-After` header when a 429 response is returned.
 
+Each sync of the `chats` stream sends one search request per day between the stream's cursor (minus a one-day lookback) or the configured start date and now, plus one extra request per 40 results in a day, plus one request per 50 chats found. The first sync of an account with a start date several years back therefore takes a few minutes of search requests before records appear. Zendesk caps a single search at 10,000 results; a day with more updated chats than that fails the sync with an explicit error.
+
 ## Troubleshooting
 
 ### Zendesk Chat access token is invalid, expired, or missing the required read and chat scopes
@@ -80,6 +89,14 @@ Zendesk Chat returned a `401 Unauthorized` response, so the connector stops the 
 ### Requests that return 404
 
 When Zendesk Chat returns a `404 Not Found` response to any request, the connector ignores that response and continues the sync instead of failing. No records from that request are emitted. This most often happens when a record has been deleted, but it applies to every stream and every request, so a 404 on a list request drops that page of results.
+
+### Zendesk rejected the incremental export request for stream agent_timeline with HTTP 403
+
+Zendesk [no longer serves incremental exports to third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498) such as Airbyte, and the `agent_timeline` stream has no other endpoint to read from. Request the 60-day partner extension in Zendesk Admin Center under **Apps and integrations > APIs > API configuration**, or deselect the `agent_timeline` stream in the connection.
+
+### Zendesk Chat search returned more than 10,000 chats for a one-day window
+
+The `chats` stream finds chats with the Search Chats endpoint one day at a time, and Zendesk returns at most 10,000 results per search. More than 10,000 chats were updated on a single day, so that day cannot be read completely and the sync stops with a system error. Contact Airbyte support if you hit this limit.
 
 ## Data type map
 
@@ -101,6 +118,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.0 | 2026-11-03 | [TBD_PR_NUMBER](https://github.com/airbytehq/airbyte/pull/TBD_PR_NUMBER) | Breaking: read `chats` through Search Chats and List Chats instead of the incremental export Zendesk ends for third-party integrations on 2026-12-02; cursor becomes `timestamp` with state migration; drop `deleted`, `update_timestamp` and `engagements` from the `chats` schema; report a configuration error when the incremental export behind `agent_timeline` returns 403 |
 | 1.3.33 | 2026-11-03 | [90807](https://github.com/airbytehq/airbyte/pull/90807) | Update dependencies |
 | 1.3.32 | 2026-10-27 | [90082](https://github.com/airbytehq/airbyte/pull/90082) | Update dependencies |
 | 1.3.31 | 2026-10-20 | [89485](https://github.com/airbytehq/airbyte/pull/89485) | Update dependencies |
