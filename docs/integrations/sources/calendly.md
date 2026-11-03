@@ -1,29 +1,76 @@
 # Calendly
 
-Calendly source syncs your organization members, groups, available event types, and scheduled events from Calendly!
+The Calendly source syncs your organization members, groups, event types, scheduled events, and event invitees from the Calendly API v2.
+
+## Prerequisites
+
+- A Calendly account. The connector's read endpoints are available on [all Calendly plans, including Free](https://developer.calendly.com/docs/getting-started/frequently-asked-questions).
+- An organization owner or administrator account to read organization-wide scheduled events. The connector reads the current organization associated with the token owner's profile; you don't need to enter an organization ID.
+- A [personal access token](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) with these [read scopes](https://developer.calendly.com/docs/authentication/scopes):
+  - `users:read`
+  - `event_types:read`
+  - `groups:read`
+  - `organizations:read`
+  - `scheduled_events:read` (also covers event invitees)
+
+## Setup
+
+1. In Calendly, open the **Profile** menu, select **Developer**, then **Personal access tokens**. If **Developer** isn't available, use the **Integrations** page instead.
+2. Select **Create personal access token**, name the token, and select the required read scopes.
+3. Create the token, complete the email verification, and copy it. Calendly shows the token only once.
+4. In Airbyte, create a Calendly source and enter the token in **Calendly personal access token**. Enter a **Start date (UTC)** and, optionally, a **Lookback window (days)** as described below.
+
+The connection check reads only the token owner's profile (`api_user`). A successful check confirms `users:read` access, not the permissions needed for every stream. Missing stream-specific scopes or organization permissions can still cause a sync to fail.
 
 ## Configuration
 
-| Input        | Type     | Description                                                                                                                  | Default Value |
-| ------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| `api_key`    | `string` | API Key. Go to Integrations → API &amp; Webhooks to obtain your bearer token. https://calendly.com/integrations/api_webhooks |               |
-| `start_date` | `string` | Start date to sync scheduled events from.                                                                                    |               |
+| Input | Type | Description | Default Value |
+| --- | --- | --- | --- |
+| `api_key` | `string` | Required. The personal access token created during setup. | |
+| `start_date` | `string` | Required. Read scheduled events starting on or after this time. Use UTC in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2024-01-01T00:00:00Z`. This filters event start times, not when invitees booked. | |
+| `lookback_days` | `number` | Optional. Days to subtract from the latest synced event's start time for incremental `scheduled_events` reads. The connector rereads events in that window, including their invitees. Use a non-negative value and see the incremental sync limitation below. | 0 |
 
 ## Streams
 
-:::note
+| Stream | Data | Primary key | Full refresh | Incremental |
+| --- | --- | --- | --- | --- |
+| `event_types` | Event types in the organization, such as meeting names, durations, and scheduling URLs | `uri` | Yes | Yes, using `updated_at` |
+| `api_user` | The token owner's profile and current organization | `uri` | Yes | No |
+| `groups` | Groups in the organization | `uri` | Yes | No |
+| `organization_memberships` | Organization members, their roles, and user profiles | `uri` | Yes | No |
+| `scheduled_events` | Scheduled meetings, including their times, status, and location | `uri` | Yes | Yes, using `start_time` |
+| `event_invitees` | Invitees for each scheduled event, including answers, tracking data, and cancellation information | `uri` | Yes | Yes, dependent on `scheduled_events` |
 
-Incremental sync in `scheduled_events` uses `start_time` as a cursor. This may lead to situations where data gets stale if the event changes after it got synced. If you are running into this, periodic full refresh would resync all data.
+The connector reads `event_invitees` for the scheduled events returned by the parent stream. It adds `scheduled_event_id` to each invitee record so you can join it to the `id` in `scheduled_events`.
+
+### Incremental sync limitation
+
+:::caution
+
+`scheduled_events` uses the event's `start_time`, not its creation or modification time, as its incremental cursor. Calendly also returns upcoming events, so the saved cursor can move into the future. Later syncs can miss new bookings for earlier times and updates, such as cancellations, to events outside the lookback window. `event_invitees` depends on these parent events and has the same limitation.
+
+Use Full refresh for both `scheduled_events` and `event_invitees` to reread the events covered by your start date. If you use incremental syncs, set `lookback_days` to at least how far in advance invitees can book. This rereads events in that window, but doesn't capture later changes to older events outside it.
 
 :::
 
-| Stream Name              | Primary Key | Pagination       | Supports Full Sync | Supports Incremental |
-| ------------------------ | ----------- | ---------------- | ------------------ | -------------------- |
-| event_types              | uri         | DefaultPaginator | ✅                 | ✅                   |
-| api_user                 | uri         | No pagination    | ✅                 | ❌                   |
-| groups                   | uri         | DefaultPaginator | ✅                 | ❌                   |
-| organization_memberships | uri         | DefaultPaginator | ✅                 | ❌                   |
-| scheduled_events         | uri         | DefaultPaginator | ✅                 | ✅                   |
+## Rate limits
+
+[Calendly limits API requests](https://developer.calendly.com/api-docs/overview/rate-limits) to 500 requests per user per minute on paid plans and 50 on the Free plan. Other applications using the same Calendly user share this allowance.
+
+The connector monitors `X-RateLimit-Remaining` and waits when the allowance is exhausted. If Calendly returns HTTP 429, the connector retries after the delay in `X-RateLimit-Reset`. Syncing invitees requires requests for each scheduled event, so large event histories can take longer to sync.
+
+## Troubleshooting
+
+| Symptom | Action |
+| --- | --- |
+| HTTP 401: invalid or revoked token | Create a new personal access token and update the Airbyte source settings. |
+| HTTP 403: insufficient scope or permission denied | Check the error for missing scopes. Create a token with the required read scopes, and use an organization owner or administrator account for organization-wide scheduled events. Update the token in Airbyte. |
+| Invitee requests return HTTP 404 | The connector logs and skips invitees for an event that Calendly no longer returns, then continues with other events. A 404 on other endpoints fails the sync. |
+| New bookings or cancellations are missing | Review the [incremental sync limitation](#incremental-sync-limitation). Use Full refresh for `scheduled_events` and `event_invitees` to reread events covered by your start date. |
+
+## Upgrading to 0.2.0
+
+Version 0.2.0 includes event types last updated before 2021 and invitees booked before the configured start date, which earlier versions could omit. Refresh the `event_types` and `event_invitees` streams to backfill these records. Invitees are still limited to the scheduled events selected by the parent stream. Refresh the connection schema to make the newly declared fields available.
 
 ## IP allow list
 
@@ -34,8 +81,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-| ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
+| 0.2.0 | 2026-11-03 | [90829](https://github.com/airbytehq/airbyte/pull/90829) | Handle rate limits and token errors, declare missing fields, fix the crash when `lookback_days` is unset, stop dropping event types updated before 2021 and invitees booked before the start date (refresh these streams to backfill) |
 | 0.1.58 | 2026-11-03 | [90473](https://github.com/airbytehq/airbyte/pull/90473) | Update dependencies |
 | 0.1.57 | 2026-10-27 | [89813](https://github.com/airbytehq/airbyte/pull/89813) | Update dependencies |
 | 0.1.56 | 2026-10-20 | [89122](https://github.com/airbytehq/airbyte/pull/89122) | Update dependencies |
@@ -102,6 +150,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.4 | 2024-12-11 | [49022](https://github.com/airbytehq/airbyte/pull/49022) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.3 | 2024-11-04 | [48279](https://github.com/airbytehq/airbyte/pull/48279) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47568](https://github.com/airbytehq/airbyte/pull/47568) | Update dependencies |
-| 0.0.1   | 2024-09-01 |                                                          | Initial release by [@natikgadzhi](https://github.com/natikgadzhi) via Connector Builder                                                                                |
+| 0.0.1 | 2024-09-01 | | Initial release by [@natikgadzhi](https://github.com/natikgadzhi) via Connector Builder |
 
 </details>
