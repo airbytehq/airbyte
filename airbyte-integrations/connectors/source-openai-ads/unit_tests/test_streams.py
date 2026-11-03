@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import logging
+from collections import Counter
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
@@ -233,12 +234,66 @@ def test_conversions_post_one_entity_and_keep_a_cursor_per_entity(
     assert post.json() == {
         "aggregation_level": aggregation_level,
         "time_granularity": "daily",
+        "attribution_time_basis": "ad_event_time",
+        "attribution_window_days": 30,
+        "view_through_attribution_window_days": 1,
         "entity_ids": [entity_id],
         "time_ranges": [_TIME_RANGE],
     }
     [partition_state] = output.most_recent_state.stream_state.states
     assert partition_state["partition"]["entity_id"] == entity_id
     assert partition_state["cursor"] == {"date": "2026-09-13"}
+
+
+def test_nested_parent_streams_reuse_cached_campaigns_and_ad_groups(requests_mock: Mocker) -> None:
+    campaign_ids = ("cmpn_1", "cmpn_2")
+    ad_group_ids = {
+        "cmpn_1": ("adgrp_11", "adgrp_12"),
+        "cmpn_2": ("adgrp_21", "adgrp_22"),
+    }
+    _mock_page(requests_mock, "/campaigns?limit=500", *campaign_ids)
+    for campaign_id, ids in ad_group_ids.items():
+        _mock_page(requests_mock, f"/ad_groups?limit=500&campaign_id={campaign_id}", *ids)
+        for ad_group_id in ids:
+            _mock_page(requests_mock, f"/ads?limit=500&ad_group_id={ad_group_id}", f"ad_{ad_group_id}")
+    requests_mock.post(
+        f"{_URL}/conversions/insights",
+        json={"object": "list", "data": [], "count": 0, "account_currency": "USD"},
+    )
+
+    config = _CONFIG
+    catalog = (
+        CatalogBuilder()
+        .with_stream("ads", SyncMode.full_refresh)
+        .with_stream("ad_group_conversions", SyncMode.incremental)
+        .with_stream("ad_conversions", SyncMode.incremental)
+        .build()
+    )
+    output = read(_source(config), config, catalog, StateBuilder().build())
+
+    assert output.errors == []
+    campaign_urls = [
+        request.url
+        for request in requests_mock.request_history
+        if request.method == "GET" and urlsplit(request.url).path == "/v1/campaigns"
+    ]
+    ad_group_urls = [
+        request.url
+        for request in requests_mock.request_history
+        if request.method == "GET" and urlsplit(request.url).path == "/v1/ad_groups"
+    ]
+    assert {
+        "campaigns": Counter(campaign_urls),
+        "ad_groups": Counter(ad_group_urls),
+    } == {
+        "campaigns": Counter({f"{_URL}/campaigns?limit=500": 1}),
+        "ad_groups": Counter(
+            {
+                f"{_URL}/ad_groups?limit=500&campaign_id=cmpn_1": 1,
+                f"{_URL}/ad_groups?limit=500&campaign_id=cmpn_2": 1,
+            }
+        ),
+    }
 
 
 @pytest.mark.parametrize(

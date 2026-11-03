@@ -111,6 +111,7 @@ definitions:
       requester:
         $ref: '#/definitions/requester'
         path: /campaigns
+        use_cache: true
       record_selector:
         $ref: '#/definitions/record_selector'
       paginator:
@@ -130,6 +131,7 @@ definitions:
       requester:
         $ref: '#/definitions/requester'
         path: /ad_groups
+        use_cache: true
       record_selector:
         $ref: '#/definitions/record_selector'
       paginator:
@@ -653,6 +655,9 @@ definitions:
     request_body_json:
       aggregation_level: '{{ parameters["aggregation_level"] }}'
       time_granularity: daily
+      attribution_time_basis: ad_event_time
+      attribution_window_days: 30
+      view_through_attribution_window_days: 1
       entity_ids: '{{ [ stream_slice["entity_id"] ] }}'
       time_ranges: >-
         {{ [ '{"type":"date_range","since":"' ~ stream_slice["start_time"] ~ '","until":"' ~ stream_slice["end_time"] ~ '"}' ] }}
@@ -809,7 +814,7 @@ spec:
       lookback_window:
         type: integer
         title: Lookback Window
-        description: How far into the past to look for records (in days) on every sync, so conversions attributed after the click are picked up. Use the click attribution window of the reports (30 days, the API default) plus 2 days, because OpenAI needs at least one day to process conversions. Used only for insights streams in incremental sync mode.
+        description: How far into the past to look for records (in days) on every sync, so conversions attributed after the ad interaction are picked up. The connector requests conversions with a 30-day click window, and OpenAI needs at least one day to process conversions, so keep this at 32 or higher when you sync conversions streams. Used only for insights streams in incremental sync mode.
         minimum: 0
         maximum: 90
         default: 32
