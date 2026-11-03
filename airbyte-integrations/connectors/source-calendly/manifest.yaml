@@ -3,8 +3,7 @@ version: 6.48.15
 type: DeclarativeSource
 
 description: >-
-  Calendly source syncs your organization members, groups, available event
-  types, and scheduled events from Calendly!
+  Calendly source syncs your organization members, groups, teams, invitations, event types and their hosts, availability schedules, meeting locations, webhook subscriptions, and scheduled events from Calendly!
 
 check:
   type: CheckStream
@@ -340,6 +339,327 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/event_invitees"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - uri
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams
+          http_method: GET
+          request_parameters:
+            count: "100"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_page_token\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("pagination", {}).get("next_page_token", {})
+              }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: user/uri
+              request_option:
+                type: RequestOption
+                field_name: user
+                inject_into: request_parameter
+              partition_field: user_uri
+              stream:
+                $ref: "#/definitions/streams/organization_memberships"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    event_type_memberships:
+      type: DeclarativeStream
+      name: event_type_memberships
+      primary_key:
+        - uri
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /event_type_memberships
+          http_method: GET
+          request_parameters:
+            count: "100"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_page_token\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("pagination", {}).get("next_page_token", {})
+              }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: uri
+              request_option:
+                type: RequestOption
+                field_name: event_type
+                inject_into: request_parameter
+              partition_field: event_type_uri
+              stream:
+                $ref: "#/definitions/streams/event_types"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event_type_memberships"
+    group_relationships:
+      type: DeclarativeStream
+      name: group_relationships
+      primary_key:
+        - uri
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /group_relationships
+          http_method: GET
+          request_parameters:
+            count: "100"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_page_token\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("pagination", {}).get("next_page_token", {})
+              }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: current_organization
+              request_option:
+                type: RequestOption
+                field_name: organization
+                inject_into: request_parameter
+              partition_field: organization_uri
+              stream:
+                $ref: "#/definitions/streams/api_user"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/group_relationships"
+    user_availability_schedules:
+      type: DeclarativeStream
+      name: user_availability_schedules
+      primary_key:
+        - uri
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user_availability_schedules
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: user/uri
+              request_option:
+                type: RequestOption
+                field_name: user
+                inject_into: request_parameter
+              partition_field: user_uri
+              stream:
+                $ref: "#/definitions/streams/organization_memberships"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_availability_schedules"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      primary_key:
+        - user
+        - kind
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /locations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: user/uri
+              request_option:
+                type: RequestOption
+                field_name: user
+                inject_into: request_parameter
+              partition_field: user_uri
+              stream:
+                $ref: "#/definitions/streams/organization_memberships"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - user
+              value: "{{ stream_partition['user_uri'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    organization_invitations:
+      type: DeclarativeStream
+      name: organization_invitations
+      primary_key:
+        - uri
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizations/{{ stream_partition.organization_uri.split('/')[-1] }}/invitations
+          http_method: GET
+          request_parameters:
+            count: "100"
+            sort: created_at:asc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_page_token\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("pagination", {}).get("next_page_token", {})
+              }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: current_organization
+              partition_field: organization_uri
+              stream:
+                $ref: "#/definitions/streams/api_user"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_invitations"
+    webhook_subscriptions:
+      type: DeclarativeStream
+      name: webhook_subscriptions
+      primary_key:
+        - uri
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webhook_subscriptions
+          http_method: GET
+          request_parameters:
+            count: "100"
+            scope: organization
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_token
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_page_token\", {}) }}"
+            stop_condition: >-
+              {{ not response.get("pagination", {}).get("next_page_token", {})
+              }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: current_organization
+              request_option:
+                type: RequestOption
+                field_name: organization
+                inject_into: request_parameter
+              partition_field: organization_uri
+              stream:
+                $ref: "#/definitions/streams/api_user"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhook_subscriptions"
   base_requester:
     type: HttpRequester
     url_base: https://api.calendly.com
@@ -389,9 +709,7 @@ definitions:
       action: FAIL
       failure_type: config_error
       error_message: >-
-        Calendly denied access. The personal access token needs the users:read, event_types:read, groups:read,
-        organizations:read and scheduled_events:read scopes, and it must belong to an owner or admin of the
-        Calendly organization because Calendly shows organization-wide scheduled events only to them.
+        Calendly denied access. The personal access token needs the read scope of every selected stream, as listed in the Calendly source documentation, and it must belong to an owner or admin of the Calendly organization because Calendly shows organization-wide scheduled events only to them.
         Create a new token and update it in the Airbyte source settings.
         Calendly response (403): {{ (response if response is mapping else {}).get('message', 'Forbidden') }}{{ ' Missing scopes: ' ~ (response['required_scopes'] | join(', ')) if response is mapping and response.get('required_scopes') else '' }}
     not_found:
@@ -414,6 +732,13 @@ streams:
   - $ref: "#/definitions/streams/organization_memberships"
   - $ref: "#/definitions/streams/scheduled_events"
   - $ref: "#/definitions/streams/event_invitees"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/event_type_memberships"
+  - $ref: "#/definitions/streams/group_relationships"
+  - $ref: "#/definitions/streams/user_availability_schedules"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/organization_invitations"
+  - $ref: "#/definitions/streams/webhook_subscriptions"
 
 api_budget:
   type: HTTPAPIBudget
@@ -443,11 +768,7 @@ spec:
       api_key:
         type: string
         description: >-
-          Calendly personal access token. In Calendly, open the Profile menu, select Developer,
-          then Personal access tokens, and create a token with the users:read, event_types:read,
-          groups:read, organizations:read and scheduled_events:read scopes. Create it as an owner
-          or admin of the Calendly organization: Calendly shows organization-wide scheduled events
-          only to them.
+          Calendly personal access token. In Calendly, open the Profile menu, select Developer, then Personal access tokens, and create a token with the read scope of every stream you sync; the Calendly source documentation lists the scopes for each stream. Create it as an owner or admin of the Calendly organization: Calendly shows organization-wide scheduled events only to them.
         order: 0
         title: Calendly personal access token
         airbyte_secret: true
@@ -480,6 +801,13 @@ metadata:
     organization_memberships: true
     scheduled_events: true
     event_invitees: true
+    teams: false
+    event_type_memberships: false
+    group_relationships: false
+    user_availability_schedules: false
+    locations: false
+    organization_invitations: false
+    webhook_subscriptions: false
   testedStreams:
     event_types:
       hasRecords: true
@@ -1194,3 +1522,336 @@ schemas:
     required:
       - uri
       - created_at
+  teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      uri:
+        type: string
+      name:
+        type: [string, 'null']
+      organization:
+        type: [string, 'null']
+      scheduling_url:
+        type: [string, 'null']
+    required: [uri]
+  event_type_memberships:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      uri:
+        type: string
+      event_type:
+        type: [object, 'null']
+        properties:
+          active:
+            type: [boolean, 'null']
+          admin_managed:
+            type: [boolean, 'null']
+          booking_method:
+            type: [string, 'null']
+          color:
+            type: [string, 'null']
+          created_at:
+            type: [string, 'null']
+            format: date-time
+          custom_questions:
+            type: [array, 'null']
+            items:
+              type: [object, 'null']
+              properties:
+                name:
+                  type: [string, 'null']
+                type:
+                  type: [string, 'null']
+                position:
+                  type: [integer, 'null']
+                enabled:
+                  type: [boolean, 'null']
+                required:
+                  type: [boolean, 'null']
+                answer_choices:
+                  type: [array, 'null']
+                  items:
+                    type: [string, 'null']
+                include_other:
+                  type: [boolean, 'null']
+          deleted_at:
+            type: [string, 'null']
+            format: date-time
+          description_html:
+            type: [string, 'null']
+          description_plain:
+            type: [string, 'null']
+          duration:
+            type: [number, 'null']
+          duration_options:
+            type: [array, 'null']
+            items:
+              type: [integer, 'null']
+          internal_note:
+            type: [string, 'null']
+          is_paid:
+            type: [boolean, 'null']
+          kind:
+            type: [string, 'null']
+          locale:
+            type: [string, 'null']
+          locations:
+            type: [array, 'null']
+            items:
+              type: [object, 'null']
+              properties:
+                kind:
+                  type: [string, 'null']
+                location:
+                  type: [string, 'null']
+                additional_info:
+                  type: [string, 'null']
+                phone_number:
+                  type: [string, 'null']
+          name:
+            type: [string, 'null']
+          pooling_type:
+            type: [string, 'null']
+          position:
+            type: [integer, 'null']
+          profile:
+            type: [object, 'null']
+            properties:
+              type:
+                type: [string, 'null']
+              name:
+                type: [string, 'null']
+              owner:
+                type: [string, 'null']
+          scheduling_url:
+            type: [string, 'null']
+          secret:
+            type: [boolean, 'null']
+          slug:
+            type: [string, 'null']
+          type:
+            type: [string, 'null']
+          updated_at:
+            type: [string, 'null']
+            format: date-time
+          uri:
+            type: [string, 'null']
+      member:
+        type: [object, 'null']
+        properties:
+          uri:
+            type: [string, 'null']
+          name:
+            type: [string, 'null']
+          slug:
+            type: [string, 'null']
+          email:
+            type: [string, 'null']
+          scheduling_url:
+            type: [string, 'null']
+          timezone:
+            type: [string, 'null']
+          time_notation:
+            type: [string, 'null']
+          avatar_url:
+            type: [string, 'null']
+          created_at:
+            type: [string, 'null']
+            format: date-time
+          updated_at:
+            type: [string, 'null']
+            format: date-time
+          current_organization:
+            type: [string, 'null']
+          resource_type:
+            type: [string, 'null']
+          locale:
+            type: [string, 'null']
+      updated_at:
+        type: [string, 'null']
+        format: date-time
+      created_at:
+        type: [string, 'null']
+        format: date-time
+    required: [uri]
+  group_relationships:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      uri:
+        type: string
+      role:
+        type: [string, 'null']
+      owner:
+        type: [object, 'null']
+        properties:
+          uri:
+            type: [string, 'null']
+          role:
+            type: [string, 'null']
+          user:
+            type: [object, string, 'null']
+            properties:
+              uri:
+                type: [string, 'null']
+              name:
+                type: [string, 'null']
+              slug:
+                type: [string, 'null']
+              email:
+                type: [string, 'null']
+              scheduling_url:
+                type: [string, 'null']
+              timezone:
+                type: [string, 'null']
+              avatar_url:
+                type: [string, 'null']
+              locale:
+                type: [string, 'null']
+              created_at:
+                type: [string, 'null']
+                format: date-time
+              updated_at:
+                type: [string, 'null']
+                format: date-time
+          organization:
+            type: [string, 'null']
+          updated_at:
+            type: [string, 'null']
+            format: date-time
+          created_at:
+            type: [string, 'null']
+            format: date-time
+          type:
+            type: [string, 'null']
+          email:
+            type: [string, 'null']
+          status:
+            type: [string, 'null']
+          last_sent_at:
+            type: [string, 'null']
+            format: date-time
+      organization:
+        type: [string, 'null']
+      group:
+        type: [string, 'null']
+      created_at:
+        type: [string, 'null']
+        format: date-time
+      updated_at:
+        type: [string, 'null']
+        format: date-time
+    required: [uri]
+  user_availability_schedules:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      uri:
+        type: string
+      default:
+        type: [boolean, 'null']
+      name:
+        type: [string, 'null']
+      user:
+        type: [string, 'null']
+      timezone:
+        type: [string, 'null']
+      rules:
+        type: [array, 'null']
+        items:
+          type: [object, 'null']
+          properties:
+            type:
+              type: [string, 'null']
+            intervals:
+              type: [array, 'null']
+              items:
+                type: [object, 'null']
+                properties:
+                  from:
+                    type: [string, 'null']
+                  to:
+                    type: [string, 'null']
+            wday:
+              type: [string, 'null']
+            date:
+              type: [string, 'null']
+    required: [uri]
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      kind:
+        type: string
+      connected:
+        type: [boolean, 'null']
+      user:
+        type: string
+    required: [user, kind]
+  organization_invitations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      uri:
+        type: string
+      organization:
+        type: [string, 'null']
+      email:
+        type: [string, 'null']
+      status:
+        type: [string, 'null']
+      created_at:
+        type: [string, 'null']
+        format: date-time
+      updated_at:
+        type: [string, 'null']
+        format: date-time
+      last_sent_at:
+        type: [string, 'null']
+        format: date-time
+      user:
+        type: [string, 'null']
+    required: [uri]
+  webhook_subscriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      uri:
+        type: string
+      callback_url:
+        type: [string, 'null']
+      created_at:
+        type: [string, 'null']
+        format: date-time
+      updated_at:
+        type: [string, 'null']
+        format: date-time
+      retry_started_at:
+        type: [string, 'null']
+        format: date-time
+      state:
+        type: [string, 'null']
+      events:
+        type: [array, 'null']
+        items:
+          type: [string, 'null']
+      scope:
+        type: [string, 'null']
+      organization:
+        type: [string, 'null']
+      user:
+        type: [string, 'null']
+      group:
+        type: [string, 'null']
+      creator:
+        type: [string, 'null']
+    required: [uri]

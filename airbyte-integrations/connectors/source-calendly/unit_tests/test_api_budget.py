@@ -27,7 +27,21 @@ def test_budget_is_one_500_per_minute_moving_window_policy() -> None:
     assert isinstance(actual, HttpAPIBudget)
     policy = actual.get_matching_policy(prepared())
     assert isinstance(policy, MovingWindowCallRatePolicy)
-    for path in ["users/me", "event_types", "groups", "organization_memberships", "scheduled_events", "scheduled_events/event/invitees"]:
+    for path in [
+        "users/me",
+        "event_types",
+        "groups",
+        "organization_memberships",
+        "scheduled_events",
+        "scheduled_events/event/invitees",
+        "teams",
+        "event_type_memberships",
+        "group_relationships",
+        "user_availability_schedules",
+        "locations",
+        "organizations/x/invitations",
+        "webhook_subscriptions",
+    ]:
         assert actual.get_matching_policy(prepared(path)) is policy
     assert actual.get_matching_policy(requests.Request("GET", "https://example.com/users/me").prepare()) is None
 

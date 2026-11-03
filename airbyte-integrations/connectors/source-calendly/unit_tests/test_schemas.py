@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+from pathlib import Path
 
 import pytest
 import yaml
@@ -58,6 +59,15 @@ ORIGINAL_TYPE_FORMAT_DIGESTS = {
     "scheduled_events": "8278e5678f3dffa2c708abb5361e90d37ce88984418a266236471afc9ed719cc",
     "event_invitees": "d957a5847b327f05233dbd95d3a0a4c4d9d17e91e450098afadf03f1437e34f3",
 }
+NEW_STREAM_PRIMARY_KEYS = {
+    "teams": ["uri"],
+    "event_type_memberships": ["uri"],
+    "group_relationships": ["uri"],
+    "user_availability_schedules": ["uri"],
+    "locations": ["user", "kind"],
+    "organization_invitations": ["uri"],
+    "webhook_subscriptions": ["uri"],
+}
 
 
 def schema_fields(node: dict, path: str = "") -> dict:
@@ -110,3 +120,24 @@ def test_documented_nested_fields_and_types() -> None:
         "utm_term",
         "salesforce_uuid",
     }
+
+
+def test_new_stream_primary_keys_are_required_strings() -> None:
+    schemas = yaml.safe_load(_YAML_FILE_PATH.read_text())["schemas"]
+    for stream, primary_key in NEW_STREAM_PRIMARY_KEYS.items():
+        schema = schemas[stream]
+        assert set(primary_key).issubset(schema["required"])
+        for field in primary_key:
+            assert schema["properties"][field]["type"] == "string"
+
+
+def test_suggested_streams_remain_the_existing_five() -> None:
+    metadata_path = Path(__file__).parents[1] / "metadata.yaml"
+    metadata = yaml.safe_load(metadata_path.read_text())
+    assert metadata["data"]["suggestedStreams"]["streams"] == [
+        "scheduled_events",
+        "event_invitees",
+        "event_types",
+        "organization_memberships",
+        "api_user",
+    ]

@@ -37,7 +37,24 @@ def test_no_composite_error_handler() -> None:
 URL = "https://api.calendly.com/scheduled_events/ABC/invitees"
 
 
-@pytest.mark.parametrize("stream", ["api_user", "event_types", "groups", "organization_memberships", "scheduled_events", "event_invitees"])
+@pytest.mark.parametrize(
+    "stream",
+    [
+        "api_user",
+        "event_types",
+        "groups",
+        "organization_memberships",
+        "scheduled_events",
+        "event_invitees",
+        "teams",
+        "event_type_memberships",
+        "group_relationships",
+        "user_availability_schedules",
+        "locations",
+        "organization_invitations",
+        "webhook_subscriptions",
+    ],
+)
 @pytest.mark.parametrize(
     "status,action,failure_type,message",
     [
@@ -81,7 +98,7 @@ def test_each_requester_classifies_errors(stream: str, status: int, action: Resp
         (
             403,
             {"title": "Permission Denied", "message": "You do not have permission to access this resource."},
-            ["owner or admin of the Calendly organization", "users:read, event_types:read, groups:read, organizations:read"],
+            ["owner or admin of the Calendly organization", "read scope of every selected stream"],
         ),
         (
             403,
@@ -106,6 +123,8 @@ def test_authentication_error_read_includes_response_and_remediation(status: int
         assert "update it in the Airbyte source settings" in error.message
         for text in expected:
             assert text in error.message
+        if body["title"] == "Permission Denied":
+            assert "users:read, event_types:read" not in error.message
         http.assert_number_of_calls(target, 1)
 
 

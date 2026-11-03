@@ -1,20 +1,40 @@
 # Calendly
 
-Calendly source syncs your organization members, groups, available event types, and scheduled events from Calendly!
+Calendly source syncs your organization members, groups, teams, invitations, event types and their hosts, availability schedules, meeting locations, webhook subscriptions, and scheduled events from Calendly!
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 | --- | --- | --- | --- |
-| `api_key` | `string` | Calendly personal access token. In Calendly, open the Profile menu, select Developer, then Personal access tokens. If Developer is missing from the menu, use the Integrations page. | |
+| `api_key` | `string` | Calendly personal access token. In Calendly, open the Profile menu, select Developer, then Personal access tokens. Select the read scopes of the streams you sync, listed under "Token scopes". | |
 | `start_date` | `string` | Sync scheduled events starting on or after this time, in UTC ISO-8601 format, for example `2024-01-01T00:00:00Z`. | |
 | `lookback_days` | `number` | Days to subtract from the start time of the latest synced event when an incremental `scheduled_events` sync starts. | 0 |
 
 :::note
 
-Since March 2026, Calendly grants newly created [personal access tokens](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) no API access until you select [authorization scopes](https://developer.calendly.com/docs/authentication/scopes) for them. When you create a token for Airbyte, select the following read scopes: `users:read`, `event_types:read`, `groups:read`, `organizations:read`, and `scheduled_events:read`. Tokens created before this change keep their existing access. Create the token as an owner or admin of your Calendly organization: Calendly shows organization-wide scheduled events only to them.
+Since March 2026, Calendly grants newly created [personal access tokens](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) no API access until you select [authorization scopes](https://developer.calendly.com/docs/authentication/scopes) for them. When you create a token for Airbyte, select the scopes of every stream you sync, listed in [Token scopes](#token-scopes). Tokens created before this change keep their existing access. Create the token as an owner or admin of your Calendly organization: Calendly shows organization-wide scheduled events only to them.
 
 :::
+
+## Token scopes
+
+Every stream reads the current user (`users:read`) to find the organization, and member-based streams read `organization_memberships` (`organizations:read`).
+
+| Stream | Required scopes |
+|---|---|
+| api_user | `users:read` |
+| event_types | `users:read`, `event_types:read` |
+| groups | `users:read`, `groups:read` |
+| organization_memberships | `users:read`, `organizations:read` |
+| scheduled_events | `users:read`, `scheduled_events:read` |
+| event_invitees | `users:read`, `scheduled_events:read` |
+| teams | `users:read`, `organizations:read` |
+| event_type_memberships | `users:read`, `event_types:read` |
+| group_relationships | `users:read`, `groups:read` |
+| user_availability_schedules | `users:read`, `organizations:read`, `availability:read` |
+| locations | `users:read`, `organizations:read`, `locations:read` |
+| organization_invitations | `users:read`, `organizations:read` |
+| webhook_subscriptions | `users:read`, `webhooks:read` |
 
 ## Streams
 
@@ -32,6 +52,15 @@ Incremental syncs of `scheduled_events` resume from the start time of the latest
 | organization_memberships | uri         | DefaultPaginator | ✅                 | ❌                   |
 | scheduled_events         | uri         | DefaultPaginator | ✅                 | ✅                   |
 | event_invitees           | uri         | DefaultPaginator | ✅                 | ✅                   |
+| teams                    | uri         | DefaultPaginator | ✅                 | ❌                   |
+| event_type_memberships   | uri         | DefaultPaginator | ✅                 | ❌                   |
+| group_relationships      | uri         | DefaultPaginator | ✅                 | ❌                   |
+| user_availability_schedules | uri      | No pagination    | ✅                 | ❌                   |
+| locations                | user, kind  | No pagination    | ✅                 | ❌                   |
+| organization_invitations | uri         | DefaultPaginator | ✅                 | ❌                   |
+| webhook_subscriptions    | uri         | DefaultPaginator | ✅                 | ❌                   |
+
+`teams`, `user_availability_schedules` and `locations` send one request per organization member and `event_type_memberships` sends one request per event type, so they are not suggested by default. `teams` returns a team once for each member who belongs to it, so deduplicate on `uri` (use a deduped sync mode).
 
 ## IP allow list
 
@@ -44,6 +73,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.3.0 | 2026-11-03 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add teams, event type memberships, group relationships, user availability schedules, locations, organization invitations and webhook subscriptions streams |
 | 0.2.0 | 2026-11-03 | [90829](https://github.com/airbytehq/airbyte/pull/90829) | Handle rate limits and token errors, declare missing fields, fix the crash when `lookback_days` is unset, stop dropping event types updated before 2021 and invitees booked before the start date (refresh these streams to backfill) |
 | 0.1.58 | 2026-11-03 | [90473](https://github.com/airbytehq/airbyte/pull/90473) | Update dependencies |
 | 0.1.57 | 2026-10-27 | [89813](https://github.com/airbytehq/airbyte/pull/89813) | Update dependencies |
