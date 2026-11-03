@@ -144,6 +144,8 @@ The connector limits Sponsored Products, Sponsored Brands, and Sponsored Display
 
 This minimum also applies when resuming from saved incremental state. If the saved cursor is more than 60 days old, the connector skips the older unsynced period. A long sync interruption can therefore leave a data gap that this connector can't backfill, even if Amazon still retains that data.
 
+If you omit **Start Date**, its default moves to yesterday (UTC) on each sync. This moving lower bound can skip missed days after shorter interruptions and limit the history re-read by **Look Back Window**. Set a fixed **Start Date** early enough to cover the history you need so subsequent syncs can resume missed days within the 60-day limit.
+
 Amazon still validates each report request against the retention window for that report type. The connector's date limit doesn't guarantee that every request is within that window, particularly during long-running syncs. See [Report creation errors](#report-creation-errors) if Amazon rejects a report's start date.
 
 :::warning
