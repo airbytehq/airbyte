@@ -8,65 +8,85 @@ import requests
 
 
 @pytest.mark.parametrize(
-    "response_data, expected_events",
+    "response_data, expected_comments",
     [
-        # Test case with no ticket_events in response
-        ({"some_other_data": [{}]}, []),
-        # Test case with empty ticket_events
-        ({"ticket_events": []}, []),
-        # Test case with ticket_events but no child_events
-        ({"ticket_events": [{"via_reference_id": 123, "ticket_id": 456, "timestamp": "2022-01-01T00:00:00Z"}]}, []),
-        # Test case with valid child_events and Comment event_type
-        (
+        pytest.param({"some_other_data": [{}]}, [], id="no audits key"),
+        pytest.param({"audits": []}, [], id="no audits"),
+        pytest.param(
+            {"audits": [{"id": 1, "ticket_id": 456, "created_at": "2022-01-01T00:00:00Z", "via": {"channel": "web"}}]}, [], id="no events"
+        ),
+        pytest.param(
             {
-                "ticket_events": [
+                "audits": [
                     {
-                        "via_reference_id": 123,
+                        "id": 1,
                         "ticket_id": 456,
-                        "timestamp": "2022-01-01T00:00:00Z",
-                        "child_events": [{"event_type": "Comment", "via_reference_id": "unused", "via": {"some": "data"}}],
+                        "created_at": "2022-01-01T00:00:00Z",
+                        "via": {"channel": "web", "source": {"from": {}, "to": {}, "rel": None}},
+                        "events": [
+                            {"id": 10, "type": "Create", "field_name": "subject", "value": "Help"},
+                            {"id": 11, "type": "Comment", "body": "Hello", "public": True, "author_id": 7, "audit_id": 1},
+                            {"id": 12, "type": "VoiceComment", "body": "Voicemail"},
+                        ],
                     }
                 ]
             },
             [
                 {
-                    "event_type": "Comment",
-                    "via_reference_id": 123,
+                    "id": 11,
+                    "type": "Comment",
+                    "body": "Hello",
+                    "public": True,
+                    "author_id": 7,
+                    "audit_id": 1,
                     "ticket_id": 456,
-                    "timestamp": "2022-01-01T00:00:00Z",
-                    "via": {"some": "data"},
+                    "created_at": "2022-01-01T00:00:00Z",
+                    "timestamp": 1640995200,
+                    "via": {"channel": "web", "source": {"from": {}, "to": {}, "rel": None}},
+                    "via_reference_id": None,
+                    "event_type": "Comment",
                 }
             ],
+            id="only Comment events, with the audit's ticket_id, created_at, timestamp and via",
         ),
-        # Test case with an invalid 'via' property format
-        (
+        pytest.param(
             {
-                "ticket_events": [
-                    {
-                        "via_reference_id": 123,
-                        "ticket_id": 456,
-                        "timestamp": "2022-01-01T00:00:00Z",
-                        "child_events": [{"event_type": "Comment", "via_reference_id": "unused", "via": "incorrect_format"}],
-                    }
+                "audits": [
+                    {"id": 1, "ticket_id": 456, "created_at": None, "via": "incorrect_format", "events": [{"id": 11, "type": "Comment"}]}
                 ]
             },
-            [{"event_type": "Comment", "via_reference_id": 123, "ticket_id": 456, "timestamp": "2022-01-01T00:00:00Z", "via": None}],
+            [
+                {
+                    "id": 11,
+                    "type": "Comment",
+                    "ticket_id": 456,
+                    "created_at": None,
+                    "timestamp": None,
+                    "via": None,
+                    "via_reference_id": None,
+                    "event_type": "Comment",
+                }
+            ],
+            id="non-object via and missing created_at become null",
         ),
     ],
 )
-def test_extraсtor_events(response_data, expected_events, components_module):
-    # Create an instance of the extractor
-    extractor = components_module.ZendeskSupportExtractorEvents()
-
-    # Mock the response from requests
+def test_audit_comments_extractor(response_data, expected_comments, components_module):
+    extractor = components_module.ZendeskSupportAuditCommentsExtractor()
     response = MagicMock(spec=requests.Response)
     response.json.return_value = response_data
 
-    # Invoke the extract_records method
-    events = extractor.extract_records(response)
+    comments = extractor.extract_records(response)
 
-    # Assert that the returned events match the expected events
-    assert events == expected_events, f"Expected events to be {expected_events}, but got {events}"
+    assert comments == expected_comments
+
+
+def test_audit_comments_extractor_given_non_json_body_then_return_nothing(components_module):
+    extractor = components_module.ZendeskSupportAuditCommentsExtractor()
+    response = MagicMock(spec=requests.Response)
+    response.json.side_effect = requests.exceptions.JSONDecodeError("Expecting value", "<html>", 0)
+
+    assert extractor.extract_records(response) == []
 
 
 @pytest.mark.parametrize(

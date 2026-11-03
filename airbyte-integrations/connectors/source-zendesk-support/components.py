@@ -1,32 +1,53 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
-class ZendeskSupportExtractorEvents(RecordExtractor):
+class ZendeskSupportAuditCommentsExtractor(RecordExtractor):
+    """Extracts `ticket_comments` records from `GET /tickets/{ticket_id}/audits.json`.
+
+    A comment is an event of type `Comment` inside an audit. The audit carries the fields the comment
+    record needs that the event itself lacks: `ticket_id`, `created_at` and `via` (the audit's `via` is
+    the channel the comment came through), and `timestamp` is the unix form of `created_at`. The
+    record shape matches what the Incremental Ticket Event Export based stream emitted before 6.0.0,
+    including `via_reference_id`, which that stream always emitted as null.
+    """
+
     def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
         try:
-            records = response.json().get("ticket_events") or []
+            audits = response.json().get("audits") or []
         except requests.exceptions.JSONDecodeError:
-            records = []
+            return []
 
-        events = []
-        for record in records:
-            for event in record.get("child_events", []):
-                if event.get("event_type") == "Comment":
-                    for prop in ["via_reference_id", "ticket_id", "timestamp"]:
-                        event[prop] = record.get(prop)
+        comments = []
+        for audit in audits:
+            for event in audit.get("events") or []:
+                if event.get("type") != "Comment":
+                    continue
+                comment = dict(event)
+                comment["ticket_id"] = audit.get("ticket_id")
+                comment["created_at"] = audit.get("created_at")
+                comment["timestamp"] = self._unix_timestamp(audit.get("created_at"))
+                comment["via"] = audit.get("via") if isinstance(audit.get("via"), dict) else None
+                comment["via_reference_id"] = None
+                comment["event_type"] = "Comment"
+                comments.append(comment)
+        return comments
 
-                    # https://github.com/airbytehq/oncall/issues/1001
-                    if not isinstance(event.get("via"), dict):
-                        event["via"] = None
-                    events.append(event)
-        return events
+    @staticmethod
+    def _unix_timestamp(created_at: Any) -> Optional[int]:
+        if not created_at:
+            return None
+        try:
+            return int(ab_datetime_parse(created_at).timestamp())
+        except (TypeError, ValueError):
+            return None
 
 
 class ZendeskSupportAttributeDefinitionsExtractor(RecordExtractor):

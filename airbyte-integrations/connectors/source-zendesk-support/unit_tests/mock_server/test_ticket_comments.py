@@ -1,6 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+"""Tests for the `ticket_comments` stream.
+
+Since 6.0.0 the stream reads `GET /tickets/{ticket_id}/audits.json` for every ticket the `tickets`
+stream returns (an incremental dependency) and extracts the Comment events of each audit.
+"""
+
 from datetime import timedelta
+from typing import Any, Dict, List, Optional, Tuple
 from unittest import TestCase
 
 import freezegun
@@ -8,104 +15,223 @@ import freezegun
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 
 from .config import ConfigBuilder
+from .helpers import given_ticket_list
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import TicketCommentsResponseBuilder
-from .utils import read_stream
+from .response_builder import ErrorResponseBuilder, TicketAuditsPerTicketResponseBuilder, TicketAuditsRecordBuilder
+from .utils import datetime_to_string, read_stream
 
 
+_STREAM_NAME = "ticket_comments"
 _NOW = ab_datetime_now()
 _START_DATE = _NOW.subtract(timedelta(weeks=104))
+_AUTHENTICATOR = ApiTokenAuthenticator(email="user@example.com", password="password")
+_VIA = {"channel": "web", "source": {"from": {}, "to": {}, "rel": None}}
+
+
+def _config() -> Dict[str, Any]:
+    return (
+        ConfigBuilder()
+        .with_basic_auth_credentials("user@example.com", "password")
+        .with_subdomain("d3v-airbyte")
+        .with_start_date(_START_DATE)
+        .build()
+    )
+
+
+def _at(moment: AirbyteDateTime, **delta: int) -> str:
+    return datetime_to_string(moment + timedelta(**delta))
+
+
+def _comment(comment_id: int, audit_id: int) -> Dict[str, Any]:
+    return {
+        "id": comment_id,
+        "type": "Comment",
+        "author_id": 7,
+        "body": "Hello",
+        "html_body": "<p>Hello</p>",
+        "plain_body": "Hello",
+        "public": True,
+        "attachments": [],
+        "audit_id": audit_id,
+    }
+
+
+def _audit(audit_id: int, ticket_id: int, created_at: str, events: List[Dict[str, Any]]) -> TicketAuditsRecordBuilder:
+    return (
+        TicketAuditsRecordBuilder.ticket_audits_record()
+        .with_id(audit_id)
+        .with_ticket_id(ticket_id)
+        .with_cursor(created_at)
+        .with_via(_VIA)
+        .with_events(events)
+    )
+
+
+def _audits_request(ticket_id: int, after_cursor: Optional[str] = None):
+    request = ZendeskSupportRequestBuilder.ticket_comments_endpoint(_AUTHENTICATOR, ticket_id).with_page_size(100)
+    if after_cursor:
+        request = request.with_after_cursor(after_cursor)
+    return request.build()
+
+
+def _given_audits(http_mocker: HttpMocker, ticket_id: int, audits: List[TicketAuditsRecordBuilder]) -> None:
+    response = TicketAuditsPerTicketResponseBuilder.ticket_audits_per_ticket_response()
+    for audit in audits:
+        response = response.with_record(audit)
+    http_mocker.get(_audits_request(ticket_id), response.build())
+
+
+def _given_tickets(http_mocker: HttpMocker, tickets: List[Tuple[int, int]]) -> None:
+    given_ticket_list(http_mocker, _AUTHENTICATOR, tickets)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketCommentsStreamFullRefresh(TestCase):
-    """Test ticket_comments stream which uses incremental/ticket_events.json endpoint with custom extractor."""
-
-    @property
-    def _config(self):
-        return (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .with_start_date(_START_DATE)
-            .build()
+    @HttpMocker()
+    def test_given_audits_when_read_then_return_the_comment_events_with_the_audit_fields(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        created_at = _START_DATE + timedelta(days=1)
+        _given_tickets(http_mocker, [(101, start_time + 10)])
+        _given_audits(
+            http_mocker,
+            101,
+            [
+                _audit(
+                    1001,
+                    101,
+                    datetime_to_string(created_at),
+                    [{"id": 11, "type": "Create", "field_name": "subject", "value": "Help"}, _comment(12, 1001)],
+                ),
+                _audit(1002, 101, _at(_START_DATE, days=2), [{"id": 21, "type": "Change", "field_name": "status", "value": "open"}]),
+                _audit(1003, 101, _at(_START_DATE, days=3), [_comment(31, 1003), {"id": 32, "type": "VoiceComment", "body": "..."}]),
+            ],
         )
 
-    def _get_authenticator(self, config):
-        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+        output = read_stream(_STREAM_NAME, SyncMode.full_refresh, _config())
+
+        assert len(output.errors) == 0
+        records = {record.record.data["id"]: record.record.data for record in output.records}
+        assert set(records) == {12, 31}
+        comment = records[12]
+        assert comment["ticket_id"] == 101
+        assert comment["audit_id"] == 1001
+        assert comment["created_at"] == datetime_to_string(created_at)
+        assert comment["timestamp"] == int(created_at.timestamp())
+        assert comment["via"] == _VIA
+        assert comment.get("via_reference_id") is None  # always null, and the CDK serializer omits null fields
+        assert comment["event_type"] == "Comment"
+        assert comment["type"] == "Comment"
+        assert comment["body"] == "Hello"
+        assert comment["public"] is True
 
     @HttpMocker()
-    def test_given_one_page_when_read_ticket_comments_then_return_records(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
-        # Note: ticket_comments uses a custom extractor (ZendeskSupportExtractorEvents) that expects
-        # ticket_events response format with nested child_events. Using with_any_query_params()
-        # because the start_time parameter is dynamically calculated based on config start_date.
-        # The template already has the correct nested structure, so we don't use .with_record().
+    def test_given_has_more_when_read_then_follow_links_next_until_has_more_is_false(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, [(101, start_time + 10)])
+        next_page_url = "https://d3v-airbyte.zendesk.com/api/v2/tickets/101/audits.json?page%5Bafter%5D=after-cursor&page%5Bsize%5D=100"
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_comments_endpoint(api_token_authenticator).with_any_query_params().build(),
-            TicketCommentsResponseBuilder.ticket_comments_response().build(),
+            _audits_request(101),
+            TicketAuditsPerTicketResponseBuilder.ticket_audits_per_ticket_response(next_page_url)
+            .with_record(_audit(1001, 101, _at(_START_DATE, days=1), [_comment(11, 1001)]))
+            .with_pagination()
+            .build(),
+        )
+        http_mocker.get(
+            _audits_request(101, after_cursor="after-cursor"),
+            TicketAuditsPerTicketResponseBuilder.ticket_audits_per_ticket_response()
+            .with_record(_audit(1002, 101, _at(_START_DATE, days=2), [_comment(21, 1002)]))
+            .build(),
         )
 
-        output = read_stream("ticket_comments", SyncMode.full_refresh, self._config)
+        output = read_stream(_STREAM_NAME, SyncMode.full_refresh, _config())
 
-        assert len(output.records) == 1
+        assert len(output.errors) == 0
+        assert sorted(record.record.data["id"] for record in output.records) == [11, 21]
+
+    @HttpMocker()
+    def test_given_comments_older_than_start_date_when_read_then_drop_them(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, [(101, start_time + 10)])
+        _given_audits(
+            http_mocker,
+            101,
+            [
+                _audit(1001, 101, _at(_START_DATE, days=-1), [_comment(11, 1001)]),
+                _audit(1002, 101, _at(_START_DATE, days=1), [_comment(21, 1002)]),
+            ],
+        )
+
+        output = read_stream(_STREAM_NAME, SyncMode.full_refresh, _config())
+
+        assert len(output.errors) == 0
+        assert [record.record.data["id"] for record in output.records] == [21]
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestTicketCommentsStreamErrorHandling(TestCase):
+    @HttpMocker()
+    def test_given_403_and_404_for_some_tickets_when_read_then_skip_them_and_read_the_rest(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, [(103, start_time + 30), (102, start_time + 20), (101, start_time + 10)])
+        http_mocker.get(_audits_request(101), ErrorResponseBuilder.response_with_status(403).with_empty_html_body().build())
+        http_mocker.get(_audits_request(102), ErrorResponseBuilder.response_with_status(404).build())
+        _given_audits(http_mocker, 103, [_audit(3001, 103, _at(_START_DATE, days=1), [_comment(31, 3001)])])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config())
+
+        assert [record.record.data["id"] for record in output.records] == [31]
+        assert len(output.errors) == 0
+        assert not any(log.log.level == "ERROR" for log in output.logs)
+        state = output.most_recent_state.stream_state.__dict__
+        assert state["parent_state"]["tickets"] == {"updated_at": str(start_time + 30)}
 
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketCommentsStreamIncremental(TestCase):
-    """Test ticket_comments stream incremental sync."""
+    @HttpMocker()
+    def test_given_no_state_when_read_then_state_follows_the_latest_comment_and_the_parent_cursor(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        latest = _START_DATE + timedelta(days=5)
+        _given_tickets(http_mocker, [(102, start_time + 20), (101, start_time + 10)])
+        _given_audits(http_mocker, 101, [_audit(1001, 101, _at(_START_DATE, days=1), [_comment(11, 1001)])])
+        _given_audits(http_mocker, 102, [_audit(2001, 102, datetime_to_string(latest), [_comment(21, 2001)])])
 
-    @property
-    def _config(self):
-        return (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .with_start_date(_START_DATE)
-            .build()
-        )
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config())
 
-    def _get_authenticator(self, config):
-        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+        assert len(output.errors) == 0
+        assert len(output.records) == 2
+        state = output.most_recent_state.stream_state.__dict__
+        assert state["state"] == {"created_at": str(int(latest.timestamp()))}
+        assert state["parent_state"]["tickets"] == {"updated_at": str(start_time + 20)}
+        assert state["use_global_cursor"] is True
+        assert not state.get("states")
 
     @HttpMocker()
-    def test_given_no_state_when_read_ticket_comments_then_return_records_and_emit_state(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
-
-        # Note: Using with_any_query_params() because the start_time parameter is dynamically
-        # calculated based on config start_date. The template already has the correct nested
-        # structure, so we don't use .with_record().
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_comments_endpoint(api_token_authenticator).with_any_query_params().build(),
-            TicketCommentsResponseBuilder.ticket_comments_response().build(),
+    def test_given_5_x_state_when_read_then_the_parent_walk_starts_from_the_saved_cursor(self, http_mocker: HttpMocker) -> None:
+        """A 5.x state is the flat `{"created_at": "<unix timestamp>"}` cursor of the export. The CDK seeds the
+        parent `tickets` cursor from that single value, and comments older than the lookback window are dropped."""
+        previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
+        latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"created_at": str(previous)}).build()
+        _given_tickets(http_mocker, [(101, latest)])
+        _given_audits(
+            http_mocker,
+            101,
+            [
+                _audit(1001, 101, _at(_START_DATE, days=1), [_comment(11, 1001)]),
+                _audit(1002, 101, datetime_to_string(_NOW.subtract(timedelta(days=3, minutes=30))), [_comment(21, 1002)]),
+                _audit(1003, 101, datetime_to_string(_NOW.subtract(timedelta(days=1))), [_comment(31, 1003)]),
+            ],
         )
 
-        output = read_stream("ticket_comments", SyncMode.incremental, self._config)
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
 
-        assert len(output.records) == 1
-        assert output.most_recent_state is not None
-        assert output.most_recent_state.stream_descriptor.name == "ticket_comments"
-
-    @HttpMocker()
-    def test_given_state_when_read_ticket_comments_then_use_state_cursor(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
-        state_cursor_value = _START_DATE.add(timedelta(days=30))
-
-        # Note: Using with_any_query_params() because the start_time parameter is dynamically
-        # calculated based on state cursor value. The template already has the correct nested
-        # structure, so we don't use .with_record().
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_comments_endpoint(api_token_authenticator).with_any_query_params().build(),
-            TicketCommentsResponseBuilder.ticket_comments_response().build(),
-        )
-
-        state = StateBuilder().with_stream_state("ticket_comments", {"timestamp": str(int(state_cursor_value.timestamp()))}).build()
-
-        output = read_stream("ticket_comments", SyncMode.incremental, self._config, state)
-
-        assert len(output.records) == 1
-        assert output.most_recent_state is not None
-        assert output.most_recent_state.stream_descriptor.name == "ticket_comments"
+        assert len(output.errors) == 0
+        # 21 is within the one-hour lookback window of the saved cursor, so it is re-emitted.
+        assert sorted(record.record.data["id"] for record in output.records) == [21, 31]
+        new_state = output.most_recent_state.stream_state.__dict__
+        assert new_state["state"] == {"created_at": str(latest)}
+        assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}

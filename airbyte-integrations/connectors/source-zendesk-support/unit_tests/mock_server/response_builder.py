@@ -16,7 +16,7 @@ Example usage:
 
 import json
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from airbyte_cdk.connector_builder.models import HttpRequest
 from airbyte_cdk.test.mock_http import HttpResponse
@@ -1073,6 +1073,9 @@ class SatisfactionRatingsRecordBuilder(ZendeskSupportRecordBuilder):
 
 
 class TicketAuditsRecordBuilder(ZendeskSupportRecordBuilder):
+    """One audit of `GET /tickets/{ticket_id}/audits.json`, the record of `ticket_audits_per_ticket` and the
+    source of `ticket_events` and `ticket_comments`."""
+
     @classmethod
     def ticket_audits_record(cls) -> "TicketAuditsRecordBuilder":
         record_template = cls.extract_record("ticket_audits", __file__, NestedPath(["audits", 0]))
@@ -1082,15 +1085,24 @@ class TicketAuditsRecordBuilder(ZendeskSupportRecordBuilder):
         self._record["id"] = id
         return self
 
+    def with_ticket_id(self, ticket_id: int) -> "TicketAuditsRecordBuilder":
+        self._record["ticket_id"] = ticket_id
+        return self
 
-class TicketCommentsRecordBuilder(ZendeskSupportRecordBuilder):
-    @classmethod
-    def ticket_comments_record(cls) -> "TicketCommentsRecordBuilder":
-        record_template = cls.extract_record("ticket_comments", __file__, NestedPath(["ticket_events", 0, "child_events", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+    def with_author_id(self, author_id: int) -> "TicketAuditsRecordBuilder":
+        self._record["author_id"] = author_id
+        return self
 
-    def with_id(self, id: int) -> "TicketCommentsRecordBuilder":
-        self._record["id"] = id
+    def with_via(self, via: Optional[Dict[str, Any]]) -> "TicketAuditsRecordBuilder":
+        self._record["via"] = via
+        return self
+
+    def with_metadata(self, metadata: Dict[str, Any]) -> "TicketAuditsRecordBuilder":
+        self._record["metadata"] = metadata
+        return self
+
+    def with_events(self, events: List[Dict[str, Any]]) -> "TicketAuditsRecordBuilder":
+        self._record["events"] = events
         return self
 
 
@@ -1110,17 +1122,6 @@ class TicketMetricEventsRecordBuilder(ZendeskSupportRecordBuilder):
 
     def with_metric(self, metric: str) -> "TicketMetricEventsRecordBuilder":
         self._record["metric"] = metric
-        return self
-
-
-class TicketEventsRecordBuilder(ZendeskSupportRecordBuilder):
-    @classmethod
-    def ticket_events_record(cls) -> "TicketEventsRecordBuilder":
-        record_template = cls.extract_record("ticket_events", __file__, NestedPath(["ticket_events", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("timestamp"))
-
-    def with_id(self, id: int) -> "TicketEventsRecordBuilder":
-        self._record["id"] = id
         return self
 
 
@@ -1268,28 +1269,6 @@ class TicketAuditsPerTicketResponseBuilder(HttpResponseBuilder):
         )
 
 
-class TicketCommentsResponseBuilder(HttpResponseBuilder):
-    """Custom response builder for ticket_comments stream.
-
-    This stream uses a custom extractor (ZendeskSupportExtractorEvents) that expects
-    a nested structure with ticket_events[].child_events[] where child_events have event_type="Comment".
-    The standard HttpResponseBuilder.build() would replace the ticket_events field with an empty list,
-    so we override build() to preserve the template structure.
-    """
-
-    @classmethod
-    def ticket_comments_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketCommentsResponseBuilder":
-        return cls(
-            find_template("ticket_comments", __file__),
-            FieldPath("ticket_events"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
-
-    def build(self) -> HttpResponse:
-        # Override to preserve the nested structure - don't replace ticket_events with records list
-        return HttpResponse(json.dumps(self._response), self._status_code)
-
-
 class TicketMetricEventsResponseBuilder(HttpResponseBuilder):
     """Response of `GET /tickets/{ticket_id}/metric_events`: an object keyed by metric name whose values are
     the lists of events, with no pagination envelope."""
@@ -1307,16 +1286,6 @@ class TicketMetricEventsResponseBuilder(HttpResponseBuilder):
 
     def build(self) -> HttpResponse:
         return HttpResponse(json.dumps(self._response), self._status_code)
-
-
-class TicketEventsResponseBuilder(HttpResponseBuilder):
-    @classmethod
-    def ticket_events_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketEventsResponseBuilder":
-        return cls(
-            find_template("ticket_events", __file__),
-            FieldPath("ticket_events"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
 
 
 class TicketSkipsResponseBuilder(HttpResponseBuilder):

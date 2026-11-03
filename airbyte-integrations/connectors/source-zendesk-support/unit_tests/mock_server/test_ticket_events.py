@@ -1,145 +1,228 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+"""Tests for the `ticket_events` stream.
+
+Since 6.0.0 the stream reads `GET /tickets/{ticket_id}/audits.json` for every ticket the `tickets`
+stream returns (an incremental dependency) and maps each audit onto the record shape of the
+Incremental Ticket Event Export it replaces.
+"""
+
 from datetime import timedelta
+from typing import Any, Dict, List, Optional, Tuple
 from unittest import TestCase
 
 import freezegun
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 
 from .config import ConfigBuilder
+from .helpers import given_ticket_list
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import TicketEventsRecordBuilder, TicketEventsResponseBuilder
-from .utils import read_stream, string_to_datetime
+from .response_builder import ErrorResponseBuilder, TicketAuditsPerTicketResponseBuilder, TicketAuditsRecordBuilder
+from .utils import datetime_to_string, read_stream
 
 
+_STREAM_NAME = "ticket_events"
 _NOW = ab_datetime_now()
 _START_DATE = _NOW.subtract(timedelta(weeks=104))
-_A_CURSOR = "MTU3NjYxMzUzOS4wfHw0Njd8"
+_AUTHENTICATOR = ApiTokenAuthenticator(email="user@example.com", password="password")
+_EVENTS = [
+    {"id": 11, "type": "Create", "field_name": "subject", "value": "Help"},
+    {"id": 12, "type": "Comment", "body": "Hello", "public": True, "author_id": 7, "audit_id": 1001},
+    {"id": 13, "type": "Notification", "subject": "Request received", "via": {"channel": "rule"}},
+]
+
+
+def _config() -> Dict[str, Any]:
+    return (
+        ConfigBuilder()
+        .with_basic_auth_credentials("user@example.com", "password")
+        .with_subdomain("d3v-airbyte")
+        .with_start_date(_START_DATE)
+        .build()
+    )
+
+
+def _at(moment: AirbyteDateTime, **delta: int) -> str:
+    return datetime_to_string(moment + timedelta(**delta))
+
+
+def _audit(audit_id: int, ticket_id: int, created_at: str, events: Optional[List[Dict[str, Any]]] = None) -> TicketAuditsRecordBuilder:
+    return (
+        TicketAuditsRecordBuilder.ticket_audits_record()
+        .with_id(audit_id)
+        .with_ticket_id(ticket_id)
+        .with_cursor(created_at)
+        .with_author_id(7)
+        .with_via({"channel": "api", "source": {"from": {}, "to": {}, "rel": None}})
+        .with_metadata({"system": {"client": "curl", "ip_address": "198.51.100.7", "location": "Kyiv"}, "custom": {}})
+        .with_events(_EVENTS if events is None else events)
+    )
+
+
+def _audits_request(ticket_id: int, after_cursor: Optional[str] = None):
+    request = ZendeskSupportRequestBuilder.ticket_events_endpoint(_AUTHENTICATOR, ticket_id).with_page_size(100)
+    if after_cursor:
+        request = request.with_after_cursor(after_cursor)
+    return request.build()
+
+
+def _given_audits(http_mocker: HttpMocker, ticket_id: int, audits: List[TicketAuditsRecordBuilder]) -> None:
+    response = TicketAuditsPerTicketResponseBuilder.ticket_audits_per_ticket_response()
+    for audit in audits:
+        response = response.with_record(audit)
+    http_mocker.get(_audits_request(ticket_id), response.build())
+
+
+def _given_tickets(http_mocker: HttpMocker, tickets: List[Tuple[int, int]]) -> None:
+    given_ticket_list(http_mocker, _AUTHENTICATOR, tickets)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketEventsStreamFullRefresh(TestCase):
-    @property
-    def _config(self):
-        return (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .with_start_date(_START_DATE)
-            .build()
-        )
-
-    def _get_authenticator(self, config):
-        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
-
     @HttpMocker()
-    def test_given_one_page_when_read_ticket_events_then_return_records(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_events_endpoint(api_token_authenticator)
-            .with_start_time(self._config["start_date"])
-            .with_any_query_params()
-            .build(),
-            TicketEventsResponseBuilder.ticket_events_response().with_record(TicketEventsRecordBuilder.ticket_events_record()).build(),
-        )
+    def test_given_audits_when_read_then_map_each_audit_onto_the_export_record_shape(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        created_at = _START_DATE + timedelta(days=1)
+        _given_tickets(http_mocker, [(101, start_time + 10)])
+        _given_audits(http_mocker, 101, [_audit(1001, 101, datetime_to_string(created_at))])
 
-        output = read_stream("ticket_events", SyncMode.full_refresh, self._config)
+        output = read_stream(_STREAM_NAME, SyncMode.full_refresh, _config())
 
+        assert len(output.errors) == 0
         assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["id"] == 1001
+        assert record["ticket_id"] == 101
+        assert record["event_type"] == "Audit"
+        assert record["created_at"] == datetime_to_string(created_at)
+        assert record["timestamp"] == int(created_at.timestamp())
+        assert record["updater_id"] == 7
+        assert record["via"] == "api"
+        assert record["system"] == {"client": "curl", "location": "Kyiv"}
+        assert record["metadata"]["system"]["ip_address"] == "198.51.100.7"
+        assert record["child_events"] == _EVENTS
+        assert "events" not in record
+        assert "author_id" not in record
 
     @HttpMocker()
-    def test_given_two_pages_when_read_ticket_events_then_return_all_records(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
+    def test_given_audit_without_via_or_metadata_when_read_then_map_them_to_null(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, [(101, start_time + 10)])
+        audit = _audit(1001, 101, _at(_START_DATE, days=1), events=[]).with_via(None).with_metadata({})
+        _given_audits(http_mocker, 101, [audit])
 
-        base_url = "https://d3v-airbyte.zendesk.com/api/v2/incremental/ticket_events.json"
+        output = read_stream(_STREAM_NAME, SyncMode.full_refresh, _config())
 
+        assert len(output.errors) == 0
+        record = output.records[0].record.data
+        # The CDK serializer omits top-level null fields from emitted records.
+        assert record.get("via") is None
+        assert record.get("system") is None
+        assert record["child_events"] == []
+
+    @HttpMocker()
+    def test_given_has_more_when_read_then_follow_links_next_until_has_more_is_false(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, [(101, start_time + 10)])
+        next_page_url = "https://d3v-airbyte.zendesk.com/api/v2/tickets/101/audits.json?page%5Bafter%5D=after-cursor&page%5Bsize%5D=100"
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_events_endpoint(api_token_authenticator)
-            .with_start_time(self._config["start_date"])
-            .with_any_query_params()
-            .build(),
-            TicketEventsResponseBuilder.ticket_events_response(base_url, _A_CURSOR)
-            .with_record(TicketEventsRecordBuilder.ticket_events_record().with_id(1))
+            _audits_request(101),
+            TicketAuditsPerTicketResponseBuilder.ticket_audits_per_ticket_response(next_page_url)
+            .with_record(_audit(1001, 101, _at(_START_DATE, days=1)))
             .with_pagination()
             .build(),
         )
         http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_events_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).build(),
-            TicketEventsResponseBuilder.ticket_events_response()
-            .with_record(TicketEventsRecordBuilder.ticket_events_record().with_id(2))
+            _audits_request(101, after_cursor="after-cursor"),
+            TicketAuditsPerTicketResponseBuilder.ticket_audits_per_ticket_response()
+            .with_record(_audit(1002, 101, _at(_START_DATE, days=2)))
             .build(),
         )
 
-        output = read_stream("ticket_events", SyncMode.full_refresh, self._config)
+        output = read_stream(_STREAM_NAME, SyncMode.full_refresh, _config())
 
-        assert len(output.records) == 2
-        record_ids = [r.record.data["id"] for r in output.records]
-        assert 1 in record_ids
-        assert 2 in record_ids
+        assert len(output.errors) == 0
+        assert sorted(record.record.data["id"] for record in output.records) == [1001, 1002]
+
+    @HttpMocker()
+    def test_given_audits_older_than_start_date_when_read_then_drop_them(self, http_mocker: HttpMocker) -> None:
+        """The endpoint returns the whole audit history of the ticket; the record filter keeps only the slice."""
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, [(101, start_time + 10)])
+        _given_audits(http_mocker, 101, [_audit(1001, 101, _at(_START_DATE, days=-1)), _audit(1002, 101, _at(_START_DATE, days=1))])
+
+        output = read_stream(_STREAM_NAME, SyncMode.full_refresh, _config())
+
+        assert len(output.errors) == 0
+        assert [record.record.data["id"] for record in output.records] == [1002]
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestTicketEventsStreamErrorHandling(TestCase):
+    @HttpMocker()
+    def test_given_403_and_404_for_some_tickets_when_read_then_skip_them_and_read_the_rest(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, [(103, start_time + 30), (102, start_time + 20), (101, start_time + 10)])
+        http_mocker.get(_audits_request(101), ErrorResponseBuilder.response_with_status(403).with_empty_html_body().build())
+        http_mocker.get(_audits_request(102), ErrorResponseBuilder.response_with_status(404).build())
+        _given_audits(http_mocker, 103, [_audit(3001, 103, _at(_START_DATE, days=1))])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config())
+
+        assert [record.record.data["id"] for record in output.records] == [3001]
+        assert len(output.errors) == 0
+        assert not any(log.log.level == "ERROR" for log in output.logs)
+        state = output.most_recent_state.stream_state.__dict__
+        assert state["parent_state"]["tickets"] == {"updated_at": str(start_time + 30)}
 
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketEventsStreamIncremental(TestCase):
-    @property
-    def _config(self):
-        return (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .with_start_date(_START_DATE)
-            .build()
-        )
+    @HttpMocker()
+    def test_given_no_state_when_read_then_state_follows_the_latest_audit_and_the_parent_cursor(self, http_mocker: HttpMocker) -> None:
+        start_time = int(_START_DATE.timestamp())
+        latest = _START_DATE + timedelta(days=5)
+        _given_tickets(http_mocker, [(102, start_time + 20), (101, start_time + 10)])
+        _given_audits(http_mocker, 101, [_audit(1001, 101, _at(_START_DATE, days=1))])
+        _given_audits(http_mocker, 102, [_audit(2001, 102, datetime_to_string(latest))])
 
-    def _get_authenticator(self, config):
-        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config())
+
+        assert len(output.errors) == 0
+        assert len(output.records) == 2
+        state = output.most_recent_state.stream_state.__dict__
+        assert state["state"] == {"timestamp": str(int(latest.timestamp()))}
+        assert state["parent_state"]["tickets"] == {"updated_at": str(start_time + 20)}
+        assert state["use_global_cursor"] is True
+        assert not state.get("states")
 
     @HttpMocker()
-    def test_given_no_state_when_read_ticket_events_then_return_records_and_emit_state(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
-        start_date = string_to_datetime(self._config["start_date"])
-        cursor_value = int(start_date.add(timedelta(days=1)).timestamp())
-
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_events_endpoint(api_token_authenticator)
-            .with_start_time(self._config["start_date"])
-            .with_any_query_params()
-            .build(),
-            TicketEventsResponseBuilder.ticket_events_response()
-            .with_record(TicketEventsRecordBuilder.ticket_events_record().with_field(FieldPath("timestamp"), cursor_value))
-            .build(),
+    def test_given_5_x_state_when_read_then_the_parent_walk_starts_from_the_saved_cursor(self, http_mocker: HttpMocker) -> None:
+        """A 5.x state is the flat `{"timestamp": "<unix timestamp>"}` cursor of the export. The CDK seeds the
+        parent `tickets` cursor from that single value, and audits older than the lookback window are dropped."""
+        previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
+        latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"timestamp": str(previous)}).build()
+        _given_tickets(http_mocker, [(101, latest)])
+        _given_audits(
+            http_mocker,
+            101,
+            [
+                _audit(1001, 101, _at(_START_DATE, days=1)),
+                _audit(1002, 101, datetime_to_string(_NOW.subtract(timedelta(days=3, minutes=30)))),
+                _audit(1003, 101, datetime_to_string(_NOW.subtract(timedelta(days=1)))),
+            ],
         )
 
-        output = read_stream("ticket_events", SyncMode.incremental, self._config)
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
 
-        assert len(output.records) == 1
-        assert output.most_recent_state is not None
-        assert output.most_recent_state.stream_descriptor.name == "ticket_events"
-
-    @HttpMocker()
-    def test_given_state_when_read_ticket_events_then_use_state_cursor(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
-        state_cursor_value = int(_START_DATE.add(timedelta(days=30)).timestamp())
-        new_cursor_value = state_cursor_value + 86400
-
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_events_endpoint(api_token_authenticator)
-            .with_start_time(state_cursor_value)
-            .with_any_query_params()
-            .build(),
-            TicketEventsResponseBuilder.ticket_events_response()
-            .with_record(TicketEventsRecordBuilder.ticket_events_record().with_field(FieldPath("timestamp"), new_cursor_value))
-            .build(),
-        )
-
-        state = StateBuilder().with_stream_state("ticket_events", {"timestamp": state_cursor_value}).build()
-
-        output = read_stream("ticket_events", SyncMode.incremental, self._config, state)
-
-        assert len(output.records) == 1
-        assert output.most_recent_state is not None
-        assert output.most_recent_state.stream_descriptor.name == "ticket_events"
+        assert len(output.errors) == 0
+        # 1002 is within the one-hour lookback window of the saved cursor, so it is re-emitted.
+        assert sorted(record.record.data["id"] for record in output.records) == [1002, 1003]
+        new_state = output.most_recent_state.stream_state.__dict__
+        assert new_state["state"] == {"timestamp": str(latest)}
+        assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}
