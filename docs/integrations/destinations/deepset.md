@@ -49,7 +49,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------- |
-| 0.1.10 | 2026-11-03 | TBD | Require Python 3.11 while keeping the existing dependency versions and runtime image. |
+| 0.1.10 | 2026-11-03 | [90909](https://github.com/airbytehq/airbyte/pull/90909) | Require Python 3.11 while keeping the existing dependency versions and runtime image. |
 | 0.1.9 | 2026-10-07 | [88205](https://github.com/airbytehq/airbyte/pull/88205) | Fix sync failures caused by unserializable error trace messages (`failure_type` emitted as a string instead of `FailureType`); surface the real reason in `check` failures; drop `main.py` from poetry `packages` so the Docker image builds |
 | 0.1.8 | 2025-05-17 | [60635](https://github.com/airbytehq/airbyte/pull/60635) | Update dependencies |
 | 0.1.7 | 2025-05-10 | [59834](https://github.com/airbytehq/airbyte/pull/59834) | Update dependencies |
