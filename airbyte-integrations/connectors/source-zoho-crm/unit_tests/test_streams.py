@@ -95,7 +95,6 @@ def test_dynamic_attrs(stream_factory):
         display_label="Name",
         length=None,
         decimal_place=None,
-        pick_list_values=[],
     )
     stream = stream_factory(ModuleMeta(api_name="Leads", module_name="Leads", api_supported=True, fields=[field]))
     assert stream.path() == "/crm/v2/Leads"
