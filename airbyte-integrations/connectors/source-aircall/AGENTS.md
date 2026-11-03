@@ -73,3 +73,9 @@ See [List all Conversations](https://developers.aircall.io/api-references/#list-
 `calls`, `contacts`, `numbers`, `teams` and `users` use `id`. `webhooks` uses `webhook_id`, the UUID Aircall documents as the webhook's identifier; Aircall describes the integer `id` as the legacy identifier. `company` has no primary key because `/company` returns one object with no identifier field ([company](https://developers.aircall.io/api-references/#company), [webhooks](https://developers.aircall.io/api-references/#webhook)).
 
 **Why this matters:** Do not add a primary key to `company`; there is no field that identifies it, and it always has exactly one record.
+
+## 9. Ids and epoch times stay `number`
+
+The reference calls ids and epoch fields (`calls.id`, `started_at`, `answered_at`, `ended_at`, `duration`, the v1 `id` fields) integers, but the manifest declares them `number`. Every value fits, Snowflake keys on `FLOAT` are exact below 2^53, and changing a declared type is breaking, so 1.0.0 changed only the fields whose declared type misrepresented the value: objects stored as text, the integer `priority`, and ISO timestamps declared as plain strings.
+
+**Why this matters:** Retyping these fields later needs another major release, and `started_at` is the `calls` cursor.

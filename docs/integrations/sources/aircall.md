@@ -77,7 +77,7 @@ GET https://api.aircall.io/v1/numbers
 
 The connector uses Aircall's [v1 API](https://developers.aircall.io/api-references/), and the [User V2 API](https://developers.aircall.io/api-references/#list-all-users-v2) for users. Calls, contacts and conversations are read in date windows because Aircall returns at most [10,000 records per query](https://developers.aircall.io/api-references/#pagination); a calls window that hits the limit is split and read again, and conversations continue from the last record's time. Without the Conversations API, every sync that selects `conversations` or `conversation_engagements` still spends one request per 30 days of history on the refused windows, so deselect both streams when the API is not enabled. The connector uses 100 of the [120 requests per minute](https://developers.aircall.io/api-references/#rate-limiting) Aircall allows each company, leaving room for the company's other integrations. Calls cover the six months of history Aircall keeps; the Start date saved by versions before 0.5.0 is no longer used.
 
-Incremental syncs of `calls`, `conversations` and `conversation_engagements` read the last three days again, and a day with more than 10,000 calls is read more than once, so Append mode stores those records again. Use Append + Deduped (primary key `id`) to keep one row per record.
+Incremental syncs of `calls`, `conversations` and `conversation_engagements` read the last three days again, and a day with more than 10,000 calls is read more than once, so a sync mode without deduplication stores those records again. Use `Incremental | Append + Deduped` (primary key `id`) to keep one row per record; an Overwrite mode keeps only the last six months of calls.
 
 ## IP allow list
 
@@ -90,7 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 1.0.0 | 2026-11-03 | [90838](https://github.com/airbytehq/airbyte/pull/90838) | Add primary keys to calls, contacts and webhooks, make numbers and teams full refresh only, and correct column types to match the Aircall API |
+| 1.0.0 | 2026-11-03 | [90838](https://github.com/airbytehq/airbyte/pull/90838) | Add primary keys to `calls` and `contacts`, key `webhooks` on `webhook_id`, make `numbers` and `teams` full refresh only, and declare the column types the Aircall API documents |
 | 0.6.0 | 2026-11-03 | [90837](https://github.com/airbytehq/airbyte/pull/90837) | Add `conversations`, `conversation_engagements`, `campaigns`, `campaign_outcomes`, `trackers`, `sms_templates` and `whatsapp_templates` streams |
 | 0.5.0 | 2026-11-03 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Read calls incrementally in daily windows that split at Aircall's 10,000-result limit, read contacts in date windows, honour Aircall's rate limit, declare `user_availability` `id` and `availability`, and read numbers and teams once per sync |
 | 0.4.27 | 2026-10-13 | [88524](https://github.com/airbytehq/airbyte/pull/88524) | Update dependencies |

@@ -29,12 +29,14 @@ data:
     breakingChanges:
       1.0.0:
         message: >-
-          Version 1.0.0 adds primary keys to `calls` (`id`) and `contacts` (`id`), changes the `webhooks` primary key from `id` to `webhook_id`,
-          makes `numbers` and `teams` full refresh only, removes the unused `teams.webhook_id` column, declares ISO 8601 timestamps on `users`, `calls` and `teams` as `date-time`,
-          retypes `calls.contact`, `calls.assigned_to`, `calls.transferred_by` and `calls.transferred_to` from string to object, and
-          retypes `numbers.priority` and `calls.number.priority` from string to integer. After upgrading, refresh the source schema and
-          clear the `calls`, `contacts`, `webhooks`, `numbers`, `teams` and `users` streams so destinations rebuild them with the new keys,
-          sync modes and column types. Other streams need no action. See the
+          Version 1.0.0 adds primary keys to `calls` (`id`) and `contacts` (`id`), keys `webhooks` on `webhook_id`,
+          makes `numbers` and `teams` full refresh only, and declares the types the Aircall API documents:
+          `calls.contact`, `assigned_to`, `transferred_by` and `transferred_to` become objects, `numbers.priority`
+          an integer and `users.created_at` a timestamp. After upgrading, refresh the source schema and switch
+          `numbers` and `teams` to `Full Refresh | Overwrite`. Clearing `calls`, or switching it from an append mode to
+          an Overwrite mode, permanently deletes calls older than six months, which Aircall no longer returns: copy the
+          table first. Some destinations need a step before the first sync, such as Snowflake for append-mode `calls`
+          and ClickHouse for append-mode `users`. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/aircall-migrations#upgrading-to-100).
         upgradeDeadline: "2026-11-17"
         deadlineAction: disable
