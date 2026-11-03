@@ -52,7 +52,11 @@ def test_oauth_connector_input_specification_declares_authorization_code_flow() 
 
     # The CDK drops `scopes` when serializing the spec, so it is only observable in the manifest.
     manifest_connector_input = _MANIFEST["spec"]["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"]
-    assert manifest_connector_input["scopes"] == [{"scope": "r_organization_social"}, {"scope": "rw_organization_admin"}]
+    assert manifest_connector_input["scopes"] == [
+        {"scope": "r_organization_social"},
+        {"scope": "r_organization_social_feed"},
+        {"scope": "rw_organization_admin"},
+    ]
 
 
 def test_oauth_outputs_map_to_the_fields_the_authenticator_reads() -> None:

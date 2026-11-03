@@ -1593,6 +1593,7 @@ spec:
       oauth_connector_input_specification:
         scopes:
           - scope: r_organization_social
+          - scope: r_organization_social_feed
           - scope: rw_organization_admin
         consent_url: "https://www.linkedin.com/oauth/v2/authorization?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&{{state_param}}"
         access_token_url: "https://www.linkedin.com/oauth/v2/accessToken"
