@@ -384,7 +384,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["end_time"]
-            value: "{{ record['values'][-1]['end_time'] if record.get('values') else None }}"
+            value: "{{ record['values'][-1].get('end_time') if record.get('values') else None }}"
       - type: CustomTransformation
         class_name: source_facebook_pages.components.CustomFieldTransformation
     # Opt-in: the stream stays full refresh unless the connection selects Incremental.
@@ -409,6 +409,10 @@ definitions:
       # its saved state to now, which stays under 90 days unless the connection sat idle longer.
       step: "{{ 'P90D' if config.get('start_date') else '' }}"
       cursor_granularity: PT1S
+      # The newest point's end_time is the end of a day that is usually still in progress, so the
+      # cursor runs ahead of the sync. Re-read the last two days each sync so that day is read again
+      # once Meta has finished counting it.
+      lookback_window: P2D
 streams:
   - "#/definitions/page_stream"
   - "#/definitions/post_stream"
