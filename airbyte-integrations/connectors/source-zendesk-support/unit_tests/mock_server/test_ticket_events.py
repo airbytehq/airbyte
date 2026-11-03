@@ -102,14 +102,15 @@ class TestTicketEventsStreamFullRefresh(TestCase):
         assert record["timestamp"] == int(created_at.timestamp())
         assert record["updater_id"] == 7
         assert record["via"] == "api"
-        assert record["system"] == {"client": "curl", "location": "Kyiv"}
+        # `system` keeps the export's four-key projection; `ip_address` stays only under `metadata`.
+        assert record["system"] == {"client": "curl", "latitude": None, "location": "Kyiv", "longitude": None}
         assert record["metadata"]["system"]["ip_address"] == "198.51.100.7"
         assert record["child_events"] == _EVENTS
         assert "events" not in record
         assert "author_id" not in record
 
     @HttpMocker()
-    def test_given_audit_without_via_or_metadata_when_read_then_map_them_to_null(self, http_mocker: HttpMocker) -> None:
+    def test_given_audit_without_via_or_metadata_when_read_then_map_them_to_nulls(self, http_mocker: HttpMocker) -> None:
         start_time = int(_START_DATE.timestamp())
         _given_tickets(http_mocker, [(101, start_time + 10)])
         audit = _audit(1001, 101, _at(_START_DATE, days=1), events=[]).with_via(None).with_metadata({})
@@ -121,7 +122,7 @@ class TestTicketEventsStreamFullRefresh(TestCase):
         record = output.records[0].record.data
         # The CDK serializer omits top-level null fields from emitted records.
         assert record.get("via") is None
-        assert record.get("system") is None
+        assert record["system"] == {"client": None, "latitude": None, "location": None, "longitude": None}
         assert record["child_events"] == []
 
     @HttpMocker()

@@ -1329,8 +1329,11 @@ definitions:
           - path: ["timestamp"]
             value: "{{ timestamp(record['created_at']) | int }}"
             value_type: "integer"
+          # The export always returned exactly these four keys (null when unknown); `metadata.system`
+          # carries more (`ip_address`, email identifiers), so the record keeps the export's projection
+          # here and the full object under `metadata`.
           - path: ["system"]
-            value: "{{ (record.get('metadata') or {}).get('system') }}"
+            value: "{% set system = (record.get('metadata') or {}).get('system') or {} %}{{ {'client': system.get('client'), 'latitude': system.get('latitude'), 'location': system.get('location'), 'longitude': system.get('longitude')} }}"
           - path: ["via"]
             value: "{{ (record.get('via') or {}).get('channel') }}"
           - path: ["event_type"]
@@ -1339,7 +1342,6 @@ definitions:
         field_pointers:
           - ["events"]
           - ["author_id"]
-          - ["system", "ip_address"] # the export did not return it; `metadata.system` still does
     $parameters:
       name: "ticket_events"
       cursor_field: "timestamp"
