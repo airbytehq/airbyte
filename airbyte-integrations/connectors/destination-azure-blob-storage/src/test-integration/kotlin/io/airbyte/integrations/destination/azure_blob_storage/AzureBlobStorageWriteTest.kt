@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.azure_blob_storage
 import io.airbyte.cdk.load.command.object_storage.CSVFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.FlatteningSpecificationProvider.Flattening
 import io.airbyte.cdk.load.command.object_storage.JsonFormatSpecification
+import io.airbyte.cdk.load.command.object_storage.ParquetFormatSpecification
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
@@ -156,6 +157,26 @@ class AzureBlobStorageSasCsvWithFlatteningWriteTestProto :
         AzureBlobStorageTestUtil.getSasConfig(
             CSVFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING),
         ),
+        nullEqualsUnset = true,
+        mismatchedTypesUnrepresentable = true,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
+    @Disabled("Not relevant for socket mode")
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
+    }
+}
+
+class AzureBlobStorageParquetWriteTest :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getAccountKeyConfig(ParquetFormatSpecification()),
+    )
+
+class AzureBlobStorageParquetWriteTestProto :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getAccountKeyConfig(ParquetFormatSpecification()),
         nullEqualsUnset = true,
         mismatchedTypesUnrepresentable = true,
         dataChannelFormat = DataChannelFormat.PROTOBUF,
