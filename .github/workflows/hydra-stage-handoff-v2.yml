@@ -7,9 +7,10 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #   1. Trigger fires: workflow_dispatch, repository_dispatch (session
 #      completion), or a required CI check completing (check_run for the
 #      octavia-bot Summary check, workflow_run for the other six). CI wakes
-#      exit in the `gate` job until all 7 required checks have completed. The
-#      remaining Phase 2 triggers — pull_request synchronize/labeled and the
-#      weekend cron — land in separate PRs.
+#      exit in the `gate` job until all 7 required checks have completed. CI
+#      wakes for PRs not in `vars.HYDRA_V2_PRS` are skipped before a runner
+#      starts. The remaining Phase 2 triggers — pull_request synchronize/labeled
+#      and the weekend cron — land in separate PRs.
 #   2. Fast pre-flight: skip the PR unless OPEN + hyd-chain-v2 + no hyd-pause +
 #      no community/fork. The v2 label is intentionally separate from `hyd-chain`
 #      so this workflow and the existing hydra-stage-handoff.yml can run in
@@ -91,16 +92,19 @@ jobs:
   gate:
     name: Wait for required checks
     runs-on: ubuntu-latest
-    # Drop CI events that aren't a required check on a same-repo PR before the
-    # runner starts. Fork PRs (and pushes to master) have empty
-    # pull_requests[], so the index check drops them.
+    # Drop CI events that aren't a required check on a same-repo PR, or whose
+    # PR isn't in vars.HYDRA_V2_PRS (kept by hydra-v2-pr-list-sync.yml); the
+    # in-job label check stays as a backstop for a stale list. Fork PRs (and
+    # pushes to master) have empty pull_requests[], so the index check drops them.
     if: |
       (github.event_name != 'check_run' && github.event_name != 'workflow_run') ||
       (github.event_name == 'check_run' &&
         github.event.check_run.pull_requests[0] != null &&
-        github.event.check_run.name == 'Connector CI Checks Summary') ||
+        github.event.check_run.name == 'Connector CI Checks Summary' &&
+        contains(fromJSON(vars.HYDRA_V2_PRS || '[]'), github.event.check_run.pull_requests[0].number)) ||
       (github.event_name == 'workflow_run' &&
-        github.event.workflow_run.pull_requests[0] != null)
+        github.event.workflow_run.pull_requests[0] != null &&
+        contains(fromJSON(vars.HYDRA_V2_PRS || '[]'), github.event.workflow_run.pull_requests[0].number))
     steps:
       - name: Resolve PR number
         id: pr
