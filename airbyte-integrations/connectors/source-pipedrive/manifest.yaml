@@ -2372,6 +2372,14 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
+      user_restrictions:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       subfields:
         type:
           - "null"
@@ -2503,11 +2511,13 @@ schemas:
         type:
           - "null"
           - object
-        items:
+        properties:
           pipeline_ids:
             type:
               - "null"
               - array
+            items:
+              type: integer
           show_in_all:
             type:
               - "null"
@@ -2533,6 +2543,8 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      seasonality:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       type:
         type:
           - object
@@ -2554,7 +2566,7 @@ schemas:
                   - "null"
                 items:
                   type:
-                    - number
+                    - integer
                     - "null"
               pipeline_id:
                 type:
@@ -2562,7 +2574,7 @@ schemas:
                   - "null"
                 items:
                   type:
-                    - number
+                    - integer
                     - "null"
       assignee:
         type:
@@ -2576,7 +2588,7 @@ schemas:
               - "null"
           id:
             type:
-              - number
+              - integer
               - "null"
       duration:
         type:
@@ -2588,10 +2600,12 @@ schemas:
             type:
               - string
               - "null"
+            format: date
           start:
             type:
               - string
               - "null"
+            format: date
       expected_outcome:
         type:
           - object
@@ -2622,7 +2636,7 @@ schemas:
         type: boolean
       owner_id:
         type:
-          - number
+          - integer
           - "null"
       report_ids:
         type:
@@ -2835,6 +2849,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       visible_to:
         type:
           - "null"
@@ -2873,6 +2889,12 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      archive_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       visible_to:
         type:
           - "null"
@@ -2932,6 +2954,8 @@ schemas:
         type:
           - "null"
           - array
+        items:
+          type: string
       next_activity_id:
         type:
           - "null"
@@ -3414,6 +3438,16 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      group_id:
+        type:
+          - "null"
+          - integer
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       subfields:
         type:
           - "null"
@@ -3996,6 +4030,12 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       subfields:
         type:
           - "null"
@@ -4385,6 +4425,20 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      group_id:
+        type:
+          - "null"
+          - integer
+      id_suffix:
+        type:
+          - "null"
+          - string
+      restriction_settings:
+        description: Undocumented by Pipedrive and absent in the test account; left untyped so any value reaches the destination as JSON.
       autocomplete:
         type:
           - "null"
@@ -4681,6 +4735,18 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+      group_id:
+        type:
+          - "null"
+          - integer
+      id_suffix:
+        type:
+          - "null"
+          - string
       created_by_user_id:
         type:
           - "null"
@@ -5176,6 +5242,8 @@ schemas:
         type: string
       add_time:
         type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       all_messages_sent_flag:
         type: integer
       archived_flag:
@@ -5196,10 +5264,15 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type: object
+          additionalProperties: true
       external_deleted_flag:
         type: integer
       first_message_timestamp:
         type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       first_message_to_me_flag:
         type: integer
       folders:
@@ -5222,12 +5295,18 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       last_message_sent_timestamp:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       last_message_timestamp:
         type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       mail_link_tracking_enabled_flag:
         type: integer
       parties:
@@ -5311,6 +5390,8 @@ schemas:
         type: integer
       update_time:
         type: string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       user_id:
         type: integer
   call_logs:
@@ -5338,6 +5419,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       from_phone_number:
         type:
           - "null"
@@ -5374,6 +5457,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       subject:
         type:
           - "null"
@@ -5425,6 +5510,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       new_value:
         type:
           - "null"
@@ -5463,6 +5550,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       deal_id:
         type:
           - "null"
@@ -5497,6 +5585,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       created_by_user_id:
         type:
           - "null"
@@ -5563,10 +5653,14 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       archive_time:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       board_id:
         type:
           - "null"
@@ -5592,6 +5686,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       health_status:
         type:
           - "null"
@@ -5636,6 +5731,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       status:
         type:
           - "null"
@@ -5644,6 +5740,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       title:
         type:
           - "null"
@@ -5652,15 +5750,27 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
   tasks:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      last_updated_by_id:
+        type:
+          - "null"
+          - integer
+      marked_as_done_by_id:
+        type:
+          - "null"
+          - integer
       add_time:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       assignee_ids:
         type:
           - "null"
@@ -5681,6 +5791,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       id:
         type:
           - "null"
@@ -5697,6 +5808,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       parent_task_id:
         type:
           - "null"
@@ -5713,6 +5826,7 @@ schemas:
         type:
           - "null"
           - string
+        format: date
       title:
         type:
           - "null"
@@ -5721,3 +5835,5 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone

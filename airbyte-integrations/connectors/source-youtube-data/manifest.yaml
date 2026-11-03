@@ -483,6 +483,13 @@ definitions:
                 is valid, the YouTube Data API v3 is enabled in your Google
                 Cloud project, and the configured Channel IDs exist.
             - type: HttpResponseFilter
+              action: FAIL
+              failure_type: system_error
+              predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') == 'playlistNotFound' }}"
+              error_message: >-
+                YouTube could not find the uploads playlist for one of the
+                configured channels (playlistNotFound).
+            - type: HttpResponseFilter
               # The daily quota resets at midnight Pacific, so no in-sync retry
               # can succeed. Fail now: incremental state is already checkpointed
               # and the next scheduled sync resumes from it.
