@@ -150,7 +150,7 @@ def test_calls_incremental_windows_pagination_and_state() -> None:
                 http_mocker.assert_number_of_calls(second_request, 1)
 
 
-def test_calls_default_config_reads_186_daily_windows_within_the_rate_budget(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_calls_default_window_reads_186_daily_windows_within_the_rate_budget(monkeypatch: pytest.MonkeyPatch) -> None:
     with freeze_time(_NOW) as clock, HttpMocker() as http_mocker:
         sleeps = _sleep_moves_clock(clock, monkeypatch)
         end = _epoch(_NOW)
@@ -159,7 +159,8 @@ def test_calls_default_config_reads_186_daily_windows_within_the_rate_budget(mon
         for request in requests:
             http_mocker.get(request, _response("calls", []))
 
-        output = _read_stream("calls", SyncMode.full_refresh)
+        # One worker, so a single thread waits for the budget and the waits add up deterministically.
+        output = _read_stream("calls", SyncMode.full_refresh, config={**_CONFIG, "num_workers": 1})
 
         assert output.errors == []
         assert len(requests) == 186
