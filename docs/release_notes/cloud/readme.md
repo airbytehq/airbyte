@@ -1,5 +1,17 @@
 # Airbyte Cloud release notes
 
+## November 2, 2026
+
+Connections
+
+- When you authenticate a source or destination, the setup form now shows **Authentication successful** with a check mark after you finish, and keeps **Re-authenticate** available. This confirmation stays in the form instead of appearing only in a temporary notification.
+- Schema discovery during your syncs now uses the intended 30-minute time limit instead of stopping after nine minutes. If discovery times out, your error message shows the time limit that was applied.
+
+Platform
+
+- Your billing grace-period countdown and, during a Standard trial, your trial countdown now show the correct number of days remaining across daylight-saving time changes.
+- On the Standard and Plus plans, if you can manage billing, the **Update** link in **Payment method** on your organization's **Billing** page now opens the full billing portal, where you can replace or remove a saved payment method. Previously, it opened a page that only let you add one.
+
 ## October 30, 2026
 
 Connections
