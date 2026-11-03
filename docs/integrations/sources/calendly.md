@@ -9,6 +9,12 @@ Calendly source syncs your organization members, groups, available event types, 
 | `api_key`    | `string` | API Key. Go to Integrations → API &amp; Webhooks to obtain your bearer token. https://calendly.com/integrations/api_webhooks |               |
 | `start_date` | `string` | Start date to sync scheduled events from.                                                                                    |               |
 
+:::note
+
+Since March 2026, Calendly grants newly created [personal access tokens](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) no API access until you select [authorization scopes](https://developer.calendly.com/docs/authentication/scopes) for them. When you create a token for Airbyte, select the following read scopes: `users:read`, `event_types:read`, `groups:read`, `organizations:read`, and `scheduled_events:read`. Tokens created before this change keep their existing access.
+
+:::
+
 ## Streams
 
 :::note
@@ -36,6 +42,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 | ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.0 | 2026-11-03 | [PR_NUMBER_TBD](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_TBD) | Add rate-limit handling, clearer authentication errors, and missing Calendly fields to schemas |
 | 0.1.58 | 2026-11-03 | [90473](https://github.com/airbytehq/airbyte/pull/90473) | Update dependencies |
 | 0.1.57 | 2026-10-27 | [89813](https://github.com/airbytehq/airbyte/pull/89813) | Update dependencies |
 | 0.1.56 | 2026-10-20 | [89122](https://github.com/airbytehq/airbyte/pull/89122) | Update dependencies |
