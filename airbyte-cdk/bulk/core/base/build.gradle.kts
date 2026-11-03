@@ -80,8 +80,10 @@ dependencies {
     }
     api("io.github.oshai:kotlin-logging-jvm:7.0.0")
     api("io.micronaut:micronaut-runtime")
-    api("org.apache.mina:mina-core:2.0.27") // for fixing vulnerability of sshd-mina
-    api("org.apache.sshd:sshd-mina:2.13.2")
+    // Explicit pin keeps mina-core at the latest 2.0.x even if sshd-mina lags behind it
+    // (CVE-2026-41409, CVE-2026-41635, CVE-2026-47065 are fixed in 2.0.28+).
+    api("org.apache.mina:mina-core:2.0.31")
+    api("org.apache.sshd:sshd-mina:2.20.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     api("com.google.protobuf:protobuf-kotlin:4.30.0")
 
@@ -98,7 +100,20 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-slf4j-impl")
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl")
     implementation("org.apache.logging.log4j:log4j-layout-template-json:2.24.0")
-    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.86")
+    // BouncyCastle jars must share one version: connector drivers pull bcpkix/bcutil at older
+    // versions, and a mixed family fails at provider init (NoSuchFieldError).
+    constraints {
+        api("org.bouncycastle:bcpkix-jdk18on:1.86") {
+            because("keep the BouncyCastle family aligned with bcprov 1.86 — mixed 1.78.x bcpkix/bcutil throw NoSuchFieldError in BouncyCastleProvider init")
+        }
+        api("org.bouncycastle:bcutil-jdk18on:1.86") {
+            because("same")
+        }
+        api("org.bouncycastle:bctls-jdk18on:1.86.2") {
+            because("same; 1.86.2 is the bctls release built against bcprov 1.86")
+        }
+    }
     implementation("net.i2p.crypto:eddsa:0.3.0")
     implementation("org.openapi4j:openapi-schema-validator:1.0.7")
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
