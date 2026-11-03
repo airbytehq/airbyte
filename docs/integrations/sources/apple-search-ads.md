@@ -134,6 +134,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.23 | 2026-11-03 | [90483](https://github.com/airbytehq/airbyte/pull/90483) | Update dependencies |
 | 1.1.22 | 2026-10-26 | [89712](https://github.com/airbytehq/airbyte/pull/89712) | Report expired client secrets and rejected report dates as configuration errors, explain missing API roles, show Apple's message on other API errors, add `biddingStrategy`, `targetCpa` and `automatedKeywordsRequired`, make Time Zone and Token Refresh Endpoint optional, hide Exponential Backoff Factor and Token Refresh Endpoint in the UI, and update the base image |
 | 1.1.21 | 2026-10-20 | [89117](https://github.com/airbytehq/airbyte/pull/89117) | Update dependencies |
 | 1.1.20 | 2026-10-13 | [88507](https://github.com/airbytehq/airbyte/pull/88507) | Update dependencies |
