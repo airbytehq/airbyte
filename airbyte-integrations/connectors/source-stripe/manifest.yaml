@@ -198,6 +198,16 @@ definitions:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
+  # A Connect platform's /v1/events never carries connected-account events, so accounts reads the list by created.
+  # Fixed start so a full refresh keeps covering every account; fixed step so num_workers reads windows in parallel.
+  accounts_cursor:
+    $ref: "#/definitions/entity_with_slice_cursor"
+    step: P30D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "2010-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
   # Events flow components
   events_based_stream:
     $ref: "#/definitions/base_stream"
@@ -985,31 +995,25 @@ definitions:
             $ref: "#/schemas/top_ups"
 
     accounts:
-      type: StateDelegatingStream
-      api_retention_period: "{{ 'P30D' if 'accounts' in config.get('api_retention_streams', []) else '' }}"
+      $ref: "#/definitions/entity_restricted_stream"
+      incremental_sync:
+        $ref: "#/definitions/accounts_cursor"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated
+              # Standard accounts return no created; use the window start, never now, so a
+              # window checkpoint cannot jump ahead of the windows still being read.
+              value: "{{ record.get('updated', record.get('created', stream_slice['start_time'])) | int }}"
+              value_type: integer
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
       $parameters:
         name: accounts
-      full_refresh_stream:
-        $ref: "#/definitions/entity_restricted_stream"
-        retriever:
-          $ref: "#/definitions/base_retriever"
-          $parameters:
-            path: accounts
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/accounts"
-      incremental_stream:
-        $ref: "#/definitions/events_based_stream"
-        retriever:
-          $ref: "#/definitions/events_objects_retriever"
-          $parameters:
-            request_parameters:
-              types[]: '{{["account.updated", "account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/accounts"
+        path: accounts
 
     checkout_sessions:
       type: StateDelegatingStream
@@ -1992,7 +1996,7 @@ spec:
         description: >-
           When set, the connector will always re-export data from the past N days,
           where N is the value set here. This is useful if your data is frequently updated
-          after creation. The Lookback Window only applies to streams that do not support event-based incremental syncs: Events,
+          after creation. The Lookback Window only applies to streams that do not support event-based incremental syncs: Accounts, Events,
           SetupAttempts, ShippingRates, BalanceTransactions, Files, FileLinks, Refunds. More info <a
           href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>
         order: 3
@@ -2033,6 +2037,7 @@ spec:
           Select streams where cursor age is validated against the Stripe API 30-day event retention period.
           When a selected stream's cursor is older than 30 days, the connector performs a full refresh
           to avoid missing data. Streams not selected here will always use incremental sync regardless of cursor age.
+          This setting has no effect on Accounts, which does not read the Events API.
         items:
           type: string
           enum:
