@@ -4,16 +4,23 @@ Calendly source syncs your organization members, groups, available event types, 
 
 ## Configuration
 
-| Input        | Type     | Description                                                                                                                  | Default Value |
-| ------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| `api_key`    | `string` | API Key. Go to Integrations → API &amp; Webhooks to obtain your bearer token. https://calendly.com/integrations/api_webhooks |               |
-| `start_date` | `string` | Start date to sync scheduled events from.                                                                                    |               |
-
-## Streams
+| Input | Type | Description | Default Value |
+| --- | --- | --- | --- |
+| `api_key` | `string` | Calendly personal access token. In Calendly, open the Profile menu, select Developer, then Personal access tokens. If Developer is missing from the menu, use the Integrations page. | |
+| `start_date` | `string` | Sync scheduled events starting on or after this time, in UTC ISO-8601 format, for example `2024-01-01T00:00:00Z`. | |
+| `lookback_days` | `number` | Days to subtract from the start time of the latest synced event when an incremental `scheduled_events` sync starts. | 0 |
 
 :::note
 
-Incremental sync in `scheduled_events` uses `start_time` as a cursor. This may lead to situations where data gets stale if the event changes after it got synced. If you are running into this, periodic full refresh would resync all data.
+Since March 2026, Calendly grants newly created [personal access tokens](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) no API access until you select [authorization scopes](https://developer.calendly.com/docs/authentication/scopes) for them. When you create a token for Airbyte, select the following read scopes: `users:read`, `event_types:read`, `groups:read`, `organizations:read`, and `scheduled_events:read`. Tokens created before this change keep their existing access. Create the token as an owner or admin of your Calendly organization: Calendly shows organization-wide scheduled events only to them.
+
+:::
+
+## Streams
+
+:::caution
+
+Incremental syncs of `scheduled_events` resume from the start time of the latest event already synced, and Calendly also returns upcoming events. After a sync reads an upcoming event, later incremental syncs request only events that start after it, minus `lookback_days`, so bookings made later for earlier times are not synced. Use Full refresh for `scheduled_events` and `event_invitees` if every booking must be synced, or set `lookback_days` to at least how far in advance invitees can book.
 
 :::
 
@@ -24,6 +31,7 @@ Incremental sync in `scheduled_events` uses `start_time` as a cursor. This may l
 | groups                   | uri         | DefaultPaginator | ✅                 | ❌                   |
 | organization_memberships | uri         | DefaultPaginator | ✅                 | ❌                   |
 | scheduled_events         | uri         | DefaultPaginator | ✅                 | ✅                   |
+| event_invitees           | uri         | DefaultPaginator | ✅                 | ✅                   |
 
 ## IP allow list
 
@@ -34,8 +42,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-| ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
+| 0.2.0 | 2026-11-03 | [90829](https://github.com/airbytehq/airbyte/pull/90829) | Handle rate limits and token errors, declare missing fields, fix the crash when `lookback_days` is unset, stop dropping event types updated before 2021 and invitees booked before the start date (refresh these streams to backfill) |
 | 0.1.58 | 2026-11-03 | [90473](https://github.com/airbytehq/airbyte/pull/90473) | Update dependencies |
 | 0.1.57 | 2026-10-27 | [89813](https://github.com/airbytehq/airbyte/pull/89813) | Update dependencies |
 | 0.1.56 | 2026-10-20 | [89122](https://github.com/airbytehq/airbyte/pull/89122) | Update dependencies |
@@ -102,6 +111,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.4 | 2024-12-11 | [49022](https://github.com/airbytehq/airbyte/pull/49022) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.3 | 2024-11-04 | [48279](https://github.com/airbytehq/airbyte/pull/48279) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47568](https://github.com/airbytehq/airbyte/pull/47568) | Update dependencies |
-| 0.0.1   | 2024-09-01 |                                                          | Initial release by [@natikgadzhi](https://github.com/natikgadzhi) via Connector Builder                                                                                |
+| 0.0.1 | 2024-09-01 | | Initial release by [@natikgadzhi](https://github.com/natikgadzhi) via Connector Builder |
 
 </details>
