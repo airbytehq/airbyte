@@ -322,7 +322,7 @@ jobs:
 
       # Holds the flagged submission, or flagged linked items when the submission passed (after its session
       # started, so a failed hold doesn't block it). Link only: the ticket never copies community text, and
-      # `skip-triage` keeps the oncall AI triage from reading the item. `intake/pending-human` keeps the sweep
+      # `skip-triage` keeps the oncall AI triage from reading the item. `intake/screen-hold` keeps the sweep
       # from picking it again. Reasons, scores and digests are read from the details file, never from step
       # outputs or env, which the public log shows.
       - name: Hold flagged items for a human
@@ -364,10 +364,10 @@ jobs:
               "No AI session was started for it. Evaluate the item by hand. $next")
             # One intake/* label at a time: the board sync skips items with several.
             current=$(gh api "repos/$GITHUB_REPOSITORY/issues/$number" --jq '.labels[].name')
-            remove=$(grep -E '^(intake/|ai-intake-screen-error$)' <<<"$current" | grep -vx 'intake/pending-human' | paste -sd, - || true)
+            remove=$(grep -E '^(intake/|ai-intake-screen-error$)' <<<"$current" | grep -vx 'intake/screen-hold' | paste -sd, - || true)
             # Label first: if it is missing, nothing is filed that the next sweep would repeat.
-            if ! gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --add-label "intake/pending-human" ${remove:+--remove-label "$remove"}; then
-              echo "::error::Could not label #$number intake/pending-human."
+            if ! gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --add-label "intake/screen-hold" ${remove:+--remove-label "$remove"}; then
+              echo "::error::Could not label #$number intake/screen-hold."
               failed=1
               continue
             fi
@@ -382,7 +382,7 @@ jobs:
               fi
             }; then
               echo "::error::Could not file the oncall ticket; labeling #$number ai-intake-screen-error so the sweep retries it."
-              gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --remove-label "intake/pending-human" --add-label ai-intake-screen-error || true
+              gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --remove-label "intake/screen-hold" --add-label ai-intake-screen-error || true
               failed=1
             fi
           done < <(jq -c '.holds[]' "$DETAILS_FILE")

@@ -76,6 +76,7 @@ SWEEP_DAYS = 30
 SKIPPED_APPS = ["devin-ai-integration", "dependabot", "octavia-bot", "octavia-bot-hoard"]
 CANARY_TEXT = "source-faker fails with a 401 error when syncing the users stream after upgrading to 6.2.0. Steps: create a connection, run a sync."
 INTAKE_STATES = [
+    "screen-hold",  # set by the workflow, not the playbook: held after screening, a person checks the raw text
     "pending-human",
     "needs-information",
     "validated-backlogged",
