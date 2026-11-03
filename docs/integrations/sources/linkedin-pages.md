@@ -76,6 +76,14 @@ The API user account should be assigned the `ADMIN` role.
 There are 2 authentication methods: Access Token or OAuth2.0.
 OAuth2.0 is recommended since it will continue streaming data for 12 months instead of 2 months with an access token.
 
+<!-- env:cloud -->
+**For Airbyte Cloud:** Select **OAuth2.0** and click **Authenticate your LinkedIn account**, then sign in as a LinkedIn user with the `ADMINISTRATOR` role on the organization page and approve the requested permissions. Airbyte supplies the LinkedIn developer app, so you don't need to create one or enter a client ID, client secret, or refresh token. Airbyte requests `r_organization_social`, `r_organization_social_feed` and `rw_organization_admin`.
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+**For Airbyte Open Source:** Create your own LinkedIn developer app and token by following the steps below.
+<!-- /env:oss -->
+
 ##### Create the `Refresh_Token` or `Access_Token`:
 The source LinkedIn Pages can use either the `client_id`, `client_secret` and `refresh_token` for OAuth2.0 authentication or simply use an `access_token` in the UI connector's settings to make API requests. Access tokens expire after `2 months from creation date (60 days)` and require a user to manually authenticate again. Refresh tokens expire after `12 months from creation date (365 days)`. If you receive a `401 invalid token response`, the error logs will state that your token has expired and to re-authenticate your connection to generate a new token. This is described more [here](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?toc=%2Flinkedin%2Fmarketing%2Ftoc.json&bc=%2Flinkedin%2Fbreadcrumb%2Ftoc.json&view=li-lms-2024-03&tabs=HTTPS1).
 
@@ -127,6 +135,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :-------- | :----------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 2.1.0 | 2026-10-29 | [89706](https://github.com/airbytehq/airbyte/pull/89706) | Add Airbyte Cloud OAuth so you can authenticate with LinkedIn without creating your own developer app |
 | 2.0.0 | 2026-10-27 | [89708](https://github.com/airbytehq/airbyte/pull/89708) | Declare primary keys on the six streams that existed before 1.3.0, type the epoch-millisecond fields of `organization_lookup` and the follower and share time-bound streams as integers, add `organizationalEntity` to `total_follower_count`, and add `date` to the three time-bound statistics streams |
 | 1.3.0 | 2026-10-26 | [89713](https://github.com/airbytehq/airbyte/pull/89713) | Add `posts`, `post_comments`, `post_reactions`, `post_statistics`, `page_statistics` and `page_statistics_time_bound` streams |
 | 1.2.0 | 2026-10-26 | [89710](https://github.com/airbytehq/airbyte/pull/89710) | Retry rate limits and server errors with backoff, report expired tokens, missing permissions and retired API versions clearly, request only whole days for `DAY` and complete months for `MONTH` time-bound statistics (each month now arrives 2 days after it ends), add a concurrency option, and migrate legacy configs |
