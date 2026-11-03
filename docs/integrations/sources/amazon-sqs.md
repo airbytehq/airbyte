@@ -95,7 +95,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                           |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
-| 1.0.16 | 2026-11-03 | TBD | Raise the minimum Python version to 3.11. |
+| 1.0.16 | 2026-11-03 | [90908](https://github.com/airbytehq/airbyte/pull/90908) | Raise the minimum Python version to 3.11. |
 | 1.0.15 | 2025-05-10 | [59775](https://github.com/airbytehq/airbyte/pull/59775) | Update dependencies |
 | 1.0.14 | 2025-05-03 | [59344](https://github.com/airbytehq/airbyte/pull/59344) | Update dependencies |
 | 1.0.13 | 2025-04-26 | [58684](https://github.com/airbytehq/airbyte/pull/58684) | Update dependencies |
