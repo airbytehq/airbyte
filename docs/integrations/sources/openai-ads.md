@@ -117,6 +117,7 @@ Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.8 | 2026-11-03 | [90660](https://github.com/airbytehq/airbyte/pull/90660) | Update dependencies |
 | 0.1.7 | 2026-10-27 | [90026](https://github.com/airbytehq/airbyte/pull/90026) | Update dependencies |
 | 0.1.6 | 2026-10-21 | [88396](https://github.com/airbytehq/airbyte/pull/88396) | Declare the documented `custom_audiences` and `ad_account` name fields, and type nested landing page, bid multiplier, product set filter, and conversion event campaign fields |
 | 0.1.5 | 2026-10-21 | [88394](https://github.com/airbytehq/airbyte/pull/88394) | Skip `conversion_pixels` when pixel management is not enabled, report rate limiting, honor `Retry-After`, and correct the `spend_limit_windows` 403 message |
