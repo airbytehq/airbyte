@@ -23,7 +23,7 @@ For Airbyte Open Source, set up your application to get a **Client ID**, **Clien
 
 :::note
 
-Microsoft refresh tokens are valid for 90 days and rotate each time they're used. Airbyte saves the rotated refresh token whenever it refreshes the access token, so a connection that syncs at least once every 90 days stays authenticated without re-authorizing. If a connection doesn't sync for more than 90 days, the refresh token expires and you must repeat the authorization process to get a new one. The full authentication process is described [here](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token). Authenticate with the email address (personal or work) that you used to sign in to the Microsoft Advertising platform.
+Microsoft refresh tokens are valid for 90 days and rotate each time they're used. Airbyte saves the rotated refresh token whenever it refreshes the access token, so a connection that syncs at least once every 90 days usually stays authenticated without re-authorizing. If a connection doesn't sync for more than 90 days, the refresh token expires and you must repeat the authorization process to get a new one. Your organization's Microsoft Entra policies can also invalidate the token sooner. See [Re-authentication errors](#re-authentication-errors). The full authentication process is described [here](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token). Authenticate with the email address (personal or work) that you used to sign in to the Microsoft Advertising platform.
 
 :::
 
@@ -316,7 +316,29 @@ Ad Groups and Ads are child streams of Campaigns, so ad groups and ads in a camp
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the Bing Ads source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+#### Re-authentication errors
+
+The connector authenticates with a refresh token issued by [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity-platform/refresh-tokens). Entra can invalidate this token before its 90-day lifetime ends. When the connector can't refresh its access token for one of the following reasons, the sync fails with a message that names the cause.
+
+| Entra error code | Cause | How to avoid a recurrence |
+| :--------------- | :---- | :------------------------ |
+| `AADSTS50078` | The tenant's multi-factor authentication (MFA) policy requires a new MFA sign-in. | This can recur on a fixed schedule set by the tenant's MFA session settings, such as **remember multi-factor authentication on trusted devices**. Ask your Entra administrator about these settings. |
+| `AADSTS70043` | A Conditional Access sign-in frequency policy expired the refresh token. | Your Entra administrator sets how often users must sign in again. |
+| `AADSTS700082` | The refresh token expired after a period of inactivity. | Keep the connection syncing regularly. |
+| `AADSTS50173` | Entra revoked the grant, typically because the authorizing user's password was changed or reset. | None. Re-authenticate after each password change or reset. |
+
+To restore syncs, re-authenticate the source:
+
+<!-- env:cloud -->
+- **Airbyte Cloud**: Open the source's settings, click **Authenticate your Bing Ads account**, sign in, and save the source.
+<!-- /env:cloud -->
+<!-- env:oss -->
+- **Airbyte Open Source**: [Get a new refresh token](https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13), enter it in the source's **Refresh Token** field, and save the source.
+<!-- /env:oss -->
+
+#### Other issues
+
+- Check out common troubleshooting issues for the Bing Ads source connector on the [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
@@ -334,9 +356,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 3.0.21 | 2026-11-03 | [88968](https://github.com/airbytehq/airbyte/pull/88968) | Add actionable messages for Microsoft Entra refresh token errors |
 | 3.0.20 | 2026-11-03 | [89720](https://github.com/airbytehq/airbyte/pull/89720) | Sync App, Hotel and Objective-based campaigns (and their ad groups and ads), which were previously skipped |
 | 3.0.19 | 2026-11-03 | [90478](https://github.com/airbytehq/airbyte/pull/90478) | Update dependencies |
-| 3.0.18 | 2026-11-02 | [89620](https://github.com/airbytehq/airbyte/pull/89620) | Apply lookback only to report streams to avoid unnecessary full downloads of bulk entities |
+| 3.0.18 | 2026-11-03 | [89620](https://github.com/airbytehq/airbyte/pull/89620) | Apply lookback only to report streams to avoid unnecessary full downloads of bulk entities |
 | 3.0.17 | 2026-10-27 | [89793](https://github.com/airbytehq/airbyte/pull/89793) | Update dependencies |
-| 3.0.16 | 2026-10-21 | [89609](https://github.com/airbytehq/airbyte/pull/89609) | Classify expired file download URL errors as transient with a clearer error message |
+| 3.0.16 | 2026-10-22 | [89609](https://github.com/airbytehq/airbyte/pull/89609) | Classify expired file download URL errors as transient with a clearer error message |
 | 3.0.15 | 2026-10-20 | [89107](https://github.com/airbytehq/airbyte/pull/89107) | Update dependencies |
 | 3.0.14 | 2026-10-13 | [88521](https://github.com/airbytehq/airbyte/pull/88521) | Update dependencies |
 | 3.0.13 | 2026-10-06 | [87771](https://github.com/airbytehq/airbyte/pull/87771) | Update dependencies |
@@ -352,13 +374,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 3.0.3 | 2026-07-21 | [82339](https://github.com/airbytehq/airbyte/pull/82339) | Update dependencies |
 | 3.0.2 | 2026-07-14 | [77143](https://github.com/airbytehq/airbyte/pull/77143) | Update dependencies |
 | 3.0.1 | 2026-07-08 | [79625](https://github.com/airbytehq/airbyte/pull/79625) | Add refresh_token_updater to persist rotated Microsoft OAuth refresh tokens; remove non-standard OAuth refresh params |
-| 3.0.0 | 2026-05-12 | [78031](https://github.com/airbytehq/airbyte/pull/78031) | Breaking: include every attribute (dimension) column in the primary keys of all report streams to prevent silent row collapse at the destination during incremental append+dedup. A stream reset is required for the affected report streams after upgrading. |
+| 3.0.0 | 2026-06-17 | [78031](https://github.com/airbytehq/airbyte/pull/78031) | Breaking: include every attribute (dimension) column in the primary keys of all report streams to prevent silent row collapse at the destination during incremental append+dedup. A stream reset is required for the affected report streams after upgrading. |
 | 2.23.17 | 2026-05-29 | [78518](https://github.com/airbytehq/airbyte/pull/78518) | Add num_workers config for user-adjustable concurrency |
-| 2.23.17-rc.2 | 2026-05-27 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Revert concurrency to 10, add num_workers config and HTTP API budget |
+| 2.23.17-rc.2 | 2026-05-26 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Revert concurrency to 10, add num_workers config and HTTP API budget |
 | 2.23.17-rc.1 | 2026-05-26 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Enable progressive rollout for concurrency tuning |
 | 2.23.16 | 2026-04-21 | [76515](https://github.com/airbytehq/airbyte/pull/76515) | Update dependencies |
 | 2.23.15 | 2026-04-08 | [76165](https://github.com/airbytehq/airbyte/pull/76165) | Promote 2.23.15-rc.3 to GA — fixes SAS token expiry during report downloads |
-| 2.23.15-rc.3 | 2026-04-02 | [76053](https://github.com/airbytehq/airbyte/pull/76053) | Fix SAS token expiry during report downloads by re-polling for fresh URL before each download |
+| 2.23.15-rc.3 | 2026-04-07 | [76053](https://github.com/airbytehq/airbyte/pull/76053) | Fix SAS token expiry during report downloads by re-polling for fresh URL before each download |
 | 2.23.15-rc.2 | 2026-03-30 | [74885](https://github.com/airbytehq/airbyte/pull/74885) | Fix OOM on large report downloads by using streaming ZIP decoder and reducing concurrency |
 | 2.23.15-rc.1 | 2026-03-12 | [74745](https://github.com/airbytehq/airbyte/pull/74745) | Increase default concurrency from 2 to 40 to test rate limit behavior |
 | 2.23.14 | 2026-03-10 | [74483](https://github.com/airbytehq/airbyte/pull/74483) | Update dependencies |
