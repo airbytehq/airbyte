@@ -8,9 +8,8 @@ This page contains the setup guide and reference information for the [Amazon Ads
 
 ## Prerequisites
 
-- Client ID
-- Client Secret
-- Refresh Token
+- An Amazon Ads account with at least one seller or vendor profile
+- For Airbyte Open Source only: the Client ID, Client Secret, and Refresh Token of your approved Amazon Ads API application. Airbyte Cloud uses OAuth instead.
 - Region
 - Start Date (Optional)
 - Profile IDs (Optional)
@@ -44,7 +43,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 5. Click **Authenticate your Amazon Ads account**.
 6. Log in and Authorize to the Amazon account.
 7. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-8. **Start Date (Optional)** is used for generating reports starting from the specified start date. Use YYYY-MM-DD format. If not specified, the connector defaults to yesterday's date (UTC). Dates older than 60 days are automatically adjusted to 60 days ago, because Amazon Ads does not retain report data beyond that window. The date is treated in the timezone of the processed profile.
+8. **Start Date (Optional)** is used for generating reports starting from the specified start date. Use YYYY-MM-DD format. If not specified, the connector defaults to yesterday's date (UTC). The connector limits the report start date to 60 days ago, even for report types with longer retention. See [Report history](#report-history) for limitations. Reports use the processed profile's timezone.
 9. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 10. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 11. **Look Back Window (Optional)** is the number of days the connector re-syncs on each run to capture late-arriving data. Defaults to 3. Increase this value if your reports frequently receive delayed updates.
@@ -62,7 +61,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 4. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 5. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Start Date (Optional)** is used for generating reports starting from the specified start date. Use YYYY-MM-DD format. If not specified, the connector defaults to yesterday's date (UTC). Dates older than 60 days are automatically adjusted to 60 days ago, because Amazon Ads does not retain report data beyond that window. The date is treated in the timezone of the processed profile.
+7. **Start Date (Optional)** is used for generating reports starting from the specified start date. Use YYYY-MM-DD format. If not specified, the connector defaults to yesterday's date (UTC). The connector limits the report start date to 60 days ago, even for report types with longer retention. See [Report history](#report-history) for limitations. Reports use the processed profile's timezone.
 8. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 10. **Look Back Window (Optional)** is the number of days the connector re-syncs on each run to capture late-arriving data. Defaults to 3. Increase this value if your reports frequently receive delayed updates.
@@ -77,7 +76,12 @@ Both **view** and **edit** access levels are supported. Accounts with view-only 
 :::
 
 :::important
-Amazon Ads refresh tokens issued on or after July 30, 2026 expire **365 days** after the advertiser grants consent, and using or refreshing the token does not extend that date. Tokens issued before July 30, 2026 do not expire unless access is revoked. When a refresh token expires, syncs fail with a configuration error asking you to re-authenticate. To resolve this, re-authenticate your Amazon Ads account to generate a new refresh token. For Airbyte Cloud users, click **Authenticate your Amazon Ads account** in the source settings. For Open Source users, follow the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) to obtain a new refresh token.
+Amazon Ads refresh tokens issued on or after July 30, 2026 expire **365 days** after the advertiser grants consent. Using or refreshing the token doesn't extend that date. Tokens issued before July 30, 2026 don't have a fixed expiration, but any refresh token stops working if access is revoked. When Amazon rejects the refresh token, syncs fail with a configuration error asking you to re-authenticate.
+
+To get a new refresh token:
+
+- **Airbyte Cloud:** Re-authenticate your Amazon Ads account in the source's settings and save the source.
+- **Airbyte Open Source:** Generate a new refresh token for your Amazon Ads API application using Amazon's [token generation guide](https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens), then replace the **Refresh Token** value in the source's settings and save the source.
 :::
 
 ## Supported sync modes
@@ -133,20 +137,30 @@ All the reports are generated relative to the target profile's timezone.
 
 Campaign reports may sometimes have no data or may not appear in records. This can occur when there are no clicks or views associated with the campaigns on the requested day. For details, see [Why is my report empty?](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/faq#why-is-my-report-empty)
 
-Amazon Ads retains report data for 60 days. The connector automatically caps the start date to 60 days ago, so any configured or saved start date older than that is adjusted at sync time. For details, see [Get started with v3 reporting](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started).
+### Report history
+
+The connector limits Sponsored Products, Sponsored Brands, and Sponsored Display report start dates to 60 days ago. This is a connector limit, not a universal Amazon Ads retention limit: for example, Amazon's [campaign reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/campaign) retain 95 days for Sponsored Products, 60 days for Sponsored Brands, and 65 days for Sponsored Display. Setting an earlier **Start Date** doesn't retrieve this additional history through the connector.
+
+Amazon still validates each report request against the retention window for that report type. The connector's date limit doesn't guarantee that every request is within that window, particularly during long-running syncs. See [Report creation errors](#report-creation-errors) if Amazon rejects a report's start date.
+
+:::warning
+Amazon has announced that [Reporting API v3 will be deprecated on June 30, 2027](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/campaign). Connector version 9.2.13 still uses this API for Sponsored Products, Sponsored Brands, and Sponsored Display report streams. These streams will need a connector update to use Amazon's replacement reporting API; changing your source settings doesn't switch API versions.
+:::
 
 ### Report stream variants
 
-Each report stream is available in two variants:
+Sponsored Products, Sponsored Brands, and Sponsored Display report streams are available in two variants:
 
 - A **summary** variant (for example, `sponsored_brands_v3_report_stream`) that uses `timeUnit=SUMMARY`. These streams use `reportDate` as the primary key and cursor, where `reportDate` reflects the end of the report's time window.
 - A **daily** variant with a `_daily` suffix (for example, `sponsored_brands_v3_report_stream_daily`) that uses `timeUnit=DAILY` for more granular, per-day data. As of connector version 8.0.0, daily variants use the API-native `date` field (the actual report date) as the primary key and cursor. If you are upgrading from an earlier version, see the [migration guide](/integrations/sources/amazon-ads-migrations).
 
 For more information on time units, see the Amazon Ads documentation on [timeUnit and supported columns](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
 
-:::note
-Amazon rejects a report request that duplicates one it is still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When the report Amazon names matches the request, the connector syncs that report instead of failing. Otherwise the connector waits and requests the report again. Amazon can also treat requests from different streams as duplicates, such as the keywords and targets reports or the summary and daily versions of a report, so syncing both can add several minutes to each report.
-:::
+### Duplicate report requests
+
+Amazon rejects a report request with HTTP 425 when it considers the request a duplicate of a report it's still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When the report Amazon names matches the requested dates, report type, time unit, columns, grouping, and filters, the connector syncs that report instead of requesting a new one.
+
+Otherwise, the connector waits 60 seconds between requests, up to four requests per report-creation attempt and three attempts per report job. If the duplicate persists, the stream fails with a transient error. Retry the sync after the earlier report finishes. Amazon can also treat requests from different streams as duplicates, such as the keywords and targets reports or the summary and daily variants of a report, so syncing both can add several minutes to each report.
 
 ### Sponsored Brands report types
 
@@ -202,6 +216,8 @@ The Amazon Ads API uses dynamic rate limiting that varies by region and system l
 
 When Amazon returns a 429 response, the connector waits for the number of seconds in the `Retry-After` header before retrying the request. This applies to the Sponsored Brands and Sponsored Display entity streams and to the report creation and status-polling requests of the report streams. Server errors (500, 502, 503, and 504) are also retried. As a result, throttling usually shows up as a slower sync rather than a failed one. If Amazon asks the connector to wait 15 minutes or longer, the connector stops the stream instead of waiting; rerun the sync later or during a less busy period.
 
+As of version 9.2.13, `sponsored_product_ad_group_bid_recommendations` and `sponsored_product_ad_group_suggested_keywords` also wait before retrying 429 responses. If Amazon doesn't send a `Retry-After` header, these streams use exponential backoff with progressively longer waits. They also retry server errors (500, 502, 503, and 504). Persistent throttling can still fail a sync after retries are exhausted.
+
 **Adjusting Concurrency Settings:**
 
 The **Number of concurrent threads** setting defaults to 14 and accepts values from 2 to 20.
@@ -221,6 +237,14 @@ If you need better sync performance and are not experiencing throttling, increas
 | `array`                  | `array`      |
 | `object`                 | `object`     |
 
+## Troubleshooting
+
+### Report creation errors
+
+As of version 9.2.13, unrecognized HTTP 400 responses during report creation include Amazon's error detail in the message `Amazon Ads rejected the report request: ...`. Check this detail in the sync logs to identify the rejected parameter, such as an invalid report column. If it concerns columns or other report configuration that Airbyte selects automatically, include the full error and affected stream name when contacting support.
+
+For a start date outside the report type's retention window, the connector reports: `Amazon Ads rejected the report request because its start date is earlier than Amazon's data retention window for this report type.` Check the full response in the sync logs for the requested date and Amazon's retention start date. For a new sync, choose a more recent **Start Date** within the report type's retention window. If an existing sync still fails with this error despite the connector's 60-day limit, include both dates and the affected stream when contacting support. This message identifies the failure; it doesn't recover expired report data or extend the available history.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -232,9 +256,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 9.2.13 | 2026-10-30 | [89746](https://github.com/airbytehq/airbyte/pull/89746) | Show Amazon's reason when it rejects a report request with HTTP 400, including a clear message when the report start date is outside Amazon's data retention window. Ad-group recommendation streams now back off longer before retrying when Amazon rate-limits them (HTTP 429). |
+| 9.2.13 | 2026-11-03 | [89746](https://github.com/airbytehq/airbyte/pull/89746) | Show Amazon's reason when it rejects a report request with HTTP 400, including a clear message when the report start date is outside Amazon's data retention window. Ad-group recommendation streams now back off longer before retrying when Amazon rate-limits them (HTTP 429). |
 | 9.2.12 | 2026-10-27 | [89801](https://github.com/airbytehq/airbyte/pull/89801) | Update dependencies |
-| 9.2.11 | 2026-10-20 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Classify HTTP 400 and 401 refresh-token responses with `invalid_grant` or `invalid_permissions` as configuration errors that ask you to re-authenticate, and document the 365-day refresh-token expiration |
+| 9.2.11 | 2026-10-22 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Classify HTTP 400 and 401 refresh-token responses with `invalid_grant` or `invalid_permissions` as configuration errors that ask you to re-authenticate, and document the 365-day refresh-token expiration |
 | 9.2.10 | 2026-10-20 | [89108](https://github.com/airbytehq/airbyte/pull/89108) | Update dependencies |
 | 9.2.9 | 2026-10-13 | [87646](https://github.com/airbytehq/airbyte/pull/87646) | When Amazon rejects a report request as a duplicate (HTTP 425), reuse the report it names if that report matches the request, and otherwise wait and request the report again, reporting a duplicate that persists as a transient error instead of a config error |
 | 9.2.8 | 2026-10-13 | [88523](https://github.com/airbytehq/airbyte/pull/88523) | Update dependencies |
