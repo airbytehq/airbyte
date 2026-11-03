@@ -59,6 +59,8 @@ CHUNK_OVERLAP = 2_000  # so text cut at a chunk edge is still seen whole in one 
 MAX_CHUNKS = 30
 ATTEMPTS = 3
 RETRY_SECONDS = 5
+# GitHub asks for at least a minute's wait after a secondary rate limit.
+RATE_LIMIT_SECONDS = 60
 BUILD_SECONDS = 14 * 60  # stays under the intake job's 20-minute timeout
 MAX_COMMITS = 250  # the commits endpoint returns no more than this
 MAX_DIFF_FILES = 300  # the diff endpoint answers HTTP 406 above this
@@ -67,7 +69,7 @@ MAX_LINKED = 5
 # A session that hasn't set an intake/* label this long after it started is reported as stuck.
 STALE_HOURS = 6
 # Started items that kept an older intake/* label are checked while they were updated this recently.
-STALE_DAYS = 30
+STALE_DAYS = 7
 # The sweep reads items created this recently (and not before --since).
 SWEEP_DAYS = 30
 # Bot authors whose items the sweep never picks, left out of the search so they don't fill its 1000-result cap.
@@ -126,15 +128,21 @@ class ScreenError(Exception):
 
 
 def gh(*args: str) -> str:
+    wait = 0
     for attempt in range(ATTEMPTS):
         if attempt:
-            time.sleep(RETRY_SECONDS * 2**attempt)
+            time.sleep(wait)
         result = subprocess.run(["gh", "api", *args], capture_output=True, text=True)
         if result.returncode == 0:
             return result.stdout
-        # A 4xx other than a rate limit won't change on retry.
-        if re.search(r"HTTP 4(?!29)\d\d", result.stderr):
+        # Rate limits come as 429 or, for secondary limits, 403 with "rate limit" in the message.
+        if re.search(r"rate limit|HTTP 429", result.stderr, re.IGNORECASE):
+            wait = RATE_LIMIT_SECONDS
+        # Any other 4xx won't change on retry.
+        elif re.search(r"HTTP 4\d\d", result.stderr):
             break
+        else:
+            wait = RETRY_SECONDS * 2 ** (attempt + 1)
     raise ScreenError(f"could not fetch {args[0]}")
 
 
@@ -243,7 +251,8 @@ def stale_started() -> list[int]:
     stale = []
     for number in sorted(candidates):
         try:
-            events = gh_pages(f"repos/{REPO}/issues/{number}/timeline")
+            # Issue events, not the timeline: label changes without comments and commits, so fewer pages.
+            events = gh_pages(f"repos/{REPO}/issues/{number}/events")
         except (ScreenError, Flagged):
             continue
         labeled = [(e["created_at"], (e.get("label") or {}).get("name") or "") for e in events if e.get("event") == "labeled"]
