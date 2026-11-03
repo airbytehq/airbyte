@@ -168,7 +168,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
-| 1.7.0 | 2026-11-03 | | Add opt-in historical channel daily reports using the YouTube Analytics query API |
+| 1.7.0 | 2026-11-03 | [90849](https://github.com/airbytehq/airbyte/pull/90849) | Add opt-in historical channel daily reports using the YouTube Analytics query API |
 | 1.6.1 | 2026-11-03 | [90800](https://github.com/airbytehq/airbyte/pull/90800) | Update dependencies |
 | 1.6.0 | 2026-10-30 | [89627](https://github.com/airbytehq/airbyte/pull/89627) | Add the `channel_reach_basic_a1` and `channel_reach_combined_a1` streams for video thumbnail impressions and click-through rate |
 | 1.5.0 | 2026-10-27 | [89629](https://github.com/airbytehq/airbyte/pull/89629) | Emit report metrics as numbers, follow pagination on job and report listings, and give clearer errors for credential, permission and missing-file failures |
