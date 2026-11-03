@@ -2090,7 +2090,8 @@ spec:
         description: >-
           UTC date and time in the format 2010-01-01T00:00:00Z. The Accounts stream reads the connected
           accounts created on or after this date. Keep the default to read every connected account; a later
-          date leaves out the accounts created before it, on full refreshes too.
+          date leaves out the accounts created before it, on full refreshes too. The Persons stream reads its
+          accounts from this stream, so their persons are left out as well.
         default: "2010-01-01T00:00:00Z"
         examples:
           - "2010-01-01T00:00:00Z"
