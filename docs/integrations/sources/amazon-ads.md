@@ -142,6 +142,8 @@ Campaign reports may sometimes have no data or may not appear in records. This c
 
 The connector limits Sponsored Products, Sponsored Brands, and Sponsored Display report start dates to 60 days ago. This is a connector limit, not a universal Amazon Ads retention limit: for example, Amazon's [campaign reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/campaign) retain 95 days for Sponsored Products, 60 days for Sponsored Brands, and 65 days for Sponsored Display. Setting an earlier **Start Date** doesn't retrieve this additional history through the connector.
 
+This minimum also applies when resuming from saved incremental state. If the saved cursor is more than 60 days old, the connector skips the older unsynced period. A long sync interruption can therefore leave a data gap that this connector can't backfill, even if Amazon still retains that data.
+
 Amazon still validates each report request against the retention window for that report type. The connector's date limit doesn't guarantee that every request is within that window, particularly during long-running syncs. See [Report creation errors](#report-creation-errors) if Amazon rejects a report's start date.
 
 :::warning
@@ -159,7 +161,7 @@ For more information on time units, see the Amazon Ads documentation on [timeUni
 
 ### Duplicate report requests
 
-Amazon rejects a report request with HTTP 425 when it considers the request a duplicate of a report it's still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When the report Amazon names matches the requested dates, report type, time unit, columns, grouping, and filters, the connector syncs that report instead of requesting a new one.
+For Sponsored Products, Sponsored Brands, and Sponsored Display reports, Amazon rejects a request with HTTP 425 when it considers the request a duplicate of a report it's still generating, for example when a sync attempt is retried after an earlier attempt already requested the report. When the report Amazon names matches the requested dates, report type, time unit, columns, grouping, and filters, the connector syncs that report instead of requesting a new one.
 
 Otherwise, the connector waits 60 seconds between requests, up to four requests per report-creation attempt and three attempts per report job. If the duplicate persists, the stream fails with a transient error. Retry the sync after the earlier report finishes. Amazon can also treat requests from different streams as duplicates, such as the keywords and targets reports or the summary and daily variants of a report, so syncing both can add several minutes to each report.
 
@@ -241,6 +243,8 @@ If you need better sync performance and are not experiencing throttling, increas
 ## Troubleshooting
 
 ### Report creation errors
+
+The following messages apply to Sponsored Products, Sponsored Brands, and Sponsored Display report streams, not Attribution reports.
 
 As of version 9.2.13, unrecognized HTTP 400 responses during report creation include Amazon's error detail in the message `Amazon Ads rejected the report request: ...`. Check this detail in the sync logs to identify the rejected parameter, such as an invalid report column. If it concerns columns or other report configuration that Airbyte selects automatically, include the full error and affected stream name when contacting support.
 
