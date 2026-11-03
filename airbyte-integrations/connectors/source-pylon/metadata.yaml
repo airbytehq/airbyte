@@ -46,3 +46,11 @@ data:
     - title: Pylon changelog
       url: https://www.usepylon.com/changelog
       type: api_release_history
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
