@@ -4,9 +4,7 @@
       "stream": {
         "name": "calls",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -15,9 +13,7 @@
       "stream": {
         "name": "company",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -26,9 +22,7 @@
       "stream": {
         "name": "contacts",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -37,10 +31,7 @@
       "stream": {
         "name": "numbers",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
@@ -49,9 +40,7 @@
       "stream": {
         "name": "tags",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -60,10 +49,7 @@
       "stream": {
         "name": "teams",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
@@ -72,9 +58,7 @@
       "stream": {
         "name": "user_availability",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -83,9 +67,7 @@
       "stream": {
         "name": "users",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -94,9 +76,7 @@
       "stream": {
         "name": "webhooks",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -105,10 +85,7 @@
       "stream": {
         "name": "conversations",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -117,9 +94,7 @@
       "stream": {
         "name": "conversation_engagements",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -128,9 +103,7 @@
       "stream": {
         "name": "campaigns",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -139,9 +112,7 @@
       "stream": {
         "name": "campaign_outcomes",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -150,9 +121,7 @@
       "stream": {
         "name": "trackers",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -161,9 +130,7 @@
       "stream": {
         "name": "sms_templates",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -172,9 +139,7 @@
       "stream": {
         "name": "whatsapp_templates",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
