@@ -182,6 +182,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 3.0.2 | 2025-07-12 | [63057](https://github.com/airbytehq/airbyte/pull/63057) | Update dependencies |
 | 3.0.1 | 2025-07-05 | [62581](https://github.com/airbytehq/airbyte/pull/62581) | Update dependencies |
 | 3.0.0 | 2025-06-20 | [61727](https://github.com/airbytehq/airbyte/pull/61727) | Removes deprecated `products` stream. Adds new `plans` stream. |
+| 2.10.2 | 2025-06-28 | [62290](https://github.com/airbytehq/airbyte/pull/62290) | Update dependencies |
 | 2.10.1 | 2025-06-14 | [61073](https://github.com/airbytehq/airbyte/pull/61073) | Update dependencies |
 | 2.10.0 | 2025-05-29 | [60810](https://github.com/airbytehq/airbyte/pull/60810) | Add new `payment_methods` stream |
 | 2.9.1 | 2025-05-24 | [60151](https://github.com/airbytehq/airbyte/pull/60151) | Update dependencies |
