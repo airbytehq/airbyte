@@ -25,6 +25,20 @@ acceptance_tests:
             bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
           - name: numbers
             bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: conversations
+            bypass_reason: "The Conversations API is an add-on that may not be enabled for the test company, and the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+          - name: conversation_engagements
+            bypass_reason: "Child of conversations, which needs the Conversations API add-on; the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+          - name: campaigns
+            bypass_reason: "The test account has no outbound campaigns and the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+          - name: campaign_outcomes
+            bypass_reason: "The test account has no campaign outcomes and the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+          - name: trackers
+            bypass_reason: "Trackers need the AI Assist or AI Assist Pro package and the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+          - name: sms_templates
+            bypass_reason: "The test account has no SMS templates and the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+          - name: whatsapp_templates
+            bypass_reason: "Needs a number registered for WhatsApp and the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
   incremental:
     tests:
       - config_path: "secrets/config.json"

@@ -40,43 +40,95 @@ definitions:
   error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
-      - type: WaitUntilTimeFromHeader
-        header: X-AircallApi-Reset
-        min_wait: 1
+      - $ref: "#/definitions/backoff_strategy"
     response_filters:
-      - type: HttpResponseFilter
-        action: FAIL
-        failure_type: config_error
-        http_codes: [401]
-        error_message: >-
-          Aircall rejected the API ID and API token (HTTP 401).
-          Create a new API key in the Aircall Dashboard (Integrations & API > API
-          Keys, https://dashboard.aircall.io/integrations/api-keys) and update
-          the connector.
-      - type: HttpResponseFilter
-        action: FAIL
-        failure_type: config_error
-        http_codes: [403]
-        error_message: >-
-          Aircall rejected the API ID and API token (HTTP 403).
-          Create a new API key in the Aircall Dashboard (Integrations & API > API
-          Keys, https://dashboard.aircall.io/integrations/api-keys) and update
-          the connector.
-      - type: HttpResponseFilter
-        action: FAIL
-        failure_type: config_error
-        http_codes: [400]
-        error_message_contains: "limited to 10k results"
-        error_message: >-
-          Aircall returns at most 10,000 calls or contacts per request window.
-          Lower the Window size (days) setting so each window holds fewer than
-          10,000 records.
-      - type: HttpResponseFilter
-        action: RATE_LIMITED
-        http_codes: [429]
-      - type: HttpResponseFilter
-        action: RETRY
-        http_codes: [500, 502, 503, 504]
+      - $ref: "#/definitions/response_filters/unauthorized"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/result_limit"
+      - $ref: "#/definitions/response_filters/rate_limited"
+      - $ref: "#/definitions/response_filters/server_error"
+  backoff_strategy:
+    type: WaitUntilTimeFromHeader
+    header: X-AircallApi-Reset
+    min_wait: 1
+  response_filters:
+    unauthorized:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      http_codes: [401]
+      error_message: >-
+        Aircall rejected the API ID and API token (HTTP 401).
+        Create a new API key in the Aircall Dashboard (Integrations & API > API
+        Keys, https://dashboard.aircall.io/integrations/api-keys) and update
+        the connector.
+    forbidden:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      http_codes: [403]
+      error_message: >-
+        Aircall rejected the API ID and API token (HTTP 403).
+        Create a new API key in the Aircall Dashboard (Integrations & API > API
+        Keys, https://dashboard.aircall.io/integrations/api-keys) and update
+        the connector.
+    result_limit:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      http_codes: [400]
+      error_message_contains: "limited to 10k results"
+      error_message: >-
+        Aircall returns at most 10,000 calls or contacts per request window.
+        Lower the Window size (days) setting so each window holds fewer than
+        10,000 records.
+    rate_limited:
+      type: HttpResponseFilter
+      action: RATE_LIMITED
+      http_codes: [429]
+    server_error:
+      type: HttpResponseFilter
+      action: RETRY
+      http_codes: [500, 502, 503, 504]
+    conversations_not_enabled:
+      type: HttpResponseFilter
+      action: IGNORE
+      predicate: >-
+        {{ response is mapping and 'conversations' not in response and 'engagements' not in response
+        and 'conversations api is not enabled' in (response | string | lower) }}
+      error_message: >-
+        Skipping this stream: the Conversations API is not enabled for this
+        Aircall company (HTTP 403). Ask Aircall to enable it to sync
+        conversations.
+    conversations_result_limit:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      predicate: >-
+        {{ response is mapping and 'conversations' not in response
+        and 'must not exceed 10000' in (response | string) }}
+      error_message: >-
+        Aircall returns at most 10,000 conversations per request window.
+        Lower the Window size (days) setting so each window holds fewer than
+        10,000 conversations.
+    trackers_not_enabled:
+      type: HttpResponseFilter
+      action: IGNORE
+      predicate: >-
+        {{ response is mapping and 'trackers' not in response
+        and 'cannot access this feature' in (response | string | lower) }}
+      error_message: >-
+        Skipping the trackers stream: this Aircall company does not have the
+        AI Assist or AI Assist Pro package (HTTP 403).
+    whatsapp_not_configured:
+      type: HttpResponseFilter
+      action: IGNORE
+      predicate: >-
+        {{ response is mapping and 'templates' not in response
+        and 'not configured to use whatsapp' in (response | string | lower) }}
+      error_message: >-
+        Skipping WhatsApp templates for a number that is not registered for
+        WhatsApp (HTTP 403).
   paginator:
     type: DefaultPaginator
     page_token_option:
@@ -91,6 +143,21 @@ definitions:
       type: PageIncrement
       page_size: 50
       start_from_page: 1
+  cursor_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: per_page
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 50
+      cursor_value: "{{ response.get('meta', {}).get('next_cursor') }}"
+      stop_condition: "{{ not response.get('meta', {}).get('next_cursor') }}"
   streams:
     calls:
       type: DeclarativeStream
@@ -358,6 +425,284 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/webhooks"
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /conversations
+          http_method: GET
+          request_parameters:
+            order: asc
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - $ref: "#/definitions/backoff_strategy"
+            response_filters:
+              - $ref: "#/definitions/response_filters/conversations_not_enabled"
+              - $ref: "#/definitions/response_filters/conversations_result_limit"
+              - $ref: "#/definitions/response_filters/unauthorized"
+              - $ref: "#/definitions/response_filters/forbidden"
+              - $ref: "#/definitions/response_filters/result_limit"
+              - $ref: "#/definitions/response_filters/rate_limited"
+              - $ref: "#/definitions/response_filters/server_error"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conversations
+        paginator:
+          $ref: "#/definitions/paginator"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_engagement_at
+        datetime_format: "%s"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        step: P{{ config.get('window_in_days', 30) }}D
+        cursor_granularity: PT1S
+        lookback_window: P3D
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1388534400"
+          datetime_format: "%s"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().timestamp() | int }}"
+          datetime_format: "%s"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations"
+    conversation_engagements:
+      type: DeclarativeStream
+      name: conversation_engagements
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /conversations/{{ stream_partition['conversation_id'] }}/engagements
+          http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - $ref: "#/definitions/backoff_strategy"
+            response_filters:
+              - $ref: "#/definitions/response_filters/conversations_not_enabled"
+              - $ref: "#/definitions/response_filters/unauthorized"
+              - $ref: "#/definitions/response_filters/forbidden"
+              - $ref: "#/definitions/response_filters/result_limit"
+              - $ref: "#/definitions/response_filters/rate_limited"
+              - $ref: "#/definitions/response_filters/server_error"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - engagements
+        paginator:
+          $ref: "#/definitions/paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: conversation_id
+              stream:
+                $ref: "#/definitions/streams/conversations"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - conversation_id
+              value: "{{ stream_partition['conversation_id'] }}"
+              value_type: integer
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversation_engagements"
+    campaigns:
+      type: DeclarativeStream
+      name: campaigns
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaigns
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaigns
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaigns"
+    campaign_outcomes:
+      type: DeclarativeStream
+      name: campaign_outcomes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /campaign_outcomes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - campaign_outcomes
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaign_outcomes"
+    trackers:
+      type: DeclarativeStream
+      name: trackers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /trackers
+          http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - $ref: "#/definitions/backoff_strategy"
+            response_filters:
+              - $ref: "#/definitions/response_filters/trackers_not_enabled"
+              - $ref: "#/definitions/response_filters/unauthorized"
+              - $ref: "#/definitions/response_filters/forbidden"
+              - $ref: "#/definitions/response_filters/result_limit"
+              - $ref: "#/definitions/response_filters/rate_limited"
+              - $ref: "#/definitions/response_filters/server_error"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - trackers
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/trackers"
+    sms_templates:
+      type: DeclarativeStream
+      name: sms_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sms/templates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - templates
+        paginator:
+          $ref: "#/definitions/paginator"
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sms_templates"
+    whatsapp_templates:
+      type: DeclarativeStream
+      name: whatsapp_templates
+      primary_key:
+        - number_id
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /numbers/{{ stream_partition['number_id'] }}/templates
+          http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - $ref: "#/definitions/backoff_strategy"
+            response_filters:
+              - $ref: "#/definitions/response_filters/whatsapp_not_configured"
+              - $ref: "#/definitions/response_filters/unauthorized"
+              - $ref: "#/definitions/response_filters/forbidden"
+              - $ref: "#/definitions/response_filters/result_limit"
+              - $ref: "#/definitions/response_filters/rate_limited"
+              - $ref: "#/definitions/response_filters/server_error"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - templates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: token
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('pageInfo', {}).get('nextToken') }}"
+            stop_condition: >-
+              {{ not response.get('templates') or response.get('pageInfo', {}).get('nextToken') is none }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: number_id
+              stream:
+                $ref: "#/definitions/streams/numbers"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - number_id
+              value: "{{ stream_partition['number_id'] }}"
+              value_type: integer
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/whatsapp_templates"
 streams:
   - $ref: "#/definitions/streams/calls"
   - $ref: "#/definitions/streams/company"
@@ -368,6 +713,13 @@ streams:
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/teams"
   - $ref: "#/definitions/streams/webhooks"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/conversation_engagements"
+  - $ref: "#/definitions/streams/campaigns"
+  - $ref: "#/definitions/streams/campaign_outcomes"
+  - $ref: "#/definitions/streams/trackers"
+  - $ref: "#/definitions/streams/sms_templates"
+  - $ref: "#/definitions/streams/whatsapp_templates"
 
 spec:
   type: Spec
@@ -413,10 +765,11 @@ spec:
         maximum: 365
         title: Window size (days)
         description: >-
-          Days of records requested per API call for the calls and contacts
-          streams. Aircall returns at most 10,000 records per request, so lower
-          this if a sync fails with the 10,000-results error. Leave empty for 1
-          day on calls and 30 days on contacts.
+          Days of records requested per API call for the calls, contacts and
+          conversations streams. Aircall returns at most 10,000 records per
+          request, so lower this if a sync fails with the 10,000-results error.
+          Leave empty for 1 day on calls and 30 days on contacts and
+          conversations.
         order: 3
       num_workers:
         type: integer
@@ -1174,3 +1527,485 @@ schemas:
           - "null"
           - string
     title: Webhooks Schema
+  conversations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      company_id:
+        type:
+          - "null"
+          - integer
+      status:
+        type:
+          - "null"
+          - string
+      number_id:
+        type:
+          - "null"
+          - integer
+      external_type:
+        type:
+          - "null"
+          - string
+      labels:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      assigned_to:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          user_id:
+            type:
+              - "null"
+              - integer
+      assigned_by:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          user_id:
+            type:
+              - "null"
+              - integer
+      assigned_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      last_engagement_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      closed_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+    title: Conversations Schema
+  conversation_engagements:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      conversation_id:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      type:
+        type:
+          - "null"
+          - string
+      call_id:
+        type:
+          - "null"
+          - integer
+      message_id:
+        type:
+          - "null"
+          - string
+      external_number:
+        type:
+          - "null"
+          - string
+      assigned_to:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          user_id:
+            type:
+              - "null"
+              - integer
+      assigned_by:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          user_id:
+            type:
+              - "null"
+              - integer
+      unassigned_from:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          user_id:
+            type:
+              - "null"
+              - integer
+      unassigned_by:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          user_id:
+            type:
+              - "null"
+              - integer
+      closed_by:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          user_id:
+            type:
+              - "null"
+              - integer
+      reopened_by:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          user_id:
+            type:
+              - "null"
+              - integer
+    title: Conversation Engagements Schema
+  campaigns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      direct_link:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      run_mode:
+        type:
+          - "null"
+          - string
+      caller_id_strategy:
+        type:
+          - "null"
+          - string
+      local_presence:
+        type:
+          - "null"
+          - boolean
+      call_attempts:
+        type:
+          - "null"
+          - integer
+      min_interval_between_attempts:
+        type:
+          - "null"
+          - integer
+      external_ringing_timeout:
+        type:
+          - "null"
+          - integer
+      campaign_outcome_time:
+        type:
+          - "null"
+          - integer
+      end_date:
+        type:
+          - "null"
+          - string
+        format: date-time
+      outcome_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      agent_type:
+        type:
+          - "null"
+          - string
+      aiva_agent_id:
+        type:
+          - "null"
+          - string
+      calling_hours:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          timezone:
+            type:
+              - "null"
+              - string
+          slots:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                from_time:
+                  type:
+                    - "null"
+                    - string
+                to_time:
+                  type:
+                    - "null"
+                    - string
+                days:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+      created_by:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+    title: Campaigns Schema
+  campaign_outcomes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      color:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+    title: Campaign Outcomes Schema
+  trackers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      title:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      created_by:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_by:
+        type:
+          - "null"
+          - integer
+      filters:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          query_terms:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          exclude_query_terms:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          call_direction:
+            type:
+              - "null"
+              - string
+          speaker_type:
+            type:
+              - "null"
+              - string
+          line_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          agent_ids:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+    title: Trackers Schema
+  sms_templates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      body:
+        type:
+          - "null"
+          - string
+    title: SMS Templates Schema
+  whatsapp_templates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      number_id:
+        type:
+          - "null"
+          - integer
+      wabaId:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      category:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      language:
+        type:
+          - "null"
+          - string
+      twilioType:
+        type:
+          - "null"
+          - string
+      createdAtTimestamp:
+        type:
+          - "null"
+          - integer
+      updatedAtTimestamp:
+        type:
+          - "null"
+          - integer
+      isFavourite:
+        type:
+          - "null"
+          - boolean
+      template:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+    title: WhatsApp Templates Schema

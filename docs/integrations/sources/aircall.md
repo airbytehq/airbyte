@@ -50,17 +50,24 @@ The Aircall source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-| Stream            | Sync mode                 | Notes                                                         |
-| :---------------- | :------------------------ | :------------------------------------------------------------ |
-| calls             | Full refresh, incremental | Incremental calls use `started_at` with a three-day lookback. |
-| company           | Full refresh              | Used for connection checks.                                   |
-| contacts          | Full refresh              |                                                               |
-| numbers           | Full refresh, incremental | Incremental sync rereads all records to capture edits.        |
-| tags              | Full refresh              |                                                               |
-| user_availability | Full refresh              |                                                               |
-| users             | Full refresh              | Uses the Aircall User V2 API.                                 |
-| teams             | Full refresh, incremental | Incremental sync rereads all records to capture edits.        |
-| webhooks          | Full refresh              |                                                               |
+| Stream                   | Sync mode                 | Notes                                                                                                                       |
+| :----------------------- | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
+| calls                    | Full refresh, incremental | Incremental calls use `started_at` with a three-day lookback.                                                               |
+| company                  | Full refresh              | Used for connection checks.                                                                                                 |
+| contacts                 | Full refresh              |                                                                                                                             |
+| numbers                  | Full refresh, incremental | Incremental sync rereads all records to capture edits.                                                                      |
+| tags                     | Full refresh              |                                                                                                                             |
+| user_availability        | Full refresh              |                                                                                                                             |
+| users                    | Full refresh              | Uses the Aircall User V2 API.                                                                                               |
+| teams                    | Full refresh, incremental | Incremental sync rereads all records to capture edits.                                                                      |
+| webhooks                 | Full refresh              |                                                                                                                             |
+| conversations            | Full refresh, incremental | Incremental on `last_engagement_at` with a three-day lookback. Needs the Conversations API; skipped when it is not enabled. |
+| conversation_engagements | Full refresh              | Engagements of each conversation. Skipped when the Conversations API is not enabled.                                        |
+| campaigns                | Full refresh              | Outbound campaigns.                                                                                                         |
+| campaign_outcomes        | Full refresh              | Outcomes agents can set on campaign calls.                                                                                  |
+| trackers                 | Full refresh              | Needs AI Assist or AI Assist Pro; skipped without it.                                                                       |
+| sms_templates            | Full refresh              |                                                                                                                             |
+| whatsapp_templates       | Full refresh              | Read per number; numbers not registered for WhatsApp are skipped.                                                           |
 
 ## API method example
 
@@ -68,7 +75,7 @@ GET https://api.aircall.io/v1/numbers
 
 ## Performance considerations
 
-The connector uses Aircall's [v1 API](https://developer.aircall.io/api-references/). Calls and contacts requests are split into configurable date windows to stay below Aircall's 10,000-result cap. Aircall's 120-requests-per-minute limit applies company-wide.
+The connector uses Aircall's [v1 API](https://developer.aircall.io/api-references/). Calls, contacts and conversations requests are split into configurable date windows to stay below Aircall's 10,000-result cap. Aircall's 120-requests-per-minute limit applies company-wide.
 
 ## IP allow list
 
@@ -81,6 +88,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                   | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
+| 0.6.0 | 2026-11-03 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add conversations, conversation engagements, campaigns, campaign outcomes, trackers, SMS templates and WhatsApp templates streams |
 | 0.5.0 | 2026-11-03 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Add incremental sync for calls, rate-limit handling and request windows that avoid Aircall's 10,000-result limit |
 | 0.4.27 | 2026-10-13 | [88524](https://github.com/airbytehq/airbyte/pull/88524) | Update dependencies |
 | 0.4.26 | 2026-10-06 | [87742](https://github.com/airbytehq/airbyte/pull/87742) | Update dependencies |
