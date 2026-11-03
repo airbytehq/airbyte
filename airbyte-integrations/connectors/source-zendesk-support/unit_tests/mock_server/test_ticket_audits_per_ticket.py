@@ -56,16 +56,17 @@ def _config() -> Dict[str, Any]:
 
 
 def _given_tickets(http_mocker: HttpMocker, start_time: int, tickets: List[Dict[str, int]]) -> None:
-    """Mock the parent `tickets` incremental export. Each ticket is {"id": ..., "generated_timestamp": ...}."""
+    """Mock the parent ticket list. Each ticket is {"id": ..., "updated_at": <unix timestamp>}; the builder
+    sets `generated_timestamp` to the same instant, which is what `_ab_updated_at` is derived from.
+
+    The list request carries no start time: the parent filters client-side, so a ticket older than
+    `start_time` would be dropped before any audits are requested for it.
+    """
     response = TicketsResponseBuilder.tickets_response()
     for ticket in tickets:
-        response = response.with_record(
-            TicketsRecordBuilder.tickets_record().with_id(ticket["id"]).with_cursor(ticket["generated_timestamp"])
-        )
-    http_mocker.get(
-        ZendeskSupportRequestBuilder.tickets_endpoint(_AUTHENTICATOR).with_start_time(start_time).build(),
-        response.build(),
-    )
+        assert ticket["updated_at"] >= start_time
+        response = response.with_record(TicketsRecordBuilder.tickets_record().with_id(ticket["id"]).with_cursor(ticket["updated_at"]))
+    http_mocker.get(ZendeskSupportRequestBuilder.tickets_endpoint(_AUTHENTICATOR).build(), response.build())
 
 
 def _audit(audit_id: int, ticket_id: int) -> TicketAuditsRecordBuilder:
@@ -125,7 +126,7 @@ class TestTicketAuditsPerTicketRead(TestCase):
         _given_tickets(
             http_mocker,
             start_time,
-            [{"id": 101, "generated_timestamp": start_time + 10}, {"id": 102, "generated_timestamp": start_time + 20}],
+            [{"id": 101, "updated_at": start_time + 10}, {"id": 102, "updated_at": start_time + 20}],
         )
         _given_audits(http_mocker, 101, [1001, 1002])
         _given_audits(http_mocker, 102, [2001])
@@ -142,7 +143,7 @@ class TestTicketAuditsPerTicketRead(TestCase):
     @HttpMocker()
     def test_given_has_more_when_read_then_follow_links_next_until_has_more_is_false(self, http_mocker: HttpMocker) -> None:
         start_time = int(_START_DATE.timestamp())
-        _given_tickets(http_mocker, start_time, [{"id": 101, "generated_timestamp": start_time + 10}])
+        _given_tickets(http_mocker, start_time, [{"id": 101, "updated_at": start_time + 10}])
         next_page_url = "https://d3v-airbyte.zendesk.com/api/v2/tickets/101/audits.json?page%5Bafter%5D=after-cursor&page%5Bsize%5D=100"
         http_mocker.get(
             _audits_request(101),
@@ -166,7 +167,7 @@ class TestTicketAuditsPerTicketRead(TestCase):
     def test_given_unpaginated_archived_ticket_response_when_read_then_read_one_page(self, http_mocker: HttpMocker) -> None:
         """Zendesk returns audits for archived tickets unpaginated, without `meta`/`links`; read it as one page."""
         start_time = int(_START_DATE.timestamp())
-        _given_tickets(http_mocker, start_time, [{"id": 101, "generated_timestamp": start_time + 10}])
+        _given_tickets(http_mocker, start_time, [{"id": 101, "updated_at": start_time + 10}])
         archived_body = {
             "audits": [_audit(1001, 101).build(), _audit(1002, 101).build()],
             "next_page": None,
@@ -190,9 +191,9 @@ class TestTicketAuditsPerTicketErrorHandling(TestCase):
             http_mocker,
             start_time,
             [
-                {"id": 101, "generated_timestamp": start_time + 10},
-                {"id": 102, "generated_timestamp": start_time + 20},
-                {"id": 103, "generated_timestamp": start_time + 30},
+                {"id": 101, "updated_at": start_time + 10},
+                {"id": 102, "updated_at": start_time + 20},
+                {"id": 103, "updated_at": start_time + 30},
             ],
         )
         # Zendesk can send a refusal with an empty, non-JSON body, so the filter must key on the status code.
@@ -207,13 +208,13 @@ class TestTicketAuditsPerTicketErrorHandling(TestCase):
         assert not any(log.log.level == "ERROR" for log in output.logs)
         # The ignored tickets must not stop the parent cursor from advancing.
         state = output.most_recent_state.stream_state.__dict__
-        assert state["parent_state"]["tickets"] == {"generated_timestamp": str(start_time + 30)}
+        assert state["parent_state"]["tickets"] == {"updated_at": str(start_time + 30)}
 
     @HttpMocker()
     def test_given_429_with_retry_after_when_read_then_wait_and_retry(self, http_mocker: HttpMocker) -> None:
         """With no `api_budget` policy for this endpoint, Zendesk's 429 + Retry-After is the only throttle."""
         start_time = int(_START_DATE.timestamp())
-        _given_tickets(http_mocker, start_time, [{"id": 101, "generated_timestamp": start_time + 10}])
+        _given_tickets(http_mocker, start_time, [{"id": 101, "updated_at": start_time + 10}])
         success = TicketAuditsPerTicketResponseBuilder.ticket_audits_per_ticket_response().with_record(_audit(1001, 101)).build()
         http_mocker.get(
             _audits_request(101),
@@ -240,7 +241,7 @@ class TestTicketAuditsPerTicketIncremental(TestCase):
         _given_tickets(
             http_mocker,
             start_time,
-            [{"id": 101, "generated_timestamp": start_time + 10}, {"id": 102, "generated_timestamp": latest}],
+            [{"id": 101, "updated_at": start_time + 10}, {"id": 102, "updated_at": latest}],
         )
         _given_audits(http_mocker, 101, [1001])
         _given_audits(http_mocker, 102, [2001])
@@ -250,7 +251,7 @@ class TestTicketAuditsPerTicketIncremental(TestCase):
         assert len(output.records) == 2
         state = output.most_recent_state.stream_state.__dict__
         assert output.most_recent_state.stream_descriptor.name == _STREAM_NAME
-        assert state["parent_state"]["tickets"] == {"generated_timestamp": str(latest)}
+        assert state["parent_state"]["tickets"] == {"updated_at": str(latest)}
         assert state["state"] == {"_ab_updated_at": str(latest)}
         # Global substream cursor: one cursor value, no per-ticket entries.
         assert state["use_global_cursor"] is True
@@ -268,16 +269,16 @@ class TestTicketAuditsPerTicketIncremental(TestCase):
                     "use_global_cursor": True,
                     "state": {"_ab_updated_at": str(previous)},
                     "lookback_window": 0,
-                    "parent_state": {"tickets": {"generated_timestamp": str(previous)}},
+                    "parent_state": {"tickets": {"updated_at": str(previous)}},
                 },
             )
             .build()
         )
-        # The parent export must be requested from the saved parent cursor, not from start_date.
+        # The parent walk resumes from the saved parent cursor (minus its lookback window), not from start_date.
         _given_tickets(
             http_mocker,
             previous,
-            [{"id": 101, "generated_timestamp": previous}, {"id": 102, "generated_timestamp": latest}],
+            [{"id": 101, "updated_at": previous}, {"id": 102, "updated_at": latest}],
         )
         _given_audits(http_mocker, 101, [1001])
         _given_audits(http_mocker, 102, [2001])
@@ -285,11 +286,42 @@ class TestTicketAuditsPerTicketIncremental(TestCase):
         output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
 
         assert len(output.errors) == 0
-        # A ticket whose generated_timestamp equals the saved cursor is still re-read.
+        # A ticket whose updated_at equals the saved cursor is still re-read.
         assert sorted(record.record.data["id"] for record in output.records) == [1001, 2001]
         new_state = output.most_recent_state.stream_state.__dict__
-        assert new_state["parent_state"]["tickets"] == {"generated_timestamp": str(latest)}
+        assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}
         assert new_state["state"] == {"_ab_updated_at": str(latest)}
+
+    @HttpMocker()
+    def test_given_5_x_parent_state_when_read_then_parent_cursor_is_migrated_onto_updated_at(self, http_mocker: HttpMocker) -> None:
+        """`parent_state` written by 5.x carries the parent's old `generated_timestamp` cursor. The tickets
+        state migration also runs on it: the value is rewound by one hour (plus the parent's one-hour
+        lookback) onto `updated_at`, so a ticket updated shortly before the saved cursor is read again."""
+        previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "use_global_cursor": True,
+                    "state": {"_ab_updated_at": str(previous)},
+                    "lookback_window": 0,
+                    "parent_state": {"tickets": {"generated_timestamp": str(previous)}},
+                },
+            )
+            .build()
+        )
+        _given_tickets(http_mocker, previous - 7200, [{"id": 101, "updated_at": previous - 7200 + 60}])
+        _given_audits(http_mocker, 101, [1001])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
+
+        assert len(output.errors) == 0
+        assert [record.record.data["id"] for record in output.records] == [1001]
+        # The cursor never moves backwards: the re-read ticket is older than the migrated value, so the
+        # parent state is the migrated value itself (saved cursor minus the one-hour migration rewind).
+        new_state = output.most_recent_state.stream_state.__dict__
+        assert new_state["parent_state"]["tickets"] == {"updated_at": str(previous - 3600)}
 
 
 class TestTicketAuditsPerTicketApiBudget(TestCase):
@@ -312,5 +344,6 @@ class TestTicketAuditsPerTicketApiBudget(TestCase):
         assert budget.get_matching_policy(self._request("/api/v2/tickets/123/audits.json")) is None
         assert budget.get_matching_policy(self._request("/api/v2/tickets/123/audits.json?page%5Bsize%5D=100")) is None
         assert budget.get_matching_policy(self._request("/api/v2/tickets/123/metrics")) is None
-        # The parent walk still goes through the incremental export policy.
-        assert budget.get_matching_policy(self._request("/api/v2/incremental/tickets/cursor.json")) is not None
+        # The parent walk goes through the ticket list policy, whichever spelling `links.next` uses.
+        assert budget.get_matching_policy(self._request("/api/v2/tickets?sort=-updated_at&page%5Bsize%5D=100")) is not None
+        assert budget.get_matching_policy(self._request("/api/v2/tickets.json?page%5Bafter%5D=abc&page%5Bsize%5D=100")) is not None

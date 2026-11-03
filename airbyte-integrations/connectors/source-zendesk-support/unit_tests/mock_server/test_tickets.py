@@ -27,121 +27,198 @@ _START_DATE = _NOW.subtract(timedelta(weeks=104))
 _A_CURSOR = "MTU3NjYxMzUzOS4wfHw0Njd8"
 
 
+def _next_page_url(after_cursor: str) -> str:
+    """`links.next` as Zendesk builds it: the original query plus `page[after]`."""
+    return f"https://d3v-airbyte.zendesk.com/api/v2/tickets?page%5Bafter%5D={after_cursor}&page%5Bsize%5D=100&sort=-updated_at"
+
+
+def _tickets_config():
+    return (
+        ConfigBuilder()
+        .with_basic_auth_credentials("user@example.com", "password")
+        .with_subdomain("d3v-airbyte")
+        .with_start_date(_START_DATE)
+        .build()
+    )
+
+
+def _authenticator(config):
+    return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+
+
+def _ticket(ticket_id: int, updated_at: int) -> TicketsRecordBuilder:
+    return TicketsRecordBuilder.tickets_record().with_id(ticket_id).with_cursor(updated_at)
+
+
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketsStreamFullRefresh(TestCase):
-    @property
-    def _config(self):
-        return (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .with_start_date(_START_DATE)
-            .build()
-        )
-
-    def _get_authenticator(self, config):
-        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
+    """`tickets` reads `GET /tickets?sort=-updated_at&page[size]=100` (newest first) and stops paginating
+    once the last ticket of a page is older than the slice start."""
 
     @HttpMocker()
     def test_given_one_page_when_read_tickets_then_return_records(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
+        config = _tickets_config()
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build(),
-            TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record()).build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(_authenticator(config)).build(),
+            TicketsResponseBuilder.tickets_response().with_record(_ticket(1, int(_START_DATE.timestamp()) + 10)).build(),
         )
 
-        output = read_stream("tickets", SyncMode.full_refresh, self._config)
+        output = read_stream("tickets", SyncMode.full_refresh, config)
 
         assert len(output.records) == 1
+        record = output.records[0].record.data
+        # `fields` is not returned by the ticket list; the stream copies `custom_fields` into it.
+        assert record["fields"] == record["custom_fields"]
+        assert record["generated_timestamp"] == int(_START_DATE.timestamp()) + 10
 
     @HttpMocker()
-    def test_given_two_pages_when_read_tickets_then_return_all_records(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
-        first_page_request = (
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build()
-        )
-
-        # Build the base URL for cursor-based pagination
-        # Note: EndOfStreamPaginationStrategy appends ?cursor={cursor} to this URL
-        # Must match the path used by tickets_endpoint: incremental/tickets/cursor.json
-        base_url = "https://d3v-airbyte.zendesk.com/api/v2/incremental/tickets/cursor.json"
+    def test_given_two_pages_when_read_tickets_then_follow_links_next(self, http_mocker):
+        """A page whose last ticket is still inside the window does not end pagination."""
+        config = _tickets_config()
+        authenticator = _authenticator(config)
+        start = int(_START_DATE.timestamp())
 
         http_mocker.get(
-            first_page_request,
-            TicketsResponseBuilder.tickets_response(base_url, _A_CURSOR)
-            .with_record(TicketsRecordBuilder.tickets_record().with_id(1))
+            ZendeskSupportRequestBuilder.tickets_endpoint(authenticator).build(),
+            TicketsResponseBuilder.tickets_response(_next_page_url(_A_CURSOR))
+            .with_record(_ticket(1, start + 200))
+            .with_record(_ticket(2, start + 100))
             .with_pagination()
             .build(),
         )
-        # The connector uses RequestPath pagination, meaning it uses the full URL from after_url
-        # The after_url only includes the cursor, not per_page
+        # `links.next` is requested as-is (RequestPath); the CDK drops the query parameters it already carries.
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).build(),
-            TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record().with_id(2)).build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(authenticator).with_after_cursor(_A_CURSOR).build(),
+            TicketsResponseBuilder.tickets_response().with_record(_ticket(3, start + 50)).build(),
         )
 
-        output = read_stream("tickets", SyncMode.full_refresh, self._config)
+        output = read_stream("tickets", SyncMode.full_refresh, config)
 
-        assert len(output.records) == 2
-        record_ids = [r.record.data["id"] for r in output.records]
-        assert 1 in record_ids
-        assert 2 in record_ids
+        assert [r.record.data["id"] for r in output.records] == [1, 2, 3]
+
+    @HttpMocker()
+    def test_given_last_ticket_of_page_older_than_start_date_when_read_then_stop_paginating(self, http_mocker):
+        """The stop condition reads the page, not the filtered records: the page says `has_more`, but its
+        last ticket is already older than `start_date`, so the next page is never requested. The old ticket
+        itself is filtered out client-side."""
+        config = _tickets_config()
+        start = int(_START_DATE.timestamp())
+        first_page = ZendeskSupportRequestBuilder.tickets_endpoint(_authenticator(config)).build()
+
+        http_mocker.get(
+            first_page,
+            TicketsResponseBuilder.tickets_response(_next_page_url(_A_CURSOR))
+            .with_record(_ticket(1, start + 10))
+            .with_record(_ticket(2, start - 10))
+            .with_pagination()
+            .build(),
+        )
+
+        output = read_stream("tickets", SyncMode.full_refresh, config)
+
+        assert len(output.errors) == 0
+        assert [r.record.data["id"] for r in output.records] == [1]
+        http_mocker.assert_number_of_calls(first_page, 1)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
 class TestTicketsStreamIncremental(TestCase):
-    @property
-    def _config(self):
-        return (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .with_start_date(_START_DATE)
-            .build()
-        )
-
-    def _get_authenticator(self, config):
-        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
-
     @HttpMocker()
-    def test_given_no_state_when_read_tickets_then_return_records_and_emit_state(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
-        cursor_value = 1723660897
+    def test_given_no_state_when_read_tickets_then_emit_updated_at_state(self, http_mocker):
+        config = _tickets_config()
+        cursor_value = int(_START_DATE.timestamp()) + 10
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build(),
-            TicketsResponseBuilder.tickets_response()
-            .with_record(TicketsRecordBuilder.tickets_record().with_field(FieldPath("generated_timestamp"), cursor_value))
+            ZendeskSupportRequestBuilder.tickets_endpoint(_authenticator(config)).build(),
+            TicketsResponseBuilder.tickets_response().with_record(_ticket(1, cursor_value)).build(),
+        )
+
+        output = read_stream("tickets", SyncMode.incremental, config)
+
+        assert len(output.records) == 1
+        assert output.most_recent_state.stream_descriptor.name == "tickets"
+        assert output.most_recent_state.stream_state.__dict__ == {"updated_at": str(cursor_value)}
+
+    @HttpMocker()
+    def test_given_state_when_read_tickets_then_apply_lookback_and_drop_older_tickets(self, http_mocker):
+        """Tickets updated within the one-hour lookback are re-read; older ones are dropped and end pagination."""
+        config = _tickets_config()
+        state_cursor = int(_NOW.subtract(timedelta(days=3)).timestamp())
+        first_page = ZendeskSupportRequestBuilder.tickets_endpoint(_authenticator(config)).build()
+
+        http_mocker.get(
+            first_page,
+            TicketsResponseBuilder.tickets_response(_next_page_url(_A_CURSOR))
+            .with_record(_ticket(1, state_cursor + 86400))
+            .with_record(_ticket(2, state_cursor - 1800))
+            .with_record(_ticket(3, state_cursor - 7200))
+            .with_pagination()
             .build(),
         )
 
-        output = read_stream("tickets", SyncMode.incremental, self._config)
+        state = StateBuilder().with_stream_state("tickets", {"updated_at": str(state_cursor)}).build()
+        output = read_stream("tickets", SyncMode.incremental, config, state)
 
-        assert len(output.records) == 1
-        assert output.most_recent_state is not None
-        assert output.most_recent_state.stream_descriptor.name == "tickets"
-        assert "generated_timestamp" in output.most_recent_state.stream_state.__dict__
+        assert len(output.errors) == 0
+        assert [r.record.data["id"] for r in output.records] == [1, 2]
+        assert output.most_recent_state.stream_state.__dict__ == {"updated_at": str(state_cursor + 86400)}
+        http_mocker.assert_number_of_calls(first_page, 1)
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestTicketsStreamStateMigration(TestCase):
+    """End-to-end coverage for TicketsStateMigration: `generated_timestamp` state from 5.x is rewound onto
+    the `updated_at` cursor rather than skipped."""
 
     @HttpMocker()
-    def test_given_state_when_read_tickets_then_use_state_cursor(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
-        state_cursor_value = _START_DATE.add(timedelta(days=30))
-        new_cursor_value = int(state_cursor_value.add(timedelta(days=1)).timestamp())
+    def test_given_generated_timestamp_state_when_read_then_rewind_onto_updated_at(self, http_mocker):
+        """Migration rewinds by one hour and the cursor's lookback adds another, so a ticket updated up to
+        two hours before the saved `generated_timestamp` is re-read; an older one is dropped."""
+        config = _tickets_config()
+        legacy_cursor = int(_NOW.subtract(timedelta(days=3)).timestamp())
+        first_page = ZendeskSupportRequestBuilder.tickets_endpoint(_authenticator(config)).build()
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(state_cursor_value).build(),
-            TicketsResponseBuilder.tickets_response()
-            .with_record(TicketsRecordBuilder.tickets_record().with_field(FieldPath("generated_timestamp"), new_cursor_value))
+            first_page,
+            TicketsResponseBuilder.tickets_response(_next_page_url(_A_CURSOR))
+            .with_record(_ticket(1, legacy_cursor + 60))
+            .with_record(_ticket(2, legacy_cursor - 7200 + 60))
+            .with_record(_ticket(3, legacy_cursor - 7200 - 60))
+            .with_pagination()
             .build(),
         )
 
-        state = StateBuilder().with_stream_state("tickets", {"generated_timestamp": str(int(state_cursor_value.timestamp()))}).build()
+        state = StateBuilder().with_stream_state("tickets", {"generated_timestamp": str(legacy_cursor)}).build()
+        output = read_stream("tickets", SyncMode.incremental, config, state)
 
-        output = read_stream("tickets", SyncMode.incremental, self._config, state)
+        assert len(output.errors) == 0
+        assert [r.record.data["id"] for r in output.records] == [1, 2]
+        assert output.most_recent_state.stream_state.__dict__ == {"updated_at": str(legacy_cursor + 60)}
+        http_mocker.assert_number_of_calls(first_page, 1)
 
-        assert len(output.records) == 1
-        assert output.most_recent_state is not None
-        assert output.most_recent_state.stream_descriptor.name == "tickets"
+    @HttpMocker()
+    def test_given_updated_at_state_when_read_then_state_is_not_rewound_by_the_migration(self, http_mocker):
+        """State that already carries `updated_at` (written by 5.2.x or by 6.0.0) is left alone: only the
+        one-hour lookback applies, not the extra migration rewind."""
+        config = _tickets_config()
+        cursor = int(_NOW.subtract(timedelta(days=3)).timestamp())
+        first_page = ZendeskSupportRequestBuilder.tickets_endpoint(_authenticator(config)).build()
+
+        http_mocker.get(
+            first_page,
+            TicketsResponseBuilder.tickets_response(_next_page_url(_A_CURSOR))
+            .with_record(_ticket(1, cursor - 3600 - 60))
+            .with_pagination()
+            .build(),
+        )
+
+        state = StateBuilder().with_stream_state("tickets", {"updated_at": str(cursor)}).build()
+        output = read_stream("tickets", SyncMode.incremental, config, state)
+
+        assert len(output.errors) == 0
+        assert len(output.records) == 0
+        assert output.most_recent_state.stream_state.__dict__ == {"updated_at": str(cursor)}
+        http_mocker.assert_number_of_calls(first_page, 1)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -299,72 +376,3 @@ class TestTicketsSearchStreamQueryParameters(TestCase):
         record_ids = [r.record.data["id"] for r in output.records]
         assert 1 in record_ids
         assert 2 in record_ids
-
-
-@freezegun.freeze_time(_NOW.isoformat())
-class TestTicketsStreamStateMigration(TestCase):
-    """End-to-end coverage for TicketsStateMigration.
-
-    v5.2.0 shipped a migration that converted state in the opposite direction, so it matters that the
-    reverse migration is actually wired into the stream and not merely unit-tested in isolation.
-    """
-
-    # 2026-03-01T00:00:00Z -- keep in sync with components.TicketsStateMigration.BACKFILL_FLOOR
-    _BACKFILL_FLOOR = 1772323200
-
-    @property
-    def _config(self):
-        return (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .with_start_date(_START_DATE)
-            .build()
-        )
-
-    def _get_authenticator(self, config):
-        return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
-
-    @HttpMocker()
-    def test_given_legacy_updated_at_state_when_read_then_clamp_cursor_to_backfill_floor(self, http_mocker):
-        """A cursor left behind by 5.2.0-5.4.x is rewound to the floor so the backfill re-reads the window.
-
-        The exact `start_time` matcher is the assertion: if the migration does not run, or clamps to the
-        wrong value, the outgoing request does not match this mock and HttpMocker fails the test.
-        """
-        api_token_authenticator = self._get_authenticator(self._config)
-        record_cursor = self._BACKFILL_FLOOR + 10
-
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(self._BACKFILL_FLOOR).build(),
-            TicketsResponseBuilder.tickets_response().with_record(TicketsRecordBuilder.tickets_record().with_cursor(record_cursor)).build(),
-        )
-
-        # A cursor well past the floor, as written by the Export Search Results versions.
-        legacy_cursor = str(int(_NOW.subtract(timedelta(days=3)).timestamp()))
-        state = StateBuilder().with_stream_state("tickets", {"updated_at": legacy_cursor}).build()
-
-        output = read_stream("tickets", SyncMode.incremental, self._config, state)
-
-        assert len(output.records) == 1
-        # State is re-keyed onto generated_timestamp, so the next sync resumes on the new cursor field.
-        assert output.most_recent_state.stream_state.__dict__ == {"generated_timestamp": str(record_cursor)}
-
-    @HttpMocker()
-    def test_given_already_migrated_state_when_read_then_cursor_is_not_clamped_again(self, http_mocker):
-        """The migration is one-shot: generated_timestamp state must be left alone.
-
-        Without this, every sync would rewind to the floor and re-run the backfill forever.
-        """
-        api_token_authenticator = self._get_authenticator(self._config)
-        cursor = int(_NOW.subtract(timedelta(days=3)).timestamp())
-
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(cursor).build(),
-            TicketsResponseBuilder.tickets_response().build(),
-        )
-
-        state = StateBuilder().with_stream_state("tickets", {"generated_timestamp": str(cursor)}).build()
-        output = read_stream("tickets", SyncMode.incremental, self._config, state)
-
-        assert len(output.records) == 0

@@ -17,6 +17,15 @@ api_budget:
       matchers:
         - url_path_pattern: "^/api/v2/incremental/.*"
 
+    # `tickets` reads the ticket list (`links.next` URLs use `/api/v2/tickets.json`). Per-ticket
+    # endpoints such as `/api/v2/tickets/{id}/audits.json` deliberately match no policy.
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT1M
+      matchers:
+        - url_path_pattern: '^/api/v2/tickets(\.json)?$'
+
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 100
@@ -165,6 +174,60 @@ definitions:
     $ref: "#/definitions/base_stream"
     incremental_sync:
       $ref: "#/definitions/cursor_incremental_sync"
+
+  # Streams that read a list endpoint sorted by the cursor field, newest first
+  # (`GET /tickets?sort=-updated_at`, `GET /users?sort=-updated_at`, ...). Zendesk no longer serves
+  # the incremental export endpoints to third-party integrations, and the list endpoints take no
+  # `start_time` filter, so an incremental read walks the list from the newest record down and
+  # stops paginating once a page ends with a record older than the slice start. The slice start is
+  # the saved cursor minus `lookback_window` (never before `start_date`); the record filter drops
+  # the records on the last page that fall below it. See AGENTS.md §1.
+  sorted_list_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_datetime_formats:
+      - "%s"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%s"
+    cursor_field: "{{ parameters.get('cursor_field', 'updated_at') }}"
+    start_datetime:
+      datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else day_delta(-730, '%s') }}"
+    lookback_window: PT1H
+
+  sorted_list_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('links', {}).get('next') }}"
+      # The page is sorted newest first, so once its last record is older than the slice start every
+      # later page is too. `sorted_path` names the sorted list in the response when it is not the
+      # stream name (`user_identities` sorts on `users` but extracts `identities`).
+      stop_condition: >-
+        {{ not response.get('meta', {}).get('has_more', false)
+        or not response.get(parameters.get('sorted_path') or parameters.get('name'))
+        or (timestamp(response[parameters.get('sorted_path') or parameters.get('name')][-1][parameters.get('cursor_field', 'updated_at')]) | int)
+        < (stream_slice.get('start_time', 0) | int) }}
+      page_size: 100
+    page_token_option:
+      type: RequestPath
+    page_size_option:
+      type: RequestOption
+      field_name: "page[size]"
+      inject_into: request_parameter
+
+  sorted_list_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        $ref: "#/definitions/sorted_list_paginator"
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
+        record_filter:
+          condition: "{{ (timestamp(record[parameters.get('cursor_field', 'updated_at')]) | int) >= (stream_interval.get('start_time', 0) | int) }}"
+    incremental_sync:
+      $ref: "#/definitions/sorted_list_incremental_sync"
 
   # Paginators
   links_next_paginator:
@@ -1279,43 +1342,49 @@ definitions:
       field_name: "page[size]"
       inject_into: request_parameter
 
-  # Default `tickets` stream: uses Zendesk's Incremental Ticket Export endpoint, keyed on
-  # `generated_timestamp`. Unlike `updated_at`, `generated_timestamp` is bumped for *every*
-  # ticket change including automation/macro/system updates, so this endpoint reliably
-  # re-surfaces tickets whose only recent change was system-driven. See CONTRIBUTING.md §1.
+  # Default `tickets` stream: reads `GET /api/v2/tickets?sort=-updated_at` (cursor pagination, 100
+  # per page) and cursors on `updated_at`. Zendesk no longer serves the Incremental Ticket Export to
+  # third-party integrations, so the list is walked newest first and the read stops once a page ends
+  # before the slice start (see `sorted_list_stream`). The list endpoint omits archived tickets
+  # (closed about 120 days ago or longer) and deleted tickets: `tickets_search` reads archived
+  # tickets and `deleted_tickets` reads deletions. `generated_timestamp` is still returned and is
+  # still what the per-ticket substreams use as their `_ab_updated_at` cursor. See AGENTS.md §1.
   tickets_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/sorted_list_stream"
     retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
-      paginator:
-        $ref: "#/definitions/after_url_paginator"
+      $ref: "#/definitions/sorted_list_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort: "-updated_at"
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TicketsStateMigration
+    transformations:
+      # The list endpoint returns the custom field values under `custom_fields` only; the export
+      # returned the same list under `fields` as well. Keep `fields` so the record shape is unchanged.
+      - type: AddFields
+        fields:
+          - path: ["fields"]
+            value: "{{ record.get('custom_fields') }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/tickets"
     $parameters:
       name: "tickets"
-      path: "incremental/tickets/cursor.json"
-      cursor_field: "generated_timestamp"
-      cursor_filter: "start_time"
+      path: "tickets"
+      cursor_field: "updated_at"
       primary_key: "id"
 
-  # Opt-in fast `tickets_search` stream: uses the Export Search Results endpoint (100 req/min vs
-  # 10 req/min for incremental export, plus concurrent time-range partitioning) but filters/
-  # checkpoints on `updated_at`. WARNING: this endpoint is served from Zendesk's search index,
-  # which Zendesk does not recommend for data export. Because Zendesk only bumps `updated_at`
-  # (and re-indexes the ticket) when an update generates a ticket event, this stream can (a) MISS
-  # automation/macro/system-driven updates in incremental mode and (b) return STALE indexed field
-  # values (e.g. status) even on a full/historical read. Use the default `tickets` stream when
-  # completeness/accuracy matter. Since Export Search excludes deleted tickets, pair this stream
-  # with `deleted_tickets`.
+  # Opt-in `tickets_search` stream: uses the Export Search Results endpoint (concurrent time-range
+  # partitioning) and filters/checkpoints on `updated_at`. It is the only stream that returns
+  # archived tickets (the ticket list omits them). WARNING: this endpoint is served from Zendesk's
+  # search index, which Zendesk does not recommend for data export: it can return STALE indexed
+  # field values (e.g. status) even on a full/historical read. Since Export Search excludes deleted
+  # tickets, pair this stream with `deleted_tickets`.
   # `lookback_window` (config: `ticket_search_lookback_days`) re-scans a trailing window on each
-  # sync; it mitigates late/out-of-order `updated_at` changes only and does NOT recover
-  # system-driven updates (those never bump `updated_at`).
+  # sync; it mitigates late/out-of-order `updated_at` changes only.
   tickets_search_stream:
     type: DeclarativeStream
     name: "tickets_search"
@@ -1607,7 +1676,8 @@ streams:
 # that emits the control message, because the CDK (7.23.8 and later) builds this
 # ConcurrencyLevel from the pre-migration config. Clamping here makes the floor
 # apply immediately, on the first sync after the upgrade. A single worker
-# serializes every stream behind the single-partition `tickets` walk, so nothing
+# serializes every stream behind the single-partition `tickets` walk (one page of
+# 100 tickets per request, 100 requests per minute on a full backfill), so nothing
 # emits a record or a state message while it runs and the platform can cancel the
 # attempt on the heartbeat timeout (airbytehq/oncall#13250).
 concurrency_level:

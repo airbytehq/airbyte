@@ -45,39 +45,26 @@ class ZendeskSupportAttributeDefinitionsExtractor(RecordExtractor):
 
 
 class TicketsStateMigration(StateMigration):
-    """Migrates tickets stream state from the `updated_at` cursor back to `generated_timestamp`.
+    """Migrates `tickets` state from the `generated_timestamp` cursor to the `updated_at` cursor.
 
-    Background: v5.2.0 switched the `tickets` stream from the Incremental Ticket Export API
-    (keyed on `generated_timestamp`) to the Export Search Results API (filtered/checkpointed on
-    `updated_at`). Because Zendesk only bumps `updated_at` when an update generates a ticket
-    event, automation/macro/system-driven updates were silently dropped. We revert the stream to
-    `generated_timestamp`, so existing connections carrying `updated_at`-based state must be
-    migrated back.
-
-    Backfill: to recover every ticket missed while the regression was live, the migrated cursor
-    is clamped back to an absolute floor of 2026-03-01T00:00:00Z (epoch 1772323200) — just before
-    v5.2.0 merged (2026-03-12) / rolled out to Cloud (~2026-03-24). This guarantees a complete
-    one-time backfill regardless of when a connection upgrades (a relative "N-day" window computed
-    at migration time would drift forward and miss the earliest affected tickets). `min(...)`
-    ensures we only ever pull the cursor back, never forward, so connections whose cursor has not
-    yet reached the floor are left untouched.
-
-    Only connections that ran the buggy `updated_at`-cursor versions carry `updated_at` state, so
-    keying `should_migrate` on that field means the floor is applied exactly once (on the first
-    sync after upgrade); subsequent syncs write `generated_timestamp` state and are left alone.
-    Connections still on a pre-5.2.0 `generated_timestamp` cursor were never broken and are not
-    migrated.
+    Versions before 6.0.0 read the Incremental Ticket Export, which is keyed on `generated_timestamp`
+    (a unix timestamp Zendesk bumps on every ticket change). 6.0.0 reads the ticket list sorted by
+    `updated_at`. A ticket's `generated_timestamp` is never earlier than its `updated_at`, so the saved
+    value is an upper bound for the tickets already synced. The migration rewinds it by one hour, on
+    top of the stream's own lookback window, so a ticket whose two timestamps straddle the cursor is
+    read again rather than skipped. The same migration runs on the `parent_state` of the per-ticket
+    substreams. State that already carries `updated_at` (5.2.x) is left alone; an unparsable value
+    drops the cursor so the next sync re-reads from `start_date`.
     """
 
-    # 2026-03-01T00:00:00Z
-    BACKFILL_FLOOR = 1772323200
+    REWIND_SECONDS = 3600
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return bool(stream_state) and "updated_at" in stream_state
+        return bool(stream_state) and "generated_timestamp" in stream_state and "updated_at" not in stream_state
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         try:
-            cursor_value = int(stream_state["updated_at"])
+            cursor_value = int(stream_state["generated_timestamp"])
         except (KeyError, TypeError, ValueError):
-            cursor_value = self.BACKFILL_FLOOR
-        return {"generated_timestamp": min(cursor_value, self.BACKFILL_FLOOR)}
+            return {}
+        return {"updated_at": str(max(cursor_value - self.REWIND_SECONDS, 0))}

@@ -149,8 +149,8 @@ class TestTicketMetricsIncremental(TestCase):
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
         # The stateful ticket_metrics stream derives its `_ab_updated_at` cursor from the parent's
-        # `generated_timestamp` (see the AddFields transformation in manifest.yaml), and the parent cursor
-        # serialises state with datetime_format "%s", i.e. as a Unix-timestamp string.
+        # `generated_timestamp` (see the AddFields transformation in manifest.yaml), and the parent
+        # `updated_at` cursor serialises state with datetime_format "%s", i.e. as a Unix-timestamp string.
         state_dict = output.most_recent_state.stream_state.__dict__
 
         assert state_dict["lookback_window"] == 0
@@ -158,7 +158,7 @@ class TestTicketMetricsIncremental(TestCase):
         assert "_ab_updated_at" in state_dict["state"]
         assert len(state_dict["states"]) == 1
 
-        assert state_dict["parent_state"]["tickets"] == {"generated_timestamp": str(int(parent_cursor_value.timestamp()))}
+        assert state_dict["parent_state"]["tickets"] == {"updated_at": str(int(parent_cursor_value.timestamp()))}
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -365,9 +365,7 @@ class TestTicketMetricsOAuthTokenRefresh(TestCase):
         for ticket_builder in ticket_builders:
             tickets_response_builder = tickets_response_builder.with_record(ticket_builder)
         http_mocker.get(
-            ZendeskSupportRequestBuilder.tickets_endpoint(OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN))
-            .with_start_time(int(state_cursor.timestamp()))
-            .build(),
+            ZendeskSupportRequestBuilder.tickets_endpoint(OAuthBearerAuthenticator(_INITIAL_ACCESS_TOKEN)).build(),
             tickets_response_builder.build(),
         )
 

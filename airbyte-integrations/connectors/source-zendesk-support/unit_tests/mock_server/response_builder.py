@@ -15,7 +15,8 @@ Example usage:
 """
 
 import json
-from typing import Any, Dict, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, Optional, Union
 
 from airbyte_cdk.connector_builder.models import HttpRequest
 from airbyte_cdk.test.mock_http import HttpResponse
@@ -28,6 +29,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     RecordBuilder,
     find_template,
 )
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 
 from .utils import http_request_to_str
 
@@ -242,12 +244,30 @@ class TicketsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def tickets_record(cls) -> "TicketsRecordBuilder":
         record_template = cls.extract_record("tickets", __file__, NestedPath(["tickets", 0]))
-        # The tickets stream reads the Incremental Ticket Export endpoint and cursors on
-        # `generated_timestamp`, so `with_cursor` must write that field (not `updated_at`).
-        return cls(record_template, FieldPath("id"), FieldPath("generated_timestamp"))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
 
     def with_id(self, id: int) -> "TicketsRecordBuilder":
         self._record["id"] = id
+        return self
+
+    def with_cursor(self, cursor_value: Union[int, str, AirbyteDateTime]) -> "TicketsRecordBuilder":
+        """Set the ticket's `updated_at` (the stream cursor) and `generated_timestamp` to the same instant.
+
+        Zendesk bumps both on every ticket change. The cursor accepts a unix timestamp, an ISO string or
+        an AirbyteDateTime; tests that need the two fields to differ call `with_generated_timestamp` after.
+        """
+        if isinstance(cursor_value, AirbyteDateTime):
+            cursor_value = int(cursor_value.timestamp())
+        if isinstance(cursor_value, int):
+            self._record["generated_timestamp"] = cursor_value
+            cursor_value = datetime.fromtimestamp(cursor_value, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            self._record["generated_timestamp"] = int(ab_datetime_parse(cursor_value).timestamp())
+        self._record["updated_at"] = cursor_value
+        return self
+
+    def with_generated_timestamp(self, generated_timestamp: int) -> "TicketsRecordBuilder":
+        self._record["generated_timestamp"] = generated_timestamp
         return self
 
 
@@ -585,12 +605,10 @@ class TicketMetricsResponseBuilder(HttpResponseBuilder):
 
 class TicketsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def tickets_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketsResponseBuilder":
-        return cls(
-            find_template("tickets", __file__),
-            FieldPath("tickets"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
+    def tickets_response(cls, next_page_url: Optional[str] = None) -> "TicketsResponseBuilder":
+        """Response of the ticket list (`GET /api/v2/tickets`): records under `tickets`, cursor pagination
+        through `meta.has_more` and `links.next`. Call `with_pagination()` to mark the page as not last."""
+        return cls(find_template("tickets", __file__), FieldPath("tickets"), CursorBasedPaginationStrategy(next_page_url))
 
 
 class TicketsSearchResponseBuilder(HttpResponseBuilder):
