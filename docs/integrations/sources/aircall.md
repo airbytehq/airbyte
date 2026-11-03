@@ -81,7 +81,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                   | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
-| 0.5.0 | 2026-11-03 | [PR_NUMBER_TBD](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_TBD) | Add incremental sync for calls, rate-limit handling and request windows that avoid Aircall's 10,000-result limit |
+| 0.5.0 | 2026-11-03 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Add incremental sync for calls, rate-limit handling and request windows that avoid Aircall's 10,000-result limit |
 | 0.4.27 | 2026-10-13 | [88524](https://github.com/airbytehq/airbyte/pull/88524) | Update dependencies |
 | 0.4.26 | 2026-10-06 | [87742](https://github.com/airbytehq/airbyte/pull/87742) | Update dependencies |
 | 0.4.25 | 2026-09-29 | [87057](https://github.com/airbytehq/airbyte/pull/87057) | Update dependencies |
