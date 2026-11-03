@@ -10,13 +10,6 @@ check:
 api_budget:
   type: HTTPAPIBudget
   policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 10
-          interval: PT1M
-      matchers:
-        - url_path_pattern: "^/api/v2/incremental/.*"
-
     # `tickets` reads the ticket list (`links.next` URLs use `/api/v2/tickets.json`). Per-ticket
     # endpoints such as `/api/v2/tickets/{id}/audits.json` deliberately match no policy.
     - type: MovingWindowCallRatePolicy
@@ -243,28 +236,6 @@ definitions:
       type: RequestOption
       field_name: "page[size]"
       inject_into: request_parameter
-
-  after_url_paginator:
-    type: DefaultPaginator
-    pagination_strategy:
-      type: CursorPagination
-      cursor_value: '{{ response.get("after_url") }}'
-      # there is a `end_of_stream` property inside the `response`,
-      # we should use it, instead of relying on `last_page_size`,
-      # which could be `[]` but, `end_of_stream == false` and `after_url != null`
-      stop_condition: '{{ response.get("end_of_stream") }}'
-      page_size: 100
-    page_token_option:
-      type: RequestPath
-
-  end_of_stream_paginator:
-    type: DefaultPaginator
-    pagination_strategy:
-      type: CursorPagination
-      cursor_value: '{{ response.get("next_page", {}) }}'
-      stop_condition: '{{ response.get("end_of_stream") }}'
-    page_token_option:
-      type: RequestPath
 
   # Full-refresh streams
   account_attributes_stream:
@@ -1106,17 +1077,6 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
-  # `ticket_audits_per_ticket` stream. Always discovered, but not in `suggestedStreams`, so users opt
-  # in by selecting it in the connection's catalog. `ticket_audits` reads the account-wide
-  # GET /ticket_audits list, which Zendesk documents as excluding archived tickets; this stream
-  # reads GET /tickets/{ticket_id}/audits.json for every ticket the `tickets` incremental export
-  # returns, and that endpoint does return audits for archived tickets. The cost is one request per
-  # created or updated ticket against the account-wide plan limit. Like the per-ticket
-  # `ticket_metrics` calls, the endpoint has no `api_budget` policy: it runs at the connector's
-  # concurrency and relies on 429 + Retry-After backoff.
-  # Each changed ticket re-emits all of its audits; `id` deduplicates them. The cursor mirrors the
-  # stateful `ticket_metrics` path (`_ab_updated_at` = the parent ticket's `generated_timestamp`),
-  # but uses a global substream cursor: a per-ticket state would grow one entry per ticket.
   # Cursor for the per-ticket substreams that carry a record cursor of their own
   # (`ticket_metric_events`, `ticket_events`, `ticket_comments`): the parent `tickets` walk is
   # bounded by `parent_state`, and this cursor tracks the newest record seen. One global value is
@@ -1175,6 +1135,17 @@ definitions:
             $ref: "#/definitions/tickets_stream"
           incremental_dependency: true
 
+  # `ticket_audits_per_ticket` stream. Always discovered, but not in `suggestedStreams`, so users opt
+  # in by selecting it in the connection's catalog. `ticket_audits` reads the account-wide
+  # GET /ticket_audits list, which Zendesk documents as excluding archived tickets; this stream
+  # reads GET /tickets/{ticket_id}/audits.json for every ticket the `tickets` stream returns, and
+  # that endpoint does return audits for archived tickets. The cost is one request per created or
+  # updated ticket against the account-wide plan limit. Like the per-ticket `ticket_metrics` calls,
+  # the endpoint has no `api_budget` policy: it runs at the connector's concurrency and relies on
+  # 429 + Retry-After backoff. Each changed ticket re-emits all of its audits; `id` deduplicates
+  # them. The cursor mirrors the stateful `ticket_metrics` path (`_ab_updated_at` = the parent
+  # ticket's `generated_timestamp`, which the ticket list still returns), but uses a global
+  # substream cursor: a per-ticket state would grow one entry per ticket.
   ticket_audits_per_ticket_stream:
     type: DeclarativeStream
     name: "ticket_audits_per_ticket"
