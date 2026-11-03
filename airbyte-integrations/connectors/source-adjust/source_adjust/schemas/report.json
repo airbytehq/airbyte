@@ -449,8 +449,6 @@
       "type": "string"
     }
   },
-  "required": [
-    "day"
-  ],
+  "required": ["day"],
   "$schema": "http://json-schema.org/draft-07/schema#"
 }
