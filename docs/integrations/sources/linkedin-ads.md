@@ -250,6 +250,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.2.8 | 2026-11-03 | [89292](https://github.com/airbytehq/airbyte/pull/89292) | Update dependencies |
 | 6.2.7 | 2026-11-02 | [90379](https://github.com/airbytehq/airbyte/pull/90379) | Restore the creatives stream's DNS retry diagnostic while preserving rate-limit and server-error handling. |
 | 6.2.6 | 2026-10-13 | [88690](https://github.com/airbytehq/airbyte/pull/88690) | Update dependencies |
 | 6.2.5 | 2026-10-06 | [87926](https://github.com/airbytehq/airbyte/pull/87926) | Update dependencies |
