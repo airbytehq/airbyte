@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Data replication platform
+# Platform
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";

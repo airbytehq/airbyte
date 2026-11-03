@@ -361,7 +361,9 @@ class SalesforceErrorHandlerTest(TestCase):
 
         assert resolution.response_action == ResponseAction.FAIL
         assert resolution.failure_type == FailureType.config_error
-        assert resolution.error_message == "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
+        assert resolution.error_message == (
+            "Salesforce authentication is expired or revoked. Re-authenticate the source and check is_sandbox: sandbox orgs use test.salesforce.com."
+        )
         sf._perform_login.assert_called_once()
 
         # Subsequent 401s must not redeem the rejected grant again.

@@ -51,9 +51,17 @@ dependencies {
     // Logging
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
 
-    // Hadoop (required by Iceberg)
-    implementation("org.apache.hadoop:hadoop-common:3.4.1")
-    implementation("org.apache.hadoop:hadoop-client-api:3.4.1")
+    // Hadoop (required by Iceberg). Hadoop's embedded Jetty HTTP server is never started by the
+    // connector, so its 9.4 line (CVE-2024-13009, CVE-2026-2332, CVE-2026-10050) is dropped; same
+    // exclusion as the CDK toolkit.
+    implementation("org.apache.hadoop:hadoop-common:3.4.3") {
+        exclude group: 'org.eclipse.jetty'
+        exclude group: 'org.eclipse.jetty.websocket'
+    }
+    implementation("org.apache.hadoop:hadoop-client-api:3.4.3") {
+        exclude group: 'org.eclipse.jetty'
+        exclude group: 'org.eclipse.jetty.websocket'
+    }
 
     // Nessie client
     implementation("org.projectnessie.nessie:nessie-client:0.99.0")
