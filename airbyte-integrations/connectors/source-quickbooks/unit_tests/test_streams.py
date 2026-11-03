@@ -564,10 +564,6 @@ def test_page_size_defaults_to_1000(manifest):
     assert manifest["spec"]["connection_specification"]["properties"]["max_results"]["default"] == 1000
 
 
-def test_start_date_is_optional(manifest):
-    assert "start_date" not in manifest["spec"]["connection_specification"]["required"]
-
-
 @freeze_time(FROZEN_NOW)
 @pytest.mark.parametrize(
     "start_date,expected",

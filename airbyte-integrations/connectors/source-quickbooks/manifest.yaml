@@ -149,7 +149,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
       - type: AddFields
@@ -333,7 +333,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -512,7 +512,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -778,7 +778,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -1139,7 +1139,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -1353,7 +1353,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
       - type: AddFields
@@ -1657,7 +1657,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -1844,7 +1844,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -2244,7 +2244,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -2610,7 +2610,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
       - type: AddFields
@@ -2757,7 +2757,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -3056,7 +3056,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
       - type: AddFields
@@ -3269,7 +3269,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -3720,7 +3720,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -3852,7 +3852,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -4417,7 +4417,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -4628,7 +4628,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -4958,7 +4958,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
       - type: AddFields
@@ -5092,7 +5092,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -5535,7 +5535,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -5994,7 +5994,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -6399,7 +6399,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -6759,7 +6759,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -6941,7 +6941,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -7388,7 +7388,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
       - type: AddFields
@@ -7525,7 +7525,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
       - type: AddFields
@@ -7710,7 +7710,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
       - type: AddFields
@@ -7906,7 +7906,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
       - type: AddFields
@@ -8064,7 +8064,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -8259,7 +8259,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -8434,7 +8434,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -8708,7 +8708,7 @@ definitions:
         step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-        start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: PT0S
       transformations:
@@ -9012,7 +9012,7 @@ streams:
     type: DatetimeBasedCursor
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   transformations:
   - type: AddFields
@@ -9196,7 +9196,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -9375,7 +9375,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -9641,7 +9641,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -10002,7 +10002,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -10216,7 +10216,7 @@ streams:
     type: DatetimeBasedCursor
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   transformations:
   - type: AddFields
@@ -10519,7 +10519,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -10706,7 +10706,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -11106,7 +11106,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -11472,7 +11472,7 @@ streams:
     type: DatetimeBasedCursor
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   transformations:
   - type: AddFields
@@ -11619,7 +11619,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -11918,7 +11918,7 @@ streams:
     type: DatetimeBasedCursor
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   transformations:
   - type: AddFields
@@ -12131,7 +12131,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -12582,7 +12582,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -12714,7 +12714,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -13279,7 +13279,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -13490,7 +13490,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -13820,7 +13820,7 @@ streams:
     type: DatetimeBasedCursor
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   transformations:
   - type: AddFields
@@ -13954,7 +13954,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -14396,7 +14396,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -14855,7 +14855,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -15260,7 +15260,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -15620,7 +15620,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -15802,7 +15802,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -16249,7 +16249,7 @@ streams:
     type: DatetimeBasedCursor
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   transformations:
   - type: AddFields
@@ -16386,7 +16386,7 @@ streams:
     type: DatetimeBasedCursor
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   transformations:
   - type: AddFields
@@ -16571,7 +16571,7 @@ streams:
     type: DatetimeBasedCursor
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   transformations:
   - type: AddFields
@@ -16767,7 +16767,7 @@ streams:
     type: DatetimeBasedCursor
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
   transformations:
   - type: AddFields
@@ -16925,7 +16925,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -17120,7 +17120,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -17295,7 +17295,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -17569,7 +17569,7 @@ streams:
     step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
-    start_datetime: "{{ config.get('start_date') or day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+    start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_granularity: PT0S
   transformations:
@@ -17812,11 +17812,11 @@ spec:
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
-        - "2021-03-20T00:00:00Z"
+        - "2026-01-01T00:00:00Z"
         description: >-
           UTC date-time in the format YYYY-MM-DDTHH:MM:SSZ. Data last updated
           before this date won't be replicated. If not set, defaults to 1 year
-          before the connector first runs.
+          ago.
       max_results:
         type: integer
         order: 2
