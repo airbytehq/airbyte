@@ -1,0 +1,50 @@
+documentationUrl: https://cloud.google.com/datastore/docs
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Google Cloud Datastore Source Spec
+  type: object
+  required:
+    - project_id
+    - credentials_json
+    - kinds
+  additionalProperties: false
+  properties:
+    project_id:
+      title: GCP Project ID
+      description: The ID of the GCP project containing the Datastore instance.
+      type: string
+      order: 0
+      examples:
+        - my-gcp-project
+    credentials_json:
+      title: Service Account Credentials JSON
+      description: >
+        The full JSON key of a GCP service account with the
+        "Cloud Datastore User" role (roles/datastore.user) on the target project.
+        Paste the entire contents of the downloaded key file.
+      type: string
+      airbyte_secret: true
+      multiline: true
+      order: 1
+    namespace:
+      title: Namespace
+      description: >
+        Datastore namespace ID to query. Leave empty to use the default namespace.
+      type: string
+      default: ""
+      order: 2
+      examples:
+        - production
+        - staging
+    kinds:
+      title: Kinds
+      description: >
+        List of Datastore entity Kinds to export. Each Kind becomes one Airbyte stream.
+      type: array
+      items:
+        type: string
+        minLength: 1
+      minItems: 1
+      order: 3
+      examples:
+        - ["Product", "Order", "Customer"]
