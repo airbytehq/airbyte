@@ -1,3 +1,5 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Mapping

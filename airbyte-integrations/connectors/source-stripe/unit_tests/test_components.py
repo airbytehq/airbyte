@@ -1,3 +1,5 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 from datetime import datetime, timezone
 
 import freezegun
