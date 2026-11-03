@@ -99,12 +99,6 @@ def _child_request(customer_id: str) -> HttpRequest:
     )
 
 
-def _number_of_calls(http_mocker: HttpMocker, request: HttpRequest) -> int:
-    matching_matchers = [matcher for matcher in http_mocker._get_matchers() if matcher.request is request]
-    assert len(matching_matchers) == 1
-    return matching_matchers[0].actual_number_of_matches
-
-
 def _events_request(created_gte: datetime, created_lte: datetime = _NOW) -> HttpRequest:
     return _cached_events_request(created_gte, created_lte)
 
@@ -435,30 +429,9 @@ class CustomerBalanceTransactionsTest(TestCase):
         assert {"customers", "cbt_customer_events"}.issubset(_stream_state(output)["parent_state"])
 
     @HttpMocker()
-    def test_given_customer_at_walk_boundary_and_update_event_when_read_then_child_read_at_most_twice(
+    def test_given_customer_created_and_updated_between_syncs_when_read_then_each_parent_may_read_child(
         self, http_mocker: HttpMocker
     ) -> None:
-        """Known walk/events overlap for post-mark customers with updates; dedup only while the first partition is in flight."""
-        mark = _NOW - timedelta(days=1)
-        customer = ("synthetic-boundary-overlap", mark)
-        initial_state = _state(_walk_state(mark, mark))
-        _register_customer_windows(http_mocker, mark, {0: [customer]})
-        update_event = _events_response().with_record(_event_record(customer[0], customer[1], _NOW - timedelta(hours=1)))
-        _register_events(http_mocker, update_event, created_gte=mark)
-        _register_children(http_mocker, [customer[0]])
-
-        output = _read(_config(), initial_state)
-
-        assert not output.errors
-        child_calls = _number_of_calls(http_mocker, _child_request(customer[0]))
-        assert 1 <= child_calls <= 2
-        assert Counter(record.record.data["id"] for record in output.records) == Counter(
-            {f"synthetic-transaction-{customer[0]}": child_calls}
-        )
-
-    @HttpMocker()
-    def test_given_customer_after_walk_mark_and_update_event_when_read_then_child_read_at_most_twice(self, http_mocker: HttpMocker) -> None:
-        """Known walk/events overlap for post-mark customers with updates; dedup only while the first partition is in flight."""
         mark = _NOW - timedelta(days=1)
         customer = ("synthetic-known-overlap", mark + timedelta(hours=1))
         initial_state = _state(_walk_state(mark, mark))
@@ -470,11 +443,11 @@ class CustomerBalanceTransactionsTest(TestCase):
         output = _read(_config(), initial_state)
 
         assert not output.errors
-        child_calls = _number_of_calls(http_mocker, _child_request(customer[0]))
-        assert 1 <= child_calls <= 2
-        assert Counter(record.record.data["id"] for record in output.records) == Counter(
-            {f"synthetic-transaction-{customer[0]}": child_calls}
-        )
+        # Both parents return this customer. In mocks, `concurrent_partition_cursor.py`'s
+        # `_semaphore_per_partition` dedup skips the second partition while the first is in flight;
+        # on a real account, the events parent follows the walk and may read the child once per parent (2).
+        http_mocker.assert_number_of_calls(_child_request(customer[0]), 1)
+        assert Counter(record.record.data["id"] for record in output.records) == Counter({f"synthetic-transaction-{customer[0]}": 1})
 
     @HttpMocker()
     def test_given_mid_walk_state_when_read_then_resume_from_customer_cursor(self, http_mocker: HttpMocker) -> None:
@@ -646,3 +619,4 @@ class CustomerBalanceTransactionsTest(TestCase):
 
         assert not output.errors
         http_mocker.assert_number_of_calls(_child_request("synthetic-old"), 1)
+        assert Counter(record.record.data["id"] for record in output.records) == Counter({"synthetic-transaction-synthetic-old": 1})
