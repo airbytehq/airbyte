@@ -2,35 +2,39 @@
 
 ## 1. Authentication Failures Stop the Sync, but Deleted Parent Events Do Not
 
-Calendly personal access tokens created since March 2026 require explicit [authorization scopes](https://developer.calendly.com/docs/authentication/scopes). Keep one `DefaultErrorHandler` per requester and no `CompositeErrorHandler`: the shared handler classifies errors consistently, while the invitee requester overrides only the missing-parent case. Authentication messages include Calendly's response `message` and tell the user how to fix the token.
+Calendly personal access tokens created since March 2026 require explicit [authorization scopes](https://developer.calendly.com/docs/authentication/scopes). Keep one `DefaultErrorHandler` per requester and no `CompositeErrorHandler`: the shared handler classifies errors consistently, while the invitee requester overrides only the missing-parent case. Authentication messages tell the user how to fix the token and end with Calendly's response `message`.
 
 | HTTP status | Base requester action / failure type | Invitee requester action / failure type | Meaning and response |
 | --- | --- | --- | --- |
-| 401 | `FAIL` / `config_error` | Same | Invalid or revoked token; create a new personal access token under Integrations → API & Webhooks and update Airbyte. |
-| 403 | `FAIL` / `config_error` | Same | Missing scope; grant `users:read`, `event_types:read`, `groups:read`, `organizations:read`, and `scheduled_events:read`. |
-| 404 | `FAIL` / `system_error` | `IGNORE` / `system_error` | A parent event can disappear between listing scheduled events and reading its invitees; skip that parent's invitees and continue. |
-| 429 | `RATE_LIMITED` / `transient_error` | Same | Retry after the reset-header delay; see [Calendly rate limits](https://developer.calendly.com/api-docs/overview/rate-limits). |
+| 401 | `FAIL` / `config_error` | Same | Invalid or revoked token; create a new token (Profile menu, Developer, Personal access tokens, per [Calendly](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens)) and update the source. |
+| 403 | `FAIL` / `config_error` | Same | `Insufficient scope` (the body lists `required_scopes`, appended to the message) or `Permission Denied`: organization-wide `/scheduled_events` needs an owner or admin token, per the [OpenAPI spec](https://developer.calendly.com/openapi/calendly-api.yaml). |
+| 404 | `FAIL` / `system_error`, message names the URL | `IGNORE`, logged with the URL | A parent event can disappear between listing scheduled events and reading its invitees; skip that parent's invitees and continue. |
+| 429 | `RATE_LIMITED` / `transient_error` (CDK default, no filter) | Same | Retry after the `X-RateLimit-Reset` delay; see [Calendly rate limits](https://developer.calendly.com/api-docs/overview/rate-limits). |
 | 500, 502, 503, 504 | `RETRY` / `transient_error` | Same | Temporary Calendly server failure. |
 
 **Why this matters:** Retrying invalid credentials hides an actionable configuration problem. Conversely, failing an invitee sync for a deleted parent prevents other events from syncing. Do not broaden the 404 ignore rule to the shared requester or change authentication failures into retries.
 
 ## 2. Rate-Limit Reset Headers Are Durations, Not Epoch Timestamps
 
-Calendly documents [per-user rate limits](https://developer.calendly.com/api-docs/overview/rate-limits) of 500 requests/minute on paid plans and 50 requests/minute on free plans. The connector uses one 500/minute `MovingWindowCallRatePolicy` matching `https://api.calendly.com`, and updates it from `X-RateLimit-Remaining`. This lets paid plans use their allowance while a free plan waits when its remaining count reaches zero after its 50 requests; the configured ceiling is not a promise of 500 requests for every account. Concurrency defaults to 4 with a maximum of 10.
+Calendly documents [per-user rate limits](https://developer.calendly.com/api-docs/overview/rate-limits) of 500 requests/minute on paid plans and 50 requests/minute on free plans. The connector uses one 500/minute `MovingWindowCallRatePolicy` matching `https://api.calendly.com`, and updates it from `X-RateLimit-Remaining`. This lets paid plans use their allowance while a free plan waits when its remaining count reaches zero after its 50 requests; the configured ceiling is not a promise of 500 requests for every account. Concurrency is a fixed 4 worker threads.
 
 Do not set the API budget's `ratelimit_reset_header` to `X-RateLimit-Reset`. CDK 7.45.0 parses that budget header as an epoch timestamp, but Calendly sends seconds until reset, typically 60. Leave the budget's default `ratelimit-reset` header unchanged: Calendly does not send it, so the moving-window policy applies the remaining count instead of skipping that update when a reset timestamp is present. A zero remaining count fills the window and blocks the next request until capacity is available.
 
-For HTTP 429, each requester's `WaitTimeFromHeader` reads `X-RateLimit-Reset` as seconds to wait. CDK adds one second to the returned backoff, so a value of 60 normally produces a 61-second retry delay.
+Each requester's `WaitTimeFromHeader` reads `X-RateLimit-Reset`, which Calendly sends on every response, as seconds to wait before retrying a 429 or a 500, 502, 503 or 504. CDK adds one second, so a value of 60 normally produces a 61-second retry delay; a 5xx without the header backs off 1, 2, 4, 8 and 16 seconds.
 
 **Why this matters:** Reusing the same reset header for the budget and retry handler looks natural but gives it two incompatible interpretations and prevents remaining-count updates. A fixed 50/minute ceiling unnecessarily throttles paid accounts; removing remaining-header handling risks repeated 429s on free accounts.
 
-## 3. Start-Time Lookback Does Not Track Every Event Update
+## 3. The Scheduled-Events Cursor Can Move Into the Future
 
-`scheduled_events` uses `start_time`, not modification time, as its incremental cursor. It sends `min_start_time` from saved state minus `lookback_days`, bounded by the configured start date. `lookback_days` is optional with default 0; keep `lookback_window: "P{{ config.get('lookback_days') or 0 }}D"` so a missing key produces `P0D`. The old `P{{config['lookback_days']}}D` rendered `PD` when the key was missing and caused an `ISO8601Error`. Explicit null is still rejected by the number-valued configuration spec.
+`scheduled_events` uses `start_time`, not modification time, as its incremental cursor and sends only `min_start_time` (saved state minus `lookback_days`, bounded by the start date). Calendly returns upcoming events too, and CDK 7.45.0 saves the largest observed cursor value, so after a sync that reads an upcoming event the state is in the future. Later incremental syncs send `min_start_time` = that state minus `lookback_days` and make no `/scheduled_events` request while that point is still in the future, so bookings made in between for earlier times are never read. `event_invitees` follows this parent through `incremental_dependency: true`, so it stalls the same way. Fixing it changes emitted records and state, so it needs a breaking release; until then the docs tell users to sync both streams in Full refresh or to set `lookback_days` to their booking horizon.
 
-`event_invitees` follows the scheduled-event parent through `incremental_dependency: true` and uses a `created_at` data-feed cursor for invitees. Its coverage therefore depends on which parent events are read, rather than independently finding all modified invitees. A redesign of this incremental behavior is tracked separately. Lookback re-reads recent scheduled events to pick up reschedules and cancellations, but changes outside that window can still require a full refresh.
+`event_invitees` is not a data feed: the invitees endpoint has no date filter, and a `created_at` data feed dropped invitees booked before the start date in every sync mode. Each parent event's invitees are read in full and deduplicated by `uri`.
 
-**Why this matters:** Treating either cursor as an update timestamp overstates freshness guarantees. Keep the missing-key-safe template and parent dependency intact unless deliberately redesigning incremental state and validating backward compatibility.
+`lookback_days` is optional with default 0; keep `lookback_window: "P{{ [config.get('lookback_days') or 0, 0] | max }}D"`. The old `P{{config['lookback_days']}}D` rendered `PD` when the key was missing and caused an `ISO8601Error`; a negative value fails the same way, so the template clamps it to 0 instead of a spec minimum that would reject configs that still sync other streams.
+
+`event_types` is a data feed sorted by `updated_at` descending, so pagination stops at the first record older than the cursor start. Its start is `1970-01-01`: a later floor (it was `2021-01-01`) silently drops every event type not updated since.
+
+**Why this matters:** Treating either cursor as an update timestamp overstates freshness guarantees. Keep the missing-key-safe template and the parent dependency intact unless deliberately redesigning incremental state in a breaking release.
 
 ## 4. Existing Datetime Fields Intentionally Remain Strings Without Formats
 
@@ -42,6 +46,6 @@ New nullable fields may use documented formats, such as `date-time` inside the n
 
 ## 5. Connection Check Tests Only Current-User Access
 
-The connection check reads `api_user` through `GET /users/me`, which requires `users:read` according to Calendly's [scope reference](https://developer.calendly.com/docs/authentication/scopes). It does not list event types or scheduled events and does not prove that the token has every scope needed by all selected streams. Organization-scoped reads also obtain the current organization from this user response.
+The connection check reads `api_user` through `GET /users/me`, which requires `users:read` according to Calendly's [scope reference](https://developer.calendly.com/docs/authentication/scopes). It does not list event types or scheduled events and does not prove that the token has every scope needed by all selected streams, or that its owner is an organization owner or admin. Organization-scoped reads also obtain the current organization from this user response.
 
 **Why this matters:** Switching the check back to a list stream creates unnecessary access requirements during setup. A successful check must not be presented as validation of all read scopes; missing stream-specific scopes still fail with an actionable 403 during a sync.

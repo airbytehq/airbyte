@@ -8,19 +8,46 @@ import yaml
 from conftest import _YAML_FILE_PATH
 
 
+STRING = {"type": ["string", "null"]}
+OBJECT = {"type": ["object", "null"]}
+DATE_TIME = {"type": ["string", "null"], "format": "date-time"}
+# Every field this release adds, with its exact declared type and format.
 ADDED_FIELDS = {
-    "event_types": {"/is_paid", "/internal_note"},
-    "api_user": {"/avatar_url"},
-    "groups": set(),
-    "organization_memberships": set(),
-    "scheduled_events": {"/meeting_notes_plain"},
+    "event_types": {
+        "/deleted_at": DATE_TIME,
+        "/internal_note": STRING,
+        "/is_paid": {"type": ["boolean", "null"]},
+        **{f"/locations/[]/{name}": STRING for name in ["location", "additional_info", "phone_number"]},
+    },
+    "api_user": {"/avatar_url": {"type": ["string", "null"], "format": "uri"}},
+    "groups": {},
+    "organization_memberships": {},
+    "scheduled_events": {
+        "/meeting_notes_html": STRING,
+        "/meeting_notes_plain": STRING,
+        "/location/additional_info": STRING,
+        "/location/data": OBJECT,
+    },
     "event_invitees": {
-        "/last_name",
-        "/scheduling_method",
-        "/no_show",
-        "/reconfirmation",
-        "/routing_form_submission",
-        *{f"/tracking/{name}" for name in ["utm_campaign", "utm_source", "utm_medium", "utm_content", "utm_term", "salesforce_uuid"]},
+        "/first_name": STRING,
+        "/last_name": STRING,
+        "/scheduling_method": STRING,
+        "/routing_form_submission": {"type": ["string", "null"], "format": "uri"},
+        "/cancellation/reason": STRING,
+        "/no_show": OBJECT,
+        "/no_show/uri": STRING,
+        "/no_show/created_at": DATE_TIME,
+        "/reconfirmation": OBJECT,
+        "/reconfirmation/created_at": DATE_TIME,
+        "/reconfirmation/confirmed_at": DATE_TIME,
+        "/payment": OBJECT,
+        **{f"/payment/{name}": STRING for name in ["external_id", "provider", "currency", "terms"]},
+        "/payment/amount": {"type": ["number", "null"]},
+        "/payment/successful": {"type": ["boolean", "null"]},
+        **{
+            f"/tracking/{name}": STRING
+            for name in ["utm_campaign", "utm_source", "utm_medium", "utm_content", "utm_term", "salesforce_uuid"]
+        },
     },
 }
 ORIGINAL_TYPE_FORMAT_DIGESTS = {
@@ -47,11 +74,7 @@ def schema_fields(node: dict, path: str = "") -> dict:
 @pytest.mark.parametrize("stream", ORIGINAL_TYPE_FORMAT_DIGESTS)
 def test_every_preexisting_field_retains_its_type_and_format(stream: str) -> None:
     fields = schema_fields(yaml.safe_load(_YAML_FILE_PATH.read_text())["schemas"][stream])
-    original = {
-        path: value
-        for path, value in fields.items()
-        if not any(path == added or path.startswith(added + "/") for added in ADDED_FIELDS[stream])
-    }
+    original = {path: value for path, value in fields.items() if path not in ADDED_FIELDS[stream]}
     assert hashlib.sha256(json.dumps(original, sort_keys=True).encode()).hexdigest() == ORIGINAL_TYPE_FORMAT_DIGESTS[stream]
     for path, definition in original.items():
         if path.rsplit("/", 1)[-1] in {"start_time", "end_time", "created_at", "updated_at", "buffered_start_time", "buffered_end_time"}:
@@ -59,11 +82,9 @@ def test_every_preexisting_field_retains_its_type_and_format(stream: str) -> Non
 
 
 @pytest.mark.parametrize("stream", ADDED_FIELDS)
-def test_new_fields_are_nullable_and_declared(stream: str) -> None:
+def test_new_fields_have_their_documented_type_and_format(stream: str) -> None:
     fields = schema_fields(yaml.safe_load(_YAML_FILE_PATH.read_text())["schemas"][stream])
-    for path in ADDED_FIELDS[stream]:
-        assert path in fields
-        assert "null" in fields[path]["type"]
+    assert {path: fields.get(path) for path in ADDED_FIELDS[stream]} == ADDED_FIELDS[stream]
 
 
 def test_documented_nested_fields_and_types() -> None:

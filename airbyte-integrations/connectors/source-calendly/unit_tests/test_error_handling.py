@@ -34,57 +34,78 @@ def test_no_composite_error_handler() -> None:
     walk(resolved_manifest())
 
 
+URL = "https://api.calendly.com/scheduled_events/ABC/invitees"
+
+
 @pytest.mark.parametrize("stream", ["api_user", "event_types", "groups", "organization_memberships", "scheduled_events", "event_invitees"])
 @pytest.mark.parametrize(
-    "status,action,failure_type",
+    "status,action,failure_type,message",
     [
-        (401, ResponseAction.FAIL, FailureType.config_error),
-        (403, ResponseAction.FAIL, FailureType.config_error),
-        (404, ResponseAction.FAIL, FailureType.system_error),
-        (429, ResponseAction.RATE_LIMITED, FailureType.transient_error),
-        *[(status, ResponseAction.RETRY, FailureType.transient_error) for status in [500, 502, 503, 504]],
+        (401, ResponseAction.FAIL, FailureType.config_error, "Calendly rejected the personal access token"),
+        (403, ResponseAction.FAIL, FailureType.config_error, "owner or admin of the Calendly organization"),
+        (404, ResponseAction.FAIL, FailureType.system_error, f"Calendly returned 404 for {URL}: Calendly response detail"),
+        (429, ResponseAction.RATE_LIMITED, FailureType.transient_error, None),
+        *[
+            (status, ResponseAction.RETRY, FailureType.transient_error, "Calendly API is temporarily unavailable.")
+            for status in [500, 502, 503, 504]
+        ],
     ],
 )
-def test_each_requester_classifies_errors(stream: str, status: int, action: ResponseAction, failure_type: FailureType) -> None:
+def test_each_requester_classifies_errors(stream: str, status: int, action: ResponseAction, failure_type: FailureType, message) -> None:
     definition = next(s for s in resolved_manifest()["streams"] if s["name"] == stream)["retriever"]["requester"]["error_handler"]
     assert definition["type"] == "DefaultErrorHandler"
     handler = ModelToComponentFactory().create_component(DefaultErrorHandlerModel, definition, config=CONFIG)
     assert isinstance(handler, DefaultErrorHandler)
     response = requests.Response()
     response.status_code = status
+    response.url = f"{URL}?count=100"
     response._content = json.dumps({"title": "API error", "message": "Calendly response detail"}).encode()
     response.headers["X-RateLimit-Reset"] = "60"
     resolution = handler.interpret_response(response)
     if stream == "event_invitees" and status == 404:
         assert resolution.response_action == ResponseAction.IGNORE
-        assert resolution.failure_type == FailureType.system_error
+        assert resolution.error_message == f"Skipping invitees of a scheduled event that Calendly no longer returns (404): {URL}"
     else:
         assert resolution.response_action == action
         assert resolution.failure_type == failure_type
+        if message:
+            assert message in resolution.error_message
     if status == 429:
         assert handler.backoff_time(response, attempt_count=1) == 60
 
 
 @pytest.mark.parametrize(
-    "status,remediation",
+    "status,body,expected",
     [
-        (401, "Create a new personal access token"),
-        (403, "users:read, event_types:read, groups:read, organizations:read, and scheduled_events:read"),
+        (401, {"title": "Unauthenticated", "message": "The access token is invalid"}, ["open the Profile menu, select Developer"]),
+        (
+            403,
+            {"title": "Permission Denied", "message": "You do not have permission to access this resource."},
+            ["owner or admin of the Calendly organization", "users:read, event_types:read, groups:read, organizations:read"],
+        ),
+        (
+            403,
+            {
+                "title": "Insufficient scope",
+                "message": "This operation requires the scopes listed in the 'required_scopes' array.",
+                "required_scopes": ["users:read"],
+            },
+            ["Missing scopes: users:read"],
+        ),
     ],
 )
-def test_authentication_error_read_includes_response_and_remediation(status: int, remediation: str) -> None:
+def test_authentication_error_read_includes_response_and_remediation(status: int, body: dict, expected: list) -> None:
     with HttpMocker() as http:
         target = request("users/me")
-        http.get(
-            target, HttpResponse(body=json.dumps({"title": "Authentication error", "message": "Token access denied"}), status_code=status)
-        )
+        http.get(target, HttpResponse(body=json.dumps(body), status_code=status))
         output = read_stream("api_user")
         assert output.errors
         error = output.errors[0].trace.error
         assert error.failure_type == FailureType.config_error
-        assert "Token access denied" in error.message
-        assert remediation in error.message
-        assert "update the Calendly personal access token in the Airbyte connection settings" in error.message
+        assert f"Calendly response ({status}): {body['message']}" in error.message
+        assert "update it in the Airbyte source settings" in error.message
+        for text in expected:
+            assert text in error.message
         http.assert_number_of_calls(target, 1)
 
 

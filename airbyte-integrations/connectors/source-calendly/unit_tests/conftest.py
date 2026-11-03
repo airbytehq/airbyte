@@ -46,7 +46,8 @@ def recorded_sleeps(monkeypatch: MonkeyPatch):
 
         def sleep(seconds: float) -> None:
             sleeps.append(seconds)
-            clock.tick(seconds)
+            # The extra millisecond steps past pyrate-limiter's inclusive window edge, as real time would.
+            clock.tick(seconds + 0.001)
 
         monkeypatch.setattr("time.sleep", sleep)
         yield sleeps

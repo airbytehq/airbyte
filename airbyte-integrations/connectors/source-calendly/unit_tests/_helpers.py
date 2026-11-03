@@ -33,8 +33,10 @@ def resource(record: Mapping[str, Any]) -> HttpResponse:
     return HttpResponse(body=json.dumps({"resource": record}), status_code=200)
 
 
-def read_stream(stream_name: str, config: Mapping[str, Any] = CONFIG, state=None) -> EntrypointOutput:
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+def read_stream(
+    stream_name: str, config: Mapping[str, Any] = CONFIG, state=None, sync_mode: SyncMode = SyncMode.incremental
+) -> EntrypointOutput:
+    catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
     return read(get_source(config, state), config, catalog, state=state)
 
 

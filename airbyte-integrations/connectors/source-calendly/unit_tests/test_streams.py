@@ -3,7 +3,7 @@
 import pytest
 from _helpers import CONFIG, USER, collection, event, invitees_request, list_request, mock_user, read_stream
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -37,6 +37,21 @@ def test_event_types_pages_with_organization_and_sort() -> None:
     read_paginated_list("event_types")
 
 
+def test_event_types_keeps_types_last_updated_before_2021() -> None:
+    newer = {"uri": "https://api.calendly.com/event_types/new", "updated_at": "2023-05-01T00:00:00.000000Z"}
+    older = {"uri": "https://api.calendly.com/event_types/old", "updated_at": "2020-06-01T00:00:00.000000Z"}
+    oldest = {"uri": "https://api.calendly.com/event_types/oldest", "updated_at": "2019-01-01T00:00:00.000000Z"}
+    with HttpMocker() as http:
+        mock_user(http)
+        http.get(list_request("event_types"), collection([newer, older], "next-token"))
+        second = list_request("event_types", "next-token")
+        http.get(second, collection([oldest]))
+        output = read_stream("event_types")
+        assert not output.errors
+        assert [r.record.data["uri"] for r in output.records] == [newer["uri"], older["uri"], oldest["uri"]]
+        http.assert_number_of_calls(second, 1)
+
+
 def test_groups_pages_with_organization() -> None:
     read_paginated_list("groups")
 
@@ -68,6 +83,18 @@ def test_scheduled_events_pages_from_state_minus_lookback(lookback: dict, minimu
         assert {r.record.data["id"] for r in output.records} == {"one", "two"}
         http.assert_number_of_calls(first, 1)
         http.assert_number_of_calls(second, 1)
+
+
+def test_negative_lookback_reads_like_zero() -> None:
+    state = StateBuilder().with_stream_state("scheduled_events", {"start_time": "2024-01-20T00:00:00.000000Z"}).build()
+    with HttpMocker() as http:
+        mock_user(http)
+        target = list_request("scheduled_events", min_start_time="2024-01-20T00:00:00.000000Z")
+        http.get(target, collection([{**event("one"), "start_time": "2024-01-22T00:00:00.000000Z"}]))
+        output = read_stream("scheduled_events", {**CONFIG, "lookback_days": -1}, state)
+        assert not output.errors
+        assert [r.record.data["id"] for r in output.records] == ["one"]
+        http.assert_number_of_calls(target, 1)
 
 
 def test_null_lookback_is_rejected_by_the_unchanged_number_spec() -> None:
@@ -105,6 +132,19 @@ def test_event_invitees_pages_for_each_parent_event() -> None:
         }
         for target in targets:
             http.assert_number_of_calls(target, 1)
+
+
+@pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
+def test_event_invitees_keeps_invitees_booked_before_start_date(sync_mode: SyncMode) -> None:
+    early = {"uri": "https://api.calendly.com/invitees/early", "created_at": "2023-12-20T00:00:00.000000Z"}
+    later = {"uri": "https://api.calendly.com/invitees/later", "created_at": "2024-01-02T00:00:00.000000Z"}
+    with HttpMocker() as http:
+        mock_user(http)
+        http.get(list_request("scheduled_events"), collection([event("jan15")]))
+        http.get(invitees_request("jan15"), collection([later, early]))
+        output = read_stream("event_invitees", sync_mode=sync_mode)
+        assert not output.errors
+        assert [r.record.data["uri"] for r in output.records] == [later["uri"], early["uri"]]
 
 
 @pytest.mark.parametrize("stream", ["event_types", "groups", "organization_memberships", "scheduled_events", "event_invitees"])

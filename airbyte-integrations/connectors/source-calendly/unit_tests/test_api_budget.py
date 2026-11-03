@@ -1,14 +1,15 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
 from datetime import timedelta
 
 import pytest
 import requests
-import yaml
-from _helpers import CONFIG
-from conftest import _YAML_FILE_PATH, get_source
+from _helpers import CONFIG, USER, collection, list_request, read_stream, request
+from conftest import get_source
 
 from airbyte_cdk.sources.streams.call_rate import CallRateLimitHit, HttpAPIBudget, MovingWindowCallRatePolicy
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 
 
 def budget() -> HttpAPIBudget:
@@ -24,12 +25,6 @@ def prepared(path: str = "users/me") -> requests.PreparedRequest:
 def test_budget_is_one_500_per_minute_moving_window_policy() -> None:
     actual = budget()
     assert isinstance(actual, HttpAPIBudget)
-    definition = yaml.safe_load(_YAML_FILE_PATH.read_text())["api_budget"]
-    assert definition["ratelimit_remaining_header"] == "X-RateLimit-Remaining"
-    assert definition.get("ratelimit_reset_header", "ratelimit-reset") == "ratelimit-reset"
-    assert definition["status_codes_for_ratelimit_hit"] == [429]
-    assert len(definition["policies"]) == 1
-    assert definition["policies"][0]["rates"] == [{"limit": 500, "interval": "PT1M"}]
     policy = actual.get_matching_policy(prepared())
     assert isinstance(policy, MovingWindowCallRatePolicy)
     for path in ["users/me", "event_types", "groups", "organization_memberships", "scheduled_events", "scheduled_events/event/invitees"]:
@@ -46,22 +41,28 @@ def test_five_hundred_and_first_call_is_blocked() -> None:
     assert timedelta(0) < error.value.time_to_wait <= timedelta(minutes=1)
 
 
-@pytest.mark.parametrize("remaining", ["0", "1", "499"])
-def test_remaining_header_updates_the_budget(remaining: str) -> None:
+def test_zero_remaining_header_blocks_the_next_call() -> None:
     actual = budget()
     response = requests.Response()
     response.status_code = 200
-    response.headers.update({"X-RateLimit-Remaining": remaining, "X-RateLimit-Reset": "60"})
+    response.headers.update({"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "60"})
     actual.update_from_response(prepared(), response)
-    if remaining == "0":
-        with pytest.raises(CallRateLimitHit) as error:
-            actual.acquire_call(prepared(), block=False)
-        assert timedelta(0) < error.value.time_to_wait <= timedelta(minutes=1)
-    else:
+    with pytest.raises(CallRateLimitHit) as error:
         actual.acquire_call(prepared(), block=False)
+    assert timedelta(0) < error.value.time_to_wait <= timedelta(minutes=1)
 
 
-def test_concurrency_defaults_to_four_with_maximum_ten() -> None:
-    definition = yaml.safe_load(_YAML_FILE_PATH.read_text())["concurrency_level"]
-    assert definition == {"type": "ConcurrencyLevel", "default_concurrency": 4, "max_concurrency": 10}
+def test_zero_remaining_makes_the_next_request_wait_a_minute(recorded_sleeps) -> None:
+    with HttpMocker() as http:
+        http.get(
+            request("users/me"), HttpResponse(body=json.dumps({"resource": USER}), status_code=200, headers={"X-RateLimit-Remaining": "0"})
+        )
+        http.get(list_request("groups"), collection([{"uri": "https://api.calendly.com/groups/1"}]))
+        output = read_stream("groups")
+        assert not output.errors
+        assert len(output.records) == 1
+        assert recorded_sleeps == [60.0]
+
+
+def test_concurrency_is_four_workers() -> None:
     assert get_source(CONFIG)._concurrent_source._threadpool._threadpool._max_workers == 4

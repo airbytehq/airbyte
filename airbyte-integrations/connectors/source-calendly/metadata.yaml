@@ -29,13 +29,11 @@ data:
   maxSecondsBetweenMessages: 3600
   suggestedStreams:
     streams:
-      [
-        scheduled_events,
-        event_invitees,
-        event_types,
-        organization_memberships,
-        api_user,
-      ]
+      - scheduled_events
+      - event_invitees
+      - event_types
+      - organization_memberships
+      - api_user
   connectorTestSuitesOptions:
     - suite: acceptanceTests
   documentationUrl: https://docs.airbyte.com/integrations/sources/calendly
@@ -50,17 +48,17 @@ data:
       url: https://developer.calendly.com/openapi/calendly-api.yaml
       type: openapi_spec
     - title: Calendly API reference
-      url: https://developer.calendly.com/api-docs
+      url: https://developer.calendly.com/api-docs/overview/api/reference
       type: api_reference
     - title: Calendly authentication
-      url: https://developer.calendly.com/getting-started
+      url: https://developer.calendly.com/docs/authentication/overview
       type: authentication_guide
     - title: Calendly personal access tokens
       url: https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens
       type: authentication_guide
     - title: Calendly authorization scopes
       url: https://developer.calendly.com/docs/authentication/scopes
-      type: authentication_guide
+      type: permissions_scopes
     - title: Calendly API release notes
       url: https://developer.calendly.com/release-notes
       type: api_release_history
