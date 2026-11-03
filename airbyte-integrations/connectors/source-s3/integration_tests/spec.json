@@ -838,7 +838,7 @@
     ],
     "sections": [
       {
-        "id": "bucket",
+        "id": "bucket_connection",
         "title": "Connect bucket",
         "order": 0,
         "description": "Which bucket to read from, and how Airbyte gets access.",

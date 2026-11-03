@@ -112,7 +112,7 @@ class SourceTest(unittest.TestCase):
         schema = self._source.spec().connectionSpecification
 
         assert [group["id"] for group in schema["groups"]] == ["connection", "advanced", "files", "start_date"]
-        assert [section["id"] for section in schema["sections"]] == ["bucket", "files", "review"]
+        assert [section["id"] for section in schema["sections"]] == ["bucket_connection", "files", "review"]
         assert all("group" not in schema["properties"][field] for field in _V3_FIELDS)
 
     def test_make_default_stream_returns_throttled_stream(self) -> None:
@@ -147,7 +147,7 @@ class CheckSectionTest(unittest.TestCase):
 
     def test_given_bucket_section_when_check_then_bucket_access_is_checked_without_streams(self) -> None:
         with patch("source_s3.v4.source.FileBasedSource.check_connection") as full_check:
-            assert self._source.check_section_connection(self._logger, "bucket", self.BUCKET_CONFIG) == (True, None)
+            assert self._source.check_section_connection(self._logger, "bucket_connection", self.BUCKET_CONFIG) == (True, None)
 
         full_check.assert_not_called()
         self._stream_reader.check_bucket_access.assert_called_once_with(self._logger)
@@ -165,25 +165,25 @@ class CheckSectionTest(unittest.TestCase):
         )
 
         with pytest.raises(AirbyteTracedException, match="The bucket acme-exports does not exist."):
-            self._source.check_section_connection(self._logger, "bucket", self.BUCKET_CONFIG)
+            self._source.check_section_connection(self._logger, "bucket_connection", self.BUCKET_CONFIG)
 
     def test_given_bucket_section_when_a_required_field_is_missing_then_error_names_it(self) -> None:
         for field in ("bucket", "credentials"):
             config = {key: value for key, value in self.BUCKET_CONFIG.items() if key != field}
             with pytest.raises(AirbyteTracedException) as exc_info:
-                self._source.check_section_connection(self._logger, "bucket", config)
+                self._source.check_section_connection(self._logger, "bucket_connection", config)
             assert exc_info.value.failure_type == FailureType.config_error
-            assert exc_info.value.message == f"The 'bucket' section check requires the '{field}' field."
+            assert exc_info.value.message == f"The 'bucket_connection' section check requires the '{field}' field."
         self._stream_reader.check_bucket_access.assert_not_called()
 
     def test_given_bucket_section_when_credentials_are_invalid_then_config_error(self) -> None:
         config = {**self.BUCKET_CONFIG, "credentials": {"auth_type": "iam_user"}}
 
         with pytest.raises(AirbyteTracedException) as exc_info:
-            self._source.check_section_connection(self._logger, "bucket", config)
+            self._source.check_section_connection(self._logger, "bucket_connection", config)
 
         assert exc_info.value.failure_type == FailureType.config_error
-        assert exc_info.value.message.startswith("Invalid configuration for the 'bucket' section: ")
+        assert exc_info.value.message.startswith("Invalid configuration for the 'bucket_connection' section: ")
         assert "aws_access_key_id" in exc_info.value.message
         self._stream_reader.check_bucket_access.assert_not_called()
 
@@ -193,7 +193,7 @@ class CheckSectionTest(unittest.TestCase):
         config = {**self.BUCKET_CONFIG, "endpoint": "http://my-s3-endpoint.com"}  # ignore-https-check
 
         with pytest.raises(AirbyteTracedException) as exc_info:
-            self._source.check_section_connection(self._logger, "bucket", config)
+            self._source.check_section_connection(self._logger, "bucket_connection", config)
 
         assert exc_info.value.failure_type == FailureType.config_error
         assert "The endpoint must be a secure HTTPS endpoint." in exc_info.value.message
@@ -225,8 +225,8 @@ class CheckSectionTest(unittest.TestCase):
     def test_given_section_config_without_streams_when_read_config_then_it_is_a_v4_config(self, emit_config_mock) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = Path(temp_dir) / "config.json"
-            config_path.write_text(json.dumps({"check-section": "bucket", **self.BUCKET_CONFIG}))
+            config_path.write_text(json.dumps({"check-section": "bucket_connection", **self.BUCKET_CONFIG}))
             config = self._source.read_config(str(config_path))
 
-        assert config == {"check-section": "bucket", **self.BUCKET_CONFIG}
+        assert config == {"check-section": "bucket_connection", **self.BUCKET_CONFIG}
         emit_config_mock.assert_not_called()

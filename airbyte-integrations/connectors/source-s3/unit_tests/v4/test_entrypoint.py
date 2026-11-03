@@ -14,7 +14,7 @@ from airbyte_cdk.models import Status, Type
 
 
 BUCKET_SECTION_CONFIG = {
-    "check-section": "bucket",
+    "check-section": "bucket_connection",
     "bucket": "acme-exports",
     "credentials": {"auth_type": "iam_user", "aws_access_key_id": "key", "aws_secret_access_key": "secret"},
 }
@@ -89,7 +89,7 @@ def test_check_of_an_unknown_section_fails(tmp_path):
 
     assert status == (
         Status.FAILED.value,
-        "Unknown check-section 'nope'; the connector specification declares: bucket, files, review.",
+        "Unknown check-section 'nope'; the connector specification declares: bucket_connection, files, review.",
     )
     s3_client.list_objects_v2.assert_not_called()
 

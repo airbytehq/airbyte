@@ -27,7 +27,7 @@ GROUP_ENDPOINT = "advanced"
 GROUP_FILES = "files"
 GROUP_START_DATE = "start_date"
 
-SECTION_BUCKET = "bucket"
+SECTION_BUCKET = "bucket_connection"
 SECTION_FILES = "files"
 SECTION_REVIEW = "review"
 
