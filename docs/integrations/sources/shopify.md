@@ -305,7 +305,14 @@ If you synced one of these streams on an earlier connector version and suspect m
 
 #### Transactions created before their order
 
-Some payment methods, such as offsite or redirect gateways like Klarna, create the transaction a few minutes before Shopify creates the order. Starting in version 4.2.6, the connector emits these transactions when their order is first synced. Such a transaction can be emitted again on following syncs until a newer transaction moves the cursor past the order's creation time, so destinations without deduplication, such as **Incremental | Append**, may see duplicate rows. Upgrading doesn't backfill transactions that earlier versions skipped, so refresh the `transactions` stream or clear its state to recover them.
+The `transactions` stream is read from its orders: a bulk job selects the orders updated within the sync window and returns the transactions attached to them. A transaction's own `created_at` can be older than that window - a payment from an offsite or redirect gateway like Klarna or Mollie is created minutes before its order, a refund or a capture is attached to an order created long before, and a historical backfill reaches old orders only after its cursor has moved well past their creation time.
+
+Before version 4.3.4, the connector compared each transaction's `created_at` against the saved cursor and skipped the older ones. Version 4.2.6 made an exception for transactions whose order was itself newer than the cursor, which covered the offsite-payment case but not any order updated after the cursor had already passed it. Because a transaction's `created_at` never changes, a transaction skipped that way could never be recovered by a later sync.
+
+Starting in version 4.3.4, every transaction returned by the bulk job is emitted. The orders are already filtered on `updated_at` by the bulk job itself, so the extra comparison only dropped records. Two consequences to expect:
+
+- All transactions of an order are emitted again every time that order is updated, and transactions older than your configured start date are emitted when their order falls in the sync window. Transactions are immutable and keyed by `id`, so deduplicating sync modes such as **Incremental | Append + Deduped** upsert them in place. Destinations without deduplication, such as **Incremental | Append**, see additional duplicate rows.
+- Upgrading doesn't backfill transactions that earlier versions skipped. Refresh the `transactions` stream or clear its state to recover them.
 
 #### Product category values
 
@@ -365,6 +372,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 4.3.4 | 2026-11-03 | [PR_NUMBER_TBD](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_TBD) | Stop dropping `transactions` whose `created_at` predates the saved cursor when their order is updated after it (refunds, captures, late offsite checkouts, historical backfills); see [Transactions created before their order](#transactions-created-before-their-order) to recover previously skipped records |
 | 4.3.3 | 2026-11-03 | [90723](https://github.com/airbytehq/airbyte/pull/90723) | Update dependencies |
 | 4.3.2 | 2026-10-30 | [90254](https://github.com/airbytehq/airbyte/pull/90254) | Explain connection test authentication and access scope failures, and improve invalid store name guidance. |
 | 4.3.1 | 2026-10-26 | [89760](https://github.com/airbytehq/airbyte/pull/89760) | Fix `deleted_products` incremental syncs skipping product deletions recorded in the same second as the saved cursor on Shopify API 2026-10 |

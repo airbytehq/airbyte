@@ -440,15 +440,26 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
         return "transactions"
 
     def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
-        # transactions of offsite payments can predate their order, so they are first exported with the newly created order
-        order_created_at = record.get("order_created_at")
-        return bool(order_created_at) and order_created_at >= state_value
+        """Always emit, regardless of how the transaction's `created_at` compares to the state.
 
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for record in super().read_records(*args, **kwargs):
-            # `order_created_at` is only used for state comparison, it should not be part of the output
-            record.pop("order_created_at", None)
-            yield record
+        The BULK query for this stream filters the *parent* `orders` on `updated_at`, while the stream's
+        cursor is the *child* transaction's own `created_at`. Every transaction present in the BULK result
+        therefore belongs to an order that matched the requested window - that is the only freshness signal
+        this stream actually has, and it is already applied server-side when the slice is built.
+
+        Comparing the transaction's `created_at` against the state on top of that drops transactions that
+        were never emitted, whenever an order created before the cursor is touched after it: a refund, a
+        capture, a tag or financial-status change, a late-finalized offsite/redirect checkout, or simply a
+        historical backfill reaching an old order once its own cursor has already advanced past that order's
+        creation time. Because a transaction's `created_at` never changes, no later sync at any state can
+        recover such a record, so the comparison is a permanent data loss rather than a freshness check.
+
+        Transactions are immutable and keyed by `id`, so re-emitting them is an idempotent upsert on any
+        deduplicating destination. The trade-off is re-emission volume (every transaction of a re-touched
+        order is emitted again) and duplicate rows on append-only destinations, which is documented in the
+        connector docs. See https://github.com/airbytehq/airbyte/issues/90842.
+        """
+        return True
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """

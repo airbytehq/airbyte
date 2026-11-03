@@ -2,7 +2,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from typing import List
 
 import pytest
@@ -12,10 +11,10 @@ from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(order_id: int, transaction_id: int, transaction_created_at: str) -> str:
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
-        f'"order_created_at":"{order_created_at}","transactions":['
+        f'"transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
         f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
         f'"processedAt":"{transaction_created_at}","gateway":"bogus","paymentId":"c25048437719229.1",'
@@ -26,50 +25,6 @@ def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, tran
         f'"amountSet":{{"shop_money":{{"amount":"57.23","currency":"USD"}}}},"fees":[],"paymentDetails":{{}}'
         f"}}]}}"
     )
-
-
-def test_transactions_graphql_emits_transactions_predating_state_with_new_order(
-    requests_mock,
-    bulk_job_completed_response,
-    auth_config,
-) -> None:
-    stream = TransactionsGraphql(auth_config)
-    test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
-
-    jsonl_content = (
-        "\n".join(
-            [
-                # transaction predates the saved state, but its order is newer -> emitted
-                _order_jsonl(1, "2026-09-11T06:27:00Z", 1001, "2026-09-11T05:07:00Z"),
-                # transaction and its order both predate the saved state -> dropped
-                _order_jsonl(2, "2026-09-11T04:00:00Z", 1002, "2026-09-11T05:07:00Z"),
-                # transaction is newer than the saved state even though its order is older -> emitted
-                _order_jsonl(3, "2026-09-11T04:00:00Z", 1003, "2026-09-11T06:00:00Z"),
-            ]
-        )
-        + "\n"
-    )
-
-    requests_mock.post(stream.job_manager.base_url, json=bulk_job_completed_response)
-    requests_mock.get(test_result_url, text=jsonl_content)
-
-    stream_state_cache.cached_state["transactions"] = {"created_at": "2026-09-11T05:49:43+00:00"}
-    try:
-        test_records = list(stream.read_records(SyncMode.incremental, stream_slice={}))
-    finally:
-        stream_state_cache.cached_state.pop("transactions", None)
-
-    assert sorted(record["id"] for record in test_records) == [1001, 1003]
-    assert all("order_created_at" not in record for record in test_records)
-
-
-def _order_jsonl_without_order_created_at(order_jsonl: str, keep_key_as_null: bool) -> str:
-    order = json.loads(order_jsonl)
-    if keep_key_as_null:
-        order["order_created_at"] = None
-    else:
-        order.pop("order_created_at")
-    return json.dumps(order)
 
 
 def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, jsonl_lines: List[str], state_value: str):
@@ -84,67 +39,84 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
     finally:
         stream_state_cache.cached_state.pop("transactions", None)
 
-    assert all("order_created_at" not in record for record in records)
     return stream, records
 
 
-@pytest.mark.parametrize(
-    "order_jsonl, expected_ids",
-    [
-        pytest.param(
-            _order_jsonl(1, "2026-09-11T05:49:43Z", 1001, "2026-09-11T05:07:00Z"),
-            [1001],
-            id="order_created_at_equal_to_state_is_emitted",
-        ),
-        pytest.param(
-            _order_jsonl_without_order_created_at(
-                _order_jsonl(1, "2026-09-11T06:27:00Z", 1001, "2026-09-11T05:07:00Z"), keep_key_as_null=False
-            ),
-            [],
-            id="missing_order_created_at_is_dropped",
-        ),
-        pytest.param(
-            _order_jsonl_without_order_created_at(
-                _order_jsonl(1, "2026-09-11T06:27:00Z", 1001, "2026-09-11T05:07:00Z"), keep_key_as_null=True
-            ),
-            [],
-            id="null_order_created_at_is_dropped",
-        ),
-    ],
-)
-def test_transactions_graphql_older_than_state_order_created_at_edge_cases(
+def test_transactions_graphql_emits_transactions_predating_state(
     requests_mock,
     bulk_job_completed_response,
     auth_config,
-    order_jsonl,
-    expected_ids,
 ) -> None:
+    """Every transaction returned by the BULK job is emitted, whatever its own `created_at` is.
+
+    The BULK job filters the parent `orders` on `updated_at`, so a transaction can only appear here if
+    its order matched the requested window. Filtering the child on its own immutable `created_at` on top
+    of that permanently drops transactions of orders that are updated after they were created.
+    """
     _, test_records = _read_transactions(
         requests_mock,
         bulk_job_completed_response,
         auth_config,
-        [order_jsonl],
+        [
+            # transaction predates the saved state, its order is newly created -> emitted
+            _order_jsonl(1, 1001, "2026-09-11T05:07:00Z"),
+            # transaction predates the saved state, its order was created long ago and only updated now -> emitted
+            _order_jsonl(2, 1002, "2026-09-11T05:07:00Z"),
+            # transaction is newer than the saved state -> emitted
+            _order_jsonl(3, 1003, "2026-09-11T06:00:00Z"),
+        ],
         state_value="2026-09-11T05:49:43+00:00",
     )
 
-    assert [record["id"] for record in test_records] == expected_ids
+    assert sorted(record["id"] for record in test_records) == [1001, 1002, 1003]
+    assert all("order_created_at" not in record for record in test_records)
 
 
-def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bounded(
+def test_transactions_graphql_emits_transaction_of_order_re_touched_after_cursor_passed_it(
     requests_mock,
     bulk_job_completed_response,
     auth_config,
 ) -> None:
-    # the transaction predates both the saved state and its order, the order is newer than the saved state
-    predating_order = _order_jsonl(1, "2026-09-11T06:27:00Z", 1001, "2026-09-11T05:07:00Z")
-    # a later transaction on another order, created after the first order
-    newer_order = _order_jsonl(2, "2026-09-11T06:30:00Z", 1002, "2026-09-11T06:31:00Z")
+    """The core scenario of https://github.com/airbytehq/airbyte/issues/90842.
+
+    An order created years ago is updated now (a refund, a capture, a late offsite checkout, or a
+    historical backfill reaching it late), so it falls into the current BULK window on `updated_at`.
+    Its transactions were created years ago, far behind the saved `created_at` cursor, and some of them
+    were never emitted. They must still be emitted: `created_at` never changes, so no later sync at any
+    state could ever recover them.
+    """
+    _, test_records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [_order_jsonl(4554821468349, 1001, "2021-03-02T10:15:00Z")],
+        state_value="2026-09-11T05:49:43+00:00",
+    )
+
+    assert [record["id"] for record in test_records] == [1001]
+    assert test_records[0]["created_at"] == "2021-03-02T10:15:00+00:00"
+
+
+def test_transactions_graphql_re_emission_does_not_move_the_cursor_backwards(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+) -> None:
+    """Emitting records older than the state must not regress the saved state.
+
+    `get_updated_state` keeps the maximum cursor value seen, so the extra, older records rescued by
+    `should_emit_record_older_than_state` can never pull the cursor back. The re-emission itself is the
+    accepted trade-off: the records are immutable and keyed by `id`, so they upsert idempotently.
+    """
+    # the transaction predates the saved state and is re-emitted on every sync that returns its order
+    predating_order = _order_jsonl(1, 1001, "2026-09-11T05:07:00Z")
+    # a later transaction on another order, which is what actually advances the cursor
+    newer_order = _order_jsonl(2, 1002, "2026-09-11T06:31:00Z")
     syncs = [
         ([predating_order], [1001]),
-        # the cursor has not moved past the first order's createdAt yet -> re-emitted
         ([predating_order, newer_order], [1001, 1002]),
-        # the cursor moved past the first order's createdAt -> no longer emitted
-        ([predating_order, newer_order], [1002]),
+        # the cursor has moved past the predating transaction, it is still emitted
+        ([predating_order, newer_order], [1001, 1002]),
     ]
 
     state = {"created_at": "2026-09-11T05:49:43+00:00"}
@@ -164,3 +136,32 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
         assert state["created_at"] >= previous_state_value
 
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
+
+
+@pytest.mark.parametrize(
+    "state_value",
+    [
+        pytest.param("2026-09-11T05:49:43+00:00", id="state_after_the_transaction"),
+        pytest.param("2021-01-01T00:00:00+00:00", id="state_before_the_transaction"),
+    ],
+)
+def test_transactions_graphql_emits_the_same_records_regardless_of_state(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+    state_value,
+) -> None:
+    """The saved state no longer changes what a given BULK result emits for this stream.
+
+    It still drives the slice boundaries in `stream_slices`, which is where incrementality for this
+    stream now lives.
+    """
+    _, test_records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [_order_jsonl(1, 1001, "2026-09-11T05:07:00Z")],
+        state_value=state_value,
+    )
+
+    assert [record["id"] for record in test_records] == [1001]
