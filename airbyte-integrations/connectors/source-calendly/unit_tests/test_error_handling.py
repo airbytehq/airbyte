@@ -37,7 +37,23 @@ def test_no_composite_error_handler() -> None:
 URL = "https://api.calendly.com/scheduled_events/ABC/invitees"
 
 
-@pytest.mark.parametrize("stream", ["api_user", "event_types", "groups", "organization_memberships", "scheduled_events", "event_invitees"])
+@pytest.mark.parametrize(
+    "stream",
+    [
+        "api_user",
+        "event_types",
+        "groups",
+        "organization_memberships",
+        "scheduled_events",
+        "event_invitees",
+        "routing_forms",
+        "routing_form_submissions",
+        "contacts",
+        "outgoing_communications",
+        "activity_log_entries",
+        "meeting_recaps",
+    ],
+)
 @pytest.mark.parametrize(
     "status,action,failure_type,message",
     [
@@ -65,6 +81,9 @@ def test_each_requester_classifies_errors(stream: str, status: int, action: Resp
     if stream == "event_invitees" and status == 404:
         assert resolution.response_action == ResponseAction.IGNORE
         assert resolution.error_message == f"Skipping invitees of a scheduled event that Calendly no longer returns (404): {URL}"
+    elif stream == "routing_form_submissions" and status == 404:
+        assert resolution.response_action == ResponseAction.IGNORE
+        assert resolution.error_message == "Skipping submissions of a routing form that Calendly no longer returns (404)."
     else:
         assert resolution.response_action == action
         assert resolution.failure_type == failure_type

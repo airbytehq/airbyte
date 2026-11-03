@@ -4,7 +4,7 @@ The Calendly source syncs your organization members, groups, event types, schedu
 
 ## Prerequisites
 
-- A Calendly account. The connector's read endpoints are available on [all Calendly plans, including Free](https://developer.calendly.com/docs/getting-started/frequently-asked-questions); contacts, meeting recaps, outgoing communications and activity logs need a paid or Enterprise plan (see [Streams](#streams)).
+- A Calendly account. Most of the connector's read endpoints are available on [all Calendly plans, including Free](https://developer.calendly.com/docs/getting-started/frequently-asked-questions); outgoing communications and activity logs need Enterprise, meeting recaps need a plan with Notetaker, and Calendly can deny contacts with a paid-plan error (see [Streams](#streams)).
 - An organization owner or administrator account to read organization-wide data such as scheduled events, activity logs and outgoing communications. The connector reads the current organization associated with the token owner's profile; you don't need to enter an organization ID.
 - A [personal access token](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) with the [read scopes](https://developer.calendly.com/docs/authentication/scopes) of every stream you sync, listed in [Token scopes](#token-scopes).
 
@@ -63,7 +63,7 @@ Since March 2026, Calendly grants newly created tokens no API access until you s
 
 The connector reads `event_invitees` for the scheduled events returned by the parent stream. It adds `scheduled_event_id` to each invitee record so you can join it to the `id` in `scheduled_events`. `routing_form_submissions` reads the submissions of every routing form returned for the organization.
 
-Outgoing communications and activity logs require an Enterprise subscription, contacts require a paid plan, and meeting recaps require a paid plan with Notetaker enabled. When Calendly reports that the plan or feature is unavailable, these streams complete without records and log a message explaining the requirement. Missing read scopes, owner or admin permission errors, and other forbidden responses still fail the sync.
+Outgoing communications and activity logs require an Enterprise subscription, meeting recaps require a paid plan with Notetaker enabled, and Calendly documents a paid-plan error for contacts. When Calendly reports that the plan or feature is unavailable, these streams complete without records and log a message explaining the requirement. Missing read scopes, owner or admin permission errors, and other forbidden responses still fail the sync.
 
 The incremental `outgoing_communications`, `activity_log_entries` and `meeting_recaps` streams request a window that ends at the sync time, so their cursors never move past it, and they do not use `lookback_days`. Calendly returns a meeting recap only after processing finishes, so each sync reads recaps of meetings that started up to three days before the saved cursor again; recaps that become available or change later than that need a Full refresh.
 
