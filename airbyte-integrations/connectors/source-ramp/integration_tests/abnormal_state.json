@@ -42,5 +42,16 @@
         "name": "reimbursements"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "vendors"
+      },
+      "stream_state": {
+        "updated_at": "2124-10-14T16:50:56Z"
+      }
+    }
   }
 ]

@@ -1,14 +1,46 @@
-{
-  "customer_stream": {
-    "created_at": "2222-01-01 00:00:00"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "customer_stream"
+      },
+      "stream_state": {
+        "created_at": "2222-01-01 00:00:00"
+      }
+    }
   },
-  "dispute_stream": {
-    "received_date": "2222-01-01 00:00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "dispute_stream"
+      },
+      "stream_state": {
+        "received_date": "2222-01-01 00:00:00"
+      }
+    }
   },
-  "transaction_stream": {
-    "created_at": "2222-01-01 00:00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "transaction_stream"
+      },
+      "stream_state": {
+        "created_at": "2222-01-01 00:00:00"
+      }
+    }
   },
-  "subscription_stream": {
-    "created_at": "2222-01-01 00:00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "subscription_stream"
+      },
+      "stream_state": {
+        "created_at": "2222-01-01 00:00:00"
+      }
+    }
   }
-}
+]
