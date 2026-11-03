@@ -543,7 +543,9 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         assert len(output.records) == 201
 
 
-def test_given_429_then_200_when_read_suggested_keywords_then_retry_and_return_records(requests_mock: requests_mock.Mocker):
+def test_given_429_without_retry_after_when_read_suggested_keywords_then_exponential_backoff_and_return_records(
+    requests_mock: requests_mock.Mocker,
+):
     config = ConfigBuilder().build()
     requests_mock.post(
         "https://api.amazon.com/auth/o2/token",
@@ -561,7 +563,11 @@ def test_given_429_then_200_when_read_suggested_keywords_then_retry_and_return_r
     requests_mock.post(
         "https://advertising-api.amazon.com/sp/targets/keywords/recommendations",
         [
-            {"status_code": 429, "headers": {"Retry-After": "1"}, "json": {"message": "Too many requests"}},
+            {
+                "status_code": 429,
+                "headers": {"x-amzn-ErrorType": "ThrottlingException"},
+                "json": {"message": "Too Many Requests"},
+            },
             {"status_code": 200, "json": {"keywordTargetList": [{"keyword": "suggested"}]}},
         ],
     )
@@ -574,5 +580,6 @@ def test_given_429_then_200_when_read_suggested_keywords_then_retry_and_return_r
     ]
     assert len(recommendation_requests) == 2
     assert output.errors == []
+    assert len(output.records) == 1
     assert [record.record.data["keyword"] for record in output.records] == ["suggested"]
-    sleep.assert_any_call(2)
+    assert any(call.args and call.args[0] >= 10 for call in sleep.call_args_list)
