@@ -28,20 +28,22 @@ import org.testcontainers.containers.MSSQLServerContainer
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MsSqlServerCdcIntegrationTest {
 
-    /**
-     * Regression test for https://github.com/airbytehq/airbyte/pull/73349: Navision / Business
-     * Central style identifiers containing spaces and `$` must be escaped in Debezium's
-     * `message.key.columns`, otherwise the engine fails config validation on startup. The second
-     * read also proves the escaped value still matches the real table, since Debezium treats the
-     * table part as a regex.
-     */
     @Test
     fun testSpecialCharactersInTableAndPrimaryKeyNames() {
-        val catalog = configuredCatalog(SPECIAL_TABLE)
+        assertSubsequentReadCapturesInsert("dbo", SPECIAL_TABLE, SPECIAL_PK)
+    }
+
+    @Test
+    fun testSpecialCharactersInSchemaName() {
+        assertSubsequentReadCapturesInsert(SPECIAL_SCHEMA, SPECIAL_SCHEMA_TABLE, SPECIAL_PK)
+    }
+
+    private fun assertSubsequentReadCapturesInsert(schema: String, table: String, pk: String) {
+        val catalog = configuredCatalog(schema, table)
         val state1: AirbyteStateMessage =
             CliRunner.source("read", config(), catalog).run().states().last()
 
-        execute("INSERT INTO dbo.[$SPECIAL_TABLE] ([$SPECIAL_PK], [Item No_]) VALUES (3, 'ITEM-3')")
+        execute("INSERT INTO [$schema].[$table] ([$pk], [Item No_]) VALUES (3, 'ITEM-3')")
         execute("EXEC sys.sp_cdc_scan")
 
         // A failed read emits an ERROR trace and then run() throws ConnectorUncleanExitException.
@@ -52,20 +54,20 @@ class MsSqlServerCdcIntegrationTest {
             run2.traces().filter { it.type == AirbyteTraceMessage.Type.ERROR }
         assertEquals(emptyList<AirbyteTraceMessage>(), errorTraces)
         val insertedRecords: List<AirbyteRecordMessage> =
-            run2.records().filter { it.data[SPECIAL_PK]?.asInt() == 3 }
+            run2.records().filter { it.data[pk]?.asInt() == 3 }
         assertEquals(1, insertedRecords.size, "records: ${run2.records()}")
         assertEquals("ITEM-3", insertedRecords.first().data["Item No_"].asText())
     }
 
-    private fun configuredCatalog(tableName: String): ConfiguredAirbyteCatalog {
+    private fun configuredCatalog(schema: String, table: String): ConfiguredAirbyteCatalog {
         val stream: AirbyteStream? =
             CliRunner.source("discover", config())
                 .run()
                 .catalogs()
                 .firstOrNull()
                 ?.streams
-                ?.find { it.namespace == "dbo" && it.name == tableName }
-        assertNotNull(stream, "stream dbo.$tableName not discovered")
+                ?.find { it.namespace == schema && it.name == table }
+        assertNotNull(stream, "stream $schema.$table not discovered")
         val configuredStream =
             CatalogHelpers.toDefaultConfiguredStream(stream)
                 .withSyncMode(SyncMode.INCREMENTAL)
@@ -79,6 +81,8 @@ class MsSqlServerCdcIntegrationTest {
     companion object {
         const val SPECIAL_TABLE = "CRON UK\$Item Ledger Entry"
         const val SPECIAL_PK = "Entry No_"
+        const val SPECIAL_SCHEMA = "CRON\$Sales"
+        const val SPECIAL_SCHEMA_TABLE = "Sales Line"
 
         lateinit var dbContainer: MSSQLServerContainer<*>
 
@@ -106,17 +110,20 @@ class MsSqlServerCdcIntegrationTest {
                     MsSqlServerContainerFactory.WithNetwork,
                     MsSqlServerContainerFactory.WithTestDatabase,
                 )
-            execute(
-                "EXEC sys.sp_cdc_enable_db",
-                "CREATE TABLE dbo.[$SPECIAL_TABLE] " +
-                    "([$SPECIAL_PK] INT PRIMARY KEY, [Item No_] NVARCHAR(20))",
-                "EXEC sys.sp_cdc_enable_table @source_schema = N'dbo', " +
-                    "@source_name = N'$SPECIAL_TABLE', @role_name = NULL",
-                "INSERT INTO dbo.[$SPECIAL_TABLE] ([$SPECIAL_PK], [Item No_]) " +
-                    "VALUES (1, 'ITEM-1'), (2, 'ITEM-2')",
-                // SQL Agent is disabled in the test container, so the CDC capture job never runs.
-                "EXEC sys.sp_cdc_scan",
-            )
+            execute("EXEC sys.sp_cdc_enable_db", "CREATE SCHEMA [$SPECIAL_SCHEMA]")
+            for ((schema, table) in
+                listOf("dbo" to SPECIAL_TABLE, SPECIAL_SCHEMA to SPECIAL_SCHEMA_TABLE)) {
+                execute(
+                    "CREATE TABLE [$schema].[$table] " +
+                        "([$SPECIAL_PK] INT PRIMARY KEY, [Item No_] NVARCHAR(20))",
+                    "EXEC sys.sp_cdc_enable_table @source_schema = N'$schema', " +
+                        "@source_name = N'$table', @role_name = NULL",
+                    "INSERT INTO [$schema].[$table] ([$SPECIAL_PK], [Item No_]) " +
+                        "VALUES (1, 'ITEM-1'), (2, 'ITEM-2')",
+                )
+            }
+            // SQL Agent is disabled in the test container, so the CDC capture job never runs.
+            execute("EXEC sys.sp_cdc_scan")
         }
 
         @JvmStatic

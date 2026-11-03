@@ -56,6 +56,7 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.atomic.AtomicLong
+import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.collections.plus
@@ -727,7 +728,11 @@ class MsSqlServerDebeziumOperations(
 
     private fun generateCommonDebeziumProperties(streams: List<Stream>): Map<String, String> {
         val databaseName = configuration.databaseName
-        val schemaList = streams.map { it.namespace }.distinct().joinToString(",")
+        // schema.include.list is a list of regexes, so quote each schema name
+        val schemaList =
+            DebeziumPropertiesBuilder.joinIncludeList(
+                streams.map { Pattern.quote(it.namespace) }.distinct(),
+            )
         val messageKeyColumns = buildMessageKeyColumns(streams)
         val tunnelSession: TunnelSession = jdbcConnectionFactory.ensureTunnelSession()
 
