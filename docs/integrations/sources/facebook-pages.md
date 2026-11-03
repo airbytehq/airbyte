@@ -61,7 +61,7 @@ The Facebook Pages source connector supports the following [sync modes](https://
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (`post` stream only)
 
-The `post` stream is full refresh by default. If you switch it to Incremental, the connector keeps the newest `created_time` it has seen and asks Facebook only for posts created after it on the next sync, which cuts the amount of data read on every sync after the first. Set **Start Date** to skip posts created before a given date on the first incremental sync. Because the filter uses the post's creation time, edits, reactions and comment counts on posts the connector has already synced are not refreshed in incremental mode, so use full refresh if you need those to stay current.
+The `post` stream is full refresh by default. If you switch it to Incremental, the connector keeps the newest `created_time` it has seen and asks Facebook only for posts created after it on the next sync, which cuts the amount of data read on every sync after the first. The first incremental sync reads the full post history, and a full refresh always does. Because the filter uses the post's creation time, edits, reactions and comment counts on posts the connector has already synced are not refreshed in incremental mode, so use full refresh if you need those to stay current.
 
 ## Supported Streams
 
@@ -179,7 +179,7 @@ Starting from version 2.0.4, the `product_catalogs` field is no longer synced in
 
 Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting, follow the instructions in the Setup Guide above to generate a Long-Lived Page Token.
 
-When Meta throttles a request, it reports how long until access returns in the `X-Business-Use-Case-Usage` response header, and the connector waits that long (up to 30 minutes) before retrying instead of retrying on a fixed schedule. Each extra stream and metric you enable adds to that usage, and the `comment` stream in particular makes one request per post.
+When Meta throttles a request, it reports how long until access returns in the `X-Business-Use-Case-Usage` response header, and the connector waits that long, up to 10 minutes, before retrying instead of retrying on a fixed schedule. Each extra stream and metric you enable adds to that usage, and the `comment` stream in particular makes one request per post.
 
 The Graph API can report rate limits with HTTP 400 and an error code such as `4`, `17`, `32`, `613`, or `80001`. Starting from version 2.1.3, the connector recognizes these codes, and any error Meta marks as transient, and retries the request with backoff instead of failing immediately. Retries are limited, so if your Page stays throttled long enough to exhaust them, the sync still fails with a transient error and succeeds on a later attempt once the quota resets.
 
@@ -196,7 +196,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.0 | 2026-10-27 | [90123](https://github.com/airbytehq/airbyte/pull/90123) | Make the insights metrics and the `page_insights` period configurable, add the `video_insights`, `reel_insights`, `comment` and `rating` streams, add optional incremental sync to the `post` stream, report a rejected metric as a configuration error, and wait for Meta's estimated time to regain access when a request is throttled. |
+| 3.1.0   | 2026-10-27 | [90123](https://github.com/airbytehq/airbyte/pull/90123)       | Configurable insights metrics and period, new video, Reels, comment and rating streams, incremental posts                                                              |
 | 3.0.0 | 2026-10-13 | [85780](https://github.com/airbytehq/airbyte/pull/85780) | Remove the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking`, and `start_info`, and the `live_videos` edge, from the `page` stream. Remove `current_location`, `genre`, and `network` from nested page objects in the `page` and `post` streams. |
 | 2.1.4 | 2026-09-22 | [86489](https://github.com/airbytehq/airbyte/pull/86489) | Retry Facebook's "Please reduce the amount of data you're asking for" error again instead of failing the sync as a configuration error. |
 | 2.1.3 | 2026-09-08 | [78077](https://github.com/airbytehq/airbyte/pull/78077) | Fail fast on deterministic Facebook API bad request errors as config errors, surface the Facebook error message, and keep retrying rate-limit and transient errors. |

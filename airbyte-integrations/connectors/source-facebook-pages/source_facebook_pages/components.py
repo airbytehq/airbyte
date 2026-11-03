@@ -118,8 +118,9 @@ class MetaUsageBackoffStrategy(BackoffStrategy):
 
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    # ponytail: cap at 30 minutes; Meta can estimate hours and a sync should fail fast past that.
-    max_wait_seconds: int = 1800
+    # The DefaultErrorHandler gives every request 10 minutes of retries in total (`max_time`, not
+    # configurable from the manifest), so a longer wait would only be cut short.
+    max_wait_seconds: int = 600
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         pass
@@ -135,8 +136,16 @@ class MetaUsageBackoffStrategy(BackoffStrategy):
             usage = json.loads(response_or_exception.headers.get("X-Business-Use-Case-Usage", ""))
         except ValueError:
             return None
+        if not isinstance(usage, dict):
+            return None
         minutes = max(
-            (entry.get("estimated_time_to_regain_access", 0) for entries in usage.values() for entry in entries),
+            (
+                entry.get("estimated_time_to_regain_access") or 0
+                for entries in usage.values()
+                if isinstance(entries, list)
+                for entry in entries
+                if isinstance(entry, dict)
+            ),
             default=0,
         )
         return min(minutes * 60, self.max_wait_seconds) if minutes > 0 else None
