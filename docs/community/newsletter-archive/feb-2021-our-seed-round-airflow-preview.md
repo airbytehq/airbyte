@@ -17,13 +17,13 @@ This fundraising will be dedicated to building the open-source standard for data
 
 * * *
 
-[![Airflow integration v2](https://airbyte.com/images/community/newsletter/bodies/2021/03/Airflow-integration-v2.png)](https://docs.airbyte.io/tutorials/using-the-airflow-airbyte-operator)
+[![Airflow integration v2](https://airbyte.com/images/community/newsletter/bodies/2021/03/Airflow-integration-v2.png)](https://docs.airbyte.com/platform/operator-guides/using-the-airflow-airbyte-operator)
 
-[**Preview: Integration with Airflow!**](https://docs.airbyte.io/tutorials/using-the-airflow-airbyte-operator)
+[**Preview: Integration with Airflow!**](https://docs.airbyte.com/platform/operator-guides/using-the-airflow-airbyte-operator)
 
 Thanks to [@marcosmarxm](https://github.com/marcosmarxm), Airbyte's integration with Airflow has been merged into Airflow's main code base. It will be released in Airflow's next release. You will be able to run Airbyte jobs from Airflow directly. This was the most requested feature in the last few months.
 
-[**CHECK THE AIRFLOW TUTORIAL >>**](https://docs.airbyte.io/tutorials/using-the-airflow-airbyte-operator)
+[**CHECK THE AIRFLOW TUTORIAL >>**](https://docs.airbyte.com/platform/operator-guides/using-the-airflow-airbyte-operator)
 
 * * *
 
@@ -57,40 +57,40 @@ Contribute source connectors and win $500 worth of prizes (your choice between d
 
 * * *
 
-[![We want you](https://airbyte.com/images/community/newsletter/bodies/2021/02/We-want-you.png)](https://docs.airbyte.io/career-and-open-positions)
+[![We want you](https://airbyte.com/images/community/newsletter/bodies/2021/02/We-want-you.png)](https://airbyte.com/company/careers)
 
-[**We're recruiting several senior engineers and a dev advocate!**](https://docs.airbyte.io/career-and-open-positions)
+[**We're recruiting several senior engineers and a dev advocate!**](https://airbyte.com/company/careers)
 
 If you're interested to join our team and commoditize data integration with us, check our job offers. Maybe you know someone who can be? A note: **we're full remote!**
 
-[**CHECK OUR JOB OFFERS>>**](https://docs.airbyte.io/career-and-open-positions)
+[**CHECK OUR JOB OFFERS>>**](https://airbyte.com/company/careers)
 
 ## Our new Tutorials
 
-[![Saving and searching Slack message with Airbyte and Meilisearch](https://airbyte.com/images/community/newsletter/bodies/2021/02/Saving-and-searching-Slack-message-with-Airbyte-and-Meilisearch.jpg)](https://docs.airbyte.io/tutorials/slack-history)
+![Saving and searching Slack message with Airbyte and Meilisearch](https://airbyte.com/images/community/newsletter/bodies/2021/02/Saving-and-searching-Slack-message-with-Airbyte-and-Meilisearch.jpg)
 
-[**How to save and search through your Slack history with a free plan, using Airbyte and MeiliSearch**](https://docs.airbyte.io/tutorials/slack-history)
+<strong>How to save and search through your Slack history with a free plan, using Airbyte and MeiliSearch</strong>
 
 Here's a short tutorial showing how we're leveraging Airbyte and Meilisearch to be able to search through our whole Slack history, even though we're on a free plan.
 
-[**CHECK THE TUTORIAL>>**](https://docs.airbyte.io/tutorials/slack-history)
+<strong>CHECK THE TUTORIAL&gt;&gt;</strong>
 
 * * *
 
-[![Build a Slack activity dashboard](https://airbyte.com/images/community/newsletter/bodies/2021/03/Build-a-Slack-activity-dashboard.jpg)](https://docs.airbyte.io/tutorials/build-a-slack-activity-dashboard)
+![Build a Slack activity dashboard](https://airbyte.com/images/community/newsletter/bodies/2021/03/Build-a-Slack-activity-dashboard.jpg)
 
-[**How to build a Slack Activity dashboard, using Airbyte and Apache Superset**](https://docs.airbyte.io/tutorials/build-a-slack-activity-dashboard)
+<strong>How to build a Slack Activity dashboard, using Airbyte and Apache Superset</strong>
 
 We're showcasing how we've built a Slack activity dashboard using Airbyte and Apache Superset, so you can do that at home in less than an hour.
 
-[**CHECK THE TUTORIAL>>**](https://docs.airbyte.io/tutorials/build-a-slack-activity-dashboard)
+<strong>CHECK THE TUTORIAL&gt;&gt;</strong>
 
 * * *
 
-[![Add incremental to a source](https://airbyte.com/images/community/newsletter/bodies/2021/03/Add-incremental-to-a-source.jpg)](https://docs.airbyte.io/tutorials/adding-incremental-sync)
+[![Add incremental to a source](https://airbyte.com/images/community/newsletter/bodies/2021/03/Add-incremental-to-a-source.jpg)](https://docs.airbyte.com/platform/connector-development/cdk-python/incremental-stream)
 
-[**How you can add incremental to a source**](https://docs.airbyte.io/tutorials/adding-incremental-sync)
+[**How you can add incremental to a source**](https://docs.airbyte.com/platform/connector-development/cdk-python/incremental-stream)
 
 This tutorial will show how you can add incremental to your working source, and will build off the "Build a Toy Connector tutorial".
 
-[**CHECK THE TUTORIAL>>**](https://docs.airbyte.io/tutorials/adding-incremental-sync)
+[**CHECK THE TUTORIAL>>**](https://docs.airbyte.com/platform/connector-development/cdk-python/incremental-stream)

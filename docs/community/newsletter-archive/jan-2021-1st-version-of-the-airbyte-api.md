@@ -17,13 +17,13 @@ We just released the 1st version of our API docs. You can now use Airflow and Da
 
 * * *
 
-[![Progress on connectors](https://airbyte.com/images/community/newsletter/bodies/2021/02/Progress-on-connectors.png)](https://docs.airbyte.io/changelog/connectors)
+![Progress on connectors](https://airbyte.com/images/community/newsletter/bodies/2021/02/Progress-on-connectors.png)
 
-[**Strengthening the connectors + MeiliSearch**](https://docs.airbyte.io/changelog/connectors)
+<strong>Strengthening the connectors + MeiliSearch</strong>
 
 In the past few weeks, we've been expanding incremental across sources and certifying them based on our best practices.
 
-[**CHECK THE CHANGELOG >>**](https://docs.airbyte.io/changelog/connectors)
+<strong>CHECK THE CHANGELOG &gt;&gt;</strong>
 
 * * *
 
@@ -55,10 +55,10 @@ We'd like to thank our contest's winners for their contributions. All contributo
 
 * * *
 
-[![We want you](https://airbyte.com/images/community/newsletter/bodies/2021/02/We-want-you.png)](https://docs.airbyte.io/career-and-open-positions)
+[![We want you](https://airbyte.com/images/community/newsletter/bodies/2021/02/We-want-you.png)](https://airbyte.com/company/careers)
 
-[**We're recruiting several senior engineers and a dev advocate!**](https://docs.airbyte.io/career-and-open-positions)
+[**We're recruiting several senior engineers and a dev advocate!**](https://airbyte.com/company/careers)
 
 If you're interested to join our team and commoditize data integration with us, check our job offers. Maybe you know someone who can be? A note: **we're full remote!**
 
-[**CHECK OUR JOB OFFERS>>**](https://docs.airbyte.io/career-and-open-positions)
+[**CHECK OUR JOB OFFERS>>**](https://airbyte.com/company/careers)

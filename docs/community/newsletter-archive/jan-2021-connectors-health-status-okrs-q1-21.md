@@ -17,23 +17,23 @@ We wanted to thank our contributors for their help in improving Airbyte. They bu
 
 * * *
 
-[![New sources on Airbyte Newsletter 7](https://airbyte.com/images/community/newsletter/bodies/2021/01/New-sources-on-Airbyte_Newsletter-7.png)](https://docs.airbyte.io/changelog/platform?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-07-20210120)
+[![New sources on Airbyte Newsletter 7](https://airbyte.com/images/community/newsletter/bodies/2021/01/New-sources-on-Airbyte_Newsletter-7.png)](https://docs.airbyte.com/release_notes)
 
-[**New sources: Plaid, Looker, Tempo, App Store**](https://docs.airbyte.io/changelog/platform?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-07-20210120)
+[**New sources: Plaid, Looker, Tempo, App Store**](https://docs.airbyte.com/release_notes)
 
 Our focus lately has been about strengthening and expanding incremental support across our connectors (50% done). Thanks to the community, we also have some new sources to announce.
 
-[**CHECK THE CHANGELOG >>**](https://docs.airbyte.io/changelog/platform?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-07-20210120)
+[**CHECK THE CHANGELOG >>**](https://docs.airbyte.com/release_notes)
 
 * * *
 
-[![Connector Health Newsletter 7](https://airbyte.com/images/community/newsletter/bodies/2021/01/Connector-Health_Newsletter-7.png)](https://docs.airbyte.io/integrations/connector-health?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-07-20210119)
+[![Connector Health Newsletter 7](https://airbyte.com/images/community/newsletter/bodies/2021/01/Connector-Health_Newsletter-7.png)](https://docs.airbyte.com/integrations/connector-support-levels)
 
-[**Our connectors' health status**](https://docs.airbyte.io/integrations/connector-health?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-07-20210119)
+[**Our connectors' health status**](https://docs.airbyte.com/integrations/connector-support-levels)
 
 You can now see the health status for all our connectors. Our focus for this quarter will be to strengthen our connectors to become production-ready.
 
-[**CHECK THE CONNECTORS' HEALTH STATUS**](https://docs.airbyte.io/integrations/connector-health?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-07-20210119)
+[**CHECK THE CONNECTORS' HEALTH STATUS**](https://docs.airbyte.com/integrations/connector-support-levels)
 
 * * *
 

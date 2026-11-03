@@ -17,13 +17,13 @@ Until 12/23, build connectors and get a chance to have a mechanical keyboard! We
 
 * * *
 
-[![Redshift new integration](https://airbyte.com/images/community/newsletter/bodies/2020/12/Redshift_new-integration.png)](https://docs.airbyte.io/integrations/integrations-changelog?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-05%20-20201207%09)
+![Redshift new integration](https://airbyte.com/images/community/newsletter/bodies/2020/12/Redshift_new-integration.png)
 
-[**Redshift and Panoply are in the house!**](https://docs.airbyte.io/integrations/integrations-changelog?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-05%20-20201207)
+**Redshift and Panoply are in the house!**
 
 We added 2 destinations for our connectors: Redshift and Panoply. S3 is the main next one. On our way to ubiquity!
 
-[**CHECK THE CONNECTOR CHANGELOG >>**](https://docs.airbyte.io/integrations/integrations-changelog?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-05%20-20201207)
+<strong>CHECK THE CONNECTOR CHANGELOG &gt;&gt;</strong>
 
 * * *
 

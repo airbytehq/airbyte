@@ -17,13 +17,13 @@ Here's the process we went through for our Series-A, including the deck we showe
 
 * * *
 
-[![60c18daf9d52607e6043c820 Progress in beginning of end of May for Airbyte](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60c18daf9d52607e6043c820_Progress%20in%20beginning%20of%20end%20of%20May%20for%20Airbyte.png)](https://docs.airbyte.io/project-overview/changelog/connectors)
+![60c18daf9d52607e6043c820 Progress in beginning of end of May for Airbyte](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60c18daf9d52607e6043c820_Progress%20in%20beginning%20of%20end%20of%20May%20for%20Airbyte.png)
 
-[**Our Progress the past 2 weeks: S3, Amplitude, Posthog, Harvest, Okta...**](https://docs.airbyte.io/project-overview/changelog/connectors)
+**Our Progress the past 2 weeks: S3, Amplitude, Posthog, Harvest, Okta...**
 
 New destination: S3 is available! New sources: Amplitude, Posthog, Harvest, Okta, Amazon Partner Seller... We will soon release our first-class integration with Kubernetes!
 
-[**CHECK THE CHANGELOG >>**](https://docs.airbyte.io/project-overview/changelog/connectors)
+<strong>CHECK THE CHANGELOG &gt;&gt;</strong>
 
 * * *
 

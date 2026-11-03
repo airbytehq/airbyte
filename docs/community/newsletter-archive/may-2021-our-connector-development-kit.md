@@ -17,13 +17,13 @@ The CDK removes 75% of the code needed to build a new connector, all the repeate
 
 * * *
 
-[![Progress in April for Airbyte for Airbyte v2](https://airbyte.com/images/community/newsletter/bodies/2021/05/Progress-in-April-for-Airbyte-for-Airbyte-v2.png)](https://docs.airbyte.io/changelog/connectors)
+![Progress in April for Airbyte for Airbyte v2](https://airbyte.com/images/community/newsletter/bodies/2021/05/Progress-in-April-for-Airbyte-for-Airbyte-v2.png)
 
-[**Our progress in April: MySQL, Iterable, Quickbooks, Zoho, Smartsheets...**](https://docs.airbyte.io/changelog/connectors)
+**Our progress in April: MySQL, Iterable, Quickbooks, Zoho, Smartsheets...**
 
 New destinations: MySQL (MSSQL and S3 are coming soon!). New sources: Quickbooks, Iterable, Zendesk Chat and Talk, Appsflyer,... We also made support for larger data sets more mature: better state management, throughput & reliability...
 
-[**CHECK OUR CHANGELOGS >>**](https://docs.airbyte.io/changelog/connectors)
+<strong>CHECK OUR CHANGELOGS &gt;&gt;</strong>
 
 * * *
 

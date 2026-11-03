@@ -17,13 +17,13 @@ Nine new source connectors are coming this week! And we're just getting started.
 
 * * *
 
-[![Snowflake new integration](https://airbyte.com/images/community/newsletter/bodies/2020/11/Snowflake_new-integration.png)](https://docs.airbyte.io/integrations/destinations/snowflake?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-03%20-20201104)
+[![Snowflake new integration](https://airbyte.com/images/community/newsletter/bodies/2020/11/Snowflake_new-integration.png)](https://docs.airbyte.com/integrations/destinations/snowflake)
 
-[**New destination: Snowflake!**](https://docs.airbyte.io/integrations/destinations/snowflake?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-03%20-20201104)
+[**New destination: Snowflake!**](https://docs.airbyte.com/integrations/destinations/snowflake)
 
 Snowflake was our most requested destination. We now have BigQuery, Postgres, CSV, and Snowflake. Redshift is coming next.
 
-[**CHECK THE SNOWFLAKE DOC >>**](https://docs.airbyte.io/integrations/destinations/snowflake?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-03%20-20201104)
+[**CHECK THE SNOWFLAKE DOC >>**](https://docs.airbyte.com/integrations/destinations/snowflake)
 
 * * *
 

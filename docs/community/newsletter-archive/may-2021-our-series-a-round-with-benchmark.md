@@ -17,13 +17,13 @@ Learn everything about our vision behind our Series-A, led by Benchmark, Accel, 
 
 * * *
 
-[![60adc64f47c8255aeb987ed4 Progress in beginning of May for Airbyte v2](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60adc64f47c8255aeb987ed4_Progress%20in%20beginning%20of%20May%20for%20Airbyte%20v2.png)](https://docs.airbyte.io/project-overview/changelog/connectors)
+![60adc64f47c8255aeb987ed4 Progress in beginning of May for Airbyte v2](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60adc64f47c8255aeb987ed4_Progress%20in%20beginning%20of%20May%20for%20Airbyte%20v2.png)
 
-[**Our Progress the past 2 weeks: MSSQL, Clickhouse, Klaviyo, Asana...**](https://docs.airbyte.io/project-overview/changelog/connectors)
+**Our Progress the past 2 weeks: MSSQL, Clickhouse, Klaviyo, Asana...**
 
 New destination: MSSQL (a little birdie told us S3 is coming soon!). New sources: Clickhouse, Klaviyo, Asana, Tempo, Recharge... Also, a LOT of new connectors are being built by the community with the CDK. This is so exciting!
 
-[**CHECK THE CHANGELOG >>**](https://docs.airbyte.io/project-overview/changelog/connectors)
+<strong>CHECK THE CHANGELOG &gt;&gt;</strong>
 
 * * *
 

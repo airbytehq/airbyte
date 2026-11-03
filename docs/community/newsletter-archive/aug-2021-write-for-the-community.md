@@ -37,13 +37,13 @@ We started Airbyte on July 27 2020. One year after, we have 102 connectors, more
 
 * * *
 
-[![6107cadc8c4da8da0912a837 Progress in end of July for Airbyte](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/6107cadc8c4da8da0912a837_Progress%20in%20end%20of%20July%20for%20Airbyte.png)](https://docs.airbyte.io/project-overview/changelog)
+[![6107cadc8c4da8da0912a837 Progress in end of July for Airbyte](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/6107cadc8c4da8da0912a837_Progress%20in%20end%20of%20July%20for%20Airbyte.png)](https://docs.airbyte.com/release_notes)
 
-[**BigQuery, GCS, Kafka, Snapshat, Pipedrive, Prestashop, Typeform & More**](https://docs.airbyte.io/project-overview/changelog)
+[**BigQuery, GCS, Kafka, Snapshat, Pipedrive, Prestashop, Typeform & More**](https://docs.airbyte.com/release_notes)
 
 New destinations with GCS and Kafka. Lots of new sources with BigQuery, Snapshat, Pipedrive, Prestashop, Typeform & a dozen more!
 
-[**Check the changelog >>**](https://docs.airbyte.io/project-overview/changelog)
+[**Check the changelog >>**](https://docs.airbyte.com/release_notes)
 
 * * *
 

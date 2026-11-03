@@ -7,33 +7,33 @@ _Published June 22, 2021. [View on airbyte.com](https://airbyte.com/community/ne
 
 Here are the community news and product updates of the past week.
 
-[![60d121f0e3a4f3642458e26a\_Newsletter\_14\_Kubernetes.png](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60d121f0e3a4f3642458e26a_Newsletter_14_Kubernetes.png)](https://docs.airbyte.io/deploying-airbyte/on-kubernetes)
+[![60d121f0e3a4f3642458e26a\_Newsletter\_14\_Kubernetes.png](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60d121f0e3a4f3642458e26a_Newsletter_14_Kubernetes.png)](https://docs.airbyte.com/platform/deploying-airbyte)
 
-[**Deploy Airbyte in Production With Our First-Class Support of Kubernetes**](https://docs.airbyte.io/deploying-airbyte/on-kubernetes)
+[**Deploy Airbyte in Production With Our First-Class Support of Kubernetes**](https://docs.airbyte.com/platform/deploying-airbyte)
 
 Here's the process we went through for our Series-A, including the deck we showed to the Benchmark parnership for our Series-A. We're on [ProductHunt](https://www.producthunt.com/posts/airbyte-26m-series-a-deck) today, don't hesitate to share your feedback!
 
-[**CHECK OUT THE DOCS >>**](https://docs.airbyte.io/deploying-airbyte/on-kubernetes)
+[**CHECK OUT THE DOCS >>**](https://docs.airbyte.com/platform/deploying-airbyte)
 
 * * *
 
-[![60d121f06058141212fbc5b1 Custom dbt based transformation](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60d121f06058141212fbc5b1_Custom%20dbt-based%20transformation.png)](https://docs.airbyte.io/operator-guides/transformation-and-normalization/transformations-with-airbyte)
+![60d121f06058141212fbc5b1 Custom dbt based transformation](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60d121f06058141212fbc5b1_Custom%20dbt-based%20transformation.png)
 
-[**Custom dbt transformations to get the data in the format you want!**](https://docs.airbyte.io/operator-guides/transformation-and-normalization/transformations-with-airbyte)
+**Custom dbt transformations to get the data in the format you want!**
 
 This tutorial will describe how to push a custom dbt transformation project back to Airbyte to use during syncs.
 
-[**CHECK THE DOCS >>**](https://docs.airbyte.io/operator-guides/transformation-and-normalization/transformations-with-airbyte)
+<strong>CHECK THE DOCS &gt;&gt;</strong>
 
 * * *
 
-[![60d1243efb2397a93efee6ff s3 Parquet and Minio Snowflake as source](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60d1243efb2397a93efee6ff_s3%20Parquet%20and%20Minio_Snowflake%20as%20source.png)](https://docs.airbyte.io/project-overview/changelog/connectors)
+![60d1243efb2397a93efee6ff s3 Parquet and Minio Snowflake as source](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60d1243efb2397a93efee6ff_s3%20Parquet%20and%20Minio_Snowflake%20as%20source.png)
 
-[**Snowflake as source, Parquet and Minio on S3, and more!**](https://docs.airbyte.io/project-overview/changelog/connectors)
+**Snowflake as source, Parquet and Minio on S3, and more!**
 
 We now support alternative S3 with Minio S3. We also support Parquet, and Snowflake can now be leveraged as a source connector!
 
-[**CHECK OUR PROGRESS >>**](https://docs.airbyte.io/project-overview/changelog/connectors)
+<strong>CHECK OUR PROGRESS &gt;&gt;</strong>
 
 * * *
 

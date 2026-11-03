@@ -27,15 +27,15 @@ By being cloud-based and closed source, current solutions are limited and limiti
 
 * * *
 
-[![New admin section Airbyte](https://airbyte.com/images/community/newsletter/bodies/2020/10/New-admin-section_Airbyte.png)](https://docs.airbyte.io/changelog?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-01%20-20201007)
+[![New admin section Airbyte](https://airbyte.com/images/community/newsletter/bodies/2020/10/New-admin-section_Airbyte.png)](https://docs.airbyte.com/release_notes)
 
-[**Our Roadmap for the Next Month**](https://docs.airbyte.io/changelog?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-01%20-20201007)
+[**Our Roadmap for the Next Month**](https://docs.airbyte.com/release_notes)
 
 \- A new Admin section to let you add your own connectors and upgrade the ones you use
 \- The doc to start contributing your own connectors
 \- A lot of new destination and source connectors!
 
-[**Check our coming releases >>**](https://docs.airbyte.io/changelog?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-01%20-20201007)
+[**Check our coming releases >>**](https://docs.airbyte.com/release_notes)
 
 * * *
 

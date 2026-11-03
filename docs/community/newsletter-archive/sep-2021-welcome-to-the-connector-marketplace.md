@@ -47,13 +47,13 @@ Over the next few weeks, we're looking to massively improve documentation and wa
 
 * * *
 
-[![613b1e0ffe054ff193aee800 Progress in August for Airbyte](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/613b1e0ffe054ff193aee800_Progress%20in%20August%20for%20Airbyte.png)](https://docs.airbyte.io/project-overview/changelog)
+[![613b1e0ffe054ff193aee800 Progress in August for Airbyte](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/613b1e0ffe054ff193aee800_Progress%20in%20August%20for%20Airbyte.png)](https://docs.airbyte.com/release_notes)
 
-[**MongoDB, DynamoDB, Bing Ads, Amazon Ads, BambooHR, Facebook Pages...**](https://docs.airbyte.io/project-overview/changelog)
+[**MongoDB, DynamoDB, Bing Ads, Amazon Ads, BambooHR, Facebook Pages...**](https://docs.airbyte.com/release_notes)
 
 In the last month, we supported 30 new connectors, including a few significant ones. Check it out!
 
-[**Check the changelog >>**](https://docs.airbyte.io/project-overview/changelog)
+[**Check the changelog >>**](https://docs.airbyte.com/release_notes)
 
 ## Community Highlights
 

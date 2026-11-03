@@ -7,23 +7,23 @@ _Published December 17, 2020. [View on airbyte.com](https://airbyte.com/communit
 
 Here are the community news and product updates of the past week.
 
-[![Incremental-v1\_Append-only-v2.png](https://airbyte.com/images/community/newsletter/bodies/2020/12/Incremental-v1_Append-only-v2.png)](https://docs.airbyte.io/architecture/incremental?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-06%20-20201216)
+[![Incremental-v1\_Append-only-v2.png](https://airbyte.com/images/community/newsletter/bodies/2020/12/Incremental-v1_Append-only-v2.png)](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
 
-[**We've released our 1st version of Incremental replication!**](https://docs.airbyte.io/architecture/incremental?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-06%20-20201216)
+[**We've released our 1st version of Incremental replication!**](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
 
 Our append incremental sync is supported across all our destinations, and 10 source connectors (including Postgres, MySQL, Intercom, Zendesk, Stripe, Twilio, Marketo, Shopify, GitHub, etc). We will expand it to all sources in the coming weeks.
 
-[**CHECK OUT THE INCREMENTAL DOCS >>**](https://docs.airbyte.io/architecture/incremental?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-06%20-20201216)
+[**CHECK OUT THE INCREMENTAL DOCS >>**](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
 
 * * *
 
-[![New sources on Airbyte Newsletter 6 v2](https://airbyte.com/images/community/newsletter/bodies/2020/12/New-sources-on-Airbyte_Newsletter-6-v2.png)](https://docs.airbyte.io/integrations/integrations-changelog?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-06%20-20201216%09)
+![New sources on Airbyte Newsletter 6 v2](https://airbyte.com/images/community/newsletter/bodies/2020/12/New-sources-on-Airbyte_Newsletter-6-v2.png)
 
-[**New sources: Intercom, Mixpanel, Jira, Zoom**](https://docs.airbyte.io/integrations/integrations-changelog?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-06%20-20201216)
+<strong>New sources: Intercom, Mixpanel, Jira, Zoom</strong>
 
 4 new sources that get us to 41 sources in total. On our way to 50 by the end of the year!
 
-[**CHECK THE CONNECTOR CHANGELOG >>**](https://docs.airbyte.io/integrations/integrations-changelog?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-06%20-20201216)
+<strong>CHECK THE CONNECTOR CHANGELOG &gt;&gt;</strong>
 
 * * *
 

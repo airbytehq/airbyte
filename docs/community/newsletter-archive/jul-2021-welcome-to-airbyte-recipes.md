@@ -17,13 +17,13 @@ Recipes are short tutorials to help you best leverage your data using Airbyte am
 
 * * *
 
-[![60e833f4f334145dd783c164 Progress in end of June for Airbyte](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60e833f4f334145dd783c164_Progress%20in%20end%20of%20June%20for%20Airbyte.png)](https://docs.airbyte.io/project-overview/changelog)
+[![60e833f4f334145dd783c164 Progress in end of June for Airbyte](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60e833f4f334145dd783c164_Progress%20in%20end%20of%20June%20for%20Airbyte.png)](https://docs.airbyte.com/release_notes)
 
-[**Google Pubsub, CockroachDB, IBM Db2, Square, Paypal, SurveyMonkey & more**](https://docs.airbyte.io/project-overview/changelog)
+[**Google Pubsub, CockroachDB, IBM Db2, Square, Paypal, SurveyMonkey & more**](https://docs.airbyte.com/release_notes)
 
 New destination with Google Pubsub. Lots of new sources with CockroachDB, IBM Db2, Square, Paypal, SurveyMonkey, and AWS CloudTrail!
 
-[**Check the changelog >>**](https://docs.airbyte.io/project-overview/changelog)
+[**Check the changelog >>**](https://docs.airbyte.com/release_notes)
 
 * * *
 

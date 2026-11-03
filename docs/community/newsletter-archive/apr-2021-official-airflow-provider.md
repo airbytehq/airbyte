@@ -17,23 +17,23 @@ Thanks to [@marcosmarxm](https://github.com/marcosmarxm), Airbyte has been relea
 
 * * *
 
-[![Progress in March 2](https://airbyte.com/images/community/newsletter/bodies/2021/04/Progress-in-March_2.png)](https://docs.airbyte.io/changelog/connectors)
+![Progress in March 2](https://airbyte.com/images/community/newsletter/bodies/2021/04/Progress-in-March_2.png)
 
-[**Our progress in March: Oracle DB, MongoDB, Instagram...**](https://docs.airbyte.io/changelog/connectors)
+**Our progress in March: Oracle DB, MongoDB, Instagram...**
 
 Better core and connector upgrade experience. Some new connectors, such as Oracle DB, MongoDB, Gitlab, Instagram, Google Audit logs ...
 
-[**CHECK OUR CHANGELOGS >>**](https://docs.airbyte.io/changelog/connectors)
+<strong>CHECK OUR CHANGELOGS &gt;&gt;</strong>
 
 * * *
 
-[![Change Data Capture Postgres](https://airbyte.com/images/community/newsletter/bodies/2021/04/Change-Data-Capture-Postgres.png)](https://docs.airbyte.io/architecture/cdc)
+[![Change Data Capture Postgres](https://airbyte.com/images/community/newsletter/bodies/2021/04/Change-Data-Capture-Postgres.png)](https://docs.airbyte.com/platform/understanding-airbyte/cdc)
 
-[**Change Data Capture (CDC) for Postgres!**](https://docs.airbyte.io/architecture/cdc)
+[**Change Data Capture (CDC) for Postgres!**](https://docs.airbyte.com/platform/understanding-airbyte/cdc)
 
 Thanks to [@jrhizor](https://github.com/jrhizor) and [@cgardens](https://github.com/cgardens), we now support CDC for Postgres. This is a first step, as we will start supporting for other databases this month: MySQL, MSSQL, etc.
 
-[**CHECK THE CDC DOCS >>**](https://docs.airbyte.io/architecture/cdc)
+[**CHECK THE CDC DOCS >>**](https://docs.airbyte.com/platform/understanding-airbyte/cdc)
 
 * * *
 
@@ -77,10 +77,10 @@ Contribute source connectors and win $500 worth of prizes (your choice between d
 
 ## Our new Tutorials
 
-[![Visualizing the Time Spent by Your Team in Zoom Calls](https://airbyte.com/images/community/newsletter/bodies/2021/04/Visualizing-the-Time-Spent-by-Your-Team-in-Zoom-Calls.jpg)](https://docs.airbyte.io/tutorials/zoom-activity-dashboard)
+![Visualizing the Time Spent by Your Team in Zoom Calls](https://airbyte.com/images/community/newsletter/bodies/2021/04/Visualizing-the-Time-Spent-by-Your-Team-in-Zoom-Calls.jpg)
 
-[**How to build a Zoom activity dashboard with Zoom meetings and webinar metrics**](https://docs.airbyte.io/tutorials/zoom-activity-dashboard)
+<strong>How to build a Zoom activity dashboard with Zoom meetings and webinar metrics</strong>
 
 Here's a short tutorial showing how we're leveraging Airbyte and Tableau to visualize the activities and impact of Zoom meetings and webinars
 
-[**CHECK THE TUTORIAL>>**](https://docs.airbyte.io/tutorials/zoom-activity-dashboard)
+<strong>CHECK THE TUTORIAL&gt;&gt;</strong>
