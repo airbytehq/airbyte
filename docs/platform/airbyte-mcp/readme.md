@@ -37,7 +37,7 @@ Direct reads also count toward the API rate limits of the source you read from, 
 
 - The hosted Airbyte MCP server works with all editions of Airbyte Cloud and Airbyte Flex. You can [run the Airbyte MCP locally with self-managed Airbyte Core](self-managed.md), but there are known issues with local deployments.
 - Direct reads and searches are read-only. Your agent can retrieve records, but it can't create, update, or delete records in a source or destination through these tools.
-- Direct reads only work with [supported connectors](../context-layer/readme.md#supported-connectors), and only after an organization admin [enables the context layer](../context-layer/manage-access.md).
+- Direct reads only work with [supported connectors](../context-layer/agent-access.md#supported-connectors), and only after an organization admin [enables agent access](../context-layer/manage-access.md#manage-agent-access).
 - Direct reads will not work with connectors whose secrets are stored in an [external secrets manager](../operating-airbyte/external-secrets.md).
 
 ## Feedback

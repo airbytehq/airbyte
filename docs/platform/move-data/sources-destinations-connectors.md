@@ -36,7 +36,7 @@ A connector can be a data replication connector, an agent connector, or both. Fo
 
 Each connector's page shows its types under **Connector type**.
 
-Agent access and search through the context layer are available only in Airbyte Cloud, not in self-managed Airbyte Core or Enterprise deployments.
+Agent access and search through the context layer are available only in Airbyte Cloud, not in self-managed Airbyte Core or Enterprise deployments. In workspaces on customer-owned Enterprise Flex data planes, you can't enable agent access for sources or destinations, and search isn't available for connections.
 
 In Airbyte Cloud, the [context layer](/platform/context-layer) lets you use agent connectors for direct reads and search through the [Airbyte MCP](/platform/airbyte-mcp). When a source or destination supports both connector types, agent access uses the same stored credentials as data replication. Direct reads support `list`, `get`, and the connector's own API `search` when available. They don't affect your syncs.
 

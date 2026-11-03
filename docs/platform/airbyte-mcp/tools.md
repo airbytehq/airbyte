@@ -86,7 +86,7 @@ These tools display interactive views in clients that support [MCP Apps](https:/
 
 ## Direct reads
 
-These tools read data directly from sources and destinations. They only work after an organization admin [enables the context layer](../context-layer/manage-access.md) and turns on agent access for the source or destination. They're read-only. They're only available in Airbyte Cloud.
+These tools read data directly from sources and destinations. They only work after an organization admin [enables agent access](../context-layer/manage-access.md#manage-agent-access) and agent access is on for the source or destination. They're read-only. They're only available in Airbyte Cloud. See [Agent access limitations](../context-layer/agent-access.md#limitations).
 
 | Tool | Description |
 | :--- | :--- |
@@ -118,7 +118,29 @@ These tools work with the [context layer search index](../context-layer/search.m
 | `get_cloud_search_status` | Check indexed streams and backfill progress for a source or destination. |
 | `request_cloud_search_index_backfill` | Request indexing of data already in a connection's destination. Supports Snowflake and BigQuery; uses destination compute. |
 
-Searches count toward the same monthly usage limit as direct reads. For parameters, examples, and setup, see [Search your data](../context-layer/search.md).
+Searches count toward the same monthly usage limit as direct reads. For examples and setup, see [Search your data](../context-layer/search.md).
+
+### Search query parameters
+
+The agent supplies these parameters to `execute_external_search_query`.
+
+| Parameter | What it controls |
+| :--- | :--- |
+| `prompt` | The words or question to search for. |
+| `search_type` | The mode: `keyword`, `semantic`, or `hybrid`. Defaults to `hybrid`. |
+| `limit` | The maximum number of results, from 1 to 100. Defaults to 10. |
+| `streams` | The streams to search. Omit it to search every indexed stream, or pass an empty list to search none. Each entry includes `stream_name` and can include `namespace` to distinguish streams with the same name. |
+| `streams[].source_id` | The source that owns a stream. Required for each stream in a destination search. Optional in a source search, where it must match the source you're searching. |
+| `streams[].fields` | The fields to return in each result's `entity_data`. This is an output projection, not a match filter: other indexed fields can still match and appear in the context. Omit it for the full indexed payload, or use an empty list for no payload fields. |
+| `lookback_seconds` | Restrict results to records whose cursor falls within this many seconds. |
+| `min_similarity` | The minimum semantic similarity for a match. Applies to semantic and hybrid searches only. |
+| `max_similarity_diff` | The maximum similarity gap from the best semantic match in an index. Applies to semantic and hybrid searches only. |
+| `max_context_chars` | Limit the text context returned for each result. A shortened keyword context stays centered on the match. |
+| `destination_id` | Choose which destination's index to use for a source search. Required when the source syncs to multiple enabled destinations. |
+
+### Backfill parameters
+
+For `request_cloud_search_index_backfill`, provide the connection ID. Optionally, provide `streams` to backfill specific selected streams and `backfill_start_time` to limit history. Omit `streams` to backfill every selected stream, or omit `backfill_start_time` for full history. Backfills use destination compute but don't change destination records.
 
 ## Connector registry and documentation
 
