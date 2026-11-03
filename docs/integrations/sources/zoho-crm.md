@@ -190,6 +190,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.4.0 | 2026-11-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to Python 3.13 base image and airbyte-cdk 7 |
 | 0.3.8 | 2026-11-03 | [90811](https://github.com/airbytehq/airbyte/pull/90811) | Update dependencies |
 | 0.3.7 | 2026-11-02 | [88944](https://github.com/airbytehq/airbyte/pull/88944) | Stop declaring picklist values as a closed `enum` in stream schemas, as records keep values removed from a picklist |
 | 0.3.6 | 2026-10-27 | [90099](https://github.com/airbytehq/airbyte/pull/90099) | Update dependencies |
