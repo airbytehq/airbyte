@@ -754,7 +754,10 @@ spec:
       credentials:
         type: object
         title: Authentication
-        description: Choose how to authenticate to Aircall.
+        description: >-
+          Choose how to authenticate to Aircall. With OAuth 2.0, Aircall returns
+          only the webhooks created with Airbyte's token, so the webhooks stream
+          is usually empty; use API Key to sync your company's webhooks.
         order: 0
         oneOf:
           - type: object

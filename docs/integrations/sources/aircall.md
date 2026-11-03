@@ -13,7 +13,7 @@ This page contains the setup guide and reference information for the [Aircall](h
 
 ### Step 1: Set up Aircall
 
-With OAuth 2.0, there is nothing to set up in Aircall: you authorize Airbyte's Aircall app in Step 2.
+On Airbyte Cloud, OAuth 2.0 needs nothing set up in Aircall: you authorize Airbyte's Aircall app in Step 2. On Airbyte Open Source, OAuth 2.0 needs your own Aircall Technology Partner app.
 
 To authenticate with an API key, create one:
 
@@ -63,6 +63,8 @@ To authenticate with an API key, create one:
 
 Connections created before version 0.5.0 also have a Start date. The connector no longer uses it, and the form hides it.
 
+Sources created before version 1.1.0 move their API ID and API token under **API Key** the next time the source runs. If you edit such a source before that, the form asks for the API key again, so click **Retest saved source** or run a sync first.
+
 #### Configure the source with the Airbyte API or Terraform
 
 Before version 1.1.0, the API ID and API token were top-level fields. Airbyte moves existing configurations under **API Key** automatically. If you manage the source through the Airbyte API or Terraform, put the settings inside the `credentials` object:
@@ -70,7 +72,7 @@ Before version 1.1.0, the API ID and API token were top-level fields. Airbyte mo
 - For OAuth 2.0, set `auth_type` to `oauth2.0` and provide `client_id`, `client_secret` and `access_token`.
 - For an API key, set `auth_type` to `api_key` and provide `api_id` and `api_token`.
 
-A configuration with only the old top-level `api_id` and `api_token` fields is rejected. Once `credentials.auth_type` is set, the connector removes those top-level fields.
+A configuration with only the old top-level `api_id` and `api_token` fields is rejected. Don't send them together with `credentials` either: the connector ignores them and removes them on its next run.
 
 ## Supported sync modes
 
@@ -118,7 +120,7 @@ Notes:
 - `company` has no primary key. Aircall returns a single company object with no identifier ([Retrieve Company information](https://developers.aircall.io/api-references/#retrieve-company-information)).
 - `contacts` returns shared contacts only ([List all Contacts](https://developers.aircall.io/api-references/#list-all-contacts)).
 - `users` reads the [User V2 API](https://developers.aircall.io/api-references/#user-v2-overview).
-- `webhooks` uses `webhook_id`, the UUID that identifies a webhook. Aircall treats the integer `id` as the old identifier ([List all Webhooks](https://developers.aircall.io/api-references/#list-all-webhooks)).
+- `webhooks` uses `webhook_id`, the UUID that identifies a webhook. Aircall treats the integer `id` as the old identifier ([List all Webhooks](https://developers.aircall.io/api-references/#list-all-webhooks)). With OAuth 2.0, Aircall returns only the webhooks created with Airbyte's token, so the stream is usually empty; authenticate with an API key to sync your company's webhooks ([Webhook API overview](https://developers.aircall.io/api-references/#webhook-api-overview)).
 - `conversation_engagements` returns the calls, messages, WhatsApp messages, assignments, unassignments, closes and reopens of each conversation. The first sync and every full refresh make at least one request per conversation. Each incremental sync re-reads the engagements of every conversation active since three days before the previous sync, so syncing more often than daily repeats most of that work.
 - `whatsapp_templates` returns the templates of each number, with `number_id` identifying the number.
 

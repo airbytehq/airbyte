@@ -49,6 +49,11 @@ data:
               - numbers
               - teams
               - users
+    unsafeDowngrades:
+      1.1.0:
+        message: >-
+          Version 1.1.0 moves the API ID and API token of saved configurations into `credentials`, and earlier
+          versions cannot read the migrated configuration.
   documentationUrl: https://docs.airbyte.com/integrations/sources/aircall
   tags:
     - cdk:low-code
