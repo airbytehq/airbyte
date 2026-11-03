@@ -3,10 +3,10 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "board_issues",
-        "namespace": null
+        "name": "board_issues"
       },
       "stream_state": {
+        "use_global_cursor": false,
         "states": [
           {
             "partition": {
@@ -14,7 +14,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "updated": "2222-10-12T13:43:50.735-0700"
+              "updated": "2222-10-12T13:43:50-0700"
             }
           },
           {
@@ -23,7 +23,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "updated": "2222-07-05T12:57:51.258-0700"
+              "updated": "2222-07-05T12:57:51-0700"
             }
           },
           {
@@ -32,14 +32,25 @@
               "parent_slice": {}
             },
             "cursor": {
-              "updated": "2222-05-08T03:04:45.139-0700"
+              "updated": "2222-05-08T03:04:45-0700"
+            }
+          },
+          {
+            "partition": {
+              "board_id": 62,
+              "parent_slice": {}
+            },
+            "cursor": {
+              "updated": "2222-09-24T11:40:32-0700"
             }
           }
-        ]
+        ],
+        "state": {
+          "updated": "2222-09-24T11:40:32-0700"
+        },
+        "lookback_window": 4,
+        "parent_state": {}
       }
-    },
-    "sourceStats": {
-      "recordCount": 1.0
     }
   },
   {

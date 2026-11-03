@@ -1,0 +1,23 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "global_suppressions" },
+      "stream_state": { "created": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "suppression_group_members" },
+      "stream_state": { "created_at": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "bounces" },
+      "stream_state": { "created": "4070908800" }
+    }
+  }
+]
