@@ -6,6 +6,10 @@ The `PinterestAnalyticsBackoffStrategy` extracts the retry wait time from the re
 
 **Why this matters:** Standard retry logic that only reads HTTP headers will miss Pinterest's retry guidance entirely and fall back to exponential backoff. The connector's regex-based extraction is brittle and will break if Pinterest changes the wording of their error message. If the regex fails to match, it falls back to exponential backoff capped at 120 seconds.
 
+## 2. Targeting Columns Are Returned, Not Requested
+
+Targeting-level reports include `TARGETING_TYPE` and `TARGETING_VALUE` without requesting them, and Pinterest rejects them as request columns, so they are declared in the report schemas only.
+
 ## Incremental Stream Considerations
 
 The Pinterest API supports date-based filtering on analytics endpoints. The connector uses Python custom components referenced from the manifest.

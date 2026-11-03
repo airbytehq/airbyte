@@ -8,6 +8,12 @@ The `PinterestAnalyticsBackoffStrategy` extracts the retry wait time from the re
 
 **Why this matters:** Standard retry logic that only reads HTTP headers will miss Pinterest's retry guidance entirely and fall back to exponential backoff. The connector's regex-based extraction is brittle and will break if Pinterest changes the wording of their error message. If the regex fails to match, it falls back to exponential backoff capped at 120 seconds.
 
+## 2. Targeting Columns Are Returned, Not Requested
+
+Targeting-level async reports (`*_targeting_report` streams and custom reports at a `*_TARGETING` level) come back with `TARGETING_TYPE` and `TARGETING_VALUE` on every row even though the report request never lists them. The report endpoint rejects `TARGETING_TYPE`, `TARGETING_VALUE`, `TARGETING_VALUE_NAME`, `KEYWORD_ID`, `PRODUCT_ITEM_ID` and `ITEM_ID` in `columns` with a 400 (`'<COLUMN>' is not one of [...]`), although Pinterest's OpenAPI `ReportingColumn` enum lists all of them. The endpoint's own allowlist is the list in that 400 message.
+
+**Why this matters:** never add these columns to a report request; it fails report creation for every stream that shares the column list. To expose a column that Pinterest adds on its own, declare it in `reports_schema` and `custom_reports_schema` instead. Destinations build typed columns from the declared schema, so an undeclared column gets no column of its own.
+
 ## Incremental Stream Considerations
 
 The Pinterest API supports date-based filtering on analytics endpoints. The connector uses Python custom components referenced from the manifest.
