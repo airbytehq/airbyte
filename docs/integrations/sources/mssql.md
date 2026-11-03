@@ -508,7 +508,7 @@ feedback on preferred mappings.
 
 ### User-defined alias types
 
-SQL Server lets you create alias types based on a built-in type, for example `CREATE TYPE Fecha FROM datetime`. The connector doesn't map alias types by name. Instead, it uses the JDBC type that the SQL Server driver reports for the column, which comes from the alias's base type.
+SQL Server lets you create alias types based on a built-in type, for example `CREATE TYPE alias_timestamp FROM datetime`. The connector doesn't map alias types by name. Instead, it uses the JDBC type that the SQL Server driver reports for the column, which comes from the alias's base type.
 
 The connector maps aliases over the following base types the same way as the base type itself, including in CDC syncs:
 

@@ -551,10 +551,10 @@ object MsSqlServerDatatypeTestOperations :
                     setupDdl = listOf(aliasType("alias_datetime", "datetime")),
                 ),
                 MsSqlServerDatatypeTestCase(
-                    "dbo.Fecha",
+                    "dbo.ABtime",
                     datetimeValues,
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
-                    setupDdl = listOf(aliasType("Fecha", "datetime")),
+                    setupDdl = listOf(aliasType("ABtime", "datetime")),
                 ),
                 MsSqlServerDatatypeTestCase(
                     "DATETIME2",
