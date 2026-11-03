@@ -126,6 +126,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.1 | 2026-11-03 | [90736](https://github.com/airbytehq/airbyte/pull/90736) | Update dependencies |
 | 1.1.0 | 2026-10-30 | [89563](https://github.com/airbytehq/airbyte/pull/89563) | Sync multiple projects (existing single-project settings are migrated automatically), and add the **Events start date** (`start_date`) and **Events full payload** (`events_full_payload`) options |
 | 1.0.16 | 2026-10-20 | [89398](https://github.com/airbytehq/airbyte/pull/89398) | Update dependencies |
 | 1.0.15 | 2026-10-13 | [88408](https://github.com/airbytehq/airbyte/pull/88408) | Type the `sentry:replay_rage_click_issues` project option as boolean in `project_detail` and `all_projects_detail` |
