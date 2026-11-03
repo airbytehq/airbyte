@@ -40,7 +40,7 @@ Add these granular scopes to your Zoom app. If your app uses Zoom's classic scop
 | Streams | Granular scopes |
 | :------ | :-------------- |
 | All streams (lists account users) | `user:read:list_users:admin` |
-| `meetings`, `meeting_registrants`, `meeting_polls`, `meeting_poll_results`, `meeting_registration_questions`, `report_meetings`, `report_meeting_participants` (lists each user's meetings) | `meeting:read:list_meetings:admin` |
+| `meetings`, `meeting_registrants`, `meeting_polls`, `meeting_poll_results`, `meeting_registration_questions` (lists each user's meetings) | `meeting:read:list_meetings:admin` |
 | `meetings` | `meeting:read:meeting:admin` |
 | `meeting_registrants` | `meeting:read:list_registrants:admin` |
 | `meeting_polls` | `meeting:read:list_polls:admin` |
@@ -133,7 +133,7 @@ A configuration with only the old top-level `account_id`, `client_id`, `client_s
 | Incremental | Yes (`meetings`, `webinars`, `report_meetings`, `report_meeting_participants`, `report_user_meetings`) |
 | Namespaces | No |
 
-`meetings` and `webinars` use `created_at` as the Incremental cursor with a 30-day lookback. Updates to meetings or webinars created more than 30 days ago are not re-read. `report_meetings` uses `end_time`, `report_meeting_participants` uses `meeting_end_time`, and `report_user_meetings` uses `end_time` as their Incremental cursors. `report_webinars`, `report_webinar_participants`, and `report_daily` support Full Refresh only; `report_daily` re-reads approximately the last six months.
+`meetings` and `webinars` use `created_at` as the Incremental cursor with a 30-day lookback. Updates to meetings or webinars created more than 30 days ago are not re-read. `report_meetings` uses `end_time`, `report_meeting_participants` uses `meeting_end_time`, and `report_user_meetings` uses `end_time` as their Incremental cursors. These three streams re-read the last day on each sync. `report_webinars`, `report_webinar_participants`, and `report_daily` support Full Refresh only; `report_daily` re-reads approximately the last six months.
 
 Use Incremental for `report_meetings` and `report_meeting_participants`. A Full Refresh makes one Heavy-rate-limited request per past meeting session in the roughly six-month report window.
 
@@ -175,7 +175,7 @@ Webinar streams require the Zoom Webinars add-on, and `zoom_events` requires a W
 - If Zoom returns code `4711`, the access token lacks a required scope. Add the missing scope from [Required scopes](#required-scopes) to the Zoom app and re-authenticate if you use OAuth2.0. Streams that ignore HTTP `400` responses return no records instead of reporting missing scopes.
 - If Zoom rejects an expired access token with code `124`, the connector refreshes the token and retries the request.
 - Zoom returns active users for the account. Meetings and webinars for inactive or pending users are not synced.
-- Zoom's list endpoints return scheduled, unexpired meetings and webinars. Instant or expired meetings and webinars, and their associated registrants, polls, and reports, are not returned.
+- Zoom's meeting and webinar list endpoints return scheduled, unexpired meetings and webinars. Instant or expired meetings and webinars, and their registrants, polls, and webinar reports, are not returned. `report_meetings` and `report_meeting_participants` read past meeting sessions from `report_user_meetings`, so they include instant and ended meetings.
 - If a user cannot host or schedule meetings, Zoom can return code `3161`; the connector skips that user's meeting partition instead of failing the sync.
 - If a meeting or webinar was deleted or no longer has report data, Zoom can return code `3001`; the connector skips that resource.
 - Some stream requesters ignore HTTP `400` or `404` responses, so those streams can return no records instead of failing. If an expected stream is empty, check your Zoom plan, the host's license, and the scopes on your app.
