@@ -74,6 +74,7 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Run AI Resolve Conflicts
+        id: devin
         uses: airbytehq/devin-action@main
         with:
           comment-id: ${{ inputs.comment-id }}
@@ -97,8 +98,9 @@ jobs:
       # a race with path filters, [skip ci], and resolver outcomes that don't
       # push (SUPERSEDED, ESCALATED). A direct dispatch here removes that race.
       # Only `hyd-chain-v2` PRs are signalled; the handoff's pre-flight re-checks the label.
+      # Skipped when no session started or the wait timed out (devin-action sets status only once the session stops).
       - name: Signal handoff v2 (repository_dispatch)
-        if: always() && inputs.pr != ''
+        if: always() && inputs.pr != '' && steps.devin.outputs.status != ''
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           PR_NUMBER: ${{ inputs.pr }}
