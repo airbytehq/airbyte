@@ -192,7 +192,7 @@ def test_conversations_gateway_403_stays_a_config_error() -> None:
 
         output = _read("conversations", expecting_exception=True)
 
-        assert "Aircall rejected the API ID and API token (HTTP 403)" in _config_error(output).message
+        assert "Aircall returned HTTP 403 for https://api.aircall.io/v1/conversations." in _config_error(output).message
 
 
 def test_conversations_ten_thousand_result_error_is_a_config_error() -> None:
@@ -278,7 +278,7 @@ def test_trackers_gateway_403_stays_a_config_error() -> None:
 
         output = _read("trackers", expecting_exception=True)
 
-        assert "Aircall rejected the API ID and API token (HTTP 403)" in _config_error(output).message
+        assert "Aircall returned HTTP 403 for https://api.aircall.io/v1/trackers." in _config_error(output).message
 
 
 def test_sms_templates_use_per_page_100() -> None:
@@ -332,4 +332,4 @@ def test_whatsapp_templates_gateway_403_stays_a_config_error() -> None:
 
         output = _read("whatsapp_templates", expecting_exception=True)
 
-        assert "Aircall rejected the API ID and API token (HTTP 403)" in _config_error(output).message
+        assert "Aircall returned HTTP 403 for https://api.aircall.io/v1/numbers/1/templates." in _config_error(output).message
