@@ -1,11 +1,9 @@
 ---
-title: "Our Connector Development Kit"
 sidebar_label: "May 2021: Our Connector Development Kit"
-description: "- Most active Slack community on data pipelines - Our 2nd community call on 05/05 - Community articles on using Airbyte"
 ---
 # Our Connector Development Kit
 
-_Published May 12, 2021. [View on airbyte.com](https://mailchi.mp/7e2b6f9daef1/weekly-bytes-learnings-from-soft-launch-and-our-vision-4713497?e=[UNIQID])._
+_Published May 12, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/may-2021-our-connector-development-kit)._
 
 Here are the community news and product updates of the past week.
 

@@ -1,11 +1,9 @@
 ---
-title: "Our Series-A round with Benchmark"
 sidebar_label: "May 2021: Our Series-A round with Benchmark"
-description: "- Most active Slack community on data pipelines - MySQL, MSSQL, Clickhouse, Klaviyo, Asana, etc. - State of Data engineering and more"
 ---
 # Our Series-A round with Benchmark
 
-_Published May 26, 2021. [View on airbyte.com](https://mailchi.mp/451025a2562c/weekly-bytes-learnings-from-soft-launch-and-our-vision-4716953?e=[UNIQID])._
+_Published May 26, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/may-2021-our-series-a-round-with-benchmark)._
 
 Here are the community news and product updates of the past week.
 

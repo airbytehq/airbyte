@@ -1,11 +1,9 @@
 ---
-title: "9 new connectors!"
 sidebar_label: "Nov 2020: 9 new connectors!"
-description: "- Lessons learned from bootstrapping with Singer - How we leveraged Singer - Why every data scientist needs a data engineer"
 ---
 # 9 new connectors!
 
-_Published November 23, 2020. [View on airbyte.com](https://us2.campaign-archive.com/?e=__test_email__&amp;u=79160446c5ea27eec5481dd8d&amp;id=78f2e00e69)._
+_Published November 23, 2020. [View on airbyte.com](https://airbyte.com/community/newsletter/nov-2020-9-new-connectors)._
 
 Here are the community news and product updates of the past week.
 

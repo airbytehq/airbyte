@@ -1,11 +1,9 @@
 ---
-title: "First-Class Support of Kubernetes"
 sidebar_label: "Jun 2021: First-Class Support of Kubernetes"
-description: "- Custom dbt transformations - Why ETL Needs Open Source to Address the Long Tail - How to Become The Next 30 Billion $$$ Data Company"
 ---
 # First-Class Support of Kubernetes
 
-_Published June 22, 2021. [View on airbyte.com](https://mailchi.mp/37eb35474313/weekly-bytes-learnings-from-soft-launch-and-our-vision-5532577)._
+_Published June 22, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/jun-2021-first-class-support-of-kubernetes)._
 
 Here are the community news and product updates of the past week.
 

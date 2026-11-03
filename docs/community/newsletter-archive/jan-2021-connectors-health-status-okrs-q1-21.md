@@ -1,11 +1,9 @@
 ---
-title: "Connectors' health status + OKRs Q1 21"
 sidebar_label: "Jan 2021: Connectors' health status + OKRs Q1 21"
-description: "- 4 new sources: App Store, Plaid, Looker, etc. - Wall for our contributors - History of our logo + mascot"
 ---
 # Connectors' health status + OKRs Q1 21
 
-_Published January 20, 2021. [View on airbyte.com](https://mailchi.mp/6f1c3612e9de/weekly-bytes-learnings-from-soft-launch-and-our-vision-3605990)._
+_Published January 20, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/jan-2021-connectors-health-status-okrs-q1-21)._
 
 Here are the community news and product updates of the past week.
 

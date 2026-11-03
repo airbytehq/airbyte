@@ -1,7 +1,5 @@
 ---
-title: "Launching Agent connectors!"
 sidebar_label: "Dec 2025: Launching Agent connectors!"
-description: "As part of our ongoing work to make agentic systems truly production-ready, Agent Connectors are now available for teams building with agents."
 ---
 # Launching Agent connectors!
 

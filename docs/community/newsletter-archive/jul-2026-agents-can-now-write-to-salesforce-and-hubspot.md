@@ -1,7 +1,5 @@
 ---
-title: "Agents can now write to Salesforce and HubSpot"
 sidebar_label: "Jul 2026: Agents can now write to Salesforce and HubSpot"
-description: "This month, agents got more ways to act on your data, not just read it. Write operations landed in the Salesforce and HubSpot connectors, semantic search arrived for Gong and Linea"
 ---
 # Agents can now write to Salesforce and HubSpot
 

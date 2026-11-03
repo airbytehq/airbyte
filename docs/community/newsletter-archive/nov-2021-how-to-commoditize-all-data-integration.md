@@ -1,11 +1,9 @@
 ---
-title: "How to Commoditize All Data Integration"
 sidebar_label: "Nov 2021: How to Commoditize All Data Integration"
-description: "- Airbyte's October product updates - ETL Pipelines with Airflow - Is Open Source The Way Forward For Data Automation? - Airbyte's explosive growth through community-led approach"
 ---
 # How to Commoditize All Data Integration
 
-_Published November 3, 2021. [View on airbyte.com](https://mailchi.mp/af35a386c493/airbytes-strategy-to-commoditize-all-types-of-data-integration?e=[UNIQID])._
+_Published November 3, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/nov-2021-how-to-commoditize-all-data-integration)._
 
 Here are the community news and product updates of the past week.
 

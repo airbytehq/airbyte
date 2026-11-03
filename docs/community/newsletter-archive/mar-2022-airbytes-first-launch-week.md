@@ -1,11 +1,9 @@
 ---
-title: "Airbyte's First Launch Week"
 sidebar_label: "Mar 2022: Airbyte's First Launch Week"
-description: "- Airbyte's Golang CDK - How to orchestrate your Airbyte jobs With Dagster - Best practices for your dbt Style Guide - How we run database migrations"
 ---
 # Airbyte's First Launch Week
 
-_Published March 3, 2022. [View on airbyte.com](https://airbyte.com/newsletter#)._
+_Published March 3, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/mar-2022-airbytes-first-launch-week)._
 
 [](https://airbyte.com/)
 

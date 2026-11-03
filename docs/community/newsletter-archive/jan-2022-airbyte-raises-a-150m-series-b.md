@@ -1,11 +1,9 @@
 ---
-title: "Airbyte Raises a $150M Series-B"
 sidebar_label: "Jan 2022: Airbyte Raises a $150M Series-B"
-description: "- Announcing Prefect integration - Deploying Airbyte on Kubernetes with Plural.sh - Scaling data pipelines on Kubernetes - Using an ETL framework vs writing yet another ETL script"
 ---
 # Airbyte Raises a $150M Series-B
 
-_Published January 7, 2022. [View on airbyte.com](https://us2.campaign-archive.com/?u=79160446c5ea27eec5481dd8d&amp;id=3a474b044e)._
+_Published January 7, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/jan-2022-airbyte-raises-a-150m-series-b)._
 
 Monthly**Bytes**
 

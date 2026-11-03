@@ -1,11 +1,9 @@
 ---
-title: "Airbyte Public Roadmap"
 sidebar_label: "Apr 2022: Airbyte Public Roadmap"
-description: "- Airbyte acquires Grouparoo - Airbyte Cloud is now available - Test the Airbyte CLI - Announcing our conference: move(data)"
 ---
 # Airbyte Public Roadmap
 
-_Published April 13, 2022. [View on airbyte.com](https://us2.campaign-archive.com/?u=79160446c5ea27eec5481dd8d&amp;id=0aba4e6fa7)._
+_Published April 13, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/apr-2022-airbyte-public-roadmap)._
 
 ## Launch week wrap-up
 

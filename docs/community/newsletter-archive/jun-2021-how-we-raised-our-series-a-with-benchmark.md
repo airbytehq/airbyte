@@ -1,11 +1,9 @@
 ---
-title: "How We Raised our Series-A with Benchmark"
 sidebar_label: "Jun 2021: How We Raised our Series-A with Benchmark"
-description: "- Preset's new Airbyte management tool - S3, Amplitude, Posthog, Harvest, Okta... - Data Engineers Shouldn't Write Airflow Dags"
 ---
 # How We Raised our Series-A with Benchmark
 
-_Published June 10, 2021. [View on airbyte.com](https://mailchi.mp/f2afcfb55b4c/weekly-bytes-learnings-from-soft-launch-and-our-vision-4721625)._
+_Published June 10, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/jun-2021-how-we-raised-our-series-a-with-benchmark)._
 
 Here are the community news and product updates of the past week.
 

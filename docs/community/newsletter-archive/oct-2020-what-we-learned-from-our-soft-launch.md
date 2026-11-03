@@ -1,11 +1,9 @@
 ---
-title: "What we learned from our soft launch"
 sidebar_label: "Oct 2020: What we learned from our soft launch"
-description: "- How we can commoditize data integration"
 ---
 # What we learned from our soft launch
 
-_Published October 8, 2020. [View on airbyte.com](https://mailchi.mp/3406a29975eb/weekly-bytes-learnings-from-soft-launch-and-our-vision)._
+_Published October 8, 2020. [View on airbyte.com](https://airbyte.com/community/newsletter/oct-2020-what-we-learned-from-our-soft-launch)._
 
 Here are the community news and product updates of the past week.
 

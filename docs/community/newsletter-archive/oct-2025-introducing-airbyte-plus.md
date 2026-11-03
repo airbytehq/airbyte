@@ -1,7 +1,5 @@
 ---
-title: "Introducing Airbyte Plus"
 sidebar_label: "Oct 2025: Introducing Airbyte Plus"
-description: "Thanks for reading this installment of the Airbyte Newsletter! We have some incredibly exciting updates to share with you, including:"
 ---
 # Introducing Airbyte Plus
 

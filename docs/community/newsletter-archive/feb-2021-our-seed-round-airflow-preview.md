@@ -1,11 +1,9 @@
 ---
-title: "Our Seed Round + Airflow preview"
 sidebar_label: "Feb 2021: Our Seed Round + Airflow preview"
-description: "- February was a productive stabilization month - Airflow integration coming on their next release - Our first community call on 04/01"
 ---
 # Our Seed Round + Airflow preview
 
-_Published February 12, 2021. [View on airbyte.com](https://mailchi.mp/e00e6b29dd3b/weekly-bytes-learnings-from-soft-launch-and-our-vision-3757130?e=0afbbb9bec)._
+_Published February 12, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/feb-2021-our-seed-round-airflow-preview)._
 
 Here are the community news and product updates of the past week.
 

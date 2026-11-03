@@ -1,11 +1,9 @@
 ---
-title: "Connector reliability as the primary focus"
 sidebar_label: "Dec 2021: Connector reliability as the primary focus"
-description: "- Airbyte's November product updates - Build a real time dashboard using a decentralized platform - Launching a Docker-based modern open-source data stack - Build a single customer view with open-source tools"
 ---
 # Connector reliability as the primary focus
 
-_Published December 6, 2021. [View on airbyte.com](https://mailchi.mp/5532da778bb2/airbyte-november-updates-hacktoberfest-results-prefect-community-call?e=[UNIQID])._
+_Published December 6, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/dec-2021-connector-reliability-as-the-primary-focus)._
 
 Monthly**Bytes**
 

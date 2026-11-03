@@ -1,11 +1,9 @@
 ---
-title: "The Deck We Used to Raise Our Series-B"
 sidebar_label: "Feb 2022: The Deck We Used to Raise Our Series-B"
-description: "- Announcing Dagster integration - Airbyte's open referral program - Replicate Salesforce data to BigQuery - How to collect behavioral data? A guide for data engineers"
 ---
 # The Deck We Used to Raise Our Series-B
 
-_Published February 3, 2022. [View on airbyte.com](https://us2.campaign-archive.com/?u=79160446c5ea27eec5481dd8d&amp;id=0129123786)._
+_Published February 3, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/feb-2022-the-deck-we-used-to-raise-our-series-b)._
 
 Monthly**Bytes**
 

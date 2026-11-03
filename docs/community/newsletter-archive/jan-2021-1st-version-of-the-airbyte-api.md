@@ -1,11 +1,9 @@
 ---
-title: "1st version of the Airbyte API"
 sidebar_label: "Jan 2021: 1st version of the Airbyte API"
-description: "- The 1st version of the API documentation - The modern analytics stack - Strengthening connectors + Meilisearch"
 ---
 # 1st version of the Airbyte API
 
-_Published January 18, 2021. [View on airbyte.com](https://mailchi.mp/bdd1ba8b4200/weekly-bytes-learnings-from-soft-launch-and-our-vision-3746738?e=%5BUNIQID%5D)._
+_Published January 18, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/jan-2021-1st-version-of-the-airbyte-api)._
 
 Here are the community news and product updates of the past week.
 

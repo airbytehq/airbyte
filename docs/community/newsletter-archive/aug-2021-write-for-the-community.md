@@ -1,11 +1,9 @@
 ---
-title: "Write for the community!"
 sidebar_label: "Aug 2021: Write for the community!"
-description: "- New contributor page - Airbyte Turns 1! - Setting up Slack notifications for connection failures"
 ---
 # Write for the community!
 
-_Published August 11, 2021. [View on airbyte.com](https://mailchi.mp/19f57623d1f2/weekly-bytes-learnings-from-soft-launch-and-our-vision-5627956?e=[UNIQID])._
+_Published August 11, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/aug-2021-write-for-the-community)._
 
 Here are the community news and product updates of the past week.
 

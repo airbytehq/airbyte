@@ -1,11 +1,9 @@
 ---
-title: "Our progress in 2022"
 sidebar_label: "Jun 2022: Our progress in 2022"
-description: "- Community call from Datacoves - Deploy Airbyte on Kubernetes - Data engineering guides - Meet Airbyte Head of Engineering"
 ---
 # Our progress in 2022
 
-_Published June 2, 2022. [View on airbyte.com](https://mailchi.mp/2bc4884cc43e/airbyte-progress-in-2022-deploying-a-data-stack-data-guides)._
+_Published June 2, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/jun-2022-our-progress-in-2022)._
 
 Monthly**Bytes**
 

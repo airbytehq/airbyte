@@ -1,11 +1,9 @@
 ---
-title: "10 more new connectors!"
 sidebar_label: "Dec 2020: 10 more new connectors!"
-description: "- 1st Airbyte Contest - Replicating Salesforce data to Snowflake in 2 min"
 ---
 # 10 more new connectors!
 
-_Published December 7, 2020. [View on airbyte.com](https://us2.campaign-archive.com/?e=__test_email__&amp;u=79160446c5ea27eec5481dd8d&amp;id=22d937222e)._
+_Published December 7, 2020. [View on airbyte.com](https://airbyte.com/community/newsletter/dec-2020-10-more-new-connectors)._
 
 Here are the community news and product updates of the past week.
 

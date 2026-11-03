@@ -1,11 +1,9 @@
 ---
-title: "Release of Incremental - Append!"
 sidebar_label: "Dec 2020: Release of Incremental - Append!"
-description: "- 4 new sources: Intercom, Mixpanel, Jira, etc. - Name for our mascot!"
 ---
 # Release of Incremental - Append!
 
-_Published December 17, 2020. [View on airbyte.com](https://mailchi.mp/2464471f01d6/weekly-bytes-learnings-from-soft-launch-and-our-vision-3594094)._
+_Published December 17, 2020. [View on airbyte.com](https://airbyte.com/community/newsletter/dec-2020-release-of-incremental-append)._
 
 Here are the community news and product updates of the past week.
 

@@ -1,11 +1,9 @@
 ---
-title: "Official Airflow Provider"
 sidebar_label: "Apr 2021: Official Airflow Provider"
-description: "- Change Data Capture for Postgres - Our progress with OracleDB, MongoDB, Instagram - Our performance on our Q1 OKRs + Q2 OKRs"
 ---
 # Official Airflow Provider
 
-_Published April 13, 2021. [View on airbyte.com](https://mailchi.mp/58e11f8e65b7/weekly-bytes-learnings-from-soft-launch-and-our-vision-4707010?e=[UNIQID])._
+_Published April 13, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/apr-2021-official-airflow-provider)._
 
 Here are the community news and product updates of the past week.
 

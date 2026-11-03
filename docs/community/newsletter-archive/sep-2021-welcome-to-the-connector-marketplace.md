@@ -1,11 +1,9 @@
 ---
-title: "Welcome to the Connector Marketplace!"
 sidebar_label: "Sep 2021: Welcome to the Connector Marketplace!"
-description: "- New catalog of 120+ connectors - A guide to database replication with open source - The Data Engineering Cookbook"
 ---
 # Welcome to the Connector Marketplace!
 
-_Published September 14, 2021. [View on airbyte.com](https://mailchi.mp/6a873282715c/weekly-bytes-learnings-from-soft-launch-and-our-vision-5653448?e=[UNIQID])._
+_Published September 14, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/sep-2021-welcome-to-the-connector-marketplace)._
 
 Here are the community news and product updates of the past week.
 

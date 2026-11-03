@@ -1,11 +1,9 @@
 ---
-title: "Build Go based connectors"
 sidebar_label: "Apr 2022: Build Go based connectors"
-description: "- SQL vs Python for data analysis - Snowflake data warehouse architecture - Build a real-time data analytics pipeline - lakeFS and Materialize integrations"
 ---
 # Build Go based connectors
 
-_Published April 1, 2022. [View on airbyte.com](https://mailchi.mp/d3e95d7f52c1/launch-week-elt-best-practices-lafefs-and-materialize-integrations)._
+_Published April 1, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/apr-2022-build-go-based-connectors)._
 
 Monthly**Bytes**
 

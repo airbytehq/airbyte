@@ -1,7 +1,5 @@
 ---
-title: "Airbyte agentic data platform is now in public beta"
 sidebar_label: "Feb 2026: Airbyte agentic data platform is now in public beta"
-description: "2026 is zipping along, and we're shipping faster than ever!"
 ---
 # Airbyte agentic data platform is now in public beta
 

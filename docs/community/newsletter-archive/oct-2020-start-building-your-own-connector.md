@@ -1,11 +1,9 @@
 ---
-title: "Start building your own connector"
 sidebar_label: "Oct 2020: Start building your own connector"
-description: "- Solving ELT: Pros and Cons of OSS vs Commercial - Landscape of all OSS ELT projects - Why Airbyte is not built on top of Singe"
 ---
 # Start building your own connector
 
-_Published October 20, 2020. [View on airbyte.com](https://mailchi.mp/e721559b14bd/weekly-bytes-learnings-from-soft-launch-and-our-vision-3247638?e=2257aab695)._
+_Published October 20, 2020. [View on airbyte.com](https://airbyte.com/community/newsletter/oct-2020-start-building-your-own-connector)._
 
 Here are the community news and product updates of the past week.
 

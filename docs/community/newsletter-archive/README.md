@@ -1,7 +1,3 @@
----
-title: "Newsletter Archive"
----
-
 # Newsletter Archive
 
 Past issues of the Airbyte community newsletter, newest first.

@@ -1,11 +1,9 @@
 ---
-title: "10 new connectors!"
 sidebar_label: "Nov 2020: 10 new connectors!"
-description: "- Our vision about the future of ETL / ELT. - How we will build 1,000s of connectors"
 ---
 # 10 new connectors!
 
-_Published November 4, 2020. [View on airbyte.com](https://mailchi.mp/467519d4fb8f/weekly-bytes-learnings-from-soft-launch-and-our-vision-3254770?e=0afbbb9bec)._
+_Published November 4, 2020. [View on airbyte.com](https://airbyte.com/community/newsletter/nov-2020-10-new-connectors)._
 
 Here are the community news and product updates of the past week.
 

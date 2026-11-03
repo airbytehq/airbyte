@@ -1,11 +1,9 @@
 ---
-title: "A New License to Future Proof the Commoditization of Data Integration!"
 sidebar_label: "Oct 2021: A New License to Future Proof the Commoditization of Data Integration!"
-description: "- New CDK tutorial video - Is Airbyte worth the hype? - 5 great data engineering tools for 2021"
 ---
 # A New License to Future Proof the Commoditization of Data Integration!
 
-_Published October 7, 2021. [View on airbyte.com](https://mailchi.mp/4254e4f1883d/new-license-new-cdk-video-airbyte-hacktoberfest-5665332?e=[UNIQID])._
+_Published October 7, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/oct-2021-a-new-license-to-future-proof-the-commoditization-of-data-integration)._
 
 Here are the community news and product updates of the past week.
 

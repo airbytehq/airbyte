@@ -1,11 +1,9 @@
 ---
-title: "Welcome to Airbyte Recipes"
 sidebar_label: "Jul 2021: Welcome to Airbyte Recipes"
-description: "- Automation of Airbyte deployment with Terraform - Demo of custom dbt transformations - Future of Data Engineering"
 ---
 # Welcome to Airbyte Recipes
 
-_Published July 22, 2021. [View on airbyte.com](https://mailchi.mp/21189401781f/weekly-bytes-learnings-from-soft-launch-and-our-vision-5554413?e=[UNIQID])._
+_Published July 22, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/jul-2021-welcome-to-airbyte-recipes)._
 
 Here are the community news and product updates of the past week.
 

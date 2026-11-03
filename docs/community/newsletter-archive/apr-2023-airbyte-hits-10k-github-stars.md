@@ -1,11 +1,9 @@
 ---
-title: "Airbyte Hits 10k GitHub Stars ⭐️"
 sidebar_label: "Apr 2023: Airbyte Hits 10k GitHub Stars ⭐️"
-description: "Airbyte hits 10k GitHub Stars Airbyte API goes to Public Beta Huge month of Connectors going to Cloud"
 ---
 # Airbyte Hits 10k GitHub Stars ⭐️
 
-_Published April 6, 2023. [View on airbyte.com](http://airbyte-21615363.hs-sites.com/airbyte-hits-10k-github-stars-️)._
+_Published April 6, 2023. [View on airbyte.com](https://airbyte.com/community/newsletter/apr-2023-airbyte-hits-10k-github-stars)._
 
 April 2023
 

@@ -1,11 +1,9 @@
 ---
-title: "Updates to Connector Release Stages"
 sidebar_label: "May 2022: Updates to Connector Release Stages"
-description: "- dbt packages for Airbyte connectors - Building an open-source EngOps platform - How we use Temporal.io at Airbyte - Snowflake best practices"
 ---
 # Updates to Connector Release Stages
 
-_Published May 5, 2022. [View on airbyte.com](https://mailchi.mp/7a46165bd712/elt-for-engops-dbt-packages-meet-our-engineers)._
+_Published May 5, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/may-2022-updates-to-connector-release-stages)._
 
 Monthly**Bytes**
 

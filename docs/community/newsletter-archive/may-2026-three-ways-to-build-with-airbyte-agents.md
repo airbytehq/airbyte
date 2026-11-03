@@ -1,7 +1,5 @@
 ---
-title: "Airbyte's agentic platform: A New Era for Airbyte"
 sidebar_label: "May 2026: Airbyte's agentic platform: A New Era for Airbyte"
-description: "Today we're launching our agentic data platform. It's the biggest step we've taken as a company since we open-sourced our first connector six years ago."
 ---
 # Airbyte's agentic platform: A New Era for Airbyte
 

@@ -1,7 +1,5 @@
 ---
-title: "Team workspaces for agentic data"
 sidebar_label: "Jun 2026: Team workspaces for agentic data"
-description: "Welcome to the Airbyte June 2026 Newsletter! We're going over our latest product updates for agentic data and Data Replication. The highlights include:"
 ---
 # Team workspaces for agentic data
 

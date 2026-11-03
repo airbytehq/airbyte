@@ -1,7 +1,5 @@
 ---
-title: "Semantic search now covers Google Drive and Granola"
 sidebar_label: "Aug 2026: Semantic search now covers Google Drive and Granola"
-description: "Welcome to the Airbyte August 2026 newsletter. Two things led the month: the release of Airbyte 2.2, and semantic search availability in Google Drive and Granola."
 ---
 # Semantic search now covers Google Drive and Granola
 
