@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b8f2cbee-b073-4dd8-9b80-97d7bae967a4
-  dockerImageTag: 0.2.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-calendly
   githubIssueLabel: source-calendly
   icon: icon.svg
@@ -69,6 +69,21 @@ data:
       url: https://status.calendly.com/
       type: status_page
   releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          Version 1.0.0 fixes incremental syncs of scheduled_events and event_invitees, which could stop reading new bookings and cancellations after an upcoming event was synced, and corrects the declared types of existing fields. scheduled_events now uses updated_at as its cursor and event_invitees follows it: clear both streams after upgrading. Datetime fields on all streams now declare date-time, position fields in event_types and event_invitees are integers, and event_types.duration_options items are integers: refresh the source schema, and clear the affected streams if your destination does not support the column type change. See https://docs.airbyte.com/integrations/sources/calendly-migrations#upgrading-to-100.
+        upgradeDeadline: "2026-12-01"
+        deadlineAction: disable
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - scheduled_events
+              - event_invitees
+              - api_user
+              - event_types
+              - groups
+              - organization_memberships
     rolloutConfiguration:
       defaultRolloutMode: autopilot
       autopilotConfig:

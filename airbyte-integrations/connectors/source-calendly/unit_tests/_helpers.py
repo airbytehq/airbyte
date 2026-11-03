@@ -65,4 +65,8 @@ def invitees_request(event_id: str, page_token: str | None = None) -> HttpReques
 
 
 def event(event_id: str) -> dict[str, str]:
-    return {"uri": f"https://api.calendly.com/scheduled_events/{event_id}", "start_time": "2024-01-15T00:00:00.000000Z"}
+    return {
+        "uri": f"https://api.calendly.com/scheduled_events/{event_id}",
+        "start_time": "2024-01-15T00:00:00.000000Z",
+        "updated_at": "2024-01-15T00:00:00.000000Z",
+    }

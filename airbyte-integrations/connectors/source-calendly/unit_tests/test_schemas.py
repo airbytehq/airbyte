@@ -50,6 +50,46 @@ ADDED_FIELDS = {
         },
     },
 }
+RETYPED_FIELDS = {
+    "api_user": {
+        "/created_at": DATE_TIME,
+        "/updated_at": DATE_TIME,
+    },
+    "event_types": {
+        "/created_at": DATE_TIME,
+        "/updated_at": {"type": "string", "format": "date-time"},
+        "/position": {"type": ["integer", "null"]},
+        "/custom_questions/[]/position": {"type": ["integer", "null"]},
+        "/duration_options/[]": {"type": "integer"},
+    },
+    "groups": {
+        "/created_at": DATE_TIME,
+        "/updated_at": DATE_TIME,
+    },
+    "organization_memberships": {
+        "/created_at": DATE_TIME,
+        "/updated_at": DATE_TIME,
+        "/user/created_at": DATE_TIME,
+        "/user/updated_at": DATE_TIME,
+    },
+    "scheduled_events": {
+        "/start_time": {"type": "string", "format": "date-time"},
+        "/end_time": DATE_TIME,
+        "/created_at": DATE_TIME,
+        "/updated_at": DATE_TIME,
+        "/cancellation/created_at": DATE_TIME,
+        "/event_guests/[]/created_at": DATE_TIME,
+        "/event_guests/[]/updated_at": DATE_TIME,
+        "/event_memberships/[]/buffered_start_time": DATE_TIME,
+        "/event_memberships/[]/buffered_end_time": DATE_TIME,
+    },
+    "event_invitees": {
+        "/created_at": {"type": "string", "format": "date-time"},
+        "/updated_at": DATE_TIME,
+        "/cancellation/created_at": DATE_TIME,
+        "/questions_and_answers/[]/position": {"type": ["integer", "null"]},
+    },
+}
 ORIGINAL_TYPE_FORMAT_DIGESTS = {
     "event_types": "d6f6a0cd2dcce2b3a3c6478edce8bd899b885ed5985cc5611c63029839b53917",
     "api_user": "74ff802202af8dd7c57b826d7daf12b096b4cc668ec370f2a3b655a9a952b9bf",
@@ -72,13 +112,18 @@ def schema_fields(node: dict, path: str = "") -> dict:
 
 
 @pytest.mark.parametrize("stream", ORIGINAL_TYPE_FORMAT_DIGESTS)
-def test_every_preexisting_field_retains_its_type_and_format(stream: str) -> None:
+def test_retyped_fields_are_the_only_existing_type_and_format_changes(stream: str) -> None:
     fields = schema_fields(yaml.safe_load(_YAML_FILE_PATH.read_text())["schemas"][stream])
+    assert {path: fields.get(path) for path in RETYPED_FIELDS[stream]} == RETYPED_FIELDS[stream]
+    for path, definition in RETYPED_FIELDS[stream].items():
+        if path == "/duration_options/[]":
+            fields.pop(path)
+        elif "format" in definition:
+            fields[path].pop("format")
+        elif definition["type"] == ["integer", "null"]:
+            fields[path]["type"] = ["number", "null"]
     original = {path: value for path, value in fields.items() if path not in ADDED_FIELDS[stream]}
     assert hashlib.sha256(json.dumps(original, sort_keys=True).encode()).hexdigest() == ORIGINAL_TYPE_FORMAT_DIGESTS[stream]
-    for path, definition in original.items():
-        if path.rsplit("/", 1)[-1] in {"start_time", "end_time", "created_at", "updated_at", "buffered_start_time", "buffered_end_time"}:
-            assert "format" not in definition, path
 
 
 @pytest.mark.parametrize("stream", ADDED_FIELDS)

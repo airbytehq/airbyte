@@ -210,6 +210,7 @@ definitions:
           request_parameters:
             count: "100"
             sort: start_time:desc
+            min_start_time: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -244,8 +245,9 @@ definitions:
           type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: start_time
-        lookback_window: "P{{ [config.get('lookback_days') or 0, 0] | max }}D"
+        cursor_field: updated_at
+        is_client_side_incremental: true
+        lookback_window: "P{{ [config.get('lookback_days') or 0, 0] | max }}DT5M"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -253,10 +255,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          field_name: min_start_time
-          inject_into: request_parameter
       transformations:
         - type: AddFields
           fields:
@@ -463,10 +461,9 @@ spec:
       lookback_days:
         type: number
         description: >-
-          Incremental syncs of scheduled_events resume from the start time of the latest event
-          already synced minus this many days, so events in that range are read again with their
-          latest status, such as a cancellation. Set it to at least how far in advance invitees can
-          book so that new bookings for earlier times are not missed.
+          Incremental syncs of scheduled_events re-read events updated within this many days
+          before the last synced update, plus a fixed five minutes. The default of 0 is enough
+          because each sync scans from the start date and emits events whose updated_at changed.
         title: Lookback window (days)
         default: 0
         order: 2
@@ -556,6 +553,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       custom_questions:
         type:
           - array
@@ -591,7 +589,7 @@ schemas:
                 - "null"
             position:
               type:
-                - number
+                - integer
                 - "null"
             required:
               type:
@@ -613,6 +611,8 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type: integer
       deleted_at:
         type: [string, "null"]
         format: date-time
@@ -657,7 +657,7 @@ schemas:
           - "null"
       position:
         type:
-          - number
+          - integer
           - "null"
       profile:
         type:
@@ -690,6 +690,7 @@ schemas:
           - "null"
       updated_at:
         type: string
+        format: date-time
       uri:
         type: string
     required:
@@ -707,6 +708,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       current_organization:
         type:
           - string
@@ -747,6 +749,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       uri:
         type: string
     required:
@@ -760,6 +763,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       member_count:
         type:
           - number
@@ -776,6 +780,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       uri:
         type: string
     required:
@@ -789,6 +794,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       organization:
         type:
           - string
@@ -801,6 +807,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       uri:
         type: string
       user:
@@ -816,6 +823,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           email:
             type:
               - string
@@ -848,6 +856,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           uri:
             type:
               - string
@@ -889,6 +898,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           reason:
             type:
               - string
@@ -897,10 +907,12 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       end_time:
         type:
           - string
           - "null"
+        format: date-time
       event_guests:
         type:
           - array
@@ -914,6 +926,7 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
             email:
               type:
                 - string
@@ -922,6 +935,7 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
       event_memberships:
         type:
           - array
@@ -935,10 +949,12 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
             buffered_start_time:
               type:
                 - string
                 - "null"
+              format: date-time
             user:
               type:
                 - string
@@ -1011,6 +1027,7 @@ schemas:
           - "null"
       start_time:
         type: string
+        format: date-time
       status:
         type:
           - string
@@ -1019,6 +1036,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       uri:
         type: string
     required:
@@ -1050,10 +1068,12 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           reason:
             type: [string, "null"]
       created_at:
         type: string
+        format: date-time
       email:
         type:
           - string
@@ -1138,7 +1158,7 @@ schemas:
                 - "null"
             position:
               type:
-                - number
+                - integer
                 - "null"
             question:
               type:
@@ -1189,6 +1209,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       uri:
         type: string
     required:

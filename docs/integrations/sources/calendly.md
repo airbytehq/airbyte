@@ -28,7 +28,7 @@ The connection check reads only the token owner's profile (`api_user`). A succes
 | --- | --- | --- | --- |
 | `api_key` | `string` | Required. The personal access token created during setup. | |
 | `start_date` | `string` | Required. Read scheduled events starting on or after this time. Use UTC in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2024-01-01T00:00:00Z`. This filters event start times, not when invitees booked. | |
-| `lookback_days` | `number` | Optional. Days to subtract from the latest synced event's start time for incremental `scheduled_events` reads. The connector rereads events in that window, including their invitees. Use a non-negative value and see the incremental sync limitation below. | 0 |
+| `lookback_days` | `number` | Optional. Days before the last synced `updated_at` value to reread during incremental `scheduled_events` syncs, plus a fixed five-minute buffer. Every sync scans from `start_date`, so the default of 0 is sufficient. | 0 |
 
 ## Streams
 
@@ -38,20 +38,16 @@ The connection check reads only the token owner's profile (`api_user`). A succes
 | `api_user` | The token owner's profile and current organization | `uri` | Yes | No |
 | `groups` | Groups in the organization | `uri` | Yes | No |
 | `organization_memberships` | Organization members, their roles, and user profiles | `uri` | Yes | No |
-| `scheduled_events` | Scheduled meetings, including their times, status, and location | `uri` | Yes | Yes, using `start_time` |
+| `scheduled_events` | Scheduled meetings, including their times, status, and location | `uri` | Yes | Yes, using `updated_at` |
 | `event_invitees` | Invitees for each scheduled event, including answers, tracking data, and cancellation information | `uri` | Yes | Yes, dependent on `scheduled_events` |
 
-The connector reads `event_invitees` for the scheduled events returned by the parent stream. It adds `scheduled_event_id` to each invitee record so you can join it to the `id` in `scheduled_events`.
+The connector reads `event_invitees` for each new or changed scheduled event returned by the parent stream. It reads all invitees for those events and adds `scheduled_event_id` to each invitee record so you can join it to the `id` in `scheduled_events`. The invitee stream's state follows `scheduled_events`.
 
-### Incremental sync limitation
+### Incremental sync behavior
 
-:::caution
+Every incremental sync requests `scheduled_events` from the configured `start_date` using `min_start_time`. The connector uses `updated_at` as a client-side cursor and emits events whose update time changed since the previous sync, including upcoming events, cancellations, and reschedules. `lookback_days` rereads events updated within that many days before the last synced update, with a fixed five-minute buffer for updates made during a scan.
 
-`scheduled_events` uses the event's `start_time`, not its creation or modification time, as its incremental cursor. Calendly also returns upcoming events, so the saved cursor can move into the future. Later syncs can miss new bookings for earlier times and updates, such as cancellations, to events outside the lookback window. `event_invitees` depends on these parent events and has the same limitation.
-
-Use Full refresh for both `scheduled_events` and `event_invitees` to reread the events covered by your start date. If you use incremental syncs, set `lookback_days` to at least how far in advance invitees can book. This rereads events in that window, but doesn't capture later changes to older events outside it.
-
-:::
+The default `lookback_days` value of 0 is sufficient because every sync scans from the start date and emits events whose `updated_at` changed. `event_invitees` follows the parent state and rereads all invitees for each new or changed event.
 
 ## Rate limits
 
@@ -66,7 +62,7 @@ The connector monitors `X-RateLimit-Remaining` and waits when the allowance is e
 | HTTP 401: invalid or revoked token | Create a new personal access token and update the Airbyte source settings. |
 | HTTP 403: insufficient scope or permission denied | Check the error for missing scopes. Create a token with the required read scopes, and use an organization owner or administrator account for organization-wide scheduled events. Update the token in Airbyte. |
 | Invitee requests return HTTP 404 | The connector logs and skips invitees for an event that Calendly no longer returns, then continues with other events. A 404 on other endpoints fails the sync. |
-| New bookings or cancellations are missing | Review the [incremental sync limitation](#incremental-sync-limitation). Use Full refresh for `scheduled_events` and `event_invitees` to reread events covered by your start date. |
+| New bookings or cancellations are missing | If upgrading to 1.0.0, follow the [migration guide](calendly-migrations.md#upgrading-to-100) and clear `scheduled_events` and `event_invitees`. Otherwise, confirm the connection's `start_date` covers the event. |
 
 ## Upgrading to 0.2.0
 
@@ -83,6 +79,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 1.0.0 | 2026-11-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix incremental syncs missing new bookings and cancellations by using updated_at as the scheduled_events cursor, and declare date-time and integer types on existing fields |
 | 0.2.0 | 2026-11-03 | [90829](https://github.com/airbytehq/airbyte/pull/90829) | Handle rate limits and token errors, declare missing fields, fix the crash when `lookback_days` is unset, stop dropping event types updated before 2021 and invitees booked before the start date (refresh these streams to backfill) |
 | 0.1.58 | 2026-11-03 | [90473](https://github.com/airbytehq/airbyte/pull/90473) | Update dependencies |
 | 0.1.57 | 2026-10-27 | [89813](https://github.com/airbytehq/airbyte/pull/89813) | Update dependencies |

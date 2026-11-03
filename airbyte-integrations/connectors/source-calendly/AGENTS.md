@@ -24,25 +24,23 @@ Each requester's `WaitTimeFromHeader` reads `X-RateLimit-Reset`, which Calendly 
 
 **Why this matters:** Reusing the same reset header for the budget and retry handler looks natural but gives it two incompatible interpretations and prevents remaining-count updates. A fixed 50/minute ceiling unnecessarily throttles paid accounts; removing remaining-header handling risks repeated 429s on free accounts.
 
-## 3. The Scheduled-Events Cursor Can Move Into the Future
+## 3. Scheduled Events Use `updated_at`; Invitees Follow Changed Events
 
-`scheduled_events` uses `start_time`, not modification time, as its incremental cursor and sends only `min_start_time` (saved state minus `lookback_days`, bounded by the start date). Calendly returns upcoming events too, and CDK 7.45.0 saves the largest observed cursor value, so after a sync that reads an upcoming event the state is in the future. Later incremental syncs send `min_start_time` = that state minus `lookback_days` and make no `/scheduled_events` request while that point is still in the future, so bookings made in between for earlier times are never read. `event_invitees` follows this parent through `incremental_dependency: true`, so it stalls the same way. Fixing it changes emitted records and state, so it needs a breaking release; until then the docs tell users to sync both streams in Full refresh or to set `lookback_days` to their booking horizon.
+`scheduled_events` uses `updated_at` as a client-side incremental cursor. Every request still sends `min_start_time` from the configured `start_date` and sorts by `start_time:desc`; it does not derive the request boundary from state. This lets Calendly return upcoming events while the client emits records whose update time is at or after the saved cursor minus `lookback_days` and a fixed five-minute buffer. Upcoming event start times therefore cannot move the update cursor into the future and suppress later bookings, cancellations, or reschedules.
 
-`event_invitees` is not a data feed: the invitees endpoint has no date filter, and a `created_at` data feed dropped invitees booked before the start date in every sync mode. Each parent event's invitees are read in full and deduplicated by `uri`.
+`lookback_days` is optional with default 0. Keep `lookback_window: "P{{ [config.get('lookback_days') or 0, 0] | max }}DT5M"`: the template clamps negative values to zero, handles a missing key, and adds five minutes for updates made during a scan. Since every request scans from `start_date`, a zero-day lookback is sufficient for normal incremental syncs.
 
-`lookback_days` is optional with default 0; keep `lookback_window: "P{{ [config.get('lookback_days') or 0, 0] | max }}D"`. The old `P{{config['lookback_days']}}D` rendered `PD` when the key was missing and caused an `ISO8601Error`; a negative value fails the same way, so the template clamps it to 0 instead of a spec minimum that would reject configs that still sync other streams.
+`event_invitees` remains a child stream with `incremental_dependency: true` on `scheduled_events`. Its `created_at` cursor is only a state vehicle: the child has no `start_time_option` or client-side incremental flag and must not filter invitees by `created_at`. The invitee endpoint has no date filter, so each invitee of a new or changed parent event is read, including invitees booked before `start_date`. The parent stream's changed-event filter limits which invitee endpoints are called. State changed in 1.0.0, so incremental connections must clear both streams when upgrading.
 
 `event_types` is a data feed sorted by `updated_at` descending, so pagination stops at the first record older than the cursor start. Its start is `1970-01-01`: a later floor (it was `2021-01-01`) silently drops every event type not updated since.
 
-**Why this matters:** Treating either cursor as an update timestamp overstates freshness guarantees. Keep the missing-key-safe template and the parent dependency intact unless deliberately redesigning incremental state in a breaking release.
+**Why this matters:** Keeping the request boundary at the configured start date prevents a future event from stalling later updates, while the cursor avoids re-emitting unchanged events. The child cursor must remain state-only so older invitees are not filtered out when their parent changes.
 
-## 4. Existing Datetime Fields Intentionally Remain Strings Without Formats
+## 4. Existing Datetime and Position Fields Carry Documented Types
 
-Adding or changing `format` or `type` on an existing schema field is a breaking change for typed destinations. Existing datetime fields such as `start_time`, `end_time`, `created_at`, and `updated_at` intentionally remain string-valued fields without a datetime `format` for now, even where the [Calendly OpenAPI specification](https://developer.calendly.com/openapi/calendly-api.yaml) documents a timestamp. This includes properties already present inside cancellation objects.
+Since 1.0.0, existing datetime fields on all streams declare `format: date-time`; integer-valued positions in `event_types` and `event_invitees` declare `integer`, and `event_types.duration_options` items are integers. The retyped paths are enumerated in the schema tests and migration guide. Adding or changing a format or type on any other existing field can retype a destination column and requires a breaking release with migration guidance.
 
-New nullable fields may use documented formats, such as `date-time` inside the newly added `no_show` and `reconfirmation` objects. Do not use those additions as a reason to retype neighboring pre-existing fields. Schema tests preserve the exact type/format definitions of every field from the previous release and explicitly guard existing datetime fields against newly added formats.
-
-**Why this matters:** Adding a format can change a destination column's type even when every API value stays the same. Keep schema expansion separate from breaking retypes and their migration requirements.
+**Why this matters:** Typed destinations can reject or null values after a column type change. Keep the schema tests' exact retyped-field list in sync with the manifest, and do not make further existing-field retypes in a non-breaking release.
 
 ## 5. Connection Check Tests Only Current-User Access
 
