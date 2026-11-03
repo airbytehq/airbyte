@@ -28,7 +28,14 @@ data:
   supportLevel: community
   maxSecondsBetweenMessages: 3600
   suggestedStreams:
-    streams: [scheduled_events, event_invitees, event_types, organization_memberships, api_user]
+    streams:
+      [
+        scheduled_events,
+        event_invitees,
+        event_types,
+        organization_memberships,
+        api_user,
+      ]
   connectorTestSuitesOptions:
     - suite: acceptanceTests
   documentationUrl: https://docs.airbyte.com/integrations/sources/calendly
