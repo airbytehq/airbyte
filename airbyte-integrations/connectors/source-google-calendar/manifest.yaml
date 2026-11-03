@@ -640,7 +640,7 @@ spec:
               refresh_token:
                 type: string
                 title: Refresh Token
-                description: Use a token with calendar.readonly or all five narrow read-only scopes; syncing acl also requires calendar.acls.readonly.
+                description: "Refresh token from your own Google Cloud OAuth app, with either calendar.readonly or calendar.calendarlist.readonly, calendar.calendars.readonly, calendar.events.readonly, calendar.settings.readonly and calendar.freebusy. The acl stream also needs calendar.acls.readonly."
                 airbyte_secret: true
       calendarid:
         type: string
