@@ -77,27 +77,17 @@ definitions:
         Aircall returns at most 10,000 contacts per request window. Lower the
         Contacts window size (days) setting (minimum 1) so each window holds
         fewer than 10,000 contacts.
+    # The reference documents this 403 only as "The Conversations API is not enabled for this
+    # Company."; the gateway's {"message": "Forbidden"} for a revoked key does not say it.
     conversations_not_enabled:
       type: HttpResponseFilter
       action: IGNORE
       predicate: >-
         {{ response is mapping and 'conversations' not in response and 'engagements' not in response
-        and 'conversations api is not enabled' in (response | string | lower) }}
+        and 'not enabled for this company' in (response | string | lower) }}
       error_message: >-
-        Skipping this stream: the Conversations API is not enabled for this
-        Aircall company (HTTP 403). Ask Aircall to enable it to sync
-        conversations.
-    conversations_result_limit:
-      type: HttpResponseFilter
-      action: FAIL
-      failure_type: config_error
-      predicate: >-
-        {{ response is mapping and 'conversations' not in response
-        and 'must not exceed 10000' in (response | string) }}
-      error_message: >-
-        Aircall returns at most 10,000 conversations per request window.
-        Lower the Window size (days) setting so each window holds fewer than
-        10,000 conversations.
+        Ignoring {{ request_url }}: the Conversations API is not enabled for
+        this Aircall company (HTTP 403).
     trackers_not_enabled:
       type: HttpResponseFilter
       action: IGNORE
@@ -107,15 +97,20 @@ definitions:
       error_message: >-
         Skipping the trackers stream: this Aircall company does not have the
         AI Assist or AI Assist Pro package (HTTP 403).
+    # Documented 403 bodies: "line is not configured to use whatsapp", "line does not belong to the
+    # company" (a number deleted during the sync); sibling WhatsApp endpoints say "line does not have
+    # WhatsApp capability".
     whatsapp_not_configured:
       type: HttpResponseFilter
       action: IGNORE
       predicate: >-
         {{ response is mapping and 'templates' not in response
-        and 'not configured to use whatsapp' in (response | string | lower) }}
+        and ('not configured to use whatsapp' in (response | string | lower)
+        or 'does not have whatsapp capability' in (response | string | lower)
+        or 'does not belong to the company' in (response | string | lower)) }}
       error_message: >-
-        Skipping WhatsApp templates for a number that is not registered for
-        WhatsApp (HTTP 403).
+        Ignoring {{ request_url }}: this number is not registered for WhatsApp
+        or no longer belongs to the company (HTTP 403).
   error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -454,10 +449,8 @@ definitions:
               - $ref: "#/definitions/backoff_strategy"
             response_filters:
               - $ref: "#/definitions/response_filters/conversations_not_enabled"
-              - $ref: "#/definitions/response_filters/conversations_result_limit"
               - $ref: "#/definitions/response_filters/unauthorized"
               - $ref: "#/definitions/response_filters/forbidden"
-              - $ref: "#/definitions/response_filters/result_limit"
         record_selector:
           type: RecordSelector
           extractor:
@@ -466,6 +459,15 @@ definitions:
               - conversations
         paginator:
           $ref: "#/definitions/paginator"
+        # Aircall rejects page 201 (page * per_page above 10,000). Records come sorted by
+        # last_engagement_at ascending (order=asc), so after 10,000 records the read restarts
+        # from the last record's timestamp instead of asking for page 201.
+        pagination_reset:
+          type: PaginationReset
+          action: SPLIT_USING_CURSOR
+          limits:
+            type: PaginationResetLimits
+            number_of_records: 10000
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: last_engagement_at
@@ -481,7 +483,7 @@ definitions:
           type: RequestOption
           field_name: to
           inject_into: request_parameter
-        step: P{{ config.get('window_in_days', 30) }}D
+        step: P30D
         cursor_granularity: PT1S
         lookback_window: P3D
         start_datetime:
@@ -513,9 +515,25 @@ definitions:
               - $ref: "#/definitions/backoff_strategy"
             response_filters:
               - $ref: "#/definitions/response_filters/conversations_not_enabled"
+              # Engagements come newest first and stop at 10,000 per conversation (no date filter).
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ response is mapping and 'engagements' not in response
+                  and ('10000' in (response | string) or '10,000' in (response | string)
+                  or '10k results' in (response | string)) }}
+                error_message: >-
+                  Aircall returns at most the 10,000 most recent engagements of a
+                  conversation; older engagements of {{ request_url }} are not
+                  synced.
+              # The conversation was deleted after the conversations read
+              # (documented 404: "No Conversation exists with this id for the Company.").
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: "{{ response is mapping and 'conversation exists' in (response | string | lower) }}"
+                error_message: "Ignoring {{ request_url }}: the conversation no longer exists (HTTP 404)."
               - $ref: "#/definitions/response_filters/unauthorized"
               - $ref: "#/definitions/response_filters/forbidden"
-              - $ref: "#/definitions/response_filters/result_limit"
         record_selector:
           type: RecordSelector
           extractor:
@@ -530,8 +548,27 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: conversation_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/conversations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        global_substream_cursor: true
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2014-01-01T00:00:00.000000+0000"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        # The slices are never sent (no request options); a far end keeps an engagement dated in the
+        # future from leaving later syncs with an empty slice for every conversation.
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "2100-01-01T00:00:00.000000+0000"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       transformations:
         - type: AddFields
           fields:
@@ -609,7 +646,6 @@ definitions:
               - $ref: "#/definitions/response_filters/trackers_not_enabled"
               - $ref: "#/definitions/response_filters/unauthorized"
               - $ref: "#/definitions/response_filters/forbidden"
-              - $ref: "#/definitions/response_filters/result_limit"
         record_selector:
           type: RecordSelector
           extractor:
@@ -667,7 +703,6 @@ definitions:
               - $ref: "#/definitions/response_filters/whatsapp_not_configured"
               - $ref: "#/definitions/response_filters/unauthorized"
               - $ref: "#/definitions/response_filters/forbidden"
-              - $ref: "#/definitions/response_filters/result_limit"
         record_selector:
           type: RecordSelector
           extractor:
@@ -804,6 +839,13 @@ metadata:
     users: false
     teams: false
     webhooks: false
+    conversations: false
+    conversation_engagements: false
+    campaigns: false
+    campaign_outcomes: false
+    trackers: false
+    sms_templates: false
+    whatsapp_templates: false
   testedStreams: {}
   assist: {}
 
@@ -2062,7 +2104,7 @@ schemas:
       id:
         type:
           - "null"
-          - integer
+          - string
       number_id:
         type:
           - "null"
