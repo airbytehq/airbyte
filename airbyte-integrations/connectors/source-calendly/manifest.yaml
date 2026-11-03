@@ -370,18 +370,6 @@ definitions:
             stop_condition: >-
               {{ not response.get("pagination", {}).get("next_page_token", {})
               }}
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: user/uri
-              request_option:
-                type: RequestOption
-                field_name: user
-                inject_into: request_parameter
-              partition_field: user_uri
-              stream:
-                $ref: "#/definitions/streams/organization_memberships"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -399,6 +387,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /event_type_memberships
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/fan_out_error_handler"
           request_parameters:
             count: "100"
         record_selector:
@@ -497,6 +487,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /user_availability_schedules
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/fan_out_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -524,15 +516,16 @@ definitions:
     locations:
       type: DeclarativeStream
       name: locations
-      primary_key:
-        - user
-        - kind
+      # No primary key: Calendly returns no location identifier and can repeat a kind for one user.
+      primary_key: []
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /locations
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/fan_out_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -691,6 +684,25 @@ definitions:
         action: IGNORE
         error_message: "Skipping invitees of a scheduled event that Calendly no longer returns (404): {{ request_url }}"
       - $ref: "#/definitions/error_filters/server_error"
+  # Requests per member or event type: one that left or was deleted mid-sync is skipped, not fatal.
+  fan_out_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: X-RateLimit-Reset
+    response_filters:
+      - $ref: "#/definitions/error_filters/unauthorized"
+      # No http_codes here: CDK 7.45 ORs them with error_message_contains, which would ignore every 403.
+      - type: HttpResponseFilter
+        error_message_contains: not in your organization
+        action: IGNORE
+        error_message: "Skipping a member who left the Calendly organization during the sync: {{ request_url }}"
+      - $ref: "#/definitions/error_filters/forbidden"
+      - type: HttpResponseFilter
+        http_codes: [404]
+        action: IGNORE
+        error_message: "Skipping a member or event type that Calendly no longer returns (404): {{ request_url }}"
+      - $ref: "#/definitions/error_filters/server_error"
   # 429 keeps the CDK default (RATE_LIMITED) and waits for X-RateLimit-Reset through backoff_strategies.
   error_filters:
     unauthorized:
@@ -709,7 +721,7 @@ definitions:
       action: FAIL
       failure_type: config_error
       error_message: >-
-        Calendly denied access. The personal access token needs the read scope of every selected stream, as listed in the Calendly source documentation, and it must belong to an owner or admin of the Calendly organization because Calendly shows organization-wide scheduled events only to them.
+        Calendly denied access. The personal access token needs the read scope of every selected stream, as listed in the Calendly source documentation, and it must belong to an owner or admin of the Calendly organization because Calendly shows organization-wide data, such as scheduled events and webhook subscriptions, only to them.
         Create a new token and update it in the Airbyte source settings.
         Calendly response (403): {{ (response if response is mapping else {}).get('message', 'Forbidden') }}{{ ' Missing scopes: ' ~ (response['required_scopes'] | join(', ')) if response is mapping and response.get('required_scopes') else '' }}
     not_found:
@@ -768,7 +780,7 @@ spec:
       api_key:
         type: string
         description: >-
-          Calendly personal access token. In Calendly, open the Profile menu, select Developer, then Personal access tokens, and create a token with the read scope of every stream you sync; the Calendly source documentation lists the scopes for each stream. Create it as an owner or admin of the Calendly organization: Calendly shows organization-wide scheduled events only to them.
+          Calendly personal access token. In Calendly, open the Profile menu, select Developer, then Personal access tokens, and create a token with the read scope of every stream you sync; the Calendly source documentation lists the scopes for each stream. Create it as an owner or admin of the Calendly organization: Calendly shows organization-wide data, such as scheduled events and webhook subscriptions, only to them.
         order: 0
         title: Calendly personal access token
         airbyte_secret: true
@@ -1782,6 +1794,7 @@ schemas:
               type: [string, 'null']
             date:
               type: [string, 'null']
+              format: date
     required: [uri]
   locations:
     type: object

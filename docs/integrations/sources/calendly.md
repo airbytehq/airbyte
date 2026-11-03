@@ -27,7 +27,7 @@ The connection check reads only the token owner's profile (`api_user`). A succes
 
 ## Token scopes
 
-Since March 2026, Calendly grants newly created tokens no API access until you select scopes for them; tokens created earlier keep their access. Select the scopes of every stream you sync. When a scope is missing, the sync error lists it. Version 0.3.0 added streams that need `availability:read`, `locations:read` and `webhooks:read`: add these scopes to your token before you enable those streams.
+Since March 2026, Calendly grants newly created tokens no API access until you select scopes for them; tokens created earlier keep their access. Select the scopes of every stream you sync; every token also needs `users:read`, which the connection check uses. When a scope is missing, the sync error lists it. Version 0.3.0 added `user_availability_schedules`, `locations` and `webhook_subscriptions`, which need `availability:read`, `locations:read` and `webhooks:read`. Calendly sets a token's scopes when you create it, so create a token with these scopes and update it in the source settings before you sync these streams. Connections set to propagate all field and stream changes add these streams automatically.
 
 | Stream | Required scopes |
 | --- | --- |
@@ -57,7 +57,7 @@ Since March 2026, Calendly grants newly created tokens no API access until you s
 | `event_invitees` | Invitees for each scheduled event, including answers, tracking data, and cancellation information | `uri` | Yes | Yes, dependent on `scheduled_events` |
 | `teams` | Teams in the organization | `uri` | Yes | No |
 | `event_type_memberships` | Hosts assigned to each event type | `uri` | Yes | No |
-| `group_relationships` | Owner and admin relationships between users and groups | `uri` | Yes | No |
+| `group_relationships` | Member and admin relationships between groups and organization members or invitees | `uri` | Yes | No |
 | `user_availability_schedules` | Availability schedules of each organization member | `uri` | Yes | No |
 | `locations` | Meeting location types available to each organization member | None | Yes | No |
 | `organization_invitations` | Invitations sent to join the organization | `uri` | Yes | No |
@@ -107,7 +107,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
-| 0.3.0 | 2026-11-03 | [90847](https://github.com/airbytehq/airbyte/pull/90847) | Add teams, event type memberships, group relationships, user availability schedules, locations, organization invitations and webhook subscriptions streams; the last three need the `availability:read`, `locations:read` and `webhooks:read` scopes |
+| 0.3.0 | 2026-11-03 | [90847](https://github.com/airbytehq/airbyte/pull/90847) | Add teams, event type memberships, group relationships, user availability schedules, locations, organization invitations and webhook subscriptions streams; user availability schedules, locations and webhook subscriptions need the new `availability:read`, `locations:read` and `webhooks:read` scopes |
 | 0.2.0 | 2026-11-03 | [90829](https://github.com/airbytehq/airbyte/pull/90829) | Handle rate limits and token errors, declare missing fields, fix the crash when `lookback_days` is unset, stop dropping event types updated before 2021 and invitees booked before the start date (refresh these streams to backfill) |
 | 0.1.58 | 2026-11-03 | [90473](https://github.com/airbytehq/airbyte/pull/90473) | Update dependencies |
 | 0.1.57 | 2026-10-27 | [89813](https://github.com/airbytehq/airbyte/pull/89813) | Update dependencies |

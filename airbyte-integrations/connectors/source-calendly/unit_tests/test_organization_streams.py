@@ -1,32 +1,29 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
+
+import pytest
 from _helpers import ORGANIZATION_URI, collection, list_request, mock_user, read_stream, request
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 
 
-def test_teams_fans_out_by_member_and_pages() -> None:
-    members = [
-        {"uri": "https://api.calendly.com/organization_memberships/a", "user": {"uri": "https://api.calendly.com/users/a"}},
-        {"uri": "https://api.calendly.com/organization_memberships/b", "user": {"uri": "https://api.calendly.com/users/b"}},
-    ]
-    first_a = request("teams", {"count": "100", "user": "https://api.calendly.com/users/a"})
-    second_a = request("teams", {"count": "100", "user": "https://api.calendly.com/users/a", "page_token": "next-a"})
-    first_b = request("teams", {"count": "100", "user": "https://api.calendly.com/users/b"})
+def test_teams_lists_organization_teams_once_and_pages() -> None:
+    first = request("teams", {"count": "100"})
+    second = request("teams", {"count": "100", "page_token": "next"})
     with HttpMocker() as http:
-        user = mock_user(http)
-        memberships = list_request("organization_memberships")
-        http.get(memberships, collection(members))
-        http.get(first_a, collection([{"uri": "https://api.calendly.com/teams/a1"}], "next-a"))
-        http.get(second_a, collection([{"uri": "https://api.calendly.com/teams/a2"}]))
-        http.get(first_b, collection([{"uri": "https://api.calendly.com/teams/b1"}]))
+        http.get(first, collection([{"uri": "https://api.calendly.com/teams/1"}], "next"))
+        http.get(second, collection([{"uri": "https://api.calendly.com/teams/2"}]))
 
         output = read_stream("teams", sync_mode=SyncMode.full_refresh)
 
         assert not output.errors
-        assert len(output.records) == 3
-        for target in [user, memberships, first_a, second_a, first_b]:
+        assert [record.record.data["uri"] for record in output.records] == [
+            "https://api.calendly.com/teams/1",
+            "https://api.calendly.com/teams/2",
+        ]
+        for target in [first, second]:
             http.assert_number_of_calls(target, 1)
 
 
@@ -106,15 +103,22 @@ def test_locations_adds_member_key_and_are_unpaginated() -> None:
         user = mock_user(http)
         memberships = list_request("organization_memberships")
         http.get(memberships, collection(members))
-        http.get(first, collection([{"kind": "zoom_conference", "connected": True}], "ignored"))
+        # Calendly's own example lists a kind twice for one user, so the stream has no primary key.
+        http.get(
+            first,
+            collection([{"kind": "inbound_call"}, {"kind": "inbound_call"}, {"kind": "zoom_conference", "connected": True}], "ignored"),
+        )
         http.get(second, collection([{"kind": "zoom_conference", "connected": True}], "ignored"))
 
         output = read_stream("locations", sync_mode=SyncMode.full_refresh)
 
         assert not output.errors
-        assert {(record.record.data["user"], record.record.data["kind"], record.record.data["connected"]) for record in output.records} == {
-            (member["user"]["uri"], "zoom_conference", True) for member in members
-        }
+        assert sorted((record.record.data["user"], record.record.data["kind"]) for record in output.records) == [
+            ("https://api.calendly.com/users/a", "inbound_call"),
+            ("https://api.calendly.com/users/a", "inbound_call"),
+            ("https://api.calendly.com/users/a", "zoom_conference"),
+            ("https://api.calendly.com/users/b", "zoom_conference"),
+        ]
         for target in [user, memberships, first, second]:
             http.assert_number_of_calls(target, 1)
 
@@ -155,3 +159,93 @@ def test_webhook_subscriptions_pages_for_organization() -> None:
         assert len(output.records) == 2
         for target in [user, first, second]:
             http.assert_number_of_calls(target, 1)
+
+
+MEMBERS = [
+    {"uri": "https://api.calendly.com/organization_memberships/a", "user": {"uri": "https://api.calendly.com/users/a"}},
+    {"uri": "https://api.calendly.com/organization_memberships/b", "user": {"uri": "https://api.calendly.com/users/b"}},
+]
+
+
+@pytest.mark.parametrize("stream", ["user_availability_schedules", "locations"])
+@pytest.mark.parametrize(
+    "status,body",
+    [
+        (403, {"title": "Permission Denied", "message": "This user is not in your organization"}),
+        (404, {"title": "Not Found", "message": "The server could not find the requested resource."}),
+    ],
+)
+def test_member_removed_during_sync_is_skipped(stream: str, status: int, body: dict) -> None:
+    with HttpMocker() as http:
+        mock_user(http)
+        http.get(list_request("organization_memberships"), collection(MEMBERS))
+        removed = request(stream, {"user": MEMBERS[0]["user"]["uri"]})
+        http.get(removed, HttpResponse(body=json.dumps(body), status_code=status))
+        http.get(
+            request(stream, {"user": MEMBERS[1]["user"]["uri"]}), collection([{"uri": "https://api.calendly.com/x/1", "kind": "custom"}])
+        )
+
+        output = read_stream(stream, sync_mode=SyncMode.full_refresh)
+
+        assert not output.errors
+        assert len(output.records) == 1
+        http.assert_number_of_calls(removed, 1)
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {
+            "title": "Insufficient scope",
+            "message": "This operation requires the scopes listed in the 'required_scopes' array.",
+            "required_scopes": ["availability:read"],
+        },
+        {"title": "Permission Denied", "message": "You do not have permission to access this resource."},
+    ],
+)
+def test_other_403s_on_a_member_stream_still_fail(body: dict) -> None:
+    with HttpMocker() as http:
+        mock_user(http)
+        http.get(list_request("organization_memberships"), collection(MEMBERS[:1]))
+        http.get(
+            request("user_availability_schedules", {"user": MEMBERS[0]["user"]["uri"]}),
+            HttpResponse(body=json.dumps(body), status_code=403),
+        )
+
+        output = read_stream("user_availability_schedules", sync_mode=SyncMode.full_refresh)
+
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert f"Calendly response (403): {body['message']}" in output.errors[0].trace.error.message
+
+
+def test_event_type_deleted_during_sync_is_skipped() -> None:
+    event_types = [
+        {"uri": f"https://api.calendly.com/event_types/{name}", "updated_at": "2024-01-01T00:00:00.000000Z"} for name in ["gone", "kept"]
+    ]
+    with HttpMocker() as http:
+        mock_user(http)
+        http.get(list_request("event_types"), collection(event_types))
+        gone = request("event_type_memberships", {"count": "100", "event_type": event_types[0]["uri"]})
+        http.get(gone, HttpResponse(body='{"title":"Not Found","message":"gone"}', status_code=404))
+        http.get(
+            request("event_type_memberships", {"count": "100", "event_type": event_types[1]["uri"]}),
+            collection([{"uri": "https://api.calendly.com/event_type_memberships/1"}]),
+        )
+
+        output = read_stream("event_type_memberships", sync_mode=SyncMode.full_refresh)
+
+        assert not output.errors
+        assert len(output.records) == 1
+        http.assert_number_of_calls(gone, 1)
+
+
+@pytest.mark.parametrize("stream", ["scheduled_events", "event_types"])
+def test_not_in_organization_403_still_fails_outside_the_fan_out_streams(stream: str) -> None:
+    body = {"title": "Permission Denied", "message": "This user is not in your organization"}
+    with HttpMocker() as http:
+        mock_user(http)
+        http.get(list_request(stream), HttpResponse(body=json.dumps(body), status_code=403))
+
+        output = read_stream(stream, sync_mode=SyncMode.full_refresh)
+
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error

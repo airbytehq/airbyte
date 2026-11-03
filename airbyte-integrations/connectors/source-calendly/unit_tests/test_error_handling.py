@@ -35,6 +35,7 @@ def test_no_composite_error_handler() -> None:
 
 
 URL = "https://api.calendly.com/scheduled_events/ABC/invitees"
+FAN_OUT_STREAMS = {"event_type_memberships", "user_availability_schedules", "locations"}
 
 
 @pytest.mark.parametrize(
@@ -82,6 +83,9 @@ def test_each_requester_classifies_errors(stream: str, status: int, action: Resp
     if stream == "event_invitees" and status == 404:
         assert resolution.response_action == ResponseAction.IGNORE
         assert resolution.error_message == f"Skipping invitees of a scheduled event that Calendly no longer returns (404): {URL}"
+    elif stream in FAN_OUT_STREAMS and status == 404:
+        assert resolution.response_action == ResponseAction.IGNORE
+        assert resolution.error_message == f"Skipping a member or event type that Calendly no longer returns (404): {URL}"
     else:
         assert resolution.response_action == action
         assert resolution.failure_type == failure_type
@@ -98,7 +102,11 @@ def test_each_requester_classifies_errors(stream: str, status: int, action: Resp
         (
             403,
             {"title": "Permission Denied", "message": "You do not have permission to access this resource."},
-            ["owner or admin of the Calendly organization", "read scope of every selected stream"],
+            [
+                "owner or admin of the Calendly organization",
+                "read scope of every selected stream",
+                "scheduled events and webhook subscriptions",
+            ],
         ),
         (
             403,
