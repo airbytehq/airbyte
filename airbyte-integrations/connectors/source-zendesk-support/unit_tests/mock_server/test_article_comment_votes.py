@@ -59,7 +59,7 @@ class TestArticleCommentVotesStreamFullRefresh(TestCase):
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build(),
+            ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator).build(),
             ArticlesResponseBuilder.articles_response().with_record(article_builder).build(),
         )
 
@@ -113,7 +113,7 @@ class TestArticleCommentVotesStreamFullRefresh(TestCase):
         )
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build(),
+            ZendeskSupportRequestBuilder.articles_endpoint(api_token_authenticator).build(),
             ArticlesResponseBuilder.articles_response().with_record(article_builder_1).with_record(article_builder_2).build(),
         )
 

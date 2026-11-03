@@ -413,37 +413,29 @@ definitions:
       primary_key: "id"
 
   # Incremental cursor-based streams
+
+  # `articles` reads `GET /api/v2/help_center/articles?sort_by=updated_at&sort_order=desc` (see
+  # `sorted_list_stream`) instead of the Help Center incremental article export. The article
+  # substreams keep their per-article paths and read the parent with `incremental_dependency`.
   articles_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/sorted_list_stream"
     name: "articles"
     primary_key: "id"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/articles"
-    incremental_sync:
-      $ref: "#/definitions/cursor_incremental_sync"
-      start_time_option:
-        $ref: "#/definitions/cursor_incremental_sync/start_time_option"
-        field_name: "start_time"
     retriever:
-      $ref: "#/definitions/retriever"
-      ignore_stream_slicer_parameters_on_paginated_requests: true
+      $ref: "#/definitions/sorted_list_stream/retriever"
       requester:
         $ref: "#/definitions/retriever/requester"
-        path: "help_center/incremental/articles"
-      paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: "{{ last_page_size == 0 }}"
-        page_token_option:
-          type: RequestPath
-      record_selector:
-        extractor:
-          type: DpathExtractor
-          field_path: ["articles"]
+        path: "help_center/articles"
+        request_parameters:
+          sort_by: "updated_at"
+          sort_order: "desc"
+    $parameters:
+      name: "articles"
+      cursor_field: "updated_at"
 
   article_attachments_stream:
     $ref: "#/definitions/base_incremental_stream"

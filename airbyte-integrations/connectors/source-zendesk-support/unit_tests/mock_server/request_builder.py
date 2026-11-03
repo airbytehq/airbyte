@@ -220,8 +220,15 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def articles_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /help_center/incremental/articles endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "help_center/incremental/articles").with_authenticator(authenticator)
+        """Create a request builder for the first page of the Help Center article list
+        (`/help_center/articles?sort_by=updated_at&sort_order=desc&page[size]=100`)."""
+        return (
+            cls(cls.DEFAULT_SUBDOMAIN, "help_center/articles")
+            .with_authenticator(authenticator)
+            .with_sort_by("updated_at")
+            .with_sort_order("desc")
+            .with_page_size(100)
+        )
 
     @classmethod
     def posts_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":

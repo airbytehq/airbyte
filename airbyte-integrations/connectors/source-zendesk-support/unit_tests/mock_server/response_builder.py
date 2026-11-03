@@ -646,17 +646,10 @@ class TicketFormsResponseBuilder(HttpResponseBuilder):
 
 class ArticlesResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def articles_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "ArticlesResponseBuilder":
-        return cls(
-            find_template("articles", __file__),
-            FieldPath("articles"),
-            NextPagePaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
-        )
-
-    @classmethod
-    def response(cls, next_page_url: Optional[HttpRequest] = None) -> "ArticlesResponseBuilder":
-        """Alias for articles_response() for backward compatibility."""
-        return cls.articles_response(next_page_url)
+    def articles_response(cls, next_page_url: Optional[str] = None) -> "ArticlesResponseBuilder":
+        """Response of the Help Center article list: records under `articles`, cursor pagination through
+        `meta.has_more` and `links.next`."""
+        return cls(find_template("articles", __file__), FieldPath("articles"), CursorBasedPaginationStrategy(next_page_url))
 
 
 class PostsResponseBuilder(HttpResponseBuilder):
