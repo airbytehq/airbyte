@@ -174,7 +174,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Smart Collections](https://shopify.dev/api/admin-rest/latest/resources/smartcollection)
 - [Tender Transactions](https://shopify.dev/api/admin-rest/latest/resources/tendertransaction)
 - [Transactions](https://shopify.dev/api/admin-rest/latest/resources/transaction#top) — Used for the `transactions` stream when **Add `user_id` to Transactions (slower)** is on.
-- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderTransaction) — Used for the `transactions` stream by default. Doesn't populate `user_id`. See [Transactions created before their order](#transactions-created-before-their-order).
+- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderTransaction) — Used for the `transactions` stream by default. Doesn't populate `user_id`. See [Transactions created before their order](#transactions-created-before-their-order) and [Transaction status changes](#transaction-status-changes).
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
