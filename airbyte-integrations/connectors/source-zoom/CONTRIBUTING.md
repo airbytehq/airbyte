@@ -4,7 +4,8 @@
 
 Zoom's REST API exposes no deletion feed; deletions are only published as webhooks such as `meeting.deleted`.
 Deleted meetings and webinars disappear from the next full refresh. For users, `users.status` (`active`,
-`inactive`, or `pending`) is the only soft-delete indicator. Incremental streams do not observe deletions.
+`inactive`, or `pending`) is the only soft-delete indicator. The only incremental stream,
+`report_user_meetings`, uses `end_time` as its cursor and does not observe deletions.
 
 The authorization endpoint is hidden and defaults to Zoom's token URL.
 
@@ -20,15 +21,17 @@ Config normalization migrates legacy top-level Server-to-Server OAuth fields (`a
 
 ## Error handling
 
-The response filters below are defined in `manifest.yaml`. Mock-server coverage is in `unit_tests/test_error_handling.py` and `unit_tests/test_authenticator.py`.
+The response filters below are defined in `manifest.yaml`. Mock-server coverage is in `unit_tests/test_error_handling.py`, `unit_tests/test_authenticator.py`, and the corresponding `unit_tests/integration/test_<stream>.py` tests.
 
 | Zoom response | Action | Where |
 | :------------ | :----- | :---- |
 | Code `124` | Refresh the access token and retry the request. | Shared `definitions.zoom_error_handler`, attached to every requester; `test_authenticator.py` |
-| Code `4711` | Fail with a configuration error that names the missing scope. | Shared `definitions.zoom_error_handler`; `test_error_handling.py` |
+| Code `4711` | Fail with a configuration error that names the missing scope. | Shared `definitions.zoom_error_handler` and stream-specific filters on `report_user_meetings`, `report_daily`, `chat_channels`, and `zoom_events`; `test_error_handling.py` and stream integration tests |
 | Code `3161` | Ignore the user's meeting-list partition, so that user's meeting streams are skipped. | User-to-meeting parent requesters; `test_error_handling.py` |
 | Code `3001` | Ignore the affected resource when a meeting or webinar was deleted or no longer has report data. | Meeting, webinar, and report requesters with an explicit filter; deleted-meeting case in `test_error_handling.py` |
-| Code `300` | Ignore the response. | `meeting_registrants` requester |
+| Code `300` | Ignore the response. | `meeting_registrants`; `report_user_meetings` and `report_daily` when Zoom reports a date outside its six-month window |
+| Code `200` | Fail with a configuration error when a report requires a Pro-or-higher plan. | `report_user_meetings` and `report_daily` requesters |
+| Code `1001` | Ignore a user removed after user discovery. | `report_user_meetings` and `chat_channels` requesters |
 | HTTP `400` or `404` | Ignore the response; the affected stream can return no records. | Only the stream-specific requesters listed below |
 | Token error `invalid_grant`, `invalid_client`, `invalid_request`, or `unsupported_grant_type` | Fail with a configuration error. | OAuth and Server-to-Server token authenticators; `test_oauth_and_config_migration.py`, `test_authenticator.py` |
 
@@ -40,7 +43,7 @@ The manifest explicitly ignores HTTP `400` responses on `meeting_polls`, `meetin
 
 ## Licence-gated streams
 
-Webinar and report-webinar streams require the Zoom Webinars add-on. The test account has no webinar data, so `acceptance-test-config.yml` lists these streams as empty and bypassed in `basic_read`; each is covered by a mock-server test in `unit_tests/integration/`:
+Webinar and report-webinar streams require the Zoom Webinars add-on. `zoom_events` requires a Webinars Plus or Zoom Events license. The test account lacks data for these licensed streams, so `acceptance-test-config.yml` lists them as empty and bypassed in `basic_read`; each is covered by a mock-server test in `unit_tests/integration/`:
 
 - `webinars` — `test_webinars.py`
 - `webinar_panelists` — `test_webinar_panelists.py`
@@ -53,6 +56,7 @@ Webinar and report-webinar streams require the Zoom Webinars add-on. The test ac
 - `webinar_qna_results` — `test_webinar_qna_results.py`
 - `report_webinars` — `test_report_webinars.py`
 - `report_webinar_participants` — `test_report_webinar_participants.py`
+- `zoom_events` — `test_zoom_events.py`
 
 ## Testing
 

@@ -34,10 +34,13 @@ from unit_tests.conftest import get_source
 _BASE_URL = "https://api.zoom.us/v2"
 
 _CONFIG = {
-    "account_id": "test_account_id",
-    "client_id": "test_client_id",
-    "client_secret": "test_client_secret",
-    "authorization_endpoint": "https://zoom.us/oauth/token",
+    "credentials": {
+        "auth_type": "server_to_server",
+        "account_id": "test_account_id",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "authorization_endpoint": "https://zoom.us/oauth/token",
+    }
 }
 
 _TOKEN_REQUEST = HttpRequest(

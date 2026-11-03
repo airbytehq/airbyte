@@ -8,7 +8,7 @@ This page explains how to set up the Zoom source connector and which Zoom data i
 
 ## Prerequisites
 
-- A Zoom account on a Pro plan or higher. Webinar and report-webinar streams also require the Zoom Webinars add-on.
+- A Zoom account on a Pro plan or higher. Webinar and report-webinar streams also require the Zoom Webinars add-on; `zoom_events` requires a Webinars Plus or Zoom Events license.
 - An account owner or admin who can create an account-level app and grant the required admin scopes.
 - An account-level **General** app set to **Admin-managed** for OAuth2.0, or a **Server-to-Server OAuth** app.
 - For OAuth2.0, have the app's **Client ID**, **Client Secret**, and **Refresh Token** ready. Airbyte Cloud obtains these when you authenticate.
@@ -35,7 +35,7 @@ Both authentication methods use an account-level app. For the scopes to grant, s
 
 #### Required scopes
 
-Add these granular scopes to your Zoom app. If your app uses Zoom's classic scopes, add `user:read:admin`, `meeting:read:admin`, `webinar:read:admin`, and `report:read:admin` instead.
+Add these granular scopes to your Zoom app. If your app uses Zoom's classic scopes, add `user:read:admin`, `meeting:read:admin`, `webinar:read:admin`, `report:read:admin`, `chat_channel:read:admin`, and `zoom_events_basic:read:admin` instead.
 
 | Streams | Granular scopes |
 | :------ | :-------------- |
@@ -59,6 +59,12 @@ Add these granular scopes to your Zoom app. If your app uses Zoom's classic scop
 | `report_meeting_participants` | `report:read:list_meeting_participants:admin` |
 | `report_webinars`, `report_webinar_participants` | `report:read:webinar:admin` |
 | `report_webinar_participants` | `report:read:list_webinar_participants:admin` |
+| `report_user_meetings` | `report:read:user:admin` |
+| `report_daily` | `report:read:daily_usage:admin` |
+| `chat_channels` | `team_chat:read:list_user_channels:admin` |
+| `zoom_events` | `zoom_events:read:list_events:admin` |
+
+If you set up your Zoom app before version 1.5.0, add the scopes for any of these four streams you want to sync. OAuth2.0 users must then re-authenticate so the new token includes the scopes. Server-to-Server OAuth requests a new token on every sync, so it needs no reconnection.
 
 ### Step 2: Set up the Zoom connector in Airbyte
 
@@ -100,6 +106,10 @@ For Server-to-Server OAuth, select that authentication method and enter the app 
 
 Zoom refresh tokens expire after 90 days. Re-authenticate if the source does not sync for that long. Zoom issues a new refresh token whenever the connector refreshes its access token, and the connector saves the new token to the source configuration. Authorizing the same Zoom app again, for example for a second source, revokes previously issued tokens. Server-to-Server OAuth apps do not use refresh tokens; the connector requests a new access token with the app credentials.
 
+#### Start Date
+
+**Start Date** (optional, `start_date`): UTC date-time from which to replicate the `report_user_meetings` and `report_daily` streams. `report_daily` starts at the beginning of that month. Zoom only serves these reports for roughly the last six months, so earlier dates are clamped to that window. Leave empty to sync everything Zoom still serves.
+
 #### Configure the source with the Airbyte API or Terraform
 
 Before version 1.4.0, Server-to-Server OAuth settings were top-level fields. Airbyte migrates existing configurations automatically. If you manage the source through the Airbyte API or Terraform, put the settings inside the `credentials` object:
@@ -114,12 +124,14 @@ A configuration with only the old top-level `account_id`, `client_id`, `client_s
 | Sync mode | Supported? |
 | :-------- | :--------- |
 | Full Refresh | Yes |
-| Incremental | No |
+| Incremental | Yes (`report_user_meetings` only) |
 | Namespaces | No |
+
+`report_daily` uses Full Refresh and re-reads approximately the last six months. `report_user_meetings` supports Incremental syncs.
 
 ## Supported streams
 
-The connector reads account users, then each user's meetings and webinars, and then details for those meetings and webinars.
+The connector reads account users, then each user's meetings and webinars, and then details for those meetings and webinars. It also syncs user meeting reports, daily account reports, chat channels, and Zoom Events.
 
 | Stream | Endpoint | Primary key |
 | :----- | :------- | :---------- |
@@ -142,10 +154,14 @@ The connector reads account users, then each user's meetings and webinars, and t
 | `report_meeting_participants` | [GET /report/meetings/&#123;meetingId&#125;/participants](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/meetings/{meetingId}/participants) | `id` |
 | `report_webinars` | [GET /report/webinars/&#123;webinarId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/webinars/{webinarId}) | — |
 | `report_webinar_participants` | [GET /report/webinars/&#123;webinarId&#125;/participants](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/webinars/{webinarId}/participants) | — |
+| `report_user_meetings` | [GET /report/users/&#123;userId&#125;/meetings](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/users/{userId}/meetings) | `uuid` |
+| `report_daily` | [GET /report/daily](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/daily) | `date` |
+| `chat_channels` | [GET /chat/users/&#123;userId&#125;/channels](https://developers.zoom.us/docs/api/chat/#tag/chat-channels/GET/chat/users/{userId}/channels) | `id`, `user_id` |
+| `zoom_events` | [GET /zoom_events/events](https://developers.zoom.us/docs/api/events/#tag/events/GET/zoom_events/events) | `event_id` |
 
 ## Limitations and troubleshooting
 
-The connector currently supports Full Refresh only. Webinar streams require the Zoom Webinars add-on. Zoom may return no records for streams that your account or host does not have access to.
+Webinar streams require the Zoom Webinars add-on, and `zoom_events` requires a Webinars Plus or Zoom Events license. Zoom may return no records for streams that your account or host does not have access to. Report streams can only access data from roughly the last six months.
 
 - If Zoom rejects the OAuth token request, the connection test or sync fails with a configuration error. For OAuth2.0, `invalid_grant` means the refresh token expired or was revoked; re-authenticate the source. `invalid_client` indicates an incorrect client ID or secret, or a deactivated app. For Server-to-Server OAuth, `invalid_request` means the Account ID is incorrect, and `unsupported_grant_type` means the selected authentication method does not match the app type. An S2S error message may say the refresh token was rejected even though S2S apps do not use refresh tokens.
 - If Zoom returns code `4711`, the access token lacks a required scope. Add the missing scope from [Required scopes](#required-scopes) to the Zoom app and re-authenticate if you use OAuth2.0. Streams that ignore HTTP `400` responses return no records instead of reporting missing scopes.
@@ -173,6 +189,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.5.1 | 2026-11-03 | [90076](https://github.com/airbytehq/airbyte/pull/90076) | Update dependencies |
+| 1.5.0 | 2026-10-22 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams; the new streams need additional Zoom app scopes |
 | 1.4.1 | 2026-10-21 | [89087](https://github.com/airbytehq/airbyte/pull/89087) | Add registry metadata, spec titles and clearer Server-to-Server field descriptions |
 | 1.4.0 | 2026-10-21 | [88359](https://github.com/airbytehq/airbyte/pull/88359) | Add OAuth2.0 authentication as the default, with automatic migration of existing Server-to-Server configurations |
 | 1.3.2 | 2026-10-20 | [89459](https://github.com/airbytehq/airbyte/pull/89459) | Update dependencies |

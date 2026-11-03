@@ -1,7 +1,0 @@
-{
-  "cursor": {
-    "id": 0,
-    "ns": "sample_airbnb.$cmd.listCollections",
-    "firstBatch": []
-  }
-}
