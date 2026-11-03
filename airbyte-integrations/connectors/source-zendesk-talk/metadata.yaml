@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c8630570-086d-4a40-99ae-ea5b18673071
-  dockerImageTag: 2.0.34
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-zendesk-talk
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
   externalDocumentationUrls:
@@ -35,6 +35,12 @@ data:
     - title: Zendesk Status
       url: https://status.zendesk.com/
       type: status_page
+    - title: Zendesk end of availability of Incremental APIs for third-party developers
+      url: https://support.zendesk.com/hc/en-us/articles/11275429993498-Announcing-end-of-availability-of-Incremental-APIs-for-third-party-developers
+      type: api_deprecations
+    - title: Migrating third-party integrations from Incremental APIs
+      url: https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/incremental-third-party/
+      type: api_deprecations
   githubIssueLabel: source-zendesk-talk
   icon: zendesk-talk.svg
   license: ELv2
@@ -53,6 +59,28 @@ data:
   supportLevel: certified
   releases:
     breakingChanges:
+      3.0.0:
+        message: >-
+          The `calls` and `call_legs` streams are removed. Zendesk is ending access to its
+          Incremental APIs for third-party integrations, including the Talk incremental call
+          and call-leg exports these streams read from, and names no replacement endpoint for
+          them. Zendesk starts blocking these requests on December 2, 2026 and finishes the
+          rollout on January 19, 2027, so on version 2.x the two streams stop syncing during
+          that window. Connections that don't sync `calls` or `call_legs` are not affected and
+          need no action. Data these streams already synced stays in your destination. After
+          upgrading, refresh the source schema so the two streams leave the connection; no
+          other stream needs a clear or re-sync. If you need more time on 2.x, your Zendesk
+          admin can request a 60-day extension for Airbyte in Admin Center under
+          Apps & integrations > APIs > API Configuration; the streams still stop working
+          when the extension ends. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/zendesk-talk-migrations#upgrading-to-300).
+        upgradeDeadline: "2026-12-02"
+        deadlineAction: auto_upgrade
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - calls
+              - call_legs
       2.0.0:
         upgradeDeadline: "2026-01-30"
         message: "This version adds OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate to use the new flow with rotating refresh tokens."
@@ -74,8 +102,9 @@ data:
         strategy: fast
   suggestedStreams:
     streams:
-      - calls
-      - call_legs
+      - agents_activity
+      - account_overview
+      - phone_numbers
   tags:
     - language:manifest-only
     - cdk:low-code
