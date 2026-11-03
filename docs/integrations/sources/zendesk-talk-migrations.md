@@ -18,16 +18,17 @@ The `start_date` field stays in the connector configuration, now optional, so ex
 
 ### Who is affected
 
-Connections that sync `calls` or `call_legs`. Connections that sync only the other streams (`account_overview`, `addresses`, `agents_activity`, `agents_overview`, `current_queue_activity`, `greeting_categories`, `greetings`, `ivr_menus`, `ivr_routes`, `ivrs`, `phone_numbers`) aren't affected and need no action.
+Sources with at least one connection, including paused connections, that selects `calls` or `call_legs`. Airbyte keeps such a source on version 2.x until you upgrade it, and on Airbyte Cloud disables every connection on that source after December 2, 2026 until the upgrade. Sources whose connections never select the two streams are upgraded automatically and need no action. The other streams (`account_overview`, `addresses`, `agents_activity`, `agents_overview`, `current_queue_activity`, `greeting_categories`, `greetings`, `ivr_menus`, `ivr_routes`, `ivrs`, `phone_numbers`) are unchanged.
 
 ### Upgrade steps
 
-1. In every connection that syncs `calls` or `call_legs`, turn the two streams off in the stream selection and save. Do this before upgrading: a sync on version 3.0.0 that still lists the two streams can replace their destination tables with empty ones in overwrite modes, and Zendesk can't provide that call history again.
+1. In every connection on the source that selects `calls` or `call_legs`, including paused connections, turn the two streams off in the stream selection and save. Do this before upgrading: a sync on version 3.0.0 that still lists the two streams can replace their destination tables with empty ones in overwrite modes, and Zendesk can't provide that call history again.
 2. Upgrade the Zendesk Talk source to version 3.0.0 (see the [connector upgrade guide](#connector-upgrade-guide) at the end of this page).
 3. Refresh the source schema for each connection and save, so the two streams leave the catalog.
-4. Keep syncing. No stream needs to be cleared or re-synced: the remaining streams are unchanged, and the call history already written by `calls` and `call_legs` stays in your destination tables. Don't clear or delete those tables unless you no longer need the history.
+4. If Airbyte disabled a connection on this source, turn it back on.
+5. Keep syncing. No stream needs to be cleared or re-synced: the remaining streams are unchanged, and the call history already written by `calls` and `call_legs` stays in your destination tables. Don't clear or delete those tables unless you no longer need the history.
 
-On Airbyte Cloud, connections still using version 2.x after December 2, 2026 are disabled until they upgrade. On self-managed Airbyte the upgrade is opt-in, but version 2.x has no supported way to keep syncing the two streams. Zendesk's announcement also offers a 60-day extension that a Zendesk admin can request in Admin Center under **Apps & integrations > APIs > API Configuration**; it applies to the partner's OAuth app and doesn't keep the two streams running in Airbyte, so don't rely on it.
+On Airbyte Cloud, every connection on a source kept on 2.x by this change is disabled after December 2, 2026 until the source is upgraded. On self-managed Airbyte the upgrade is opt-in, but version 2.x has no supported way to keep syncing the two streams. Zendesk's announcement also offers a 60-day extension that a Zendesk admin can request in Admin Center under **Apps & integrations > APIs > API Configuration**; it doesn't help in Airbyte, because version 3.0.0 no longer has the streams and Cloud disables the 2.x connections after December 2, 2026, so don't rely on it.
 
 ### Update downstream queries
 
