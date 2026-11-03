@@ -16,14 +16,14 @@ Agents act with the Airbyte permissions of the person or application using the [
 
 ### Turn on agent access
 
-1. In Airbyte, open **Context layer**.
+1. In Airbyte, open **Context layer** > **Settings**.
 2. Turn on **Agent access**.
 
 Airbyte turns on agent access for all supported sources in your organization. Destinations aren't turned on automatically.
 
 ### Choose sources and destinations
 
-1. Open **Context layer** and click **Sources** or **Destinations**.
+1. Open **Context layer** > **Agent access**.
 2. Find the workspace.
 3. Turn **Agent access** on or off for each source or destination.
 
@@ -31,7 +31,7 @@ You can also change **Agent access** in a source or destination's **Settings**. 
 
 ### Turn off agent access
 
-To stop direct reads from one resource, turn off its **Agent access** setting. To stop direct reads across the organization, turn off **Agent access** in **Context layer** and click **Disable** to confirm.
+To stop direct reads from one resource, turn off its **Agent access** setting. To stop direct reads across the organization, open **Context layer** > **Settings**, turn off **Agent access**, and click **Disable** to confirm.
 
 Airbyte keeps your resource selections and restores them if you turn organization agent access back on. Turning off agent access doesn't stop replication or independently enabled search.
 
@@ -39,7 +39,7 @@ Airbyte keeps your resource selections and restores them if you turn organizatio
 
 ### Turn on search
 
-1. In Airbyte, open **Context layer** settings.
+1. In Airbyte, open **Context layer** > **Settings**.
 2. Turn on **Semantic search**.
 3. Review and accept the new terms of service for storing indexed data on Airbyte infrastructure.
 
@@ -53,7 +53,7 @@ Search indexes data synced after you enable it. To make previously synced data s
 
 ### Turn off search
 
-Turn off **Semantic search** for a connection to stop indexing it, or turn off the organization setting to stop search for the organization. Airbyte deletes the affected index. Re-enabling search requires a new backfill to search previously synced data, using destination compute again.
+Turn off **Semantic search** for a connection on **Context layer** > **Semantic search** to stop indexing it, or turn off **Semantic search** on **Context layer** > **Settings** to stop search for the organization. Airbyte deletes the affected index. Re-enabling search requires a new backfill to search previously synced data, using destination compute again.
 
 Turning off search doesn't turn off agent access or data replication.
 
