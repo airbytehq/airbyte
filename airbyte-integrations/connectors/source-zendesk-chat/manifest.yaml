@@ -267,8 +267,8 @@ definitions:
         request_window_splitting:
           type: RequestWindowSplitting
           failure_message: >-
-            Zendesk returns at most 10,000 chats per search, so a window with more updated chats than that
-            cannot be read completely. Contact Airbyte support.
+            Zendesk returns at most 10,000 chats per search, so the chats stream cannot completely read a
+            window in which more chats than that were updated. Contact Airbyte support.
         requester:
           $ref: "#/definitions/base_requester"
           path: chats/search
