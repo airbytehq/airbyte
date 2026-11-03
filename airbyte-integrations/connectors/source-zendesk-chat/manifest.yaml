@@ -42,9 +42,10 @@ definitions:
         failure_type: config_error
         error_message: >-
           Zendesk rejected the incremental export request for stream agent_timeline with HTTP 403.
-          Zendesk no longer serves incremental exports to third-party integrations such as Airbyte.
-          Request the 60-day partner extension in Zendesk Admin Center under
-          Apps and integrations > APIs > API configuration, or deselect the agent_timeline stream.
+          Zendesk is withdrawing incremental exports from third-party integrations such as Airbyte,
+          and the export also requires an Owner or Administrator role. Request the 60-day partner
+          extension in Zendesk Admin Center under Apps and integrations > APIs > API configuration,
+          check the role of the authorizing user, or deselect the agent_timeline stream.
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
@@ -263,6 +264,11 @@ definitions:
         https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#search-chats
       retriever:
         type: SimpleRetriever
+        request_window_splitting:
+          type: RequestWindowSplitting
+          failure_message: >-
+            Zendesk returns at most 10,000 chats per search, so a window with more updated chats than that
+            cannot be read completely. Contact Airbyte support.
         requester:
           $ref: "#/definitions/base_requester"
           path: chats/search
@@ -272,14 +278,13 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
+              # Search Chats serves at most 10,000 results (250 pages of 40) per query and does not document
+              # whether `count` is capped at that value, hence `>=`. The window is split in halves until
+              # every piece fits; the predicate fires on the first page, before any record is emitted.
               - type: HttpResponseFilter
-                predicate: "{{ response.get('count', 0) > 10000 }}"
-                action: FAIL
-                failure_type: system_error
-                error_message: >-
-                  Zendesk Chat search returned more than 10,000 chats for a one-day window of the
-                  chats stream, which exceeds the Search Chats result limit, so the window cannot be
-                  read completely.
+                predicate: "{{ response.get('count', 0) >= 10000 }}"
+                action: SPLIT_REQUEST_WINDOW
+                error_message: "Search Chats returned {{ response.get('count') }} results, at or above Zendesk's 10,000-result cap."
               - type: HttpResponseFilter
                 http_codes: [404]
                 action: IGNORE
@@ -352,6 +357,12 @@ definitions:
             field_path:
               - docs
               - "*"
+          # List Chats answers an id it no longer has with `"<id>": null` (HTTP 200), for example a chat
+          # deleted between the search and this fetch. Without the filter the null reaches schema
+          # normalization and fails the sync.
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record is not none }}"
         partition_router:
           type: GroupingPartitionRouter
           group_size: 50

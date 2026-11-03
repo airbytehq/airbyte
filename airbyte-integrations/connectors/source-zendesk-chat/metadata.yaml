@@ -50,15 +50,17 @@ data:
     breakingChanges:
       2.0.0:
         message: >-
-          Zendesk stops serving incremental exports to third-party integrations such as Airbyte on
+          Zendesk stops serving incremental exports to third-party integrations such as Airbyte from
           2026-12-02, so the `chats` stream now reads chats through the Search Chats and List Chats
-          endpoints instead. Its cursor field changes from `update_timestamp` to `timestamp`; existing
-          state is migrated automatically and no clear is required. The fields `deleted`,
-          `update_timestamp` and `engagements` are no longer available and stay empty, and deleted
-          chats are no longer reported. Other streams are unchanged. Refreshing the source schema is
-          optional. See the migration guide:
+          endpoints instead. Its cursor field changes from `update_timestamp` to `timestamp` and the
+          fields `deleted`, `update_timestamp` and `engagements` are removed from the stream; deleted
+          chats are no longer reported. Connections that sync `chats` incrementally are paused after the
+          upgrade because their cursor field no longer exists: refresh the source schema and accept the
+          new cursor to resume. Existing state is migrated automatically and no clear is required.
+          Connections that sync `chats` in full refresh mode and connections without the `chats` stream
+          need no action. See the migration guide:
           https://docs.airbyte.com/integrations/sources/zendesk-chat-migrations#upgrading-to-200
-        upgradeDeadline: "2026-12-02"
+        upgradeDeadline: "2026-12-01"
         deadlineAction: auto_upgrade
         scopedImpact:
           - scopeType: stream

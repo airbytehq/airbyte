@@ -75,7 +75,7 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 
 The Zendesk Chat API enforces a rate limit of [200 requests per minute](https://developer.zendesk.com/api-reference/live-chat/introduction/) per endpoint. The connector handles rate limiting automatically by respecting the `Retry-After` header when a 429 response is returned.
 
-Each sync of the `chats` stream sends one search request per day between the stream's cursor (minus a one-day lookback) or the configured start date and now, plus one extra request per 40 results in a day, plus one request per 50 chats found. The first sync of an account with a start date several years back therefore takes a few minutes of search requests before records appear. Zendesk caps a single search at 10,000 results; a day with more updated chats than that fails the sync with an explicit error.
+Each sync of the `chats` stream sends one search request per day between the stream's cursor (minus a one-day lookback) or the configured start date and now, plus one extra request per 40 results in a day, plus one request per 50 chats found. The first sync of an account with a start date several years back therefore spends 20 to 30 minutes on search requests before records appear, and an account without new chats repeats one search per day since its newest chat on every sync. The rate limit is shared with every other integration that uses the account's Chat API, so these searches can slow down other integrations while the sync runs. Zendesk returns at most 10,000 results per search; when a day holds more updated chats than that, the connector splits the day into shorter windows until each one fits.
 
 ## Troubleshooting
 
@@ -92,11 +92,11 @@ When Zendesk Chat returns a `404 Not Found` response to any request, the connect
 
 ### Zendesk rejected the incremental export request for stream agent_timeline with HTTP 403
 
-Zendesk [no longer serves incremental exports to third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498) such as Airbyte, and the `agent_timeline` stream has no other endpoint to read from. Request the 60-day partner extension in Zendesk Admin Center under **Apps and integrations > APIs > API configuration**, or deselect the `agent_timeline` stream in the connection.
+Zendesk [is withdrawing incremental exports from third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498) such as Airbyte, and the `agent_timeline` stream has no other endpoint to read from. The export also requires the authorizing user to have the Owner or Administrator role, so a 403 can also mean that the user who authorized Airbyte lost that role. Request the 60-day partner extension in Zendesk Admin Center under **Apps and integrations > APIs > API configuration**, check the role of the authorizing user, or deselect the `agent_timeline` stream in the connection.
 
-### Zendesk Chat search returned more than 10,000 chats for a one-day window
+### Zendesk returns at most 10,000 chats per search
 
-The `chats` stream finds chats with the Search Chats endpoint one day at a time, and Zendesk returns at most 10,000 results per search. More than 10,000 chats were updated on a single day, so that day cannot be read completely and the sync stops with a system error. Contact Airbyte support if you hit this limit.
+The `chats` stream finds chats with the Search Chats endpoint one day at a time, and Zendesk returns at most 10,000 results per search. When a day holds 10,000 or more updated chats, the connector splits the day into shorter windows (down to about 90 seconds) until each one fits, so the sync continues. The sync only fails with this message when more than 10,000 chats were updated within one such short window, which cannot be read completely. Contact Airbyte support if you hit this limit.
 
 ## Data type map
 

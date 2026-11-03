@@ -163,15 +163,43 @@ class ChatsTest(TestCase):
         assert len({r.record.data["id"] for r in output.records}) == 51
 
     @HttpMocker()
-    def test_given_more_than_10000_results_when_read_then_fail(self, http_mocker: HttpMocker) -> None:
-        """Zendesk caps a search at 10,000 results (250 pages), so a bigger window cannot be read completely."""
-        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([_search_result(_chat_id(1), "2021-01-01T10:00:00Z")], count=10001))
-        # The sync stops on the first window, so the later windows are never requested.
+    def test_given_10000_results_when_read_then_window_is_split(self, http_mocker: HttpMocker) -> None:
+        """
+        Zendesk serves at most 10,000 results per search (250 pages of 40). A first page whose `count` reaches that cap is
+        not read; the day is split in halves and each half is searched on its own, so nothing is lost or emitted twice.
+        """
+        overflow_page = _search_response([_search_result(_chat_id(99), "2021-01-01T00:00:01Z")], count=10000, next_page=2)
+        first_half = ("2021-01-01T00:00:00Z", "2021-01-01T11:59:59Z")
+        second_half = ("2021-01-01T12:00:00Z", "2021-01-01T23:59:59Z")
+        chats = [_chat(_chat_id(1), "2021-01-01T10:00:00Z"), _chat(_chat_id(2), "2021-01-01T15:00:00Z")]
+        http_mocker.get(_search_request(*_WINDOWS[0]), overflow_page)
+        http_mocker.get(_search_request(*first_half), _search_response([_search_result(chats[0]["id"], chats[0]["timestamp"])]))
+        http_mocker.get(_search_request(*second_half), _search_response([_search_result(chats[1]["id"], chats[1]["timestamp"])]))
+        _mock_empty_windows(http_mocker, _WINDOWS[1:])
+        http_mocker.get(_chats_request([c["id"] for c in chats]), _chats_response(chats))
 
-        output = read(_config(), expecting_exception=True)
+        output = read(_config())
 
-        assert len(output.records) == 0
-        assert any("more than 10,000 chats" in error.trace.error.message for error in output.errors)
+        assert sorted(r.record.data["id"] for r in output.records) == [c["id"] for c in chats]
+        assert not output.errors
+
+    @HttpMocker()
+    def test_given_missing_chat_in_fetch_when_read_then_null_doc_is_skipped(self, http_mocker: HttpMocker) -> None:
+        """List Chats answers an id it no longer has (deleted between the search and the fetch) with `"<id>": null`."""
+        present = _chat(_chat_id(1), "2021-01-01T10:00:00Z")
+        missing_id = _chat_id(2)
+        results = [_search_result(present["id"], present["timestamp"]), _search_result(missing_id, "2021-01-01T11:00:00Z")]
+        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response(results))
+        _mock_empty_windows(http_mocker, _WINDOWS[1:])
+        http_mocker.get(
+            _chats_request([present["id"], missing_id]),
+            HttpResponse(body=json.dumps({"docs": {present["id"]: present, missing_id: None}, "count": 1}), status_code=200),
+        )
+
+        output = read(_config())
+
+        assert [r.record.data["id"] for r in output.records] == [present["id"]]
+        assert not output.errors
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:
