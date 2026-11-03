@@ -101,10 +101,7 @@ jobs:
             text+="*${pr_count} ${pr_noun}* auto-merged ${window_phrase}:"$'\n'
             while IFS= read -r pr; do
               number="$(jq -r '.number' <<< "$pr")"
-              title="$(jq -r '.title' <<< "$pr")"
-              title="${title//&/&amp;}"
-              title="${title//</&lt;}"
-              title="${title//>/&gt;}"
+              title="$(jq -r '.title | gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;")' <<< "$pr")"
               text+="• <https://github.com/airbytehq/airbyte/pull/${number}|#${number}> ${title}"$'\n'
             done < <(jq -c '.[]' <<< "$api_prs")
             text+="<!subteam^S08SQDL2RS9|@oc-apis-support> please review and flag any merge that looks wrong."
