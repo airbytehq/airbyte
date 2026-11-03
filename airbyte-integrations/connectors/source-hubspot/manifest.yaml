@@ -2238,6 +2238,8 @@ definitions:
     $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: listings
+      # HubSpot's v3 reference documents listings only by object type id (0-420); the name also resolves on v3,
+      # verified by a live read, and matches the association enum above.
       entity: listings
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.listings.read
