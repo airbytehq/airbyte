@@ -996,17 +996,20 @@ definitions:
 
     accounts:
       $ref: "#/definitions/entity_restricted_stream"
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        partition_router:
+          # A single static partition makes the cursor a ConcurrentPerPartitionCursor in global mode:
+          # created windows still run in parallel, but no STATE is emitted until the walk completes,
+          # so a killed attempt restarts instead of resuming from a checkpoint the now_utc() fallback
+          # could push ahead of windows still being read. Same pattern as bank_accounts.
+          type: ListPartitionRouter
+          cursor_field: accounts_walk
+          values:
+            - all
       incremental_sync:
         $ref: "#/definitions/accounts_cursor"
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - updated
-              # Standard accounts return no created; use the window start, never now, so a
-              # window checkpoint cannot jump ahead of the windows still being read.
-              value: "{{ record.get('updated', record.get('created', stream_slice['start_time'])) | int }}"
-              value_type: integer
+        global_substream_cursor: true
       schema_loader:
         type: InlineSchemaLoader
         schema:

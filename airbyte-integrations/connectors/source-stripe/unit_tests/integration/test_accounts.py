@@ -27,7 +27,6 @@ from integration.accounts_windows import (
     WINDOW_COUNT,
     created_inside_window,
     request_for_window,
-    window_bounds,
     window_request,
     windows_from,
 )
@@ -107,7 +106,21 @@ def _mock_windows(http_mocker: HttpMocker, responses: Dict[int, Union[HttpRespon
 
 
 def _a_state(updated: datetime) -> List[AirbyteStateMessage]:
+    """The bookmark shape versions before 7.1.0 saved; still accepted as input."""
     return StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(updated.timestamp())}).build()
+
+
+def _global_cursor_state(updated: Union[int, str]) -> Dict[str, Any]:
+    """The shape the global substream cursor saves, which bank_accounts has used since 7.0.3."""
+    return {"use_global_cursor": True, "state": {"updated": updated}, "lookback_window": 0}
+
+
+def _a_new_shape_state(updated: datetime) -> List[AirbyteStateMessage]:
+    return StateBuilder().with_stream_state(_STREAM_NAME, _global_cursor_state(int(updated.timestamp()))).build()
+
+
+def _bookmark(output: EntrypointOutput) -> str:
+    return output.most_recent_state.stream_state.state["updated"]
 
 
 def _read_incremental(config: Dict[str, Any], state: List[AirbyteStateMessage], expecting_exception: bool = False) -> EntrypointOutput:
@@ -128,7 +141,8 @@ class AccountsTest(TestCase):
         assert len(actual_messages.records) == 1
         for window in windows:
             http_mocker.assert_number_of_calls(window, 1)
-        assert actual_messages.most_recent_state.stream_state.updated == str(created)
+        assert len(actual_messages.state_messages) == 1
+        assert vars(actual_messages.most_recent_state.stream_state) == _global_cursor_state(str(created))
 
     @HttpMocker()
     def test_pagination(self, http_mocker: HttpMocker) -> None:
@@ -170,10 +184,10 @@ class AccountsTest(TestCase):
         ]
         for window in windows:
             http_mocker.assert_number_of_calls(window, 1)
-        assert actual_messages.most_recent_state.stream_state.updated == str(created_inside_window(WINDOW_COUNT - 1))
+        assert _bookmark(actual_messages) == str(created_inside_window(WINDOW_COUNT - 1))
 
     @HttpMocker()
-    def test_standard_account_without_created_gets_window_start(self, http_mocker: HttpMocker) -> None:
+    def test_standard_account_without_created_gets_sync_time(self, http_mocker: HttpMocker) -> None:
         standard_account = _create_record().with_id("acct_standard").build()
         standard_account.pop("created")
         standard_account["type"] = "standard"
@@ -184,7 +198,7 @@ class AccountsTest(TestCase):
 
         assert len(actual_messages.records) == 1
         assert actual_messages.records[0].record.data["id"] == "acct_standard"
-        assert actual_messages.records[0].record.data["updated"] == int(window_bounds(1)[0].timestamp())
+        assert actual_messages.records[0].record.data["updated"] == int(_NOW.timestamp())
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -205,7 +219,7 @@ class AccountsIncrementalTest(TestCase):
         assert len(output.records) == 1
         assert output.records[0].record.data["updated"] == record_created
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert output.most_recent_state.stream_state.updated == str(record_created)
+        assert _bookmark(output) == str(record_created)
 
     @HttpMocker()
     def test_given_state_and_lookback_window_when_read_then_created_gte_is_state_minus_lookback(self, http_mocker: HttpMocker) -> None:
@@ -218,7 +232,7 @@ class AccountsIncrementalTest(TestCase):
         output = _read_incremental(_config_2010().with_lookback_window_in_days(_LOOKBACK_WINDOW_IN_DAYS).build(), _a_state(_STATE_DATETIME))
 
         assert len(output.records) == 1
-        assert output.most_recent_state.stream_state.updated == str(int(_STATE_DATETIME.timestamp()))
+        assert _bookmark(output) == str(int(_STATE_DATETIME.timestamp()))
 
     @HttpMocker()
     def test_given_state_and_no_new_accounts_when_read_then_state_is_unchanged(self, http_mocker: HttpMocker) -> None:
@@ -228,7 +242,17 @@ class AccountsIncrementalTest(TestCase):
 
         assert len(output.records) == 0
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
-        assert output.most_recent_state.stream_state.updated == str(int(_STATE_DATETIME.timestamp()))
+        assert vars(output.most_recent_state.stream_state) == _global_cursor_state(str(int(_STATE_DATETIME.timestamp())))
+
+    @HttpMocker()
+    def test_given_new_shape_state_when_read_then_bookmark_is_read_from_nested_state(self, http_mocker: HttpMocker) -> None:
+        record_created = int(datetime(2010, 3, 10, tzinfo=timezone.utc).timestamp())
+        http_mocker.get(_incremental_request(_STATE_DATETIME).build(), _a_page_with(_create_record().with_cursor(record_created)))
+
+        output = _read_incremental(_config_2010().build(), _a_new_shape_state(_STATE_DATETIME))
+
+        assert len(output.records) == 1
+        assert vars(output.most_recent_state.stream_state) == _global_cursor_state(str(record_created))
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records_from_all_pages(self, http_mocker: HttpMocker) -> None:
@@ -249,47 +273,33 @@ class AccountsIncrementalTest(TestCase):
         output = _read_incremental(_config_2010().build(), _a_state(_STATE_DATETIME))
 
         assert len(output.records) == 2
-        assert output.most_recent_state.stream_state.updated == str(second_record_created)
+        assert _bookmark(output) == str(second_record_created)
 
     @HttpMocker()
-    def test_failed_window_then_retry_resumes_from_checkpoint(self, http_mocker: HttpMocker) -> None:
-        checkpoint = datetime(2010, 1, 10, tzinfo=timezone.utc)
-        first_windows = _mock_windows(
+    def test_failed_window_emits_no_state_and_retry_restarts(self, http_mocker: HttpMocker) -> None:
+        first_created = created_inside_window(0)
+        second_created = created_inside_window(1)
+        windows = _mock_windows(
             http_mocker,
             {
-                0: _a_page_with(_create_record().with_id("acct_before_failure").with_cursor(int(checkpoint.timestamp()))),
-                1: a_response_with_status(401),
+                0: _a_page_with(_create_record().with_id("acct_first_window").with_cursor(first_created)),
+                1: [
+                    a_response_with_status(401),
+                    _a_page_with(_create_record().with_id("acct_second_window").with_cursor(second_created)),
+                ],
             },
         )
 
         first_attempt = _read_incremental(_config_2010().build(), _NO_STATE, expecting_exception=True)
 
         assert first_attempt.errors
-        assert first_attempt.state_messages[-1].state.stream.stream_state.updated == str(int(checkpoint.timestamp()))
-        for request in first_windows:
-            http_mocker.assert_number_of_calls(request, 1)
+        assert first_attempt.state_messages == []
 
-        retry_windows = windows_from(checkpoint)
-        assert retry_windows == [
-            (checkpoint, datetime(2010, 2, 8, 23, 59, 59, tzinfo=timezone.utc)),
-            (datetime(2010, 2, 9, tzinfo=timezone.utc), datetime(2010, 3, 10, 23, 59, 59, tzinfo=timezone.utc)),
-            (datetime(2010, 3, 11, tzinfo=timezone.utc), datetime(2010, 3, 15, 12, 0, 0, tzinfo=timezone.utc)),
-        ]
-        created_in_failed_region = int(datetime(2010, 2, 14, tzinfo=timezone.utc).timestamp())
-        retry_requests = [request_for_window(_create_accounts_request(), start, end).build() for start, end in retry_windows]
-        # created[gte] is inclusive, so the checkpoint record comes back with the retry.
-        http_mocker.get(
-            retry_requests[0], _a_page_with(_create_record().with_id("acct_before_failure").with_cursor(int(checkpoint.timestamp())))
-        )
-        http_mocker.get(
-            retry_requests[1], _a_page_with(_create_record().with_id("acct_in_failed_region").with_cursor(created_in_failed_region))
-        )
-        http_mocker.get(retry_requests[2], _a_page_with())
-
-        retry = _read_incremental(_config_2010().build(), _a_state(checkpoint))
+        retry = _read_incremental(_config_2010().build(), _NO_STATE)
 
         assert not retry.errors
-        assert sorted(record.record.data["id"] for record in retry.records) == ["acct_before_failure", "acct_in_failed_region"]
-        for request in retry_requests:
-            http_mocker.assert_number_of_calls(request, 1)
-        assert retry.most_recent_state.stream_state.updated == str(created_in_failed_region)
+        assert sorted(record.record.data["id"] for record in retry.records) == ["acct_first_window", "acct_second_window"]
+        for window in windows:
+            http_mocker.assert_number_of_calls(window, 2)
+        assert len(retry.state_messages) == 1
+        assert vars(retry.most_recent_state.stream_state) == _global_cursor_state(str(second_created))
