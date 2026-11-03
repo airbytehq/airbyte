@@ -434,12 +434,11 @@ def test_reference_stream_incremental_read_starts_from_state(manifest):
 
 
 @freeze_time(FROZEN_NOW)
-def test_transaction_streams_keep_30_day_windows(manifest):
-    config = _frozen_config(start_date="2026-01-01T00:00:00Z")
+def test_transaction_streams_use_365_day_windows(manifest):
+    config = _frozen_config(start_date="2025-01-01T00:00:00Z")
     windows = [
-        ("2026-01-01T00:00:00+00:00", "2026-01-31T00:00:00+00:00"),
-        ("2026-01-31T00:00:00+00:00", "2026-03-02T00:00:00+00:00"),
-        ("2026-03-02T00:00:00+00:00", "2026-03-15T12:00:00+00:00"),
+        ("2025-01-01T00:00:00+00:00", "2026-01-01T00:00:00+00:00"),
+        ("2026-01-01T00:00:00+00:00", "2026-03-15T12:00:00+00:00"),
     ]
     requests = [
         HttpRequest(
@@ -464,7 +463,7 @@ def test_transaction_streams_keep_30_day_windows(manifest):
             http_mocker.assert_number_of_calls(request, 1)
 
     assert output.errors == []
-    assert len(output.records) == 3
+    assert [record.record.data["Id"] for record in output.records] == ["1", "2"]
 
 
 @freeze_time(FROZEN_NOW)
