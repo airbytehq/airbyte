@@ -1,20 +1,35 @@
 # Calendly
 
-Calendly source syncs your organization members, groups, available event types, and scheduled events from Calendly!
+The Calendly source syncs organization members, groups, event types, scheduled events and invitees, routing forms and submissions, contacts, outgoing communications, activity logs, and meeting recaps.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 | --- | --- | --- | --- |
 | `api_key` | `string` | Calendly personal access token. In Calendly, open the Profile menu, select Developer, then Personal access tokens. If Developer is missing from the menu, use the Integrations page. | |
-| `start_date` | `string` | Sync scheduled events starting on or after this time, in UTC ISO-8601 format, for example `2024-01-01T00:00:00Z`. | |
+| `start_date` | `string` | Start time for scheduled events and the incremental communications, activity log, and meeting recap streams, in UTC ISO-8601 format, for example `2024-01-01T00:00:00Z`. | |
 | `lookback_days` | `number` | Days to subtract from the start time of the latest synced event when an incremental `scheduled_events` sync starts. | 0 |
 
 :::note
 
-Since March 2026, Calendly grants newly created [personal access tokens](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) no API access until you select [authorization scopes](https://developer.calendly.com/docs/authentication/scopes) for them. When you create a token for Airbyte, select the following read scopes: `users:read`, `event_types:read`, `groups:read`, `organizations:read`, and `scheduled_events:read`. Tokens created before this change keep their existing access. Create the token as an owner or admin of your Calendly organization: Calendly shows organization-wide scheduled events only to them.
+Since March 2026, Calendly grants newly created [personal access tokens](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) no API access until you select [authorization scopes](https://developer.calendly.com/docs/authentication/scopes) for them. Select the read scope of every stream you sync using the table below. Tokens created before this change keep their existing access. Organization-scoped streams also need `users:read` to look up the current organization, and the connection check always needs `users:read`. Use an owner or admin token for organization-wide scheduled events and the Enterprise streams. A successful connection check does not verify every selected stream's scope; a missing scope fails the sync and appears in the `required_scopes` error detail.
 
 :::
+
+| Stream | Required read scope |
+| --- | --- |
+| `api_user` | `users:read` |
+| `event_types` | `event_types:read` |
+| `groups` | `groups:read` |
+| `organization_memberships` | `organizations:read` |
+| `scheduled_events` | `scheduled_events:read` |
+| `event_invitees` | `scheduled_events:read` |
+| `routing_forms` | `routing_forms:read` |
+| `routing_form_submissions` | `routing_forms:read` |
+| `contacts` | `contacts:read` |
+| `outgoing_communications` | `outgoing_communications:read` |
+| `activity_log_entries` | `activity_log:read` |
+| `meeting_recaps` | `meeting_recaps:read` |
 
 ## Streams
 
@@ -32,6 +47,22 @@ Incremental syncs of `scheduled_events` resume from the start time of the latest
 | organization_memberships | uri         | DefaultPaginator | ✅                 | ❌                   |
 | scheduled_events         | uri         | DefaultPaginator | ✅                 | ✅                   |
 | event_invitees           | uri         | DefaultPaginator | ✅                 | ✅                   |
+| routing_forms            | uri         | DefaultPaginator | ✅                 | ❌                   |
+| routing_form_submissions  | uri         | DefaultPaginator | ✅                 | ❌                   |
+| contacts                 | uri         | DefaultPaginator | ✅                 | ❌                   |
+| outgoing_communications  | None        | DefaultPaginator | ✅                 | ✅                   |
+| activity_log_entries     | uri         | DefaultPaginator | ✅                 | ✅                   |
+| meeting_recaps           | uri         | DefaultPaginator | ✅                 | ✅                   |
+
+`routing_form_submissions` reads every routing form returned for the organization, passing each form's URI as the `form` parameter. Contacts are scoped to the token's organization without an organization query parameter.
+
+Outgoing communications and activity logs require an Enterprise subscription. Meeting recaps require a paid plan with Notetaker enabled. When Calendly explicitly reports that the plan or feature is unavailable, these streams complete without records and log a message explaining the requirement. Missing read scopes, owner/admin permission errors, and other forbidden responses still fail the sync.
+
+The three new incremental streams use bounded request windows ending at the sync time: `created_at` for outgoing communications, `occurred_at` for activity logs, and `start_time` for meeting recaps. The connector also filters records outside that window before updating state, so future timestamps cannot advance these cursors. These streams do not use `lookback_days`.
+
+Meeting recaps include both Calendly-scheduled and external meetings. Calendly returns available recaps by default; processing and unavailable recaps are not requested. The cursor tracks the meeting's start time, not the recap's creation or update time. Use Full refresh to pick up recaps made available later for older meetings or changes to previously synced recaps.
+
+The [OpenAPI schema](https://developer.calendly.com/openapi/calendly-api.yaml) does not provide a unique identifier for outgoing communications. This stream therefore has no declared primary key and cannot use deduplicated history; choose an append or overwrite sync mode. Repeated incremental boundary records may appear in append mode.
 
 ## IP allow list
 
@@ -44,6 +75,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.4.0 | 2026-11-03 | | Added routing forms and submissions, contacts, outgoing communications, activity logs, and meeting recaps. |
 | 0.2.0 | 2026-11-03 | [90829](https://github.com/airbytehq/airbyte/pull/90829) | Handle rate limits and token errors, declare missing fields, fix the crash when `lookback_days` is unset, stop dropping event types updated before 2021 and invitees booked before the start date (refresh these streams to backfill) |
 | 0.1.58 | 2026-11-03 | [90473](https://github.com/airbytehq/airbyte/pull/90473) | Update dependencies |
 | 0.1.57 | 2026-10-27 | [89813](https://github.com/airbytehq/airbyte/pull/89813) | Update dependencies |

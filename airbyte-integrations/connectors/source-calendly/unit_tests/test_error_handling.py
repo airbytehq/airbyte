@@ -81,7 +81,7 @@ def test_each_requester_classifies_errors(stream: str, status: int, action: Resp
         (
             403,
             {"title": "Permission Denied", "message": "You do not have permission to access this resource."},
-            ["owner or admin of the Calendly organization", "users:read, event_types:read, groups:read, organizations:read"],
+            ["owner or admin of the Calendly organization", "read scope of every selected stream"],
         ),
         (
             403,

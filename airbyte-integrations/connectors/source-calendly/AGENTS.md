@@ -2,7 +2,7 @@
 
 ## 1. Authentication Failures Stop the Sync, but Deleted Parent Events Do Not
 
-Calendly personal access tokens created since March 2026 require explicit [authorization scopes](https://developer.calendly.com/docs/authentication/scopes). Keep one `DefaultErrorHandler` per requester and no `CompositeErrorHandler`: the shared handler classifies errors consistently, while the invitee requester overrides only the missing-parent case. Authentication messages tell the user how to fix the token and end with Calendly's response `message`.
+Calendly personal access tokens created since March 2026 require explicit [authorization scopes](https://developer.calendly.com/docs/authentication/scopes). Keep one `DefaultErrorHandler` per requester and no `CompositeErrorHandler`: the shared handler classifies errors consistently, the invitee requester overrides only the missing-parent case, and the three plan-gated streams override only explicit upgrade/feature messages. Authentication messages tell the user how to fix the token and end with Calendly's response `message`. Keep the per-stream scope table in CONTRIBUTING.md synchronized with the connector docs.
 
 | HTTP status | Base requester action / failure type | Invitee requester action / failure type | Meaning and response |
 | --- | --- | --- | --- |
@@ -49,3 +49,34 @@ New nullable fields may use documented formats, such as `date-time` inside the n
 The connection check reads `api_user` through `GET /users/me`, which requires `users:read` according to Calendly's [scope reference](https://developer.calendly.com/docs/authentication/scopes). It does not list event types or scheduled events and does not prove that the token has every scope needed by all selected streams, or that its owner is an organization owner or admin. Organization-scoped reads also obtain the current organization from this user response.
 
 **Why this matters:** Switching the check back to a list stream creates unnecessary access requirements during setup. A successful check must not be presented as validation of all read scopes; missing stream-specific scopes still fail with an actionable 403 during a sync.
+
+## 6. Plan-Gated Streams Skip Only Explicit Upgrade Messages
+
+Outgoing communications and activity logs require Enterprise. Meeting recaps require a paid plan with Notetaker features. Their stream-level `DefaultErrorHandler` inherits the shared backoff and puts a message-only IGNORE predicate before the shared filters. In CDK 7.45.0, `http_codes`, `predicate` and `error_message_contains` are ORed: never add `http_codes: [403]` to the plan filter, or all permission failures will be ignored.
+
+Match only these exact messages from the [OpenAPI specification](https://developer.calendly.com/openapi/calendly-api.yaml):
+- `Please upgrade your Calendly account to Enterprise.`
+- `Please upgrade to a paid Calendly account`
+- `Meeting recap access is not available. Required features are not enabled for your account`
+
+A body containing `required_scopes` must never match, even alongside an upgrade message. Both permission-denied variants (with or without a final period) and unknown 403 bodies fail through the shared config-error handler. CDK's IGNORE action logs the plan notice at INFO and completes the stream empty.
+
+**Why this matters:** Plan unavailability is an expected empty stream, but invalid scopes or organization privileges require user action. A broad status filter hides misconfiguration.
+
+## 7. New Incremental Streams Bound Both Requests and State
+
+`outgoing_communications` uses `created_at` with `min_created_at`/`max_created_at`; `activity_log_entries` uses `occurred_at` with `min_occurred_at`/`max_occurred_at` and `sort=occurred_at:asc`; `meeting_recaps` uses meeting `start_time` with `start_time`/`end_time`. Each `DatetimeBasedCursor` ends at now and enables `is_client_side_incremental` to reject records beyond the request window before updating state. These cursors do not use the scheduled-events lookback.
+
+Communications and activity logs use the current organization's URI from `api_user`. Their single-organization incremental streams use `global_substream_cursor: true`; persisted state contains `state`, `use_global_cursor`, `parent_state`, and `lookback_window`. Recaps are token-scoped and use flat cursor state. Exercise both actual persisted shapes in resume tests. Do not mark these as data feeds: the API does not guarantee descending cursor order for early pagination termination.
+
+The recaps endpoint returns available recaps by default, including external meetings where `event` can be null. Its cursor is not a recap update timestamp: a recap that appears later for an older meeting may fall behind saved state. Full refresh is needed for that backfill and for updates.
+
+`routing_form_submissions` is full refresh, paginates every parent form, and sends `form=parent.uri` plus `sort=created_at:asc`. Contacts send no organization parameter.
+
+**Why this matters:** An unbounded cursor can stall future syncs, while the wrong parent state shape silently loses incremental progress. A meeting-time cursor cannot promise update capture.
+
+## 8. Outgoing Communications Have No Documented Unique Identifier
+
+The OpenAPI email/SMS variants expose `created_at`, `event_uri`, `type`, `to`, and other message fields, but neither has a `uri` or documented stable ID. Keep `primary_key: []`; do not synthesize an allegedly unique key from fields without a uniqueness guarantee. This stream supports append/overwrite, not deduplicated history.
+
+**Why this matters:** Declaring a nonexistent field breaks deduplication; inventing a composite can collapse distinct messages. Mock records must use the actual email/SMS shapes, not a fabricated URI.
