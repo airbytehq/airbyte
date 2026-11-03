@@ -23,8 +23,6 @@ The CDK removes 75% of the code needed to build a new connector, all the repeate
 
 New destinations: MySQL (MSSQL and S3 are coming soon!). New sources: Quickbooks, Iterable, Zendesk Chat and Talk, Appsflyer,... We also made support for larger data sets more mature: better state management, throughput & reliability...
 
-<strong>CHECK OUR CHANGELOGS &gt;&gt;</strong>
-
 * * *
 
 [![Its a party at Airbyte](https://airbyte.com/images/community/newsletter/bodies/2021/05/Its-a-party-at-Airbyte.jpg)](https://airbyte.io/articles/our-story/how-user-success-helps-us-become-the-most-active-slack-community/)

@@ -23,8 +23,6 @@ Until 12/23, build connectors and get a chance to have a mechanical keyboard! We
 
 We added 2 destinations for our connectors: Redshift and Panoply. S3 is the main next one. On our way to ubiquity!
 
-<strong>CHECK THE CONNECTOR CHANGELOG &gt;&gt;</strong>
-
 * * *
 
 [![New sources on Airbyte v2](https://airbyte.com/images/community/newsletter/bodies/2020/12/New-sources-on-Airbyte-v2.png)](https://airbyte.io/sources?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-05%20-20201207)

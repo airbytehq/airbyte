@@ -23,8 +23,6 @@ We just released the 1st version of our API docs. You can now use Airflow and Da
 
 In the past few weeks, we've been expanding incremental across sources and certifying them based on our best practices.
 
-<strong>CHECK THE CHANGELOG &gt;&gt;</strong>
-
 * * *
 
 [![The modern analytics stack 1](https://airbyte.com/images/community/newsletter/bodies/2021/02/The-modern-analytics-stack-1.png)](https://technically.dev/posts/what-your-data-team-is-using)

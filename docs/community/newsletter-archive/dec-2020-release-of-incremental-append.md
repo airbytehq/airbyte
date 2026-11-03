@@ -23,8 +23,6 @@ Our append incremental sync is supported across all our destinations, and 10 sou
 
 4 new sources that get us to 41 sources in total. On our way to 50 by the end of the year!
 
-<strong>CHECK THE CONNECTOR CHANGELOG &gt;&gt;</strong>
-
 * * *
 
 [![Among us with Airbyte team](https://airbyte.com/images/community/newsletter/bodies/2020/12/Among-us-with-Airbyte-team.jpg)](https://airbyte.io/weekly-office-hours/?utm_medium=email&utm_source=newsletter&utm_campaign=newsletter-06%20-20201216)

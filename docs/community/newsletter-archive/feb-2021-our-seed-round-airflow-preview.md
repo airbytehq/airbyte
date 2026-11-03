@@ -73,8 +73,6 @@ If you're interested to join our team and commoditize data integration with us, 
 
 Here's a short tutorial showing how we're leveraging Airbyte and Meilisearch to be able to search through our whole Slack history, even though we're on a free plan.
 
-<strong>CHECK THE TUTORIAL&gt;&gt;</strong>
-
 * * *
 
 ![Build a Slack activity dashboard](https://airbyte.com/images/community/newsletter/bodies/2021/03/Build-a-Slack-activity-dashboard.jpg)
@@ -82,8 +80,6 @@ Here's a short tutorial showing how we're leveraging Airbyte and Meilisearch to 
 <strong>How to build a Slack Activity dashboard, using Airbyte and Apache Superset</strong>
 
 We're showcasing how we've built a Slack activity dashboard using Airbyte and Apache Superset, so you can do that at home in less than an hour.
-
-<strong>CHECK THE TUTORIAL&gt;&gt;</strong>
 
 * * *
 

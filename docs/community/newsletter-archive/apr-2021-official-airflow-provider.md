@@ -23,8 +23,6 @@ Thanks to [@marcosmarxm](https://github.com/marcosmarxm), Airbyte has been relea
 
 Better core and connector upgrade experience. Some new connectors, such as Oracle DB, MongoDB, Gitlab, Instagram, Google Audit logs ...
 
-<strong>CHECK OUR CHANGELOGS &gt;&gt;</strong>
-
 * * *
 
 [![Change Data Capture Postgres](https://airbyte.com/images/community/newsletter/bodies/2021/04/Change-Data-Capture-Postgres.png)](https://docs.airbyte.com/platform/understanding-airbyte/cdc)
@@ -82,5 +80,3 @@ Contribute source connectors and win $500 worth of prizes (your choice between d
 <strong>How to build a Zoom activity dashboard with Zoom meetings and webinar metrics</strong>
 
 Here's a short tutorial showing how we're leveraging Airbyte and Tableau to visualize the activities and impact of Zoom meetings and webinars
-
-<strong>CHECK THE TUTORIAL&gt;&gt;</strong>

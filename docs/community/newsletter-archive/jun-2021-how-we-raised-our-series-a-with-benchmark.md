@@ -23,8 +23,6 @@ Here's the process we went through for our Series-A, including the deck we showe
 
 New destination: S3 is available! New sources: Amplitude, Posthog, Harvest, Okta, Amazon Partner Seller... We will soon release our first-class integration with Kubernetes!
 
-<strong>CHECK THE CHANGELOG &gt;&gt;</strong>
-
 * * *
 
 [![60b70eb2076ff7528b05e9bd Airbyte Community Call Edition 3](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60b70eb2076ff7528b05e9bd_Airbyte%20-%20Community%20Call%20-%20Edition%203.png)](https://www.youtube.com/watch?v=htxlIsMUpQI&t=37s)

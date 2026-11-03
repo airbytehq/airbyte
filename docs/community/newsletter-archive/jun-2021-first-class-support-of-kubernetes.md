@@ -23,8 +23,6 @@ Here's the process we went through for our Series-A, including the deck we showe
 
 This tutorial will describe how to push a custom dbt transformation project back to Airbyte to use during syncs.
 
-<strong>CHECK THE DOCS &gt;&gt;</strong>
-
 * * *
 
 ![60d1243efb2397a93efee6ff s3 Parquet and Minio Snowflake as source](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60d1243efb2397a93efee6ff_s3%20Parquet%20and%20Minio_Snowflake%20as%20source.png)
@@ -32,8 +30,6 @@ This tutorial will describe how to push a custom dbt transformation project back
 **Snowflake as source, Parquet and Minio on S3, and more!**
 
 We now support alternative S3 with Minio S3. We also support Parquet, and Snowflake can now be leveraged as a source connector!
-
-<strong>CHECK OUR PROGRESS &gt;&gt;</strong>
 
 * * *
 

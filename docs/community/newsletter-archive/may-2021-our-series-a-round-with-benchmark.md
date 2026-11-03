@@ -23,8 +23,6 @@ Learn everything about our vision behind our Series-A, led by Benchmark, Accel, 
 
 New destination: MSSQL (a little birdie told us S3 is coming soon!). New sources: Clickhouse, Klaviyo, Asana, Tempo, Recharge... Also, a LOT of new connectors are being built by the community with the CDK. This is so exciting!
 
-<strong>CHECK THE CHANGELOG &gt;&gt;</strong>
-
 * * *
 
 [![60aa018ad93f7d677c58b745 Postgres CDC with Airbyte](https://uploads-ssl.webflow.com/605e01bc25f7e19a82e74788/60aa018ad93f7d677c58b745_Postgres%20CDC%20with%20Airbyte.png)](https://www.youtube.com/watch?v=NMODvLgZvuE)
