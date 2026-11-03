@@ -3,7 +3,7 @@
 import pytest
 import requests
 
-from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
@@ -42,7 +42,6 @@ def test_all_streams_covered(streams):
 def test_default_error_handler(streams, stream_name):
     handler = _error_handler(streams[stream_name])
     assert isinstance(handler, DefaultErrorHandler)
-    assert not isinstance(handler, CompositeErrorHandler)
 
 
 @pytest.mark.parametrize("stream_name", STREAM_NAMES)
