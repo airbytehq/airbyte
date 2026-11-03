@@ -76,7 +76,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 0.3.50 | 2026-11-03 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Upgrade base image to python-connector-base 4.0.2 (Python 3.11) and airbyte-cdk to 1.x, since airbyte-cdk 0.50 cannot run on Python 3.11 |
+| 0.3.50 | 2026-11-03 | [90880](https://github.com/airbytehq/airbyte/pull/90880) | Upgrade base image to python-connector-base 4.0.2 (Python 3.11) and airbyte-cdk to 1.x, since airbyte-cdk 0.50 cannot run on Python 3.11 |
 | 0.3.49 | 2026-11-03 | [90476](https://github.com/airbytehq/airbyte/pull/90476) | Update dependencies |
 | 0.3.48 | 2026-10-27 | [89807](https://github.com/airbytehq/airbyte/pull/89807) | Update dependencies |
 | 0.3.47 | 2026-10-20 | [89116](https://github.com/airbytehq/airbyte/pull/89116) | Update dependencies |
