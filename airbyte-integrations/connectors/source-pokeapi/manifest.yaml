@@ -29,12 +29,36 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/pokemon"
+    pokemon_species:
+      type: DeclarativeStream
+      name: pokemon_species
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/species_requester"
+          path: /{{config['pokemon_name']}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pokemon_species"
   base_requester:
     type: HttpRequester
     url_base: https://pokeapi.co/api/v2/pokemon
+  species_requester:
+    type: HttpRequester
+    url_base: https://pokeapi.co/api/v2/pokemon-species
 
 streams:
   - $ref: "#/definitions/streams/pokemon"
+  - $ref: "#/definitions/streams/pokemon_species"
 
 spec:
   type: Spec
@@ -960,6 +984,59 @@ metadata:
     pokemon: false
 
 schemas:
+  pokemon_species:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      order:
+        type:
+          - "null"
+          - integer
+      base_happiness:
+        type:
+          - "null"
+          - integer
+      capture_rate:
+        type:
+          - "null"
+          - integer
+      gender_rate:
+        type:
+          - "null"
+          - integer
+      hatch_counter:
+        type:
+          - "null"
+          - integer
+      is_baby:
+        type:
+          - "null"
+          - boolean
+      is_legendary:
+        type:
+          - "null"
+          - boolean
+      is_mythical:
+        type:
+          - "null"
+          - boolean
+      color:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      evolution_chain:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
   pokemon:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
