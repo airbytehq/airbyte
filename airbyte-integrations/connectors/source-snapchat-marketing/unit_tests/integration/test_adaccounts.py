@@ -6,9 +6,9 @@ from http import HTTPStatus
 from typing import List, Optional
 from unittest import TestCase
 
-from airbyte_cdk.models import AirbyteStateMessage, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, FailureType, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.request import HttpRequest
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -61,6 +61,37 @@ class TestAdaccounts(TestCase):
         output = _read(config_builder=config())
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == AD_ACCOUNT_ID
+
+    @HttpMocker()
+    def test_read_records_with_configured_ad_account_404_raises_config_error(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint("me").build(),
+            organizations_response(organization_id=ORGANIZATION_ID),
+        )
+        ad_account_request = RequestBuilder.adaccounts_by_id_endpoint(AD_ACCOUNT_ID).build()
+        http_mocker.get(
+            ad_account_request,
+            HttpResponse(
+                body='{"request_status":"ERROR","request_id":"x","error_code":"E3003","display_message":"Resource can not be found"}',
+                status_code=404,
+            ),
+        )
+
+        output = _read(config_builder=config().with_ad_account_ids([AD_ACCOUNT_ID]), expecting_exception=True)
+
+        assert not output.records
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        assert any(
+            error.trace.error.failure_type == FailureType.config_error
+            and "Ad Account IDs" in error.trace.error.message
+            and AD_ACCOUNT_ID in error.trace.error.message
+            for error in output.errors
+        )
+        http_mocker.assert_number_of_calls(ad_account_request, 1)
 
     @HttpMocker()
     def test_read_records_with_pagination(self, http_mocker: HttpMocker) -> None:

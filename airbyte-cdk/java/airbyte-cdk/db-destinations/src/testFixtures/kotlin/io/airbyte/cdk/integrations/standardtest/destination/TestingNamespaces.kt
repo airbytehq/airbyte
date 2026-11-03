@@ -90,7 +90,7 @@ object TestingNamespaces {
     private fun parseDateOrEmpty(dateCandidate: String): Optional<Instant> {
         return try {
             Optional.ofNullable(
-                LocalDate.parse(dateCandidate, FORMATTER).atStartOfDay().toInstant(ZoneOffset.UTC)
+                LocalDate.parse(dateCandidate, FORMATTER).atStartOfDay().toInstant(ZoneOffset.UTC),
             )
         } catch (e: DateTimeParseException) {
             Optional.empty()

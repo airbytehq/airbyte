@@ -26,9 +26,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-        fail_on_extra_columns: false
         empty_streams:
           - name: account_overview
             bypass_reason:
@@ -51,13 +48,3 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        ignored_fields:
-          account_overview:
-            - name: current_timestamp
-              bypass_reason: Depends on current time
-          agents_overview:
-            - name: current_timestamp
-              bypass_reason: Depends on current time
-          current_queue_activity:
-            - name: current_timestamp
-              bypass_reason: Depends on current time

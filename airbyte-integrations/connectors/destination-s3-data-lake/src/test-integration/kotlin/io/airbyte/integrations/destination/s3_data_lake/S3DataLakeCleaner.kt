@@ -19,7 +19,7 @@ object S3DataLakeCleaner : DestinationCleaner {
                 IcebergDestinationCleaner(
                     S3DataLakeTestUtil.getCatalog(
                         S3DataLakeTestUtil.parseConfig(
-                            S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH
+                            S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH,
                         ),
                         S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
                     ),

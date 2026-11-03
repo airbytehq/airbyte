@@ -99,8 +99,8 @@ internal class ConcurrentStreamConsumerTest {
             streams.add(
                 AutoCloseableIterators.fromIterator(
                     messages.iterator(),
-                    airbyteStreamNameNamespacePair
-                )
+                    airbyteStreamNameNamespacePair,
+                ),
             )
         }
         val streamConsumer: Consumer<AutoCloseableIterator<AirbyteMessage>> = mock()

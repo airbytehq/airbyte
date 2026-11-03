@@ -30,13 +30,13 @@ class IntegrationTestOperations(
     fun sync(
         catalog: ConfiguredAirbyteCatalog,
         state: List<AirbyteStateMessage> = listOf(),
-        vararg featureFlags: FeatureFlag
+        vararg featureFlags: FeatureFlag,
     ): BufferingOutputConsumer = read(catalog, state, *featureFlags)
 
     fun read(
         catalog: ConfiguredAirbyteCatalog,
         state: List<AirbyteStateMessage> = listOf(),
-        vararg featureFlags: FeatureFlag
+        vararg featureFlags: FeatureFlag,
     ): BufferingOutputConsumer {
         return CliRunner.source("read", configSpec, catalog, state, *featureFlags).run()
     }

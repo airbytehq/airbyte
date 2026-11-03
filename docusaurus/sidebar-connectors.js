@@ -185,23 +185,23 @@ const sourcePostgres = {
 const sourceMongoDB = {
   type: "category",
   label: "Mongo DB",
-  key: "sources-mongodb-v2-category",
+  key: "sources-mongodb-category",
   link: {
     type: "doc",
-    id: "sources/mongodb-v2",
+    id: "sources/mongodb",
   },
   items: [
     {
       type: "doc",
       label: "Migration Guide",
-      id: "sources/mongodb-v2-migrations",
-      key: "sources-mongodb-v2-migrations",
+      id: "sources/mongodb-migrations",
+      key: "sources-mongodb-migrations",
     },
     {
       type: "doc",
       label: "Troubleshooting",
-      id: "sources/mongodb-v2/mongodb-v2-troubleshooting",
-      key: "sources-mongodb-v2-troubleshooting",
+      id: "sources/mongodb/mongodb-troubleshooting",
+      key: "sources-mongodb-troubleshooting",
     },
   ],
 };
@@ -245,7 +245,7 @@ function getSourceConnectors(registry) {
   const sources = getFilenamesInDir("sources/", SOURCES_DOCS, [
     "readme",
     "postgres",
-    "mongodb-v2",
+    "mongodb",
     "mssql",
     "mysql",
   ]);
