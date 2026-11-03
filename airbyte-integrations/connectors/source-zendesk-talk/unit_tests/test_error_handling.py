@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 """Tests for the error handlers declared in `manifest.yaml`."""
 
@@ -78,12 +78,12 @@ def _read_addresses(expecting_exception: bool = False) -> Any:
     return read(get_source(CONFIG), CONFIG, catalog, expecting_exception=expecting_exception)
 
 
-def test_manifest_has_no_composite_error_handler() -> None:
+def test_every_error_handler_is_a_single_default_error_handler() -> None:
     manifest = _resolved_manifest()
-    composite_handler_type = "".join(("Composite", "ErrorHandler"))
-    composite_handlers = [node for node in _walk(manifest) if node.get("type") == composite_handler_type]
+    error_handlers = [node["error_handler"] for node in _walk(manifest) if "error_handler" in node]
 
-    assert not composite_handlers
+    assert error_handlers
+    assert {handler["type"] for handler in error_handlers} == {"DefaultErrorHandler"}
 
 
 @pytest.mark.parametrize("stream_name", ERROR_HANDLER_STREAMS)
