@@ -372,7 +372,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 4.3.4 | 2026-11-03 | [PR_NUMBER_TBD](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_TBD) | Stop dropping `transactions` whose `created_at` predates the saved cursor when their order is updated after it (refunds, captures, late offsite checkouts, historical backfills); see [Transactions created before their order](#transactions-created-before-their-order) to recover previously skipped records |
+| 4.3.4 | 2026-11-03 | [90851](https://github.com/airbytehq/airbyte/pull/90851) | Stop dropping `transactions` whose `created_at` predates the saved cursor when their order is updated after it (refunds, captures, late offsite checkouts, historical backfills); see [Transactions created before their order](#transactions-created-before-their-order) to recover previously skipped records |
 | 4.3.3 | 2026-11-03 | [90723](https://github.com/airbytehq/airbyte/pull/90723) | Update dependencies |
 | 4.3.2 | 2026-10-30 | [90254](https://github.com/airbytehq/airbyte/pull/90254) | Explain connection test authentication and access scope failures, and improve invalid store name guidance. |
 | 4.3.1 | 2026-10-26 | [89760](https://github.com/airbytehq/airbyte/pull/89760) | Fix `deleted_products` incremental syncs skipping product deletions recorded in the same second as the saved cursor on Shopify API 2026-10 |
