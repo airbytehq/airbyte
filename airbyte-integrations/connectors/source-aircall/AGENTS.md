@@ -26,12 +26,12 @@ Aircall allows 120 requests per minute per company. `X-AircallApi-Reset` is a UN
 
 ## 5. HTTP errors have distinct recovery behavior
 
-| HTTP status                        | Connector behavior                                    |
-| :--------------------------------- | :---------------------------------------------------- |
-| 401 or 403                         | Configuration error; update the API ID and API token. |
-| 400 with the 10,000-result message | Configuration error; lower `window_in_days`.          |
-| 429                                | Rate limited; wait for Aircall's reset time.          |
-| 500, 502, 503, or 504              | Retry the request.                                    |
+| HTTP status                        | Connector behavior                                                  |
+| :--------------------------------- | :------------------------------------------------------------------ |
+| 401 or 403                         | Configuration error; re-authenticate OAuth or replace the API key.  |
+| 400 with the 10,000-result message | Configuration error; lower `window_in_days`.                        |
+| 429                                | Rate limited; wait for Aircall's reset time.                        |
+| 500, 502, 503, or 504              | Retry the request.                                                  |
 
 See [Aircall's error documentation](https://developer.aircall.io/api-references/#errors).
 
@@ -42,3 +42,9 @@ See [Aircall's error documentation](https://developer.aircall.io/api-references/
 Aircall v1 list endpoints use 1-based page numbering. Their first request omits `page`, and subsequent requests use `page=2`, `page=3`, and so on; the shared paginator therefore starts at page 1.
 
 **Why this matters:** Starting at page 0 or repeating page 1 can duplicate the first page and skip records.
+
+## 7. Two authentication modes; OAuth needs Airbyte's partner app
+
+`credentials` is a `oneOf` with OAuth 2.0 first and the API key pair second, selected by `credentials.auth_type` through a `SelectiveAuthenticator`. Aircall issues OAuth client credentials only to [Technology Partner apps](https://developers.aircall.io/api-references#oauth-technology-partners). The consent URL is `https://dashboard.aircall.io/oauth/authorize` with `scope=public_api`, and the code is exchanged at `POST https://api.aircall.io/v1/oauth/token` with a JSON body. The returned `access_token` does not expire and no refresh token is issued, so OAuth uses a `BearerAuthenticator` and `advanced_auth` extracts only `access_token`. The API key option uses HTTP Basic with `api_id` and `api_token`. A config migration moves top-level `api_id`/`api_token` from versions before 0.7.0 into `credentials` with `auth_type: api_key` and removes the old keys.
+
+**Why this matters:** An OAuth token stops working only when the Admin uninstalls the app, so a 401 or 403 under OAuth means re-authentication is needed, not a refresh. Removing the migration would break every existing API key connection.

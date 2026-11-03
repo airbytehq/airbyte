@@ -4,17 +4,20 @@ This page contains the setup guide and reference information for the [Aircall](h
 
 ## Prerequisites
 
-Create an API key in the Aircall Dashboard under **Integrations & API > API Keys**. The API ID and API token are both required.
+The connector supports two authentication methods:
+
+- **OAuth 2.0** (default): an Aircall Admin authorizes Airbyte's Aircall app. This requires Airbyte's Aircall Technology Partner app, which is not yet available in Airbyte Cloud. Self-managed deployments need their own Aircall partner app's client ID and client secret.
+- **API Key**: an Aircall Admin creates an API key in the Aircall Dashboard under **Integrations & API > API Keys**. The API ID and API token are both required.
 
 ## Setup guide
 
 ### Step 1: Set up Aircall connection
 
-- Create an API key in **Integrations & API > API Keys** in the Aircall Dashboard.
-- Enter the required API ID and API token. `start_date` is retained for compatibility but is unused.
+- Choose an authentication method. For **API Key**, create an API key in **Integrations & API > API Keys** in the Aircall Dashboard. `start_date` is retained for compatibility but is unused.
 - Available params
-  - `api_id`: Your Aircall API ID.
-  - `api_token`: The API token shown with the API ID.
+  - `credentials`: The authentication method.
+    - **OAuth 2.0**: `client_id` and `client_secret` of the Aircall partner app, and the `access_token` Aircall returns when an Admin installs the app. Aircall access tokens do not expire.
+    - **API Key**: `api_id`, your Aircall API ID, and `api_token`, the API token shown with the API ID.
   - `start_date`: Unused since 0.5.0. Calls start at 186 days before the sync; other streams read every record.
   - `window_in_days`: Optional number of days per API request for calls and contacts. Defaults to 1 day for calls and 30 days for contacts; reduce it if a window exceeds Aircall's 10,000-result limit.
   - `num_workers`: Optional concurrent workers, from 1 to 4 (default 2). Workers share Aircall's company-wide rate limit of 120 requests per minute.
@@ -26,14 +29,14 @@ Create an API key in the Aircall Dashboard under **Integrations & API > API Keys
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Aircall connector and select **Aircall** from the Source type dropdown.
-4. Enter your API ID and API token. `start_date` is optional and unused.
+4. Under **Authentication**, select **OAuth 2.0** and click **Authenticate your Aircall account**, or select **API Key** and enter your API ID and API token. `start_date` is optional and unused.
 5. Click **Set up source**.
 
 #### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. Enter your API ID and API token. `start_date` is optional and unused.
+3. Under **Authentication**, select **API Key** and enter your API ID and API token, or select **OAuth 2.0** and enter your partner app's client ID, client secret and access token. `start_date` is optional and unused.
 4. Click **Set up source**.
 
 ## Supported sync modes
@@ -81,6 +84,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                   | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
+| 0.7.0 | 2026-11-03 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add OAuth 2.0 authentication as the default; existing API key configurations move to the API Key option automatically |
 | 0.5.0 | 2026-11-03 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Add incremental sync for calls, rate-limit handling and request windows that avoid Aircall's 10,000-result limit |
 | 0.4.27 | 2026-10-13 | [88524](https://github.com/airbytehq/airbyte/pull/88524) | Update dependencies |
 | 0.4.26 | 2026-10-06 | [87742](https://github.com/airbytehq/airbyte/pull/87742) | Update dependencies |

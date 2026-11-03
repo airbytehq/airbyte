@@ -17,8 +17,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 _BASE_URL = "https://api.aircall.io/v1"
 _CONFIG = {
-    "api_id": "test-id",
-    "api_token": "test-token",
+    "credentials": {"auth_type": "api_key", "api_id": "test-id", "api_token": "test-token"},
     "start_date": "2022-03-01T00:00:00.000Z",
 }
 _NOW = "2026-11-03T00:00:00Z"
@@ -235,9 +234,10 @@ def test_401_and_403_are_config_errors_with_actionable_message(status_code: int)
         error = _error_trace(output)
         assert error.failure_type == FailureType.config_error
         assert error.message == (
-            f"Aircall rejected the API ID and API token (HTTP {status_code}). "
-            "Create a new API key in the Aircall Dashboard (Integrations & API > API Keys, "
-            "https://dashboard.aircall.io/integrations/api-keys) and update the connector."
+            f"Aircall rejected the credentials (HTTP {status_code}). If you use OAuth, re-authenticate the "
+            "connector. If you use an API key, create a new API key in the Aircall Dashboard "
+            "(Integrations & API > API Keys, https://dashboard.aircall.io/integrations/api-keys) and update "
+            "the connector."
         )
         http_mocker.assert_number_of_calls(request, 1)
 

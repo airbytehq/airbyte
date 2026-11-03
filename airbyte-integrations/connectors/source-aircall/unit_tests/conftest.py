@@ -30,10 +30,12 @@ _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 sys.path.append(str(_SOURCE_FOLDER_PATH))
 
 
-def get_source(config, state=None) -> YamlDeclarativeSource:
+def get_source(config, state=None, config_path=None) -> YamlDeclarativeSource:
     catalog = CatalogBuilder().build()
     state = state or StateBuilder().build()
-    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+    return YamlDeclarativeSource(
+        path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state, config_path=config_path
+    )
 
 
 @fixture(autouse=True)
