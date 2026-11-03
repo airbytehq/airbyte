@@ -23,21 +23,7 @@ definitions:
           path: user
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -84,21 +70,7 @@ definitions:
           path: team
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -166,21 +138,7 @@ definitions:
           path: folder/{{ stream_partition['folder_id'] }}/list
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -210,23 +168,7 @@ definitions:
                     path: space/{{ stream_partition['space_id'] }}/folder
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 500
-                              error_message:
-                                Something wrong with API, Please recheck all
-                                ids
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
+                      $ref: "#/definitions/error_handler"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -256,23 +198,7 @@ definitions:
                               path: team/{{ stream_partition['team_id'] }}/space
                               http_method: GET
                               error_handler:
-                                type: CompositeErrorHandler
-                                error_handlers:
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 500
-                                        error_message:
-                                          Something wrong with API, Please recheck
-                                          all ids
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 404
+                                $ref: "#/definitions/error_handler"
                             record_selector:
                               type: RecordSelector
                               extractor:
@@ -302,23 +228,7 @@ definitions:
                                         path: team
                                         http_method: GET
                                         error_handler:
-                                          type: CompositeErrorHandler
-                                          error_handlers:
-                                            - type: DefaultErrorHandler
-                                              response_filters:
-                                                - type: HttpResponseFilter
-                                                  action: IGNORE
-                                                  http_codes:
-                                                    - 500
-                                                  error_message:
-                                                    Something wrong with API, Please
-                                                    recheck all ids
-                                            - type: DefaultErrorHandler
-                                              response_filters:
-                                                - type: HttpResponseFilter
-                                                  action: IGNORE
-                                                  http_codes:
-                                                    - 404
+                                          $ref: "#/definitions/error_handler"
                                       record_selector:
                                         type: RecordSelector
                                         extractor:
@@ -658,21 +568,7 @@ definitions:
           path: team/{{ stream_partition['team_id'] }}/space
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -702,23 +598,7 @@ definitions:
                     path: team
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 500
-                              error_message:
-                                Something wrong with API, Please recheck all
-                                ids
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
+                      $ref: "#/definitions/error_handler"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -904,21 +784,7 @@ definitions:
           path: space/{{ stream_partition['space_id'] }}/folder
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -948,23 +814,7 @@ definitions:
                     path: team/{{ stream_partition['team_id'] }}/space
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 500
-                              error_message:
-                                Something wrong with API, Please recheck all
-                                ids
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
+                      $ref: "#/definitions/error_handler"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -994,23 +844,7 @@ definitions:
                               path: team
                               http_method: GET
                               error_handler:
-                                type: CompositeErrorHandler
-                                error_handlers:
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 500
-                                        error_message:
-                                          Something wrong with API, Please recheck
-                                          all ids
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 404
+                                $ref: "#/definitions/error_handler"
                             record_selector:
                               type: RecordSelector
                               extractor:
@@ -1254,21 +1088,7 @@ definitions:
           request_parameters:
             include_closed: "{{ config['include_closed_tasks']|lower }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1311,23 +1131,7 @@ definitions:
                     path: folder/{{ stream_partition['folder_id'] }}/list
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 500
-                              error_message:
-                                Something wrong with API, Please recheck all
-                                ids
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
+                      $ref: "#/definitions/error_handler"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -1357,23 +1161,7 @@ definitions:
                               path: space/{{ stream_partition['space_id'] }}/folder
                               http_method: GET
                               error_handler:
-                                type: CompositeErrorHandler
-                                error_handlers:
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 500
-                                        error_message:
-                                          Something wrong with API, Please recheck
-                                          all ids
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 404
+                                $ref: "#/definitions/error_handler"
                             record_selector:
                               type: RecordSelector
                               extractor:
@@ -1403,23 +1191,7 @@ definitions:
                                         path: team/{{ stream_partition['team_id'] }}/space
                                         http_method: GET
                                         error_handler:
-                                          type: CompositeErrorHandler
-                                          error_handlers:
-                                            - type: DefaultErrorHandler
-                                              response_filters:
-                                                - type: HttpResponseFilter
-                                                  action: IGNORE
-                                                  http_codes:
-                                                    - 500
-                                                  error_message:
-                                                    Something wrong with API, Please
-                                                    recheck all ids
-                                            - type: DefaultErrorHandler
-                                              response_filters:
-                                                - type: HttpResponseFilter
-                                                  action: IGNORE
-                                                  http_codes:
-                                                    - 404
+                                          $ref: "#/definitions/error_handler"
                                       record_selector:
                                         type: RecordSelector
                                         extractor:
@@ -1449,23 +1221,7 @@ definitions:
                                                   path: team
                                                   http_method: GET
                                                   error_handler:
-                                                    type: CompositeErrorHandler
-                                                    error_handlers:
-                                                      - type: DefaultErrorHandler
-                                                        response_filters:
-                                                          - type: HttpResponseFilter
-                                                            action: IGNORE
-                                                            http_codes:
-                                                              - 500
-                                                            error_message:
-                                                              Something wrong with
-                                                              API, Please recheck all ids
-                                                      - type: DefaultErrorHandler
-                                                        response_filters:
-                                                          - type: HttpResponseFilter
-                                                            action: IGNORE
-                                                            http_codes:
-                                                              - 404
+                                                    $ref: "#/definitions/error_handler"
                                                 record_selector:
                                                   type: RecordSelector
                                                   extractor:
@@ -1951,21 +1707,7 @@ definitions:
           path: team/{{ stream_partition['team_id']}}/time_entries/tags
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1995,23 +1737,7 @@ definitions:
                     path: team
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 500
-                              error_message:
-                                Something wrong with API, Please recheck all
-                                ids
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
+                      $ref: "#/definitions/error_handler"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -2104,21 +1830,7 @@ definitions:
           path: task/{{ stream_partition['task_id'] }}/time
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2150,23 +1862,7 @@ definitions:
                     request_parameters:
                       include_closed: "{{ config['include_closed_tasks']|lower }}"
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 500
-                              error_message:
-                                Something wrong with API, Please recheck all
-                                ids
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
+                      $ref: "#/definitions/error_handler"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -2209,23 +1905,7 @@ definitions:
                               path: folder/{{ stream_partition['folder_id'] }}/list
                               http_method: GET
                               error_handler:
-                                type: CompositeErrorHandler
-                                error_handlers:
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 500
-                                        error_message:
-                                          Something wrong with API, Please recheck
-                                          all ids
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 404
+                                $ref: "#/definitions/error_handler"
                             record_selector:
                               type: RecordSelector
                               extractor:
@@ -2255,23 +1935,7 @@ definitions:
                                         path: space/{{ stream_partition['space_id'] }}/folder
                                         http_method: GET
                                         error_handler:
-                                          type: CompositeErrorHandler
-                                          error_handlers:
-                                            - type: DefaultErrorHandler
-                                              response_filters:
-                                                - type: HttpResponseFilter
-                                                  action: IGNORE
-                                                  http_codes:
-                                                    - 500
-                                                  error_message:
-                                                    Something wrong with API, Please
-                                                    recheck all ids
-                                            - type: DefaultErrorHandler
-                                              response_filters:
-                                                - type: HttpResponseFilter
-                                                  action: IGNORE
-                                                  http_codes:
-                                                    - 404
+                                          $ref: "#/definitions/error_handler"
                                       record_selector:
                                         type: RecordSelector
                                         extractor:
@@ -2303,23 +1967,7 @@ definitions:
                                                     }}/space
                                                   http_method: GET
                                                   error_handler:
-                                                    type: CompositeErrorHandler
-                                                    error_handlers:
-                                                      - type: DefaultErrorHandler
-                                                        response_filters:
-                                                          - type: HttpResponseFilter
-                                                            action: IGNORE
-                                                            http_codes:
-                                                              - 500
-                                                            error_message:
-                                                              Something wrong with
-                                                              API, Please recheck all ids
-                                                      - type: DefaultErrorHandler
-                                                        response_filters:
-                                                          - type: HttpResponseFilter
-                                                            action: IGNORE
-                                                            http_codes:
-                                                              - 404
+                                                    $ref: "#/definitions/error_handler"
                                                 record_selector:
                                                   type: RecordSelector
                                                   extractor:
@@ -2351,24 +1999,7 @@ definitions:
                                                             path: team
                                                             http_method: GET
                                                             error_handler:
-                                                              type: CompositeErrorHandler
-                                                              error_handlers:
-                                                                - type: DefaultErrorHandler
-                                                                  response_filters:
-                                                                    - type: HttpResponseFilter
-                                                                      action: IGNORE
-                                                                      http_codes:
-                                                                        - 500
-                                                                      error_message:
-                                                                        Something wrong
-                                                                        with API, Please recheck
-                                                                        all ids
-                                                                - type: DefaultErrorHandler
-                                                                  response_filters:
-                                                                    - type: HttpResponseFilter
-                                                                      action: IGNORE
-                                                                      http_codes:
-                                                                        - 404
+                                                              $ref: "#/definitions/error_handler"
                                                           record_selector:
                                                             type: RecordSelector
                                                             extractor:
@@ -2956,21 +2587,7 @@ definitions:
           path: list/{{ stream_partition['list_id'] }}/field
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3000,23 +2617,7 @@ definitions:
                     path: folder/{{ stream_partition['folder_id'] }}/list
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 500
-                              error_message:
-                                Something wrong with API, Please recheck all
-                                ids
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
+                      $ref: "#/definitions/error_handler"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -3046,23 +2647,7 @@ definitions:
                               path: space/{{ stream_partition['space_id'] }}/folder
                               http_method: GET
                               error_handler:
-                                type: CompositeErrorHandler
-                                error_handlers:
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 500
-                                        error_message:
-                                          Something wrong with API, Please recheck
-                                          all ids
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 404
+                                $ref: "#/definitions/error_handler"
                             record_selector:
                               type: RecordSelector
                               extractor:
@@ -3092,23 +2677,7 @@ definitions:
                                         path: team/{{ stream_partition['team_id'] }}/space
                                         http_method: GET
                                         error_handler:
-                                          type: CompositeErrorHandler
-                                          error_handlers:
-                                            - type: DefaultErrorHandler
-                                              response_filters:
-                                                - type: HttpResponseFilter
-                                                  action: IGNORE
-                                                  http_codes:
-                                                    - 500
-                                                  error_message:
-                                                    Something wrong with API, Please
-                                                    recheck all ids
-                                            - type: DefaultErrorHandler
-                                              response_filters:
-                                                - type: HttpResponseFilter
-                                                  action: IGNORE
-                                                  http_codes:
-                                                    - 404
+                                          $ref: "#/definitions/error_handler"
                                       record_selector:
                                         type: RecordSelector
                                         extractor:
@@ -3138,23 +2707,7 @@ definitions:
                                                   path: team
                                                   http_method: GET
                                                   error_handler:
-                                                    type: CompositeErrorHandler
-                                                    error_handlers:
-                                                      - type: DefaultErrorHandler
-                                                        response_filters:
-                                                          - type: HttpResponseFilter
-                                                            action: IGNORE
-                                                            http_codes:
-                                                              - 500
-                                                            error_message:
-                                                              Something wrong with
-                                                              API, Please recheck all ids
-                                                      - type: DefaultErrorHandler
-                                                        response_filters:
-                                                          - type: HttpResponseFilter
-                                                            action: IGNORE
-                                                            http_codes:
-                                                              - 404
+                                                    $ref: "#/definitions/error_handler"
                                                 record_selector:
                                                   type: RecordSelector
                                                   extractor:
@@ -3529,21 +3082,7 @@ definitions:
           path: team/{{ stream_partition["team_id"] }}/field
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3573,23 +3112,7 @@ definitions:
                     path: team
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 500
-                              error_message:
-                                Something wrong with API, Please recheck all
-                                ids
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
+                      $ref: "#/definitions/error_handler"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -3690,21 +3213,7 @@ definitions:
           path: space/{{ stream_partition['space_id'] }}/tag
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3734,23 +3243,7 @@ definitions:
                     path: team/{{ stream_partition['team_id'] }}/space
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 500
-                              error_message:
-                                Something wrong with API, Please recheck all
-                                ids
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
+                      $ref: "#/definitions/error_handler"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -3780,23 +3273,7 @@ definitions:
                               path: team
                               http_method: GET
                               error_handler:
-                                type: CompositeErrorHandler
-                                error_handlers:
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 500
-                                        error_message:
-                                          Something wrong with API, Please recheck
-                                          all ids
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 404
+                                $ref: "#/definitions/error_handler"
                             record_selector:
                               type: RecordSelector
                               extractor:
@@ -4009,21 +3486,7 @@ definitions:
           path: team/{{ stream_partition['team_id'] }}/goal
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4053,23 +3516,7 @@ definitions:
                     path: team
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 500
-                              error_message:
-                                Something wrong with API, Please recheck all
-                                ids
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
+                      $ref: "#/definitions/error_handler"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -4253,21 +3700,7 @@ definitions:
           path: list/{{ stream_partition['list_id'] }}/comment
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 500
-                    error_message: Something wrong with API, Please recheck all ids
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4297,23 +3730,7 @@ definitions:
                     path: folder/{{ stream_partition['folder_id'] }}/list
                     http_method: GET
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 500
-                              error_message:
-                                Something wrong with API, Please recheck all
-                                ids
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: IGNORE
-                              http_codes:
-                                - 404
+                      $ref: "#/definitions/error_handler"
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -4343,23 +3760,7 @@ definitions:
                               path: space/{{ stream_partition['space_id'] }}/folder
                               http_method: GET
                               error_handler:
-                                type: CompositeErrorHandler
-                                error_handlers:
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 500
-                                        error_message:
-                                          Something wrong with API, Please recheck
-                                          all ids
-                                  - type: DefaultErrorHandler
-                                    response_filters:
-                                      - type: HttpResponseFilter
-                                        action: IGNORE
-                                        http_codes:
-                                          - 404
+                                $ref: "#/definitions/error_handler"
                             record_selector:
                               type: RecordSelector
                               extractor:
@@ -4389,23 +3790,7 @@ definitions:
                                         path: team/{{ stream_partition['team_id'] }}/space
                                         http_method: GET
                                         error_handler:
-                                          type: CompositeErrorHandler
-                                          error_handlers:
-                                            - type: DefaultErrorHandler
-                                              response_filters:
-                                                - type: HttpResponseFilter
-                                                  action: IGNORE
-                                                  http_codes:
-                                                    - 500
-                                                  error_message:
-                                                    Something wrong with API, Please
-                                                    recheck all ids
-                                            - type: DefaultErrorHandler
-                                              response_filters:
-                                                - type: HttpResponseFilter
-                                                  action: IGNORE
-                                                  http_codes:
-                                                    - 404
+                                          $ref: "#/definitions/error_handler"
                                       record_selector:
                                         type: RecordSelector
                                         extractor:
@@ -4435,23 +3820,7 @@ definitions:
                                                   path: team
                                                   http_method: GET
                                                   error_handler:
-                                                    type: CompositeErrorHandler
-                                                    error_handlers:
-                                                      - type: DefaultErrorHandler
-                                                        response_filters:
-                                                          - type: HttpResponseFilter
-                                                            action: IGNORE
-                                                            http_codes:
-                                                              - 500
-                                                            error_message:
-                                                              Something wrong with
-                                                              API, Please recheck all ids
-                                                      - type: DefaultErrorHandler
-                                                        response_filters:
-                                                          - type: HttpResponseFilter
-                                                            action: IGNORE
-                                                            http_codes:
-                                                              - 404
+                                                    $ref: "#/definitions/error_handler"
                                                 record_selector:
                                                   type: RecordSelector
                                                   extractor:
@@ -4839,6 +4208,18 @@ definitions:
                     - "null"
           required:
             - id
+  error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 500
+        error_message: Something wrong with API, Please recheck all ids
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 404
   base_requester:
     type: HttpRequester
     url_base: https://api.clickup.com/api/v2/
@@ -4863,21 +4244,7 @@ streams:
         path: user
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -4923,21 +4290,7 @@ streams:
         path: team
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5004,21 +4357,7 @@ streams:
         path: folder/{{ stream_partition['folder_id'] }}/list
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5048,21 +4387,7 @@ streams:
                   path: space/{{ stream_partition['space_id'] }}/folder
                   http_method: GET
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 500
-                            error_message: Something wrong with API, Please recheck all ids
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 404
+                    $ref: "#/definitions/error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -5092,23 +4417,7 @@ streams:
                             path: team/{{ stream_partition['team_id'] }}/space
                             http_method: GET
                             error_handler:
-                              type: CompositeErrorHandler
-                              error_handlers:
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 500
-                                      error_message:
-                                        Something wrong with API, Please recheck
-                                        all ids
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 404
+                              $ref: "#/definitions/error_handler"
                           record_selector:
                             type: RecordSelector
                             extractor:
@@ -5138,23 +4447,7 @@ streams:
                                       path: team
                                       http_method: GET
                                       error_handler:
-                                        type: CompositeErrorHandler
-                                        error_handlers:
-                                          - type: DefaultErrorHandler
-                                            response_filters:
-                                              - type: HttpResponseFilter
-                                                action: IGNORE
-                                                http_codes:
-                                                  - 500
-                                                error_message:
-                                                  Something wrong with API, Please
-                                                  recheck all ids
-                                          - type: DefaultErrorHandler
-                                            response_filters:
-                                              - type: HttpResponseFilter
-                                                action: IGNORE
-                                                http_codes:
-                                                  - 404
+                                        $ref: "#/definitions/error_handler"
                                     record_selector:
                                       type: RecordSelector
                                       extractor:
@@ -5493,21 +4786,7 @@ streams:
         path: team/{{ stream_partition['team_id'] }}/space
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5537,21 +4816,7 @@ streams:
                   path: team
                   http_method: GET
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 500
-                            error_message: Something wrong with API, Please recheck all ids
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 404
+                    $ref: "#/definitions/error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -5736,21 +5001,7 @@ streams:
         path: space/{{ stream_partition['space_id'] }}/folder
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5780,21 +5031,7 @@ streams:
                   path: team/{{ stream_partition['team_id'] }}/space
                   http_method: GET
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 500
-                            error_message: Something wrong with API, Please recheck all ids
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 404
+                    $ref: "#/definitions/error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -5824,23 +5061,7 @@ streams:
                             path: team
                             http_method: GET
                             error_handler:
-                              type: CompositeErrorHandler
-                              error_handlers:
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 500
-                                      error_message:
-                                        Something wrong with API, Please recheck
-                                        all ids
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 404
+                              $ref: "#/definitions/error_handler"
                           record_selector:
                             type: RecordSelector
                             extractor:
@@ -6083,21 +5304,7 @@ streams:
         request_parameters:
           include_closed: "{{ config['include_closed_tasks']|lower }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -6140,21 +5347,7 @@ streams:
                   path: folder/{{ stream_partition['folder_id'] }}/list
                   http_method: GET
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 500
-                            error_message: Something wrong with API, Please recheck all ids
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 404
+                    $ref: "#/definitions/error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -6184,23 +5377,7 @@ streams:
                             path: space/{{ stream_partition['space_id'] }}/folder
                             http_method: GET
                             error_handler:
-                              type: CompositeErrorHandler
-                              error_handlers:
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 500
-                                      error_message:
-                                        Something wrong with API, Please recheck
-                                        all ids
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 404
+                              $ref: "#/definitions/error_handler"
                           record_selector:
                             type: RecordSelector
                             extractor:
@@ -6230,23 +5407,7 @@ streams:
                                       path: team/{{ stream_partition['team_id'] }}/space
                                       http_method: GET
                                       error_handler:
-                                        type: CompositeErrorHandler
-                                        error_handlers:
-                                          - type: DefaultErrorHandler
-                                            response_filters:
-                                              - type: HttpResponseFilter
-                                                action: IGNORE
-                                                http_codes:
-                                                  - 500
-                                                error_message:
-                                                  Something wrong with API, Please
-                                                  recheck all ids
-                                          - type: DefaultErrorHandler
-                                            response_filters:
-                                              - type: HttpResponseFilter
-                                                action: IGNORE
-                                                http_codes:
-                                                  - 404
+                                        $ref: "#/definitions/error_handler"
                                     record_selector:
                                       type: RecordSelector
                                       extractor:
@@ -6276,23 +5437,7 @@ streams:
                                                 path: team
                                                 http_method: GET
                                                 error_handler:
-                                                  type: CompositeErrorHandler
-                                                  error_handlers:
-                                                    - type: DefaultErrorHandler
-                                                      response_filters:
-                                                        - type: HttpResponseFilter
-                                                          action: IGNORE
-                                                          http_codes:
-                                                            - 500
-                                                          error_message:
-                                                            Something wrong with API,
-                                                            Please recheck all ids
-                                                    - type: DefaultErrorHandler
-                                                      response_filters:
-                                                        - type: HttpResponseFilter
-                                                          action: IGNORE
-                                                          http_codes:
-                                                            - 404
+                                                  $ref: "#/definitions/error_handler"
                                               record_selector:
                                                 type: RecordSelector
                                                 extractor:
@@ -6777,21 +5922,7 @@ streams:
         path: team/{{ stream_partition['team_id']}}/time_entries/tags
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -6821,21 +5952,7 @@ streams:
                   path: team
                   http_method: GET
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 500
-                            error_message: Something wrong with API, Please recheck all ids
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 404
+                    $ref: "#/definitions/error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -6927,21 +6044,7 @@ streams:
         path: task/{{ stream_partition['task_id'] }}/time
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -6973,21 +6076,7 @@ streams:
                   request_parameters:
                     include_closed: "{{ config['include_closed_tasks']|lower }}"
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 500
-                            error_message: Something wrong with API, Please recheck all ids
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 404
+                    $ref: "#/definitions/error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -7030,23 +6119,7 @@ streams:
                             path: folder/{{ stream_partition['folder_id'] }}/list
                             http_method: GET
                             error_handler:
-                              type: CompositeErrorHandler
-                              error_handlers:
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 500
-                                      error_message:
-                                        Something wrong with API, Please recheck
-                                        all ids
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 404
+                              $ref: "#/definitions/error_handler"
                           record_selector:
                             type: RecordSelector
                             extractor:
@@ -7076,23 +6149,7 @@ streams:
                                       path: space/{{ stream_partition['space_id'] }}/folder
                                       http_method: GET
                                       error_handler:
-                                        type: CompositeErrorHandler
-                                        error_handlers:
-                                          - type: DefaultErrorHandler
-                                            response_filters:
-                                              - type: HttpResponseFilter
-                                                action: IGNORE
-                                                http_codes:
-                                                  - 500
-                                                error_message:
-                                                  Something wrong with API, Please
-                                                  recheck all ids
-                                          - type: DefaultErrorHandler
-                                            response_filters:
-                                              - type: HttpResponseFilter
-                                                action: IGNORE
-                                                http_codes:
-                                                  - 404
+                                        $ref: "#/definitions/error_handler"
                                     record_selector:
                                       type: RecordSelector
                                       extractor:
@@ -7122,23 +6179,7 @@ streams:
                                                 path: team/{{ stream_partition['team_id'] }}/space
                                                 http_method: GET
                                                 error_handler:
-                                                  type: CompositeErrorHandler
-                                                  error_handlers:
-                                                    - type: DefaultErrorHandler
-                                                      response_filters:
-                                                        - type: HttpResponseFilter
-                                                          action: IGNORE
-                                                          http_codes:
-                                                            - 500
-                                                          error_message:
-                                                            Something wrong with API,
-                                                            Please recheck all ids
-                                                    - type: DefaultErrorHandler
-                                                      response_filters:
-                                                        - type: HttpResponseFilter
-                                                          action: IGNORE
-                                                          http_codes:
-                                                            - 404
+                                                  $ref: "#/definitions/error_handler"
                                               record_selector:
                                                 type: RecordSelector
                                                 extractor:
@@ -7170,24 +6211,7 @@ streams:
                                                           path: team
                                                           http_method: GET
                                                           error_handler:
-                                                            type: CompositeErrorHandler
-                                                            error_handlers:
-                                                              - type: DefaultErrorHandler
-                                                                response_filters:
-                                                                  - type: HttpResponseFilter
-                                                                    action: IGNORE
-                                                                    http_codes:
-                                                                      - 500
-                                                                    error_message:
-                                                                      Something wrong
-                                                                      with API, Please recheck all
-                                                                      ids
-                                                              - type: DefaultErrorHandler
-                                                                response_filters:
-                                                                  - type: HttpResponseFilter
-                                                                    action: IGNORE
-                                                                    http_codes:
-                                                                      - 404
+                                                            $ref: "#/definitions/error_handler"
                                                         record_selector:
                                                           type: RecordSelector
                                                           extractor:
@@ -7774,21 +6798,7 @@ streams:
         path: list/{{ stream_partition['list_id'] }}/field
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -7818,21 +6828,7 @@ streams:
                   path: folder/{{ stream_partition['folder_id'] }}/list
                   http_method: GET
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 500
-                            error_message: Something wrong with API, Please recheck all ids
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 404
+                    $ref: "#/definitions/error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -7862,23 +6858,7 @@ streams:
                             path: space/{{ stream_partition['space_id'] }}/folder
                             http_method: GET
                             error_handler:
-                              type: CompositeErrorHandler
-                              error_handlers:
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 500
-                                      error_message:
-                                        Something wrong with API, Please recheck
-                                        all ids
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 404
+                              $ref: "#/definitions/error_handler"
                           record_selector:
                             type: RecordSelector
                             extractor:
@@ -7908,23 +6888,7 @@ streams:
                                       path: team/{{ stream_partition['team_id'] }}/space
                                       http_method: GET
                                       error_handler:
-                                        type: CompositeErrorHandler
-                                        error_handlers:
-                                          - type: DefaultErrorHandler
-                                            response_filters:
-                                              - type: HttpResponseFilter
-                                                action: IGNORE
-                                                http_codes:
-                                                  - 500
-                                                error_message:
-                                                  Something wrong with API, Please
-                                                  recheck all ids
-                                          - type: DefaultErrorHandler
-                                            response_filters:
-                                              - type: HttpResponseFilter
-                                                action: IGNORE
-                                                http_codes:
-                                                  - 404
+                                        $ref: "#/definitions/error_handler"
                                     record_selector:
                                       type: RecordSelector
                                       extractor:
@@ -7954,23 +6918,7 @@ streams:
                                                 path: team
                                                 http_method: GET
                                                 error_handler:
-                                                  type: CompositeErrorHandler
-                                                  error_handlers:
-                                                    - type: DefaultErrorHandler
-                                                      response_filters:
-                                                        - type: HttpResponseFilter
-                                                          action: IGNORE
-                                                          http_codes:
-                                                            - 500
-                                                          error_message:
-                                                            Something wrong with API,
-                                                            Please recheck all ids
-                                                    - type: DefaultErrorHandler
-                                                      response_filters:
-                                                        - type: HttpResponseFilter
-                                                          action: IGNORE
-                                                          http_codes:
-                                                            - 404
+                                                  $ref: "#/definitions/error_handler"
                                               record_selector:
                                                 type: RecordSelector
                                                 extractor:
@@ -8344,21 +7292,7 @@ streams:
         path: team/{{ stream_partition["team_id"] }}/field
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -8388,21 +7322,7 @@ streams:
                   path: team
                   http_method: GET
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 500
-                            error_message: Something wrong with API, Please recheck all ids
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 404
+                    $ref: "#/definitions/error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -8502,21 +7422,7 @@ streams:
         path: space/{{ stream_partition['space_id'] }}/tag
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -8546,21 +7452,7 @@ streams:
                   path: team/{{ stream_partition['team_id'] }}/space
                   http_method: GET
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 500
-                            error_message: Something wrong with API, Please recheck all ids
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 404
+                    $ref: "#/definitions/error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -8590,23 +7482,7 @@ streams:
                             path: team
                             http_method: GET
                             error_handler:
-                              type: CompositeErrorHandler
-                              error_handlers:
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 500
-                                      error_message:
-                                        Something wrong with API, Please recheck
-                                        all ids
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 404
+                              $ref: "#/definitions/error_handler"
                           record_selector:
                             type: RecordSelector
                             extractor:
@@ -8818,21 +7694,7 @@ streams:
         path: team/{{ stream_partition['team_id'] }}/goal
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -8862,21 +7724,7 @@ streams:
                   path: team
                   http_method: GET
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 500
-                            error_message: Something wrong with API, Please recheck all ids
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 404
+                    $ref: "#/definitions/error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -9059,21 +7907,7 @@ streams:
         path: list/{{ stream_partition['list_id'] }}/comment
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 500
-                  error_message: Something wrong with API, Please recheck all ids
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  http_codes:
-                    - 404
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -9103,21 +7937,7 @@ streams:
                   path: folder/{{ stream_partition['folder_id'] }}/list
                   http_method: GET
                   error_handler:
-                    type: CompositeErrorHandler
-                    error_handlers:
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 500
-                            error_message: Something wrong with API, Please recheck all ids
-                      - type: DefaultErrorHandler
-                        response_filters:
-                          - type: HttpResponseFilter
-                            action: IGNORE
-                            http_codes:
-                              - 404
+                    $ref: "#/definitions/error_handler"
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -9147,23 +7967,7 @@ streams:
                             path: space/{{ stream_partition['space_id'] }}/folder
                             http_method: GET
                             error_handler:
-                              type: CompositeErrorHandler
-                              error_handlers:
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 500
-                                      error_message:
-                                        Something wrong with API, Please recheck
-                                        all ids
-                                - type: DefaultErrorHandler
-                                  response_filters:
-                                    - type: HttpResponseFilter
-                                      action: IGNORE
-                                      http_codes:
-                                        - 404
+                              $ref: "#/definitions/error_handler"
                           record_selector:
                             type: RecordSelector
                             extractor:
@@ -9193,23 +7997,7 @@ streams:
                                       path: team/{{ stream_partition['team_id'] }}/space
                                       http_method: GET
                                       error_handler:
-                                        type: CompositeErrorHandler
-                                        error_handlers:
-                                          - type: DefaultErrorHandler
-                                            response_filters:
-                                              - type: HttpResponseFilter
-                                                action: IGNORE
-                                                http_codes:
-                                                  - 500
-                                                error_message:
-                                                  Something wrong with API, Please
-                                                  recheck all ids
-                                          - type: DefaultErrorHandler
-                                            response_filters:
-                                              - type: HttpResponseFilter
-                                                action: IGNORE
-                                                http_codes:
-                                                  - 404
+                                        $ref: "#/definitions/error_handler"
                                     record_selector:
                                       type: RecordSelector
                                       extractor:
@@ -9239,23 +8027,7 @@ streams:
                                                 path: team
                                                 http_method: GET
                                                 error_handler:
-                                                  type: CompositeErrorHandler
-                                                  error_handlers:
-                                                    - type: DefaultErrorHandler
-                                                      response_filters:
-                                                        - type: HttpResponseFilter
-                                                          action: IGNORE
-                                                          http_codes:
-                                                            - 500
-                                                          error_message:
-                                                            Something wrong with API,
-                                                            Please recheck all ids
-                                                    - type: DefaultErrorHandler
-                                                      response_filters:
-                                                        - type: HttpResponseFilter
-                                                          action: IGNORE
-                                                          http_codes:
-                                                            - 404
+                                                  $ref: "#/definitions/error_handler"
                                               record_selector:
                                                 type: RecordSelector
                                                 extractor:
