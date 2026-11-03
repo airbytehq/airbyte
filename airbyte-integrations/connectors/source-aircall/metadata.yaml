@@ -54,19 +54,19 @@ data:
       - tags
   externalDocumentationUrls:
     - title: API documentation
-      url: https://developer.aircall.io/api-references/
+      url: https://developers.aircall.io/api-references/
       type: api_reference
     - title: Authentication
-      url: https://developer.aircall.io/api-references/#authentication
+      url: https://developers.aircall.io/api-references/#authentication
       type: authentication_guide
     - title: Rate limits
-      url: https://developer.aircall.io/api-references/#rate-limit
+      url: https://developers.aircall.io/api-references/#rate-limiting
       type: rate_limits
     - title: API announcements
-      url: https://developer.aircall.io/api-references/#announcements
+      url: https://developers.aircall.io/api-references/#announcements
       type: api_deprecations
     - title: Status page
-      url: https://status.aircall.io/
+      url: https://status.aircall.com/
       type: status_page
   releases:
     rolloutConfiguration:
