@@ -3,7 +3,7 @@ import TabItem from "@theme/TabItem";
 
 # Connector UX handbook
 
-Use this handbook when you make decisions that affect how people configure or use connectors. Each form rule has a stable ID (for example, UX-01) so reviews and automated checks can link to it.
+Use this handbook when you make decisions that affect how people configure or use connectors. Each form rule has a stable ID (for example, UX-01) so reviews and automated checks can link to it. Automated checks report violations as warnings, which don't block merge.
 
 ## Personas
 
@@ -58,7 +58,7 @@ The hierarchy of user needs is security, data integrity, reliability, speed, eas
 | [UX-04](#ux-04) | Required fields have a default when a safe value exists |
 | [UX-05](#ux-05) | `pattern` has a readable `pattern_descriptor` |
 | [UX-06](#ux-06) | Secrets marked `airbyte_secret` |
-| [UX-07](#ux-07) | Fields with a default are required |
+| [UX-07](#ux-07) | Fields with a default are required (recommended, not checked) |
 | [UX-08](#ux-08) | Explain meaning and impact |
 | [UX-09](#ux-09) | Say where to get each value |
 | [UX-10](#ux-10) | Doc links point to anchors |
@@ -662,7 +662,7 @@ lateinit var password: String
 **Why:** The web app fills defaults only when someone creates a configuration in the UI. API, Terraform, and PyAirbyte callers do not get those defaults, so an optional field with a default may be missing from saved configurations. Required fields with a default collapse out of the main form, so this rule doesn't add clutter. Set `always_show: true` when users should see the field right away.
 
 :::warning
-Making an existing optional field required is a breaking change, because API and Terraform updates of saved configurations that lack the field fail validation. Apply this rule to new fields, and handle changes to existing fields as breaking changes.
+UX-07 is a recommendation. Automated checks don't report it. Applying it to an existing connector means making an optional field required, which is a breaking change: API and Terraform updates of saved configurations that lack the field fail validation. A breaking change is rarely worth it for this rule, so apply it to new fields and be judicious about existing ones.
 :::
 
 <Tabs groupId="cdk">
