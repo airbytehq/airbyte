@@ -25,8 +25,20 @@ class LegacyConfigTransformer:
 
     @classmethod
     def convert(cls, legacy_config: SourceS3Spec) -> Mapping[str, Any]:
+        aws_access_key_id = legacy_config.provider.aws_access_key_id
+        aws_secret_access_key = legacy_config.provider.aws_secret_access_key
+        if aws_access_key_id or aws_secret_access_key:
+            credentials = {"auth_type": "iam_user"}
+            if aws_access_key_id:
+                credentials["aws_access_key_id"] = aws_access_key_id
+            if aws_secret_access_key:
+                credentials["aws_secret_access_key"] = aws_secret_access_key
+        else:
+            credentials = {"auth_type": "default_credentials"}
+
         transformed_config = {
             "bucket": legacy_config.provider.bucket,
+            "credentials": credentials,
             "streams": [
                 {
                     "name": legacy_config.dataset,
@@ -39,10 +51,6 @@ class LegacyConfigTransformer:
 
         if legacy_config.provider.start_date:
             transformed_config["start_date"] = cls._transform_seconds_to_micros(legacy_config.provider.start_date)
-        if legacy_config.provider.aws_access_key_id:
-            transformed_config["aws_access_key_id"] = legacy_config.provider.aws_access_key_id
-        if legacy_config.provider.aws_secret_access_key:
-            transformed_config["aws_secret_access_key"] = legacy_config.provider.aws_secret_access_key
         if legacy_config.provider.endpoint:
             transformed_config["endpoint"] = legacy_config.provider.endpoint
         if legacy_config.user_schema and legacy_config.user_schema != "{}":

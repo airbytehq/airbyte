@@ -244,7 +244,7 @@ module.exports = {
     {
       type: "category",
       collapsible: false,
-      label: "Data replication platform",
+      label: "Platform",
       link: {
         type: "doc",
         id: "readme",
@@ -260,10 +260,6 @@ module.exports = {
         {
           type: "doc",
           id: "using-airbyte/core-concepts/readme",
-        },
-        {
-          type: "doc",
-          id: "using-airbyte/getting-started/academy",
         },
         sectionHeader("Move and manage data"),
         {
@@ -406,6 +402,10 @@ module.exports = {
               label: "Access management",
               items: [
                 {
+                  type: "doc",
+                  id: "access-management/manage-users",
+                },
+                {
                   type: "category",
                   label: "Single Sign-On (SSO)",
                   link: {
@@ -471,9 +471,11 @@ module.exports = {
           items: [
             "airbyte-mcp/install",
             "airbyte-mcp/tools",
+            "airbyte-mcp/advanced-configuration",
             "airbyte-mcp/self-managed",
           ],
         },
+        "airbyte-knowledge-mcp",
         {
           type: "category",
           label: "Context layer",

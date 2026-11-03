@@ -89,15 +89,16 @@ class DatabricksCheckerSqlTest {
             DatabricksAirbyteClient(
                 dataSource,
                 sqlGenerator,
-                mockk<WorkspaceClient>(relaxed = true)
+                mockk<WorkspaceClient>(relaxed = true),
             )
         val checker = DatabricksChecker(databricksClient, config)
 
         checker.check()
         checker.cleanup()
 
-        val createVolumeStatements =
-            sqlStatements.filter { it.startsWith("CREATE VOLUME IF NOT EXISTS ") }
+        val createVolumeStatements = sqlStatements.filter {
+            it.startsWith("CREATE VOLUME IF NOT EXISTS ")
+        }
         assertEquals(1, createVolumeStatements.size)
         val volumeName =
             createVolumeStatements.single().removePrefix("CREATE VOLUME IF NOT EXISTS ")

@@ -38,7 +38,7 @@ abstract class BigqueryWriteTest(
     isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
     unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
-    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
@@ -90,7 +90,7 @@ abstract class BigqueryDirectLoadWriteTest(
     isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
     unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
-    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
 ) :
     BigqueryWriteTest(
         configContents = configContents,
@@ -112,7 +112,7 @@ abstract class BigqueryDirectLoadWriteTest(
                         // want.
                         CdcDeletionMode.HARD_DELETE -> DedupBehavior.CdcDeletionMode.HARD_DELETE
                         CdcDeletionMode.SOFT_DELETE -> DedupBehavior.CdcDeletionMode.SOFT_DELETE
-                    }
+                    },
             ),
         nullEqualsUnset = true,
         StronglyTyped(
@@ -179,7 +179,7 @@ class StandardInsertCdcSoftDeletes :
             configFile = STANDARD_INSERT_CONFIG,
             cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
         ),
-        CdcDeletionMode.SOFT_DELETE
+        CdcDeletionMode.SOFT_DELETE,
     )
 
 class StandardInsertCdcSoftDeletesProto :

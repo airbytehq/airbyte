@@ -23,7 +23,7 @@ import kotlin.math.max
  *
  * * 1. Destinations that upload files. This includes warehouses and databases.
  * * 2. Destinations that upload data streams. This mostly includes various Cloud storages. This
- * will include reverse-ETL in the future
+ *   will include reverse-ETL in the future
  *
  * In both cases, the simplest way to model the incoming data is as a stream.
  */

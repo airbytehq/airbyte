@@ -141,7 +141,9 @@ constructor(
     val readApiAvailability: BigQueryReadApiAvailability = BigQueryReadApiAvailability(),
 ) :
     SourceConfigurationFactory<
-        BigQuerySourceConfigurationSpecification, BigQuerySourceConfiguration> {
+        BigQuerySourceConfigurationSpecification,
+        BigQuerySourceConfiguration,
+    > {
 
     /**
      * The default implementation wraps every exception, including [ConfigErrorException], in a
@@ -176,7 +178,7 @@ constructor(
         val maxDbConnections: Int? = pojo.maxDbConnections
         if (maxDbConnections != null && maxDbConnections <= 0) {
             throw ConfigErrorException(
-                "'max_db_connections' must be a positive integer, got $maxDbConnections."
+                "'max_db_connections' must be a positive integer, got $maxDbConnections.",
             )
         }
         val cloud: Boolean = FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT in featureFlags
@@ -316,7 +318,7 @@ constructor(
             validatePrivateKey(privateKey)
             return ServiceAccountKey(
                 clientEmail = required("client_email"),
-                privateKey = privateKey
+                privateKey = privateKey,
             )
         }
 

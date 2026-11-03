@@ -74,7 +74,7 @@ object DisabledBigqueryS3Copy : BigqueryS3Copy {
     override fun context(stream: DestinationStream): BigqueryCopyContext? = null
 
     override fun startStandardInsertBatch(
-        context: BigqueryCopyContext
+        context: BigqueryCopyContext,
     ): StandardInsertArchiveBatch = error("Cannot start a batch when Fusion S3 copying is disabled")
 
     override suspend fun copyCompletedGcsObject(
@@ -151,7 +151,7 @@ class EnabledBigqueryS3Copy(
                 .filterValues { it > 1 }
         if (duplicates.isNotEmpty()) {
             throw SystemErrorException(
-                "Fusion S3 routing requires unique original namespace and name pairs: ${duplicates.keys}"
+                "Fusion S3 routing requires unique original namespace and name pairs: ${duplicates.keys}",
             )
         }
         catalog.streams.forEach { stream ->
@@ -160,7 +160,7 @@ class EnabledBigqueryS3Copy(
                     stream.minimumGenerationId != stream.generationId
             ) {
                 throw SystemErrorException(
-                    "Cannot execute a hybrid refresh - current generation ${stream.generationId}; minimum generation ${stream.minimumGenerationId}"
+                    "Cannot execute a hybrid refresh - current generation ${stream.generationId}; minimum generation ${stream.minimumGenerationId}",
                 )
             }
         }
@@ -222,7 +222,7 @@ class EnabledBigqueryS3Copy(
             } catch (t: Throwable) {
                 throw archiveFailure(
                     "Fusion S3 stream completion failed for run=$runId key=$key",
-                    t
+                    t,
                 )
             }
         }
@@ -235,12 +235,12 @@ class EnabledBigqueryS3Copy(
         checkHealthy()
         return contexts?.get(stream.mappedDescriptor)
             ?: throw SystemErrorException(
-                "Fusion S3 run metadata is not prepared for ${stream.mappedDescriptor}"
+                "Fusion S3 run metadata is not prepared for ${stream.mappedDescriptor}",
             )
     }
 
     override fun startStandardInsertBatch(
-        context: BigqueryCopyContext
+        context: BigqueryCopyContext,
     ): StandardInsertArchiveBatch {
         checkHealthy()
         check(bigqueryConfiguration.loadingMethod is BatchedStandardInsertConfiguration) {
@@ -426,7 +426,7 @@ class EnabledBigqueryS3Copy(
                 }
             } else {
                 try {
-                    Files.deleteIfExists(path)
+                    deleteSpool(path)
                 } catch (t: Throwable) {
                     poisoned.set(true)
                     retainedBytes.addAndGet(runCatching { Files.size(path) }.getOrDefault(0))
@@ -434,6 +434,12 @@ class EnabledBigqueryS3Copy(
                 }
             }
         }
+    }
+
+    // Unit on purpose: with a Boolean-valued branch, Kotlin 2.4 types the `if (retain)` above as
+    // Any, boxes the result, and SpotBugs flags the ignored Boxing.boxBoolean.
+    private fun deleteSpool(path: Path) {
+        Files.deleteIfExists(path)
     }
 
     private fun checkHealthy() {
