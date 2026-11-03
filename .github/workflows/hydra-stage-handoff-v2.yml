@@ -52,19 +52,20 @@ on:
   # The job-level `if:` below narrows both triggers. The names are duplicated
   # from branch protection for v1; HYD-375 moves them to a repo variable with
   # a drift-detection CI check.
-  check_run:
-    types: [completed]
-  workflow_run:
-    types: [completed]
-    # Workflow names (not check names). Produced checks, in order:
-    #   Format Check; CDK Check + Bulk CDK version check result; Enforce PR
-    #   structure; Check Changelog Updated; Connectors CDK Version Check.
-    workflows:
-      - "Global Format Check"
-      - "Java CDK Tests"
-      - "PR cannot modify both bulk CDK and connectors"
-      - "Changelog Update Check"
-      - "Connectors CDK Version Check"
+  # Disabled until v2 is ready to roll out; uncomment to enable CI wakes.
+  # check_run:
+  #   types: [completed]
+  # workflow_run:
+  #   types: [completed]
+  #   # Workflow names (not check names). Produced checks, in order:
+  #   #   Format Check; CDK Check + Bulk CDK version check result; Enforce PR
+  #   #   structure; Check Changelog Updated; Connectors CDK Version Check.
+  #   workflows:
+  #     - "Global Format Check"
+  #     - "Java CDK Tests"
+  #     - "PR cannot modify both bulk CDK and connectors"
+  #     - "Changelog Update Check"
+  #     - "Connectors CDK Version Check"
   workflow_dispatch:
     inputs:
       pr:
