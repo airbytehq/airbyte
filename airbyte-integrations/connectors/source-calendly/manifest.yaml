@@ -9,7 +9,7 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - event_types
+    - api_user
 
 definitions:
   streams:
@@ -25,6 +25,7 @@ definitions:
           path: /event_types
           http_method: GET
           request_parameters:
+            count: "100"
             sort: updated_at:desc
         record_selector:
           type: RecordSelector
@@ -66,7 +67,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "2021-01-01"
+          datetime: "1970-01-01"
           datetime_format: "%Y-%m-%d"
         is_data_feed: true
       schema_loader:
@@ -107,6 +108,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /groups
           http_method: GET
+          request_parameters:
+            count: "100"
         record_selector:
           type: RecordSelector
           extractor:
@@ -155,6 +158,7 @@ definitions:
           path: /organization_memberships
           http_method: GET
           request_parameters:
+            count: "100"
             sort: updated_at:desc
         record_selector:
           type: RecordSelector
@@ -203,7 +207,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /scheduled_events
           http_method: GET
-          request_body_json:
+          request_parameters:
+            count: "100"
             sort: start_time:desc
         record_selector:
           type: RecordSelector
@@ -240,7 +245,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: start_time
-        lookback_window: P{{config['lookback_days']}}D
+        lookback_window: "P{{ [config.get('lookback_days') or 0, 0] | max }}D"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -274,7 +279,10 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /scheduled_events/{{ stream_partition.scheduled_event_id }}/invitees
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/invitees_error_handler"
           request_parameters:
+            count: "100"
             sort: created_at:desc
         record_selector:
           type: RecordSelector
@@ -315,7 +323,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
       transformations:
         - type: AddFields
           fields:
@@ -339,6 +346,66 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
+  base_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: X-RateLimit-Reset
+    response_filters:
+      - $ref: "#/definitions/error_filters/unauthorized"
+      - $ref: "#/definitions/error_filters/forbidden"
+      - $ref: "#/definitions/error_filters/not_found"
+      - $ref: "#/definitions/error_filters/server_error"
+  invitees_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: X-RateLimit-Reset
+    response_filters:
+      - $ref: "#/definitions/error_filters/unauthorized"
+      - $ref: "#/definitions/error_filters/forbidden"
+      - type: HttpResponseFilter
+        http_codes: [404]
+        action: IGNORE
+        error_message: "Skipping invitees of a scheduled event that Calendly no longer returns (404): {{ request_url }}"
+      - $ref: "#/definitions/error_filters/server_error"
+  # 429 keeps the CDK default (RATE_LIMITED) and waits for X-RateLimit-Reset through backoff_strategies.
+  error_filters:
+    unauthorized:
+      type: HttpResponseFilter
+      http_codes: [401]
+      action: FAIL
+      failure_type: config_error
+      error_message: >-
+        Calendly rejected the personal access token because it is invalid or revoked.
+        Create a new token in Calendly (open the Profile menu, select Developer, then Personal access tokens)
+        and update it in the Airbyte source settings.
+        Calendly response (401): {{ (response if response is mapping else {}).get('message', 'Unauthorized') }}
+    forbidden:
+      type: HttpResponseFilter
+      http_codes: [403]
+      action: FAIL
+      failure_type: config_error
+      error_message: >-
+        Calendly denied access. The personal access token needs the users:read, event_types:read, groups:read,
+        organizations:read and scheduled_events:read scopes, and it must belong to an owner or admin of the
+        Calendly organization because Calendly shows organization-wide scheduled events only to them.
+        Create a new token and update it in the Airbyte source settings.
+        Calendly response (403): {{ (response if response is mapping else {}).get('message', 'Forbidden') }}{{ ' Missing scopes: ' ~ (response['required_scopes'] | join(', ')) if response is mapping and response.get('required_scopes') else '' }}
+    not_found:
+      type: HttpResponseFilter
+      http_codes: [404]
+      action: FAIL
+      failure_type: system_error
+      error_message: >-
+        Calendly returned 404 for {{ request_url }}: {{ (response if response is mapping else {}).get('message', 'Not found') }}
+    server_error:
+      type: HttpResponseFilter
+      http_codes: [500, 502, 503, 504]
+      action: RETRY
+      error_message: Calendly API is temporarily unavailable.
 
 streams:
   - $ref: "#/definitions/streams/event_types"
@@ -347,6 +414,22 @@ streams:
   - $ref: "#/definitions/streams/organization_memberships"
   - $ref: "#/definitions/streams/scheduled_events"
   - $ref: "#/definitions/streams/event_invitees"
+
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_remaining_header: X-RateLimit-Remaining
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 500
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_base: https://api.calendly.com
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
 
 spec:
   type: Spec
@@ -360,23 +443,31 @@ spec:
       api_key:
         type: string
         description: >-
-          Go to Integrations → API & Webhooks to obtain your bearer token.
-          https://calendly.com/integrations/api_webhooks
+          Calendly personal access token. In Calendly, open the Profile menu, select Developer,
+          then Personal access tokens, and create a token with the users:read, event_types:read,
+          groups:read, organizations:read and scheduled_events:read scopes. Create it as an owner
+          or admin of the Calendly organization: Calendly shows organization-wide scheduled events
+          only to them.
         order: 0
-        title: API Key
+        title: Calendly personal access token
         airbyte_secret: true
       start_date:
         type: string
         order: 1
-        title: Start date
+        title: Start date (UTC)
+        description: >-
+          Sync scheduled events starting on or after this time, in UTC ISO-8601 format.
+        examples: ["2024-01-01T00:00:00Z"]
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
       lookback_days:
         type: number
         description: >-
-          Number of days to be subtracted from the last cutoff date before
-          starting to sync the `scheduled_events` stream.
-        title: Lookback Days
+          Incremental syncs of scheduled_events resume from the start time of the latest event
+          already synced minus this many days, so events in that range are read again with their
+          latest status, such as a cancellation. Set it to at least how far in advance invitees can
+          book so that new bookings for earlier times are not missed.
+        title: Lookback window (days)
         default: 0
         order: 2
     additionalProperties: true
@@ -522,6 +613,13 @@ schemas:
         type:
           - array
           - "null"
+      deleted_at:
+        type: [string, "null"]
+        format: date-time
+      internal_note:
+        type: [string, "null"]
+      is_paid:
+        type: [boolean, "null"]
       kind:
         type:
           - string
@@ -543,6 +641,12 @@ schemas:
               type:
                 - string
                 - "null"
+            location:
+              type: [string, "null"]
+            additional_info:
+              type: [string, "null"]
+            phone_number:
+              type: [string, "null"]
       name:
         type:
           - string
@@ -596,6 +700,9 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      avatar_url:
+        type: [string, "null"]
+        format: uri
       created_at:
         type:
           - string
@@ -869,11 +976,19 @@ schemas:
             type:
               - number
               - "null"
+      meeting_notes_html:
+        type: [string, "null"]
+      meeting_notes_plain:
+        type: [string, "null"]
       location:
         type:
           - object
           - "null"
         properties:
+          additional_info:
+            type: [string, "null"]
+          data:
+            type: [object, "null"]
           type:
             type:
               - string
@@ -935,6 +1050,8 @@ schemas:
             type:
               - string
               - "null"
+          reason:
+            type: [string, "null"]
       created_at:
         type: string
       email:
@@ -953,6 +1070,47 @@ schemas:
         type:
           - string
           - "null"
+      first_name:
+        type: [string, "null"]
+      last_name:
+        type: [string, "null"]
+      payment:
+        type: [object, "null"]
+        properties:
+          external_id:
+            type: [string, "null"]
+          provider:
+            type: [string, "null"]
+          amount:
+            type: [number, "null"]
+          currency:
+            type: [string, "null"]
+          terms:
+            type: [string, "null"]
+          successful:
+            type: [boolean, "null"]
+      no_show:
+        type: [object, "null"]
+        properties:
+          uri:
+            type: [string, "null"]
+          created_at:
+            type: [string, "null"]
+            format: date-time
+      reconfirmation:
+        type: [object, "null"]
+        properties:
+          created_at:
+            type: [string, "null"]
+            format: date-time
+          confirmed_at:
+            type: [string, "null"]
+            format: date-time
+      routing_form_submission:
+        type: [string, "null"]
+        format: uri
+      scheduling_method:
+        type: [string, "null"]
       name:
         type:
           - string
@@ -1014,7 +1172,19 @@ schemas:
         type:
           - object
           - "null"
-        properties: {}
+        properties:
+          utm_campaign:
+            type: [string, "null"]
+          utm_source:
+            type: [string, "null"]
+          utm_medium:
+            type: [string, "null"]
+          utm_content:
+            type: [string, "null"]
+          utm_term:
+            type: [string, "null"]
+          salesforce_uuid:
+            type: [string, "null"]
       updated_at:
         type:
           - string
