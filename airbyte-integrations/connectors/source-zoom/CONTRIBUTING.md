@@ -4,8 +4,9 @@
 
 Zoom's REST API exposes no deletion feed; deletions are only published as webhooks such as `meeting.deleted`.
 Deleted meetings and webinars disappear from the next full refresh. For users, `users.status` (`active`,
-`inactive`, or `pending`) is the only soft-delete indicator. The only incremental stream,
-`report_user_meetings`, uses `end_time` as its cursor and does not observe deletions.
+`inactive`, or `pending`) is the only soft-delete indicator. Incremental streams do not observe deletions:
+`meetings` and `webinars` use `created_at`, `report_meetings` uses `end_time`,
+`report_meeting_participants` uses `meeting_end_time`, and `report_user_meetings` uses `end_time`.
 
 The authorization endpoint is hidden and defaults to Zoom's token URL.
 
@@ -26,8 +27,8 @@ The response filters below are defined in `manifest.yaml`. Mock-server coverage 
 | Zoom response | Action | Where |
 | :------------ | :----- | :---- |
 | Code `124` | Refresh the access token and retry the request. | Shared `definitions.zoom_error_handler`, attached to every requester; `test_authenticator.py` |
-| Code `4711` | Fail with a configuration error that names the missing scope. | Shared `definitions.zoom_error_handler` and stream-specific filters on `report_user_meetings`, `report_daily`, `chat_channels`, and `zoom_events`; `test_error_handling.py` and stream integration tests |
-| Code `3161` | Ignore the user's meeting-list partition, so that user's meeting streams are skipped. | User-to-meeting parent requesters; `test_error_handling.py` |
+| Code `4711` | Fail with a configuration error that names the missing scope. | Shared `definitions.zoom_error_handler` on all requesters; additional stream-specific scope filters on `report_user_meetings`, `report_daily`, `chat_channels`, and `zoom_events`; `test_error_handling.py` and stream integration tests |
+| Code `3161` | Ignore the user's standard meeting-list partition rather than failing the sync. | User-to-meeting parent requesters; the `test_error_handling.py` skip matrix no longer includes the session-based `report_meetings` or `report_meeting_participants` streams |
 | Code `3001` | Ignore the affected resource when a meeting or webinar was deleted or no longer has report data. | Meeting, webinar, and report requesters with an explicit filter; deleted-meeting case in `test_error_handling.py` |
 | Code `300` | Ignore the response. | `meeting_registrants`; `report_user_meetings` and `report_daily` when Zoom reports a date outside its six-month window |
 | Code `200` | Fail with a configuration error when a report requires a Pro-or-higher plan. | `report_user_meetings` and `report_daily` requesters |
@@ -39,7 +40,7 @@ The manifest explicitly ignores HTTP `400` responses on `meeting_polls`, `meetin
 
 ## Rate limits
 
-`manifest.yaml` does not configure `api_budget` or `concurrency_level`, so the connector relies on the CDK's default backoff for HTTP `429` and `5xx` responses. Zoom applies limits per account and plan. Report endpoints and past-webinar absentees are Heavy APIs; see Zoom's [rate-limits documentation](https://developers.zoom.us/docs/api/rate-limits/). Concurrency is not configured yet; see [PR #83260](https://github.com/airbytehq/airbyte/pull/83260).
+`manifest.yaml` configures `WaitTimeFromHeader` for Zoom's `Retry-After` header, with a maximum wait of 600 seconds. A wait of 10 minutes or longer stops the stream; if the header is missing, the CDK uses exponential backoff. `test_error_handling.py` verifies retries for short and missing headers and that a long wait does not sleep. The manifest does not configure `api_budget` or `concurrency_level`. Zoom applies limits per account and plan. Report endpoints and past-webinar absentees are Heavy APIs; see Zoom's [rate-limits documentation](https://developers.zoom.us/docs/api/rate-limits/). Concurrency is not configured yet; see [PR #83260](https://github.com/airbytehq/airbyte/pull/83260).
 
 ## Licence-gated streams
 
