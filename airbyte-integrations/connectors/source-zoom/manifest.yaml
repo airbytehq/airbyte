@@ -53,6 +53,10 @@ definitions:
           - unsupported_grant_type
   zoom_error_handler:
     type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: "Retry-After"
+        max_waiting_time_in_seconds: 600
     response_filters:
       - type: HttpResponseFilter
         predicate: "{{ response.code == 124 }}"
@@ -3523,7 +3527,7 @@ definitions:
           webinar_id:
             type:
             - 'null'
-            - number
+            - integer
           id:
             type:
             - 'null'
@@ -6853,6 +6857,303 @@ definitions:
             type:
             - 'null'
             - string
+  report_user_meetings_stream:
+    retriever:
+      requester:
+        url_base: "https://api.zoom.us/v2"
+        http_method: "GET"
+        authenticator: "#/definitions/authenticator"
+        path: "/report/users/{{ stream_partition.parent_id }}/meetings"
+        request_parameters:
+          type: past
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+          - "#/definitions/zoom_error_handler"
+          - type: DefaultErrorHandler
+            response_filters:
+            - predicate: "{{ response.code == 4711 }}"
+              action: FAIL
+              failure_type: config_error
+              error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the report:read:admin scope (or granular report:read:user:admin); add this scope to the app and reconnect."
+              type: HttpResponseFilter
+            - predicate: "{{ response.code == 1001 }}"
+              action: IGNORE
+              error_message: "Zoom returned code 1001 ('{{ response.message }}'): this user was removed from the account after user discovery; skipping this user."
+              type: HttpResponseFilter
+            - predicate: "{{ response.code == 300 and ('six months' in response.get('message', '') or '6 months' in response.get('message', '')) }}"
+              action: IGNORE
+              error_message: "Zoom returned code 300 ('{{ response.message }}'): Zoom keeps reports for six months only; skipping this date window."
+              type: HttpResponseFilter
+            - predicate: "{{ response.code == 200 }}"
+              action: FAIL
+              failure_type: config_error
+              error_message: "Zoom returned code 200 ('{{ response.message }}'): reports require a Pro or higher plan and the report:read:admin scope (or granular report:read:user:admin); upgrade the plan and grant this scope."
+              type: HttpResponseFilter
+            - predicate: "{{ response.code == 124 }}"
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: "Zoom rejected the access token (code 124: '{{ response.message }}'); refreshing the token and retrying the request."
+              type: HttpResponseFilter
+        type: HttpRequester
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.get('next_page_token') }}"
+          stop_condition: "{{ not response.get('next_page_token') }}"
+          page_size: 300
+        page_size_option:
+          field_name: page_size
+          inject_into: request_parameter
+          type: RequestOption
+        page_token_option:
+          type: RequestOption
+          field_name: next_page_token
+          inject_into: request_parameter
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - meetings
+        type: RecordSelector
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - stream:
+            retriever:
+              requester:
+                url_base: "https://api.zoom.us/v2"
+                http_method: "GET"
+                authenticator: "#/definitions/authenticator"
+                path: "/users"
+                error_handler: "#/definitions/zoom_error_handler"
+                type: HttpRequester
+              paginator:
+                type: DefaultPaginator
+                pagination_strategy:
+                  type: CursorPagination
+                  cursor_value: "{{ response.get('next_page_token') }}"
+                  stop_condition: "{{ not response.get('next_page_token') }}"
+                  page_size: 30
+                page_size_option:
+                  field_name: page_size
+                  inject_into: request_parameter
+                  type: RequestOption
+                page_token_option:
+                  type: RequestOption
+                  field_name: next_page_token
+                  inject_into: request_parameter
+              record_selector:
+                extractor:
+                  type: DpathExtractor
+                  field_path:
+                  - users
+                type: RecordSelector
+              type: SimpleRetriever
+            schema_loader:
+              type: InlineSchemaLoader
+              schema:
+                $schema: http://json-schema.org/draft-07/schema#
+                type: object
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
+                additionalProperties: true
+            type: DeclarativeStream
+            name: users
+            primary_key: id
+          parent_key: id
+          partition_field: parent_id
+      type: SimpleRetriever
+    incremental_sync:
+      type: DatetimeBasedCursor
+      global_substream_cursor: true
+      cursor_field: end_time
+      datetime_format: "%Y-%m-%d"
+      cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%d"
+      start_datetime: "{{ [config.get('start_date', '')[:10], (now_utc() - duration('P6M') + duration('P1D')).strftime('%Y-%m-%d')] | max }}"
+      end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      step: P28D
+      cursor_granularity: P1D
+      lookback_window: P1D
+      start_time_option:
+        type: RequestOption
+        field_name: from
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: to
+        inject_into: request_parameter
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - user_id
+        value: "{{ stream_partition.parent_id }}"
+        type: AddedFieldDefinition
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          custom_keys:
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              properties:
+                key:
+                  type:
+                  - 'null'
+                  - string
+                value:
+                  type:
+                  - 'null'
+                  - string
+              additionalProperties: true
+          duration:
+            type:
+            - 'null'
+            - integer
+          end_time:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          id:
+            type:
+            - 'null'
+            - integer
+          participants_count:
+            type:
+            - 'null'
+            - integer
+          session_key:
+            type:
+            - 'null'
+            - string
+          source:
+            type:
+            - 'null'
+            - string
+          start_time:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          topic:
+            type:
+            - 'null'
+            - string
+          total_minutes:
+            type:
+            - 'null'
+            - integer
+          type:
+            type:
+            - 'null'
+            - integer
+          user_email:
+            type:
+            - 'null'
+            - string
+          user_name:
+            type:
+            - 'null'
+            - string
+          uuid:
+            type:
+            - 'null'
+            - string
+          schedule_time:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          join_waiting_room_time:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          join_time:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          leave_time:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          host_organization:
+            type:
+            - 'null'
+            - string
+          host_name:
+            type:
+            - 'null'
+            - string
+          has_screen_share:
+            type:
+            - 'null'
+            - boolean
+          has_recording:
+            type:
+            - 'null'
+            - boolean
+          has_chat:
+            type:
+            - 'null'
+            - boolean
+          meeting_encryption_status:
+            type:
+            - 'null'
+            - integer
+          participants_count_my_account:
+            type:
+            - 'null'
+            - integer
+          user_id:
+            type:
+            - 'null'
+            - string
+        additionalProperties: true
+    primary_key:
+    - uuid
+    type: DeclarativeStream
+    name: "report_user_meetings"
+  report_user_meetings_filtered_parent_stream:
+    retriever:
+      requester:
+        $ref: "#/definitions/report_user_meetings_stream/retriever/requester"
+      paginator:
+        $ref: "#/definitions/report_user_meetings_stream/retriever/paginator"
+      record_selector:
+        extractor:
+          $ref: "#/definitions/report_user_meetings_stream/retriever/record_selector/extractor"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('type') not in [5, 6, 9] }}"
+        type: RecordSelector
+      partition_router:
+        $ref: "#/definitions/report_user_meetings_stream/retriever/partition_router"
+      type: SimpleRetriever
+    incremental_sync:
+      $ref: "#/definitions/report_user_meetings_stream/incremental_sync"
+    transformations:
+      $ref: "#/definitions/report_user_meetings_stream/transformations"
+    schema_loader:
+      $ref: "#/definitions/report_user_meetings_stream/schema_loader"
+    primary_key:
+    - uuid
+    type: DeclarativeStream
+    name: "report_user_meetings"
 streams:
 - retriever:
     requester:
@@ -6893,10 +7194,12 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         created_at:
           type:
           - 'null'
           - string
+          format: date-time
         custom_attributes:
           type:
           - 'null'
@@ -6956,6 +7259,14 @@ streams:
           type:
           - 'null'
           - string
+        login_types:
+          type:
+          - 'null'
+          - array
+          items:
+            type:
+            - 'null'
+            - integer
         last_client_version:
           type:
           - 'null'
@@ -6964,6 +7275,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         last_name:
           type:
           - 'null'
@@ -7236,9 +7548,23 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "meetings_list_tmp"
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: created_at
+            cursor_datetime_formats:
+            - '%Y-%m-%dT%H:%M:%SZ'
+            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            is_client_side_incremental: true
+            lookback_window: P30D
+            global_substream_cursor: true
           primary_key: "id"
         parent_key: "id"
         partition_field: "parent_id"
+        incremental_dependency: true
         type: ParentStreamConfig
     type: SimpleRetriever
   schema_loader:
@@ -7275,6 +7601,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         duration:
           type:
           - 'null'
@@ -7316,6 +7643,7 @@ streams:
                 type:
                 - 'null'
                 - string
+                format: date-time
               status:
                 type:
                 - 'null'
@@ -7345,6 +7673,7 @@ streams:
               type:
               - 'null'
               - string
+              format: date-time
             end_times:
               type:
               - 'null'
@@ -7816,6 +8145,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         start_url:
           type:
           - 'null'
@@ -7859,6 +8189,19 @@ streams:
           - number
   type: DeclarativeStream
   name: "meetings"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: created_at
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    is_client_side_incremental: true
+    lookback_window: P30D
+    global_substream_cursor: true
   primary_key: "id"
 - retriever:
     requester:
@@ -8221,6 +8564,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         join_url:
           type:
           - 'null'
@@ -8596,7 +8940,7 @@ streams:
           - string
   type: DeclarativeStream
   name: "meeting_polls"
-  primary_key: "id"
+  primary_key: [meeting_id, id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -9200,6 +9544,7 @@ streams:
                 - boolean
   type: DeclarativeStream
   name: "meeting_registration_questions"
+  primary_key: [meeting_id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -9430,9 +9775,23 @@ streams:
             type: SimpleRetriever
           type: DeclarativeStream
           name: "webinars_list_tmp"
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: created_at
+            cursor_datetime_formats:
+            - '%Y-%m-%dT%H:%M:%SZ'
+            datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+              datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+            is_client_side_incremental: true
+            lookback_window: P30D
+            global_substream_cursor: true
           primary_key: "id"
         parent_key: "id"
         partition_field: "parent_id"
+        incremental_dependency: true
         type: ParentStreamConfig
     type: SimpleRetriever
   schema_loader:
@@ -9465,6 +9824,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         duration:
           type:
           - 'null'
@@ -9494,6 +9854,7 @@ streams:
                 type:
                 - 'null'
                 - string
+                format: date-time
               status:
                 type:
                 - 'null'
@@ -9511,6 +9872,7 @@ streams:
               type:
               - 'null'
               - string
+              format: date-time
             end_times:
               type:
               - 'null'
@@ -9790,6 +10152,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         start_url:
           type:
           - 'null'
@@ -9833,6 +10196,19 @@ streams:
           - string
   type: DeclarativeStream
   name: "webinars"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: created_at
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '2010-01-01T00:00:00Z' }}"
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    is_client_side_incremental: true
+    lookback_window: P30D
+    global_substream_cursor: true
   primary_key: "id"
 - retriever:
     requester:
@@ -10086,7 +10462,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - number
+          - integer
         id:
           type:
           - 'null'
@@ -10125,6 +10501,7 @@ streams:
           - string
   type: DeclarativeStream
   name: "webinar_panelists"
+  primary_key: [webinar_id, id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -10390,7 +10767,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - string
+          - integer
         id:
           type:
           - 'null'
@@ -10484,12 +10861,14 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         join_url:
           type:
           - 'null'
           - string
   type: DeclarativeStream
   name: "webinar_registrants"
+  primary_key: [webinar_id, id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -10849,6 +11228,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         join_url:
           type:
           - 'null'
@@ -11108,7 +11488,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - string
+          - integer
         id:
           type:
           - 'null'
@@ -11221,6 +11601,7 @@ streams:
           - string
   type: DeclarativeStream
   name: "webinar_polls"
+  primary_key: [webinar_id, id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -11454,6 +11835,8 @@ streams:
           primary_key: "id"
         parent_key: "uuid"
         partition_field: "parent_id"
+        extra_fields:
+        - - id
         type: ParentStreamConfig
     type: SimpleRetriever
   transformations:
@@ -11462,6 +11845,10 @@ streams:
     - path:
       - "webinar_uuid"
       value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+    - path:
+      - webinar_id
+      value: "{{ stream_slice.extra_fields.get('id') }}"
       type: AddedFieldDefinition
   schema_loader:
     type: InlineSchemaLoader
@@ -11473,6 +11860,10 @@ streams:
           type:
           - 'null'
           - string
+        webinar_id:
+          type:
+          - 'null'
+          - integer
         email:
           type:
           - 'null'
@@ -11762,7 +12153,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - string
+          - integer
         custom_questions:
           type:
           - 'null'
@@ -11811,6 +12202,7 @@ streams:
                 - boolean
   type: DeclarativeStream
   name: "webinar_registration_questions"
+  primary_key: [webinar_id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -12066,7 +12458,7 @@ streams:
         webinar_id:
           type:
           - 'null'
-          - string
+          - integer
         id:
           type:
           - 'null'
@@ -12324,6 +12716,8 @@ streams:
           primary_key: "id"
         parent_key: "uuid"
         partition_field: "parent_id"
+        extra_fields:
+        - - id
         type: ParentStreamConfig
     type: SimpleRetriever
   transformations:
@@ -12332,6 +12726,10 @@ streams:
     - path:
       - "webinar_uuid"
       value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+    - path:
+      - webinar_id
+      value: "{{ stream_slice.extra_fields.get('id') }}"
       type: AddedFieldDefinition
   schema_loader:
     type: InlineSchemaLoader
@@ -12343,6 +12741,10 @@ streams:
           type:
           - 'null'
           - string
+        webinar_id:
+          type:
+          - 'null'
+          - integer
         email:
           type:
           - 'null'
@@ -12375,7 +12777,7 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator: "#/definitions/authenticator"
-      path: "/report/meetings/{{ stream_partition.parent_id }}"
+      path: "/report/meetings/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
@@ -12398,212 +12800,15 @@ streams:
     partition_router:
       type: SubstreamPartitionRouter
       parent_stream_configs:
-      - stream:
-          retriever:
-            requester:
-              url_base: "https://api.zoom.us/v2"
-              http_method: "GET"
-              authenticator: "#/definitions/authenticator"
-              path: "/users/{{ stream_partition.parent_id }}/meetings"
-              error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  response_filters:
-                  - predicate: "{{ response.code == 3161 }}"
-                    action: IGNORE
-                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
-                    type: HttpResponseFilter
-                - "#/definitions/zoom_error_handler"
-              type: HttpRequester
-            paginator:
-              type: DefaultPaginator
-              pagination_strategy:
-                type: "CursorPagination"
-                cursor_value: "{{ response.next_page_token }}"
-                stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
-              page_size_option:
-                field_name: "page_size"
-                inject_into: "request_parameter"
-                type: RequestOption
-              page_token_option:
-                type: RequestOption
-                field_name: "next_page_token"
-                inject_into: "request_parameter"
-            record_selector:
-              extractor:
-                type: DpathExtractor
-                field_path:
-                - "meetings"
-              type: RecordSelector
-            partition_router:
-              type: SubstreamPartitionRouter
-              parent_stream_configs:
-              - stream:
-                  retriever:
-                    requester:
-                      url_base: "https://api.zoom.us/v2"
-                      http_method: "GET"
-                      authenticator: "#/definitions/authenticator"
-                      error_handler: "#/definitions/zoom_error_handler"
-                      type: HttpRequester
-                      path: "/users"
-                    paginator:
-                      type: DefaultPaginator
-                      pagination_strategy:
-                        type: "CursorPagination"
-                        cursor_value: "{{ response.next_page_token }}"
-                        stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
-                      page_size_option:
-                        field_name: "page_size"
-                        inject_into: "request_parameter"
-                        type: RequestOption
-                      page_token_option:
-                        type: RequestOption
-                        field_name: "next_page_token"
-                        inject_into: "request_parameter"
-                    record_selector:
-                      extractor:
-                        type: DpathExtractor
-                        field_path:
-                        - "users"
-                      type: RecordSelector
-                    type: SimpleRetriever
-                  schema_loader:
-                    type: InlineSchemaLoader
-                    schema:
-                      $schema: http://json-schema.org/draft-07/schema#
-                      properties:
-                        user_created_at:
-                          type:
-                          - 'null'
-                          - string
-                        created_at:
-                          type:
-                          - 'null'
-                          - string
-                        custom_attributes:
-                          type:
-                          - 'null'
-                          - array
-                          items:
-                            type: object
-                            properties:
-                              key:
-                                type:
-                                - 'null'
-                                - string
-                              name:
-                                type:
-                                - 'null'
-                                - string
-                              value:
-                                type:
-                                - 'null'
-                                - string
-                        dept:
-                          type:
-                          - 'null'
-                          - string
-                        email:
-                          type:
-                          - 'null'
-                          - string
-                        employee_unique_id:
-                          type:
-                          - 'null'
-                          - string
-                        first_name:
-                          type:
-                          - 'null'
-                          - string
-                        group_ids:
-                          type:
-                          - 'null'
-                          - array
-                          items:
-                            type:
-                            - 'null'
-                            - string
-                        id:
-                          type:
-                          - 'null'
-                          - string
-                        im_group_ids:
-                          type:
-                          - 'null'
-                          - array
-                          items:
-                            type:
-                            - 'null'
-                            - string
-                        language:
-                          type:
-                          - 'null'
-                          - string
-                        last_client_version:
-                          type:
-                          - 'null'
-                          - string
-                        last_login_time:
-                          type:
-                          - 'null'
-                          - string
-                        last_name:
-                          type:
-                          - 'null'
-                          - string
-                        phone_number:
-                          type:
-                          - 'null'
-                          - string
-                        plan_united_type:
-                          type:
-                          - 'null'
-                          - string
-                        pmi:
-                          type:
-                          - 'null'
-                          - number
-                        role_id:
-                          type:
-                          - 'null'
-                          - string
-                        status:
-                          type:
-                          - 'null'
-                          - string
-                        timezone:
-                          type:
-                          - 'null'
-                          - string
-                        type:
-                          type:
-                          - 'null'
-                          - number
-                        verified:
-                          type:
-                          - 'null'
-                          - number
-                        display_name:
-                          type:
-                          - 'null'
-                          - string
-                  type: DeclarativeStream
-                  name: "users"
-                  primary_key: "id"
-                parent_key: "id"
-                partition_field: "parent_id"
-                type: ParentStreamConfig
-            type: SimpleRetriever
-          type: DeclarativeStream
-          name: "meetings_list_tmp"
-          primary_key: "id"
-        parent_key: "id"
-        partition_field: "parent_id"
-        type: ParentStreamConfig
+      - type: ParentStreamConfig
+        stream:
+          $ref: "#/definitions/report_user_meetings_filtered_parent_stream"
+        parent_key: uuid
+        partition_field: parent_id
+        incremental_dependency: true
+        extra_fields:
+        - - id
+        - - end_time
     type: SimpleRetriever
   schema_loader:
     type: InlineSchemaLoader
@@ -12644,6 +12849,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         host_id:
           type:
           - 'null'
@@ -12660,6 +12866,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         topic:
           type:
           - 'null'
@@ -12703,13 +12910,24 @@ streams:
           - string
   type: DeclarativeStream
   name: "report_meetings"
-  primary_key: "id"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: end_time
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    - '%Y-%m-%d'
+    datetime_format: '%Y-%m-%d'
+    start_datetime: "{{ [config.get('start_date', '')[:10], (now_utc() - duration('P6M') + duration('P1D')).strftime('%Y-%m-%d')] | max }}"
+    is_client_side_incremental: true
+    lookback_window: P1D
+    global_substream_cursor: true
+  primary_key: "uuid"
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator: "#/definitions/authenticator"
-      path: "/report/meetings/{{ stream_partition.parent_id }}/participants"
+      path: "/report/meetings/{{ stream_partition.parent_id | urlencode | replace('/', '%2F') | urlencode }}/participants"
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
@@ -12746,219 +12964,30 @@ streams:
     partition_router:
       type: SubstreamPartitionRouter
       parent_stream_configs:
-      - stream:
-          retriever:
-            requester:
-              url_base: "https://api.zoom.us/v2"
-              http_method: "GET"
-              authenticator: "#/definitions/authenticator"
-              path: "/users/{{ stream_partition.parent_id }}/meetings"
-              error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  response_filters:
-                  - predicate: "{{ response.code == 3161 }}"
-                    action: IGNORE
-                    error_message: "Zoom returned code 3161 ('{{ response.message }}'): Zoom does not let this user host or schedule meetings, so its meetings cannot be listed; skipping this user."
-                    type: HttpResponseFilter
-                - "#/definitions/zoom_error_handler"
-              type: HttpRequester
-            paginator:
-              type: DefaultPaginator
-              pagination_strategy:
-                type: "CursorPagination"
-                cursor_value: "{{ response.next_page_token }}"
-                stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
-              page_size_option:
-                field_name: "page_size"
-                inject_into: "request_parameter"
-                type: RequestOption
-              page_token_option:
-                type: RequestOption
-                field_name: "next_page_token"
-                inject_into: "request_parameter"
-            record_selector:
-              extractor:
-                type: DpathExtractor
-                field_path:
-                - "meetings"
-              type: RecordSelector
-            partition_router:
-              type: SubstreamPartitionRouter
-              parent_stream_configs:
-              - stream:
-                  retriever:
-                    requester:
-                      url_base: "https://api.zoom.us/v2"
-                      http_method: "GET"
-                      authenticator: "#/definitions/authenticator"
-                      error_handler: "#/definitions/zoom_error_handler"
-                      type: HttpRequester
-                      path: "/users"
-                    paginator:
-                      type: DefaultPaginator
-                      pagination_strategy:
-                        type: "CursorPagination"
-                        cursor_value: "{{ response.next_page_token }}"
-                        stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
-                      page_size_option:
-                        field_name: "page_size"
-                        inject_into: "request_parameter"
-                        type: RequestOption
-                      page_token_option:
-                        type: RequestOption
-                        field_name: "next_page_token"
-                        inject_into: "request_parameter"
-                    record_selector:
-                      extractor:
-                        type: DpathExtractor
-                        field_path:
-                        - "users"
-                      type: RecordSelector
-                    type: SimpleRetriever
-                  schema_loader:
-                    type: InlineSchemaLoader
-                    schema:
-                      $schema: http://json-schema.org/draft-07/schema#
-                      properties:
-                        user_created_at:
-                          type:
-                          - 'null'
-                          - string
-                        created_at:
-                          type:
-                          - 'null'
-                          - string
-                        custom_attributes:
-                          type:
-                          - 'null'
-                          - array
-                          items:
-                            type: object
-                            properties:
-                              key:
-                                type:
-                                - 'null'
-                                - string
-                              name:
-                                type:
-                                - 'null'
-                                - string
-                              value:
-                                type:
-                                - 'null'
-                                - string
-                        dept:
-                          type:
-                          - 'null'
-                          - string
-                        email:
-                          type:
-                          - 'null'
-                          - string
-                        employee_unique_id:
-                          type:
-                          - 'null'
-                          - string
-                        first_name:
-                          type:
-                          - 'null'
-                          - string
-                        group_ids:
-                          type:
-                          - 'null'
-                          - array
-                          items:
-                            type:
-                            - 'null'
-                            - string
-                        id:
-                          type:
-                          - 'null'
-                          - string
-                        im_group_ids:
-                          type:
-                          - 'null'
-                          - array
-                          items:
-                            type:
-                            - 'null'
-                            - string
-                        language:
-                          type:
-                          - 'null'
-                          - string
-                        last_client_version:
-                          type:
-                          - 'null'
-                          - string
-                        last_login_time:
-                          type:
-                          - 'null'
-                          - string
-                        last_name:
-                          type:
-                          - 'null'
-                          - string
-                        phone_number:
-                          type:
-                          - 'null'
-                          - string
-                        plan_united_type:
-                          type:
-                          - 'null'
-                          - string
-                        pmi:
-                          type:
-                          - 'null'
-                          - number
-                        role_id:
-                          type:
-                          - 'null'
-                          - string
-                        status:
-                          type:
-                          - 'null'
-                          - string
-                        timezone:
-                          type:
-                          - 'null'
-                          - string
-                        type:
-                          type:
-                          - 'null'
-                          - number
-                        verified:
-                          type:
-                          - 'null'
-                          - number
-                        display_name:
-                          type:
-                          - 'null'
-                          - string
-                  type: DeclarativeStream
-                  name: "users"
-                  primary_key: "id"
-                parent_key: "id"
-                partition_field: "parent_id"
-                type: ParentStreamConfig
-            type: SimpleRetriever
-          type: DeclarativeStream
-          name: "meetings_list_tmp"
-          primary_key: "id"
-        parent_key: "id"
-        partition_field: "parent_id"
-        type: ParentStreamConfig
+      - type: ParentStreamConfig
+        stream:
+          $ref: "#/definitions/report_user_meetings_filtered_parent_stream"
+        parent_key: uuid
+        partition_field: parent_id
+        incremental_dependency: true
+        extra_fields:
+        - - id
+        - - end_time
     type: SimpleRetriever
   transformations:
   - type: AddFields
     fields:
     - path:
-      - "meeting_id"
+      - meeting_id
+      value: "{{ stream_slice.extra_fields.get('id') }}"
+      type: AddedFieldDefinition
+    - path:
+      - meeting_uuid
       value: "{{ stream_partition.parent_id }}"
+      type: AddedFieldDefinition
+    - path:
+      - meeting_end_time
+      value: "{{ stream_slice.extra_fields.get('end_time') }}"
       type: AddedFieldDefinition
   schema_loader:
     type: InlineSchemaLoader
@@ -12970,6 +12999,11 @@ streams:
           type:
           - 'null'
           - string
+        meeting_end_time:
+          type:
+          - 'null'
+          - string
+          format: date-time
         meeting_id:
           type:
           - 'null'
@@ -12994,10 +13028,12 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         leave_time:
           type:
           - 'null'
           - string
+          format: date-time
         name:
           type:
           - 'null'
@@ -13032,7 +13068,18 @@ streams:
           - string
   type: DeclarativeStream
   name: "report_meeting_participants"
-  primary_key: "id"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: meeting_end_time
+    cursor_datetime_formats:
+    - '%Y-%m-%dT%H:%M:%SZ'
+    - '%Y-%m-%d'
+    datetime_format: '%Y-%m-%d'
+    start_datetime: "{{ [config.get('start_date', '')[:10], (now_utc() - duration('P6M') + duration('P1D')).strftime('%Y-%m-%d')] | max }}"
+    is_client_side_incremental: true
+    lookback_window: P1D
+    global_substream_cursor: true
+  primary_key: [meeting_uuid, user_id]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -13317,6 +13364,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         id:
           type:
           - 'null'
@@ -13329,6 +13377,7 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         topic:
           type:
           - 'null'
@@ -13372,6 +13421,7 @@ streams:
           - string
   type: DeclarativeStream
   name: "report_webinars"
+  primary_key: [uuid]
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -13661,10 +13711,12 @@ streams:
           type:
           - 'null'
           - string
+          format: date-time
         leave_time:
           type:
           - 'null'
           - string
+          format: date-time
         name:
           type:
           - 'null'
@@ -13687,276 +13739,8 @@ streams:
           - string
   type: DeclarativeStream
   name: "report_webinar_participants"
-- retriever:
-    requester:
-      url_base: "https://api.zoom.us/v2"
-      http_method: "GET"
-      authenticator: "#/definitions/authenticator"
-      path: "/report/users/{{ stream_partition.parent_id }}/meetings"
-      request_parameters:
-        type: past
-      error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-        - "#/definitions/zoom_error_handler"
-        - type: DefaultErrorHandler
-          response_filters:
-          - predicate: "{{ response.code == 4711 }}"
-            action: FAIL
-            failure_type: config_error
-            error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the report:read:admin scope (or granular report:read:user:admin); add this scope to the app and reconnect."
-            type: HttpResponseFilter
-          - predicate: "{{ response.code == 1001 }}"
-            action: IGNORE
-            error_message: "Zoom returned code 1001 ('{{ response.message }}'): this user was removed from the account after user discovery; skipping this user."
-            type: HttpResponseFilter
-          - predicate: "{{ response.code == 300 and ('six months' in response.get('message', '') or '6 months' in response.get('message', '')) }}"
-            action: IGNORE
-            error_message: "Zoom returned code 300 ('{{ response.message }}'): Zoom keeps reports for six months only; skipping this date window."
-            type: HttpResponseFilter
-          - predicate: "{{ response.code == 200 }}"
-            action: FAIL
-            failure_type: config_error
-            error_message: "Zoom returned code 200 ('{{ response.message }}'): reports require a Pro or higher plan and the report:read:admin scope (or granular report:read:user:admin); upgrade the plan and grant this scope."
-            type: HttpResponseFilter
-          - predicate: "{{ response.code == 124 }}"
-            action: REFRESH_TOKEN_THEN_RETRY
-            error_message: "Zoom rejected the access token (code 124: '{{ response.message }}'); refreshing the token and retrying the request."
-            type: HttpResponseFilter
-      type: HttpRequester
-    paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: CursorPagination
-        cursor_value: "{{ response.get('next_page_token') }}"
-        stop_condition: "{{ not response.get('next_page_token') }}"
-        page_size: 300
-      page_size_option:
-        field_name: page_size
-        inject_into: request_parameter
-        type: RequestOption
-      page_token_option:
-        type: RequestOption
-        field_name: next_page_token
-        inject_into: request_parameter
-    record_selector:
-      extractor:
-        type: DpathExtractor
-        field_path:
-        - meetings
-      type: RecordSelector
-    partition_router:
-      type: SubstreamPartitionRouter
-      parent_stream_configs:
-      - stream:
-          retriever:
-            requester:
-              url_base: "https://api.zoom.us/v2"
-              http_method: "GET"
-              authenticator: "#/definitions/authenticator"
-              path: "/users"
-              error_handler: "#/definitions/zoom_error_handler"
-              type: HttpRequester
-            paginator:
-              type: DefaultPaginator
-              pagination_strategy:
-                type: CursorPagination
-                cursor_value: "{{ response.get('next_page_token') }}"
-                stop_condition: "{{ not response.get('next_page_token') }}"
-                page_size: 30
-              page_size_option:
-                field_name: page_size
-                inject_into: request_parameter
-                type: RequestOption
-              page_token_option:
-                type: RequestOption
-                field_name: next_page_token
-                inject_into: request_parameter
-            record_selector:
-              extractor:
-                type: DpathExtractor
-                field_path:
-                - users
-              type: RecordSelector
-            type: SimpleRetriever
-          schema_loader:
-            type: InlineSchemaLoader
-            schema:
-              $schema: http://json-schema.org/draft-07/schema#
-              type: object
-              properties:
-                id:
-                  type:
-                  - 'null'
-                  - string
-              additionalProperties: true
-          type: DeclarativeStream
-          name: users
-          primary_key: id
-        parent_key: id
-        partition_field: parent_id
-    type: SimpleRetriever
-  incremental_sync:
-    type: DatetimeBasedCursor
-    global_substream_cursor: true
-    cursor_field: end_time
-    datetime_format: "%Y-%m-%d"
-    cursor_datetime_formats:
-    - "%Y-%m-%dT%H:%M:%SZ"
-    - "%Y-%m-%d"
-    start_datetime: "{{ [config.get('start_date', '')[:10], (now_utc() - duration('P6M') + duration('P1D')).strftime('%Y-%m-%d')] | max }}"
-    end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-    step: P28D
-    cursor_granularity: P1D
-    lookback_window: P1D
-    start_time_option:
-      type: RequestOption
-      field_name: from
-      inject_into: request_parameter
-    end_time_option:
-      type: RequestOption
-      field_name: to
-      inject_into: request_parameter
-  transformations:
-  - type: AddFields
-    fields:
-    - path:
-      - user_id
-      value: "{{ stream_partition.parent_id }}"
-      type: AddedFieldDefinition
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type: object
-      properties:
-        custom_keys:
-          type:
-          - 'null'
-          - array
-          items:
-            type: object
-            properties:
-              key:
-                type:
-                - 'null'
-                - string
-              value:
-                type:
-                - 'null'
-                - string
-            additionalProperties: true
-        duration:
-          type:
-          - 'null'
-          - integer
-        end_time:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        id:
-          type:
-          - 'null'
-          - integer
-        participants_count:
-          type:
-          - 'null'
-          - integer
-        session_key:
-          type:
-          - 'null'
-          - string
-        source:
-          type:
-          - 'null'
-          - string
-        start_time:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        topic:
-          type:
-          - 'null'
-          - string
-        total_minutes:
-          type:
-          - 'null'
-          - integer
-        type:
-          type:
-          - 'null'
-          - integer
-        user_email:
-          type:
-          - 'null'
-          - string
-        user_name:
-          type:
-          - 'null'
-          - string
-        uuid:
-          type:
-          - 'null'
-          - string
-        schedule_time:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        join_waiting_room_time:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        join_time:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        leave_time:
-          type:
-          - 'null'
-          - string
-          format: date-time
-        host_organization:
-          type:
-          - 'null'
-          - string
-        host_name:
-          type:
-          - 'null'
-          - string
-        has_screen_share:
-          type:
-          - 'null'
-          - boolean
-        has_recording:
-          type:
-          - 'null'
-          - boolean
-        has_chat:
-          type:
-          - 'null'
-          - boolean
-        meeting_encryption_status:
-          type:
-          - 'null'
-          - integer
-        participants_count_my_account:
-          type:
-          - 'null'
-          - integer
-        user_id:
-          type:
-          - 'null'
-          - string
-      additionalProperties: true
-  primary_key:
-  - uuid
-  type: DeclarativeStream
-  name: "report_user_meetings"
+  primary_key: [webinar_uuid, user_id]
+- $ref: "#/definitions/report_user_meetings_stream"
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -14543,7 +14327,7 @@ spec:
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:
         - "2026-01-01T00:00:00Z"
-        description: "UTC date-time from which to replicate the report_user_meetings and report_daily streams (report_daily starts at the beginning of that month). Zoom only serves these reports for roughly the last six months, so earlier dates are clamped to that window. Leave empty to sync everything Zoom still serves."
+        description: "UTC start date for meeting and webinar creation times. The meetings and webinars streams include only records created on or after this date, including in Full Refresh; leave it empty to sync everything Zoom still serves. The report_user_meetings, report_daily, report_meetings, and report_meeting_participants streams start from this date and are limited to the reports Zoom retains (roughly six months); report_daily starts at the beginning of the month."
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
