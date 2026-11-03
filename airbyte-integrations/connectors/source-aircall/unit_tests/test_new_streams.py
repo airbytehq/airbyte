@@ -220,8 +220,11 @@ def test_conversation_engagements_read_each_parent_and_paginate() -> None:
 
         assert output.errors == []
         assert len(output.records) == 52
-        assert {record.record.data["conversation_id"] for record in output.records[:51]} == {11}
-        assert output.records[-1].record.data == {"id": 99, "type": "conversation_closed", "conversation_id": 12}
+        by_parent = {}
+        for record in output.records:
+            by_parent.setdefault(record.record.data["conversation_id"], []).append(record.record.data)
+        assert {parent: len(records) for parent, records in by_parent.items()} == {11: 51, 12: 1}
+        assert by_parent[12] == [{"id": 99, "type": "conversation_closed", "conversation_id": 12}]
         for request in (first, second, other):
             http_mocker.assert_number_of_calls(request, 1)
 
