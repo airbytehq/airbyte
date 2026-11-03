@@ -361,6 +361,7 @@ class ErrorResponseBuilder:
     def __init__(self, status_code: int):
         self._status_code: int = status_code
         self._error_message: Optional[str] = None
+        self._html_body: bool = False
 
     @classmethod
     def response_with_status(cls, status_code: int) -> "ErrorResponseBuilder":
@@ -375,7 +376,19 @@ class ErrorResponseBuilder:
         self._error_message = message
         return self
 
+    def with_empty_html_body(self) -> "ErrorResponseBuilder":
+        """Return an empty `text/html` body instead of a JSON error envelope.
+
+        Some Zendesk services (notably `collaboration-api`, which serves the side conversations
+        endpoints) answer permission denials this way. Any error handler that keys on the response
+        body cannot match such a response, so error handling must key on the status code instead.
+        """
+        self._html_body = True
+        return self
+
     def build(self) -> HttpResponse:
+        if self._html_body:
+            return HttpResponse("", self._status_code, {"Content-Type": "text/html"})
         if self._error_message:
             body = json.dumps({"error": self._error_message})
         else:
@@ -1207,6 +1220,22 @@ class TicketAuditsResponseBuilder(HttpResponseBuilder):
             body["before_url"] = self._before_url
             return HttpResponse(json.dumps(body), response.status_code)
         return response
+
+
+class TicketAuditsPerTicketResponseBuilder(HttpResponseBuilder):
+    """Response builder for the ticket_audits_per_ticket stream (GET /tickets/{ticket_id}/audits.json).
+
+    The stream uses links_next_paginator: links.next is the next request URL and meta.has_more is
+    the stop condition. Call with_pagination() to point links.next at `next_page_url`.
+    """
+
+    @classmethod
+    def ticket_audits_per_ticket_response(cls, next_page_url: Optional[str] = None) -> "TicketAuditsPerTicketResponseBuilder":
+        return cls(
+            find_template("ticket_audits", __file__),
+            FieldPath("audits"),
+            CursorBasedPaginationStrategy(next_page_url),
+        )
 
 
 class TicketCommentsResponseBuilder(HttpResponseBuilder):

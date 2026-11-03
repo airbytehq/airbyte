@@ -8,7 +8,10 @@ import pytest
 import yaml
 from requests import Response
 
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
+
+from .conftest import read_from_stream
 
 
 @pytest.fixture
@@ -215,9 +218,10 @@ class TestCustomObjectAssociationStreamRefResolution:
         custom_requester = resolved_manifest["definitions"]["base_custom_object_association_stream"]["retriever"]["requester"]
         assert "error_handler" in custom_requester
 
-        # The custom error handler should be a DefaultErrorHandler (not the base's CustomErrorHandler)
+        # The custom error handler must keep HubspotErrorHandler so 401 handling stays credential-type aware
         custom_error_handler = custom_requester["error_handler"]
-        assert custom_error_handler["type"] == "DefaultErrorHandler"
+        assert custom_error_handler["type"] == "CustomErrorHandler"
+        assert custom_error_handler["class_name"].endswith("HubspotErrorHandler")
 
         # Verify it has the custom-object-specific 400 filter with a message about custom object names
         filter_400 = next((f for f in custom_error_handler["response_filters"] if 400 in f.get("http_codes", [])), None)
@@ -253,12 +257,22 @@ class TestCustomObjectAssociationStreamErrorHandler:
         assert filter_403["action"] == "FAIL"
         assert "permission" in filter_403["error_message"].lower() or "access denied" in filter_403["error_message"].lower()
 
-    def test_429_response_retries(self, resolved_manifest):
-        """HTTP 429 (rate limit) should be mapped to RETRY action."""
+    def test_429_response_is_rate_limited(self, resolved_manifest):
+        """HTTP 429 (rate limit) should be mapped to RATE_LIMITED action, matching the base error handler."""
         error_handler = self._get_error_handler(resolved_manifest)
         filter_429 = next((f for f in error_handler["response_filters"] if 429 in f.get("http_codes", [])), None)
         assert filter_429 is not None, "Expected a response filter for HTTP 429"
-        assert filter_429["action"] == "RETRY"
+        assert filter_429["action"] == "RATE_LIMITED"
+
+    def test_auth_filters_match_base_error_handler(self, resolved_manifest):
+        """401 and 530 must be handled the same way as the base error handler so auth behavior is preserved."""
+        error_handler = self._get_error_handler(resolved_manifest)
+        base_handler = resolved_manifest["definitions"]["base_error_handler"]
+        for code in (401, 530):
+            custom_filter = next((f for f in error_handler["response_filters"] if code in f.get("http_codes", [])), None)
+            base_filter = next((f for f in base_handler["response_filters"] if code in f.get("http_codes", [])), None)
+            assert custom_filter is not None, f"Expected a response filter for HTTP {code}"
+            assert custom_filter["action"] == base_filter["action"]
 
     def test_5xx_response_retries(self, resolved_manifest):
         """HTTP 502/503 should be mapped to RETRY action."""
@@ -495,3 +509,32 @@ class TestCustomObjectAssociationExtractor:
         assert records[0]["from_id"] == "789"
         assert records[0]["to_id"] == "101"
         assert records[0]["label"] == "Related"
+
+
+def test_custom_association_parent_search_400_reports_invalid_custom_object_config_error(requests_mock):
+    """A 400 from the parent `/crm/v3/objects/{from_object}/search` request (e.g. HubSpot cannot infer the object type
+    from a bare custom object name) must surface as a config_error naming the custom object identifier fields, not as
+    the generic credentials error."""
+    config = {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"},
+        "custom_object_association_streams": [{"from_object": "my_custom_object", "to_object": "deals"}],
+    }
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    search = requests_mock.post(
+        "https://api.hubapi.com/crm/v3/objects/my_custom_object/search",
+        json={"status": "error", "message": "Unable to infer object type from: my_custom_object"},
+        status_code=400,
+    )
+    associations = requests_mock.post("https://api.hubapi.com/crm/v4/associations/my_custom_object/deals/batch/read", json={"results": []})
+
+    output = read_from_stream(config, "associations_my_custom_object_deals", SyncMode.incremental, expecting_exception=True)
+
+    assert search.called
+    assert not associations.called
+    assert output.errors
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.config_error
+    assert "custom object" in error.message.lower()
+    assert "'from_object'" in error.message
+    assert "credentials" not in error.message.lower()

@@ -45,6 +45,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.4.4 | 2026-06-30 | [81345](https://github.com/airbytehq/airbyte/pull/81345) | Add missing `airbyte_secret` flag to `secret_token` spec field |
 | 0.4.3 | 2026-06-02 | [79008](https://github.com/airbytehq/airbyte/pull/79008) | Update dependencies |
 | 0.4.2 | 2025-05-24 | [60783](https://github.com/airbytehq/airbyte/pull/60783) | Update dependencies |
 | 0.4.1 | 2025-05-10 | [59942](https://github.com/airbytehq/airbyte/pull/59942) | Update dependencies |

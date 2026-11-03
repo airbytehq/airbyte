@@ -41,8 +41,9 @@ private val logger = KotlinLogging.logger {}
  * The PER-STREAM case is simple, and is as described above. The NON-PER-STREAM case is slightly
  * tricky. Because we don't know the stream type to begin with, we always assume PER_STREAM until
  * the first state message arrives. If this state message is a GLOBAL state, we alias all existing
- * state ids to a single global state id via a set of alias ids. From then onwards, we use one id -
- * [.SENTINEL_GLOBAL_DESC] regardless of stream. Read [.convertToGlobalIfNeeded] for more detail.
+ * state ids to a single global state id via a set of alias ids. From then onwards, we use one
+ * id - [.SENTINEL_GLOBAL_DESC] regardless of stream. Read [.convertToGlobalIfNeeded] for more
+ * detail.
  */
 class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
     /** Memory that the manager has allocated to it to use. It can ask for more memory as needed. */
@@ -120,6 +121,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      *
      * @param streamDescriptor
      * - stream to get stateId for.
+     *
      * @return state id
      */
     fun getStateIdAndIncrementCounter(streamDescriptor: StreamDescriptor): Long {
@@ -238,6 +240,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
      *
      * @param streamDescriptor
      * - stream to get stateId for.
+     *
      * @return state id
      */
     private fun getStateId(streamDescriptor: StreamDescriptor): Long {

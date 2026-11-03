@@ -26,6 +26,7 @@ open class TeradataRawOverrideTypingDedupingTest : TeradataTypingDedupingTest() 
      */
     override var clearscapeManager: ClearScapeManager =
         ClearScapeManager("secrets/raw_override_typing_config.json")
+
     /**
      * Provides the base configuration with custom overrides.
      *
@@ -40,6 +41,7 @@ open class TeradataRawOverrideTypingDedupingTest : TeradataTypingDedupingTest() 
             .put("raw_data_schema", "overridden_raw_dataset")
             .put("disable_type_dedupe", false)
     }
+
     /**
      * Indicates whether the final table comparison should be disabled.
      *
@@ -48,6 +50,7 @@ open class TeradataRawOverrideTypingDedupingTest : TeradataTypingDedupingTest() 
     override fun disableFinalTableComparison(): Boolean {
         return false
     }
+
     /**
      * Provides the name of the raw schema used during the test.
      *

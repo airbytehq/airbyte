@@ -49,7 +49,7 @@ class HubSpotOperationRepository(
                                         typePath = PROPERTY_TYPE_PATH,
                                         matchingKeyPredicate =
                                             JsonNodePredicate(
-                                                """{{ property["name"] == "email" }}"""
+                                                """{{ property["name"] == "email" }}""",
                                             ),
                                         availabilityPredicate = UPSERT_AVAILABILITY_PREDICATE,
                                         requiredPredicate = NEVER_REQUIRED_PREDICATE,
@@ -60,9 +60,9 @@ class HubSpotOperationRepository(
                                 HttpRequester(
                                     httpClient,
                                     RequestMethod.GET,
-                                    STANDARD_OBJECT_SCHEMA_URL
+                                    STANDARD_OBJECT_SCHEMA_URL,
                                 ),
-                        )
+                        ),
                 ),
                 DynamicOperationProvider(
                     objectsSupplier =
@@ -75,9 +75,9 @@ class HubSpotOperationRepository(
                                 HttpRequester(
                                     httpClient,
                                     RequestMethod.GET,
-                                    STANDARD_OBJECT_SCHEMA_URL
+                                    STANDARD_OBJECT_SCHEMA_URL,
                                 ),
-                        )
+                        ),
                 ),
                 DynamicOperationProvider(
                     objectsSupplier =
@@ -88,7 +88,7 @@ class HubSpotOperationRepository(
                                         HttpRequester(
                                             httpClient,
                                             RequestMethod.GET,
-                                            "https://api.hubapi.com/crm/v3/schemas"
+                                            "https://api.hubapi.com/crm/v3/schemas",
                                         ),
                                     selector = listOf("results"),
                                 ),
@@ -101,7 +101,7 @@ class HubSpotOperationRepository(
                             schemaRequester = null,
                         ),
                 ),
-            )
+            ),
         )
 
     companion object {
@@ -121,7 +121,7 @@ class HubSpotOperationRepository(
         val PROPERTY_TYPE_PATH = listOf("type")
         val UPSERT_AVAILABILITY_PREDICATE =
             JsonNodePredicate(
-                """{{ property["type"] != "object_coordinates" && property["modificationMetadata"]["readOnlyValue"] == false && property["calculated"] == false }}"""
+                """{{ property["type"] != "object_coordinates" && property["modificationMetadata"]["readOnlyValue"] == false && property["calculated"] == false }}""",
             )
         val NEVER_REQUIRED_PREDICATE: Predicate<JsonNode> = Predicate { _ -> false }
         const val STANDARD_OBJECT_SCHEMA_URL =
@@ -133,7 +133,7 @@ class HubSpotOperationRepository(
                 typePath = PROPERTY_TYPE_PATH,
                 matchingKeyPredicate =
                     JsonNodePredicate(
-                        """{{ property["hasUniqueValue"] && property["modificationMetadata"]["readOnlyValue"] == false }}"""
+                        """{{ property["hasUniqueValue"] && property["modificationMetadata"]["readOnlyValue"] == false }}""",
                     ),
                 availabilityPredicate = UPSERT_AVAILABILITY_PREDICATE,
                 requiredPredicate = NEVER_REQUIRED_PREDICATE,

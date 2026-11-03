@@ -22,7 +22,8 @@ class StateAdditionalStatsStore {
 
     private val store =
         ConcurrentHashMap<
-            PartitionKey, ConcurrentHashMap<DestinationStream.Descriptor, AdditionalStatsHistogram>
+            PartitionKey,
+            ConcurrentHashMap<DestinationStream.Descriptor, AdditionalStatsHistogram>,
         >()
 
     /**
@@ -38,7 +39,7 @@ class StateAdditionalStatsStore {
         partitionKey: PartitionKey,
         streamDescriptor: DestinationStream.Descriptor,
         metric: ObservabilityMetrics,
-        value: Double
+        value: Double,
     ) {
         store.putIfAbsent(partitionKey, ConcurrentHashMap())
         store[partitionKey]?.let { partitionStats ->
@@ -55,7 +56,7 @@ class StateAdditionalStatsStore {
      * the last state message publish event.
      *
      * @param partitionKeys The list of partition keys to process, each representing a distinct
-     * partition.
+     *   partition.
      * @param stream The descriptor of the destination stream whose statistics are to be drained.
      * @return A `Histogram` containing the combined metrics for the specified destination stream.
      */
@@ -87,17 +88,18 @@ class StateAdditionalStatsStore {
      *                  representing metric counts by their names.
      * @return
      * ```
+     *
      * The updated histogram with default values for missing metrics.
      */
     private fun addDefaultValues(
-        stats: MutableMap<DestinationStream.Descriptor, AdditionalStatsHistogram>
+        stats: MutableMap<DestinationStream.Descriptor, AdditionalStatsHistogram>,
     ): MutableMap<DestinationStream.Descriptor, AdditionalStatsHistogram> {
         stats.forEach { (_, histogram) -> populateWithDefaultValues(histogram) }
         return stats
     }
 
     private fun populateWithDefaultValues(
-        histogram: AdditionalStatsHistogram
+        histogram: AdditionalStatsHistogram,
     ): AdditionalStatsHistogram {
         ObservabilityMetrics.entries.forEach {
             if (histogram.get(it.metricName) == null) {
@@ -115,6 +117,6 @@ class StateAdditionalStatsStore {
      */
     enum class ObservabilityMetrics(val metricName: String) {
         NULLED_VALUE_COUNT("nulledValueCount"),
-        TRUNCATED_VALUE_COUNT("truncatedValueCount")
+        TRUNCATED_VALUE_COUNT("truncatedValueCount"),
     }
 }

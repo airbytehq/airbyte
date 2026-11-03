@@ -228,6 +228,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
+          url_base: https://api.aircall.io/v2
           path: /users
           http_method: GET
         record_selector:
@@ -236,6 +237,20 @@ definitions:
             type: DpathExtractor
             field_path:
               - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:

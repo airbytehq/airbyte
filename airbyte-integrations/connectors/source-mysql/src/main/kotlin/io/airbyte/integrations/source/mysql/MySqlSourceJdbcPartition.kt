@@ -149,7 +149,7 @@ sealed class MySqlSourceJdbcResumablePartition(
                 FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
                 NoWhere,
                 OrderBy(checkpointColumns),
-                Limit(sampleSize.toLong())
+                Limit(sampleSize.toLong()),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
@@ -287,7 +287,7 @@ class MySqlSourceJdbcCdcSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
     primaryKey: List<EmittedField>,
-    override val lowerBound: List<JsonNode>?
+    override val lowerBound: List<JsonNode>?,
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
     override val upperBound: List<JsonNode>? = null
     override val completeState: OpaqueStateValue
@@ -340,7 +340,7 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
         streamState,
         primaryKey,
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
     ) {
     // UpperBound is not used because the partition is not splittable.
     override val upperBound: List<JsonNode>? = null
@@ -371,14 +371,14 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
     override val upperBound: List<JsonNode>?,
     cursor: EmittedField,
     cursorUpperBound: JsonNode?,
-    override val isLowerBoundIncluded: Boolean
+    override val isLowerBoundIncluded: Boolean,
 ) :
     MySqlSourceJdbcCursorPartition(
         selectQueryGenerator,
         streamState,
         primaryKey,
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
     ) {
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
@@ -402,7 +402,7 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
                         checkpointColumns,
                         primaryKeyCheckpoint = upperBound,
                         cursor,
-                        stream
+                        stream,
                     )
             }
 }
@@ -424,7 +424,7 @@ class MySqlSourceJdbcCursorIncrementalPartition(
         streamState,
         listOf(cursor),
         cursor,
-        cursorUpperBound
+        cursorUpperBound,
     ) {
 
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
@@ -462,7 +462,10 @@ class MySqlJdbcConcurrentPartitionsCreatorFactory<
 }
 
 class MySqlJdbcConcurrentPartitionsCreator<
-    A : JdbcSharedState, S : JdbcStreamState<A>, P : JdbcPartition<S>>(
+    A : JdbcSharedState,
+    S : JdbcStreamState<A>,
+    P : JdbcPartition<S>,
+>(
     partition: P,
     partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
@@ -557,7 +560,7 @@ class MySqlJdbcConcurrentPartitionsCreator<
         jdbcConnectionFactory.get().use { connection ->
             val stmt =
                 connection.prepareStatement(
-                    tableEstimateQuery.format(stream.namespace, stream.name)
+                    tableEstimateQuery.format(stream.namespace, stream.name),
                 )
             val rs = stmt.executeQuery()
             if (rs.next()) {
