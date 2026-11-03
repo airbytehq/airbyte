@@ -308,6 +308,12 @@ Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign 
 
 The cursor for these streams is the most recent `Modified Time` among synced records, not the time of the last sync. If none of an account's entities change for more than 30 days, the next incremental sync performs a full download even if the connection syncs regularly. The **Lookback window** setting doesn't apply to bulk streams.
 
+#### Campaign and ad type coverage
+
+The Microsoft Campaign Management API only returns campaigns and ads of the types the connector explicitly requests. The Campaigns stream requests these [campaign types](https://learn.microsoft.com/en-us/advertising/campaign-management-service/campaigntype?view=bingads-13): App, Audience, DynamicSearchAds, Hotel, ObjectiveBased, PerformanceMax, Search, and Shopping. The Ads stream requests these [ad types](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13): AppInstall, DynamicSearch, ExpandedText, Hotel, Image, Product, ResponsiveAd, ResponsiveSearch, and Text.
+
+Ad Groups and Ads are child streams of Campaigns, so ad groups and ads in a campaign of an unrequested type aren't synced either. Before version 3.0.20, the connector didn't request App, Hotel, or ObjectiveBased campaigns or Hotel ads, so those records and their ad groups and ads were missing. Run a sync after upgrading to pick them up.
+
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Bing Ads source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
