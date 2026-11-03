@@ -3,10 +3,8 @@
 #
 
 
-import sys
-
-from destination_amazon_sqs import DestinationAmazonSqs
+from destination_amazon_sqs.run import run
 
 
 if __name__ == "__main__":
-    DestinationAmazonSqs().run(sys.argv[1:])
+    run()

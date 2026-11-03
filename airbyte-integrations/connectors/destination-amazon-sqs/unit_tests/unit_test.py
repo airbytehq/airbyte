@@ -11,13 +11,12 @@ import boto3
 from destination_amazon_sqs import DestinationAmazonSqs
 
 # from airbyte_cdk.sources.source import Source
-from moto import mock_iam, mock_sqs
+from moto import mock_aws
 from moto.core import set_initial_no_auth_action_count
 
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_cdk.models import AirbyteMessageSerializer, ConfiguredAirbyteCatalogSerializer, Status
 
 
-@mock_iam
 def create_user_with_all_permissions():
     client = boto3.client("iam", region_name="eu-west-1")
     client.create_user(UserName="test_user1")
@@ -74,8 +73,7 @@ def get_catalog() -> Mapping[str, Any]:
 
 
 @set_initial_no_auth_action_count(3)
-@mock_sqs
-@mock_iam
+@mock_aws
 def test_check():
     # Create User
     user = create_user_with_all_permissions()
@@ -107,8 +105,7 @@ def test_check():
 
 
 @set_initial_no_auth_action_count(4)
-@mock_sqs
-@mock_iam
+@mock_aws
 def test_write():
     # Create User
     user = create_user_with_all_permissions()
@@ -121,7 +118,7 @@ def test_write():
             "emitted_at": 1633881878000,
         },
     }
-    ab_message = AirbyteMessage(**test_message)
+    ab_message = AirbyteMessageSerializer.load(test_message)
 
     # Common params
     message_delay = 1
@@ -138,7 +135,7 @@ def test_write():
     # Create config
     config = create_config(queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], message_delay)
     # Create ConfiguredAirbyteCatalog
-    catalog = ConfiguredAirbyteCatalog(streams=get_catalog()["streams"])
+    catalog = ConfiguredAirbyteCatalogSerializer.load(get_catalog())
     # Create Destination
     destination = DestinationAmazonSqs()
     # Send messages using write()
@@ -201,9 +198,7 @@ def test_write():
     fifo_queue_name = "amazon-sqs-mock-queue.fifo"
     fifo_queue_url = client.create_queue(QueueName=fifo_queue_name, Attributes={"FifoQueue": "true"})["QueueUrl"]
     # Create config
-    fifo_config = create_fifo_config(
-        fifo_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], "fifo-group", message_delay
-    )
+    fifo_config = create_fifo_config(fifo_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], "fifo-group", None)
     # Send messages using write()
     for message in destination.write(fifo_config, catalog, [ab_message]):
         print(f"Message Sent with delay of {message_delay} seconds")

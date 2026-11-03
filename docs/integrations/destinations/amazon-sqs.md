@@ -129,6 +129,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                              | Subject                           |
 |:--------|:-----------| :-------------------------------------------------------- | :-------------------------------- |
+| 0.2.0   | 2026-11-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)      | Upgrade to Airbyte CDK v7 and base image 4.1.1 to support Python 3.13 |
 | 0.1.17  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                  |
 | 0.1.16  | 2024-08-03 | [43278](https://github.com/airbytehq/airbyte/pull/43278) | Update dependencies |
 | 0.1.15  | 2024-07-27 | [42795](https://github.com/airbytehq/airbyte/pull/42795) | Update dependencies |
