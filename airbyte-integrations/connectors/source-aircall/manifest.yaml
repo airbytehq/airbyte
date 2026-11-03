@@ -1,21 +1,96 @@
-version: 4.5.4
+version: 7.45.0
 
 type: DeclarativeSource
 
 check:
   type: CheckStream
   stream_names:
-    - calls
     - company
-    - contacts
-    - numbers
-    - tags
-    - user_availability
-    - users
-    - teams
-    - webhooks
+
+api_budget:
+  $ref: "#/definitions/api_budget"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 4
 
 definitions:
+  api_budget:
+    type: HTTPAPIBudget
+    policies:
+      - type: MovingWindowCallRatePolicy
+        rates:
+          - limit: 120
+            interval: PT1M
+        matchers:
+          - type: HttpRequestRegexMatcher
+            url_base: https://api.aircall.io
+    ratelimit_remaining_header: X-AircallApi-Remaining
+    status_codes_for_ratelimit_hit: [429]
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.aircall.io/v1
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: '{{ config["api_id"] }}'
+      password: '{{ config["api_token"] }}'
+    error_handler:
+      $ref: "#/definitions/error_handler"
+  error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitUntilTimeFromHeader
+        header: X-AircallApi-Reset
+        min_wait: 1
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes: [401]
+        error_message: >-
+          Aircall rejected the API ID and API token (HTTP 401).
+          Create a new API key in the Aircall Dashboard (Integrations & API > API
+          Keys, https://dashboard.aircall.io/integrations/api-keys) and update
+          the connector.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes: [403]
+        error_message: >-
+          Aircall rejected the API ID and API token (HTTP 403).
+          Create a new API key in the Aircall Dashboard (Integrations & API > API
+          Keys, https://dashboard.aircall.io/integrations/api-keys) and update
+          the connector.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes: [400]
+        error_message_contains: "limited to 10k results"
+        error_message: >-
+          Aircall returns at most 10,000 calls or contacts per request window.
+          Lower the Window size (days) setting so each window holds fewer than
+          10,000 records.
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes: [429]
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes: [500, 502, 503, 504]
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: per_page
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 50
+      start_from_page: 1
   streams:
     calls:
       type: DeclarativeStream
@@ -33,18 +108,32 @@ definitions:
             field_path:
               - calls
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: per_page
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
+          $ref: "#/definitions/paginator"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: started_at
+        datetime_format: "%s"
+        cursor_datetime_formats:
+          - "%s"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        step: P{{ config.get('window_in_days', 1) }}D
+        cursor_granularity: PT1S
+        lookback_window: P3D
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ (now_utc().timestamp() - 186 * 86400) | int }}"
+          datetime_format: "%s"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().timestamp() | int }}"
+          datetime_format: "%s"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -64,19 +153,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - company
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: per_page
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -90,6 +166,9 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /contacts
           http_method: GET
+          request_parameters:
+            from: "{{ 1388534400 + (stream_partition['window_index'] | int) * config.get('window_in_days', 30) * 86400 }}"
+            to: "{{ 1388534400 + ((stream_partition['window_index'] | int) + 1) * config.get('window_in_days', 30) * 86400 - 1 }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -97,18 +176,15 @@ definitions:
             field_path:
               - contacts
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: per_page
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
+          $ref: "#/definitions/paginator"
+        partition_router:
+          type: ListPartitionRouter
+          values: >-
+            {% set window_days = config.get('window_in_days', 30) | int %}
+            {% set window_count = (((now_utc().timestamp() | int) - 1388534400) //
+            (window_days * 86400)) + 1 %}
+            [{% for _ in 'x' * window_count %}'{{ loop.index0 }}'{{ ',' if not loop.last }}{% endfor %}]
+          cursor_field: window_index
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -131,35 +207,22 @@ definitions:
             field_path:
               - numbers
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: per_page
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
+          $ref: "#/definitions/paginator"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
-        lookback_window: P31D
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] }}"
+          datetime: "2014-01-01T00:00:00.000000+0000"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
-        step: P1M
-        cursor_granularity: PT0.000001S
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -182,18 +245,7 @@ definitions:
             field_path:
               - tags
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: per_page
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
+          $ref: "#/definitions/paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -215,6 +267,8 @@ definitions:
             type: DpathExtractor
             field_path:
               - users
+        paginator:
+          $ref: "#/definitions/paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -238,19 +292,7 @@ definitions:
             field_path:
               - users
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: per_page
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
-            start_from_page: 1
+          $ref: "#/definitions/paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -273,35 +315,22 @@ definitions:
             field_path:
               - teams
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: per_page
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
+          $ref: "#/definitions/paginator"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
-        lookback_window: P31D
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] }}"
+          datetime: "2014-01-01T00:00:00.000000+0000"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
-        step: P1M
-        cursor_granularity: PT0.000001S
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -324,30 +353,11 @@ definitions:
             field_path:
               - webhooks
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: per_page
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 50
+          $ref: "#/definitions/paginator"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/webhooks"
-  base_requester:
-    type: HttpRequester
-    url_base: https://api.aircall.io/v1
-    authenticator:
-      type: BasicHttpAuthenticator
-      username: '{{ config["api_id"] }}'
-      password: '{{ config["api_token"] }}'
-
 streams:
   - $ref: "#/definitions/streams/calls"
   - $ref: "#/definitions/streams/company"
@@ -367,35 +377,57 @@ spec:
     required:
       - api_id
       - api_token
-      - start_date
     properties:
       api_id:
         type: string
         description: >-
-          App ID found at settings
-          https://dashboard.aircall.io/integrations/api-keys
+          Your Aircall API ID. Create an API key in the Aircall Dashboard under
+          Integrations & API > API Keys
+          (https://dashboard.aircall.io/integrations/api-keys).
         title: API ID
         airbyte_secret: true
         order: 0
       api_token:
         type: string
         description: >-
-          App token found at settings (Ref-
-          https://dashboard.aircall.io/integrations/api-keys)
+          The API token shown with the API ID in the Aircall Dashboard under
+          Integrations & API > API Keys
+          (https://dashboard.aircall.io/integrations/api-keys).
         title: API Token
         airbyte_secret: true
         order: 1
       start_date:
         type: string
         description: >-
-          Date time filter for incremental filter, Specify which date to extract
-          from.
-        title: Date-From Filter
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$
+          Not used since version 0.5.0. Calls are read from the six months of
+          history Aircall keeps; the other streams always return every record.
+        title: Start date (unused)
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{3})?Z$
         examples:
           - "2022-03-01T00:00:00.000Z"
         format: date-time
         order: 2
+      window_in_days:
+        type: integer
+        minimum: 1
+        maximum: 365
+        title: Window size (days)
+        description: >-
+          Days of records requested per API call for the calls and contacts
+          streams. Aircall returns at most 10,000 records per request, so lower
+          this if a sync fails with the 10,000-results error. Leave empty for 1
+          day on calls and 30 days on contacts.
+        order: 3
+      num_workers:
+        type: integer
+        minimum: 1
+        maximum: 4
+        default: 2
+        title: Concurrent workers
+        description: >-
+          Parallel requests. All workers share Aircall's limit of 120 requests
+          per minute per company.
+        order: 4
     additionalProperties: true
 
 metadata:
@@ -593,6 +625,10 @@ schemas:
         type:
           - "null"
           - number
+      sid:
+        type:
+          - "null"
+          - string
       status:
         type:
           - "null"
@@ -970,7 +1006,13 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {}
+    properties:
+      id:
+        type: integer
+      availability:
+        type:
+          - "null"
+          - string
   users:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1008,6 +1050,22 @@ schemas:
         type:
           - "null"
           - string
+      substatus:
+        type:
+          - "null"
+          - string
+      extension:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      default_number_id:
+        type:
+          - "null"
+          - integer
       time_zone:
         type:
           - "null"
@@ -1035,6 +1093,10 @@ schemas:
         type:
           - "null"
           - number
+      webhook_id:
+        type:
+          - "null"
+          - string
       name:
         type:
           - "null"

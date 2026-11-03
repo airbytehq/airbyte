@@ -4,18 +4,20 @@ This page contains the setup guide and reference information for the [Aircall](h
 
 ## Prerequisites
 
-Access Token (which acts as bearer token) is mandate for this connector to work, It could be seen at settings (ref - https://dashboard.aircall.io/integrations/api-keys).
+Create an API key in the Aircall Dashboard under **Integrations & API > API Keys**. The API ID and API token are both required.
 
 ## Setup guide
 
 ### Step 1: Set up Aircall connection
 
-- Get an Aircall access token via settings (ref - https://dashboard.aircall.io/integrations/api-keys)
-- Setup params (All params are required)
+- Create an API key in **Integrations & API > API Keys** in the Aircall Dashboard.
+- Enter the required API ID and API token. `start_date` is retained for compatibility but is unused.
 - Available params
-  - api_id: The auto generated id
-  - api_token: Seen at the Aircall settings (ref - https://dashboard.aircall.io/integrations/api-keys)
-  - start_date: Date filter for eligible streams, enter
+  - `api_id`: Your Aircall API ID.
+  - `api_token`: The API token shown with the API ID.
+  - `start_date`: Unused since 0.5.0. Calls start at 186 days before the sync; other streams read every record.
+  - `window_in_days`: Optional number of days per API request for calls and contacts. Defaults to 1 day for calls and 30 days for contacts; reduce it if a window exceeds Aircall's 10,000-result limit.
+  - `num_workers`: Optional concurrent workers, from 1 to 4 (default 2). Workers share Aircall's company-wide rate limit of 120 requests per minute.
 
 ### Step 2: Set up the Aircall connector in Airbyte
 
@@ -24,14 +26,14 @@ Access Token (which acts as bearer token) is mandate for this connector to work,
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Aircall connector and select **Aircall** from the Source type dropdown.
-4. Enter your `api_id, api_token and start_date`.
+4. Enter your API ID and API token. `start_date` is optional and unused.
 5. Click **Set up source**.
 
 #### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. Enter your `api_id, api_token and start_date`.
+3. Enter your API ID and API token. `start_date` is optional and unused.
 4. Click **Set up source**.
 
 ## Supported sync modes
@@ -48,15 +50,17 @@ The Aircall source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-- calls
-- company
-- contacts
-- numbers
-- tags
-- user_availability
-- users (uses the Aircall User V2 API)
-- teams
-- webhooks
+| Stream            | Sync mode                 | Notes                                                         |
+| :---------------- | :------------------------ | :------------------------------------------------------------ |
+| calls             | Full refresh, incremental | Incremental calls use `started_at` with a three-day lookback. |
+| company           | Full refresh              | Used for connection checks.                                   |
+| contacts          | Full refresh              |                                                               |
+| numbers           | Full refresh, incremental | Incremental sync rereads all records to capture edits.        |
+| tags              | Full refresh              |                                                               |
+| user_availability | Full refresh              |                                                               |
+| users             | Full refresh              | Uses the Aircall User V2 API.                                 |
+| teams             | Full refresh, incremental | Incremental sync rereads all records to capture edits.        |
+| webhooks          | Full refresh              |                                                               |
 
 ## API method example
 
@@ -64,7 +68,7 @@ GET https://api.aircall.io/v1/numbers
 
 ## Performance considerations
 
-Aircall [API reference](https://api.aircall.io/v1) has v1 at present. The connector as default uses v1.
+The connector uses Aircall's [v1 API](https://developer.aircall.io/api-references/). Calls and contacts requests are split into configurable date windows to stay below Aircall's 10,000-result cap. Aircall's 120-requests-per-minute limit applies company-wide.
 
 ## IP allow list
 
@@ -77,6 +81,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                   | Subject                     |
 | :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
+| 0.5.0 | 2026-11-03 | [PR_NUMBER_TBD](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_TBD) | Add incremental sync for calls, rate-limit handling and request windows that avoid Aircall's 10,000-result limit |
 | 0.4.27 | 2026-10-13 | [88524](https://github.com/airbytehq/airbyte/pull/88524) | Update dependencies |
 | 0.4.26 | 2026-10-06 | [87742](https://github.com/airbytehq/airbyte/pull/87742) | Update dependencies |
 | 0.4.25 | 2026-09-29 | [87057](https://github.com/airbytehq/airbyte/pull/87057) | Update dependencies |
