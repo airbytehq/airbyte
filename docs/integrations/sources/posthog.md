@@ -75,7 +75,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| 1.1.30 | 2026-11-03 | TBD | Require Python 3.11 or newer, retaining support through Python 3.13. |
+| 1.1.30 | 2026-11-03 | [90903](https://github.com/airbytehq/airbyte/pull/90903) | Require Python 3.11 or newer, retaining support through Python 3.13. |
 | 1.1.29 | 2026-11-03 | [90691](https://github.com/airbytehq/airbyte/pull/90691) | Update dependencies |
 | 1.1.28 | 2026-10-27 | [90013](https://github.com/airbytehq/airbyte/pull/90013) | Update dependencies |
 | 1.1.27 | 2026-10-20 | [78912](https://github.com/airbytehq/airbyte/pull/78912) | Update dependencies |
