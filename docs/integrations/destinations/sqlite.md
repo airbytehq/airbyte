@@ -82,7 +82,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                             | Subject                |
 |:--------| :--------- | :------------------------------------------------------- | :--------------------- |
-| 0.2.10 | 2026-11-03 | | Require Python 3.11 or newer while retaining Python 3.12 support. |
+| 0.2.10 | 2026-11-03 | [90895](https://github.com/airbytehq/airbyte/pull/90895) | Require Python 3.11 or newer while retaining Python 3.12 support. |
 | 0.2.9 | 2025-05-10 | [59805](https://github.com/airbytehq/airbyte/pull/59805) | Update dependencies |
 | 0.2.8 | 2025-05-03 | [59348](https://github.com/airbytehq/airbyte/pull/59348) | Update dependencies |
 | 0.2.7 | 2025-04-26 | [58682](https://github.com/airbytehq/airbyte/pull/58682) | Update dependencies |
