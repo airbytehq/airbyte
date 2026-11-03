@@ -12,7 +12,7 @@ With the Airbyte MCP, your agent can:
 - **Troubleshoot and maintain pipelines**: check sync status, read job logs, check connector configurations, and explain failures.
 - **Read data directly from sources and destinations**: when your organization enables the [context layer](../context-layer/readme.md), your agent can read live data from supported sources and query supported destinations without waiting for a sync.
 - **Learn how each connector works**: connector skills describe the entities, actions, and parameters each connector supports, so your agent knows how to request data correctly.
-- **Answer questions about Airbyte**: your agent can search Airbyte's documentation, website, API specifications, YouTube videos, and GitHub content to answer questions about how Airbyte works. If you use Airbyte Cloud, you don't need the separate [Airbyte knowledge MCP server](/community/mcp-servers/airbyte-knowledge-mcp).
+- **Answer questions about Airbyte**: your agent can search Airbyte's documentation, website, API specifications, YouTube videos, and GitHub content to answer questions about how Airbyte works. If you use Airbyte Cloud, you don't need the separate [Airbyte knowledge MCP server](/platform/airbyte-knowledge-mcp).
 
 To start, [connect the Airbyte MCP to your agent](install.md). For a complete list of what your agent can do, see [Airbyte MCP tools](tools.md). To limit which tools your agent can use, see [Advanced configuration](advanced-configuration.md).
 

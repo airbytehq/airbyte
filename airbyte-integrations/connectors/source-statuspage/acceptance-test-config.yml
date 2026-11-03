@@ -23,6 +23,10 @@ acceptance_tests:
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: subscribers
             bypass_reason: "This stream can't be seeded in our sandbox account"
+        # The `subscribers_histogram_by_state` stream declares `id` as its primary key, but the
+        # endpoint returns one record of counts per page, without an `id`. Changing a stream's
+        # primary key is a breaking change; remove this opt-out once the primary key is fixed.
+        validate_primary_keys_data_type: false
 
   # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
   #        expect_records:
