@@ -8,11 +8,9 @@ This page contains the setup guide and reference information for the [Microsoft 
 
 ### Prerequisites
 
-- Application \(client\) ID
-- Directory \(tenant\) ID
-- Drive name
-- Folder Path
-- Client secrets
+- A Microsoft 365 work or school account with access to the SharePoint sites and document libraries you want to sync.
+- For OAuth authentication: permission to consent to the `Files.Read.All`, `Sites.Read.All`, and `Sites.Selected` delegated permissions, or an administrator who can grant consent for your organization.
+- For Service Key authentication (Airbyte Open Source): an app registration in Microsoft Entra ID with its Application (client) ID, Directory (tenant) ID, and a client secret, plus the User Principal Name (UPN) of a user in your tenant. See [Step 1: Set up SharePoint application](#step-1-set-up-sharepoint-application).
 
 ## Setup guide
 
@@ -26,17 +24,18 @@ This page contains the setup guide and reference information for the [Microsoft 
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
 4. Enter a name for the Microsoft SharePoint connector.
-5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'. Microsoft is retiring the Graph `sharedWithMe` API that 'SHARED_ITEMS' and 'ALL' use to find shared items, and it stops returning data after November 2026. Files shared from a SharePoint site can still be synced by selecting 'ACCESSIBLE_DRIVES' and setting **Site URL** to that site, which syncs the whole document library. Files shared from another user's OneDrive can't be synced after the retirement.
-6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
-7. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
-8. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
-9. Add a stream:
+5. Select **Search Scope**: `ACCESSIBLE_DRIVES` searches the SharePoint document libraries you can access, `SHARED_ITEMS` searches items shared with you, and `ALL` searches both. The default is `ALL`. Microsoft is retiring the API the connector uses to find shared items. See [Search scope and shared items](#search-scope-and-shared-items) before you choose `SHARED_ITEMS` or `ALL`.
+6. Enter **Folder Path**. Leave empty to search all folders of the drives. This doesn't apply to shared items.
+7. (Optional) Enter **Site URL** to search a specific SharePoint site. See [Multi-Site Support](#multi-site-support).
+8. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
+9. For **Start Date**, enter the date in YYYY-MM-DD format. The connector replicates data added on and after this date.
+10. Add a stream:
    1. Write the **File Type**
-   2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
+   2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro**, **JSONL**, **Excel**, and **Document File Type Format**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
-   5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-10. Click **Set up source**
+   5. Optionally, enter the **Globs**, which determine which files to sync. Globs are glob-style path patterns, not regular expressions. To replicate all files, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
+11. Click **Set up source**
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -57,23 +56,23 @@ Microsoft Graph has two types of permissions:
 - **Delegated permissions** are used by apps that have a signed-in user present. For these apps, either the user or an administrator consents to the permissions that the app requests, and the app can act as the signed-in user when making calls to Microsoft Graph. Some delegated permissions can be consented by non-administrative users, but some higher-privileged permissions require administrator consent.
 - **Application permissions** are used by apps that run without a signed-in user present; for example, apps that run as background services or daemons. Application permissions can only be consented by an administrator.
 
-This source requires **Application permissions**. Follow these [instructions](https://docs.microsoft.com/en-us/graph/auth-v2-service?context=graph%2Fapi%2F1.0&view=graph-rest-1.0) for creating an app in the Azure portal. This process will produce the `client_id`, `client_secret`, and `tenant_id` needed for the tap configuration file.
+Service Key authentication requires **Application permissions**. Follow these [instructions](https://learn.microsoft.com/en-us/graph/auth-v2-service) to create an app in the Azure portal. This process produces the Client ID, Client Secret, and Tenant ID that you enter in the connector configuration.
 
-1. Login to [Azure Portal](https://portal.azure.com/#home)
-2. Click upper-left menu icon and select **Azure Active Directory**
+1. Log in to the [Azure portal](https://portal.azure.com/#home).
+2. Click the upper-left menu icon and select **Microsoft Entra ID**.
 3. Select **App Registrations**
 4. Click **New registration**
 5. Register an application
    1. Name:
    2. Supported account types: Accounts in this organizational directory only
    3. Register \(button\)
-6. Record the client_id and tenant_id which will be used by the tap for authentication and API integration.
+6. Record the Application (client) ID and Directory (tenant) ID.
 7. Select **Certificates & secrets**
 8. Provide **Description and Expires**
-   1. Description: tap-microsoft-teams client secret
+   1. Description: for example, `airbyte-sharepoint`
    2. Expires: 1-year
    3. Add
-9. Copy the client secret value, this will be the client_secret
+9. Copy the client secret value. This is the Client Secret.
 10. Select **API permissions**
     1. Click **Add a permission**
 11. Select **Microsoft Graph**
@@ -90,21 +89,39 @@ This source requires **Application permissions**. Follow these [instructions](ht
 2. Click **Sources** and then click **+ New source**.
 3. On the **Set up** the source page, select **Microsoft SharePoint** from the Source type dropdown.
 4. Enter the name for the Microsoft SharePoint connector.
-5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'. Service Key Authentication can't list items shared with you, so 'SHARED_ITEMS' isn't supported and 'ALL' only searches accessible drives. To sync files shared from a SharePoint site, select 'ACCESSIBLE_DRIVES' and enter that site's Site URL (this syncs the whole document library).
-6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
-7. Switch to **Service Key Authentication**
-8. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
-9. Enter **Tenant ID**, **Client ID** and **Client secret**.
-10. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
-11. Add a stream:
+5. Select **Search Scope**. Service Key Authentication can't list items shared with you, so select `ACCESSIBLE_DRIVES`. If you select `ALL`, the connector only searches accessible drives, and `SHARED_ITEMS` fails. See [Search scope and shared items](#search-scope-and-shared-items).
+6. Enter **Folder Path**. Leave empty to search all folders of the drives. This doesn't apply to shared items.
+7. (Optional) Enter **Site URL** to search a specific SharePoint site. See [Multi-Site Support](#multi-site-support).
+8. Switch to **Service Key Authentication**.
+9. For **User Principal Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
+10. Enter **Tenant ID**, **Client ID** and **Client Secret**.
+11. For **Start Date**, enter the date in YYYY-MM-DD format. The connector replicates data added on and after this date.
+12. Add a stream:
     1. Write the **File Type**
-    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
+    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro**, **JSONL**, **Excel**, and **Document File Type Format**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
     3. Give a **Name** to the stream
     4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
-    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-12. Click **Set up source**
+    5. Optionally, enter the **Globs**, which determine which files to sync. Globs are glob-style path patterns, not regular expressions. To replicate all files, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
+13. Click **Set up source**
 
 <!-- /env:oss -->
+
+## Search scope and shared items
+
+The **Search Scope** setting controls where the connector looks for files:
+
+- `ACCESSIBLE_DRIVES`: SharePoint document libraries from the site in **Site URL**, or from the main site if you leave it empty.
+- `SHARED_ITEMS`: Items that other users shared with you.
+- `ALL` (default): Both of the above.
+
+The connector finds shared items with the Microsoft Graph [`sharedWithMe` API](https://learn.microsoft.com/en-us/graph/api/drive-sharedwithme?view=graph-rest-1.0). Microsoft deprecated this API. It operates in a degraded state until November 2026, after which it stops returning data. There's no replacement API. After the retirement:
+
+- With `ALL`, the connector logs a warning, skips shared items, and continues to sync files from accessible drives.
+- With `SHARED_ITEMS`, the sync fails with a configuration error.
+- Files shared from a SharePoint site can still be synced. Set **Search Scope** to `ACCESSIBLE_DRIVES` and **Site URL** to that site. This syncs the site's whole document library, so use **Folder Path** and **Globs** to narrow the files you replicate.
+- Files shared from another user's OneDrive can't be synced.
+
+The `sharedWithMe` API requires a signed-in user, so it doesn't support application permissions. With Service Key Authentication, the connector never lists shared items: `SHARED_ITEMS` fails with a configuration error, and `ALL` behaves like `ACCESSIBLE_DRIVES`.
 
 ## Path Patterns
 
@@ -227,13 +244,15 @@ The Avro parser uses the [Fastavro library](https://fastavro.readthedocs.io/en/l
 
 There are currently no options for JSONL parsing.
 
+### Excel
+
+There are currently no options for Excel parsing.
+
 ### Document File Type Format
 
-The Document file type format is a special format that allows you to extract text from Markdown, TXT, PDF, Word, Powerpoint and Google documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
+The Document file type format is a special format that allows you to extract text from Markdown (`md`), text (`txt`), PDF (`pdf`), Word (`docx`), and PowerPoint (`pptx`) files. If selected, the connector extracts text from the documents and outputs it as a single field named `content`. The `document_key` field holds a unique identifier for the processed file, which you can use as a primary key. The content of the document contains Markdown formatting converted from the original file format. Each file matching the defined glob pattern must be one of these file types.
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
-
-Before parsing each document, the connector exports Google Document files to Docx format internally. Google Sheets, Google Slides, and drawings are internally exported and parsed by the connector as PDFs.
 
 <HideInUI>
 
@@ -280,7 +299,7 @@ The Microsoft SharePoint source connector supports the following [sync modes](ht
 
 ### Supported Streams
 
-There is no predefined streams. The streams are based on content of files were added on the Set up page.
+There are no predefined streams. You define each stream on the source setup page, and its schema is based on the content of the files it matches.
 
 ### Performance considerations
 
@@ -306,7 +325,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.10.5 | 2026-10-22 | [89687](https://github.com/airbytehq/airbyte/pull/89687) | Keep syncing drive files and report a clear error when the deprecated Microsoft Graph sharedWithMe API stops returning shared items |
+| 0.10.5 | 2026-11-03 | [89687](https://github.com/airbytehq/airbyte/pull/89687) | Keep syncing drive files and report a clear error when the deprecated Microsoft Graph sharedWithMe API stops returning shared items |
 | 0.10.4 | 2025-08-21 | [65118](https://github.com/airbytehq/airbyte/pull/65118) | Decertify connector |
 | 0.10.3 | 2025-07-13 | [60562](https://github.com/airbytehq/airbyte/pull/60562) | Update dependencies |
 | 0.10.2 | 2025-05-10 | [59113](https://github.com/airbytehq/airbyte/pull/59113) | Update dependencies |
