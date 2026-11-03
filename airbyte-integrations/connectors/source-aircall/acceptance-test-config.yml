@@ -5,8 +5,6 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.4.27" # start_date pattern relaxed to also accept timestamps without milliseconds
   connection:
     tests:
       - config_path: "secrets/config.json"

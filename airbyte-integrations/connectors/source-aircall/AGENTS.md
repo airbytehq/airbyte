@@ -2,10 +2,10 @@
 
 ## 1. The 10,000-result cap requires date windows
 
-Aircall limits list queries to 10,000 results. Past that it answers page 201 with HTTP 400 and puts the reason in `errors` ("Your query is limited to 10k results ..."); `message` only says `BAD_REQUEST` (airbytehq/airbyte#76489), so the filters match `errors` with a predicate. Calls and contacts read date windows through the API's `from` and `to` parameters; `window_in_days` sets their size, defaulting to one day for calls and 30 days for contacts. See [pagination](https://developers.aircall.io/api-references/#pagination).
+Aircall limits list queries to 10,000 results. Past that it answers page 201 with HTTP 400 and puts the reason in `errors` ("Your query is limited to 10k results ..."); `message` only says `BAD_REQUEST` (airbytehq/airbyte#76489), so the filters match `errors` with a predicate. Calls and contacts read date windows through the API's `from` and `to` parameters; `window_in_days` sets the calls window (default one day) and `contacts_window_in_days` the contacts window (default 30 days). See [pagination](https://developers.aircall.io/api-references/#pagination).
 
-- `calls` splits a rejected window in two and reads each half (`request_window_splitting`). The CDK splits at most 10 times, so a one-day window ends at about 84 seconds. Records the oversized window emitted before the rejection are emitted again; dedup on the primary key removes them once the stream has one.
-- `contacts` is full refresh only, so it has no cursor to split. Its windows come from a `ListPartitionRouter`, and a rejected window fails as a config error that asks for a smaller `window_in_days`. A single day with more than 10,000 new contacts cannot be read.
+- `calls` splits a rejected window in two and reads each half (`request_window_splitting`). The CDK splits at most 10 times, so a one-day window ends at about 84 seconds. Aircall rejects only page 201, so the records of every rejected window are emitted again at each split level (a day with 15,000 calls emits 10,000 of them twice). Dedup on the primary key removes them once the stream has one (1.0.0).
+- `contacts` is full refresh only, so it has no cursor to split. Its windows come from a `ListPartitionRouter`, and a rejected window fails as a config error that asks for a smaller `contacts_window_in_days` (default 30). It is a separate setting because a wider calls window means more splits and more replayed calls. A single day with more than 10,000 new contacts cannot be read.
 
 **Why this matters:** Without windows a large company never reads past the first 10,000 calls or contacts.
 
@@ -23,19 +23,19 @@ Aircall retains only six months of calls. A first sync or a full refresh of call
 
 ## 4. Rate limits are shared across the company
 
-Aircall allows 120 requests per minute per company. The reference calls `X-AircallApi-Reset` a timestamp without a unit, so `WaitUntilTimeFromHeader` reads its first 10 digits, which are epoch seconds for both seconds and milliseconds. The shared API budget covers v1 and v2 requests and treats a 429 as a full bucket, so a 429 costs about one minute. The configurable `num_workers` setting controls concurrency, but workers share this same company-wide limit. See [Aircall's rate-limit documentation](https://developers.aircall.io/api-references/#rate-limiting).
+Aircall allows 120 requests per minute per company, shared with the company's other integrations, so the budget allows 100. The reference calls `X-AircallApi-Reset` a timestamp without a unit, so `WaitUntilTimeFromHeader` reads its first 10 digits, which are epoch seconds for both seconds and milliseconds. Waits are capped at 300 seconds; a later reset is treated as a bad header and fails the attempt. The shared API budget covers v1 and v2 requests and treats a 429 as a full bucket, so a 429 costs about one minute. The configurable `num_workers` setting controls concurrency, but workers share this same company-wide limit. See [Aircall's rate-limit documentation](https://developers.aircall.io/api-references/#rate-limiting).
 
 **Why this matters:** Increasing concurrency does not increase the company's quota and can cause all streams to be throttled together.
 
 ## 5. HTTP errors have distinct recovery behavior
 
-| HTTP status                     | Connector behavior                                                                                     |
-| :------------------------------ | :----------------------------------------------------------------------------------------------------- |
-| 401 or 403                      | Configuration error. Invalid keys answer 403; the 403 message names the URL in case the plan lacks it. |
-| 400 with the 10,000-result text | Calls split the window; contacts fail as a configuration error asking for a smaller `window_in_days`.  |
-| Other 400                       | CDK default: system error.                                                                             |
-| 429                             | CDK default (rate limited); waits until `X-AircallApi-Reset`.                                          |
-| 500, 502, 503, or 504           | CDK default: retried with exponential backoff.                                                         |
+| HTTP status                     | Connector behavior                                                                                             |
+| :------------------------------ | :------------------------------------------------------------------------------------------------------------- |
+| 401 or 403                      | Configuration error. Invalid keys answer 403; the 403 message names the URL in case the plan lacks it.         |
+| 400 with the 10,000-result text | Calls split the window; contacts fail as a configuration error asking for a smaller `contacts_window_in_days`. |
+| Other 400                       | CDK default: system error.                                                                                     |
+| 429                             | CDK default (rate limited); waits until `X-AircallApi-Reset`.                                                  |
+| 500, 502, 503, or 504           | CDK default: retried with exponential backoff, or until `X-AircallApi-Reset` when the response has it.         |
 
 See [Aircall's error documentation](https://developers.aircall.io/api-references/#errors).
 

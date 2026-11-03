@@ -21,7 +21,8 @@ definitions:
     policies:
       - type: MovingWindowCallRatePolicy
         rates:
-          - limit: 120
+          # Aircall allows 120 requests per minute per company, shared with the company's other integrations.
+          - limit: 100
             interval: PT1M
         matchers:
           - type: HttpRequestRegexMatcher
@@ -37,7 +38,14 @@ definitions:
       password: '{{ config["api_token"] }}'
     error_handler:
       $ref: "#/definitions/error_handler"
-  error_filters:
+  # The reference only calls X-AircallApi-Reset a timestamp: its first 10 digits are epoch seconds
+  # whether Aircall sends seconds or milliseconds. Resets come within a minute; a later one is a bad header.
+  backoff_strategy:
+    type: WaitUntilTimeFromHeader
+    header: X-AircallApi-Reset
+    regex: "^[0-9]{10}"
+    max_waiting_time_in_seconds: 300
+  response_filters:
     unauthorized:
       type: HttpResponseFilter
       action: FAIL
@@ -60,26 +68,23 @@ definitions:
         Aircall plan includes this data.
     # Aircall answers page 201 of an oversized query with 400 and puts the reason in `errors`
     # ("Your query is limited to 10k results ..."); `message` only says BAD_REQUEST.
-    result_cap:
+    result_limit:
       type: HttpResponseFilter
       action: FAIL
       failure_type: config_error
       predicate: "{{ 'limited to 10k results' in (response.get('errors', '') | string) }}"
       error_message: >-
         Aircall returns at most 10,000 contacts per request window. Lower the
-        Window size (days) setting (minimum 1) so each window holds fewer than
-        10,000 contacts.
+        Contacts window size (days) setting (minimum 1) so each window holds
+        fewer than 10,000 contacts.
   error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
-      # The reference only says "Timestamp"; the first 10 digits are epoch seconds whether Aircall sends seconds or milliseconds.
-      - type: WaitUntilTimeFromHeader
-        header: X-AircallApi-Reset
-        regex: "^[0-9]{10}"
+      - $ref: "#/definitions/backoff_strategy"
     response_filters:
-      - $ref: "#/definitions/error_filters/unauthorized"
-      - $ref: "#/definitions/error_filters/forbidden"
-      - $ref: "#/definitions/error_filters/result_cap"
+      - $ref: "#/definitions/response_filters/unauthorized"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/result_limit"
   paginator:
     type: DefaultPaginator
     page_token_option:
@@ -110,13 +115,13 @@ definitions:
               - type: HttpResponseFilter
                 action: SPLIT_REQUEST_WINDOW
                 predicate: "{{ 'limited to 10k results' in (response.get('errors', '') | string) }}"
-              - $ref: "#/definitions/error_filters/unauthorized"
-              - $ref: "#/definitions/error_filters/forbidden"
+              - $ref: "#/definitions/response_filters/unauthorized"
+              - $ref: "#/definitions/response_filters/forbidden"
         request_window_splitting:
           type: RequestWindowSplitting
           failure_message: >-
-            Lower the Window size (days) setting so each request starts with
-            fewer than 10,000 calls.
+            Lower the Window size (days) setting so each window holds fewer than
+            10,000 calls.
         record_selector:
           type: RecordSelector
           extractor:
@@ -183,8 +188,8 @@ definitions:
           path: /contacts
           http_method: GET
           request_parameters:
-            from: "{{ 1388534400 + (stream_partition['window_index'] | int) * config.get('window_in_days', 30) * 86400 }}"
-            to: "{{ 1388534400 + ((stream_partition['window_index'] | int) + 1) * config.get('window_in_days', 30) * 86400 - 1 }}"
+            from: "{{ 1388534400 + (stream_partition['window_index'] | int) * config.get('contacts_window_in_days', 30) * 86400 }}"
+            to: "{{ 1388534400 + ((stream_partition['window_index'] | int) + 1) * config.get('contacts_window_in_days', 30) * 86400 - 1 }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -198,7 +203,7 @@ definitions:
           # One partition per window since 2014-01-01. The CDK Jinja sandbox has no range(),
           # so the loop iterates over a string of window_count characters.
           values: >-
-            {% set window_days = config.get('window_in_days', 30) | int %}
+            {% set window_days = config.get('contacts_window_in_days', 30) | int %}
             {% set window_count = (((now_utc().timestamp() | int) - 1388534400) //
             (window_days * 86400)) + 1 %}
             [{% for _ in 'x' * window_count %}'{{ loop.index0 }}'{{ ',' if not loop.last }}{% endfor %}]
@@ -421,10 +426,6 @@ spec:
           the six months of history Aircall keeps; the other streams always return
           every record.
         title: Start date (before 0.5.0)
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{3})?Z$
-        examples:
-          - "2022-03-01T00:00:00.000Z"
-        format: date-time
         airbyte_hidden: true
         order: 2
       window_in_days:
@@ -433,12 +434,22 @@ spec:
         maximum: 365
         title: Window size (days)
         description: >-
-          Days of records requested per API call for the calls and contacts
-          streams. Aircall returns at most 10,000 records per request. Calls
-          split a larger window on their own; lower this if a contacts sync fails
-          with the 10,000-results error. Leave empty for 1 day on calls and 30
-          days on contacts.
+          Days of calls requested per window, read in pages of 50. Aircall
+          returns at most 10,000 records per window, and a calls window above
+          that is split and read again, so larger windows save requests only for
+          companies with few calls. Leave empty for 1 day.
         order: 3
+      contacts_window_in_days:
+        type: integer
+        minimum: 1
+        maximum: 365
+        title: Contacts window size (days)
+        description: >-
+          Days of new contacts requested per window, read in pages of 50.
+          Aircall returns at most 10,000 records per window; lower this if a
+          contacts sync fails with the 10,000-results error. Leave empty for 30
+          days.
+        order: 4
       num_workers:
         type: integer
         minimum: 1
@@ -446,9 +457,9 @@ spec:
         default: 2
         title: Concurrent workers
         description: >-
-          Parallel requests. All workers share Aircall's limit of 120 requests
-          per minute per company.
-        order: 4
+          Parallel requests. All workers share one budget of 100 requests per
+          minute, below Aircall's limit of 120 per company.
+        order: 5
     additionalProperties: true
 
 metadata:

@@ -2,7 +2,6 @@
 
 import json
 import logging
-import re
 from datetime import datetime
 
 import pytest
@@ -14,6 +13,7 @@ from airbyte_cdk.models import FailureType, Status, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -70,7 +70,8 @@ def _read_stream(
 
 
 def _response(stream_name: str, records: list[dict]) -> HttpResponse:
-    return HttpResponse(body=json.dumps({stream_name: records}), status_code=200)
+    meta = {"count": len(records), "total": len(records), "per_page": 50, "next_page_link": None, "previous_page_link": None}
+    return HttpResponse(body=json.dumps({stream_name: records, "meta": meta}), status_code=200)
 
 
 def _call_requests(start: int, end: int, window_days: int = 1) -> list[tuple[int, int]]:
@@ -163,7 +164,6 @@ def test_calls_default_window_reads_186_daily_windows_within_the_rate_budget(mon
         output = _read_stream("calls", SyncMode.full_refresh, config={**_CONFIG, "num_workers": 1})
 
         assert output.errors == []
-        assert len(requests) == 186
         for request in requests:
             http_mocker.assert_number_of_calls(request, 1)
         # 120 requests per minute: the 121st waits for the window to move on.
@@ -202,7 +202,7 @@ def test_contacts_use_configured_date_windows() -> None:
             requests.append(request)
             http_mocker.get(request, _response("contacts", [{"id": index + 1}]))
 
-        output = _read_stream("contacts", SyncMode.full_refresh, config={**_CONFIG, "window_in_days": 2})
+        output = _read_stream("contacts", SyncMode.full_refresh, config={**_CONFIG, "contacts_window_in_days": 2})
 
         assert output.errors == []
         assert len(output.records) == windows
@@ -224,7 +224,8 @@ def test_contacts_default_window_count_is_thirty_days() -> None:
             requests.append(request)
             http_mocker.get(request, _response("contacts", [{"id": index + 1}]))
 
-        output = _read_stream("contacts", SyncMode.full_refresh)
+        # The calls window does not change the contacts windows.
+        output = _read_stream("contacts", SyncMode.full_refresh, config={**_CONFIG, "window_in_days": 7})
 
         assert output.errors == []
         assert len(output.records) == window_count
@@ -333,26 +334,57 @@ def test_contacts_result_cap_is_a_config_error() -> None:
         assert error.failure_type == FailureType.config_error
         assert error.message == (
             "Aircall returns at most 10,000 contacts per request window. "
-            "Lower the Window size (days) setting (minimum 1) so each window holds fewer than 10,000 contacts."
+            "Lower the Contacts window size (days) setting (minimum 1) so each window holds fewer than 10,000 contacts."
         )
         http_mocker.assert_number_of_calls(request, 1)
 
 
-def test_other_400_errors_keep_the_default_classification() -> None:
-    with freeze_time("2014-01-03T00:00:00Z"), HttpMocker() as http_mocker:
-        request = _request(
-            "/contacts",
-            {"from": str(_CONTACTS_EPOCH), "to": str(_CONTACTS_EPOCH + 30 * _WINDOW_SECONDS - 1), "per_page": "50"},
-        )
+@pytest.mark.parametrize(
+    "stream_name,now,query,config",
+    [
+        pytest.param(
+            "contacts",
+            "2014-01-03T00:00:00Z",
+            {"from": str(_CONTACTS_EPOCH), "to": str(_CONTACTS_EPOCH + 30 * _WINDOW_SECONDS - 1)},
+            {},
+            id="contacts",
+        ),
+        pytest.param(
+            "calls",
+            _NOW,
+            {"from": str(_epoch(_NOW) - 186 * _WINDOW_SECONDS), "to": str(_epoch(_NOW))},
+            {"window_in_days": 365},
+            id="calls",
+        ),
+    ],
+)
+def test_other_400_errors_keep_the_default_classification(stream_name: str, now: str, query: dict, config: dict) -> None:
+    with freeze_time(now), HttpMocker() as http_mocker:
+        request = _request(f"/{stream_name}", {**query, "per_page": "50"})
         body = {**_RESULT_CAP_BODY, "errors": "from must be lower than to"}
         http_mocker.get(request, HttpResponse(body=json.dumps(body), status_code=400))
 
-        output = _read_stream("contacts", SyncMode.full_refresh, expecting_exception=True)
+        output = _read_stream(stream_name, SyncMode.full_refresh, config={**_CONFIG, **config}, expecting_exception=True)
 
         error = _error_trace(output)
         assert error.failure_type == FailureType.system_error
-        assert "10,000" not in error.message
+        assert error.message == "HTTP Status Code: 400. Error: Bad request. Please check your request parameters."
         http_mocker.assert_number_of_calls(request, 1)
+
+
+def test_calls_window_still_over_the_cap_fails_after_ten_splits() -> None:
+    with freeze_time(_NOW), HttpMocker() as http_mocker:
+        http_mocker.get(HttpRequest(f"{_BASE_URL}/calls", query_params=ANY_QUERY_PARAMS), _result_cap_response())
+        state = StateBuilder().with_stream_state("calls", {"started_at": str(_epoch(_NOW) - _WINDOW_SECONDS)}).build()
+
+        output = _read_stream("calls", SyncMode.incremental, config={**_CONFIG, "num_workers": 1}, state=state, expecting_exception=True)
+
+        error = _error_trace(output)
+        assert error.failure_type == FailureType.transient_error
+        assert error.message == (
+            "Stream calls could not split its request window to a size the API accepts within 10 splits. "
+            "Lower the Window size (days) setting so each window holds fewer than 10,000 calls."
+        )
 
 
 @pytest.mark.parametrize("unit", [pytest.param(1, id="seconds"), pytest.param(1000, id="milliseconds")])
@@ -386,8 +418,10 @@ def test_429_waits_until_the_reset_header_then_reads_records(monkeypatch: pytest
         assert output.errors == []
         assert len(output.records) == 1
         http_mocker.assert_number_of_calls(request, 2)
-        # 30 s until the reset, plus the second the CDK adds to every wait taken from a header.
+        # 30 s until the reset, plus the second the CDK adds to every wait taken from a header; then the
+        # API budget, which counts the 429 as a full minute, waits for the rest of that minute.
         assert sleeps[0] == 31.0
+        assert abs(sum(sleeps) - 60) < 0.1
 
 
 def test_500_without_reset_header_retries_with_fallback_backoff(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -465,28 +499,43 @@ def test_webhooks_include_webhook_id_and_start_pagination_at_page_two() -> None:
         http_mocker.assert_number_of_calls(second_request, 1)
 
 
-@pytest.mark.parametrize(
-    "value",
-    [
-        pytest.param("2022-03-01T00:00:00.000Z", id="fractional-seconds"),
-        pytest.param("2022-03-01T00:00:00Z", id="whole-seconds"),
-    ],
-)
-def test_start_date_pattern_accepts_milliseconds_and_whole_seconds(value: str) -> None:
-    manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
-    pattern = manifest["spec"]["connection_specification"]["properties"]["start_date"]["pattern"]
+def test_start_date_is_optional_hidden_and_unconstrained() -> None:
+    spec = yaml.safe_load(_YAML_FILE_PATH.read_text())["spec"]["connection_specification"]
+    start_date = spec["properties"]["start_date"]
 
-    assert re.fullmatch(pattern, value)
+    assert "start_date" not in spec["required"]
+    assert start_date["airbyte_hidden"] is True
+    assert "pattern" not in start_date and "format" not in start_date
 
 
 _DOCUMENTED_FIELDS = {
-    "calls": {"sid", "conference_participants"},
-    "contacts": {"description"},
-    "tags": {"direct_link"},
-    "user_availability": {"id", "availability"},
-    "users": {"substatus", "extension", "default_number_id"},
-    "webhooks": {"webhook_id", "custom_name"},
+    "calls": {
+        "sid": "string",
+        "conference_participants": "array",
+        "conference_participants.id": "string",
+        "number.messages": "object",
+        "number.messages.welcome": "string",
+    },
+    "contacts": {"description": "string"},
+    "tags": {"direct_link": "string"},
+    "teams": {
+        "users.availability_status": "string",
+        "users.default_number_id": "integer",
+        "users.language": "string",
+        "users.wrap_up_time": "integer",
+    },
+    "user_availability": {"id": "integer", "availability": "string"},
+    "users": {"substatus": "string", "extension": "string", "default_number_id": "integer"},
+    "webhooks": {"webhook_id": "string", "custom_name": "string"},
 }
+
+
+def _field_type(properties: dict, path: str) -> str:
+    node = {"properties": properties}
+    for part in path.split("."):
+        node = node.get("items", node)["properties"][part]
+    types = node["type"] if isinstance(node["type"], list) else [node["type"]]
+    return next(value for value in types if value != "null")
 
 
 def test_discovered_schemas_declare_primary_keys_and_documented_fields() -> None:
@@ -497,5 +546,7 @@ def test_discovered_schemas_declare_primary_keys_and_documented_fields() -> None
         for key in stream.source_defined_primary_key or []:
             assert key[0] in schemas[stream.name], (stream.name, key)
     for stream_name, fields in _DOCUMENTED_FIELDS.items():
-        assert fields <= set(schemas[stream_name]), (stream_name, fields - set(schemas[stream_name]))
+        for path, field_type in fields.items():
+            assert _field_type(schemas[stream_name], path) == field_type, (stream_name, path)
     assert "webhook_id" not in schemas["teams"]
+    assert "state" not in schemas["users"]

@@ -15,8 +15,9 @@ Create an API key in the Aircall Dashboard under **Integrations & API > API Keys
 - Available params
   - `api_id`: Your Aircall API ID.
   - `api_token`: The API token shown with the API ID.
-  - `window_in_days`: Optional number of days per API request for calls and contacts. Defaults to 1 day for calls and 30 days for contacts. Calls split a window that exceeds Aircall's 10,000-result limit on their own; reduce it if a contacts sync fails with the 10,000-results error.
-  - `num_workers`: Optional concurrent workers, from 1 to 4 (default 2). Workers share Aircall's company-wide rate limit of 120 requests per minute.
+  - `window_in_days` (Window size): optional days of calls per request window, default 1. Calls split a window that hits Aircall's 10,000-result limit on their own; larger windows save requests only for companies with few calls.
+  - `contacts_window_in_days` (Contacts window size): optional days of new contacts per request window, default 30. Lower it if a contacts sync fails with the 10,000-results error.
+  - `num_workers`: optional concurrent workers, from 1 to 4 (default 2). All workers share one budget of 100 requests per minute, below Aircall's company-wide limit of 120.
 
 ### Step 2: Set up the Aircall connector in Airbyte
 
@@ -49,17 +50,17 @@ The Aircall source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-| Stream            | Sync mode                 | Notes                                                  |
-| :---------------- | :------------------------ | :----------------------------------------------------- |
-| calls             | Full refresh, incremental | Incremental syncs read the last three days again.      |
-| company           | Full refresh              | Used for connection checks.                            |
-| contacts          | Full refresh              |                                                        |
-| numbers           | Full refresh, incremental | Incremental sync rereads all records to capture edits. |
-| tags              | Full refresh              |                                                        |
-| user_availability | Full refresh              |                                                        |
-| users             | Full refresh              | Uses the Aircall User V2 API.                          |
-| teams             | Full refresh, incremental | Incremental sync rereads all records to capture edits. |
-| webhooks          | Full refresh              |                                                        |
+| Stream            | Sync mode                 | Notes                                                        |
+| :---------------- | :------------------------ | :----------------------------------------------------------- |
+| calls             | Full refresh, incremental | Incremental syncs read the last three days again. See below. |
+| company           | Full refresh              | Used for connection checks.                                  |
+| contacts          | Full refresh              |                                                              |
+| numbers           | Full refresh, incremental | Incremental sync rereads all records to capture edits.       |
+| tags              | Full refresh              |                                                              |
+| user_availability | Full refresh              |                                                              |
+| users             | Full refresh              | Uses the Aircall User V2 API.                                |
+| teams             | Full refresh, incremental | Incremental sync rereads all records to capture edits.       |
+| webhooks          | Full refresh              |                                                              |
 
 ## API method example
 
@@ -67,7 +68,9 @@ GET https://api.aircall.io/v1/numbers
 
 ## Performance considerations
 
-The connector uses Aircall's [v1 API](https://developers.aircall.io/api-references/), and the [User V2 API](https://developers.aircall.io/api-references/#list-all-users-v2) for users. Calls and contacts requests are split into configurable date windows to stay below Aircall's [10,000-result cap](https://developers.aircall.io/api-references/#pagination). Aircall's [120-requests-per-minute limit](https://developers.aircall.io/api-references/#rate-limiting) applies company-wide. Calls cover the six months of history Aircall keeps; the Start date saved by versions before 0.5.0 is no longer used.
+The connector uses Aircall's [v1 API](https://developers.aircall.io/api-references/), and the [User V2 API](https://developers.aircall.io/api-references/#list-all-users-v2) for users. Calls and contacts are read in date windows because Aircall returns at most [10,000 records per query](https://developers.aircall.io/api-references/#pagination); a calls window that hits the limit is split and read again. The connector uses 100 of the [120 requests per minute](https://developers.aircall.io/api-references/#rate-limiting) Aircall allows each company, leaving room for the company's other integrations. Calls cover the six months of history Aircall keeps; the Start date saved by versions before 0.5.0 is no longer used.
+
+The `calls` stream has no primary key before version 1.0.0. Incremental syncs read the last three days of calls again, and a day with more than 10,000 calls is read more than once, so Append mode stores those calls again. Use Append + Deduped with `id` as the primary key to keep one row per call.
 
 ## IP allow list
 
@@ -80,7 +83,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.5.0 | 2026-11-03 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Add incremental calls in daily windows that split at Aircall's 10,000-result limit, date windows for contacts and rate-limit handling; stop repeating the first page and stop filtering by Start date |
+| 0.5.0 | 2026-11-03 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Read calls incrementally in daily windows that split at Aircall's 10,000-result limit, read contacts in date windows, honour Aircall's rate limit, declare `user_availability` `id` and `availability`, and read numbers and teams once per sync |
 | 0.4.27 | 2026-10-13 | [88524](https://github.com/airbytehq/airbyte/pull/88524) | Update dependencies |
 | 0.4.26 | 2026-10-06 | [87742](https://github.com/airbytehq/airbyte/pull/87742) | Update dependencies |
 | 0.4.25 | 2026-09-29 | [87057](https://github.com/airbytehq/airbyte/pull/87057) | Update dependencies |
