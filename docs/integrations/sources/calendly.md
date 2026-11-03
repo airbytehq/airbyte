@@ -5,7 +5,7 @@ The Calendly source syncs your organization members, groups, event types, schedu
 ## Prerequisites
 
 - A Calendly account. The connector's read endpoints are available on [all Calendly plans, including Free](https://developer.calendly.com/docs/getting-started/frequently-asked-questions).
-- An organization owner or admin account to read organization-wide scheduled events. The connector reads the current organization associated with the token owner's profile; you don't need to enter an organization ID.
+- An organization owner or administrator account to read organization-wide scheduled events. The connector reads the current organization associated with the token owner's profile; you don't need to enter an organization ID.
 - A [personal access token](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) with these [read scopes](https://developer.calendly.com/docs/authentication/scopes):
   - `users:read`
   - `event_types:read`
@@ -16,7 +16,7 @@ The Calendly source syncs your organization members, groups, event types, schedu
 ## Setup
 
 1. In Calendly, open the **Profile** menu, select **Developer**, then **Personal access tokens**. If **Developer** isn't available, use the **Integrations** page instead.
-2. Select **Create personal access token**, name the token, and select the read scopes listed above.
+2. Select **Create personal access token**, name the token, and select the required read scopes.
 3. Create the token, complete the email verification, and copy it. Calendly shows the token only once.
 4. In Airbyte, create a Calendly source and enter the token in **Calendly personal access token**. Enter a **Start date (UTC)** and, optionally, a **Lookback window (days)** as described below.
 
@@ -64,9 +64,9 @@ The connector monitors `X-RateLimit-Remaining` and waits when the allowance is e
 | Symptom | Action |
 | --- | --- |
 | HTTP 401: invalid or revoked token | Create a new personal access token and update the Airbyte source settings. |
-| HTTP 403: insufficient scope or permission denied | Check the error for missing scopes. Create a token with the required read scopes, and use an organization owner or admin account for organization-wide scheduled events. Update the token in Airbyte. |
+| HTTP 403: insufficient scope or permission denied | Check the error for missing scopes. Create a token with the required read scopes, and use an organization owner or administrator account for organization-wide scheduled events. Update the token in Airbyte. |
 | Invitee requests return HTTP 404 | The connector logs and skips invitees for an event that Calendly no longer returns, then continues with other events. A 404 on other endpoints fails the sync. |
-| New bookings or cancellations are missing | Review the incremental sync limitation above. Use Full refresh for `scheduled_events` and `event_invitees` to reread events covered by your start date. |
+| New bookings or cancellations are missing | Review the [incremental sync limitation](#incremental-sync-limitation). Use Full refresh for `scheduled_events` and `event_invitees` to reread events covered by your start date. |
 
 ## Upgrading to 0.2.0
 
