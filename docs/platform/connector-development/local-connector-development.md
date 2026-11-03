@@ -113,6 +113,9 @@ poe test-unit-tests
 
 #  Run all integration tests:
 poe test-integration-tests
+
+# Python sources: run the in-process standard tests, with the CDK version the connector pins:
+poe test-standard-tests
 ```
 
 :::tip
