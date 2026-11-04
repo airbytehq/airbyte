@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import timedelta
 from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
@@ -39,3 +40,27 @@ def test_streams():
     streams = source.streams(config_mock)
     expected_streams_number = 18
     assert len(streams) == expected_streams_number
+
+
+def test_streams_raw_data_lookback_window():
+    source = SourceAppsflyer()
+    config_mock = {
+        "app_id": "testing",
+        "api_token": "secrets",
+        "start_date": "2021-09-13 01:00:00",
+        "timezone": "UTC",
+        "raw_data_lookback_window_in_hours": 6,
+    }
+    streams = source.streams(config_mock)
+    raw_data_streams = [
+        "in_app_events",
+        "organic_in_app_events",
+        "retargeting_in_app_events",
+        "installs",
+        "organic_installs",
+        "retargeting_installs",
+        "uninstall_events",
+        "organic_uninstall_events",
+    ]
+    expected_lookback_windows = {name: timedelta(hours=6) for name in raw_data_streams}
+    assert {stream.name: stream.lookback_window for stream in streams if stream.lookback_window} == expected_lookback_windows
