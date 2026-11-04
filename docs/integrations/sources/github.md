@@ -328,6 +328,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.4 | 2026-11-04 | [90970](https://github.com/airbytehq/airbyte/pull/90970) | Shorten manifest comments and move the design rationale to the connector docs; no behavior change |
 | 2.8.3 | 2026-11-03 | [90557](https://github.com/airbytehq/airbyte/pull/90557) | Update dependencies |
 | 2.8.2 | 2026-10-28 | [90165](https://github.com/airbytehq/airbyte/pull/90165) | Request `review_comments` with `per_page=100` to avoid GitHub timeouts on very large repositories |
 | 2.8.1 | 2026-10-27 | [89848](https://github.com/airbytehq/airbyte/pull/89848) | Update dependencies |

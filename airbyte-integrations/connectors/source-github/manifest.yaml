@@ -34,8 +34,9 @@ definitions:
         request_headers:
           Accept: "application/vnd.github+json"
           X-GitHub-Api-Version: "2022-11-28"
-        # GHES with rate limiting disabled answers `GET /rate_limit` with 404: track that token as unlimited
-        # instead of failing every command. Only 404; never list 401/403 (a revoked token would look untracked).
+        # GHES with rate limiting disabled answers `GET /rate_limit` with 404: seed that token as untracked instead of
+        # failing every command. 404 only: untracked lasts the whole sync, so no transient status (5xx, 429), and never
+        # 401/403 (a revoked token would look untracked). See AGENTS.md "Authenticator quota pools".
         unavailable_status_codes: [404]
       quotas:
         - type: TokenQuota
@@ -44,11 +45,13 @@ definitions:
           reset_path: ["resources", "core", "reset"]
           limit_path: ["resources", "core", "limit"]
           # Reconcile the pool from every response's headers, not only the initial /rate_limit seeding.
+          # See AGENTS.md "Authenticator quota pools".
           remaining_header: "X-RateLimit-Remaining"
           reset_header: "X-RateLimit-Reset"
           limit_header: "X-RateLimit-Limit"
           # No `exhaustion_status_codes` on purpose: GitHub's 403 also means secondary limit or missing scope.
           # Primary exhaustion arrives as `X-RateLimit-Remaining: 0`, which the header reconciliation picks up.
+          # See AGENTS.md "Authenticator quota pools".
         - type: TokenQuota
           name: graphql
           remaining_path: ["resources", "graphql", "remaining"]
@@ -183,7 +186,8 @@ definitions:
     action: IGNORE
     error_message: "Syncing this stream isn't available for this organization/repository (HTTP 404). Skipping."
 
-  # A 404 mid attempt-chain (run deleted) is skipped; it loses that run's older attempts, not the repository.
+  # A 404 mid attempt-chain (run deleted) is skipped; it loses that run's older attempts for good (the cursor
+  # still advances), but FAIL would wedge the stream on every deleted run. See AGENTS.md "Error handling".
   attempt_not_found_skip_filter:
     type: HttpResponseFilter
     http_codes: [404]
@@ -277,12 +281,13 @@ definitions:
       - $ref: "#/definitions/gone_fail_filter"
 
   # `comments` keeps legacy's 7 retries (`Comments.max_retries`); every other stream uses the default 5.
+  # See AGENTS.md "Error handling".
   comments_error_handler:
     $ref: "#/definitions/skip_inaccessible_error_handler"
     max_retries: 7
 
   # A 403 on one explicit `org/repo` (e.g. a SAML org) skips it instead of killing partition generation.
-  # `check` still fails when every entry is skipped ("no stream slices were found").
+  # `check` still fails when every entry is skipped ("no stream slices were found"). See AGENTS.md "Error handling".
   resolve_explicit_repository_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -299,7 +304,7 @@ definitions:
       - $ref: "#/definitions/gone_fail_filter"
 
   # Since July 2026 GitHub lists stargazers only to admins/collaborators (404/403 for everyone else).
-  # These messages name that restriction and take the repository from `request_url`.
+  # These messages name that restriction and take the repository from `request_url`. See AGENTS.md "Error handling".
   stargazers_restricted_not_found_skip_filter:
     type: HttpResponseFilter
     http_codes: [404]
@@ -564,6 +569,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       # Listing is `sort=updated&direction=desc`, so the data feed stops at the first already-synced page.
       # A partition with no state is seeded from the global cursor (an org added later only gets newer repos).
+      # See AGENTS.md "Incremental REST streams".
       is_data_feed: true
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
@@ -1660,7 +1666,7 @@ definitions:
               - string
 
   # Requester for `orgs/{organization}/...` streams; an unreadable organization is skipped, as in legacy.
-  # `use_cache` lets `team_members` reuse the `teams` listing pages for its parent read.
+  # `use_cache` lets `team_members` reuse the `teams` listing pages. See AGENTS.md "Incremental REST streams".
   organization_scoped_requester:
     $ref: "#/definitions/requester_base"
     use_cache: true
@@ -5850,6 +5856,7 @@ definitions:
   # --- Group D: server-side incremental REST streams -------------------------------
   # `comments`, `issues`, `review_comments` filter server-side with `since`; no `is_client_side_incremental`
   # (its inclusive filter adds nothing). The boundary record is re-emitted once per sync.
+  # See AGENTS.md "Incremental REST streams".
   server_side_since_cursor:
     type: DatetimeBasedCursor
     cursor_field: "updated_at"
@@ -5880,7 +5887,7 @@ definitions:
         # `commit_comments`. Legacy spelled this out by overriding `Comments.path`.
         path: "repos/{{ stream_partition.repository }}/issues/comments"
         # Cached so `issue_comment_reactions` reads this listing as its parent from already-fetched pages.
-        # TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): drop with Step 7.
+        # Keep while `issue_comment_reactions` uses this listing as its parent. See AGENTS.md "Incremental REST streams".
         use_cache: true
         error_handler:
           $ref: "#/definitions/comments_error_handler"
@@ -6235,9 +6242,8 @@ definitions:
       requester:
         $ref: "#/definitions/large_stream_repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/issues"
-        # `use_cache = True` on the Python class, kept because `IssueTimelineEvents` reads this
-        # listing as its parent and stays Python until Step 7 — see `comments_stream` above.
-        # TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): drop with Step 7.
+        # Cached so `issue_timeline_events` reads this listing as its parent from already-fetched pages.
+        # Keep while `issue_timeline_events` uses this listing as its parent. See AGENTS.md "Incremental REST streams".
         use_cache: true
         # Replaces (not merges) the shared params, so `per_page` is restated; without `state=all` closed issues are lost.
         request_parameters:
@@ -8278,7 +8284,8 @@ definitions:
           - path: ["issue_number"]
             value: "{{ stream_partition.number }}"
     schema_loader:
-      # Inline; the shared `base_event` is expanded at all 23 uses, since a manifest `$ref` cannot express it.
+      # Inline; the shared `base_event` is expanded at all 23 uses: an in-schema `#/definitions/…` resolves against the
+      # manifest root, not this schema. See AGENTS.md "Migration to manifest-only (complete)".
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#

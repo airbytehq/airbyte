@@ -566,6 +566,8 @@ ends pagination.
 - `comments` keeps `use_cache` so `issue_comment_reactions` reads its parent from pages this
   stream already fetched. They only share entries while the URLs match (the parent read sends
   `since=start_date`, this stream `since=<cursor>`), exactly as legacy `ReactionStream` did.
+  `issues` keeps `use_cache` for the same reason: it is the parent of `issue_timeline_events`
+  (legacy `Issues.use_cache = True`). Both stay while those substreams read these listings.
 - `organization_scoped_requester.use_cache` lets one read of `orgs/{org}/teams` serve both
   `teams` and the `team_members` parent read; harmless for `organizations` and `users`.
 - `add_organization_transformation` replaces legacy `Organizations.transform`. It is applied to
