@@ -1,0 +1,10 @@
+FROM airbyte/source-redis-adbc:0.1.0
+USER root
+RUN pip install --no-cache-dir pytest==9.2.0
+COPY pyproject.toml /tests/pyproject.toml
+COPY unit_tests /tests/unit_tests
+COPY integration_tests /tests/integration_tests
+ENV PYTEST_ADDOPTS="-o cache_dir=/tmp/pytest-cache"
+WORKDIR /tests
+USER airbyte
+ENTRYPOINT ["python", "-m", "pytest"]

@@ -1,0 +1,41 @@
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "airbyte-source-redis-adbc"
+version = "0.1.0"
+description = "Full-refresh Redis source through Apache Arrow ADBC"
+authors = ["Albert Wong"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/redis-adbc"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [{include = "source_redis_adbc"}]
+include = ["source_redis_adbc/spec.json"]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.15"
+airbyte-cdk = "7.45.0"
+adbc-driver-manager = "1.13.0"
+adbc-driver-flightsql = "1.13.0"
+adbc-driver-redis = "0.0.19"
+pyarrow = "26.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "9.2.0"
+ruff = "0.8.3"
+mypy = "^1.18"
+
+[tool.poetry.scripts]
+source-redis-adbc = "source_redis_adbc.__main__:main"
+
+[tool.poe]
+include = ["${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["unit_tests", "integration_tests"]
+markers = ["integration: requires a disposable Redis Search endpoint or Flight SQL reference server"]
+
+[tool.mypy]
+ignore_missing_imports = true
