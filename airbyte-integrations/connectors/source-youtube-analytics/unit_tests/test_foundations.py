@@ -334,6 +334,7 @@ def test_spec_declares_google_oauth_and_optional_num_workers(config):
     assert [scope["scope"] for scope in connector_input.scopes] == [
         "https://www.googleapis.com/auth/yt-analytics.readonly",
         "https://www.googleapis.com/auth/yt-analytics-monetary.readonly",
+        "https://www.googleapis.com/auth/youtube.readonly",
     ]
     # Config paths are unchanged, so existing connections keep working.
     assert oauth.complete_oauth_output_specification["properties"]["refresh_token"]["path_in_connector_config"] == [

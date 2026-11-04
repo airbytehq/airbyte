@@ -3,17 +3,133 @@
 #
 import csv
 import io
+import math
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Callable, Generator, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Generator, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib.parse import parse_qs, urlparse
 
 import requests
 
 from airbyte_cdk import AirbyteTracedException, Decoder, FailureType
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
+    InterpolatedRequestOptionsProvider,
+)
 from airbyte_cdk.sources.types import StreamSlice, StreamState
+
+
+@dataclass
+class AnalyticsQueryRequester(HttpRequester):
+    """Validate the optional channel query configuration without changing bulk requests."""
+
+    request_parameters: Optional[Mapping[str, Any]] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        settings = self.config.get("query_reports", {})
+        try:
+            if not isinstance(settings, Mapping):
+                raise ValueError("query_reports must be an object")
+            if self.config.get("content_owner_id"):
+                raise ValueError("query_reports supports channel owners only; remove content_owner_id or disable query_reports")
+            channel_id = settings.get("channel_id")
+            if not isinstance(channel_id, str) or not channel_id.strip() or channel_id != channel_id.strip():
+                raise ValueError("query_reports.channel_id must identify the authorized channel")
+            for field in ("start_date", "end_date"):
+                value = settings.get(field)
+                if field == "end_date" and field not in settings:
+                    continue
+                if not isinstance(value, str) or datetime.strptime(value, "%Y-%m-%d").strftime("%Y-%m-%d") != value:
+                    raise ValueError(f"query_reports.{field} must use YYYY-MM-DD")
+            if settings.get("end_date") and settings["end_date"] < settings["start_date"]:
+                raise ValueError("query_reports.end_date must be on or after start_date")
+            for field, default in (("lookback_days", 7), ("data_lag_days", 3)):
+                value = settings.get(field, default)
+                if type(value) is not int or value < 0:
+                    raise ValueError(f"query_reports.{field} must be a nonnegative integer")
+        except (TypeError, ValueError) as error:
+            raise AirbyteTracedException(message=str(error), failure_type=FailureType.config_error) from error
+        # The custom-component factory forwards annotated fields, but does not build the
+        # standard request-options provider for a CustomRequester. Interpolate explicitly.
+        self.request_options_provider = InterpolatedRequestOptionsProvider(
+            config=self.config, parameters=parameters, request_parameters=self.request_parameters
+        )
+        super().__post_init__(parameters)
+
+
+@dataclass
+class AnalyticsQueryExtractor(RecordExtractor):
+    """Decode a targeted query's positional rows using its returned column headers.
+
+    The channel comes from the explicit request configuration, not an inferred video or
+    bulk-report dimension. Validate the entire page before emitting any of its records.
+    """
+
+    config: Mapping[str, Any]
+
+    METRICS = {
+        "views": "INTEGER",
+        "engagedViews": "INTEGER",
+        "estimatedMinutesWatched": "FLOAT",
+        "averageViewDuration": "FLOAT",
+        "averageViewPercentage": "FLOAT",
+        "likes": "INTEGER",
+        "dislikes": "INTEGER",
+        "comments": "INTEGER",
+        "shares": "INTEGER",
+        "subscribersGained": "INTEGER",
+        "subscribersLost": "INTEGER",
+        "videosAddedToPlaylists": "INTEGER",
+        "videosRemovedFromPlaylists": "INTEGER",
+    }
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        try:
+            body = response.json()
+            if not isinstance(body, dict) or "error" in body:
+                raise ValueError("Expected a YouTube Analytics result table")
+            headers = body.get("columnHeaders", [])
+            names = [header["name"] for header in headers]
+            expected = {"day": "STRING", **self.METRICS}
+            if len(names) != len(set(names)) or set(names) != set(expected):
+                raise ValueError("YouTube Analytics column headers do not match the channel daily report")
+            for header in headers:
+                name = header["name"]
+                # YouTube can declare duration/watch-time measures as INTEGER or FLOAT.
+                # Both fit the stream's number schema; counts must remain integer-valued.
+                allowed_types = ("INTEGER", "FLOAT") if expected[name] == "FLOAT" else (expected[name],)
+                if header.get("dataType") not in allowed_types or header.get("columnType") != ("DIMENSION" if name == "day" else "METRIC"):
+                    raise ValueError(f"Unexpected YouTube Analytics column type for {name}")
+            rows = body.get("rows", [])
+            if not isinstance(rows, list):
+                raise ValueError("YouTube Analytics rows must be an array")
+            query = parse_qs(urlparse(response.request.url).query)
+            start, end = query["startDate"][0], query["endDate"][0]
+            records = []
+            for row in rows:
+                if not isinstance(row, list) or len(row) != len(names):
+                    raise ValueError("YouTube Analytics row length does not match column headers")
+                record = dict(zip(names, row))
+                day = record["day"]
+                if not isinstance(day, str) or datetime.strptime(day, "%Y-%m-%d").strftime("%Y-%m-%d") != day or not start <= day <= end:
+                    raise ValueError("YouTube Analytics returned a day outside the requested date interval")
+                for name, data_type in self.METRICS.items():
+                    value = record[name]
+                    if value is None:
+                        continue
+                    if type(value) not in (int, float) or not math.isfinite(value):
+                        raise ValueError(f"YouTube Analytics returned a nonnumeric value for {name}")
+                    if data_type == "INTEGER":
+                        if int(value) != value:
+                            raise ValueError(f"YouTube Analytics returned a fractional count for {name}")
+                        record[name] = int(value)
+                records.append({"channel_id": self.config["query_reports"]["channel_id"], **record})
+        except (KeyError, TypeError, ValueError) as error:
+            raise AirbyteTracedException(message=str(error), failure_type=FailureType.system_error) from error
+        yield from records
 
 
 @dataclass
