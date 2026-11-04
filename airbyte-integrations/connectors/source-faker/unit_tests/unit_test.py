@@ -270,3 +270,26 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+
+
+def test_read_users_resumes_from_checkpoint():
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users", namespace=None),
+        stream_state=AirbyteStateBlob(updated_at="2024-01-01T00:00:00+00:00", loop_offset=5),
+    )
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+    iterator = source.read(logger, config, catalog, state)
+
+    records = [row.record.data for row in iterator if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
