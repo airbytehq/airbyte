@@ -69,11 +69,11 @@ def run_read(manifest: Path, stream: str, expecting_exception: bool = False) -> 
 
 
 def records(output: EntrypointOutput) -> list[dict[str, Any]]:
-    return [message.record.data for message in output.records]
+    return [message.record.data for message in output.records if message.record is not None]
 
 
 def states(output: EntrypointOutput) -> list[Any]:
-    return [message.state.stream for message in output.state_messages]
+    return [message.state.stream for message in output.state_messages if message.state is not None]
 
 
 @pytest.fixture
@@ -152,7 +152,7 @@ def test_ignored_http_errors_match_wrapped_baseline(
             assert output.errors == []
             assert output.state_messages
             assert error.call_count >= 1
-            assert any(message in log.log.message for log in output.logs)
+            assert any(message in log.log.message for log in output.logs if log.log is not None)
             results.append((records(output), states(output), error.call_count))
     assert results[0] == results[1]
     assert sleeps == []
@@ -180,5 +180,7 @@ def test_unrelated_errors_preserve_retry_budget_and_backoff(
             assert records(output) == []
             assert response.call_count == (1 if status == 401 else 6)
             assert len(sleeps) == (0 if status == 401 else 5)
-            results.append((states(output), copy.deepcopy(sleeps), output.errors[0].trace.error.failure_type))
+            trace = output.errors[0].trace
+            assert trace is not None and trace.error is not None
+            results.append((states(output), copy.deepcopy(sleeps), trace.error.failure_type))
     assert results[0] == results[1]
