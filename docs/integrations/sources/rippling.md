@@ -112,8 +112,8 @@ Rippling allows 600 requests per 10 seconds per token and endpoint path. The con
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                      | Subject              |
-| :------ | :--------- | :------------------------------------------------ | :------------------- |
-| 0.1.0   | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pulls) | New Source: Rippling |
+| Version | Date       | Pull Request                                             | Subject              |
+| :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.1.0   | 2026-11-04 | [90987](https://github.com/airbytehq/airbyte/pull/90987) | New Source: Rippling |
 
 </details>
