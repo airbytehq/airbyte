@@ -37,20 +37,22 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
         testdb =
             PostgresTestDatabase.Companion.`in`(
                 PostgresTestDatabase.BaseImage.POSTGRES_17,
-                PostgresTestDatabase.ContainerModifier.CERT
+                PostgresTestDatabase.ContainerModifier.CERT,
             )
-        testdb.query<Any?>({ ctx ->
-            ctx.fetch("CREATE SCHEMA $SCHEMA_NAME;")
-            ctx.fetch("CREATE TABLE $SCHEMA_NAME.id_and_name(id INTEGER, name VARCHAR(200));")
-            ctx.fetch(
-                "INSERT INTO $SCHEMA_NAME.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
-            )
-            ctx.fetch("CREATE TABLE $SCHEMA_NAME.starships(id INTEGER, name VARCHAR(200));")
-            ctx.fetch(
-                "INSERT INTO $SCHEMA_NAME.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
-            )
-            null
-        },)
+        testdb.query<Any?>(
+            { ctx ->
+                ctx.fetch("CREATE SCHEMA $SCHEMA_NAME;")
+                ctx.fetch("CREATE TABLE $SCHEMA_NAME.id_and_name(id INTEGER, name VARCHAR(200));")
+                ctx.fetch(
+                    "INSERT INTO $SCHEMA_NAME.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
+                )
+                ctx.fetch("CREATE TABLE $SCHEMA_NAME.starships(id INTEGER, name VARCHAR(200));")
+                ctx.fetch(
+                    "INSERT INTO $SCHEMA_NAME.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
+                )
+                null
+            },
+        )
     }
 
     override fun tearDown(testEnv: TestDestinationEnv?) {

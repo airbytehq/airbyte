@@ -12,6 +12,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.sql.SQLException
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetTime
@@ -77,7 +78,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
     override fun converterFor(
         field: RelationalColumn?,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>?
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>?,
     ) {
         if (field == null || registration == null) return
         val upperType = field.typeName().uppercase()
@@ -103,7 +104,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
     private fun registerArray(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         val fieldType = field.typeName().uppercase(Locale.getDefault())
         val arraySchema =
@@ -143,7 +144,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
     private fun registerNumber(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         registration.register(
             SchemaBuilder.string().optional(),
@@ -187,7 +188,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
     private fun registerBytea(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         registration.register(
             SchemaBuilder.string().optional(),
@@ -208,7 +209,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
     private fun registerText(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         registration.register(
             SchemaBuilder.string().optional(),
@@ -395,7 +396,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
     // https://debezium.io/documentation/reference/2.2/connectors/postgresql.html#postgresql-temporal-types
     private fun registerDate(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         registration.register(
             SchemaBuilder.string().optional(),
@@ -436,12 +437,12 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
                 if (x is Long) {
                     if (getTimePrecision(field) <= 3) {
                         return DateTimeConverter.convertToTimestamp(
-                            Conversions.toInstantFromMillis(x)
+                            Conversions.toInstantFromMillis(x),
                         )
                     }
                     if (getTimePrecision(field) <= 6) {
                         return DateTimeConverter.convertToTimestamp(
-                            Conversions.toInstantFromMicros(x)
+                            Conversions.toInstantFromMicros(x),
                         )
                     }
                 }
@@ -460,7 +461,18 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
                 return DateTimeConverter.convertToDate(x)
             }
             "TIME" -> return resolveTime(field, x)
-            "INTERVAL" -> return convertInterval((x as PGInterval?)!!)
+            "INTERVAL" -> {
+                return when (x) {
+                    is PGInterval -> convertInterval(x)
+                    is Number -> convertInterval(microsecondsToPgInterval(x))
+                    else -> {
+                        log.warn {
+                            "Unexpected interval value type: ${x::class.java.name}. Falling back to string conversion."
+                        }
+                        x.toString()
+                    }
+                }
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unknown field type  " + field.typeName().uppercase(),
@@ -492,9 +504,26 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
         return resultInterval.toString()
     }
 
+    internal fun microsecondsToPgInterval(value: Number): PGInterval {
+        // Debezium may surface interval defaults as microseconds; integer division below discards
+        // any sub-second remainder.
+        val duration = Duration.ofSeconds(value.toLong() / 1_000_000)
+
+        // Duration is a fixed-length amount and cannot be losslessly decomposed into calendar-aware
+        // months/years, so those PGInterval fields are intentionally set to zero.
+        return PGInterval(
+            0,
+            0,
+            duration.toDays().toInt(),
+            duration.toHoursPart(),
+            duration.toMinutesPart(),
+            duration.toSecondsPart().toDouble(),
+        )
+    }
+
     private fun registerMoney(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder?>,
     ) {
         registration.register(
             SchemaBuilder.string().optional(),

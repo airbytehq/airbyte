@@ -7,6 +7,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 
 class TestHarnessException : Exception {
     val outputMessages: List<AirbyteMessage>?
+
     constructor(message: String?) : super(message) {
         outputMessages = null
     }
@@ -18,7 +19,7 @@ class TestHarnessException : Exception {
     constructor(
         message: String?,
         cause: Throwable?,
-        outputMessages: List<AirbyteMessage>
+        outputMessages: List<AirbyteMessage>,
     ) : super(message, cause) {
         this.outputMessages = outputMessages
     }

@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.integrations.destination.databricks.spec.DatabricksSpecification
 import io.airbyte.integrations.destination.databricks.write.CONFIG_PATH
+import io.airbyte.integrations.destination.databricks.write.PAT_CONFIG_PATH
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -24,6 +25,9 @@ class DatabricksCheckTest :
             listOf(
                 CheckTestConfig(
                     configContents = Files.readString(Path.of(CONFIG_PATH)),
+                ),
+                CheckTestConfig(
+                    configContents = Files.readString(Path.of(PAT_CONFIG_PATH)),
                 ),
             ),
         failConfigFilenamesAndFailureReasons = emptyMap(),

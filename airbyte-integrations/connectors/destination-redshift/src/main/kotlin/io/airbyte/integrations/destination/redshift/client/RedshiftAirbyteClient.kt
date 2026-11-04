@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift.client
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
@@ -40,17 +41,23 @@ private const val SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST = "2BP01"
 private const val SQLSTATE_UNDEFINED_TABLE = "42P01"
 
 @Singleton
+@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
 class RedshiftAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: RedshiftSqlGenerator,
     private val s3Client: S3Client,
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
-    private val describeTableCache = ConcurrentHashMap<TableName, List<String>>()
+    private val describeTableCache = ConcurrentHashMap<TableName, LinkedHashMap<String, String>>()
 
     override suspend fun createNamespace(namespace: String) {
         try {
-            execute(sqlGenerator.createNamespace(namespace))
+            // Skip CREATE SCHEMA when the schema already exists. On Redshift, CREATE SCHEMA
+            // IF NOT EXISTS still requires CREATE ON DATABASE even for an existing schema, so
+            // users with only USAGE+CREATE on a pre-created schema would fail check/sync.
+            if (!namespaceExists(namespace)) {
+                execute(sqlGenerator.createNamespace(namespace))
+            }
         } catch (e: SQLException) {
             // Swallow race condition where concurrent connections both try CREATE SCHEMA
             if (e.message?.contains("already exists") != true) {
@@ -71,7 +78,7 @@ class RedshiftAirbyteClient(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        replace: Boolean
+        replace: Boolean,
     ) {
         execute(sqlGenerator.createTable(stream, tableName, replace))
     }
@@ -87,7 +94,7 @@ class RedshiftAirbyteClient(
     override suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         execute(sqlGenerator.copyTable(sourceTableName, targetTableName))
     }
@@ -96,7 +103,7 @@ class RedshiftAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         execute(sqlGenerator.upsertTable(stream, sourceTableName, targetTableName))
     }
@@ -160,7 +167,8 @@ class RedshiftAirbyteClient(
                 Airbyte can only sync to Airbyte-controlled tables. To fix this error, \
                 you must either delete the target table or add a prefix in the connection \
                 configuration in order to sync to a separate table in the destination.
-                """.trimIndent()
+                """
+                    .trimIndent()
             log.error { message }
             throw ConfigErrorException(message)
         }
@@ -171,15 +179,18 @@ class RedshiftAirbyteClient(
     }
 
     /**
-     * Returns the column names of the given table in ordinal order (matching the physical column
-     * layout)
+     * Returns column names and their normalized Redshift data types in ordinal order (matching the
+     * physical column layout). Used to determine CSV column ordering and which columns require null
+     * sentinel encoding (VARCHAR columns).
      */
-    fun describeTable(tableName: TableName): List<String> =
+    fun describeTable(tableName: TableName): LinkedHashMap<String, String> =
         describeTableCache.getOrPut(tableName) {
             executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
-                val columns = mutableListOf<String>()
+                val columns = linkedMapOf<String, String>()
                 while (rs.next()) {
-                    columns.add(rs.getString(COLUMN_NAME_COLUMN))
+                    val columnName = rs.getString(COLUMN_NAME_COLUMN)
+                    val dataType = normalizeRedshiftType(rs.getString("data_type"))
+                    columns[columnName] = dataType
                 }
                 columns
             }
@@ -187,7 +198,7 @@ class RedshiftAirbyteClient(
 
     override fun computeSchema(
         stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ): TableSchema {
         return TableSchema(stream.tableSchema.columnSchema.finalSchema)
     }
@@ -197,7 +208,7 @@ class RedshiftAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedColumns: TableColumns,
-        columnChangeset: ColumnChangeset
+        columnChangeset: ColumnChangeset,
     ) {
         if (columnChangeset.isNoop()) {
             return
@@ -207,16 +218,14 @@ class RedshiftAirbyteClient(
 
         log.info { "Summary of table alterations for ${tableName.namespace}.${tableName.name}:" }
         log.info { "  Added columns: ${columnChangeset.columnsToAdd}" }
-        log.info { "  Dropped columns: ${columnChangeset.columnsToDrop}" }
         log.info { "  Modified columns: ${columnChangeset.columnsToChange}" }
 
         execute(
             sqlGenerator.matchSchemas(
                 tableName = tableName,
                 columnsToAdd = columnChangeset.columnsToAdd,
-                columnsToRemove = columnChangeset.columnsToDrop,
-                columnsToModify = columnChangeset.columnsToChange
-            )
+                columnsToModify = columnChangeset.columnsToChange,
+            ),
         )
     }
 
@@ -330,7 +339,7 @@ class RedshiftAirbyteClient(
      * Executes a SQL statement (DDL or DML) against Redshift.
      *
      * @param logStatement set to `false` for statements that contain secrets (e.g. COPY with inline
-     * AWS credentials) to prevent plaintext credentials from appearing in logs.
+     *   AWS credentials) to prevent plaintext credentials from appearing in logs.
      */
     internal fun execute(query: String, logStatement: Boolean = true) {
         if (logStatement) {
@@ -364,7 +373,8 @@ class RedshiftAirbyteClient(
                     JOIN pg_namespace dependent_ns 
                     ON dependent_view.relnamespace = dependent_ns.oid 
                     WHERE pg_depend.refobjid = 'your_schema.your_table'::regclass;
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 log.error { message }
                 throw ConfigErrorException(message, e)
             }
@@ -411,7 +421,8 @@ class RedshiftAirbyteClient(
                 WHERE starttime >= GETDATE() - INTERVAL '1 minute'
                 ORDER BY starttime DESC
                 LIMIT 1
-                """.trimIndent()
+                """
+                    .trimIndent(),
             ) { rs ->
                 val errors = mutableListOf<String>()
                 while (rs.next()) {

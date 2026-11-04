@@ -1,7 +1,3 @@
----
-products: oss-enterprise
----
-
 # Airbyte Self-Managed Enterprise
 
 Airbyte no longer sells Self-Managed Enterprise. If you still use Self-Managed Enterprise, documentation is preserved in this PDF:
