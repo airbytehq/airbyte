@@ -98,15 +98,15 @@ definitions:
         Skipping the trackers stream: this Aircall company does not have the
         AI Assist or AI Assist Pro package (HTTP 403).
     # Documented 403 bodies: "line is not configured to use whatsapp", "line does not belong to the
-    # company" (a number deleted during the sync); sibling WhatsApp endpoints say "line does not have
-    # WhatsApp capability".
+    # company" (a number deleted during the sync). Live responses for numbers without WhatsApp say
+    # "Line <id> doesn't have WhatsApp capability" with key "Forbidden".
     whatsapp_not_configured:
       type: HttpResponseFilter
       action: IGNORE
       predicate: >-
         {{ response is mapping and 'templates' not in response
         and ('not configured to use whatsapp' in (response | string | lower)
-        or 'does not have whatsapp capability' in (response | string | lower)
+        or 'have whatsapp capability' in (response | string | lower)
         or 'does not belong to the company' in (response | string | lower)) }}
       error_message: >-
         Ignoring {{ request_url }}: this number is not registered for WhatsApp
