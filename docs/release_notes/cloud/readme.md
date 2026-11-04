@@ -1,5 +1,13 @@
 # Airbyte Cloud release notes
 
+## November 4, 2026
+
+Connections
+
+- In source and destination setup forms, required settings that already have a default value now appear in the collapsed section with the optional settings, so the main form shows only what you need to fill in. Airbyte still uses the default value unless you change it.
+- When a setting in a source or destination setup form has only one option, the form no longer shows a dropdown with nothing to choose. If that option has its own fields, they appear directly under the setting. Otherwise, the setting is hidden.
+- After you click **Save as a draft** while setting up a source or destination, you can now leave the page without a warning about unsaved changes. The warning returns if you edit the form again.
+
 ## November 3, 2026
 
 Connections

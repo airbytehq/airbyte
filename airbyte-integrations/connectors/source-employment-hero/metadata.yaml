@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e2db518e-ef68-40bb-a2b6-b9f9aabbadb3
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-employment-hero
   githubIssueLabel: source-employment-hero
   icon: icon.svg
@@ -37,6 +37,13 @@ data:
           for details.
         upgradeDeadline: "2026-10-21"
         deadlineAction: "disable"
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/employment-hero
