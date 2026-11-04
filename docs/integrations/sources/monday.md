@@ -77,7 +77,7 @@ The following streams are available:
 | Items | Full Refresh, Incremental | [Items](https://developer.monday.com/api-reference/docs/items-queries) |
 | Tags | Full Refresh | [Tags](https://developer.monday.com/api-reference/docs/tags-queries) |
 | Teams | Full Refresh | [Teams](https://developer.monday.com/api-reference/docs/teams-queries) |
-| Updates | Full Refresh | [Updates](https://developer.monday.com/api-reference/docs/updates-queries) |
+| Updates | Full Refresh, Incremental | [Updates](https://developer.monday.com/api-reference/docs/updates-queries) |
 | Users | Full Refresh | [Users](https://developer.monday.com/api-reference/docs/users-queries-1) |
 | Workspaces | Full Refresh | [Workspaces](https://developer.monday.com/api-reference/docs/workspaces) |
 
@@ -91,6 +91,8 @@ The following streams are available:
   - **Mirror**, **Connect Boards**, and **Dependency** columns include a `display_value` field with a human-readable text representation.
 
 - Incremental sync for the Items and Boards streams relies on the Activity logs stream. Board and item IDs are extracted from activity log events and used to selectively sync only the changed records. If the time between syncs exceeds the activity log retention period for your [Monday.com plan](https://monday.com/pricing), some changes may not be captured during incremental syncs.
+
+- Incremental sync for the Updates stream filters on each update's creation date (`created_at`) and re-reads the last day on every sync. Monday.com can't filter updates by edit date, so edits and new replies on updates created more than a day before the previous sync aren't captured by incremental syncs. Run a full refresh to pick them up.
 
 - The Items stream uses [cursor-based pagination](https://developer.monday.com/api-reference/reference/items-page#cursor-based-pagination-using-next_items_page), and Monday.com pagination cursors expire after 60 minutes. If reading a board takes longer than that (for example, due to rate limiting or very large boards), the API returns a `CursorExpiredError` and the connector restarts pagination for that stream from the beginning. Syncs of very large boards can take longer than expected as a result.
 
@@ -111,6 +113,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.0 | 2026-11-03 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add incremental sync to the Updates stream and read all pages of updates |
 | 2.6.2 | 2026-10-13 | [87933](https://github.com/airbytehq/airbyte/pull/87933) | Update dependencies |
 | 2.6.1 | 2026-09-29 | [87243](https://github.com/airbytehq/airbyte/pull/87243) | Update dependencies |
 | 2.6.0 | 2026-09-24 | [85170](https://github.com/airbytehq/airbyte/pull/85170) | Move OAuth to Monday's OAuth 2.1 flow (PKCE, new token endpoint, rotating refresh tokens); migrate existing legacy OAuth tokens automatically on the first run; prompt the admin to install the Airbyte app during authorization |
