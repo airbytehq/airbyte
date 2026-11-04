@@ -84,7 +84,11 @@ The Granola API doesn't return deleted notes or mark notes as deleted, so the co
 
 The `detailed_notes` stream retrieves each note from the `notes` stream with the [`GET /v1/notes/{note_id}`](https://docs.granola.ai/api-reference/get-note) endpoint. It includes the note metadata plus fields available only on the detail endpoint, including summaries, transcripts, attendees, calendar events, and folder membership.
 
-The stream is incremental through the parent `notes` stream's `updated_after` state: after the initial sync, it requests details only for notes updated since the last sync. The connector always requests transcript data for this stream. In **Incremental | Append** mode, each edit adds a row for the note, and the most recently updated note is repeated on each sync because the parent cursor looks back one second. This is the same behavior as `notes`. A note skipped because Granola returned `413 TRANSCRIPT_TOO_LARGE` isn't retried by later incremental syncs unless it is edited again; use the full-refresh `note_transcripts` stream to retrieve its transcript.
+For incremental syncs, the stream uses `updated_at` as the cursor field. The stream keeps its own copy of the `notes` cursor in its state and uses it to list notes with `updated_after`, so after the first sync it requests details only for notes updated since the last sync. Because the copy is separate, syncing, clearing, or refreshing the `notes` stream doesn't change which notes `detailed_notes` requests. The connector always requests transcript data for this stream.
+
+In **Incremental | Append** mode, each edit adds a row for the note, and the most recently updated note is repeated on each sync because of the same one-second lookback that `notes` uses. A note skipped because Granola returned `413 TRANSCRIPT_TOO_LARGE` isn't requested again by later incremental syncs unless it is edited; use the `note_transcripts` stream to retrieve its transcript.
+
+Incremental sync for `detailed_notes` is available starting with version 1.1.0. Connections that already synced this stream in full refresh keep doing so until you change the stream's sync mode.
 
 The API returns a 404 for notes that don't have a generated AI summary and transcript. Because `detailed_notes` uses `notes` as its parent stream, it only requests detail records for notes returned by the list endpoint.
 
@@ -94,7 +98,7 @@ Granola returns the transcript inline. If a transcript is too large to return th
 
 The `note_transcripts` stream retrieves each note's transcript from the [`GET /v1/notes/{note_id}/transcript`](https://docs.granola.ai/api-reference/get-transcript) endpoint, one record per transcript segment. Each record carries the segment's speaker, text, and start and end times, plus the `note_id` of the note it belongs to. Because this endpoint is paged, it returns transcripts of any size, including those `detailed_notes` can't return inline.
 
-The stream has no primary key, so records are appended rather than deduplicated. It remains full refresh: on every sync it re-reads the full list of notes updated since your start date and requests each of those notes' transcripts again, so it adds at least one request for every note in that range rather than only for new notes. The connector requests the API's maximum of 100 transcript segments per page, so a transcript longer than 100 segments costs one more request for each additional page. On a workspace with thousands of historical notes this dominates sync time, so size your sync frequency against the total note count.
+The stream has no primary key, so records are appended rather than deduplicated. It isn't incremental: on every sync it re-reads the full list of notes updated since your start date and requests each of those notes' transcripts again, so it adds at least one request for every note in that range rather than only for new notes. The connector requests the API's maximum of 100 transcript segments per page, so a transcript longer than 100 segments costs one more request for each additional page. On a workspace with thousands of historical notes this dominates sync time, so size your sync frequency against the total note count.
 
 If Granola no longer returns a transcript for a note that the `notes` stream listed, such as a note deleted or unshared mid-sync, the API responds with `404` and the connector skips that note instead of failing the stream.
 
@@ -134,7 +138,7 @@ When Granola returns `401` or `403`, the connector fails the sync immediately as
 
 Versions up to 0.2.13 sent each 30-day window's bounds as dates rather than timestamps. The Granola API excludes the entire day named by `created_before`, so those syncs skipped every note created on a window boundary date, in both the `notes` and `detailed_notes` streams. Version 0.2.14 sends second-level timestamps, so new syncs cover the full range.
 
-Existing connections don't backfill the skipped notes on their own. After upgrading to 0.2.14 or later, [refresh](/platform/operator-guides/refreshes) the `notes` stream once to recover them. If you're upgrading straight to 1.0.0 or later, you don't need a separate refresh: the first sync after that upgrade re-reads every note updated since your start date. You don't need to do anything for `detailed_notes`, which reads from `notes` and picks up the recovered notes with it.
+Existing connections don't backfill the skipped notes on their own. After upgrading to 0.2.14 or later, [refresh](/platform/operator-guides/refreshes) the `notes` stream once to recover them. If you're upgrading straight to 1.0.0 or later, you don't need a separate refresh: the first sync after that upgrade re-reads every note updated since your start date. You don't need to do anything for `detailed_notes`. It was full refresh only before version 1.1.0, so it re-read every note since your start date on each sync after the fix.
 
 ### Notes are missing from `detailed_notes`
 
@@ -164,7 +168,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.1.0 | 2026-11-03 | [89049](https://github.com/airbytehq/airbyte/pull/89049) | Add incremental sync to the detailed_notes stream |
+| 1.1.0 | 2026-11-04 | [89049](https://github.com/airbytehq/airbyte/pull/89049) | Add incremental sync to the detailed_notes stream |
 | 1.0.6 | 2026-11-03 | [90584](https://github.com/airbytehq/airbyte/pull/90584) | Update dependencies |
 | 1.0.5 | 2026-10-27 | [89923](https://github.com/airbytehq/airbyte/pull/89923) | Update dependencies |
 | 1.0.4 | 2026-10-20 | [89255](https://github.com/airbytehq/airbyte/pull/89255) | Update dependencies |
