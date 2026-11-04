@@ -33,6 +33,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -59,6 +60,10 @@ internal class RedshiftAirbyteClientTest {
     private lateinit var client: RedshiftAirbyteClient
 
     private val testTable = TableName(namespace = "test_schema", name = "test_table")
+    private val missingAirbyteColumnsMessage =
+        "The target table (test_schema.test_table) already exists in the destination, " +
+            "but does not contain Airbyte's internal columns. " +
+            "Delete or rename the target table, or set a stream prefix in the connection configuration to sync to a separate table."
 
     @BeforeEach
     fun setUp() {
@@ -379,11 +384,24 @@ internal class RedshiftAirbyteClientTest {
     }
 
     @Test
+    fun `getGenerationId throws ConfigErrorException on undefined column`() = runTest {
+        every { sqlGenerator.getGenerationId(testTable) } returns "GEN ID SQL"
+        val exception = SQLException("column does not exist", "42703")
+        every { mockStatement.executeQuery("GEN ID SQL") } throws exception
+
+        val thrown = assertThrows<ConfigErrorException> { client.getGenerationId(testTable) }
+
+        assertEquals(missingAirbyteColumnsMessage, thrown.message)
+        assertSame(exception, thrown.cause)
+    }
+
+    @Test
     fun `getGenerationId rethrows non-table-not-found SQLException`() = runTest {
         every { sqlGenerator.getGenerationId(testTable) } returns "GEN ID SQL"
-        every { mockStatement.executeQuery("GEN ID SQL") } throws SQLException("Connection reset")
+        val exception = SQLException("permission denied", "42501")
+        every { mockStatement.executeQuery("GEN ID SQL") } throws exception
 
-        assertThrows<SQLException> { client.getGenerationId(testTable) }
+        assertSame(exception, assertThrows<SQLException> { client.getGenerationId(testTable) })
     }
 
     // ================================================================
@@ -467,7 +485,8 @@ internal class RedshiftAirbyteClientTest {
         every { mockResultSet.getString("data_type") } returns "character varying"
         every { mockResultSet.getString("is_nullable") } returns "YES"
 
-        assertThrows<ConfigErrorException> { client.discoverSchema(testTable) }
+        val thrown = assertThrows<ConfigErrorException> { client.discoverSchema(testTable) }
+        assertEquals(missingAirbyteColumnsMessage, thrown.message)
     }
 
     @Test

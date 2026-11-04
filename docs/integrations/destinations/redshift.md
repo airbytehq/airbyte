@@ -297,6 +297,7 @@ This is by design for performance reasons.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.14 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Report a configuration error instead of a system error when a pre-existing target table is missing Airbyte's internal columns. |
 | 4.0.13 | 2026-10-22 | [89657](https://github.com/airbytehq/airbyte/pull/89657) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; AWS SDK 2.57.2. |
 | 4.0.12 | 2026-10-15 | [87619](https://github.com/airbytehq/airbyte/pull/87619) | Upgrade to Bulk CDK 1.1.1. |
 | 4.0.11  | 2026-10-15 | [88985](https://github.com/airbytehq/airbyte/pull/88985)   | Suppress a SpotBugs false positive (`NP_NONNULL_PARAM_VIOLATION`) on the suspend `createNamespace` so the connector lint passes; no functional change.                                                            |
