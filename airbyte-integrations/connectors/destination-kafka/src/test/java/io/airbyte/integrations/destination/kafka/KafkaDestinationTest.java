@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.kafka;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
@@ -16,6 +17,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -38,6 +40,8 @@ class KafkaDestinationTest {
     final JsonNode protocols = destination(deployment).spec().getConnectionSpecification().get("properties").get("protocol").get("oneOf");
     assertEquals(1, protocols.size());
     assertEquals("SASL_SSL", protocols.get(0).get("properties").get("security_protocol").get("enum").get(0).asText());
+    assertTrue(StreamSupport.stream(protocols.get(0).get("properties").get("sasl_mechanism").get("enum").spliterator(), false)
+        .anyMatch(mechanism -> "PLAIN".equals(mechanism.asText())));
   }
 
   @ParameterizedTest

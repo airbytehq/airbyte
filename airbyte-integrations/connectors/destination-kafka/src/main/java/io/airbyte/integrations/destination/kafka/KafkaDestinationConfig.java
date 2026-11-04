@@ -78,8 +78,8 @@ public class KafkaDestinationConfig {
 
   private Map<String, Object> propertiesByProtocol(final JsonNode config) {
     final JsonNode protocolConfig = config.get("protocol");
-    LOGGER.info("Kafka protocol config: {}", protocolConfig.toString());
     final KafkaProtocol protocol = KafkaProtocol.valueOf(protocolConfig.get("security_protocol").asText().toUpperCase());
+    LOGGER.info("Kafka protocol: {}", protocol);
     final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
         .put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, protocol.toString());
 
