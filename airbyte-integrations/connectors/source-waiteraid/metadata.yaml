@@ -26,7 +26,10 @@ data:
           response envelope. Refresh the schema and clear existing booking data
           before resyncing. Update downstream queries that read the nested bookings
           array or response-level status.
+          See https://docs.airbyte.com/integrations/sources/waiteraid-migrations#upgrading-to-100
+          for full migration instructions.
         upgradeDeadline: "2026-11-18"
+        deadlineAction: disable
         scopedImpact:
           - scopeType: stream
             impactedScopes:

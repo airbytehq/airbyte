@@ -60,7 +60,11 @@ def test_booking_stream_reads_individual_bookings(bookings: list[dict]) -> None:
         output = read(source, config=CONFIG, catalog=catalog)
 
     assert output.errors == [], output.get_formatted_error_message()
-    assert [record.record.data for record in output.records] == bookings
+    records = []
+    for message in output.records:
+        assert message.record is not None
+        records.append(message.record.data)
+    assert records == bookings
     assert http_mock.call_count == 1
     assert http_mock.last_request.qs == {key: [value] for key, value in CONFIG.items() if key != "start_date"} | {
         "date": [CONFIG["start_date"]]
