@@ -37,6 +37,11 @@ data:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      0.3.0:
+        message: "This version rewrites the Firebolt destination on Airbyte's Java/Kotlin bulk-connector framework. Streams now write typed columns into final tables instead of a single JSON raw table, data loads through S3 staging and COPY FROM (S3 credentials are now required), and deduped syncs are supported via MERGE. All connections are affected: after upgrading, provide S3 staging configuration and perform a full refresh so streams are rewritten in the new table format. See https://docs.airbyte.com/integrations/destinations/firebolt-migrations#upgrading-to-030"
+        upgradeDeadline: "2026-12-08"
   releaseStage: alpha
   supportLevel: community
   supportsDbt: true

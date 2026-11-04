@@ -8,19 +8,14 @@ This page guides you through the process of setting up the Firebolt destination 
 2. Firebolt Database and Engine created: Follow the [guide](https://docs.firebolt.io/guides/operate-engines/working-with-engines-using-ddl) to create an engine if you don't have one in your Firebolt workspace.
 3. Service Account credentials: all programmatic access to Firebolt requires a service account to interact with the database. Create a service account as described in this [guide](https://docs.firebolt.io/guides/managing-your-organization/service-accounts) and note its ID and secret.
 
-## Replication strategies
+## Replication strategy
 
-This Firebolt destination connector has two replication strategies:
+The Firebolt destination is built on Airbyte's Java/Kotlin bulk-connector framework (DirectLoad).
+Records are buffered into gzipped CSV files, uploaded to an S3 staging bucket, and loaded into the
+target table with Firebolt's [COPY FROM](https://docs.firebolt.io/godocs/Guides/loading-data/loading-data.html).
+Deduped syncs merge staged rows into the final table.
 
-1. SQL: Replicates data via SQL INSERT queries. This leverages
-   [Firebolt SDK](https://pypi.org/project/firebolt-sdk/) to execute queries directly on Firebolt
-   [Engines](https://docs.firebolt.io/godocs/Overview/understanding-engine-fundamentals.html).
-   **Not recommended for production workloads as this does not scale well**.
-
-2. S3: Replicates data by first uploading data to an S3 bucket, creating an External Table and
-   writing into a final Fact Table. This is the recommended loading
-   [approach](https://docs.firebolt.io/godocs/Guides/loading-data/loading-data.html). Requires an S3 bucket and
-   credentials in addition to Firebolt credentials.
+An S3 bucket and credentials are **required** in addition to Firebolt credentials.
 
 ## Connection parameters
 
@@ -36,12 +31,18 @@ This Firebolt destination connector has two replication strategies:
   - Name of the engine that will run the queries.
 - **Host (optional)**
   - Firebolt backend URL. Can be left blank for most usecases.
+- **Default Schema (optional)**
+  - The Firebolt schema streams are written to when a stream has no namespace.
+- **JDBC URL Params (optional)**
+  - Additional parameters appended to the Firebolt JDBC connection URL.
 
-Additionally, for S3 strategy:
+### S3 staging configuration (required)
 
 - **S3 Bucket Name**
   - See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to
     create an S3 bucket.
+- **S3 Bucket Path (optional)**
+  - Directory under the bucket where staging files are written. Defaults to the bucket root.
 - **S3 Bucket Region**
   - Create the S3 bucket on the same region as the Firebolt database.
 - **Access Key Id**
@@ -53,6 +54,10 @@ Additionally, for S3 strategy:
     to objects in the staging bucket.
 - **Secret Access Key**
   - Corresponding key to the above key id.
+- **S3 Filename Pattern (optional)**
+  - Pattern for naming staging files.
+- **Purge Staging Files and Tables**
+  - When enabled (default), staging files are deleted from S3 after the sync completes.
 
 ## Setup guide
 
@@ -62,11 +67,9 @@ Additionally, for S3 strategy:
 1. Create a [service account](https://docs.firebolt.io/godocs/Guides/managing-your-organization/service-accounts.html).
 1. Create an engine as described in
    [here](https://docs.firebolt.io/godocs/Guides/working-with-engines/working-with-engines-using-the-firebolt-manager.html)
-1. (Optional)
-   [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
-   staging S3 bucket \(for the S3 strategy\).
-1. (Optional)
-   [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-iam-policies.html) an IAM
+1. [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
+   staging S3 bucket.
+1. [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-iam-policies.html) an IAM
    with programmatic access to read, write and delete objects from an S3 bucket.
 
 ## Supported sync modes
@@ -77,26 +80,27 @@ Additionally, for S3 strategy:
 | [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
-| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Connector-specific features & highlights
 
 ### Output schema
 
-Each stream will be output into its own raw
-[Fact table](https://docs.firebolt.io/working-with-tables.html#fact-and-dimension-tables) in
-Firebolt. Each table will contain 3 columns:
+Each stream is written to its own final
+[table](https://docs.firebolt.io/working-with-tables.html#fact-and-dimension-tables) in Firebolt.
+The table contains one typed column per stream field (mapped from the stream's JSON schema to
+Firebolt types) plus the Airbyte metadata columns:
 
-- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
-  Firebolt is `VARCHAR`.
-- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
-  The column type in Firebolt is `TIMESTAMP`.
-- `_airbyte_data`: a json blob representing the event data. The column type in Firebolt is `VARCHAR`
-  but can be parsed with JSON functions.
+- `_airbyte_raw_id`: a unique identifier assigned to each record by Airbyte.
+- `_airbyte_extracted_at`: a timestamp representing when the record was pulled from the source.
+- `_airbyte_meta`: metadata about the record, including change tracking and sync errors.
+- `_airbyte_generation_id`: a monotonically increasing identifier used to track refreshes.
 
 ## Namespace support
 
-This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+Stream [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces) map to
+Firebolt schemas, which the connector creates automatically on first sync. Streams without a
+namespace are written to the configured Default Schema.
 
 ## Changelog
 
