@@ -812,27 +812,27 @@ schemas:
       annotation_click_through_rate:
         type:
           - "null"
-          - string
+          - number
       annotation_clickable_impressions:
         type:
           - "null"
-          - string
+          - integer
       annotation_clicks:
         type:
           - "null"
-          - string
+          - integer
       annotation_closable_impressions:
         type:
           - "null"
-          - string
+          - integer
       annotation_close_rate:
         type:
           - "null"
-          - string
+          - number
       annotation_closes:
         type:
           - "null"
-          - string
+          - integer
       annotation_id:
         type:
           - "null"
@@ -840,7 +840,7 @@ schemas:
       annotation_impressions:
         type:
           - "null"
-          - string
+          - integer
       annotation_type:
         type:
           - "null"
@@ -1014,11 +1014,11 @@ schemas:
       card_click_rate:
         type:
           - "null"
-          - string
+          - number
       card_clicks:
         type:
           - "null"
-          - string
+          - integer
       card_id:
         type:
           - "null"
@@ -1026,19 +1026,19 @@ schemas:
       card_impressions:
         type:
           - "null"
-          - string
+          - integer
       card_teaser_click_rate:
         type:
           - "null"
-          - string
+          - number
       card_teaser_clicks:
         type:
           - "null"
-          - string
+          - integer
       card_teaser_impressions:
         type:
           - "null"
-          - string
+          - integer
       card_type:
         type:
           - "null"
@@ -1174,7 +1174,7 @@ schemas:
       views_percentage:
         type:
           - "null"
-          - string
+          - number
   channel_device_os_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1256,11 +1256,11 @@ schemas:
       end_screen_element_click_rate:
         type:
           - "null"
-          - string
+          - number
       end_screen_element_clicks:
         type:
           - "null"
-          - string
+          - integer
       end_screen_element_id:
         type:
           - "null"
@@ -1268,7 +1268,7 @@ schemas:
       end_screen_element_impressions:
         type:
           - "null"
-          - string
+          - integer
       end_screen_element_type:
         type:
           - "null"
@@ -1356,7 +1356,7 @@ schemas:
       annotation_click_through_rate:
         type:
           - "null"
-          - integer
+          - number
       annotation_clickable_impressions:
         type:
           - "null"
@@ -1372,7 +1372,7 @@ schemas:
       annotation_close_rate:
         type:
           - "null"
-          - integer
+          - number
       annotation_closes:
         type:
           - "null"
@@ -1392,7 +1392,7 @@ schemas:
       card_click_rate:
         type:
           - "null"
-          - integer
+          - number
       card_clicks:
         type:
           - "null"
@@ -1404,7 +1404,7 @@ schemas:
       card_teaser_click_rate:
         type:
           - "null"
-          - integer
+          - number
       card_teaser_clicks:
         type:
           - "null"
@@ -1543,7 +1543,7 @@ schemas:
       shares:
         type:
           - "null"
-          - string
+          - integer
       sharing_service:
         type:
           - "null"
@@ -1980,15 +1980,15 @@ schemas:
       playlist_saves_added:
         type:
           - "null"
-          - string
+          - integer
       playlist_saves_removed:
         type:
           - "null"
-          - string
+          - integer
       playlist_starts:
         type:
           - "null"
-          - string
+          - integer
       province_code:
         type:
           - "null"
@@ -2004,7 +2004,7 @@ schemas:
       views:
         type:
           - "null"
-          - string
+          - integer
       watch_time_minutes:
         type:
           - "null"
