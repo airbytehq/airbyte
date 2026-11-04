@@ -96,6 +96,8 @@ Connector Builder sends test data through the control plane during development a
 
 ## Sizing
 
+Sizing depends on the type and size of the jobs you run. Your Airbyte solutions architect works with you to recommend the right size for your needs.
+
 Use [Scaling Airbyte](/platform/operator-guides/scaling-airbyte) to plan capacity for your data planes. For infrastructure requirements, see the [Helm prerequisites](/platform/enterprise-flex/data-plane#infrastructure-prerequisites) and [Airbox requirements](/platform/enterprise-flex/data-plane-util#infrastructure-requirements).
 
 Self-managed data planes count toward your organization's data workers, the same as Airbyte-managed data planes. See [Manage and monitor data workers](/platform/cloud/managing-airbyte-cloud/manage-data-workers).
