@@ -53,6 +53,8 @@ On Airbyte Cloud, **SASL JAAS Config** must contain exactly one of these support
 
 Use a login module that matches your selected **SASL Mechanism**. Missing, malformed, or unsupported JAAS configurations are rejected before connecting to Kafka.
 
+When using `OAUTHBEARER` on Airbyte Cloud, set **OAUTHBEARER token endpoint URL** to an HTTPS URL without embedded credentials or a fragment. HTTP URLs, local-file URLs, and missing endpoints are rejected before connecting. Any OAuth endpoint allowlist configured by the operator remains enforced.
+
 Airbyte Open Source continues to support **PLAINTEXT**, **SASL PLAINTEXT**, and **SASL SSL**, without these Cloud-only restrictions.
 
 ##### Confluent Cloud API-key authentication

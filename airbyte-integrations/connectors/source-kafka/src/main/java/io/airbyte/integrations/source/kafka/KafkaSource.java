@@ -21,6 +21,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +90,21 @@ public class KafkaSource extends BaseConnector implements Source {
     }
     if (entries.size() != 1 || !CLOUD_LOGIN_MODULES.contains(entries.get(0).getLoginModuleName())) {
       throw new ConfigErrorException(CLOUD_JAAS_ERROR);
+    }
+    if ("OAUTHBEARER".equals(config.path("protocol").path("sasl_mechanism").asText())
+        && !isHttpsTokenEndpoint(config.path("protocol").path("oauthbearer_token_endpoint_url").asText())) {
+      throw new ConfigErrorException(
+          "Airbyte Cloud requires an HTTPS OAuth token endpoint. Set OAuth Bearer Token Endpoint URL to a valid HTTPS URL without credentials or a fragment.");
+    }
+  }
+
+  private static boolean isHttpsTokenEndpoint(final String value) {
+    try {
+      final URI endpoint = URI.create(value);
+      return "https".equalsIgnoreCase(endpoint.getScheme()) && endpoint.getHost() != null
+          && endpoint.getRawUserInfo() == null && endpoint.getRawFragment() == null;
+    } catch (final IllegalArgumentException e) {
+      return false;
     }
   }
 
