@@ -149,7 +149,12 @@ def test_config_schema_declares_groups_and_sections():
     schema = Config.schema()
     properties = schema["properties"]
 
-    assert [group["id"] for group in schema["groups"]] == ["connection", "advanced_bucket_connection", "file_access", "advanced_file_access"]
+    assert [group["id"] for group in schema["groups"]] == [
+        "connection",
+        "advanced_bucket_connection",
+        "file_access",
+        "advanced_file_access",
+    ]
     assert schema["sections"] == SECTIONS
     assert [section["id"] for section in schema["sections"]] == ["bucket_connection", "file_access", "review"]
     assert [section["order"] for section in schema["sections"]] == [0, 1, 2]

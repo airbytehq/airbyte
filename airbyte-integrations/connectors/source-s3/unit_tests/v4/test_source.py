@@ -111,7 +111,12 @@ class SourceTest(unittest.TestCase):
     def test_when_spec_then_groups_and_sections_are_kept_and_v3_fields_have_no_group(self) -> None:
         schema = self._source.spec().connectionSpecification
 
-        assert [group["id"] for group in schema["groups"]] == ["connection", "advanced_bucket_connection", "file_access", "advanced_file_access"]
+        assert [group["id"] for group in schema["groups"]] == [
+            "connection",
+            "advanced_bucket_connection",
+            "file_access",
+            "advanced_file_access",
+        ]
         assert [section["id"] for section in schema["sections"]] == ["bucket_connection", "file_access", "review"]
         assert all("group" not in schema["properties"][field] for field in _V3_FIELDS)
 
