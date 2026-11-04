@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import tomllib
 from pathlib import Path
 
 import jsonschema
 import pytest
+import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
