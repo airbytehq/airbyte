@@ -72,16 +72,15 @@ def _response(status_code: int, headers: dict[str, str] | None = None) -> reques
 
 
 def _filter_message(definition: dict, status_code: int) -> str:
-    if definition["type"] == "Composite" + "ErrorHandler":
-        error_handlers = definition["error_handlers"]
-        filters = [filter_ for handler in error_handlers for filter_ in handler.get("response_filters", [])]
+    if "error_handlers" in definition:
+        filters = [filter_ for handler in definition["error_handlers"] for filter_ in handler.get("response_filters", [])]
     else:
         filters = definition.get("response_filters", [])
     return next(filter_["error_message"] for filter_ in filters if status_code in filter_.get("http_codes", []))
 
 
 def test_manifest_uses_shared_default_error_handler() -> None:
-    assert not any(node.get("type") == "Composite" + "ErrorHandler" for node in _walk(RESOLVED_MANIFEST))
+    assert not any("error_handlers" in node for node in _walk(RESOLVED_MANIFEST))
 
     streams = RESOLVED_MANIFEST["streams"]
     for stream in streams:
