@@ -38,7 +38,7 @@ data:
     breakingChanges:
       2.0.0:
         message: "Version 2.0.0 changes 26 metric fields in channel_annotations_a1, channel_cards_a1, channel_demographics_a1, channel_end_screens_a1, channel_sharing_service_a1, channel_province_a3, and playlist_province_a2 to numeric types to correct their metric definitions. Connections selecting none of these streams need no migration. Before upgrading, review downstream consumers and preserve existing destination history. Refresh the source schema and follow the destination- and sync-mode-specific migration steps; do not clear or rebuild without a verified backup and history-preservation plan, because expired YouTube report files cannot be re-downloaded. Connections not upgraded by the deadline will be disabled. See the [2.0.0 Migration Guide](https://docs.airbyte.com/integrations/sources/youtube-analytics-migrations#upgrading-to-200) for the complete field list and steps."
-        upgradeDeadline: "2026-11-29"
+        upgradeDeadline: "2026-12-04"
         deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream

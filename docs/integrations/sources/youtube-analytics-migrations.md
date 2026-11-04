@@ -62,7 +62,7 @@ These streams can hold history older than YouTube's retention window, so preserv
 3. Run a sync and check the affected columns in your destination.
 4. If you have to clear or rebuild a stream, restore the older history from your backup, converting the affected fields to the new numeric types, and reconcile it with the data the new sync replays:
    - In **Append** mode, replayed records are added again, so the restored history and the replayed window can contain duplicate rows.
-   - In **Append + Deduped** mode, replayed rows replace matching restored rows only if the primary keys are unchanged and deduplication is enabled.
+   - In **Append + Deduped** mode, 2.0.0 doesn't change any primary key, so replayed rows replace matching restored rows as long as deduplication is enabled.
 
 If you don't have a tested way to preserve and reconcile the history, stop before clearing and work out a destination-specific plan first.
 
