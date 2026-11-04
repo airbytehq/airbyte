@@ -54,11 +54,7 @@ dynamic_streams:
           path: >-
             {{ config["spreadsheet_id"] }}/values:batchGet?ranges={{parameters["sheet_id"] | urlencode}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
           error_handler:
-            type: DefaultErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-            response_filters:
-              $ref: "#/definitions/response_filters/response_error_filters"
+            $ref: "#/definitions/error_handlers/default"
       schema_loader:
         type: DynamicSchemaLoader
         retriever:
@@ -88,13 +84,7 @@ dynamic_streams:
             path: >-
               {{ config["spreadsheet_id"] }}?includeGridData=true&ranges={{parameters["sheet_id"] | urlencode}}!1:1&alt=json
             error_handler:
-              type: CompositeErrorHandler
-              error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                    - type: ExponentialBackoffStrategy
-                  response_filters:
-                    $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
+              $ref: "#/definitions/error_handlers/single_sheet"
 
         schema_type_identifier:
           $ref: "#/definitions/schema_type_identifier"
@@ -180,13 +170,7 @@ definitions:
             {{ config["spreadsheet_id"] }}?includeGridData=false&alt=json
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  $ref: "#/definitions/response_filters/response_error_filters"
+            $ref: "#/definitions/error_handlers/default"
         record_selector:
           type: RecordSelector
           extractor:
@@ -233,19 +217,23 @@ definitions:
         path: >-
           {{ config["spreadsheet_id"] }}?includeGridData=true&ranges={{stream_partition.sheet_id | urlencode}}!1:1&alt=json
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: CustomErrorHandler
-              class_name: source_declarative_manifest.components.GridDataErrorHandler
-              response_filters:
-                $ref: "#/definitions/response_filters/response_error_filters"
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-            - type: DefaultErrorHandler
-              response_filters:
-                $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
+          $ref: "#/definitions/error_handlers/grid_data"
+  error_handlers:
+    default:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+      response_filters:
+        $ref: "#/definitions/response_filters/response_error_filters"
+    single_sheet:
+      $ref: "#/definitions/error_handlers/default"
+      response_filters:
+        $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
+    grid_data:
+      $ref: "#/definitions/error_handlers/single_sheet"
+      type: CustomErrorHandler
+      class_name: source_declarative_manifest.components.GridDataErrorHandler
   response_filters:
     expected_one_sheet:
       type: HttpResponseFilter
