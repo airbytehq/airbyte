@@ -37,6 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.74 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix 401 errors by sending the API key as a Bearer token |
 | 0.0.73 | 2026-11-03 | [90624](https://github.com/airbytehq/airbyte/pull/90624) | Update dependencies |
 | 0.0.72 | 2026-10-27 | [89995](https://github.com/airbytehq/airbyte/pull/89995) | Update dependencies |
 | 0.0.71 | 2026-10-20 | [89286](https://github.com/airbytehq/airbyte/pull/89286) | Update dependencies |
