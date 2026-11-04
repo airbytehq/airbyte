@@ -104,6 +104,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
 | 3.0.0 | 2026-11-03 | [90850](https://github.com/airbytehq/airbyte/pull/90850) | Remove the `calls` and `call_legs` streams: Zendesk ends third-party access to the Talk incremental call exports (rollout 2026-12-02 to 2027-01-19) and offers no replacement endpoint |
+| 2.0.35 | 2026-11-03 | [90906](https://github.com/airbytehq/airbyte/pull/90906) | Simplify rate-limit and retry error handling configuration with no change in behavior |
 | 2.0.34 | 2026-11-03 | [90809](https://github.com/airbytehq/airbyte/pull/90809) | Update dependencies |
 | 2.0.33 | 2026-10-27 | [90071](https://github.com/airbytehq/airbyte/pull/90071) | Update dependencies |
 | 2.0.32 | 2026-10-20 | [89478](https://github.com/airbytehq/airbyte/pull/89478) | Update dependencies |
