@@ -34,6 +34,13 @@ data:
       1.0.0:
         message: The `event` field in the `events` stream has been corrected to the proper data type. To apply this change, refresh the schema for the `events` stream and reset your data. For more information [visit](https://docs.airbyte.com/integrations/sources/posthog-migrations)
         upgradeDeadline: "2024-01-15"
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   tags:
     - cdk:low-code
     - language:python
