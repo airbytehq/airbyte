@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
@@ -69,6 +70,9 @@ public class KafkaDestination extends BaseConnector implements Destination {
           options.remove();
         }
       }
+      final ObjectNode mechanism = (ObjectNode) protocols.get(0).path("properties").path("sasl_mechanism");
+      mechanism.putArray("enum").add("PLAIN");
+      mechanism.put("default", "PLAIN");
     }
     return spec;
   }
@@ -83,6 +87,9 @@ public class KafkaDestination extends BaseConnector implements Destination {
     }
     if (!"SASL_SSL".equalsIgnoreCase(config.path("protocol").path("security_protocol").asText())) {
       throw new ConfigErrorException("Airbyte Cloud requires TLS for Kafka connections. Set Security Protocol to SASL_SSL.");
+    }
+    if (!"PLAIN".equals(config.path("protocol").path("sasl_mechanism").asText())) {
+      throw new ConfigErrorException("Airbyte Cloud supports only the PLAIN SASL mechanism. Set SASL Mechanism to PLAIN.");
     }
     final List<AppConfigurationEntry> entries;
     try {

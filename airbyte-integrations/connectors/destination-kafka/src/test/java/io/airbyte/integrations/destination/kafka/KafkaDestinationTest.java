@@ -44,6 +44,8 @@ class KafkaDestinationTest {
     final JsonNode protocols = destination(deployment).spec().getConnectionSpecification().get("properties").get("protocol").get("oneOf");
     assertEquals(1, protocols.size());
     assertEquals("SASL_SSL", protocols.get(0).get("properties").get("security_protocol").get("enum").get(0).asText());
+    assertEquals(1, protocols.get(0).get("properties").get("sasl_mechanism").get("enum").size());
+    assertEquals("PLAIN", protocols.get(0).get("properties").get("sasl_mechanism").get("default").asText());
     assertTrue(StreamSupport.stream(protocols.get(0).get("properties").get("sasl_mechanism").get("enum").spliterator(), false)
         .anyMatch(mechanism -> "PLAIN".equals(mechanism.asText())));
   }
@@ -111,6 +113,25 @@ class KafkaDestinationTest {
       factory.when(() -> KafkaDestinationConfig.getKafkaDestinationConfig(config)).thenReturn(producerConfig);
       assertEquals(Status.SUCCEEDED, destination.check(config).getStatus());
       assertNotNull(destination.getConsumer(config, null, null));
+    }
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = {"GSSAPI", "OAUTHBEARER", "SCRAM-SHA-256", "plain", "UNKNOWN"})
+  void cloudRejectsUnsupportedMechanismsBeforeConnecting(final String mechanism) {
+    final KafkaDestination destination = destination("CLOUD");
+    final JsonNode config = config("SASL_SSL");
+    final ObjectNode protocol = (ObjectNode) config.get("protocol");
+    if (mechanism == null) {
+      protocol.remove("sasl_mechanism");
+    } else {
+      protocol.put("sasl_mechanism", mechanism);
+    }
+    try (final MockedStatic<KafkaDestinationConfig> factory = mockStatic(KafkaDestinationConfig.class)) {
+      assertThrows(ConfigErrorException.class, () -> destination.check(config));
+      assertThrows(ConfigErrorException.class, () -> destination.getConsumer(config, null, null));
+      factory.verifyNoInteractions();
     }
   }
 
