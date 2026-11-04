@@ -37,6 +37,18 @@ definitions:
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes: [401]
+                action: FAIL
+                failure_type: config_error
+                error_message: LinkedIn authentication failed because the access token is invalid or expired. Re-authenticate the source.
+              - type: HttpResponseFilter
+                http_codes: [403]
+                action: FAIL
+                failure_type: config_error
+                error_message: >-
+                  LinkedIn ad account access is denied. Re-authenticate with the {{ (response | string | regex_search('(?<![a-zA-Z0-9_])((?:r|rw)_[a-z_]{1,60})(?![a-zA-Z0-9_])')) or 'r_ads' }} scope and ensure the authorized member has access to the ad account.
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5

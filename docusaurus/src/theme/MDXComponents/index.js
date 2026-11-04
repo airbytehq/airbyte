@@ -15,6 +15,7 @@ import { Details } from "../../components/Details";
 import { DocMetaTags } from "../../components/DocMetaTags";
 import { EntityRelationshipDiagram } from "../../components/EntityRelationshipDiagram";
 import { Grid } from "../../components/Grid/Grid";
+import { HashRedirect } from "../../components/HashRedirect";
 import { YoutubeEmbed } from "../../components/YoutubeEmbed";
 
 export default {
@@ -33,6 +34,7 @@ export default {
   EntityRelationshipDiagram,
   CardWithIcon,
   Grid,
+  HashRedirect,
   YoutubeEmbed,
   DocMetaTags,
   CopyPageButton,
