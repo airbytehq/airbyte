@@ -7,8 +7,10 @@ import pytest
 import requests
 import requests_mock as rm
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import SUCCESS_RESOLUTION
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 @pytest.mark.parametrize(
@@ -963,8 +965,10 @@ def test_decoder_closes_raw_stream(components_module):
 
 def test_decoder_raises_on_bad_data(components_module):
     response = _make_response(b"\x1f\x8b not valid gzip at all")
-    with pytest.raises(gzip.BadGzipFile):
+    with pytest.raises(AirbyteTracedException) as exc_info:
         list(components_module.BingAdsGzipCsvDecoder().decode(response))
+    assert exc_info.value.failure_type == FailureType.transient_error
+    assert isinstance(exc_info.value.__cause__, gzip.BadGzipFile)
 
 
 # --- BingAdsReportDownloadRequester tests ---

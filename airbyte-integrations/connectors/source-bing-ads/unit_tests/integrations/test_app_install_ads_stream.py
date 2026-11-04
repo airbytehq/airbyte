@@ -6,7 +6,7 @@ from freezegun import freeze_time
 from request_builder import RequestBuilder
 from test_bulk_stream import TestBulkStream
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.mock_http import HttpResponse
 
 
@@ -65,10 +65,13 @@ class TestAppInstallAdsStream(TestBulkStream):
             self.stream_name, SyncMode.incremental, self._config, "app_install_ads_with_cursor_value", expecting_exception=True
         )
 
-        # Rows read before the cut-off are emitted and the stream fails, but the cursor stays at the
-        # default start date (one year back) instead of moving past records that never arrived.
+        # Rows read before the cut-off are emitted and the stream fails with a transient error, but the cursor
+        # stays at the default start date (one year back) instead of moving past records that never arrived.
         assert output.records
         assert output.errors
+        error = output.errors[0].trace.error
+        assert error.failure_type == FailureType.transient_error
+        assert error.message == "Bing Ads bulk download file could not be fully read."
         assert output.most_recent_state.stream_state.states[0]["cursor"] == {self.cursor_field: "2023-02-26T00:00:00.000+0000"}
 
     @freeze_time("2024-02-26")  # mock current time as stream data available for 30 days only

@@ -13,6 +13,7 @@ from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, Muta
 
 import requests
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
@@ -25,6 +26,7 @@ from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import SUCCESS_RESOLUTION, ErrorResolution
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 logger = logging.getLogger(__name__)
@@ -567,7 +569,11 @@ class BingAdsGzipCsvDecoder(Decoder):
             yield from self._decode_stream(raw)
         except Exception as e:
             logger.error(f"Failed to parse response as either GZip or plain CSV: {e}")
-            raise
+            raise AirbyteTracedException(
+                message="Bing Ads bulk download file could not be fully read.",
+                internal_message=f"{type(e).__name__}: {e}",
+                failure_type=FailureType.transient_error,
+            ) from e
         finally:
             raw.close()
 
