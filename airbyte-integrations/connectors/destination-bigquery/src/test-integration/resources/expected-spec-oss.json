@@ -83,6 +83,14 @@
               "title" : "GCS Tmp Files Post-Processing",
               "order" : 3
             },
+            "staging_file_format" : {
+              "type" : "string",
+              "default" : "CSV (gzip)",
+              "enum" : [ "CSV (gzip)", "Avro" ],
+              "description" : "The format of the files staged in GCS. BigQuery reads an Avro file with several workers and a gzipped CSV file with one, and Avro needs far less CPU to write, so loads are faster. Avro does not apply in legacy raw tables mode. Defaults to CSV (gzip).",
+              "title" : "Staging File Format",
+              "order" : 4
+            },
             "gcs_bucket_name" : {
               "type" : "string",
               "description" : "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
@@ -109,6 +117,19 @@
               "type" : "string",
               "enum" : [ "Standard" ],
               "default" : "Standard"
+            }
+          },
+          "required" : [ "method" ]
+        }, {
+          "title" : "Storage Write API",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Streams records into BigQuery with the Storage Write API, each batch in a pending stream committed when the batch is flushed. No staging bucket or load jobs. Billed per GB ingested beyond the free monthly allowance. Not available in legacy raw tables mode.",
+          "properties" : {
+            "method" : {
+              "type" : "string",
+              "enum" : [ "Storage Write API" ],
+              "default" : "Storage Write API"
             }
           },
           "required" : [ "method" ]
