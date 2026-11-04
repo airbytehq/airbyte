@@ -99,6 +99,6 @@ Rillet pagination cursors are valid for 2 hours. A single stream that takes long
 
 | Version | Date       | Pull Request | Subject                                   |
 | :------ | :--------- | :----------- | :---------------------------------------- |
-| 0.1.0   | 2026-11-04 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | New Source: Rillet |
+| 0.1.0   | 2026-11-04 | [90964](https://github.com/airbytehq/airbyte/pull/90964) | New Source: Rillet |
 
 </details>
