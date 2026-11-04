@@ -12,13 +12,14 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 3. **The Scheduled-Events Cursor Can Move Into the Future** -- Calendly returns upcoming events, so incremental state can jump ahead and later syncs miss new bookings for earlier times; event invitees follow the same cursor. Users should sync both streams in Full refresh, or set the lookback to their booking horizon, until a breaking release fixes it.
 4. **Existing Datetime Fields Intentionally Remain Strings Without Formats** -- Retyping existing fields can break destination schemas. Keep additions separate from changes to existing datetime column types.
 5. **Connection Check Tests Only Current-User Access** -- A successful connection check confirms access to the token owner's profile, not permission to read every selected stream.
-6. **Plan-Gated Streams Skip Only Explicit Upgrade Messages** -- Outgoing communications and activity logs require Enterprise, meeting recaps a paid Notetaker plan, and Calendly documents a paid-plan error for contacts. Only the documented plan/feature messages are ignored. Missing scopes, owner/admin errors, and unknown 403s still fail.
-7. **New Incremental Streams Bound Both Requests and State** -- Communications use `created_at`, activity logs use `occurred_at`, and recaps use meeting `start_time`. All send lower and upper bounds and filter records outside the window. Recaps are re-read for three days because Calendly returns them only after processing.
-8. **Outgoing Communications Have No Documented Unique Identifier** -- The API returns email/SMS records without `uri`. Do not invent a key; the stream has no declared primary key and keeps per-partition state, so a sync does not re-read the previous sync's duration.
+6. **Organization-Member and Event-Type Fan-Out Streams** -- Availability schedules, locations and event type hosts send one request per member or event type, and skip a member or event type that disappears mid-sync; teams are read once for the organization, and locations have no primary key.
+7. **Plan-Gated Streams Skip Only Explicit Upgrade Messages** -- Outgoing communications and activity logs require Enterprise, meeting recaps a paid Notetaker plan, and Calendly documents a paid-plan error for contacts. Only the documented plan/feature messages are ignored. Missing scopes, owner/admin errors, and unknown 403s still fail.
+8. **New Incremental Streams Bound Both Requests and State** -- Communications use `created_at`, activity logs use `occurred_at`, and recaps use meeting `start_time`. All send lower and upper bounds and filter records outside the window. Recaps are re-read for three days because Calendly returns them only after processing.
+9. **Outgoing Communications Have No Documented Unique Identifier** -- The API returns email/SMS records without `uri`. Do not invent a key; the stream has no declared primary key and keeps per-partition state, so a sync does not re-read the previous sync's duration.
 
 ## Token scopes per stream
 
-The connection check and the organization-scoped streams read the current user (`users:read`). A successful check does not validate all stream scopes; missing scope names appear in the appended `required_scopes` error detail.
+The connection check and most streams read the current user (`users:read`) to find the organization; member-based streams also read `organization_memberships` (`organizations:read`). A successful check does not validate all stream scopes; missing scope names appear in the appended `required_scopes` error detail.
 
 | Stream | Required scopes |
 | --- | --- |
@@ -28,6 +29,13 @@ The connection check and the organization-scoped streams read the current user (
 | `organization_memberships` | `users:read`, `organizations:read` |
 | `scheduled_events` | `users:read`, `scheduled_events:read` |
 | `event_invitees` | `users:read`, `scheduled_events:read` |
+| `teams` | `organizations:read` |
+| `event_type_memberships` | `users:read`, `event_types:read` |
+| `group_relationships` | `users:read`, `groups:read` |
+| `user_availability_schedules` | `users:read`, `organizations:read`, `availability:read` |
+| `locations` | `users:read`, `organizations:read`, `locations:read` |
+| `organization_invitations` | `users:read`, `organizations:read` |
+| `webhook_subscriptions` | `users:read`, `webhooks:read` |
 | `routing_forms` | `users:read`, `routing_forms:read` |
 | `routing_form_submissions` | `users:read`, `routing_forms:read` |
 | `contacts` | `contacts:read` |

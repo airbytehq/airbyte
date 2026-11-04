@@ -1,11 +1,11 @@
 # Calendly
 
-The Calendly source syncs your organization members, groups, event types, scheduled events, event invitees, routing forms and their submissions, contacts, outgoing communications, activity logs, and meeting recaps from the Calendly API v2.
+The Calendly source syncs your organization members, groups, teams, invitations, event types and their hosts, availability schedules, meeting locations, webhook subscriptions, scheduled events, event invitees, routing forms and their submissions, contacts, outgoing communications, activity logs, and meeting recaps from the Calendly API v2.
 
 ## Prerequisites
 
 - A Calendly account. Most of the connector's read endpoints are available on [all Calendly plans, including Free](https://developer.calendly.com/docs/getting-started/frequently-asked-questions); outgoing communications and activity logs need Enterprise, meeting recaps need a plan with Notetaker, and Calendly can deny contacts with a paid-plan error (see [Streams](#streams)).
-- An organization owner or administrator account to read organization-wide data such as scheduled events, activity logs and outgoing communications. The connector reads the current organization associated with the token owner's profile; you don't need to enter an organization ID.
+- An organization owner or administrator account to read organization-wide data such as scheduled events, webhook subscriptions, activity logs and outgoing communications. The connector reads the current organization associated with the token owner's profile; you don't need to enter an organization ID.
 - A [personal access token](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) with the [read scopes](https://developer.calendly.com/docs/authentication/scopes) of every stream you sync, listed in [Token scopes](#token-scopes).
 
 ## Setup
@@ -27,7 +27,7 @@ The connection check reads only the token owner's profile (`api_user`). A succes
 
 ## Token scopes
 
-Since March 2026, Calendly grants newly created tokens no API access until you select scopes for them; tokens created earlier keep their access. Select the scopes of every stream you sync; every token also needs `users:read`, which the connection check uses. When a scope is missing, the sync error lists it. Version 0.4.0 added streams that need `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read`. Calendly sets a token's scopes when you create it, so create a token with these scopes and update it in the source settings before you sync these streams. Connections set to propagate all field and stream changes add these streams automatically.
+Since March 2026, Calendly grants newly created tokens no API access until you select scopes for them; tokens created earlier keep their access. Select the scopes of every stream you sync; every token also needs `users:read`, which the connection check uses. When a scope is missing, the sync error lists it. Version 0.3.0 added `user_availability_schedules`, `locations` and `webhook_subscriptions`, which need `availability:read`, `locations:read` and `webhooks:read`, and version 0.4.0 added `routing_forms`, `routing_form_submissions`, `contacts`, `outgoing_communications`, `activity_log_entries` and `meeting_recaps`, which need `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read`. Calendly sets a token's scopes when you create it, so create a token with these scopes and update it in the source settings before you sync these streams. Connections set to propagate all field and stream changes add these streams automatically.
 
 | Stream | Required scopes |
 | --- | --- |
@@ -37,6 +37,13 @@ Since March 2026, Calendly grants newly created tokens no API access until you s
 | `organization_memberships` | `users:read`, `organizations:read` |
 | `scheduled_events` | `users:read`, `scheduled_events:read` |
 | `event_invitees` | `users:read`, `scheduled_events:read` |
+| `teams` | `organizations:read` |
+| `event_type_memberships` | `users:read`, `event_types:read` |
+| `group_relationships` | `users:read`, `groups:read` |
+| `user_availability_schedules` | `users:read`, `organizations:read`, `availability:read` |
+| `locations` | `users:read`, `organizations:read`, `locations:read` |
+| `organization_invitations` | `users:read`, `organizations:read` |
+| `webhook_subscriptions` | `users:read`, `webhooks:read` |
 | `routing_forms` | `users:read`, `routing_forms:read` |
 | `routing_form_submissions` | `users:read`, `routing_forms:read` |
 | `contacts` | `contacts:read` |
@@ -54,6 +61,13 @@ Since March 2026, Calendly grants newly created tokens no API access until you s
 | `organization_memberships` | Organization members, their roles, and user profiles | `uri` | Yes | No |
 | `scheduled_events` | Scheduled meetings, including their times, status, and location | `uri` | Yes | Yes, using `start_time` |
 | `event_invitees` | Invitees for each scheduled event, including answers, tracking data, and cancellation information | `uri` | Yes | Yes, dependent on `scheduled_events` |
+| `teams` | Teams in the organization | `uri` | Yes | No |
+| `event_type_memberships` | Hosts assigned to each event type | `uri` | Yes | No |
+| `group_relationships` | Member and admin relationships between groups and organization members or invitees | `uri` | Yes | No |
+| `user_availability_schedules` | Availability schedules of each organization member | `uri` | Yes | No |
+| `locations` | Meeting location types available to each organization member | None | Yes | No |
+| `organization_invitations` | Invitations sent to join the organization | `uri` | Yes | No |
+| `webhook_subscriptions` | Organization-scoped webhook subscriptions | `uri` | Yes | No |
 | `routing_forms` | Routing forms in the organization and their questions | `uri` | Yes | No |
 | `routing_form_submissions` | Submissions of each routing form, including answers, tracking data and the routing result | `uri` | Yes | No |
 | `contacts` | Contacts the token's user can access | `uri` | Yes | No |
@@ -68,6 +82,8 @@ Outgoing communications and activity logs require an Enterprise subscription, me
 The incremental `outgoing_communications`, `activity_log_entries` and `meeting_recaps` streams request a window that ends at the sync time, so their cursors never move past it, and they do not use `lookback_days`. Calendly returns a meeting recap only after processing finishes, so each sync reads recaps of meetings that started up to three days before the saved cursor again; recaps that become available or change later than that need a Full refresh.
 
 Calendly returns no unique identifier for outgoing communications, so this stream has no source-defined primary key. Deduplicated modes need a primary key you select, and no field combination is guaranteed unique, so deduplication can merge distinct messages. Prefer Full refresh | Overwrite or Incremental | Append.
+
+`user_availability_schedules` and `locations` send one request per organization member, and `event_type_memberships` sends one per event type, so they are not suggested by default. `locations` has no primary key because Calendly returns no identifier for a location and can list a location kind more than once. `webhook_subscriptions` lists organization-scoped subscriptions only; user- and group-scoped subscriptions are not synced.
 
 ### Incremental sync limitation
 
@@ -90,9 +106,9 @@ The connector monitors `X-RateLimit-Remaining` and waits when the allowance is e
 | Symptom | Action |
 | --- | --- |
 | HTTP 401: invalid or revoked token | Create a new personal access token and update the Airbyte source settings. |
-| HTTP 403: insufficient scope or permission denied | Check the error for missing scopes. Create a token with the required read scopes, and use an organization owner or administrator account for organization-wide data such as scheduled events, activity logs and outgoing communications. Update the token in Airbyte. |
+| HTTP 403: insufficient scope or permission denied | Check the error for missing scopes. Create a token with the required read scopes, and use an organization owner or administrator account for organization-wide data such as scheduled events, webhook subscriptions, activity logs and outgoing communications. Update the token in Airbyte. |
 | A plan-gated stream syncs no records | Calendly reported that the plan or feature is unavailable; the sync log names the requirement. |
-| A scheduled event or routing form disappears during a sync | The connector logs and skips that event's invitees or that form's submissions, then continues. A 404 on other endpoints fails the sync. |
+| A scheduled event, event type, member or routing form disappears during a sync | The connector logs and skips that event's invitees, that event type's hosts, that member's availability schedules and locations, or that form's submissions, then continues. A 404 on other endpoints fails the sync. |
 | New bookings or cancellations are missing | Review the [incremental sync limitation](#incremental-sync-limitation). Use Full refresh for `scheduled_events` and `event_invitees` to reread events covered by your start date. |
 
 ## Upgrading to 0.2.0
@@ -110,7 +126,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
-| 0.4.0 | 2026-11-03 | [90848](https://github.com/airbytehq/airbyte/pull/90848) | Add routing forms and submissions, contacts, outgoing communications, activity logs and meeting recaps streams; they need the new `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read` scopes |
+| 0.4.0 | 2026-11-04 | [90848](https://github.com/airbytehq/airbyte/pull/90848) | Add routing forms and submissions, contacts, outgoing communications, activity logs and meeting recaps streams; they need the new `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read` scopes |
+| 0.3.0 | 2026-11-04 | [90847](https://github.com/airbytehq/airbyte/pull/90847) | Add teams, event type memberships, group relationships, user availability schedules, locations, organization invitations and webhook subscriptions streams; user availability schedules, locations and webhook subscriptions need the new `availability:read`, `locations:read` and `webhooks:read` scopes |
 | 0.2.0 | 2026-11-03 | [90829](https://github.com/airbytehq/airbyte/pull/90829) | Handle rate limits and token errors, declare missing fields, fix the crash when `lookback_days` is unset, stop dropping event types updated before 2021 and invitees booked before the start date (refresh these streams to backfill) |
 | 0.1.58 | 2026-11-03 | [90473](https://github.com/airbytehq/airbyte/pull/90473) | Update dependencies |
 | 0.1.57 | 2026-10-27 | [89813](https://github.com/airbytehq/airbyte/pull/89813) | Update dependencies |
