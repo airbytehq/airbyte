@@ -15,8 +15,8 @@ Say hello to the modern end-to-end podcasting platform. Simplecast remains the e
 | analytics |  | DefaultPaginator | ✅ |  ❌  |
 | analytics_downloads | id | No pagination | ✅ |  ❌  |
 | analytics_podcasts_listeners | id | No pagination | ✅ |  ❌  |
-| categories |  | DefaultPaginator | ✅ |  ❌  |
-| distribution_channels |  | DefaultPaginator | ✅ |  ❌  |
+| categories |  | No pagination | ✅ |  ❌  |
+| distribution_channels |  | No pagination | ✅ |  ❌  |
 | timezones | value | No pagination | ✅ |  ❌  |
 | analytics_episodes | id | No pagination | ✅ |  ❌  |
 
@@ -31,6 +31,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.69-rc.1 | 2026-11-04 | | Fixed endless requests and duplicate records in the categories and distribution_channels lookup streams. |
 | 0.0.68 | 2026-11-03 | [90733](https://github.com/airbytehq/airbyte/pull/90733) | Update dependencies |
 | 0.0.67 | 2026-10-20 | [89404](https://github.com/airbytehq/airbyte/pull/89404) | Update dependencies |
 | 0.0.66 | 2026-10-13 | [88781](https://github.com/airbytehq/airbyte/pull/88781) | Update dependencies |
