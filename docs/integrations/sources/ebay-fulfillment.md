@@ -30,7 +30,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.45 | 2026-11-03 | [PR_NUMBER_TBD](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_TBD) | Simplify orders stream error handler configuration; no behavior change |
+| 0.0.45 | 2026-11-03 | [90930](https://github.com/airbytehq/airbyte/pull/90930) | Simplify orders stream error handler configuration; no behavior change |
 | 0.0.44 | 2026-11-03 | [90546](https://github.com/airbytehq/airbyte/pull/90546) | Update dependencies |
 | 0.0.43 | 2026-10-27 | [89866](https://github.com/airbytehq/airbyte/pull/89866) | Update dependencies |
 | 0.0.42 | 2026-10-20 | [89202](https://github.com/airbytehq/airbyte/pull/89202) | Update dependencies |
