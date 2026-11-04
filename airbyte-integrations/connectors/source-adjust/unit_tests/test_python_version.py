@@ -2,10 +2,10 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 import re
-import tomllib
 from pathlib import Path
 
 import pytest
+import tomllib
 
 
 PROJECT_ROOT = Path(__file__).parent.parent
