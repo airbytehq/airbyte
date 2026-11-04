@@ -559,6 +559,30 @@ definitions:
       - type: ConstantBackoffStrategy
         backoff_time_in_seconds: 30
 
+  # Only the report download gets the 404 filter: a 404 on a listing endpoint is a real
+  # error, but a report file that is gone by the time it is downloaded must not fail the
+  # whole sync.
+  download_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 404
+        error_message: >-
+          Skipping a YouTube report file that is no longer available for download
+          (HTTP 404), most likely because YouTube removed it after its retention
+          period. The rows in that file are not synced; the rest of the sync continues
+          so one missing file does not fail every stream.
+      - $ref: "#/definitions/base_error_handler/response_filters/0"
+      - $ref: "#/definitions/base_error_handler/response_filters/1"
+      - $ref: "#/definitions/base_error_handler/response_filters/2"
+      - $ref: "#/definitions/base_error_handler/response_filters/3"
+      - $ref: "#/definitions/base_error_handler/response_filters/4"
+      - $ref: "#/definitions/base_error_handler/response_filters/5"
+    backoff_strategies:
+      $ref: "#/definitions/base_error_handler/backoff_strategies"
+
   base_requester:
     type: CustomRequester
     class_name: source_declarative_manifest.components.ContentOwnerRequester
@@ -583,24 +607,8 @@ definitions:
     requester:
       $ref: "#/definitions/base_requester"
       url_base: "{{ stream_partition['extra_fields']['downloadUrl'] }}"
-      # Only the report download gets the 404 filter: a 404 on a listing endpoint is a real
-      # error, but a report file that is gone by the time it is downloaded must not fail the
-      # whole sync.
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          - type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                http_codes:
-                  - 404
-                error_message: >-
-                  Skipping a YouTube report file that is no longer available for download
-                  (HTTP 404), most likely because YouTube removed it after its retention
-                  period. The rows in that file are not synced; the rest of the sync continues
-                  so one missing file does not fail every stream.
-          - $ref: "#/definitions/base_error_handler"
+        $ref: "#/definitions/download_error_handler"
     record_selector:
       type: RecordSelector
       extractor:
