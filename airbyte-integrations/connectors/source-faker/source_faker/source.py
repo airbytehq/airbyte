@@ -13,6 +13,9 @@ from .streams import Products, Purchases, Users
 
 DEFAULT_COUNT = 1_000
 
+# Upper bound on the number of synthetic records a single sync will emit.
+MAX_RECORDS_LIMIT = 10_000_000
+
 
 class SourceFaker(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -23,6 +26,7 @@ class SourceFaker(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         count: int = config["count"] if "count" in config else DEFAULT_COUNT
+        count = min(count, MAX_RECORDS_LIMIT)
         seed: int = config["seed"] if "seed" in config else None
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
         always_updated: bool = config["always_updated"] if "always_updated" in config else True
