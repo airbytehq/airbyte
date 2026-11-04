@@ -179,6 +179,46 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
     assert records
 
 
+def test_deal_pipelines_read_uses_2026_09_response_shape(requests_mock, config):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    requests_mock.get(
+        "https://api.hubapi.com/crm/pipelines/2026-09/deals",
+        json={
+            "results": [
+                {
+                    "id": "b9152945-a594-4835-9676-a6f405fecd71",
+                    "label": "New Business Pipeline",
+                    "displayOrder": 3,
+                    "createdAt": "2021-01-14T14:52:53.956Z",
+                    "updatedAt": "2023-04-04T14:59:14.263Z",
+                    "archived": False,
+                    "stages": [
+                        {
+                            "id": "9567448",
+                            "label": "Initial Qualification",
+                            "displayOrder": 0,
+                            "createdAt": "2021-01-14T14:52:53.956Z",
+                            "updatedAt": "2023-04-04T14:59:14.263Z",
+                            "metadata": {"isClosed": "false", "probability": "0.1"},
+                            "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                            "archived": False,
+                        }
+                    ],
+                }
+            ]
+        },
+    )
+
+    output = read_from_stream(config, "deal_pipelines", SyncMode.full_refresh)
+
+    assert len(output.records) == 1
+    record = output.records[0].record.data
+    assert record["pipelineId"] == "b9152945-a594-4835-9676-a6f405fecd71"
+    assert record["updatedAt"] == 1680620354263
+    assert record["objectType"] == "DEAL"
+    assert record["stages"][0]["stageId"] == "9567448"
+
+
 @pytest.mark.parametrize(
     "stream_class, endpoint, cursor_value",
     [
@@ -674,7 +714,7 @@ def test_cast_record_fields_if_needed(
         ("companies_property_history", "crm.objects.companies.read", "https://api.hubapi.com/properties/v2/companies/properties", "GET"),
         ("contact_lists", "crm.lists.read", "https://api.hubapi.com/crm/v3/lists/search", "POST"),
         ("contacts_property_history", "crm.objects.contacts.read", "https://api.hubapi.com/properties/v2/contacts/properties", "GET"),
-        ("deal_pipelines", "crm.objects.contacts.read", "https://api.hubapi.com/crm-pipelines/v1/pipelines/deals", "GET"),
+        ("deal_pipelines", "crm.objects.contacts.read", "https://api.hubapi.com/crm/pipelines/2026-09/deals", "GET"),
         ("deals", "crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deal/search", "POST"),
         ("deals_property_history", "crm.objects.deals.read", "https://api.hubapi.com/properties/v2/deals/properties", "GET"),
         ("email_events", "content", "https://api.hubapi.com/email/public/v1/events", "GET"),
