@@ -2,6 +2,167 @@ version: 6.5.0
 
 type: DeclarativeSource
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_remaining_header: X-Rate-Limit-Remaining
+  status_codes_for_ratelimit_hit: [429]
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 30
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/activity-types$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 30
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/issue-statuses$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 120
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: POST
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/issues/search$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 120
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/issues/[^/]+/messages$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 120
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/issues/[^/]+/threads$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 120
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/knowledge-bases/[^/]+/articles$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/accounts$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/contacts$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/tags$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/teams$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/users$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/custom-fields$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/knowledge-bases$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/ticket-forms$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://api.usepylon.com
+          url_path_pattern: ^/user-roles$
+
 description: >-
   Pylon (https://usepylon.com) is a customer support platform.
   This connector replicates data from the Pylon REST API.
@@ -485,22 +646,71 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.usepylon.com
+    connect_timeout_in_seconds: 30
+    read_timeout_in_seconds: 300
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_token'] }}"
 
   error_handler:
     type: DefaultErrorHandler
-    max_retries: 3
+    max_retries: 5
     backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+        max_waiting_time_in_seconds: 120
       - type: ExponentialBackoffStrategy
         factor: 5
     response_filters:
       - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        predicate: "{{ response.get('code') == 'wrong_region_token' }}"
+        error_message: >-
+          The Pylon token belongs to another region. Use a US API token for
+          api.usepylon.com; EU tokens starting with pylon_api_eu_ are not supported.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        predicate: "{{ response.get('code') == 'invalid_api_token' }}"
+        error_message: >-
+          Pylon rejects the API token because it is revoked, mistyped, or blocked by an IP allowlist.
+          Check Settings > Integrations & dev > API tokens and allow Airbyte's IP addresses.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        predicate: "{{ response.get('code') == 'invalid_authorization_header' }}"
+        error_message: >-
+          Pylon rejects the authorization header. Paste only the API token,
+          without a 'Bearer ' prefix or spaces.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        predicate: "{{ response.get('code') in ['organization_deactivated', 'organization_suspended'] }}"
+        error_message: >-
+          The Pylon organization is deactivated or suspended. Contact Pylon support to restore API access.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes: [401]
+        error_message: >-
+          Pylon cannot authenticate the API token. Check the token in Settings > Integrations & dev > API tokens
+          and update the token in your Airbyte source settings.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes: [403]
+        error_message: >-
+          The API token's role is not allowed to read {{ request_url }}.
+          Give the token's role access to this data in Pylon, or deselect this stream.
+      - type: HttpResponseFilter
         action: RATE_LIMITED
-        http_codes:
-          - 429
-        error_message: Rate limit hit
+        http_codes: [429]
+        error_message: The Pylon API rate limit is exceeded.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes: [500, 502, 503, 504]
+        error_message: The Pylon API is temporarily unavailable.
 
   cursor_paginator:
     type: DefaultPaginator
