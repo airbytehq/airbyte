@@ -73,11 +73,11 @@ With Enterprise Flex, Airbyte manages the control plane, including the user inte
 | Information | Where it is handled |
 | --- | --- |
 | Records | Extracted, processed, and loaded in your data plane. |
-| Credentials | Credentials you enter in the UI are written by the control plane to your secrets manager. Configure the same secrets manager on the control plane and data plane. |
+| Credentials | The control plane writes credentials you enter in the UI to your secrets manager and reads them back when syncs run. Configure the same secrets manager on the control plane and data plane so the data plane can read them. |
 | Connector configuration, table names, and column names | Stored by the control plane. |
 | Cursor and primary key values | Stored by the control plane, regardless of the data plane's location. |
 | Job status | Reported by the data plane to the control plane. |
-| Logs and state | Job logs and state are stored in data plane storage. Data plane components write structured JSON logs to stdout starting with Helm chart version 2.1.0; collect them with your own log collector. |
+| Logs and state | Job logs and state are stored in your data plane's storage. Sync logs appear in the Airbyte UI only if you ask Airbyte to turn this on. Data plane components write structured JSON logs to stdout starting with Helm chart version 2.1.0; collect them with your own log collector. |
 | Connector Builder test data | Processed through the control plane during development and testing. Published connectors use the workspace's region for syncs. |
 
 ## Network and security
@@ -86,17 +86,19 @@ Data planes send outbound HTTPS requests to the control plane at `https://cloud.
 
 Configure the same external secrets manager on the control plane and data plane. Enterprise Flex data planes support AWS Secrets Manager, Google Secret Manager, Azure Key Vault, and HashiCorp Vault; data planes support access key authentication only. See [Secrets manager requirements](/platform/enterprise-flex/data-plane#secrets-manager-requirements).
 
-Data in transit uses TLS or other encrypted channels. For information about Airbyte's security practices and certifications, see [Security](/platform/operating-airbyte/security).
+Data in transit uses TLS or other encrypted channels. For Airbyte's security practices, see [Security](/platform/operating-airbyte/security). For certifications, compliance, and data retention, see the [Airbyte Trust Center](https://trust.airbyte.com/).
 
 ## Supported connectors
 
-Connectors you configure in a workspace run on that workspace's data plane. Browse the [connector catalog](/integrations/).
+All connectors that work on Airbyte Cloud work on Enterprise Flex. Connectors you configure in a workspace run on that workspace's data plane. Browse the [connector catalog](/integrations/).
 
 Connector Builder sends test data through the control plane during development and testing. On customer-owned Enterprise Flex data planes, you can't use agent access for sources or destinations, and search isn't available for connections. See [Connector Builder](/platform/connector-development/connector-builder-ui/overview) and [Sources, destinations, and connectors](/platform/move-data/sources-destinations-connectors).
 
 ## Sizing
 
 Use [Scaling Airbyte](/platform/operator-guides/scaling-airbyte) to plan capacity for your data planes. For infrastructure requirements, see the [Helm prerequisites](/platform/enterprise-flex/data-plane#infrastructure-prerequisites) and [Airbox requirements](/platform/enterprise-flex/data-plane-util#infrastructure-requirements).
+
+Self-managed data planes count toward your organization's data workers, the same as Airbyte-managed data planes. See [Manage and monitor data workers](/platform/cloud/managing-airbyte-cloud/manage-data-workers).
 
 ## Deployment options
 
