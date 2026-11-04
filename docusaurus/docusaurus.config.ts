@@ -119,6 +119,13 @@ const config: Config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
+        async sidebarItemsGenerator({defaultSidebarItemsGenerator, ...args}) {
+          const items = await defaultSidebarItemsGenerator(args);
+          if (args.item.dirName === "connector-development/config-based/understanding-the-yaml-file/reference") {
+            return items.filter((item) => item.type !== "doc" || item.id !== "connector-development/config-based/understanding-the-yaml-file/reference/index");
+          }
+          return items;
+        },
         editUrl:
           "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
@@ -242,6 +249,7 @@ const config: Config = {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
   },
   clientModules: [
+    require.resolve("./src/scripts/yaml-reference-redirect.js"),
     require.resolve("./src/scripts/cloudStatus.js"),
     require.resolve("./src/scripts/download-abctl-buttons.js"),
     require.resolve("./src/scripts/fontAwesomeIcons.js"),
