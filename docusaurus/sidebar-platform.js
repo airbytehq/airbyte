@@ -239,7 +239,20 @@ const understandingAirbyte = {
     "understanding-airbyte/airbyte-protocol-docker",
     "understanding-airbyte/airbyte-protocol-versioning",
     "understanding-airbyte/jobs",
-    "understanding-airbyte/database-data-catalog",
+    {
+      type: "category",
+      label: "Database Data Catalog",
+      link: {
+        type: "doc",
+        id: "understanding-airbyte/database-data-catalog",
+      },
+      items: [
+        "understanding-airbyte/database-data-catalog/config-database-connectors",
+        "understanding-airbyte/database-data-catalog/config-database-connections",
+        "understanding-airbyte/database-data-catalog/config-database-organizations",
+        "understanding-airbyte/database-data-catalog/jobs-database",
+      ],
+    },
     "understanding-airbyte/beginners-guide-to-catalog",
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/secrets",
@@ -414,6 +427,10 @@ module.exports = {
               label: "Access management",
               items: [
                 {
+                  type: "doc",
+                  id: "access-management/manage-users",
+                },
+                {
                   type: "category",
                   label: "Single Sign-On (SSO)",
                   link: {
@@ -491,7 +508,7 @@ module.exports = {
             type: "doc",
             id: "context-layer/readme",
           },
-          items: ["context-layer/manage-access"],
+          items: ["context-layer/manage-access", "context-layer/agent-access", "context-layer/search"],
         },
         sectionHeader("Deploy and upgrade Airbyte"),
         deployAirbyte,
