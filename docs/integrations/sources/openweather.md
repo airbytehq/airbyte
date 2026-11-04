@@ -42,6 +42,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.71 | 2026-11-03 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Simplify error handling configuration with no change in retry behavior |
 | 0.3.70 | 2026-11-03 | [90677](https://github.com/airbytehq/airbyte/pull/90677) | Update dependencies |
 | 0.3.69 | 2026-10-27 | [89984](https://github.com/airbytehq/airbyte/pull/89984) | Update dependencies |
 | 0.3.68 | 2026-10-20 | [89318](https://github.com/airbytehq/airbyte/pull/89318) | Update dependencies |
