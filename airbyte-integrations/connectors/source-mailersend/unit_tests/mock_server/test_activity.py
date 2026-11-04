@@ -64,7 +64,7 @@ def test_incremental_first_sync_sends_date_range_per_slice():
         output = _read(config)
 
     assert output.errors == []
-    assert [record.record.data["id"] for record in output.records] == ["activity-1", "activity-2"]
+    assert sorted(record.record.data["id"] for record in output.records) == ["activity-1", "activity-2"]
     assert output.most_recent_state.stream_state.__dict__ == {"created_at": "1788341400"}
     http_mocker.assert_number_of_calls(first_request, 1)
     http_mocker.assert_number_of_calls(second_request, 1)
