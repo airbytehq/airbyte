@@ -43,3 +43,11 @@ data:
     - title: Elastic Email rate limits
       url: https://elasticemail.com/developers/api-documentation/rate-limiting
       type: rate_limits
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
