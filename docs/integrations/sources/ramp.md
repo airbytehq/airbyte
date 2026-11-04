@@ -180,6 +180,7 @@ The connector reports these Ramp errors as configuration errors, so Airbyte does
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.1.4 | 2026-11-03 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Handle `vendor_contacts` errors with one error handler; sync behavior is unchanged |
 | 1.1.3 | 2026-11-03 | [90728](https://github.com/airbytehq/airbyte/pull/90728) | Update dependencies |
 | 1.1.2 | 2026-10-27 | [90047](https://github.com/airbytehq/airbyte/pull/90047) | Update dependencies |
 | 1.1.1 | 2026-10-20 | [89387](https://github.com/airbytehq/airbyte/pull/89387) | Update dependencies |

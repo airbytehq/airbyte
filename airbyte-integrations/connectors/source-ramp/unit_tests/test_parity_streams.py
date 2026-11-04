@@ -6,6 +6,7 @@
 - list streams paginate with `start`/`page_size`, and the partitioned ones read every partition
 - `business` and `business_balance` read Ramp's single-object responses
 - `vendor_contacts` is read per vendor and carries `vendor_id`
+- `vendor_contacts` keeps the shared error messages, retries server errors, and skips deleted vendors
 - `vendor_agreements` is read through Ramp's POST query endpoint, paginating in the JSON body
 - `receipts` is incremental on `created_at` via `created_after`
 - `vendors` is incremental on `updated_at` via `from_updated_at`, sent only from saved state, while `vendor_contacts` still reads every vendor
@@ -13,6 +14,7 @@
 """
 
 import json
+import time
 from urllib.parse import parse_qs
 
 import pytest
@@ -221,17 +223,55 @@ def test_vendor_contacts_skip_a_vendor_that_returns_404():
     assert [(message.record.data["vendor_id"], message.record.data["id"]) for message in output.records] == [("v-2", "c-1")]
 
 
-def test_vendor_contacts_keep_the_scope_message_on_403():
-    """The 404 handler does not swallow other errors: a 403 still fails the stream with the scope message."""
+@pytest.mark.parametrize(
+    "status_code, error_code, expected_message",
+    [
+        pytest.param(403, "DEVELOPER_7100", "grant the missing read scope", id="missing_scope"),
+        pytest.param(
+            401,
+            "DEVELOPER_7002",
+            "no longer accepts this connector's access token",
+            id="revoked_token_on_non_404",
+        ),
+        pytest.param(401, "DEVELOPER_7000", "Re-enter the client ID and client secret", id="generic_unauthorized"),
+        pytest.param(403, "DEVELOPER_7999", "vendors:read scope", id="generic_forbidden"),
+    ],
+)
+def test_vendor_contacts_errors_keep_the_shared_messages(status_code, error_code, expected_message):
     with requests_mock.Mocker() as mocker:
         mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
         mocker.get(f"{BASE_URL}/vendors", json=_page([{"id": "v-1"}]))
-        mocker.get(f"{BASE_URL}/vendors/v-1/contacts", json={"error_v2": {"error_code": "DEVELOPER_7999"}}, status_code=403)
+        mocker.get(
+            f"{BASE_URL}/vendors/v-1/contacts",
+            json={"error_v2": {"error_code": error_code, "message": "Ramp error"}},
+            status_code=status_code,
+        )
         output = read_stream("vendor_contacts")
 
+    assert not output.records
     errors = [message.trace.error for message in output.errors]
-    assert errors and errors[0].failure_type == FailureType.config_error
-    assert "vendors:read scope" in errors[0].message
+    assert errors, "expected the read to emit an error trace"
+    assert errors[0].failure_type == FailureType.config_error
+    assert expected_message in errors[0].message
+
+
+def test_vendor_contacts_retry_a_server_error(monkeypatch):
+    monkeypatch.setattr(time, "sleep", lambda _: None)
+    contacts_url = f"{BASE_URL}/vendors/v-1/contacts"
+    with requests_mock.Mocker() as mocker:
+        mocker.post(TOKEN_URL, json=TOKEN_RESPONSE)
+        mocker.get(f"{BASE_URL}/vendors", json=_page([{"id": "v-1"}]))
+        mocker.get(
+            contacts_url,
+            response_list=[
+                {"status_code": 500, "json": {"error_v2": {"error_code": "DEVELOPER_8000", "message": "Server error"}}},
+                {"status_code": 200, "json": _page([{"id": "c-1"}])},
+            ],
+        )
+        output = read_stream("vendor_contacts")
+
+    assert not output.errors
+    assert [(message.record.data["vendor_id"], message.record.data["id"]) for message in output.records] == [("v-1", "c-1")]
 
 
 def test_vendor_agreements_paginate_in_the_json_body():
