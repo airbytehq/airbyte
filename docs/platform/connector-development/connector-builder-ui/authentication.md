@@ -331,7 +331,7 @@ We will walk through each part of the configuration below. Throughout this, we w
 
 Selective Authenticator allows you to dynamically choose between different authentication methods based on a configuration property value. This is useful when your connector needs to support multiple authentication options and let users select which one to use.
 
-This authentication method isn't well-supported in the UI because you can't define nested inputs on the Inputs form. If you need to use this authentication method, switch to [YAML mode](../config-based/understanding-the-yaml-file/reference#/definitions/SelectiveAuthenticator) and configure the spec with nested inputs.
+This authentication method isn't well-supported in the UI because you can't define nested inputs on the Inputs form. If you need to use this authentication method, switch to [YAML mode](../config-based/understanding-the-yaml-file/reference/SelectiveAuthenticator.md) and configure the spec with nested inputs.
 
 ### Use Cases
 
