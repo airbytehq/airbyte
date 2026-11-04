@@ -164,3 +164,52 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
         assert state["created_at"] >= previous_state_value
 
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
+
+
+def _order_jsonl_with_updated_at(order_jsonl: str, order_updated_at: str, transaction_status: str) -> str:
+    order = json.loads(order_jsonl)
+    order["order_updated_at"] = order_updated_at
+    for transaction in order["transactions"]:
+        transaction["kind"] = "REFUND"
+        transaction["status"] = transaction_status
+    return json.dumps(order)
+
+
+def test_transactions_graphql_emits_status_change_of_transaction_older_than_state(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+) -> None:
+    state_value = "2026-10-22T14:59:10+00:00"
+    jsonl_lines = [
+        # refund created before the saved state settled later, which updated its order -> emitted with the new status
+        _order_jsonl_with_updated_at(
+            _order_jsonl(1, "2026-10-20T10:00:00Z", 1001, "2026-10-21T09:00:00Z"),
+            order_updated_at="2026-10-22T15:12:00Z",
+            transaction_status="SUCCESS",
+        ),
+        # order and refund both unchanged since the saved state -> dropped
+        _order_jsonl_with_updated_at(
+            _order_jsonl(2, "2026-10-20T10:00:00Z", 1002, "2026-10-21T09:00:00Z"),
+            order_updated_at="2026-10-21T09:00:00Z",
+            transaction_status="PENDING",
+        ),
+    ]
+
+    stream, test_records = _read_transactions(requests_mock, bulk_job_completed_response, auth_config, jsonl_lines, state_value)
+
+    assert [(record["id"], record["status"]) for record in test_records] == [(1001, "SUCCESS")]
+    assert all("order_updated_at" not in record for record in test_records)
+
+    state = {"created_at": state_value}
+    for record in test_records:
+        state = stream.get_updated_state(state, record)
+    # re-emitting an older transaction never moves the cursor backwards
+    assert state == {"created_at": state_value}
+
+
+def test_transactions_graphql_query_requests_order_updated_at(auth_config) -> None:
+    query = TransactionsGraphql(auth_config).job_manager.query.get(
+        filter_field="updated_at", start="2026-10-22T14:59:10+00:00", end="2026-10-22T16:00:00+00:00"
+    )
+    assert "order_updated_at:updatedAt" in query.replace(" ", "")

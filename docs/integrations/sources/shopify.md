@@ -307,6 +307,10 @@ If you synced one of these streams on an earlier connector version and suspect m
 
 Some payment methods, such as offsite or redirect gateways like Klarna, create the transaction a few minutes before Shopify creates the order. Starting in version 4.2.6, the connector emits these transactions when their order is first synced. Such a transaction can be emitted again on following syncs until a newer transaction moves the cursor past the order's creation time, so destinations without deduplication, such as **Incremental | Append**, may see duplicate rows. Upgrading doesn't backfill transactions that earlier versions skipped, so refresh the `transactions` stream or clear its state to recover them.
 
+#### Transaction status changes
+
+Shopify transactions have no `updated_at` field, so the `transactions` stream can't use one as its cursor. When the status of an existing transaction changes, for example when a refund goes from `PENDING` to `SUCCESS`, Shopify updates its order instead. Starting in version 4.3.6, the connector emits all transactions of the orders updated since the saved state, so the next sync delivers the new status. These transactions can be emitted again on following syncs until a newer transaction moves the cursor past the order's update time, so destinations without deduplication, such as **Incremental | Append**, may see duplicate rows. Upgrading doesn't backfill status changes that earlier versions skipped, so refresh the `transactions` stream to bring them up to date.
+
 #### Product category values
 
 The `category` field on the `products` stream comes from Shopify's Standard Product Taxonomy. Shopify updates the taxonomy several times a year and can rename a category or move it in the tree without changing its ID. Because `products` syncs incrementally on `updated_at`, a product is only re-read when it changes, so its `category` values can lag behind the current taxonomy. Use `category.id` as the stable identifier, and refresh the `products` stream to get current values.
@@ -365,6 +369,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 4.3.6 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Emit `transactions` again when their order is updated, so status changes of existing transactions (eg. a refund going from `PENDING` to `SUCCESS`) reach the destination on the next incremental sync |
 | 4.3.5 | 2026-11-03 | [90900](https://github.com/airbytehq/airbyte/pull/90900) | Require Python 3.11 or newer, retaining support through Python 3.13 |
 | 4.3.3 | 2026-11-03 | [90723](https://github.com/airbytehq/airbyte/pull/90723) | Update dependencies |
 | 4.3.2 | 2026-10-30 | [90254](https://github.com/airbytehq/airbyte/pull/90254) | Explain connection test authentication and access scope failures, and improve invalid store name guidance. |
