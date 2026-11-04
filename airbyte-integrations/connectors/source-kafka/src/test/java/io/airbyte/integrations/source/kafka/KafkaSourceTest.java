@@ -24,6 +24,7 @@ import io.airbyte.integrations.source.kafka.format.AvroFormat;
 import io.airbyte.integrations.source.kafka.format.KafkaFormat;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.StreamSupport;
@@ -73,7 +74,7 @@ public class KafkaSourceTest {
     final JsonNode config = config(protocol);
     assertThrows(ConfigErrorException.class, () -> source.check(config));
     assertThrows(ConfigErrorException.class, () -> source.discover(config));
-    assertThrows(ConfigErrorException.class, () -> source.read(config, null, null));
+    assertThrows(ConfigErrorException.class, () -> source.read(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), null));
   }
 
   @Test
@@ -82,7 +83,7 @@ public class KafkaSourceTest {
     final JsonNode config = Jsons.emptyObject();
     assertThrows(ConfigErrorException.class, () -> source.check(config));
     assertThrows(ConfigErrorException.class, () -> source.discover(config));
-    assertThrows(ConfigErrorException.class, () -> source.read(config, null, null));
+    assertThrows(ConfigErrorException.class, () -> source.read(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), null));
   }
 
   @ParameterizedTest
@@ -109,7 +110,7 @@ public class KafkaSourceTest {
       assertFalse(error.getMessage().contains("sensitive-test-value"));
       assertThrows(ConfigErrorException.class, () -> source.check(config));
       assertThrows(ConfigErrorException.class, () -> source.discover(config));
-      assertThrows(ConfigErrorException.class, () -> source.read(config, null, null));
+      assertThrows(ConfigErrorException.class, () -> source.read(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), null));
       factory.verifyNoInteractions();
     }
   }
@@ -126,7 +127,7 @@ public class KafkaSourceTest {
       factory.when(() -> KafkaFormatFactory.getFormat(config)).thenReturn(format);
       assertEquals(Status.SUCCEEDED, source.check(config).getStatus());
       source.discover(config);
-      source.read(config, null, null);
+      source.read(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), null);
     }
   }
 
@@ -142,7 +143,7 @@ public class KafkaSourceTest {
       factory.when(() -> KafkaFormatFactory.getFormat(config)).thenReturn(format);
       assertEquals(Status.SUCCEEDED, source.check(config).getStatus());
       assertEquals(new AirbyteCatalog().withStreams(List.of()), source.discover(config));
-      source.read(config, null, null);
+      source.read(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), null);
       verify(format).read();
     }
   }
@@ -159,7 +160,7 @@ public class KafkaSourceTest {
       factory.when(() -> KafkaFormatFactory.getFormat(config)).thenReturn(format);
       assertEquals(Status.SUCCEEDED, source.check(config).getStatus());
       source.discover(config);
-      source.read(config, null, null);
+      source.read(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), null);
       verify(format).read();
     }
   }
@@ -169,6 +170,24 @@ public class KafkaSourceTest {
     final JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config.json"));
     final KafkaFormat kafkaFormat = KafkaFormatFactory.getFormat(configJson);
     assertInstanceOf(AvroFormat.class, kafkaFormat);
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = {"http://identity.example/token", "file:/tmp/token", "not a URL",
+    "https://user:password@identity.example/token", "https://identity.example/token#fragment"})
+  void cloudRejectsUnsafeOAuthTokenEndpoints(final String endpoint) {
+    final KafkaSource source = source("CLOUD");
+    final JsonNode config = config("SASL_SSL");
+    final ObjectNode protocol = (ObjectNode) config.get("protocol");
+    protocol.put("sasl_mechanism", "OAUTHBEARER");
+    protocol.put("oauthbearer_token_endpoint_url", endpoint);
+    try (final MockedStatic<KafkaFormatFactory> factory = mockStatic(KafkaFormatFactory.class)) {
+      assertThrows(ConfigErrorException.class, () -> source.check(config));
+      assertThrows(ConfigErrorException.class, () -> source.discover(config));
+      assertThrows(ConfigErrorException.class, () -> source.read(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), null));
+      factory.verifyNoInteractions();
+    }
   }
 
   @ParameterizedTest
@@ -185,6 +204,7 @@ public class KafkaSourceTest {
     final JsonNode config = config("SASL_SSL");
     final ObjectNode protocol = (ObjectNode) config.get("protocol");
     protocol.put("sasl_mechanism", mechanism);
+    protocol.put("oauthbearer_token_endpoint_url", "https://identity.example/token");
     protocol.put("sasl_jaas_config", loginModule + " required password=\"a; quoted value\";");
     final KafkaFormat format = mock(KafkaFormat.class);
     when(format.isAccessible()).thenReturn(true);
@@ -193,7 +213,27 @@ public class KafkaSourceTest {
       factory.when(() -> KafkaFormatFactory.getFormat(config)).thenReturn(format);
       assertEquals(Status.SUCCEEDED, source.check(config).getStatus());
       source.discover(config);
-      source.read(config, null, null);
+      source.read(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), null);
+      verify(format).read();
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"http://identity.example/token", "file:/tmp/token"})
+  void nonCloudAllowsLegacyOAuthEndpoints(final String endpoint) throws Exception {
+    final KafkaSource source = source("OSS");
+    final JsonNode config = config("SASL_SSL");
+    final ObjectNode protocol = (ObjectNode) config.get("protocol");
+    protocol.put("sasl_mechanism", "OAUTHBEARER");
+    protocol.put("oauthbearer_token_endpoint_url", endpoint);
+    final KafkaFormat format = mock(KafkaFormat.class);
+    when(format.isAccessible()).thenReturn(true);
+    when(format.getStreams()).thenReturn(List.of());
+    try (final MockedStatic<KafkaFormatFactory> factory = mockStatic(KafkaFormatFactory.class)) {
+      factory.when(() -> KafkaFormatFactory.getFormat(config)).thenReturn(format);
+      assertEquals(Status.SUCCEEDED, source.check(config).getStatus());
+      source.discover(config);
+      source.read(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), null);
       verify(format).read();
     }
   }

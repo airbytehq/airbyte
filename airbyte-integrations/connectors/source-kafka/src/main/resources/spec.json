@@ -202,7 +202,7 @@
               "oauthbearer_token_endpoint_url": {
                 "title": "OAUTHBEARER token endpoint URL",
                 "type": "string",
-                "description": "Endpoint for requesting tokens if setting SASL Mechanism to OAUTHBEARER",
+                "description": "Endpoint for requesting tokens if setting SASL Mechanism to OAUTHBEARER. Airbyte Cloud requires an HTTPS URL without embedded credentials or a fragment.",
                 "default": ""
               }
             }
