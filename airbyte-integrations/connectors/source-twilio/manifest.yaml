@@ -558,6 +558,8 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: date_created
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      step: P28D
+      cursor_granularity: PT1S
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"

@@ -12,7 +12,7 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 `conversations` and `executions` filter on creation date only. Later updates (and steps added to long-running executions) are revisited only within the Lookback window; use full refresh for complete current state.
 
-Both cursors use a fixed 2010-01-01 floor rather than Replication Start Date and have no step, preserving existing full-refresh data scope and request counts. Neither uses Slice Step Duration. Omit cursor_granularity too: the CDK requires it to be paired with step. Conversations use inclusive whole-day StartDate/EndDate filters and date-only state; executions use DateCreatedFrom/DateCreatedTo and per-flow state.
+Both cursors use a fixed 2010-01-01 floor rather than Replication Start Date, preserving existing full-refresh data scope. Neither uses Slice Step Duration. Conversations have no step or cursor_granularity, preserving a single request window, with inclusive whole-day StartDate/EndDate filters and date-only state. Executions use DateCreatedFrom/DateCreatedTo and per-flow state, with a fixed P28D step and PT1S granularity because Studio limits date ranges to one calendar month. This slicing also applies when executions is the parent of step, including after lookback is applied.
 
 `step` uses incremental_dependency on executions, retaining flow_sid as an extra field. Its global child cursor has a far-future end, no request options, and no client-side filtering; nested parent_state resumes executions per flow. Conversation children intentionally use base_conversations_stream without an incremental cursor or dependency so they still enumerate all conversations.
 
