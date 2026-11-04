@@ -4,7 +4,7 @@ The Calendly source syncs your organization members, groups, teams, invitations,
 
 ## Prerequisites
 
-- A Calendly account. The connector's read endpoints are available on [all Calendly plans, including Free](https://developer.calendly.com/docs/getting-started/frequently-asked-questions).
+- A Calendly account. [API access is available on all Calendly plans, including Free](https://developer.calendly.com/docs/getting-started/frequently-asked-questions). Creating webhook subscriptions requires a paid Standard, Teams, or Enterprise plan; the connector only reads existing subscriptions.
 - An organization owner or administrator account to read organization-wide data such as scheduled events and webhook subscriptions. The connector reads the current organization associated with the token owner's profile; you don't need to enter an organization ID.
 - A [personal access token](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) with the [read scopes](https://developer.calendly.com/docs/authentication/scopes) of every stream you sync, listed in [Token scopes](#token-scopes).
 
@@ -37,7 +37,7 @@ Since March 2026, Calendly grants newly created tokens no API access until you s
 | `organization_memberships` | `users:read`, `organizations:read` |
 | `scheduled_events` | `users:read`, `scheduled_events:read` |
 | `event_invitees` | `users:read`, `scheduled_events:read` |
-| `teams` | `organizations:read` |
+| `teams` | `users:read`, `organizations:read` |
 | `event_type_memberships` | `users:read`, `event_types:read` |
 | `group_relationships` | `users:read`, `groups:read` |
 | `user_availability_schedules` | `users:read`, `organizations:read`, `availability:read` |
@@ -58,14 +58,20 @@ Since March 2026, Calendly grants newly created tokens no API access until you s
 | `teams` | Teams in the organization | `uri` | Yes | No |
 | `event_type_memberships` | Hosts assigned to each event type | `uri` | Yes | No |
 | `group_relationships` | Member and admin relationships between groups and organization members or invitees | `uri` | Yes | No |
-| `user_availability_schedules` | Availability schedules of each organization member | `uri` | Yes | No |
+| `user_availability_schedules` | Each organization member's availability schedules, including time zones, weekly rules, and date-specific overrides | `uri` | Yes | No |
 | `locations` | Meeting location types available to each organization member | None | Yes | No |
 | `organization_invitations` | Invitations sent to join the organization | `uri` | Yes | No |
-| `webhook_subscriptions` | Organization-scoped webhook subscriptions | `uri` | Yes | No |
+| `webhook_subscriptions` | Configuration of organization-scoped webhook subscriptions, including callback URLs, subscribed event types, and state | `uri` | Yes | No |
 
 The connector reads `event_invitees` for the scheduled events returned by the parent stream. It adds `scheduled_event_id` to each invitee record so you can join it to the `id` in `scheduled_events`.
 
 `user_availability_schedules` and `locations` send one request per organization member, and `event_type_memberships` sends one per event type, so they are not suggested by default. `locations` has no primary key because Calendly returns no identifier for a location and can list a location kind more than once. `webhook_subscriptions` lists organization-scoped subscriptions only; user- and group-scoped subscriptions are not synced.
+
+The scheduling-setup streams read configuration, not live availability or webhook deliveries:
+
+- `user_availability_schedules` returns [availability rules](https://developer.calendly.com/api-docs/calendly-api/availability/list-user-availability-schedules), not bookable time slots or calendar busy times.
+- `locations` lists the meeting location types configured for each member, not the locations of booked meetings. Read `scheduled_events` for meeting-specific locations.
+- `webhook_subscriptions` lists [existing subscriptions](https://developer.calendly.com/api-docs/calendly-api/webhooks/list-webhook-subscriptions). It doesn't create subscriptions or receive webhook event payloads. Read `scheduled_events` and `event_invitees` for bookings and cancellations.
 
 ### Incremental sync limitation
 
