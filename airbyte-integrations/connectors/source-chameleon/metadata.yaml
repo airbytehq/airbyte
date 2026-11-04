@@ -43,3 +43,11 @@ data:
     - title: Chameleon rate limits
       url: https://developers.chameleon.io/reference/rate-limiting
       type: rate_limits
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
