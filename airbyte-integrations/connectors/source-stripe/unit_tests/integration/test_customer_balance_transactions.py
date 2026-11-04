@@ -3,17 +3,22 @@
 #
 
 import json
+import re
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
+from queue import Queue
 from typing import Any, Dict, List, Optional, Tuple
 from unittest import TestCase
+from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
 
 import freezegun
 import pytest
 from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.concurrent_source import concurrent_source
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -201,6 +206,21 @@ def _register_events(
     http_mocker.get(_events_request(created_gte, created_lte), (response or _events_response()).build())
 
 
+def _register_events_by_window(http_mocker: HttpMocker, older_window_response: HttpResponseBuilder) -> List[str]:
+    request_urls: List[str] = []
+    empty_response = _events_response().build()
+    older_response = older_window_response.build()
+
+    def respond_to_request(request: Any, context: Any) -> str:
+        request_urls.append(request.url)
+        created_gte = int(parse_qs(urlparse(request.url).query)["created[gte]"][0])
+        context.status_code = 200
+        return empty_response.body if created_gte == int(_NOW.timestamp()) else older_response.body
+
+    http_mocker._mocker.get(re.compile(r"https://api\.stripe\.com/v1/events(?:\?.*)?$"), text=respond_to_request)
+    return request_urls
+
+
 def _status_response(status_code: int) -> HttpResponse:
     return HttpResponse(
         json.dumps({"error": {"type": "invalid_request_error", "message": "Synthetic request failure"}}),
@@ -259,7 +279,9 @@ def _legacy_post_events_state(customers_updated: datetime) -> Dict[str, Any]:
 
 @freezegun.freeze_time(_NOW.isoformat())
 class CustomerBalanceTransactionsTest(TestCase):
-    def _assert_cold_read(self, http_mocker: HttpMocker, sync_mode: SyncMode) -> EntrypointOutput:
+    def _assert_cold_read(
+        self, http_mocker: HttpMocker, sync_mode: SyncMode, config_builder: Optional[ConfigBuilder] = None
+    ) -> EntrypointOutput:
         windows = _created_windows(_START_DATE, _NOW)
         customers = [
             ("synthetic-1", windows[0][0] + timedelta(hours=1)),
@@ -270,7 +292,7 @@ class CustomerBalanceTransactionsTest(TestCase):
         _register_events(http_mocker)
         _register_children(http_mocker, [customer_id for customer_id, _ in customers])
 
-        output = _read(_config(), sync_mode=sync_mode)
+        output = _read(config_builder or _config(), sync_mode=sync_mode)
 
         assert not output.errors
         assert len(output.records) == len(customers)
@@ -292,8 +314,33 @@ class CustomerBalanceTransactionsTest(TestCase):
     def test_given_full_refresh_cold_read_when_read_then_walk_each_customer_once_and_start_events_at_now(
         self, http_mocker: HttpMocker
     ) -> None:
-        output = self._assert_cold_read(http_mocker, SyncMode.full_refresh)
+        output = self._assert_cold_read(
+            http_mocker,
+            SyncMode.full_refresh,
+            _config().with_lookback_window_in_days(7),
+        )
         assert int(_stream_state(output)["parent_state"][_EVENT_STREAM]["updated"]) == int(_NOW.timestamp())
+
+    @HttpMocker()
+    def test_given_large_cold_read_with_lookback_when_read_then_each_customer_is_read_once(self, http_mocker: HttpMocker) -> None:
+        customers = [(f"synthetic-large-{index}", _START_DATE + timedelta(hours=index)) for index in range(16)]
+        events = _events_response()
+        for customer_id, customer_created in customers[8:]:
+            events.with_record(_event_record(customer_id, customer_created, _NOW - timedelta(hours=1)))
+
+        _register_customer_windows(http_mocker, _START_DATE, {0: customers})
+        event_request_urls = _register_events_by_window(http_mocker, events)
+        _register_children(http_mocker, [customer_id for customer_id, _ in customers])
+
+        with patch.object(concurrent_source, "Queue", side_effect=lambda maxsize: Queue(maxsize=5)):
+            output = _read(_config().with_lookback_window_in_days(30))
+
+        assert not output.errors
+        assert len(event_request_urls) == 1
+        expected_record_ids = Counter({f"synthetic-transaction-{customer_id}": 1 for customer_id, _ in customers})
+        assert Counter(record.record.data["id"] for record in output.records) == expected_record_ids
+        for customer_id, _ in customers:
+            http_mocker.assert_number_of_calls(_child_request(customer_id), 1)
 
     @HttpMocker()
     def test_given_placeholder_upgrade_when_read_then_walk_once_and_start_events_at_now(self, http_mocker: HttpMocker) -> None:
@@ -475,12 +522,15 @@ class CustomerBalanceTransactionsTest(TestCase):
         with HttpMocker() as http_mocker:
             http_mocker.get(_customer_request(*windows[0]), _customers_response([newest, oldest]).build())
             http_mocker.get(_customer_request(*windows[1]), _status_response(status_code))
+            for window in windows[2:]:
+                http_mocker.get(_customer_request(*window), _customers_response([]).build())
             _register_events(http_mocker)
             _register_children(http_mocker, ["synthetic-newest", "synthetic-oldest"])
 
             attempt_a = _read(_config(), input_state, expecting_exception=True)
 
             assert attempt_a.errors
+            assert any(f"status code '{status_code}'" in error.trace.error.message for error in attempt_a.errors)
             http_mocker.assert_number_of_calls(_child_request("synthetic-oldest"), 0)
 
     def _assert_failed_walk_resumes_oldest_customer(self, status_code: int) -> None:
@@ -493,10 +543,13 @@ class CustomerBalanceTransactionsTest(TestCase):
         with HttpMocker() as http_mocker:
             http_mocker.get(_customer_request(*windows[0]), _customers_response([newest, oldest]).build())
             http_mocker.get(_customer_request(*windows[1]), _status_response(status_code))
+            for window in windows[2:]:
+                http_mocker.get(_customer_request(*window), _customers_response([]).build())
             _register_events(http_mocker)
             _register_children(http_mocker, ["synthetic-newest"])
             attempt_a = _read(_config(), input_state, expecting_exception=True)
             assert attempt_a.errors
+            assert any(f"status code '{status_code}'" in error.trace.error.message for error in attempt_a.errors)
             state_a = _stream_state(attempt_a)
             assert int(state_a["parent_state"]["customers"]["updated"]) < int(oldest[1].timestamp())
             assert _EVENT_STREAM in state_a["parent_state"]

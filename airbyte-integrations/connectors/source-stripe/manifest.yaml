@@ -1173,15 +1173,38 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                http_codes:
-                  - 404
-                error_message: >-
-                  Data was not found. Error message: {{ response['error']['message'] }}
+              - $ref: "#/definitions/ignore_404_filter"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/events_based_stream"
+                $parameters:
+                  name: cbt_customer_events
+                retriever:
+                  $ref: "#/definitions/events_objects_retriever"
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: events
+                    # must not IGNORE 400/403: an ignored events response would miss a customer update or delete
+                    error_handler:
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - $ref: "#/definitions/ignore_404_filter"
+                  $parameters:
+                    request_parameters:
+                      types[]: '{{["customer.updated", "customer.deleted"]}}'
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $ref: "#/schemas/customers"
+                incremental_sync:
+                  $ref: "#/definitions/events_read_slice_cursor"
+                  lookback_window: P0D
+              incremental_dependency: true
             - type: ParentStreamConfig
               parent_key: id
               partition_field: customer_id
@@ -1197,51 +1220,16 @@ definitions:
                     error_handler:
                       type: DefaultErrorHandler
                       response_filters:
-                        - type: HttpResponseFilter
-                          action: IGNORE
-                          http_codes:
-                            - 404
-                          error_message: >-
-                            Data was not found. Error message: {{ response['error']['message'] }}
+                        - $ref: "#/definitions/ignore_404_filter"
                   $parameters:
                     path: customers
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $ref: "#/schemas/customers"
                 incremental_sync:
                   $ref: "#/definitions/entity_with_slice_cursor"
                   step: P7D
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $ref: "#/schemas/customers"
-              incremental_dependency: true
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: customer_id
-              stream:
-                $ref: "#/definitions/events_based_stream"
-                $parameters:
-                  name: cbt_customer_events
-                retriever:
-                  $ref: "#/definitions/events_objects_retriever"
-                  requester:
-                    $ref: "#/definitions/base_requester"
-                    path: events
-                    # must not IGNORE 400/403: an ignored window or page would let the low-water mark move past unread customers
-                    error_handler:
-                      type: DefaultErrorHandler
-                      response_filters:
-                        - type: HttpResponseFilter
-                          action: IGNORE
-                          http_codes:
-                            - 404
-                          error_message: >-
-                            Data was not found. Error message: {{ response['error']['message'] }}
-                  $parameters:
-                    request_parameters:
-                      types[]: '{{["customer.updated", "customer.deleted"]}}'
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $ref: "#/schemas/customers"
               incremental_dependency: true
       # This stream is not truly incremental on the child level.
       # We're configuring it this way to support incremental syncs on the parent only,
