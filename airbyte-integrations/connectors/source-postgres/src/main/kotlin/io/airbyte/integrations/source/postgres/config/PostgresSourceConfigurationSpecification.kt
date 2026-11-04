@@ -58,6 +58,7 @@ import jakarta.inject.Singleton
             "jdbc_url_params",
             "replication_method",
             "check_privileges",
+            "json_columns_as_json",
             "checkpoint_target_interval_seconds",
             "max_db_connections",
         ],
@@ -232,6 +233,18 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
             "in which case it might be advisable to disable this feature.",
     )
     var checkPrivileges: Boolean? = true
+
+    @JsonProperty("json_columns_as_json")
+    @JsonSchemaTitle("Sync JSON Columns as JSON (Advanced)")
+    @JsonSchemaInject(json = """{"order":14,"group":"advanced"}""")
+    @JsonSchemaDefault("false")
+    @JsonPropertyDescription(
+        "Declare json and jsonb columns as JSON rather than as strings, so that destinations " +
+            "store their values in a JSON type. Arrays of json and jsonb stay arrays of " +
+            "strings. Changing this setting changes the type of these columns: refresh the " +
+            "source schema, then the affected streams.",
+    )
+    var jsonColumnsAsJson: Boolean? = false
 
     @JsonIgnore var additionalPropertiesMap: MutableMap<String, Any>? = mutableMapOf<String, Any>()
 

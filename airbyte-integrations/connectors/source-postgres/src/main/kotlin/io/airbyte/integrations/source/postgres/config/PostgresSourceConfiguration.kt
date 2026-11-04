@@ -64,6 +64,7 @@ data class PostgresSourceConfiguration(
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
+    val jsonColumnsAsJson: Boolean = false,
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
     val cdc: CdcIncrementalConfiguration? = incrementalConfiguration as? CdcIncrementalConfiguration
 
@@ -204,6 +205,7 @@ constructor(
             maxConcurrency = maxConcurrency,
             checkpointTargetInterval = checkpointTargetInterval,
             checkPrivileges = pojo.checkPrivileges ?: true,
+            jsonColumnsAsJson = pojo.jsonColumnsAsJson ?: false,
         )
     }
 

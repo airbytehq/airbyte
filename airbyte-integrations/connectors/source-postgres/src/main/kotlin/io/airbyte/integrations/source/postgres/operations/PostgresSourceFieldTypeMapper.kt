@@ -16,6 +16,7 @@ import io.airbyte.cdk.jdbc.NullFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.operations.types.AnyFieldType
 import io.airbyte.integrations.source.postgres.operations.types.HstoreFieldType
 import io.airbyte.integrations.source.postgres.operations.types.LegacyBooleanBitsFieldType
@@ -23,6 +24,7 @@ import io.airbyte.integrations.source.postgres.operations.types.PostgresByteaFie
 import io.airbyte.integrations.source.postgres.operations.types.PostgresDateFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresDoubleFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresFloatFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresJsonFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresMoneyArrayElementFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresMoneyFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeFieldType
@@ -35,7 +37,8 @@ import java.sql.JDBCType
 
 @Singleton
 @Primary
-class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
+class PostgresSourceFieldTypeMapper(private val config: PostgresSourceConfiguration) :
+    JdbcMetadataQuerier.FieldTypeMapper {
 
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (val type = c.type) {
@@ -107,9 +110,12 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             JDBCType.NULL -> NullFieldType
             JDBCType.OTHER ->
                 when (type.scalarTypeName) {
-                    // Legacy mappings. Could be JsonStringFieldType instead?
+                    // Legacy mappings, kept unless the configuration opts out. json[] and
+                    // jsonb[] keep string elements: JSON elements are untested on the CDC path.
                     "json",
-                    "jsonb" -> StringFieldType
+                    "jsonb" ->
+                        if (config.jsonColumnsAsJson && !type.isArray) PostgresJsonFieldType
+                        else StringFieldType
                     "hstore" -> HstoreFieldType
                     "point",
                     "box",
