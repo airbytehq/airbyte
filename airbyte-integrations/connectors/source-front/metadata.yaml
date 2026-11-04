@@ -46,3 +46,11 @@ data:
     - title: Front Status
       url: https://status.front.com/
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
