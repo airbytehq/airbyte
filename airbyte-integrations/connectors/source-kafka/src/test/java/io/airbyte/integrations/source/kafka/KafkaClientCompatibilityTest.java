@@ -19,10 +19,13 @@ import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.config.internals.BrokerSecurityConfigs;
 import org.apache.kafka.common.security.JaasContext;
 import org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+@ResourceLock(Resources.SYSTEM_PROPERTIES)
 class KafkaClientCompatibilityTest {
 
   @ParameterizedTest
