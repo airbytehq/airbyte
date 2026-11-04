@@ -48,30 +48,44 @@ allprojects {
         enabled = false
     }
 
+    // Fail fast on Micronaut bean definitions that the JVM refuses to load (inject-kotlin 4.8-4.10
+    // emits unverifiable bytecode for Kotlin constructors mixing default values and primitives).
+    // Micronaut's service loader would otherwise drop them silently.
+    io.airbyte.gradle.MicronautBeanDefinitionVerification.configure(project)
+
     dependencies {
-        api platform('org.jetbrains.kotlin:kotlin-bom:2.0.10')
-        api platform('org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1')
-        api platform('com.fasterxml.jackson:jackson-bom:2.17.2')
+        api platform('org.jetbrains.kotlin:kotlin-bom:2.4.21')
+        api platform('org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.11.0')
+        api platform('com.fasterxml.jackson:jackson-bom:2.21.7')
         api platform("io.micronaut:micronaut-core-bom:$micronautVersion")
-        api platform('org.junit:junit-bom:5.10.2')
+        // micronaut-test is not managed by micronaut-core-bom and its own BOM is deliberately not
+        // imported here: an `api platform(...)` is exported in the published CDK metadata and would
+        // push every connector to the mockk version the BOM constrains. The micronaut-test artifacts
+        // carry an explicit version where they are declared (core/base, legacy-task-load-dlq).
+        api platform('org.junit:junit-bom:5.14.0')
         api platform('org.slf4j:slf4j-bom:2.0.13')
         api platform('org.apache.logging.log4j:log4j-bom:2.21.1')
         api platform('org.testcontainers:testcontainers-bom:1.21.4')
 
         api 'org.jetbrains.kotlin:kotlin-stdlib'
-        api 'com.google.dagger:dagger:2.51.1'
-        ksp 'com.google.dagger:dagger-compiler:2.52'
-
-        annotationProcessor platform("io.micronaut:micronaut-core-bom:$micronautVersion")
-        annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
-        annotationProcessor 'io.micronaut:micronaut-inject-kotlin'
 
         ksp platform("io.micronaut:micronaut-core-bom:$micronautVersion")
         ksp 'io.micronaut:micronaut-inject-kotlin'
         kspTest platform("io.micronaut:micronaut-core-bom:$micronautVersion")
         kspTest 'io.micronaut:micronaut-inject-kotlin'
+        // KSP 2 no longer applies the `ksp` configuration to the other compilations (KSP 1 did,
+        // through its deprecated ksp.allow.all.target.configuration default), so every source set
+        // that declares Micronaut beans needs the processor spelled out. Modules with an
+        // integrationTest source set declare kspIntegrationTest themselves.
+        kspTestFixtures platform("io.micronaut:micronaut-core-bom:$micronautVersion")
+        kspTestFixtures 'io.micronaut:micronaut-inject-kotlin'
 
-        testImplementation("io.mockk:mockk:1.13.13")
+        // Not below 1.14.9: mockk 1.13.16-1.14.7 unbox a value class returned from any property
+        // getter regardless of the getter's declared type, so recording `every { rawData }` on a
+        // mocked DestinationRecordRaw recursed until the heap was gone (fixed upstream in 1.14.9,
+        // which needs the Kotlin 2.2+ runtime). A plain version is enough: micronaut-test-bom, which
+        // would constrain mockk to 1.13.17, is deliberately not imported above.
+        testImplementation("io.mockk:mockk:1.14.11")
     }
 
     publishing {

@@ -85,7 +85,7 @@ object SnowflakeOffsetDateTimeFieldType :
             val timestamp = java.sql.Timestamp.from(instant)
             timestamp.nanos = instant.nano
             stmt.setTimestamp(paramIdx, timestamp)
-        }
+        },
     )
 
 /**

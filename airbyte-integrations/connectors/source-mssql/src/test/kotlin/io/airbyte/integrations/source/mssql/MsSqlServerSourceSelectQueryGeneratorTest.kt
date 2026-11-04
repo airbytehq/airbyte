@@ -142,7 +142,7 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                 From("employees", "hr"),
             )
             .assertSqlEquals(
-                """SELECT [employee_id], [org_node].ToString(), [employee_name] FROM [hr].[employees]"""
+                """SELECT [employee_id], [org_node].ToString(), [employee_name] FROM [hr].[employees]""",
             )
     }
 
@@ -195,9 +195,9 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
                     And(
                         listOf(
                             Greater(created, createdAfter),
-                            LesserOrEqual(updated, updatedBefore)
-                        )
-                    )
+                            LesserOrEqual(updated, updatedBefore),
+                        ),
+                    ),
                 ),
                 OrderBy(listOf(created, updated)),
                 Limit(100),
@@ -219,13 +219,13 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
 
         SelectQuerySpec(
                 SelectColumns(
-                    listOf(EmittedField("Id", IntFieldType), startField, endField, orderField)
+                    listOf(EmittedField("Id", IntFieldType), startField, endField, orderField),
                 ),
                 From("CustomerAgreementProfiles", "dbo"),
                 limit = Limit(100),
             )
             .assertSqlEquals(
-                """SELECT TOP 100 [Id], [Start], [End], [Order] FROM [dbo].[CustomerAgreementProfiles]"""
+                """SELECT TOP 100 [Id], [Start], [End], [Order] FROM [dbo].[CustomerAgreementProfiles]""",
             )
     }
 

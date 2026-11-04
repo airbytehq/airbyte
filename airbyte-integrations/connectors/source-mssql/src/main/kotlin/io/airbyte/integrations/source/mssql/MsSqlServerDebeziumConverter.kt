@@ -49,7 +49,7 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
 
     override fun converterFor(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder>,
     ) {
         val typeName = field.typeName().uppercase()
 
@@ -65,7 +65,7 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
             MSSQL_DATETIMEOFFSET_TYPE -> {
                 registration.register(
                     SchemaBuilder.string().optional(),
-                    this::convertDateTimeOffset
+                    this::convertDateTimeOffset,
                 )
             }
             MSSQL_TIME_TYPE -> {
@@ -93,7 +93,7 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
             MSSQL_UNIQUEIDENTIFIER_TYPE -> {
                 registration.register(
                     SchemaBuilder.string().optional(),
-                    this::convertUniqueIdentifier
+                    this::convertUniqueIdentifier,
                 )
             }
             MSSQL_XML_TYPE -> {
@@ -285,7 +285,7 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
         } catch (e: Exception) {
             logger.warn(
                 "Failed to deserialize spatial binary as ${if (isGeography) "Geography" else "Geometry"}: {}",
-                e.message
+                e.message,
             )
             // Fallback to base64 if deserialization fails
             Base64.getEncoder().encodeToString(bytes)

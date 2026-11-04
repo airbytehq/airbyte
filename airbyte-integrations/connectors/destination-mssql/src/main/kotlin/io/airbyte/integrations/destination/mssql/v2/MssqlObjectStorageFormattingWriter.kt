@@ -20,9 +20,11 @@ class MSSQLCSVFormattingWriter(
     private val finalSchema = stream.schema.withAirbyteMeta(true)
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
     private val mssqlRowGenerator = MSSQLCsvRowGenerator()
+
     override fun accept(record: DestinationRecordRaw) {
         printer.printRecord(mssqlRowGenerator.generate(record, finalSchema))
     }
+
     override fun flush() {
         printer.flush()
     }
@@ -36,7 +38,7 @@ class MSSQLCSVFormattingWriter(
 class MssqlObjectStorageFormattingWriterFactory : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
-        outputStream: OutputStream
+        outputStream: OutputStream,
     ): ObjectStorageFormattingWriter {
         return MSSQLCSVFormattingWriter(stream, outputStream)
     }

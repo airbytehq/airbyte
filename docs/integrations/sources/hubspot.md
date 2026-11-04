@@ -218,7 +218,7 @@ Association stream records include:
 - `category`: The association category, such as `HUBSPOT_DEFINED` or `USER_DEFINED`.
 - `label`: The association label. This is `null` for unlabeled associations.
 
-Association streams sync incrementally. Only associations for records modified since the last sync are fetched.
+Association streams sync in Full Refresh mode: the stream itself tracks no incremental cursor. Each sync reads every parent record modified since the configured start date and fetches its associations.
 
 If you authenticate with a Private App or Service Key, grant read scopes for both selected objects. For example, a tickets-to-companies association stream needs the `tickets` (or, for a Service Key, `crm.objects.tickets.read`) and `crm.objects.companies.read` scopes.
 
@@ -245,7 +245,7 @@ For custom objects, use either:
 
 You can use standard object names, such as `contacts`, `companies`, or `deals`, for the standard-object side of the relationship.
 
-Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`. They also sync incrementally, the same way as standard association streams.
+Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`. Like standard association streams, they sync in Full Refresh mode.
 
 If you authenticate with a Private App or Service Key, grant `crm.objects.custom.read` and the read scope for any standard object in the relationship.
 
@@ -310,8 +310,8 @@ The HubSpot source connector supports the following streams:
 - [Workflows](https://developers.hubspot.com/docs/api/automation/workflows) \(Client-Side Incremental\)
 - [Flows](https://developers.hubspot.com/docs/reference/api/automation/create-manage-workflows) \(Client-Side Incremental, experimental\)
 - [Account Details](https://developers.hubspot.com/docs/api-reference/account-account-info-v3/details/get-account-info-v3-details) \(Full Refresh\)
-- [Association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for standard objects, such as `associations_tickets_companies` \(Incremental\)
-- [Custom object association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for custom-to-standard or custom-to-custom associations \(Incremental\)
+- [Association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for standard objects, such as `associations_tickets_companies` \(Full Refresh\)
+- [Custom object association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for custom-to-standard or custom-to-custom associations \(Full Refresh\)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -367,6 +367,16 @@ By default, these streams request history for every property on the object, whic
 
 Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. To accommodate for this limitation, we recommend scheduling more frequent syncs.
 
+### Notes on the `deal_pipelines` stream
+
+Starting with version 6.13.3, the `deal_pipelines` stream reads from HubSpot's Pipelines API `2026-09`, because HubSpot retires Pipelines API V1 on December 4, 2026. The connector converts the records back to the V1 shape, so columns, the primary key and the cursor stay the same. A few details of the output differ from earlier versions:
+
+- The new API doesn't return `default`. The connector sets it to `true` when `pipelineId` is `default`, which is HubSpot's built-in deal pipeline, and to `false` for every other pipeline.
+- The new API doesn't return `objectType` or `objectTypeId`. The connector sets them to `DEAL` and `0-3`, the values V1 returned for deal pipelines.
+- Each item in `stages` has a new `writePermissions` field.
+- Stages of the built-in pipeline can have `updatedAt` set to `0` instead of `null`.
+- Stages within a pipeline can be listed in a different order.
+
 ### Notes on the `Forms` and `Form Submissions` stream
 
 This stream only syncs marketing forms.
@@ -382,6 +392,7 @@ The `list_memberships` stream reads memberships for every list returned by the `
 ### Notes on the `Custom CRM` Objects
 
 Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above.
+If a custom object has the same name as a built-in stream (for example, a custom object named `form_submissions`), discover returns two streams with that name and connection setup fails with a duplicate stream name error. To fix this, enable **Prefix custom objects that share a name with a built-in stream** (`prefix_colliding_custom_objects`) in the source configuration and refresh the source schema. The custom object is then exposed as `custom_object_<name>`. Custom objects with other names are not renamed. If you were already syncing the built-in stream with that name, it may have been receiving the custom object's records. After enabling the setting and refreshing the schema, clear that stream's data so its destination table contains only the built-in stream's records.
 
 If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
 
@@ -505,6 +516,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.13.3 | 2026-11-03 | [90251](https://github.com/airbytehq/airbyte/pull/90251) | Migrate `deal_pipelines` to Pipelines API 2026-09 ahead of the V1 sunset. Columns, primary key and cursor are unchanged; stages gain `writePermissions`. See [Notes on the `deal_pipelines` stream](#notes-on-the-deal_pipelines-stream) |
+| 6.13.2 | 2026-11-03 | [88157](https://github.com/airbytehq/airbyte/pull/88157) | Fix custom object association streams with a `contacts` `from_object`: use the `lastmodifieddate` parent cursor, as the standard association streams do, instead of `hs_lastmodifieddate`, which contacts do not have and which made the stream emit no records. Document association streams as Full Refresh. |
+| 6.13.1 | 2026-11-03 | [89950](https://github.com/airbytehq/airbyte/pull/89950) | Update dependencies |
+| 6.13.0 | 2026-10-14 | [88415](https://github.com/airbytehq/airbyte/pull/88415) | Add the optional `prefix_colliding_custom_objects` config toggle. When enabled, a custom object whose name matches a built-in stream (e.g. `form_submissions`) is exposed as `custom_object_<name>`, so connections can be created without a duplicate stream name error. Off by default, so existing stream names are unchanged. |
+| 6.12.2 | 2026-10-20 | [89246](https://github.com/airbytehq/airbyte/pull/89246) | Update dependencies |
 | 6.12.1 | 2026-10-13 | [87204](https://github.com/airbytehq/airbyte/pull/87204) | Update dependencies |
 | 6.12.0 | 2026-09-12 | [85854](https://github.com/airbytehq/airbyte/pull/85854) | Add the `flows` stream, which syncs full workflow definitions (action graph, enrollment criteria, data sources, schedules) from HubSpot's Automation v4 Flows API. Each flow summary from `GET /automation/v4/flows` is enriched with `GET /automation/v4/flows/{flowId}`. Requires the `automation` scope and is gated behind `enable_experimental_streams` because the upstream API is a HubSpot developer preview. The legacy `workflows` stream is unchanged. |
 | 6.11.0 | 2026-10-01 | [87604](https://github.com/airbytehq/airbyte/pull/87604) | Add `deals_property_history_properties`, `contacts_property_history_properties`, and `companies_property_history_properties` config options to limit property history streams to a configured list of properties |

@@ -29,21 +29,21 @@ interface SerializableBuffer : AutoCloseable {
     fun accept(record: AirbyteRecordMessage, generationId: Long = 0, syncId: Long = 0): Long
 
     /**
-     * TODO: (ryankfu) Move all destination connectors to pass the serialized record string instead
-     * of the entire AirbyteRecordMessage
-     *
      * @param recordString serialized record
      * @param airbyteMetaString The serialized airbyte_meta entry
      * @param emittedAt timestamp of the record in milliseconds
      * @return number of bytes written to the buffer
      * @throws Exception
+     *
+     * TODO: (ryankfu) Move all destination connectors to pass the serialized record string instead
+     *   of the entire AirbyteRecordMessage
      */
     @Throws(Exception::class)
     fun accept(
         recordString: String,
         airbyteMetaString: String,
         generationId: Long,
-        emittedAt: Long
+        emittedAt: Long,
     ): Long
 
     /** Flush a buffer implementation. */

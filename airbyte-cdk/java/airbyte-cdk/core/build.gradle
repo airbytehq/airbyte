@@ -1,31 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-
-
-
-compileTestFixturesKotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.JVM_21
-        languageVersion = KotlinVersion.KOTLIN_1_9
-        allWarningsAsErrors = false
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-    dependsOn {
-        tasks.matching { it.name == 'generate' }
-    }
-}
-
-compileTestKotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.JVM_21
-        languageVersion = KotlinVersion.KOTLIN_1_9
-        allWarningsAsErrors = false
-        freeCompilerArgs = ["-Xjvm-default=all"]
-    }
-    dependsOn {
-        tasks.matching { it.name == 'generate' }
-    }
-}
+compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
+compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 
 dependencies {
 

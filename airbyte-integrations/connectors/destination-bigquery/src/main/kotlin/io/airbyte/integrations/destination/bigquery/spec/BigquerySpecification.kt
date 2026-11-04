@@ -214,7 +214,7 @@ enum class GcsFilePostProcessing(@get:JsonValue val postProcesing: String) {
 
 enum class TransformationPriority(@get:JsonValue val transformationPriority: String) {
     INTERACTIVE("interactive"),
-    BATCH("batch")
+    BATCH("batch"),
 }
 
 enum class CdcDeletionMode(@get:JsonValue val cdcDeletionMode: String) {

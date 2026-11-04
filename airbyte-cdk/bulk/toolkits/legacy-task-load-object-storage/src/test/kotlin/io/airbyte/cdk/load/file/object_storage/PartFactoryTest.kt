@@ -131,7 +131,7 @@ class PartFactoryTest {
                     launch {
                         assert(!assembler.isComplete)
                         assembler.add(it)
-                    }
+                    },
                 )
             }
             jobs.forEach { it.join() }

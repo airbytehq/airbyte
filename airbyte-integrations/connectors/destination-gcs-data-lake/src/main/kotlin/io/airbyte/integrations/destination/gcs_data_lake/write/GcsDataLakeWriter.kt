@@ -26,7 +26,7 @@ class GcsDataLakeWriter(
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val catalog: DestinationCatalog,
     private val tableIdGenerator: TableIdGenerator,
-    private val streamStateStore: StreamStateStore<GcsDataLakeStreamState>
+    private val streamStateStore: StreamStateStore<GcsDataLakeStreamState>,
 ) : DestinationWriter {
     override suspend fun setup() {
         super.setup()
@@ -34,7 +34,7 @@ class GcsDataLakeWriter(
             mutableMapOf()
         val conflictingStreams:
             MutableList<
-                Triple<DestinationStream.Descriptor, DestinationStream.Descriptor, TableIdentifier>
+                Triple<DestinationStream.Descriptor, DestinationStream.Descriptor, TableIdentifier>,
             > =
             mutableListOf()
         catalog.streams.forEach { incomingStream ->
@@ -42,9 +42,8 @@ class GcsDataLakeWriter(
                 tableIdGenerator.toTableIdentifier(incomingStream.mappedDescriptor)
             if (processedTableIds.containsKey(incomingTableId)) {
                 val conflictingStream = processedTableIds[incomingTableId]!!
-                conflictingStreams.add(
+                conflictingStreams +=
                     Triple(conflictingStream, incomingStream.mappedDescriptor, incomingTableId)
-                )
             } else {
                 processedTableIds[incomingTableId] = incomingStream.mappedDescriptor
             }
@@ -56,7 +55,7 @@ class GcsDataLakeWriter(
                         val s1Desc = s1.toPrettyString()
                         val s2Desc = s2.toPrettyString()
                         "$s1Desc - $s2Desc (both writing to $tableId)"
-                    }
+                    },
             )
         }
     }

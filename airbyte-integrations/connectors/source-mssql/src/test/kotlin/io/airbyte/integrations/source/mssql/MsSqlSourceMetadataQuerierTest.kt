@@ -37,7 +37,7 @@ class MsSqlSourceMetadataQuerierTest {
             MsSqlServerContainerFactory.shared(
                 "mcr.microsoft.com/mssql/server:2022-latest",
                 MsSqlServerContainerFactory.WithNetwork,
-                MsSqlServerContainerFactory.WithTestDatabase
+                MsSqlServerContainerFactory.WithTestDatabase,
             )
 
         val spec = MsSqlServerContainerFactory.config(dbContainer)
@@ -57,7 +57,7 @@ class MsSqlSourceMetadataQuerierTest {
                 sourceOperations,
                 sourceOperations,
                 JdbcCheckQueries(),
-                jdbcConnectionFactory
+                jdbcConnectionFactory,
             )
         metadataQuerier = MsSqlSourceMetadataQuerier(base)
     }
@@ -75,7 +75,7 @@ class MsSqlSourceMetadataQuerierTest {
                     "DROP TABLE IF EXISTS dbo.table_with_pk_and_composite_clustered",
                     "DROP TABLE IF EXISTS dbo.table_no_pk_no_clustered",
                     "DROP TABLE IF EXISTS dbo.table_with_non_unique_clustered",
-                    "DROP TABLE IF EXISTS dbo.table_with_composite_pk"
+                    "DROP TABLE IF EXISTS dbo.table_with_composite_pk",
                 )
 
             for (ddl in dropStatements) {
@@ -99,13 +99,13 @@ class MsSqlSourceMetadataQuerierTest {
                         name NVARCHAR(100),
                         created_at DATETIME2
                     )
-                """
+                """,
                 )
                 stmt.execute(
                     """
                     CREATE UNIQUE CLUSTERED INDEX idx_clustered_id
                     ON dbo.table_with_clustered_no_pk (id)
-                """
+                """,
                 )
             }
 
@@ -120,7 +120,7 @@ class MsSqlSourceMetadataQuerierTest {
                         created_at DATETIME2,
                         CONSTRAINT pk_table2 PRIMARY KEY NONCLUSTERED (id)
                     )
-                """
+                """,
                 )
             }
 
@@ -138,13 +138,13 @@ class MsSqlSourceMetadataQuerierTest {
                         created_at DATETIME2,
                         CONSTRAINT pk_table3 PRIMARY KEY NONCLUSTERED (id)
                     )
-                """
+                """,
                 )
                 stmt.execute(
                     """
                     CREATE UNIQUE CLUSTERED INDEX idx_clustered_code
                     ON dbo.table_with_pk_and_single_clustered (code)
-                """
+                """,
                 )
             }
 
@@ -162,13 +162,13 @@ class MsSqlSourceMetadataQuerierTest {
                         created_at DATETIME2,
                         CONSTRAINT pk_table4 PRIMARY KEY NONCLUSTERED (id)
                     )
-                """
+                """,
                 )
                 stmt.execute(
                     """
                     CREATE UNIQUE CLUSTERED INDEX idx_clustered_composite
                     ON dbo.table_with_pk_and_composite_clustered (code, category)
-                """
+                """,
                 )
             }
 
@@ -182,7 +182,7 @@ class MsSqlSourceMetadataQuerierTest {
                         name NVARCHAR(100),
                         created_at DATETIME2
                     )
-                """
+                """,
                 )
             }
 
@@ -199,13 +199,13 @@ class MsSqlSourceMetadataQuerierTest {
                         created_at DATETIME2,
                         CONSTRAINT pk_table6 PRIMARY KEY NONCLUSTERED (id)
                     )
-                """
+                """,
                 )
                 stmt.execute(
                     """
                     CREATE CLUSTERED INDEX idx_non_unique_category
                     ON dbo.table_with_non_unique_clustered (category)
-                """
+                """,
                 )
             }
 
@@ -222,7 +222,7 @@ class MsSqlSourceMetadataQuerierTest {
                         name NVARCHAR(100),
                         CONSTRAINT pk_table7 PRIMARY KEY NONCLUSTERED (reg_id, agent_id, assigned_date)
                     )
-                """
+                """,
                 )
             }
         }
@@ -233,7 +233,7 @@ class MsSqlSourceMetadataQuerierTest {
     fun testClusteredIndexNoPrimaryKey() {
         val streamId =
             StreamIdentifier.from(
-                StreamDescriptor().withName("table_with_clustered_no_pk").withNamespace("dbo")
+                StreamDescriptor().withName("table_with_clustered_no_pk").withNamespace("dbo"),
             )
 
         // Test discovery: should return empty (no PK constraint)
@@ -250,7 +250,7 @@ class MsSqlSourceMetadataQuerierTest {
     fun testPrimaryKeyNoClusteredIndex() {
         val streamId =
             StreamIdentifier.from(
-                StreamDescriptor().withName("table_with_pk_no_clustered").withNamespace("dbo")
+                StreamDescriptor().withName("table_with_pk_no_clustered").withNamespace("dbo"),
             )
 
         val primaryKey = metadataQuerier.primaryKey(streamId)
@@ -266,7 +266,7 @@ class MsSqlSourceMetadataQuerierTest {
             StreamIdentifier.from(
                 StreamDescriptor()
                     .withName("table_with_pk_and_single_clustered")
-                    .withNamespace("dbo")
+                    .withNamespace("dbo"),
             )
 
         // Test discovery: should return actual PK constraint
@@ -279,7 +279,7 @@ class MsSqlSourceMetadataQuerierTest {
         assertEquals(
             "code",
             orderedColumn,
-            "Sync strategy should prefer clustered index 'code' over PK"
+            "Sync strategy should prefer clustered index 'code' over PK",
         )
     }
 
@@ -290,7 +290,7 @@ class MsSqlSourceMetadataQuerierTest {
             StreamIdentifier.from(
                 StreamDescriptor()
                     .withName("table_with_pk_and_composite_clustered")
-                    .withNamespace("dbo")
+                    .withNamespace("dbo"),
             )
 
         val primaryKey = metadataQuerier.primaryKey(streamId)
@@ -299,7 +299,7 @@ class MsSqlSourceMetadataQuerierTest {
         assertEquals(
             listOf("id"),
             primaryKey[0],
-            "Should use primary key 'id' instead of composite clustered index"
+            "Should use primary key 'id' instead of composite clustered index",
         )
     }
 
@@ -308,14 +308,14 @@ class MsSqlSourceMetadataQuerierTest {
     fun testNoPrimaryKeyNoClusteredIndex() {
         val streamId =
             StreamIdentifier.from(
-                StreamDescriptor().withName("table_no_pk_no_clustered").withNamespace("dbo")
+                StreamDescriptor().withName("table_no_pk_no_clustered").withNamespace("dbo"),
             )
 
         val primaryKey = metadataQuerier.primaryKey(streamId)
 
         assertTrue(
             primaryKey.isEmpty(),
-            "Should return empty list when no PK and no clustered index"
+            "Should return empty list when no PK and no clustered index",
         )
     }
 
@@ -337,21 +337,22 @@ class MsSqlSourceMetadataQuerierTest {
         val clusteredKeys = memoizedClusteredIndexKeys[tableWithClusteredNoPk]
         Assertions.assertNotNull(
             clusteredKeys,
-            "Should have clustered index for table_with_clustered_no_pk"
+            "Should have clustered index for table_with_clustered_no_pk",
         )
         assertEquals(1, clusteredKeys?.size, "Should have single column clustered index")
         assertEquals(
             listOf("id"),
             clusteredKeys?.get(0),
-            "Clustered index should be on 'id' column"
+            "Clustered index should be on 'id' column",
         )
 
         // Verify composite clustered index
-        val tableWithComposite =
-            testTables.find { it.name == "table_with_pk_and_composite_clustered" }
+        val tableWithComposite = testTables.find {
+            it.name == "table_with_pk_and_composite_clustered"
+        }
         Assertions.assertNotNull(
             tableWithComposite,
-            "Should find table_with_pk_and_composite_clustered"
+            "Should find table_with_pk_and_composite_clustered",
         )
         val compositeKeys = memoizedClusteredIndexKeys[tableWithComposite]
         Assertions.assertNotNull(compositeKeys, "Should have clustered index for composite table")
@@ -360,7 +361,7 @@ class MsSqlSourceMetadataQuerierTest {
         assertEquals(
             listOf("category"),
             compositeKeys?.get(1),
-            "Second column should be 'category'"
+            "Second column should be 'category'",
         )
     }
 
@@ -388,7 +389,7 @@ class MsSqlSourceMetadataQuerierTest {
         val noPkKeys = memoizedPrimaryKeys[tableNoPk]
         Assertions.assertNull(
             noPkKeys,
-            "Should not have primary key for table_with_clustered_no_pk"
+            "Should not have primary key for table_with_clustered_no_pk",
         )
     }
 
@@ -397,7 +398,7 @@ class MsSqlSourceMetadataQuerierTest {
     fun testUserDefinedLogicalPrimaryKey() {
         val streamId =
             StreamIdentifier.from(
-                StreamDescriptor().withName("table_no_pk_no_clustered").withNamespace("dbo")
+                StreamDescriptor().withName("table_no_pk_no_clustered").withNamespace("dbo"),
             )
 
         // Create a ConfiguredAirbyteCatalog with a user-defined logical PK
@@ -409,12 +410,12 @@ class MsSqlSourceMetadataQuerierTest {
                             .withStream(
                                 AirbyteStream()
                                     .withName("table_no_pk_no_clustered")
-                                    .withNamespace("dbo")
+                                    .withNamespace("dbo"),
                             )
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                            .withPrimaryKey(listOf(listOf("name")))
-                    )
+                            .withPrimaryKey(listOf(listOf("name"))),
+                    ),
                 )
 
         // Create a new querier with the configured catalog
@@ -427,7 +428,7 @@ class MsSqlSourceMetadataQuerierTest {
                 sourceOperations,
                 sourceOperations,
                 JdbcCheckQueries(),
-                jdbcConnectionFactory
+                jdbcConnectionFactory,
             )
         val querierWithCatalog = MsSqlSourceMetadataQuerier(base, configuredCatalog)
 
@@ -438,7 +439,7 @@ class MsSqlSourceMetadataQuerierTest {
         assertEquals(
             listOf("name"),
             primaryKey[0],
-            "Should use user-defined logical primary key 'name' from catalog"
+            "Should use user-defined logical primary key 'name' from catalog",
         )
     }
 
@@ -447,7 +448,7 @@ class MsSqlSourceMetadataQuerierTest {
     fun testNonUniqueClusteredIndexFiltered() {
         val streamId =
             StreamIdentifier.from(
-                StreamDescriptor().withName("table_with_non_unique_clustered").withNamespace("dbo")
+                StreamDescriptor().withName("table_with_non_unique_clustered").withNamespace("dbo"),
             )
 
         // Test discovery: should return actual PK constraint
@@ -457,8 +458,9 @@ class MsSqlSourceMetadataQuerierTest {
 
         // Verify that non-unique CI is NOT in memoizedClusteredIndexKeys
         val tables = metadataQuerier.memoizedTableNames
-        val table =
-            tables.find { it.name == "table_with_non_unique_clustered" && it.schema == "dbo" }
+        val table = tables.find {
+            it.name == "table_with_non_unique_clustered" && it.schema == "dbo"
+        }
         Assertions.assertNotNull(table, "Should find table_with_non_unique_clustered")
         val clusteredKeys = metadataQuerier.memoizedClusteredIndexKeys[table]
         Assertions.assertNull(clusteredKeys, "Non-unique clustered index should be filtered out")
@@ -473,7 +475,7 @@ class MsSqlSourceMetadataQuerierTest {
     fun testCompositePrimaryKey() {
         val streamId =
             StreamIdentifier.from(
-                StreamDescriptor().withName("table_with_composite_pk").withNamespace("dbo")
+                StreamDescriptor().withName("table_with_composite_pk").withNamespace("dbo"),
             )
 
         // Test discovery: should return all 3 PK columns
@@ -484,7 +486,7 @@ class MsSqlSourceMetadataQuerierTest {
         assertEquals(
             listOf("assigned_date"),
             primaryKey[2],
-            "Third PK column should be 'assigned_date'"
+            "Third PK column should be 'assigned_date'",
         )
 
         // Test sync strategy: should use first PK column
@@ -497,7 +499,7 @@ class MsSqlSourceMetadataQuerierTest {
     fun testPhysicalPrimaryKeyPreferredOverLogical() {
         val streamId =
             StreamIdentifier.from(
-                StreamDescriptor().withName("table_with_pk_no_clustered").withNamespace("dbo")
+                StreamDescriptor().withName("table_with_pk_no_clustered").withNamespace("dbo"),
             )
 
         // Create a ConfiguredAirbyteCatalog with a different logical PK
@@ -509,12 +511,12 @@ class MsSqlSourceMetadataQuerierTest {
                             .withStream(
                                 AirbyteStream()
                                     .withName("table_with_pk_no_clustered")
-                                    .withNamespace("dbo")
+                                    .withNamespace("dbo"),
                             )
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                            .withPrimaryKey(listOf(listOf("name")))
-                    )
+                            .withPrimaryKey(listOf(listOf("name"))),
+                    ),
                 )
 
         // Create a new querier with the configured catalog
@@ -527,7 +529,7 @@ class MsSqlSourceMetadataQuerierTest {
                 sourceOperations,
                 sourceOperations,
                 JdbcCheckQueries(),
-                jdbcConnectionFactory
+                jdbcConnectionFactory,
             )
         val querierWithCatalog = MsSqlSourceMetadataQuerier(base, configuredCatalog)
 
@@ -538,7 +540,7 @@ class MsSqlSourceMetadataQuerierTest {
         assertEquals(
             listOf("id"),
             primaryKey[0],
-            "Should use physical primary key 'id' even when logical PK 'name' is defined"
+            "Should use physical primary key 'id' even when logical PK 'name' is defined",
         )
     }
 
@@ -556,7 +558,7 @@ class MsSqlSourceMetadataQuerierTest {
                         "DROP TABLE IF EXISTS dbo.table_with_pk_and_composite_clustered",
                         "DROP TABLE IF EXISTS dbo.table_no_pk_no_clustered",
                         "DROP TABLE IF EXISTS dbo.table_with_non_unique_clustered",
-                        "DROP TABLE IF EXISTS dbo.table_with_composite_pk"
+                        "DROP TABLE IF EXISTS dbo.table_with_composite_pk",
                     )
 
                 for (ddl in dropStatements) {

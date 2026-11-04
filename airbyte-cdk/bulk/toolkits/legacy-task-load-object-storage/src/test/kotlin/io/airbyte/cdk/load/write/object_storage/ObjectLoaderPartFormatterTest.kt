@@ -93,8 +93,8 @@ class ObjectLoaderPartFormatterTest {
                             .withRecord(
                                 AirbyteRecordMessage()
                                     .withEmittedAt(42)
-                                    .withData(Jsons.createObjectNode())
-                            )
+                                    .withData(Jsons.createObjectNode()),
+                            ),
                 ),
             serializedSizeBytes = 0L,
             airbyteRawId = UUID.randomUUID(),
@@ -106,13 +106,17 @@ class ObjectLoaderPartFormatterTest {
     private suspend fun <T : OutputStream> threadRecords(
         nRecords: Int,
         acc: ObjectLoaderPartFormatter<T>,
-        initialState: ObjectLoaderPartFormatter.State<T>
+        initialState: ObjectLoaderPartFormatter.State<T>,
     ): BatchAccumulatorResult<
-        ObjectLoaderPartFormatter.State<T>, ObjectLoaderPartFormatter.FormattedPart>? {
+        ObjectLoaderPartFormatter.State<T>,
+        ObjectLoaderPartFormatter.FormattedPart,
+    >? {
         var state = initialState
         var result:
             BatchAccumulatorResult<
-                ObjectLoaderPartFormatter.State<T>, ObjectLoaderPartFormatter.FormattedPart>? =
+                ObjectLoaderPartFormatter.State<T>,
+                ObjectLoaderPartFormatter.FormattedPart,
+            >? =
             null
         makeRecords(nRecords).forEach { record ->
             val next = acc.accept(record, state)
@@ -139,7 +143,7 @@ class ObjectLoaderPartFormatterTest {
                 loader = objectLoader,
                 stateManager = stateManager,
                 batchSizeOverride = null,
-                clampedPartSizeBytes = partSizeBytes
+                clampedPartSizeBytes = partSizeBytes,
             )
 
         val bufferSize = AtomicLong(0L)

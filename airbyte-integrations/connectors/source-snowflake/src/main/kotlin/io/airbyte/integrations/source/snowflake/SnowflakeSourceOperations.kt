@@ -86,14 +86,14 @@ class SnowflakeSourceOperations() :
             "CHAR",
             "CHARACTER",
             "STRING",
-            "TEXT", -> StringFieldType
-            "BOOLEAN", -> BooleanFieldType
+            "TEXT" -> StringFieldType
+            "BOOLEAN" -> BooleanFieldType
             "NUMBER",
             "DECIMAL",
-            "NUMERIC", -> BigDecimalFieldType
+            "NUMERIC" -> BigDecimalFieldType
             "INT",
-            "INTEGER", -> IntFieldType
-            "BIGINT", -> BigIntegerFieldType
+            "INTEGER" -> IntFieldType
+            "BIGINT" -> BigIntegerFieldType
             "SMALLINT",
             "TINYINT" -> ShortFieldType
             "BYTEINT" -> ByteFieldType
@@ -102,26 +102,26 @@ class SnowflakeSourceOperations() :
             "FLOAT8",
             "DOUBLE",
             "DOUBLE PRECISION",
-            "REAL", -> DoubleFieldType
-            "DATE", -> LocalDateFieldType
-            "TIME", -> SnowflakeLocalTimeFieldType
+            "REAL" -> DoubleFieldType
+            "DATE" -> LocalDateFieldType
+            "TIME" -> SnowflakeLocalTimeFieldType
             "TIMESTAMP_LTZ",
             "TIMESTAMP_TZ",
             "TIMESTAMPLTZ",
-            "TIMESTAMPTZ", -> SnowflakeOffsetDateTimeFieldType
+            "TIMESTAMPTZ" -> SnowflakeOffsetDateTimeFieldType
             "DATETIME",
             "TIMESTAMP",
             "TIMESTAMP_NTZ",
-            "TIMESTAMPNTZ", -> SnowflakeLocalDateTimeFieldType
+            "TIMESTAMPNTZ" -> SnowflakeLocalDateTimeFieldType
             "BINARY",
-            "VARBINARY", -> BytesFieldType
+            "VARBINARY" -> BytesFieldType
             "VARIANT",
             "OBJECT",
             "GEOGRAPHY",
             "GEOMETRY",
             "VECTOR",
             "FILE",
-            "ARRAY", -> StringFieldType
+            "ARRAY" -> StringFieldType
             else -> PokemonFieldType
         }
     }
@@ -227,7 +227,7 @@ class SnowflakeSourceOperations() :
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: ObjectNode
+        recordData: ObjectNode,
     ) {
         return
     }
@@ -236,7 +236,7 @@ class SnowflakeSourceOperations() :
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
-        recordData: NativeRecordPayload
+        recordData: NativeRecordPayload,
     ) {
         return
     }

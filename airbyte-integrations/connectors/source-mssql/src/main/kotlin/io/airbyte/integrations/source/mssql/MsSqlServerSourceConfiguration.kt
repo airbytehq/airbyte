@@ -52,7 +52,9 @@ class MsSqlServerSourceConfiguration(
         fun mssqlServerSourceConfig(
             factory:
                 SourceConfigurationFactory<
-                    MsSqlServerSourceConfigurationSpecification, MsSqlServerSourceConfiguration>,
+                    MsSqlServerSourceConfigurationSpecification,
+                    MsSqlServerSourceConfiguration,
+                >,
             supplier:
                 ConfigurationSpecificationSupplier<MsSqlServerSourceConfigurationSpecification>,
         ): MsSqlServerSourceConfiguration = factory.make(supplier.get())
@@ -146,7 +148,7 @@ data class CdcIncrementalConfiguration(
     val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
     val initialLoadTimeout: Duration,
     val pollIntervalMs: Int,
-    val maxIterationTransactions: Int
+    val maxIterationTransactions: Int,
 ) : IncrementalConfiguration
 
 enum class InvalidCdcCursorPositionBehavior {
@@ -165,7 +167,9 @@ constructor(
     val socketPaths: List<String> = emptyList(),
 ) :
     SourceConfigurationFactory<
-        MsSqlServerSourceConfigurationSpecification, MsSqlServerSourceConfiguration> {
+        MsSqlServerSourceConfigurationSpecification,
+        MsSqlServerSourceConfiguration,
+    > {
 
     constructor() : this(emptySet(), DataChannelMedium.STDIO.name, emptyList())
 
@@ -177,7 +181,7 @@ constructor(
             when (incrementalSpec) {
                 is UserDefinedCursor -> {
                     UserDefinedCursorIncrementalConfiguration(
-                        excludeTodaysData = incrementalSpec.excludeTodaysData ?: false
+                        excludeTodaysData = incrementalSpec.excludeTodaysData ?: false,
                     )
                 }
                 is Cdc -> {
@@ -201,7 +205,7 @@ constructor(
                     if (pollIntervalMs >= heartbeatIntervalMs) {
                         throw ConfigErrorException(
                             "Poll interval ($pollIntervalMs ms) must be smaller than heartbeat interval ($heartbeatIntervalMs ms). " +
-                                "Please reduce the poll interval to a value less than $heartbeatIntervalMs ms."
+                                "Please reduce the poll interval to a value less than $heartbeatIntervalMs ms.",
                         )
                     }
 
@@ -211,7 +215,7 @@ constructor(
                                 .DEFAULT_MAX_ITERATION_TRANSACTIONS
                     if (maxIterationTransactions < 0) {
                         throw ConfigErrorException(
-                            "Max transactions per CDC iteration ($maxIterationTransactions) must be 0 (unbounded) or a positive number."
+                            "Max transactions per CDC iteration ($maxIterationTransactions) must be 0 (unbounded) or a positive number.",
                         )
                     }
 
@@ -249,7 +253,7 @@ constructor(
                 if (username.isNullOrBlank() || password.isNullOrBlank()) {
                     throw ConfigErrorException(
                         "Authentication is not configured: provide username/password " +
-                            "or configure Entra ID authentication."
+                            "or configure Entra ID authentication.",
                     )
                 }
                 SqlPasswordAuthentication(username, password)
@@ -264,7 +268,7 @@ constructor(
             throw ConfigErrorException(
                 "Microsoft Entra ID authentication requires an encrypted connection. " +
                     "Please set ssl_mode to 'encrypted_verify_certificate' or " +
-                    "'encrypted_trust_server_certificate'."
+                    "'encrypted_trust_server_certificate'.",
             )
         }
 
@@ -296,7 +300,7 @@ constructor(
                         ) {
                             throw ConfigErrorException(
                                 "Connection from Airbyte Cloud requires " +
-                                    "SSL encryption or an SSH tunnel."
+                                    "SSL encryption or an SSH tunnel.",
                             )
                         } else {
                             mapOf("encrypt" to "false", "trustServerCertificate" to "true")
@@ -320,7 +324,7 @@ constructor(
                                 SSLCertificateUtils.keyStoreFromCertificate(certificate, password)
                             mapOf(
                                 "trustStore" to keyStoreUri.path,
-                                "trustStorePassword" to password
+                                "trustStorePassword" to password,
                             )
                         }
                     val hostNameInCertificate = encryptionSpec.hostNameInCertificate
@@ -398,7 +402,7 @@ constructor(
             checkPrivileges = pojo.checkPrivileges ?: true,
             debeziumHeartbeatInterval =
                 Duration.ofMillis(
-                    MsSqlServerSourceConfigurationSpecification.DEFAULT_HEARTBEAT_INTERVAL_MS
+                    MsSqlServerSourceConfigurationSpecification.DEFAULT_HEARTBEAT_INTERVAL_MS,
                 ),
             incrementalReplicationConfiguration = incrementalReplicationConfiguration,
             databaseName = pojo.database,

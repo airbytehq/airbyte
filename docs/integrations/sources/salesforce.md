@@ -199,6 +199,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Limitations & Troubleshooting
 
+### Connection test login failures
+
+- **Expired or revoked authentication / `invalid_grant`**: Re-authenticate the source.
+  Check **Sandbox** (`is_sandbox`): sandbox organizations authenticate through
+  `test.salesforce.com`, while production organizations use `login.salesforce.com`.
+- **Invalid Connected App credentials / `invalid_client_id` or `invalid_client`**:
+  Check the OAuth client ID and client secret in the source settings against the Connected App.
+- **API access disabled / `API_DISABLED_FOR_ORG`**: Use a Salesforce edition that
+  supports API access and grant the authenticated user the **API Enabled** permission.
+- **IP restrictions / `LOGIN_MUST_USE_SECURITY_TOKEN`**: Allowlist the Airbyte
+  deployment's outbound IP addresses or update the Connected App **IP Relaxation**
+  policy according to your organization's security requirements. For Airbyte Cloud,
+  use the addresses linked in [IP allow list](#ip-allow-list).
+
 <details>
 <summary>
 Expand to see details about Salesforce connector limitations and troubleshooting.
@@ -256,6 +270,12 @@ If you set the `Force Use Bulk API` option to `true`, the connector will ignore 
 Salesforce access tokens expire after a configurable session timeout, which defaults to 2 hours. Prior to connector version 2.7.20, long-running Bulk API syncs could fail with `INVALID_SESSION_ID` errors because the access token was captured once at sync start and never refreshed. Starting in version 2.7.20, the connector proactively refreshes the access token every 30 minutes, well before the default session timeout. If a session is unexpectedly invalidated between refresh cycles, the connector detects the `INVALID_SESSION_ID` response and forces an immediate token refresh before retrying the request.
 
 If you still encounter `INVALID_SESSION_ID` errors, verify that the connector is running version 2.7.20 or later.
+
+### Session expiry during REST pagination
+
+Streams that cannot use the Bulk API, for example objects containing compound fields such as addresses, are read through the REST `queryAll` endpoint and paginated with `nextRecordsUrl`. Prior to connector version 2.10.3, these REST streams authenticated with the access token captured when the stream was created, so they could neither refresh it nor pick up a token refreshed by another stream. When that session ended mid-sync, for example after the proactive refresh described above with Refresh Token Rotation enabled, the REST stream kept retrying with the dead token until the sync failed with `Exhausted available request attempts ... Salesforce session expired or invalid`.
+
+Starting in version 2.10.3, REST streams read the access token that is current at each request and retry, so they pick up a refresh made by any stream. They don't trigger the 30-minute refresh themselves: if their session ends, the `INVALID_SESSION_ID` response forces a token refresh before the retry. Salesforce keeps query results available to the same user across sessions, so the retried `nextRecordsUrl` continues where the stream stopped. If Salesforce rejects the refresh, the sync fails right away with a configuration error asking you to re-authenticate, instead of exhausting its retries.
 
 ### Refresh Token Rotation (RTR)
 
@@ -320,8 +340,13 @@ When extracting data through the Bulk API, the connector downloads results as CS
 <details>
   <summary>Expand to review</summary>
 
-| Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 2.10.4 | 2026-10-30 | [90253](https://github.com/airbytehq/airbyte/pull/90253) | Explain Salesforce OAuth, API permission, and IP restriction failures with actionable guidance and sandbox login hints. |
+| 2.10.3 | 2026-10-23 | [87665](https://github.com/airbytehq/airbyte/pull/87665) | Let REST streams use the refreshed access token, so a session invalidated mid-pagination no longer fails the sync, and mask rotated refresh tokens in logs |
+| 2.10.2 | 2026-10-20 | [89072](https://github.com/airbytehq/airbyte/pull/89072) | Fix syncs hanging indefinitely when a Salesforce OAuth token refresh or describe request stalls, by adding a request timeout |
+| 2.10.1 | 2026-10-20 | [89399](https://github.com/airbytehq/airbyte/pull/89399) | Update dependencies |
+| 2.10.0 | 2026-10-15 | [89008](https://github.com/airbytehq/airbyte/pull/89008) | Upgrade to Python 3.13 and base image 4.1.1 |
 | 2.9.3 | 2026-10-07 | [88170](https://github.com/airbytehq/airbyte/pull/88170) | Surface the underlying request error and retry, instead of failing with an `AttributeError`, when a Salesforce request raises a non-HTTP error such as an invalid URL |
 | 2.9.2 | 2026-09-10 | [85166](https://github.com/airbytehq/airbyte/pull/85166) | Report a Salesforce field that no longer exists or is not accessible to the authenticated user as a configuration error naming the stream and field, instead of a system error containing the raw Salesforce response |
 | 2.9.1 | 2026-08-27 | [85057](https://github.com/airbytehq/airbyte/pull/85057) | Send PKCE `code_challenge`/`code_challenge_method=S256` on the consent URL and `code_verifier` on the token exchange, so OAuth works in orgs that require PKCE |

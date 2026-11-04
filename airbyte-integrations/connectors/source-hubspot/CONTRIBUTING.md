@@ -111,6 +111,8 @@ efficient for incremental syncs because it supports `lastmodifieddate` filters, 
 
 **Why this matters:** These are two completely independent stream implementations that happen to share a name. They have different requesters, paginators, and record selectors, so a fix applied to one sub-stream will not carry over to the other. If you change how custom objects sync, you need to verify both the full-refresh and incremental paths separately.
 
+When `prefix_colliding_custom_objects` is enabled, custom objects whose name matches a built-in stream are exposed as `custom_object_<name>`. It is opt-in because, with the flag off, a colliding custom object replaces the built-in stream at read time (the CDK resolves streams by name and dynamic streams come last), and some existing connections depend on that. When adding a built-in stream, update the built-in name list in `definitions.custom_object_stream_name` in `manifest.yaml`; `test_custom_objects_never_collide_with_any_builtin_stream` guards it.
+
 ---
 
 ## 5. Property Chunking with Character-Based Limits
@@ -170,9 +172,10 @@ for partial failures (requiring separate partial-error handling), and flow count
 
 HubSpot's API uses inconsistent datetime formats across different endpoint versions:
 
-- **Legacy v1 endpoints** (engagements, campaigns, deal_pipelines, workflows, email_events,
+- **Legacy v1 endpoints** (engagements, campaigns, workflows, email_events,
   subscription_changes, form_submissions) return **millisecond Unix timestamps** (e.g.,
   `1672531200000`). The connector uses the `%ms` format string for these.
+- `deal_pipelines` calls Pipelines API 2026-09, and `DealPipelinesV1ShapeTransformation` converts the records back to the V1 shape (ms timestamps, `pipelineId`/`stageId`, `active`, constant `objectType`/`objectTypeId`, and `default` from `id == "default"`) to keep output stable.
 - **CRM v3 endpoints** (contacts, companies, deals, tickets, etc.) return **ISO 8601 strings** with
   varying precision:
   - `%Y-%m-%dT%H:%M:%S.%fZ` (with milliseconds, e.g., `2023-01-01T00:00:00.000Z`)

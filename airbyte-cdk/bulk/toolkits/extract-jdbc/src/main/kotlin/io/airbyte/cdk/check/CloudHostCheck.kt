@@ -17,7 +17,7 @@ import java.net.UnknownHostException
  * On Airbyte Cloud ([FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT]) two mistakes are common enough to
  * deserve their own message instead of the generic unreachable-host error the driver produces:
  * - a loopback or unspecified address (`localhost`, `127.x.x.x`, `::1`, `0.0.0.0`) without an SSH
- * tunnel, which Airbyte Cloud can never reach;
+ *   tunnel, which Airbyte Cloud can never reach;
  * - a full URL, credentials or a `host:port` pair pasted into the field instead of a bare hostname.
  *
  * Outside Airbyte Cloud the check is a no-op: a self-managed deployment may well run next to its
@@ -46,10 +46,10 @@ object CloudHostCheck {
      * @param host the host as the user typed it, not the address resolved through the tunnel.
      * @param sshTunnel the configured tunnel method; `null` and [SshNoTunnelMethod] mean no tunnel.
      * @param featureFlags the active feature flags; the check only runs with
-     * [FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT].
+     *   [FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT].
      * @throws ConfigErrorException with [HOST_SYNTAX_MESSAGE] when [host] carries a scheme, a path,
-     * credentials or an explicit port, or with [LOCAL_HOST_MESSAGE] when [host] is a loopback or
-     * unspecified address and no SSH tunnel is configured.
+     *   credentials or an explicit port, or with [LOCAL_HOST_MESSAGE] when [host] is a loopback or
+     *   unspecified address and no SSH tunnel is configured.
      */
     fun validate(
         host: String,
@@ -72,10 +72,10 @@ object CloudHostCheck {
      *
      * @param host the host as the user typed it.
      * @param featureFlags the active feature flags; the check only runs with
-     * [FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT].
+     *   [FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT].
      * @param message the text of the [ConfigErrorException].
      * @throws ConfigErrorException with [message] when [host] carries a scheme, a path, credentials
-     * or an explicit port.
+     *   or an explicit port.
      */
     fun validateHostSyntax(
         host: String,
