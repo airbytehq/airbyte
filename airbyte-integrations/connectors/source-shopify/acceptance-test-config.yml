@@ -31,10 +31,7 @@ acceptance_tests:
       # stream that returns `user_id`; the other streams read the same as with `config.json`.
       - config_path: "secrets/config_transactions_with_user_id.json"
         configured_catalog_path: "integration_tests/transactions_with_user_id_catalog.json"
-      # The metadata.yaml `suggestedStreams` (its `transactions_graphql` is the `transactions` stream):
-      # reading every discovered stream does not fit the CI time budget.
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/basic_read_catalog.json"
         empty_streams:
           - name: abandoned_checkouts
             bypass_reason: The stream holds data up to 1 month then records are removed by Shopify.
