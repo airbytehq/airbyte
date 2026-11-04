@@ -100,6 +100,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 1.1.64 | 2026-11-03 | [90754](https://github.com/airbytehq/airbyte/pull/90754) | Update dependencies |
 | 1.1.63 | 2026-10-20 | [89431](https://github.com/airbytehq/airbyte/pull/89431) | Update dependencies |
 | 1.1.62 | 2026-10-13 | [88824](https://github.com/airbytehq/airbyte/pull/88824) | Update dependencies |
 | 1.1.61 | 2026-10-07 | [88180](https://github.com/airbytehq/airbyte/pull/88180) | Fix `trending` stream failing with 401 by sending `api_key` like every other stream |

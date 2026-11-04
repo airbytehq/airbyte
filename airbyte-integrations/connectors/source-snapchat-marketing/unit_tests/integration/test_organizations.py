@@ -7,9 +7,9 @@ from http import HTTPStatus
 from typing import List, Optional
 from unittest import TestCase
 
-from airbyte_cdk.models import AirbyteStateMessage, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, FailureType, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ORGANIZATION_ID, ConfigBuilder
@@ -71,6 +71,32 @@ class TestOrganizations(TestCase):
         output = _read(config_builder=config().with_organization_ids([ORGANIZATION_ID]))
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == ORGANIZATION_ID
+
+    @HttpMocker()
+    def test_read_records_with_configured_organization_404_raises_config_error(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        organization_request = RequestBuilder.organizations_endpoint(ORGANIZATION_ID).build()
+        http_mocker.get(
+            organization_request,
+            HttpResponse(
+                body='{"request_status":"ERROR","request_id":"x","error_code":"E3003","display_message":"Resource can not be found"}',
+                status_code=404,
+            ),
+        )
+
+        output = _read(config_builder=config().with_organization_ids([ORGANIZATION_ID]), expecting_exception=True)
+
+        assert not output.records
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
+        assert any(
+            error.trace.error.failure_type == FailureType.config_error
+            and "Organization IDs" in error.trace.error.message
+            and ORGANIZATION_ID in error.trace.error.message
+            for error in output.errors
+        )
 
     @HttpMocker()
     def test_read_records_with_error_403_retry(self, http_mocker: HttpMocker) -> None:
