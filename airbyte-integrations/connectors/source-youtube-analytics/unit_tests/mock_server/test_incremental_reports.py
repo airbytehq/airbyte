@@ -196,7 +196,7 @@ class TestIncrementalReports(TestCase):
         output = _read(_state({"date": 20251107}))
 
         assert output.errors == []
-        assert sorted(record.record.data["date"] for record in output.records) == [_SAME["day"], _NEW["day"]]
+        assert sorted(record.record.data["date"] for record in output.records) == sorted([_SAME["day"], _NEW["day"]])
         assert _report_state(output)["state"] == {"createTime": "2026-03-03T00:00:00.000000Z"}
 
     @HttpMocker()

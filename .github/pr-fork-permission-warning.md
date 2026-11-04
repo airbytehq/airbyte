@@ -38,7 +38,7 @@ After completing these steps, you should see a green checkmark (✅) on the "**P
 
 If you have questions or need assistance, please:
 - Ask in the PR comments.
-- Join our [Slack community](https://airbytehq.slack.com/).
+- Join our [Slack community](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg).
 - Review our [Contributing Guide](https://docs.airbyte.com/platform/contributing-to-airbyte).
 
 Thank you for your understanding and for contributing to Airbyte! 🙏
