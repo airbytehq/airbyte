@@ -1,0 +1,99 @@
+{
+  "connectionSpecification": {
+    "description": "Configuration to connect to the Vectara instance",
+    "groups": [
+      {
+        "id": "account",
+        "title": "Account"
+      },
+      {
+        "id": "auth",
+        "title": "Authentication"
+      }
+    ],
+    "properties": {
+      "corpus_name": {
+        "description": "The Name of Corpus to load data into",
+        "group": "account",
+        "order": 3,
+        "title": "Corpus Name",
+        "type": "string"
+      },
+      "customer_id": {
+        "description": "Your Vectara customer id. No longer required: API v2 authenticates with the OAuth2.0 client credentials only",
+        "group": "account",
+        "order": 2,
+        "title": "Customer ID",
+        "type": "string"
+      },
+      "metadata_fields": {
+        "always_show": true,
+        "default": [],
+        "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
+        "examples": ["age", "user"],
+        "items": {
+          "type": "string"
+        },
+        "title": "Fields to store as metadata",
+        "type": "array"
+      },
+      "oauth2": {
+        "description": "OAuth2.0 credentials used to authenticate admin actions (creating/deleting corpora)",
+        "group": "auth",
+        "properties": {
+          "client_id": {
+            "description": "OAuth2.0 client id",
+            "order": 0,
+            "title": "OAuth Client ID",
+            "type": "string"
+          },
+          "client_secret": {
+            "airbyte_secret": true,
+            "description": "OAuth2.0 client secret",
+            "order": 1,
+            "title": "OAuth Client Secret",
+            "type": "string"
+          }
+        },
+        "required": ["client_id", "client_secret"],
+        "title": "OAuth2.0 Credentials",
+        "type": "object"
+      },
+      "parallelize": {
+        "always_show": true,
+        "default": false,
+        "description": "Parallelize indexing into Vectara with multiple threads",
+        "group": "account",
+        "title": "Parallelize",
+        "type": "boolean"
+      },
+      "text_fields": {
+        "always_show": true,
+        "default": [],
+        "description": "List of fields in the record that should be in the section of the document. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
+        "examples": ["text", "user.name", "users.*.name"],
+        "items": {
+          "type": "string"
+        },
+        "title": "Text fields to index with Vectara",
+        "type": "array"
+      },
+      "title_field": {
+        "always_show": true,
+        "default": "",
+        "description": "A field that will be used to populate the `title` of each document. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
+        "examples": ["document_key"],
+        "title": "Text field to use as document title with Vectara",
+        "type": "string"
+      }
+    },
+    "required": ["oauth2", "corpus_name"],
+    "title": "Vectara Config",
+    "type": "object"
+  },
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/vectara",
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "supportsDBT": false,
+  "supportsIncremental": true,
+  "supportsNormalization": false
+}
