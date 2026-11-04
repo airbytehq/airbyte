@@ -46,7 +46,7 @@ export const faqs = [
   },
 ];
 
-Airbyte manages the control plane in Airbyte Cloud, and you run data planes in your own infrastructure. Your records are extracted, processed, and loaded in your data plane. The control plane receives configuration and metadata; see [What data leaves your network](#what-data-leaves-your-network).
+Airbyte Enterprise Flex is a hybrid deployment: a managed cloud control plane with data planes in your own infrastructure. Your records are extracted, processed, and loaded in your data plane. The control plane receives configuration and metadata; see [What data leaves your network](#what-data-leaves-your-network).
 
 ## What is Enterprise Flex
 
@@ -70,15 +70,19 @@ With Enterprise Flex, Airbyte manages the control plane, including the user inte
 
 ## What data leaves your network
 
-| Information | Where it is handled |
-| --- | --- |
-| Records | Extracted, processed, and loaded in your data plane. |
-| Credentials | The control plane writes credentials you enter in the UI to your secrets manager and reads them back when syncs run. Configure the same secrets manager on the control plane and data plane so the data plane can read them. |
-| Connector configuration, table names, and column names | Stored by the control plane. |
-| Cursor and primary key values | Stored by the control plane, regardless of the data plane's location. |
-| Job status | Reported by the data plane to the control plane. |
-| Logs and state | Job logs and state are stored in your data plane's storage. Sync logs appear in the Airbyte UI only if you ask Airbyte to turn this on. Data plane components write structured JSON logs to stdout starting with Helm chart version 2.1.0; collect them with your own log collector. |
-| Connector Builder test data | Processed through the control plane during development and testing. Published connectors use the workspace's region for syncs. |
+The following information reaches the control plane:
+
+- **Credentials**: The control plane writes credentials you enter in the UI to your secrets manager and reads them back when syncs run. Configure the same secrets manager on the control plane and data plane so the data plane can read them.
+- **Connector configuration, table names, and column names**: Stored by the control plane.
+- **Cursor and primary key values**: Stored by the control plane, regardless of the data plane's location.
+- **Job status**: Reported by the data plane to the control plane.
+- **Connector Builder test data**: Processed through the control plane during development and testing. Published connectors use the workspace's region for syncs.
+- **Sync logs, if you turn this on**: Sync logs appear in the Airbyte UI only if you ask Airbyte to turn this on.
+
+The following information stays in your data plane:
+
+- **Records**: Extracted, processed, and loaded in your data plane.
+- **Job logs and state**: Stored in your data plane's storage. Data plane components write structured JSON logs to stdout starting with Helm chart version 2.1.0; collect them with your own log collector.
 
 ## Network and security
 
@@ -96,7 +100,7 @@ Connector Builder sends test data through the control plane during development a
 
 ## Sizing
 
-Sizing depends on the type and size of the jobs you run. Your Airbyte solutions architect works with you to recommend the right size for your needs.
+Sizing depends on the type and size of the jobs you run. Your Airbyte Solution Architect works with you to recommend the right resource allocation for your needs.
 
 Use [Scaling Airbyte](/platform/operator-guides/scaling-airbyte) to plan capacity for your data planes. For infrastructure requirements, see the [Helm prerequisites](/platform/enterprise-flex/data-plane#infrastructure-prerequisites) and [Airbox requirements](/platform/enterprise-flex/data-plane-util#infrastructure-requirements).
 
