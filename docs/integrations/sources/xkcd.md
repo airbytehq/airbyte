@@ -48,6 +48,7 @@ For programmatic configuration, use this parameter name:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.2.61 | 2026-11-03 | [90805](https://github.com/airbytehq/airbyte/pull/90805) | Update dependencies |
 | 0.2.60 | 2026-10-27 | [90066](https://github.com/airbytehq/airbyte/pull/90066) | Update dependencies |
 | 0.2.59 | 2026-10-20 | [89468](https://github.com/airbytehq/airbyte/pull/89468) | Update dependencies |
 | 0.2.58 | 2026-10-13 | [88860](https://github.com/airbytehq/airbyte/pull/88860) | Update dependencies |
