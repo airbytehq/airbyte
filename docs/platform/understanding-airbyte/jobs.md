@@ -260,7 +260,7 @@ In the event of a failure, the Airbyte platform will retry the pipeline. Each of
 Based on the outcome of previous attempts, the number of permitted attempts per job changes. By default, Airbyte is configured to allow the following:
 
 - 5 subsequent attempts where no data was synchronized
-- 10 total attempts where no data was synchronized
+- 5 total attempts where no data was synchronized
 - 5 total attempts where some data was synchronized
 
 For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
