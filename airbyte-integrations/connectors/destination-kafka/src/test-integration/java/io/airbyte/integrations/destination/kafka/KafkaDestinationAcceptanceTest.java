@@ -162,7 +162,11 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     consumer.subscribe(Collections.singletonList(topic));
     consumer.poll(Duration.ofMillis(20000L)).iterator()
-        .forEachRemaining(record -> records.add(record.value()));
+        .forEachRemaining(record -> {
+          final ObjectNode envelope = record.value().deepCopy();
+          envelope.remove(KafkaDestination.COLUMN_NAME_STREAM);
+          records.add(envelope);
+        });
     consumer.close();
 
     return records;
