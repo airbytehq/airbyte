@@ -4,13 +4,15 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
-## 1. Organizations and Ad Accounts ignore Start Date
+## 1. Organizations and Ad Accounts are read as parents without the date filter
 
-`organizations` and `adaccounts` are client-side incremental on `updated_at`, and the CDK applies that filter to a stream even when it is read as a parent through `SubstreamPartitionRouter`. Organizations and ad accounts are rarely edited, so filtering them by `start_date` dropped any organization or ad account last updated before it, and every stream under it returned 0 records while the sync succeeded ([#47834](https://github.com/airbytehq/airbyte/issues/47834)). Both streams therefore use a fixed `start_datetime` of `2011-09-01`. Setting `organization_ids` or `ad_account_ids` doesn't bypass the filter, because it applies to the records those requests return too.
+`organizations` and `adaccounts` are client-side incremental on `updated_at`, and the CDK applies that filter to a stream even when it is read as a parent through `SubstreamPartitionRouter`. Organizations and ad accounts are rarely edited, so the filter dropped any organization or ad account last updated outside the `start_date` to `end_date` window, and every stream under it returned 0 records while the sync succeeded ([#47834](https://github.com/airbytehq/airbyte/issues/47834)). Setting `organization_ids` or `ad_account_ids` didn't help, because the filter also applies to the records those requests return.
 
-Known gaps: `ads`, `adsquads` and `campaigns` still filter by `start_date` when read as parents of the stats streams, so an entity not edited since `start_date` gets no stats. An explicit `end_date` still drops organizations and ad accounts updated after it.
+The streams under them therefore read `definitions.parent_streams.organizations` and `definitions.parent_streams.adaccounts`: copies with the same retriever and schema and no `incremental_sync`. The user-facing `organizations` and `adaccounts` streams keep the filter, so Start Date still applies to their own records. Each copy keeps its stream's `name`, because the CDK turns on the shared parent response cache by name.
 
-**Why this matters:** Pointing these two `start_datetime` values back at `config.start_date` for consistency silently empties every stream for accounts whose organization or ad accounts weren't edited recently. When a fix makes hidden parents visible, existing connections pick up the new partitions from the stream's saved state, not from `start_date`, so partly affected connections need a refresh to backfill.
+Known gap: `ads`, `adsquads` and `campaigns` still filter by `start_date` when read as parents of the stats streams, so an entity not edited since `start_date` gets no stats.
+
+**Why this matters:** Pointing a `ParentStreamConfig` back at `#/definitions/streams/organizations` or `#/definitions/streams/adaccounts` silently empties every stream under them for accounts whose organization or ad accounts weren't edited inside the sync window. When a fix makes hidden parents visible, existing connections pick up the new partitions from the stream's saved state, not from `start_date`, so partly affected connections need a refresh to backfill.
 
 ## Incremental Stream Considerations
 

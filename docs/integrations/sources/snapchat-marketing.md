@@ -140,7 +140,7 @@ Start Date is required for all stats streams that use `start_time` as a key (see
 | Campaigns_Stats_Daily     | Yes         | `id`, `granularity`, `start_time`   |
 | Campaigns_Stats_Lifetime  | No          | `id`, `granularity`                 |
 
-The Organizations and Ad Accounts streams sync every organization and ad account, including those last updated before the Start Date, so the streams under them don't come back empty. All other streams still apply the Start Date. If a connection was missing some organizations or ad accounts before version 1.6.10, refresh the affected streams to backfill their history.
+Start Date and End Date filter the records of the Organizations and Ad Accounts streams, but not which organizations and ad accounts the other streams read from. For example, an ad account last updated before the Start Date is left out of the Ad Accounts stream, but its campaigns and ad account stats are still synced. If a connection was missing data for some organizations or ad accounts before version 1.6.10, refresh the affected streams to backfill their history.
 
 ### Metrics in the stats streams
 
@@ -169,7 +169,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 1.6.10 | 2026-11-04 | [89027](https://github.com/airbytehq/airbyte/pull/89027) | Stop filtering organizations and ad accounts by Start Date, which emptied every stream under them |
+| 1.6.10 | 2026-11-04 | [89027](https://github.com/airbytehq/airbyte/pull/89027) | Read every organization and ad account as a parent, so Start Date and End Date no longer empty the streams under them |
 | 1.6.9 | 2026-11-03 | [90759](https://github.com/airbytehq/airbyte/pull/90759) | Update dependencies |
 | 1.6.8 | 2026-10-27 | [90055](https://github.com/airbytehq/airbyte/pull/90055) | Update dependencies |
 | 1.6.7 | 2026-10-21 | [89614](https://github.com/airbytehq/airbyte/pull/89614) | Report not-found organization and ad account IDs as configuration errors with actionable messages |

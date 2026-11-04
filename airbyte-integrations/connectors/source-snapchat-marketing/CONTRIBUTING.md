@@ -6,7 +6,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
-1. **Organizations and Ad Accounts ignore Start Date** -- these two streams always sync every organization and ad account, because filtering them by Start Date emptied every stream under them. Keep them that way.
+1. **Organizations and Ad Accounts are read as parents without the date filter** -- the streams under them see every organization and ad account, even ones Start Date leaves out of those two streams, because the filter used to empty every stream under them.
 
 ## Incremental Stream Considerations
 
