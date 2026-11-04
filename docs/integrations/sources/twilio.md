@@ -173,7 +173,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.2.0 | 2026-11-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add incremental sync to the `conversations`, `executions`, and `step` streams |
+| 1.2.0 | 2026-11-03 | [90957](https://github.com/airbytehq/airbyte/pull/90957) | Add incremental sync to the `conversations`, `executions`, and `step` streams |
 | 1.1.9 | 2026-11-03 | [90752](https://github.com/airbytehq/airbyte/pull/90752) | Update dependencies |
 | 1.1.8 | 2026-10-27 | [90064](https://github.com/airbytehq/airbyte/pull/90064) | Update dependencies |
 | 1.1.7 | 2026-10-20 | [89453](https://github.com/airbytehq/airbyte/pull/89453) | Update dependencies |
