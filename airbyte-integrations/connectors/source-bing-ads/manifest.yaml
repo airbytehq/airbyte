@@ -2624,7 +2624,7 @@ definitions:
             action: FAIL
             failure_type: transient_error
             error_message_contains: "Signature not valid in the specified time frame"
-            error_message: "The Bing Ads download link for this report expired or was not yet valid when the connector tried to download the file. This is a temporary issue; the sync will be retried."
+            error_message: "The Bing Ads file download link expired or was not yet valid when the connector tried to download the file. This is a temporary issue; the sync will be retried."
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:

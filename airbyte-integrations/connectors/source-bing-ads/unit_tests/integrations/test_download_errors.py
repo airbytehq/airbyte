@@ -22,7 +22,7 @@ PERMISSION_MISMATCH_RESPONSE = (
     "<Message>This request is not authorized to perform this operation using this permission.</Message></Error>"
 )
 EXPECTED_EXPIRED_LINK_MESSAGE = (
-    "The Bing Ads download link for this report expired or was not yet valid when the connector tried to download "
+    "The Bing Ads file download link expired or was not yet valid when the connector tried to download "
     "the file. This is a temporary issue; the sync will be retried."
 )
 
