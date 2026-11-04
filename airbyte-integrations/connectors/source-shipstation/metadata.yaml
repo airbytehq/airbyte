@@ -43,3 +43,11 @@ data:
     - title: ShipStation rate limits
       url: https://www.shipstation.com/docs/api/requirements/#rate-limits
       type: rate_limits
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
