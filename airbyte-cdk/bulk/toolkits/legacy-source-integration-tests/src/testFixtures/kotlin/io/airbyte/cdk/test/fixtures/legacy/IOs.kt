@@ -3,7 +3,6 @@
  */
 package io.airbyte.cdk.test.fixtures.legacy
 
-import com.google.common.base.Charsets
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files

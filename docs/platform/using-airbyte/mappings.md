@@ -1,5 +1,5 @@
 ---
-products: cloud-teams, oss-enterprise
+products: cloud-plus
 ---
 
 # Mappings

@@ -23,7 +23,7 @@ The following describes the types of schema changes that are detected.
 | Type of Schema Change    | Propagation Behavior  | Breaking Schema Change? |
 | ------------------------ | --------------------- | ----------------------- |
 | New Column/Field               | The new field will be created in the destination. Values for the field will be filled in for the updated rows. If you are missing values for rows not updated, a backfill can be done by manually triggering a refresh or through the `Backfill new or renamed columns` option (see below)                                                                         |
-| Removal of column/field        | The old field will be retained in the destination, but stop updating with updated values. If the connection is ever cleared or refreshed, the field and its historical data will be removed entirely. || 
+| Removal of column/field        | The old field and its historical data are retained in the destination; the column is not dropped. Subsequent rows are written with `NULL` for that field. If the connection is ever cleared or refreshed, the field and its historical data will be removed entirely. ||
 | New stream               | The first sync will create the new stream in the destination and fill all data in as if it is an initial sync.    ||
 | Removal of stream        | The stream will stop updating, and any existing data in the destination will remain.    ||
 | Column data type changes | The data in the destination will remain the same. For those syncing on a Destinations V2 destination, any new or updated rows with incompatible data types will result in a row error in the destination tables and show an error in the `airbyte_meta` field. You will need to refresh the schema and refresh the stream to ensure the data types are consistent. ||
@@ -36,15 +36,16 @@ Airbyte offers a few options for how it should detect and propagate schema chang
 
 | Connection Setting    | Definition  |
 | --------------------- | ----------- |
-| Propagate field changes only              | Only column changes will be propagated. New or removed streams will be ignored.            |
+| Propagate field changes only              | Only column changes will be propagated, with one exception: if a stream is removed from the source, it is also removed from the connection.            |
 | Propagate all field and stream changes | All new streams and column changes from the source will automatically be propagated and reflected in the destination. This includes stream changes (additions or deletions), column changes (additions or deletions) and data type changes |
 | Approve all changes myself         | This allows you to detect and manually approve changes. Schema changes will be detected, but not propagated. Syncs will continue running with the schema you've set up. To propagate the detected schema changes, you will need to approve the changes manually                                    |
 | Stop future syncs         | Connections will be automatically paused as soon as any schema changes are detected             |
 
 ### Automatic propagation of detected schema changes
-If your connection setting is set to `Propagate field changes only` or `Propagate all field and stream changes`, schema changes except for breaking changes are automatically applied to the ensuing sync and the data in the destination will automatically shift as schema changes are applied. 
 
-When `Propagate field changes only` is selected, only field changes will be propagated. New or removed streams will be ignored. 
+If your connection setting is set to `Propagate field changes only` or `Propagate all field and stream changes`, schema changes except for breaking changes are automatically applied to the ensuing sync and the data in the destination will automatically shift as schema changes are applied.
+
+When `Propagate field changes only` is selected, only field changes will be propagated, with one exception: if a stream is removed from the source, it is also removed from the connection.
 
 When `Propagate all field and stream changes` is selected, both field and stream changes will be automatically propagated.
 

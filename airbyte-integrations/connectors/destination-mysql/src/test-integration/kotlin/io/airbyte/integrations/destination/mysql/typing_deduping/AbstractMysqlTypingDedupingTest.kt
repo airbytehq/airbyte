@@ -25,6 +25,7 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest(SQLDiale
     override val sqlGenerator = MysqlSqlGenerator()
     override val sourceOperations = MysqlTestSourceOperations()
     override val nameTransformer = MySQLNameTransformer()
+
     override fun getBaseConfig(): ObjectNode = containerizedConfig.deepCopy()
 
     override fun getDataSource(config: JsonNode?): DataSource =
@@ -84,7 +85,7 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest(SQLDiale
         // mysql doesn't have schemas, it only has databases.
         // so override this method to use dropDatabase.
         database!!.execute(
-            dslContext.dropDatabaseIfExists(streamNamespace).getSQL(ParamType.INLINED)
+            dslContext.dropDatabaseIfExists(streamNamespace).getSQL(ParamType.INLINED),
         )
     }
 
@@ -94,8 +95,8 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest(SQLDiale
         private lateinit var containerizedConfig: ObjectNode
         /**
          * The config with host/port accessible from the host's network. (technically, this is still
-         * within the airbyte-ci container, but `containerizedConfig` is intended for containers in
-         * the docker-in-docker matryoshka doll)
+         * within the CI container, but `containerizedConfig` is intended for containers in the
+         * docker-in-docker matryoshka doll)
          */
         private lateinit var bareMetalConfig: ObjectNode
 

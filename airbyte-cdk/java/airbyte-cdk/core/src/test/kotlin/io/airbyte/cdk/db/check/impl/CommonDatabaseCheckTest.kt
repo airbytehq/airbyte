@@ -30,7 +30,7 @@ internal class CommonDatabaseCheckTest {
                 container!!.username,
                 container!!.password,
                 container!!.driverClassName,
-                container!!.jdbcUrl
+                container!!.jdbcUrl,
             )
         dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)
     }

@@ -147,12 +147,27 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: {}
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    grant_type: refresh_token
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+  access_token_authenticator:
+    type: BearerAuthenticator
+    api_token: '{{ config["credentials"]["access_token"] }}'
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      Client: "#/definitions/oauth_authenticator"
+      AccessToken: "#/definitions/access_token_authenticator"
   base_requester:
     type: HttpRequester
     url_base: https://tasks.googleapis.com/tasks/v1/
-    authenticator:
-      type: BearerAuthenticator
-      api_token: '{{ config["api_key"] }}'
+    authenticator: "#/definitions/authenticator"
 
 streams:
   - $ref: "#/definitions/streams/tasks"
@@ -164,27 +179,137 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_key
+      - credentials
       - start_date
     properties:
-      api_key:
-        type: string
-        order: 1
-        title: API Key
-        airbyte_secret: true
+      credentials:
+        type: object
+        title: Authentication
+        description: >-
+          Credentials for connecting to the Google Tasks API. The API only
+          accepts OAuth 2.0 user credentials; use the OAuth option so the
+          connector can refresh its access token on every sync.
+        order: 0
+        oneOf:
+          - title: Authenticate via Google (OAuth)
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: Client
+              client_id:
+                title: Client ID
+                type: string
+                description: "Enter your Google application's Client ID. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
+              client_secret:
+                title: Client Secret
+                type: string
+                description: "Enter your Google application's Client Secret. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
+              refresh_token:
+                title: Refresh Token
+                type: string
+                description: "Enter your Google application's refresh token, obtained with the <code>https://www.googleapis.com/auth/tasks.readonly</code> scope. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
+          - title: Access Token (expires after about 1 hour)
+            type: object
+            required:
+              - auth_type
+              - access_token
+            properties:
+              auth_type:
+                type: string
+                const: AccessToken
+              access_token:
+                title: Access Token
+                type: string
+                description: "A short-lived Google OAuth 2.0 access token. Google access tokens expire after about one hour, so this option is only suitable for one-off tests; use the OAuth option for scheduled syncs."
+                airbyte_secret: true
       start_date:
         type: string
-        order: 2
+        order: 1
         title: Start date
+        description: Only task lists and tasks last updated on or after this date are synced.
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2024-01-01T00:00:00Z"
       records_limit:
         type: string
-        description: The maximum number of records to be returned per request
-        order: 0
+        description: The maximum number of records to be returned per request (the Google Tasks API allows at most 100 for tasks and 1000 for task lists).
+        order: 2
         title: Records Limit
         default: "50"
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Migrates the legacy top-level `api_key` (a Google OAuth access token) into the nested credentials object.
+          OLD: {"api_key": ...}
+          NEW: {"credentials": {"auth_type": "AccessToken", "access_token": ...}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "access_token"]
+                value: "{{ config['api_key'] }}"
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: AccessToken
+            condition: "{{ (config.get('api_key') or False) and not (config.get('credentials') or {}).get('auth_type') }}"
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: Client
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "https://www.googleapis.com/auth/tasks.readonly"
+        consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
+        access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
+        extract_output:
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
 
 metadata:
   assist:

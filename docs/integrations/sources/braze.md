@@ -47,6 +47,10 @@ Rate limits differ depending on stream.
 
 Rate limits table: https://www.braze.com/docs/api/api_limits/#rate-limits-by-request-type
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

@@ -7,6 +7,16 @@ enterprise-connector: true
 
 <HideInUI>
 
+:::info We no longer sell this connector
+
+Airbyte no longer sells this connector, but we continue to support it if you purchased it in the past.
+
+:::
+
+</HideInUI>
+
+<HideInUI>
+
 This page contains the setup guide and reference information for the [SharePoint Lists Enterprise](https://portal.azure.com) source connector.
 
 </HideInUI>
@@ -83,9 +93,9 @@ The Site ID is required to identify which SharePoint site to sync from. You can 
 | `client_secret` | Yes | Azure AD Application client secret |
 | `tenant_id` | Yes | Azure AD Tenant ID |
 | `site_id` | Yes | SharePoint Site ID in format: `hostname,site-guid,web-guid` |
-| `list_name_filter` | No | Regular expression pattern to filter which lists to sync (for example, `Perdue.*` to match lists starting with "Perdue") |
+| `list_name_filter` | No | Regular expression pattern to filter which lists to sync (for example, `Project.*` to match lists starting with "Project") |
 | `skip_document_libraries` | No | Skip document library lists (default: `true`) |
-| `num_workers` | No | Number of concurrent workers for parallel processing (default: `10`, range: 1-20) |
+| `num_workers` | No | Number of concurrent threads for parallel processing (default: `10`, range: 1-20) |
 
 ## Streams
 

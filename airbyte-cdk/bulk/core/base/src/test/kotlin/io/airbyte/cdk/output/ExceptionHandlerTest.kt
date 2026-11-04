@@ -21,7 +21,7 @@ private const val RULE0 = "${REGEX_CLASSIFIER_PREFIX}.rules[0]"
             Property(name = "$RULE0.error", value = "config"),
             Property(name = "$RULE0.pattern", value = "foo"),
             Property(name = "$RULE0.input-example", value = "foobarbaz"),
-        ]
+        ],
 )
 class ExceptionHandlerTest {
 
@@ -31,7 +31,7 @@ class ExceptionHandlerTest {
     fun testClassified() {
         Assertions.assertEquals(
             TransientError("foo"),
-            handler.classify(TransientErrorException("foo"))
+            handler.classify(TransientErrorException("foo")),
         )
         Assertions.assertEquals(ConfigError("foo"), handler.classify(RuntimeException("foo")))
     }

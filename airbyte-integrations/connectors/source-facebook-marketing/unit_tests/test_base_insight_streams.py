@@ -2,12 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from datetime import date, datetime, timedelta
 
 import pytest
+from facebook_business.exceptions import FacebookRequestError
 from freezegun import freeze_time
 from source_facebook_marketing.spec import InsightConfig, TimeIncrementPeriod, ValidBreakdowns
-from source_facebook_marketing.streams import AdsInsights
+from source_facebook_marketing.streams import AdsInsights, AdsInsightsAgeAndGender
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.utils import DateInterval
 
@@ -50,6 +52,19 @@ def async_manager_mock_fixture(mocker):
 def async_job_mock_fixture(mocker):
     mock = mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob")
     mock.side_effect = lambda api, **kwargs: {"api": api, **kwargs}
+
+
+def _complete_insight_slice(stream, mocker, account_id, interval_start):
+    job = mocker.Mock(spec=InsightAsyncJob)
+    job.get_result.return_value = []
+    job.interval = DateInterval(interval_start, interval_start)
+
+    return list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            stream_slice={"insight_job": job, "account_id": account_id},
+        )
+    )
 
 
 class TestBaseInsightsStream:
@@ -122,6 +137,67 @@ class TestBaseInsightsStream:
         assert stream.action_attribution_windows == expected_windows
         assert stream.request_params()["action_attribution_windows"] == expected_windows
 
+    @pytest.mark.parametrize(
+        "include_engaged_view,expected_windows",
+        [
+            pytest.param(
+                False,
+                ["1d_click", "7d_click", "28d_click", "1d_view"],
+                id="disabled_uses_default_windows",
+            ),
+            pytest.param(
+                True,
+                ["1d_click", "7d_click", "28d_click", "1d_view", "1d_ev"],
+                id="enabled_appends_ev_windows",
+            ),
+        ],
+    )
+    def test_include_engaged_view(self, api, some_config, include_engaged_view, expected_windows):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            include_engaged_view=include_engaged_view,
+        )
+
+        assert stream.action_attribution_windows == expected_windows
+        assert stream.request_params()["action_attribution_windows"] == expected_windows
+
+    @pytest.mark.parametrize(
+        "include_incrementality,include_engaged_view,expected_windows",
+        [
+            pytest.param(
+                True,
+                True,
+                ["1d_click", "7d_click", "28d_click", "1d_view", "incrementality", "1d_ev"],
+                id="both_enabled",
+            ),
+            pytest.param(
+                False,
+                False,
+                ["1d_click", "7d_click", "28d_click", "1d_view"],
+                id="both_disabled",
+            ),
+        ],
+    )
+    def test_include_incrementality_and_engaged_view(
+        self, api, some_config, include_incrementality, include_engaged_view, expected_windows
+    ):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            include_incrementality=include_incrementality,
+            include_engaged_view=include_engaged_view,
+        )
+
+        assert stream.action_attribution_windows == expected_windows
+        assert stream.request_params()["action_attribution_windows"] == expected_windows
+
     def test_init_statuses(self, api, some_config):
         stream = AdsInsights(
             api=api,
@@ -164,6 +240,160 @@ class TestBaseInsightsStream:
         )
 
         assert len(records) == 3
+
+    @freeze_time("2026-09-30")
+    def test_cursor_does_not_regress_while_completing_lookback_slices(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 9, 20)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 29),
+            insights_lookback_window=28,
+        )
+        stream.state = {account_id: {"date_start": cursor.isoformat(), "slices": []}}
+
+        for offset in [-28, -26, -27, -25, -24]:
+            _complete_insight_slice(stream, mocker, account_id, cursor + timedelta(days=offset))
+            assert date.fromisoformat(stream.state[account_id]["date_start"]) >= cursor
+
+        resumed_stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 29),
+            insights_lookback_window=28,
+        )
+        resumed_stream.state = stream.state
+        assert resumed_stream._get_start_date()[account_id] == cursor - timedelta(days=28)
+
+    @freeze_time("2026-09-30")
+    def test_stale_slices_are_removed_and_lookback_dates_are_still_requested(self, mocker, api, some_config, async_job_mock):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 9, 20)
+        end_date = date(2026, 9, 25)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime.combine(end_date, datetime.min.time()),
+            insights_lookback_window=28,
+        )
+        stream.state = {
+            account_id: {
+                "date_start": cursor.isoformat(),
+                "slices": [(cursor - timedelta(days=days)).isoformat() for days in [19, 12, 11, 10]],
+            }
+        }
+        assert stream.state[account_id]["slices"] == []
+
+        stale_slice = cursor - timedelta(days=29)
+        _complete_insight_slice(stream, mocker, account_id, stale_slice)
+        assert stale_slice in stream._completed_slices[account_id]
+        assert stream.state[account_id]["slices"] == []
+        assert stale_slice in stream._completed_slices[account_id]
+
+        generated_jobs = list(stream._generate_async_jobs(params={}, account_id=account_id))
+        expected_dates = [cursor - timedelta(days=28) + timedelta(days=offset) for offset in range((end_date - cursor).days + 29)]
+        assert {job["interval"].start for job in generated_jobs} == set(expected_dates)
+
+        completion_order = expected_dates[::2] + expected_dates[1::2]
+        for interval_start in completion_order:
+            _complete_insight_slice(stream, mocker, account_id, interval_start)
+
+        assert stream.state[account_id]["date_start"] == end_date.isoformat()
+        assert stream.state[account_id]["slices"] == []
+
+    @freeze_time("2026-09-30")
+    def test_completed_slices_past_gap_remain_in_state(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 9, 20)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 29),
+            insights_lookback_window=28,
+        )
+        stream.state = {account_id: {"date_start": cursor.isoformat(), "slices": []}}
+
+        for offset in [*range(-28, 3), 4]:
+            _complete_insight_slice(stream, mocker, account_id, cursor + timedelta(days=offset))
+
+        assert stream.state[account_id]["date_start"] == (cursor + timedelta(days=2)).isoformat()
+        assert stream.state[account_id]["slices"] == [(cursor + timedelta(days=4)).isoformat()]
+
+    @freeze_time("2026-09-30")
+    def test_monthly_cursor_advances_from_snapped_first_slice(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 8, 1)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 20),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        stream.state = {
+            account_id: {"date_start": cursor.isoformat(), "slices": []},
+            "time_increment": 30,
+            "time_increment_period": "monthly",
+        }
+
+        for interval_start in [date(2026, 7, 1), date(2026, 8, 1), date(2026, 9, 1)]:
+            _complete_insight_slice(stream, mocker, account_id, interval_start)
+
+        assert stream.state[account_id]["date_start"] == "2026-09-01"
+
+    @freeze_time("2026-09-30")
+    def test_weekly_cursor_advances_with_non_aligned_lookback(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 9, 21)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 30),
+            insights_lookback_window=10,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        stream.state = {
+            account_id: {"date_start": cursor.isoformat(), "slices": []},
+            "time_increment": 7,
+            "time_increment_period": "weekly",
+        }
+
+        for interval_start in [date(2026, 9, 7), date(2026, 9, 14), date(2026, 9, 21), date(2026, 9, 28)]:
+            _complete_insight_slice(stream, mocker, account_id, interval_start)
+
+        assert stream.state[account_id]["date_start"] == "2026-09-28"
+
+    @freeze_time("2026-09-30")
+    def test_cursor_progress_is_independent_between_accounts(self, mocker, api):
+        first_account, second_account = "first_account", "second_account"
+        first_cursor, second_cursor = date(2026, 9, 20), date(2026, 9, 10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[first_account, second_account],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 29),
+            insights_lookback_window=28,
+        )
+        stream.state = {
+            first_account: {"date_start": first_cursor.isoformat(), "slices": []},
+            second_account: {"date_start": second_cursor.isoformat(), "slices": []},
+        }
+
+        for offset in [-28, -26, -27]:
+            _complete_insight_slice(stream, mocker, first_account, first_cursor + timedelta(days=offset))
+            assert date.fromisoformat(stream.state[first_account]["date_start"]) >= first_cursor
+            assert date.fromisoformat(stream.state[second_account]["date_start"]) == second_cursor
+
+        _complete_insight_slice(stream, mocker, second_account, second_cursor - timedelta(days=28))
+        assert date.fromisoformat(stream.state[second_account]["date_start"]) >= second_cursor
+        assert date.fromisoformat(stream.state[first_account]["date_start"]) >= first_cursor
 
     def test_read_records_random_order(self, mocker, api, some_config):
         """1. yield all from mock
@@ -244,10 +474,7 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
-                        ],
+                        "slices": [],
                     },
                     "time_increment": 1,
                 },
@@ -290,7 +517,13 @@ class TestBaseInsightsStream:
                     },
                     "time_increment": 1,
                 },
-                None,
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": [],
+                    },
+                    "time_increment": 1,
+                },
             ),
             (
                 {
@@ -564,6 +797,85 @@ class TestBaseInsightsStream:
                 "ad_id",
             ]
         )
+
+    def test_fields_exclude_breakdowns_from_configured_json_schema(self, api, some_config):
+        stream = AdsInsightsAgeAndGender(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+        )
+        stream.configured_json_schema = {
+            "properties": {
+                "account_id": {"type": ["null", "string"]},
+                "age": {"type": ["null", "string"]},
+                "gender": {"type": ["null", "string"]},
+                "impressions": {"type": ["null", "integer"]},
+            }
+        }
+
+        params = stream.request_params()
+
+        assert params["breakdowns"] == ["age", "gender"]
+        assert "age" not in params["fields"]
+        assert "gender" not in params["fields"]
+        assert params["fields"] == ["account_id", "impressions"]
+
+    def test_fields_exclude_breakdowns_from_custom_fields(self, api, some_config):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["account_id", "age", "gender", "impressions"],
+            breakdowns=["age", "gender"],
+            insights_lookback_window=28,
+        )
+
+        params = stream.request_params()
+
+        assert params["breakdowns"] == ["age", "gender"]
+        assert params["fields"] == ["account_id", "impressions"]
+
+    def test_fields_exclude_object_breakdown_ids_from_configured_json_schema(self, api, some_config):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            breakdowns=["body_asset"],
+            insights_lookback_window=28,
+        )
+        stream.configured_json_schema = {
+            "properties": {
+                "account_id": {"type": ["null", "string"]},
+                "body_asset": {"type": ["null", "object"]},
+                "body_asset_id": {"type": ["null", "string"]},
+                "impressions": {"type": ["null", "integer"]},
+            }
+        }
+
+        params = stream.request_params()
+
+        assert params["breakdowns"] == ["body_asset"]
+        assert params["fields"] == ["account_id", "impressions"]
+
+    def test_fields_exclude_object_breakdown_ids_from_custom_fields(self, api, some_config):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["account_id", "body_asset", "body_asset_id", "impressions"],
+            breakdowns=["body_asset"],
+            insights_lookback_window=28,
+        )
+
+        params = stream.request_params()
+
+        assert params["breakdowns"] == ["body_asset"]
+        assert params["fields"] == ["account_id", "impressions"]
 
     @pytest.mark.parametrize(
         "custom_fields, expected_in_schema, expected_not_in_schema",
@@ -1639,3 +1951,122 @@ class TestCalendarAlignedPeriods:
         # Next would be Mar 9 > end_date Mar 6, so stops
         expected = [date(2026, 3, 2)]
         assert intervals == expected
+
+    @freeze_time("2026-04-01")
+    def test_date_intervals_clamps_start_to_retention_boundary(self, api, some_config):
+        """Start date older than 37-month retention period is clamped forward."""
+        # Set start_date well before the retention boundary (4+ years ago).
+        # validate_start_date computes retention_date = today - 1123 days + 1 day.
+        # Frozen today = 2026-04-01 → retention_date = 2026-04-01 - 1123 + 1 = 2023-03-05.
+        retention_date = date(2026, 4, 1) - timedelta(days=1123) + timedelta(days=1)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2022, 1, 1),  # way before retention boundary
+            end_date=datetime(2026, 4, 1),
+            insights_lookback_window=0,
+            time_increment=5,
+        )
+        intervals = list(stream._date_intervals(some_config["account_ids"][0]))
+        # The first interval should start at the retention boundary, not 2022-01-01
+        assert intervals[0] == retention_date
+
+
+class TestCheckBreakdowns:
+    """Tests for AdsInsights.check_breakdowns() — the connection-check breakdown validation.
+
+    The method uses a three-tier fallback when Facebook rejects the synchronous call with
+    "Please reduce the amount of data you're asking for" (common for high-cardinality
+    breakdowns like product_id). See base_insight_streams.check_breakdowns for details.
+    """
+
+    @classmethod
+    def _make_fb_error(cls, message: str) -> FacebookRequestError:
+        return FacebookRequestError(
+            message="Call was not successful",
+            request_context={"method": "GET"},
+            http_status=400,
+            http_headers={},
+            body={"error": {"message": message, "code": 100}},
+        )
+
+    def _make_stream(self, api, some_config):
+        return AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2024, 1, 2),
+            insights_lookback_window=28,
+            breakdowns=["product_id"],
+        )
+
+    def test_check_breakdowns_first_attempt_succeeds_no_retry(self, api, some_config):
+        """First attempt succeeds → no retry is issued and no error is raised."""
+        stream = self._make_stream(api, some_config)
+        account = api.get_account.return_value
+        account.get_insights.return_value = []
+
+        stream.check_breakdowns(account_id=some_config["account_ids"][0])
+
+        assert account.get_insights.call_count == 1
+        first_call_kwargs = account.get_insights.call_args_list[0].kwargs
+        assert "time_range" not in first_call_kwargs["params"]
+        assert first_call_kwargs["is_async"] is False
+
+    @freeze_time("2024-06-15")
+    def test_check_breakdowns_retries_with_today_on_reduce_data_error(self, api, some_config):
+        """First attempt raises "reduce data" → retry constrained to today succeeds."""
+        stream = self._make_stream(api, some_config)
+        account = api.get_account.return_value
+        account.get_insights.side_effect = [
+            self._make_fb_error("Please reduce the amount of data you're asking for."),
+            [],
+        ]
+
+        stream.check_breakdowns(account_id=some_config["account_ids"][0])
+
+        assert account.get_insights.call_count == 2
+        first_params = account.get_insights.call_args_list[0].kwargs["params"]
+        second_params = account.get_insights.call_args_list[1].kwargs["params"]
+        assert "time_range" not in first_params
+        assert second_params["time_range"] == {"since": "2024-06-15", "until": "2024-06-15"}
+
+    def test_check_breakdowns_logs_warning_when_both_attempts_fail(self, api, some_config, caplog):
+        """Both attempts raise "reduce data" → warning logged, no exception raised."""
+        stream = self._make_stream(api, some_config)
+        account = api.get_account.return_value
+        account.get_insights.side_effect = [
+            self._make_fb_error("Please reduce the amount of data you're asking for."),
+            self._make_fb_error("Please reduce the amount of data you're asking for."),
+        ]
+
+        with caplog.at_level(logging.WARNING, logger="airbyte"):
+            stream.check_breakdowns(account_id=some_config["account_ids"][0])
+
+        assert account.get_insights.call_count == 2
+        assert any("exceeded Facebook API data-volume limit" in rec.message for rec in caplog.records)
+
+    def test_check_breakdowns_reraises_non_reduce_data_error_on_first_attempt(self, api, some_config):
+        """First attempt raises any other FacebookRequestError → re-raise, no retry."""
+        stream = self._make_stream(api, some_config)
+        account = api.get_account.return_value
+        account.get_insights.side_effect = self._make_fb_error("Invalid OAuth access token")
+
+        with pytest.raises(FacebookRequestError):
+            stream.check_breakdowns(account_id=some_config["account_ids"][0])
+
+        assert account.get_insights.call_count == 1
+
+    def test_check_breakdowns_reraises_non_reduce_data_error_on_retry(self, api, some_config):
+        """Retry raises a non-"reduce data" FacebookRequestError → re-raise."""
+        stream = self._make_stream(api, some_config)
+        account = api.get_account.return_value
+        account.get_insights.side_effect = [
+            self._make_fb_error("Please reduce the amount of data you're asking for."),
+            self._make_fb_error("Invalid parameter"),
+        ]
+
+        with pytest.raises(FacebookRequestError):
+            stream.check_breakdowns(account_id=some_config["account_ids"][0])
+
+        assert account.get_insights.call_count == 2

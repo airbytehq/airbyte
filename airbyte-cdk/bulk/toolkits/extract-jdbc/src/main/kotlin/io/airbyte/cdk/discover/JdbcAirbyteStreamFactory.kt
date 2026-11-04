@@ -16,7 +16,7 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
 
     override fun create(
         config: SourceConfiguration,
-        discoveredStream: DiscoveredStream
+        discoveredStream: DiscoveredStream,
     ): AirbyteStream {
         val isCdc = config.isCdc()
         val hasPK = hasValidPrimaryKey(discoveredStream)
@@ -54,10 +54,11 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
         if (discoveredStream.primaryKeyColumnIDs.isEmpty()) {
             return false
         }
-        val allColumnsByID: Map<String, Field> = discoveredStream.columns.associateBy { it.id }
+        val allColumnsByID: Map<String, EmittedField> =
+            discoveredStream.columns.associateBy { it.id }
         return discoveredStream.primaryKeyColumnIDs.all { idComponents: List<String> ->
             val id: String = idComponents.joinToString(separator = ".")
-            val field: Field? = allColumnsByID[id]
+            val field: EmittedField? = allColumnsByID[id]
             field != null && isPossiblePrimaryKeyElement(field)
         }
     }
@@ -68,7 +69,7 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
      * For this to be possible,
      * 1. the field needs to be part of a key as defined by the source,
      * 2. and its values must be deserializable from the checkpoint persisted in an Airbyte state
-     * message.
+     *    message.
      *
      * This method does not determine (1), of course, because the source keys are defined in the
      * source database itself and are retrieved via [MetadataQuerier.primaryKey]. Instead, this
@@ -76,14 +77,14 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
      * objects. For instance if the [Field.type] does not map to a [LosslessFieldType] then the
      * field can't reliably round-trip checkpoint values during a resumable initial sync.
      */
-    fun isPossiblePrimaryKeyElement(field: Field): Boolean =
+    fun isPossiblePrimaryKeyElement(field: EmittedField): Boolean =
         when (field.type) {
             !is LosslessFieldType -> false
             CharacterStreamFieldType,
             NCharacterStreamFieldType,
             ClobFieldType,
             NClobFieldType,
-            JsonStringFieldType, -> false
+            JsonStringFieldType -> false
             else -> true
         }
 
@@ -94,6 +95,6 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
      * to round-trip the column values, we need to be able to query the max value from the source at
      * the start of the sync.
      */
-    fun isPossibleCursor(field: Field): Boolean =
+    fun isPossibleCursor(field: EmittedField): Boolean =
         isPossiblePrimaryKeyElement(field) && field.type !is BooleanFieldType
 }

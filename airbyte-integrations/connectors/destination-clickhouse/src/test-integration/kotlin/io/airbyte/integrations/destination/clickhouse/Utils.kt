@@ -22,7 +22,7 @@ object Utils {
     fun getConfigPath(relativePath: String): Path =
         Path.of(
             this::class.java.classLoader.getResource(relativePath)?.toURI()
-                ?: throw IllegalArgumentException("Resource $relativePath could not be found")
+                ?: throw IllegalArgumentException("Resource $relativePath could not be found"),
         )
 
     fun specToConfig(spec: ConfigurationSpecification): ClickhouseConfiguration {
@@ -49,7 +49,7 @@ object Utils {
     fun getClickhouseAirbyteClient(spec: ConfigurationSpecification): ClickhouseAirbyteClient {
         return ClickhouseAirbyteClient(
             getClickhouseClient(spec),
-            ClickhouseSqlGenerator(),
+            ClickhouseSqlGenerator(specToConfig(spec)),
             DefaultTempTableNameGenerator(),
         )
     }

@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.test.util.destination_process
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.config.DataChannelFormat
@@ -42,7 +41,9 @@ interface DestinationProcess {
      * unless you're trying to send a poison pill.
      */
     suspend fun sendMessage(string: String)
+
     suspend fun sendMessage(message: InputMessage, broadcast: Boolean = false)
+
     suspend fun sendMessages(vararg messages: InputMessage) {
         messages.forEach { sendMessage(it) }
     }
@@ -61,7 +62,6 @@ interface DestinationProcess {
     fun verifyFileDeleted()
 }
 
-@SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION", "good old lateinit")
 abstract class DestinationProcessFactory {
     /**
      * Ideally we'd take this in the constructor, but that's annoying because of how junit injects
@@ -105,12 +105,12 @@ abstract class DestinationProcessFactory {
                             )
                     DockerizedDestinationFactory(
                         rawProperties["data.dockerRepository"] as String,
-                        "dev"
+                        "dev",
                     )
                 }
                 else ->
                     throw IllegalArgumentException(
-                        "Unknown AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER environment variable: $runner"
+                        "Unknown AIRBYTE_CONNECTOR_INTEGRATION_TEST_RUNNER environment variable: $runner",
                     )
             }
     }

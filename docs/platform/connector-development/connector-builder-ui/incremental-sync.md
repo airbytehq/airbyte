@@ -1,4 +1,4 @@
-# Incremental sync
+# Incremental Sync
 
 An incremental sync is a sync which pulls only the data that has changed since the previous sync (as opposed to all the data available in the data source).
 
@@ -101,7 +101,7 @@ If the last record read has a datetime earlier than the end time of the stream i
 The `from-date` is set to the cutoff date of articles synced already and the `to-date` is set to the current date.
 
 :::info
-In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_time }}` and `{{ stream_interval.end_time }}` [placeholders](/platform/connector-development/config-based/understanding-the-yaml-file/reference#variables). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
+In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_time }}` and `{{ stream_interval.end_time }}` [placeholders](../config-based/understanding-the-yaml-file/reference/variables.md). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
 :::
 
 ## Advanced settings
@@ -199,3 +199,7 @@ To handle these cases, disable injection in the incremental sync form and use th
 
 For example the [Sendgrid API](https://docs.sendgrid.com/api-reference/e-mail-activity/filter-all-messages) requires setting both start and end time in a `query` parameter.
 For this case, you can use the `stream_interval` variable to configure a query parameter with "key" `query` and "value" `last_event_time BETWEEN TIMESTAMP "{{stream_interval.start_time}}" AND TIMESTAMP "{{stream_interval.end_time}}"` to filter down to the right window in time.
+
+## Related
+
+- *YAML Components*: [Incremental Sync](/platform/connector-development/config-based/understanding-the-yaml-file/incremental-syncs)

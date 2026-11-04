@@ -36,7 +36,7 @@ function getSupportLevelDisplay(rawSupportLevel) {
 
 module.exports = {
   isPypiConnector: (connector) => {
-    return Boolean(connector.remoteRegistries_oss?.pypi?.enabled);
+    return Boolean(connector.remoteRegistries?.pypi?.enabled);
   },
   parseCDKVersion,
   getSupportLevelDisplay,
