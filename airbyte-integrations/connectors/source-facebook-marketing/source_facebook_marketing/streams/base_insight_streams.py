@@ -263,8 +263,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             raise traced_exception(exc)
 
         self._completed_slices[account_id].add(job.interval.start)
-        if job.interval.start == self._next_cursor_values[account_id]:
-            self._advance_cursor(account_id)
+        self._advance_cursor(account_id)
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -276,7 +275,11 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                cursor_value = self._cursor_values.get(account_id)
+                completed_slices = self._completed_slices[account_id]
+                if cursor_value:
+                    completed_slices = {d for d in completed_slices if d > cursor_value}
+                new_state[account_id]["slices"] = sorted(d.isoformat() for d in completed_slices)
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -418,7 +421,8 @@ class AdsInsights(FBMarketingIncrementalStream):
                 break
             self._completed_slices[account_id].remove(ts_start)
             if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
+                existing_cursor = self._cursor_values.get(account_id)
+                self._cursor_values[account_id] = max(existing_cursor, ts_start) if existing_cursor is not None else ts_start
             else:
                 self._cursor_values = {account_id: ts_start}
 

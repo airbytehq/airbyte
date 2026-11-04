@@ -291,6 +291,18 @@ class TestBaseInsightsStream:
         for record in records:
             assert record.get("account_id")
 
+    def _complete_interval(self, mocker, stream, account_id, interval_start):
+        job = mocker.Mock(spec=InsightAsyncJob)
+        job.get_result.return_value = []
+        job.interval = DateInterval(interval_start, stream._compute_interval_end(interval_start))
+
+        list(
+            stream.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice={"insight_job": job, "account_id": account_id},
+            )
+        )
+
     @pytest.mark.parametrize(
         "state,result_state",
         [
@@ -307,10 +319,7 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
-                        ],
+                        "slices": [],
                     },
                     "time_increment": 1,
                 },
@@ -346,10 +355,7 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
-                        ],
+                        "slices": [],
                     },
                     "time_increment": 1,
                 },
@@ -399,6 +405,104 @@ class TestBaseInsightsStream:
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
+
+    def test_cursor_does_not_move_backwards_when_lookback_slices_complete(self, mocker, api, some_config):
+        with freeze_time("2026-11-04"):
+            account_id = some_config["account_ids"][0]
+            cursor = date(2026, 9, 20)
+            end_date = cursor + timedelta(days=5)
+            stream = AdsInsights(
+                api=api,
+                account_ids=some_config["account_ids"],
+                start_date=datetime(2024, 1, 1),
+                end_date=datetime.combine(end_date, datetime.min.time()),
+                insights_lookback_window=30,
+            )
+            stream.state = {account_id: {stream.cursor_field: cursor.isoformat()}, "time_increment": 1}
+
+            for offset in range(-30, -23):
+                self._complete_interval(mocker, stream, account_id, cursor + timedelta(days=offset))
+
+            assert stream.state[account_id][stream.cursor_field] == cursor.isoformat()
+
+            resumed_stream = AdsInsights(
+                api=api,
+                account_ids=some_config["account_ids"],
+                start_date=datetime(2024, 1, 1),
+                end_date=datetime.combine(end_date, datetime.min.time()),
+                insights_lookback_window=30,
+            )
+            resumed_stream.state = stream.state
+            assert resumed_stream._get_start_date()[account_id] == cursor - timedelta(days=30)
+
+            for offset in range(-23, 3):
+                self._complete_interval(mocker, stream, account_id, cursor + timedelta(days=offset))
+
+            assert stream.state[account_id][stream.cursor_field] == (cursor + timedelta(days=2)).isoformat()
+
+    def test_state_excludes_slices_at_or_before_cursor(self, mocker, api, some_config):
+        with freeze_time("2026-11-04"):
+            account_id = some_config["account_ids"][0]
+            cursor = date(2026, 9, 20)
+            stream = AdsInsights(
+                api=api,
+                account_ids=some_config["account_ids"],
+                start_date=datetime(2024, 1, 1),
+                end_date=datetime(2026, 9, 30),
+                insights_lookback_window=30,
+            )
+            stream.state = {account_id: {stream.cursor_field: cursor.isoformat()}, "time_increment": 1}
+            self._complete_interval(mocker, stream, account_id, cursor - timedelta(days=10))
+
+            state = stream.state
+            assert state[account_id][stream.cursor_field] == cursor.isoformat()
+            assert (cursor - timedelta(days=10)).isoformat() not in state[account_id]["slices"]
+
+            stream.state = {
+                account_id: {
+                    stream.cursor_field: cursor.isoformat(),
+                    "slices": [
+                        (cursor - timedelta(days=19)).isoformat(),
+                        (cursor + timedelta(days=1)).isoformat(),
+                    ],
+                },
+                "time_increment": 1,
+            }
+            assert stream.state[account_id]["slices"] == [(cursor + timedelta(days=1)).isoformat()]
+
+    @pytest.mark.parametrize(
+        "period,cursor,time_increment,end_date,last_period_start",
+        [
+            ("monthly", date(2026, 9, 1), 30, date(2026, 10, 2), date(2026, 10, 1)),
+            ("weekly", date(2026, 10, 5), 7, date(2026, 11, 2), date(2026, 11, 2)),
+        ],
+    )
+    def test_cursor_advances_with_monthly_time_increment_period(
+        self, mocker, api, some_config, period, cursor, time_increment, end_date, last_period_start
+    ):
+        with freeze_time("2026-11-04"):
+            account_id = some_config["account_ids"][0]
+            stream = AdsInsights(
+                api=api,
+                account_ids=some_config["account_ids"],
+                start_date=datetime(2024, 1, 1),
+                end_date=datetime.combine(end_date, datetime.min.time()),
+                time_increment=time_increment,
+                time_increment_period=period,
+                insights_lookback_window=30,
+            )
+            stream.state = {
+                account_id: {stream.cursor_field: cursor.isoformat()},
+                "time_increment": time_increment,
+                "time_increment_period": period,
+            }
+            intervals = list(stream._date_intervals(account_id))
+
+            for interval_start in intervals:
+                self._complete_interval(mocker, stream, account_id, interval_start)
+
+            assert intervals[-1] == last_period_start
+            assert stream.state[account_id][stream.cursor_field] == last_period_start.isoformat()
 
     def test_stream_slices_no_state(self, api, async_manager_mock, start_date, some_config):
         """Stream will use start_date when there is not state"""
