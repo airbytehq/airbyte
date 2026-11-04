@@ -293,3 +293,50 @@ def test_read_users_resumes_from_checkpoint():
 
     records = [row.record.data for row in iterator if row.type is Type.RECORD]
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
+
+
+def test_read_users_restarts_after_completed_sync():
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType
+
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    first_sync_messages = list(source.read(logger, config, catalog, {}))
+    first_sync_records = [row.record.data for row in first_sync_messages if row.type is Type.RECORD]
+    assert [record["id"] for record in first_sync_records] == list(range(1, 11))
+
+    last_state_message = [row for row in first_sync_messages if row.type is Type.STATE][-1]
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=last_state_message.state.stream)]
+    second_sync_messages = list(source.read(logger, config, catalog, state))
+    second_sync_records = [row.record.data for row in second_sync_messages if row.type is Type.RECORD]
+    assert [record["id"] for record in second_sync_records] == list(range(1, 11))
+
+
+@pytest.mark.parametrize("loop_offset", [10, 15])
+def test_read_users_restarts_when_checkpoint_at_or_past_count(loop_offset):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users", namespace=None),
+        stream_state=AirbyteStateBlob(updated_at="2024-01-01T00:00:00+00:00", loop_offset=loop_offset),
+    )
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+    messages = list(source.read(logger, config, catalog, state))
+    records = [row.record.data for row in messages if row.type is Type.RECORD]
+
+    assert [record["id"] for record in records] == list(range(1, 11))
