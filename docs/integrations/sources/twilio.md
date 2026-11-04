@@ -69,11 +69,11 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [Calls](https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources) | Full refresh, incremental |
 | [Conference Participants](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources) | Full refresh |
 | [Conferences](https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources) | Full refresh, incremental |
-| [Conversations](https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources) | Full refresh |
+| [Conversations](https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources) | Full refresh, Incremental |
 | [Conversation Messages](https://www.twilio.com/docs/conversations/api/conversation-message-resource#list-all-conversation-messages) | Full refresh |
 | [Conversation Participants](https://www.twilio.com/docs/conversations/api/conversation-participant-resource) | Full refresh |
 | [Dependent Phone Numbers](https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources) | Full refresh |
-| [Executions](https://www.twilio.com/docs/studio/rest-api/v2/execution#read-a-list-of-executions) | Full refresh |
+| [Executions](https://www.twilio.com/docs/studio/rest-api/v2/execution#read-a-list-of-executions) | Full refresh, Incremental |
 | [Flows](https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows) | Full refresh |
 | [Incoming Phone Numbers](https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources) | Full refresh |
 | [Keys](https://www.twilio.com/docs/usage/api/keys#read-a-key-resource) | Full refresh |
@@ -86,7 +86,7 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [Recordings](https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources) | Full refresh, incremental |
 | [Roles](https://www.twilio.com/docs/conversations/api/role-resource#read-multiple-role-resources) | Full refresh |
 | [Services](https://www.twilio.com/docs/conversations/api/service-resource#read-multiple-service-resources) | Full refresh |
-| [Steps](https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources) | Full refresh |
+| [Steps](https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources) | Full refresh, Incremental |
 | [Transcriptions](https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources) | Full refresh |
 | [Trunks](https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties) | Full refresh |
 | [Usage Records](https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources) | Full refresh, incremental |
@@ -95,6 +95,12 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [Users](https://www.twilio.com/docs/conversations/api/user-resource) | Full refresh |
 | [Verify Services](https://www.twilio.com/docs/verify/api/service#maincontent) | Full refresh |
 | [Voice Pricing Countries](https://www.twilio.com/docs/voice/pricing#pricing-voice-country-instance-resource) | Full refresh |
+
+### Creation-date incremental streams
+
+Conversations and Executions filter on creation date only, and Steps follows its parent executions' creation dates. Later changes to existing records, such as conversation `state`, execution `status`, or steps added to long-running executions, are only re-read if their creation dates fall within the **Lookback window**. Use full refresh for complete current state.
+
+These three streams ignore **Replication Start Date** and read from the earliest data, using a fixed January 1, 2010 lower bound. They do not use **Slice Step Duration**. Conversation Participants and Conversation Messages continue to read all parent conversations.
 
 ### Pricing streams
 
@@ -167,6 +173,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.2.0 | 2026-11-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add incremental sync to the `conversations`, `executions`, and `step` streams |
 | 1.1.9 | 2026-11-03 | [90752](https://github.com/airbytehq/airbyte/pull/90752) | Update dependencies |
 | 1.1.8 | 2026-10-27 | [90064](https://github.com/airbytehq/airbyte/pull/90064) | Update dependencies |
 | 1.1.7 | 2026-10-20 | [89453](https://github.com/airbytehq/airbyte/pull/89453) | Update dependencies |
