@@ -50,6 +50,9 @@ class SnowflakeSourceMetadataQuerierTest {
         private const val SQLSTATE_COMPILE_ERROR = "42601"
         private const val ERRORCODE_VIEW_DECLARED_MISMATCH = 2057
         private const val ERRORCODE_VIEW_EXPANSION_FAILURE = 2037
+        private const val SQLSTATE_SYNTAX_OR_ACCESS = "42000"
+        private const val ERRORCODE_INVALID_IDENTIFIER = 904
+        private const val ERRORCODE_SYNTAX_ERROR = 1003
 
         // Object does not exist or is not authorized -> tolerable, whole-object when paired
         // with vendor codes 2003 or 2043.
@@ -117,13 +120,13 @@ class SnowflakeSourceMetadataQuerierTest {
     }
 
     /** A mocked [ResultSet] over [DatabaseMetaData.getTables] enumerating two views. */
-    private fun tablesResultSet(): ResultSet {
+    private fun tablesResultSet(badObjectType: String = "VIEW"): ResultSet {
         val rs = mock(ResultSet::class.java)
         `when`(rs.next()).thenReturn(true, true, false)
         `when`(rs.getString("TABLE_CAT")).thenReturn(DATABASE, DATABASE)
         `when`(rs.getString("TABLE_SCHEM")).thenReturn(SCHEMA, SCHEMA)
         `when`(rs.getString("TABLE_NAME")).thenReturn(GOOD_VIEW, BAD_VIEW)
-        `when`(rs.getString("TABLE_TYPE")).thenReturn("VIEW", "VIEW")
+        `when`(rs.getString("TABLE_TYPE")).thenReturn("VIEW", badObjectType)
         return rs
     }
 
@@ -211,9 +214,12 @@ class SnowflakeSourceMetadataQuerierTest {
     private fun twoColumnBadViewFixture(
         allColumnsFailure: SQLException,
         idColumnFailure: SQLException,
+        badObjectType: String = "VIEW",
     ): Fixture {
         val dbmd = mock(DatabaseMetaData::class.java)
-        `when`(dbmd.getTables(anyString(), any(), any(), any())).thenAnswer { tablesResultSet() }
+        `when`(dbmd.getTables(anyString(), any(), any(), any())).thenAnswer {
+            tablesResultSet(badObjectType)
+        }
         `when`(dbmd.getColumns(any(), any(), any(), any())).thenAnswer {
             twoColumnBadViewColumnsResultSet()
         }
@@ -229,7 +235,7 @@ class SnowflakeSourceMetadataQuerierTest {
         `when`(conn.createStatement()).thenReturn(stmt)
         return Fixture(
             querierFor(conn, tolerateObjectLevelFailures = true, checkPrivileges = true),
-            stmt
+            stmt,
         )
     }
 
@@ -246,6 +252,72 @@ class SnowflakeSourceMetadataQuerierTest {
     }
 
     // --- Tolerated object-level failures (discover mode) ---
+    @Test
+    fun `view referencing a dropped base-table column is skipped without per-column probes`() {
+        val fixture =
+            fixtureWith(
+                SQLException(
+                    "SQL compilation error: error line 33 at position 0\ninvalid identifier 'CAMPAIGN_NAME'",
+                    SQLSTATE_SYNTAX_OR_ACCESS,
+                    ERRORCODE_INVALID_IDENTIFIER,
+                ),
+            )
+
+        assertEquals(listOf("ID"), fixture.querier.fields(streamId(GOOD_VIEW)).map { it.id })
+        assertTrue(fixture.querier.fields(streamId(BAD_VIEW)).isEmpty())
+        verify(fixture.stmt, times(1)).executeQuery(contains(BAD_VIEW))
+    }
+
+    @Test
+    fun `table probe naming a dropped column falls back to per-column probes`() {
+        val fixture =
+            twoColumnBadViewFixture(
+                allColumnsFailure =
+                    SQLException(
+                        "invalid identifier",
+                        SQLSTATE_SYNTAX_OR_ACCESS,
+                        ERRORCODE_INVALID_IDENTIFIER,
+                    ),
+                idColumnFailure =
+                    SQLException(
+                        "invalid identifier",
+                        SQLSTATE_SYNTAX_OR_ACCESS,
+                        ERRORCODE_INVALID_IDENTIFIER,
+                    ),
+                badObjectType = "TABLE",
+            )
+
+        assertEquals(listOf("ID2"), fixture.querier.fields(streamId(BAD_VIEW)).map { it.id })
+        verify(fixture.stmt, times(1)).executeQuery(contains(PROBE_ALL_COLUMNS))
+        verify(fixture.stmt, times(1)).executeQuery(contains(PROBE_ID_ONLY))
+        verify(fixture.stmt, times(1)).executeQuery(contains(PROBE_ID2_ONLY))
+    }
+
+    @Test
+    fun `other 42000 compilation errors still propagate in discover`() {
+        val fixture =
+            fixtureWith(
+                SQLException("syntax error", SQLSTATE_SYNTAX_OR_ACCESS, ERRORCODE_SYNTAX_ERROR),
+            )
+
+        assertHardDiscoveryFailure(fixture, BAD_VIEW)
+    }
+
+    @Test
+    fun `invalid identifier propagates when tolerance is disabled`() {
+        val fixture =
+            fixtureWith(
+                SQLException(
+                    "invalid identifier",
+                    SQLSTATE_SYNTAX_OR_ACCESS,
+                    ERRORCODE_INVALID_IDENTIFIER,
+                ),
+                tolerateObjectLevelFailures = false,
+            )
+
+        assertHardDiscoveryFailure(fixture, BAD_VIEW)
+    }
+
     @Test
     fun `invalid view is skipped while healthy streams still discover`() {
         val fixture =
@@ -332,7 +404,7 @@ class SnowflakeSourceMetadataQuerierTest {
         // Pins the errorCode branch of the allowlist independently of SQLSTATE.
         val fixture =
             fixtureWith(
-                SQLException("does not exist or not authorized", null, ERRORCODE_OBJECT_NOT_FOUND)
+                SQLException("does not exist or not authorized", null, ERRORCODE_OBJECT_NOT_FOUND),
             )
 
         assertTrue(fixture.querier.fields(streamId(BAD_VIEW)).isEmpty())
@@ -349,7 +421,7 @@ class SnowflakeSourceMetadataQuerierTest {
                     "does not exist or not authorized",
                     null,
                     ERRORCODE_OBJECT_UNAUTHORIZED,
-                )
+                ),
             )
 
         assertTrue(fixture.querier.fields(streamId(BAD_VIEW)).isEmpty())

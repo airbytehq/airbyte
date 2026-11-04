@@ -37,16 +37,23 @@ data class CsvCopyContext(
 
 interface SnowflakeS3Copy : AutoCloseable {
     suspend fun prepare(catalog: DestinationCatalog)
+
     suspend fun complete(stream: DestinationStream)
+
     fun context(stream: DestinationStream): CsvCopyContext?
+
     suspend fun upload(path: Path, context: CsvCopyContext, recordCount: Int)
 }
 
 object DisabledSnowflakeS3Copy : SnowflakeS3Copy {
     override suspend fun prepare(catalog: DestinationCatalog) = Unit
+
     override suspend fun complete(stream: DestinationStream) = Unit
+
     override fun context(stream: DestinationStream): CsvCopyContext? = null
+
     override suspend fun upload(path: Path, context: CsvCopyContext, recordCount: Int) = Unit
+
     override fun close() = Unit
 }
 
@@ -79,7 +86,7 @@ class EnabledSnowflakeS3Copy(
                     stream.unmappedNamespace,
                     stream.unmappedName,
                     runId,
-                    epochSeconds
+                    epochSeconds,
                 )
             }
         catalog.streams.forEach { stream ->
@@ -121,13 +128,18 @@ class EnabledSnowflakeS3Copy(
 
     private fun streamKey(stream: DestinationStream) =
         sha(mapOf("namespace" to stream.unmappedNamespace, "name" to stream.unmappedName))
+
     private fun sha(value: Any): String =
         MessageDigest.getInstance("SHA-256").digest(Jsons.writeValueAsBytes(value)).joinToString(
-            ""
-        ) { "%02x".format(it) }
+            "",
+        ) {
+            "%02x".format(it)
+        }
+
     private fun putJson(key: String, value: Any) {
         uploader.uploadJson(Jsons.writeValueAsBytes(value), key).get()
     }
+
     private fun descriptor(stream: DestinationStream): Map<String, Any?> {
         val columns = LinkedHashMap<String, Any>()
         columnManager.getMetaColumns().forEach { (n, t) ->
@@ -150,8 +162,8 @@ class EnabledSnowflakeS3Copy(
                         AirbyteTypeToJsonSchema()
                             .convert(
                                 ObjectType(
-                                    LinkedHashMap(stream.tableSchema.columnSchema.inputSchema)
-                                )
+                                    LinkedHashMap(stream.tableSchema.columnSchema.inputSchema),
+                                ),
                             ),
                     "primary_key" to emptyList<List<String>>(),
                     "cursor" to emptyList<String>(),
@@ -166,12 +178,12 @@ class EnabledSnowflakeS3Copy(
                 "mapped_stream" to
                     mapOf(
                         "namespace" to stream.mappedDescriptor.namespace,
-                        "name" to stream.mappedDescriptor.name
+                        "name" to stream.mappedDescriptor.name,
                     ),
                 "table" to
                     mapOf(
                         "namespace" to stream.tableSchema.tableNames.finalTableName!!.namespace,
-                        "name" to stream.tableSchema.tableNames.finalTableName!!.name
+                        "name" to stream.tableSchema.tableNames.finalTableName!!.name,
                     ),
                 "mode" to if (snowflakeConfiguration.legacyRawTablesOnly) "raw" else "schema",
                 "columns" to columns,
@@ -183,10 +195,11 @@ class EnabledSnowflakeS3Copy(
                         "quote" to "\"",
                         "line_separator" to "LF",
                         "header" to false,
-                        "compression" to "gzip"
-                    )
+                        "compression" to "gzip",
+                    ),
             )
     }
+
     override fun close() {
         uploader.close()
     }

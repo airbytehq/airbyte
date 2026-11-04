@@ -39,7 +39,7 @@ object MsSqlServerContainerFactory {
                 container.password,
                 "-Q",
                 "CREATE DATABASE test",
-                "-C"
+                "-C",
             )
         }
     }
@@ -64,7 +64,7 @@ object MsSqlServerContainerFactory {
 
     @JvmStatic
     fun config(
-        msSQLContainer: MSSQLServerContainer<*>
+        msSQLContainer: MSSQLServerContainer<*>,
     ): MsSqlServerSourceConfigurationSpecification =
         MsSqlServerSourceConfigurationSpecification().apply {
             host = msSQLContainer.host

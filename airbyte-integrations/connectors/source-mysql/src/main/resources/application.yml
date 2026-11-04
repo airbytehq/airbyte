@@ -28,6 +28,13 @@ airbyte:
 
     exception-classifiers:
       regex:
+        # Run the regex rules ahead of the DefaultExceptionClassifier (order 1), which maps any
+        # ConfigErrorException / TransientErrorException / SystemErrorException to its raw message.
+        # Going first lets the rules below refine ConfigErrorExceptions the CDK throws, such as
+        # "Discovered zero tables." from CheckOperation, which would otherwise reach the user verbatim.
+        # Typed exceptions that match no rule still fall through to the default mapping unchanged.
+        order: 0
+
         # The following rules are for the RegexExceptionClassifier [0] which are applied
         # sequentially on a Throwable's message [1] and its nested messages by cause [2].
         #
@@ -120,6 +127,87 @@ airbyte:
             group: MySQL EOF Exception
             output: The sync encountered a communication issue while reading data from the MySQL server, will retry.
             reference-links: https://docs.oracle.com/javase/8/docs/api/java/io/EOFException.html
+
+          # Unreachable host: the same rules serve a failed connection test and a failed sync.
+          # Connector/J wraps java.net.ConnectException / java.net.UnknownHostException in a
+          # CommunicationsException whose message starts with "Communications link failure",
+          # followed by a blank line and one of two tails (LocalizedErrorMessages.properties in
+          # mysql-connector-j 9.1.0, keys CommunicationsException.ServerPacketTimingInfoNoRecv and
+          # CommunicationsException.ServerPacketTimingInfo):
+          #   never connected: "The last packet sent successfully to the server was N milliseconds ago.
+          #                     The driver has not received any packets from the server."
+          #   connection lost: "The last packet successfully received from the server was N milliseconds ago.
+          #                     The last packet sent successfully to the server was M milliseconds ago."
+          # The two rules key on the tail: a host that never answered is a configuration error,
+          # an established connection that dropped mid-sync is retried. (?s) lets .* span the newlines.
+          - pattern: (?s).*Communications link failure.*The driver has not received any packets from the server.*
+            input-example: >-
+              com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+              The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that MySQL accepts remote connections (bind-address, the user's host grants),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
+              - https://docs.airbyte.com/integrations/sources/mysql
+
+          - pattern: (?s).*Communications link failure.*The last packet successfully received from the server was.*The last packet sent successfully to the server was.*
+            input-example: >-
+              com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+              The last packet successfully received from the server was 36,254 milliseconds ago. The last packet sent successfully to the server was 36,251 milliseconds ago.
+            error: transient
+            group: MySQL EOF Exception
+            output: The connection to the MySQL server was lost while reading data, will retry.
+            reference-links: https://docs.airbyte.com/integrations/sources/mysql
+
+          - pattern: (?i).*UnknownHostException.*
+            input-example: >-
+              java.net.UnknownHostException: nonexistent-host.invalid
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that MySQL accepts remote connections (bind-address, the user's host grants),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
+              - https://docs.airbyte.com/integrations/sources/mysql
+
+          - pattern: (?i).*Connection refused.*
+            input-example: >-
+              java.net.ConnectException: Connection refused
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that MySQL accepts remote connections (bind-address, the user's host grants),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
+              - https://docs.airbyte.com/integrations/sources/mysql
+
+          # The server offers no TLS but the selected SSL mode (required, verify_ca, verify_identity) needs it.
+          - pattern: (?i).*SSL Connection required, but not provided by server.*
+            input-example: >-
+              com.mysql.cj.jdbc.exceptions.CommunicationsException: SSL Connection required, but not provided by server.
+            error: config
+            output: >-
+              Your MySQL server does not offer TLS. On Airbyte Cloud, either enable TLS on the MySQL server
+              (require_secure_transport and server certificates) or connect through an SSH tunnel;
+              the preferred SSL mode is not accepted on Airbyte Cloud without an SSH tunnel.
+            reference-links: https://docs.airbyte.com/integrations/sources/mysql#connecting-with-ssl-or-ssh-tunneling
+
+          # The connection test found no table in the configured database: the CDK's CheckOperation
+          # throws ConfigErrorException("Discovered zero tables."), which this rule reaches only because
+          # the regex classifier runs ahead of the default one (order: 0 above).
+          - pattern: (?i)^Discovered zero tables\.?$
+            input-example: Discovered zero tables.
+            error: config
+            output: >-
+              No tables are visible to the configured user in the configured database.
+              Grant SELECT on the tables to sync (GRANT SELECT ON <database>.* TO '<user>'@'%'),
+              check the database name, and check that no table filter excludes every table.
+            reference-links: https://docs.airbyte.com/integrations/sources/mysql#step-1-create-a-dedicated-read-only-mysql-user
 
           - pattern: (?i).*exception occurred in the change event produce.*
             input-example: >-

@@ -8,15 +8,11 @@ This page contains the setup guide and reference information for the [Facebook M
 
 ## Prerequisites
 
-- A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
-<!-- env:cloud -->
--  **For Airbyte Cloud**: If you are not the owner/admin of the Ad account, you must be granted [permissions to access the Ad account](https://www.facebook.com/business/help/155909647811305?id=829106167281625) by an admin.
-<!-- /env:cloud -->
-<!-- env:oss -->
--  **For Airbyte Open Source**:
-   - [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled
-   - The following permissions: [ads_management](https://developers.facebook.com/docs/permissions#a), [ads_read](https://developers.facebook.com/docs/permissions#a), [business_management](https://developers.facebook.com/docs/permissions#b) and [read_insights](https://developers.facebook.com/docs/permissions#r).
-<!-- /env:oss -->
+- A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762) for each ad account you want to sync.
+- Access to each of those ad accounts. If you aren't an admin of an ad account, an admin must [grant you access to it](https://www.facebook.com/business/help/155909647811305?id=829106167281625). If you authenticate with a system user access token, the ad accounts must be assigned to that system user.
+- **To authenticate with an access token** (required for Airbyte Open Source, optional for Airbyte Cloud):
+  - A [Meta app](https://developers.facebook.com/apps/) created with the **Measure ad performance data with Marketing API** use case and connected to a business portfolio.
+  - A system user access token with the `ads_read`, `ads_management`, and `business_management` permissions. See [Create a Meta app and access token](#create-a-meta-app-and-access-token).
 
 ## Setup guide
 
@@ -29,7 +25,14 @@ This page contains the setup guide and reference information for the [Facebook M
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Facebook Marketing from the Source type dropdown.
 4. Enter a name for the Facebook Marketing connector.
-5. To authenticate the connection, click **Authenticate your account** to authorize your Facebook account. Ensure you are logged into the right account, as Airbyte will authenticate the account you are currently logged in to.
+
+<FieldAnchor field="credentials">
+
+5. For **Authentication**, choose one of these options:
+   - **Authenticate via Facebook Marketing (Oauth)**: Click **Authenticate your account** to authorize your Facebook account. Make sure you're logged into the right Facebook account, because Airbyte authenticates the account you're currently logged in to. That account must have access to the ad accounts you want to sync.
+   - **Service Account Key Authentication**: Enter a system user access token. To create one, follow the steps in [Create a Meta app and access token](#create-a-meta-app-and-access-token).
+
+</FieldAnchor>
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -39,236 +42,260 @@ This page contains the setup guide and reference information for the [Facebook M
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Facebook Marketing from the Source type dropdown.
 4. Enter a name for the Facebook Marketing connector.
+
 <FieldAnchor field="credentials">
-5. For **Authentication**, select **Service Account Key Authentication** and enter the Marketing API access token you generated. See the steps below for how to generate a token.
+
+5. For **Authentication**, select **Service Account Key Authentication** and enter a system user access token. To create one, follow the steps in [Create a Meta app and access token](#create-a-meta-app-and-access-token).
+
 </FieldAnchor>
-
-### Airbyte Open Source
-
-This guide outlines the steps required to configure your Meta Developer account and create an app to utilize the Facebook Marketing API.
-
-Follow these five key steps:
-
-1.  **Register as a Meta Developer:** If you haven't already, create your developer account.
-2.  **Create a New App:** Set up a new application within your Developer Dashboard.
-3.  **Integrate the Marketing API:** Add the Marketing API product to your newly created app.
-4.  **Generate an Access Token:** Obtain the necessary credentials to authenticate your API requests.
-5.  **Request Increased Rate Limits:** Ensure your app can handle the required data volume by requesting Advanced Access.
-
-### 1. Register as a Meta Developer
-
-A Meta Developer account is your gateway to the App Dashboard, SDKs, APIs, development tools, and documentation.
-
-To register, follow the official instructions: [Register as a Meta Developer](https://developers.facebook.com/docs/development/register/)
-
-### 2. Create a New App
-
-Your Meta app serves as a container for your API credentials and permissions. Meta uses it to monitor API usage, enforce rate limits, and ensure application security.
-
-- Go to the [Meta for Developers App Dashboard](https://developers.facebook.com/apps/) and click **Create App**.
-
-- **Important:**
-  During the setup process, at the **"Use case"** step, select:
-  > **Create an app without a use case**
-  > *Choose this option if you'd like to get an app ID without automatically adding any permissions, features, or products.*
-
-- **App Type:**
-  Choose **Business** as the app type when prompted.
-
-### 3. Add the Marketing API Product
-
-After creating your app, you’ll need to enable the Marketing API to begin making requests.
-
-- In your app’s dashboard, open the sidebar menu.
-- Click **Add Product**.
-- Find and select **Marketing API** from the list of available products.
-
-For an overview of the Marketing API, see the [Facebook Developer Marketing API Docs](https://developers.facebook.com/docs/marketing-apis).
-
-### 4. Generate an Access Token
-
-To authorize your application to interact with the Facebook Marketing API, you'll need to generate an access token with the appropriate permissions.
-
-- From your app's dashboard, go to **Marketing API > Tools**.
-
-- In the **Token Permissions** section, select the following permissions:
-  - `ads_management`: Manage ads and campaigns.
-  - `ads_read`: Read ad and campaign data.
-  - `read_insights`: Access insights data for ads, ad sets, and campaigns.
-  - `business_management`: Manage business assets (often required to access ad accounts connected to a Meta Business Manager).
-
-- Click **Get Token** to generate the access token.
-
-- **Copy the generated token securely.**
-  Use this Access Token to authenticate your API calls when using the “Service Account Key Authentication” method.
-
-:::tip
-You can always view your existing access tokens, their permissions, and lifecycles using the [Access Token Tool](https://developers.facebook.com/tools/accesstoken).
-:::
-
-### 5. Request Increased Rate Limits
-
-By default, API tokens generated from apps with "Standard Access" are heavily throttled by Facebook.
-
-This can make them unsuitable for applications requiring frequent or large data syncs (like with Airbyte).
-
-To ensure reliable performance, you'll need to request "Advanced Access."
-
-- **Access App Review**
-  - From your app's dashboard, go to **App Review > Permissions and Features**.
-
-- **Identify Required Permissions**
-  - For each of the following permissions marked as "Standard Access", click the **Request advanced access** button:
-    - `ads_read`
-    - `ads_management`
-  - Facebook may prompt you to fill out a form detailing how the permission is used.
-
-- **Complete Business Verification**
-  - Make sure your app is associated with a **verified Business Manager account**.
-  - This is a [prerequisite](https://developers.facebook.com/docs/marketing-api/get-started/authorization/#business-verification) for obtaining Advanced Access.
-
-- **Submit the App Review Request**
-  - Once all information is provided, submit the request through the App Review interface.
-  - Monitor the status in the dashboard as Facebook reviews your application.
-
-- **Meet Rate Limit Requirements**
-	- Once you’ve been granted advanced access, you must consistently make at least 1,500 Marketing API calls within any rolling 15-day window to [maintain your status](https://developers.facebook.com/docs/marketing-api/get-started/authorization/#permissions-and-features).
-	- Facebook continuously evaluates your API activity based on the past 15 days, not just immediately after approval.
-	- Falling below the 1,500 call threshold during any 15-day period may result in your advanced access being revoked.
-
-Refer to Facebook's official documentation on [Access Levels and Authorization](https://developers.facebook.com/docs/marketing-api/get-started/authorization/) for detailed instructions on requesting Advanced Access.
-
 <!-- /env:oss -->
 
-#### Facebook Marketing Source Settings
+### Create a Meta app and access token
+
+Follow these steps to create a Meta app and a system user access token for **Service Account Key Authentication**. Meta's UI labels change from time to time. If a label below doesn't match what you see, refer to the linked Meta documentation.
+
+#### Step 1: Register as a Meta developer
+
+If you don't have one yet, [register as a Meta developer](https://developers.facebook.com/docs/development/register/). A developer account gives you access to the App Dashboard.
+
+#### Step 2: Create a Meta app
+
+1. Go to the [Meta for Developers App Dashboard](https://developers.facebook.com/apps/) and click **Create App**.
+2. When asked to add a use case, select **Measure ad performance data with Marketing API**. This use case adds the `ads_read`, `ads_management`, and `business_management` permissions and the **Marketing API Access Tier** feature to your app. Don't choose **Create an app without a use case**, because that option creates an app without any permissions or products.
+3. Connect the app to the business portfolio that owns, or has access to, your ad accounts. Meta recommends a verified business portfolio, and you need one to access ad accounts owned by other businesses.
+4. Finish creating the app.
+
+For more information, see Meta's [Create an app](https://developers.facebook.com/documentation/development/create-an-app) and [Marketing API: Get started](https://developers.facebook.com/documentation/ads-commerce/marketing-api/get-started) guides.
+
+#### Step 3: Generate a system user access token
+
+A [system user](https://developers.facebook.com/docs/business-management-apis/system-users/overview) is a non-human account in your business portfolio. Its access token isn't tied to a personal Facebook login, which makes it the recommended option for server-to-server integrations like Airbyte.
+
+1. In [Meta Business Settings](https://business.facebook.com/settings), go to **Users** > **System users** and click **Add** to create a system user. See Meta's [Add system users to your business portfolio](https://www.facebook.com/business/help/503306463479099) guide.
+2. Select the system user and click **Assign assets**. Assign every ad account you want to sync, with at least permission to view performance. Also assign the Meta app you created in Step 2.
+3. Click **Generate new token** and select your app.
+4. Choose an expiration. A token that expires after 60 days is more secure, but you must generate a new one and update it in Airbyte before it expires. A token that never expires doesn't need to be refreshed.
+5. Select the `ads_read`, `ads_management`, and `business_management` permissions, then generate the token.
+6. Copy the token and store it securely. Enter it as the **Access Token** when you choose **Service Account Key Authentication**.
+
+The system user and the app must belong to the same business portfolio. For details, see Meta's [Install apps and generate tokens](https://developers.facebook.com/docs/business-management-apis/system-users/install-apps-and-generate-tokens) guide.
+
+:::tip
+You can check a token's permissions and expiration with Meta's [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken/).
+:::
+
+#### Step 4: Upgrade to the Marketing API Access Tier's full access
+
+New apps start with **Limited access** to the Marketing API. Limited access is heavily rate-limited and meant for development only, so it's usually too slow for regular syncs.
+
+1. In the App Dashboard, find the **Marketing API Access Tier** feature that the use case added to your app.
+2. Click **+Upgrade** to request **Full access**.
+
+To qualify for and keep full access, your app must have made at least 500 Marketing API calls in the past 15 days, with an error rate below 15% over its last 500 calls. Meta evaluates these requirements continuously, so it can move an app back to limited access.
+
+You only need advanced access to the `ads_read` or `ads_management` permissions, which requires App Review and business verification, if you sync ad accounts owned by other businesses. For details, see Meta's [Marketing API: Authorization](https://developers.facebook.com/documentation/ads-commerce/marketing-api/get-started/authorization) guide.
+
+### Permission errors
+
+If the connection check or a sync fails with a permission error for an ad account, check the following:
+
+- **The Account ID is correct.** Enter only the number, without the `act_` prefix.
+- **The authenticated user has access to the ad account.** With OAuth, Airbyte uses the Facebook account you were logged in to when you clicked **Authenticate your account**. With an access token, the ad account must be assigned to the system user. You can check who has access in [Meta Business Settings](https://business.facebook.com/settings) under **Accounts** > **Ad accounts**.
+- **The token has the required permissions.** Use the [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken/) to confirm that the token includes `ads_read`, `ads_management`, and `business_management`, and that it hasn't expired.
+- **The ad account belongs to your business portfolio, or is shared with it.** If another business owns the ad account, that business must share it with your business portfolio.
+
+### Facebook Marketing source settings
+
 <FieldAnchor field="account_ids">
-1. For **Account ID(s)**, enter one or multiple comma-separated [Facebook Ad Account ID Numbers](https://www.facebook.com/business/help/1492627900875762) to use when pulling data from the Facebook Marketing API. To find this ID, open your Meta Ads Manager. The Ad Account ID number is in the **Account** dropdown menu or in your browser's address bar. Refer to the [Facebook docs](https://www.facebook.com/business/help/1492627900875762) for more information.
+
+1. For **Account ID(s)**, enter one or more comma-separated [Facebook Ad Account ID numbers](https://www.facebook.com/business/help/1492627900875762). To find an ID, open [Meta Ads Manager](https://adsmanager.facebook.com/), go to your ad account's **Settings**, and look under **Account overview**. Enter only the number, without the `act_` prefix.
+
 </FieldAnchor>
 
 <FieldAnchor field="start_date">
-2. (Optional) For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. If the start date is not set, then all data will be replicated except for `Insight` data, which only pulls data for the last 37 months.
 
-   :::info
-   Insight tables are only able to pull data from the last 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will not succeed for those streams.
-   :::
+2. (Optional) For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. If you don't set a start date, the connector replicates all data, except for Insights data, which it only pulls for the last 37 months.
+
+:::info
+Insight tables can only pull data from the last 37 months. If you're syncing insight tables and your start date is older than 37 months, your sync won't succeed for those streams.
+:::
 
 </FieldAnchor>
 
 <FieldAnchor field="end_date">
+
 3. (Optional) For **End Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. This is the date until which you'd like to replicate data for all Incremental streams. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
+
 </FieldAnchor>
 
 <FieldAnchor field="campaign_statuses">
+
 4. (Optional) Multiselect the **Campaign Statuses** to include data from Campaigns for particular statuses.
+
 </FieldAnchor>
 
 <FieldAnchor field="adset_statuses">
+
 5. (Optional) Multiselect the **AdSet Statuses** to include data from AdSets for particular statuses.
+
 </FieldAnchor>
 
 <FieldAnchor field="ad_statuses">
+
 6. (Optional) Multiselect the **Ad Statuses** to include data from Ads for particular statuses.
+
 </FieldAnchor>
 
-   :::caution Status filtering and missing records
-   When no statuses are selected for Campaign Statuses, AdSet Statuses, or Ad Statuses, the connector relies on the Facebook Marketing API's default behavior, which **excludes records in ARCHIVED and DELETED states**. This means archived campaigns, ad sets, and ads will not appear in your synced data.
+:::caution
+**Status filtering and missing records**
 
-   To ensure a complete dataset, explicitly select all statuses you want to include. This is especially important when using Full Refresh sync mode, because previously synced records that have since been archived will not be re-fetched unless you include the ARCHIVED status.
-   :::
+When no statuses are selected for Campaign Statuses, AdSet Statuses, or Ad Statuses, the connector relies on the Facebook Marketing API's default behavior, which **excludes records in ARCHIVED and DELETED states**. This means archived campaigns, ad sets, and ads will not appear in your synced data.
+
+To ensure a complete dataset, explicitly select all statuses you want to include. This is especially important when using Full Refresh sync mode, because previously synced records that have since been archived will not be re-fetched unless you include the ARCHIVED status.
+:::
 
 <FieldAnchor field="fetch_thumbnail_images">
+
 7. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
+
 </FieldAnchor>
 
 <FieldAnchor field="default_ads_insights_action_breakdowns">
+
 8. (Optional) If needed, you can change default action breakdowns for Built-in Ads Insights stream. Remove all if you need to make it empty list or change default values.
+
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights">
-9. (Optional) In the **Custom Insights** section, you may provide a list of ad statistics entries. Each entry should have a unique name and can contain fields, breakdowns or action_breakdowns. Fields refer to the different data points you can collect from an ad, while breakdowns and action_breakdowns let you segment this data for more detailed insights. Click on **Add** to create a new entry in this list.
+
+9. (Optional) In the **Custom Insights** section, you may provide a list of ad statistics entries. Each entry should have a unique name and can contain fields, breakdowns, or action breakdowns (`action_breakdowns`). Fields refer to the different data points you can collect from an ad, while breakdowns and action breakdowns let you segment this data for more detailed insights. Click **Add** to create a new entry in this list. See [Custom Insights settings](#custom-insights-settings) for each entry's options.
 
 To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. However, please note that not all fields can be requested, and many are only functional when combined with specific other fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. For more information on the breakdown limitations, refer to the [Facebook documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns).
 
-   :::info
-   Additional data streams for your Facebook Marketing connector are dynamically generated according to the Custom Insights you specify. If you have an existing Facebook Marketing source and you decide to update or remove some of your Custom Insights, you must also update the connections to sync these streams by refreshing the schema.
-   :::
+:::info
+Additional data streams for your Facebook Marketing connector are dynamically generated according to the Custom Insights you specify. If you have an existing Facebook Marketing source and you decide to update or remove some of your Custom Insights, you must also update the connections to sync these streams by refreshing the schema.
+:::
+
 </FieldAnchor>
 
-   To configure Custom Insights:
+Optionally, configure each custom insight's [Custom Insights settings](#custom-insights-settings) and the [Advanced settings](#advanced-settings). Then click **Set up source** and wait for the tests to complete.
+
+#### Custom Insights settings
+
+To define the data each custom insight pulls:
+
 <FieldAnchor field="custom_insights.name">
-   1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name.
+
+1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name.
+
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.level">
-   2. (Optional) For **Level**, enter the level of granularity for the data you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default. The level you select determines the primary key used for deduplication in Incremental Append + Deduped sync mode. For details, see the [primary key behavior by level](#custom-insights-primary-keys) section.
+
+2. (Optional) For **Level**, enter the level of granularity for the data you want to pull from the Facebook Marketing API (`account`, `ad`, `adset`, `campaign`). Set to `ad` by default. The level you select determines the primary key used for deduplication in Incremental Append + Deduped sync mode. For details, see the [primary key behavior by level](#custom-insights-primary-keys) section.
+
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.fields">
-   3. (Optional) For **Fields**, use the dropdown list to select the fields you want to pull from the Facebook Marketing API.
+
+3. (Optional) For **Fields**, use the dropdown list to select the fields you want to pull from the Facebook Marketing API.
+
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.breakdowns">
-   4. (Optional) For **Breakdowns**, use the dropdown list to select the breakdowns you want to configure.
 
-   :::info High-cardinality breakdowns
-   Some breakdowns, such as `product_id`, can produce thousands of rows per day. Connection setup still succeeds for these breakdowns: if Facebook's synchronous validation call returns `"Please reduce the amount of data you're asking for"`, the connector retries with a one-day window to validate the breakdown combination, and falls back to a logged warning if the single-day call also exceeds the limit. Real syncs use async jobs and are not affected by this limit.
-   :::
+4. (Optional) For **Breakdowns**, use the dropdown list to select the breakdowns you want to configure.
+
+:::info
+**High-cardinality breakdowns**
+
+Some breakdowns, such as `product_id`, can produce thousands of rows per day. Connection setup still succeeds for these breakdowns: if Facebook's synchronous validation call returns `"Please reduce the amount of data you're asking for"`, the connector retries with a one-day window to validate the breakdown combination, and falls back to a logged warning if the single-day call also exceeds the limit. Real syncs use async jobs and are not affected by this limit.
+:::
+
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.action_breakdowns">
-   5. (Optional) For **Action Breakdowns**, use the dropdown list to select the action breakdowns you want to configure.
+
+5. (Optional) For **Action Breakdowns**, use the dropdown list to select the action breakdowns you want to configure.
+
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.action_report_time">
-   6. **Action Report Time** is deprecated and hidden from the UI since v3.5.0. It defaults to `mixed` and cannot be changed through the Airbyte UI. If you set it programmatically (via API, Terraform, or PyAirbyte), the available values are `impression` (attributed to view time), `conversion` (attributed to action time), or `mixed` (click-through to view time, view-through to action time).
+
+6. **Action Report Time** is deprecated and hidden from the UI since v3.5.0. It defaults to `mixed` and cannot be changed through the Airbyte UI. If you set it programmatically (via API, Terraform, or PyAirbyte), the available values are `impression` (attributed to view time), `conversion` (attributed to action time), or `mixed` (click-through to view time, view-through to action time).
+
 </FieldAnchor>
 
+To set the time range and attribution window for each custom insight:
+
 <FieldAnchor field="custom_insights.time_increment">
-   7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day. Cannot be used together with **Time Increment Period**.
+
+1. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day. Cannot be used together with **Time Increment Period**.
+
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.time_increment_period">
-   8. (Optional) For **Time Increment Period**, select a calendar-aligned aggregation period instead of a fixed number of days. This produces consistently aligned time buckets regardless of the start date, making cross-client comparison easier. Available options:
-      - `daily` — equivalent to Time Increment = 1 (1-day buckets).
-      - `weekly` — aligns to Monday-through-Sunday calendar weeks.
-      - `monthly` — aligns to calendar month boundaries (1st to last day of each month). This is natively supported by the Facebook API.
+
+2. (Optional) For **Time Increment Period**, select a calendar-aligned aggregation period instead of a fixed number of days. This produces consistently aligned time buckets regardless of the start date, making cross-client comparison easier. Available options:
+   - `daily` — equivalent to Time Increment = 1 (1-day buckets).
+   - `weekly` — aligns to Monday-through-Sunday calendar weeks.
+   - `monthly` — aligns to calendar month boundaries (1st to last day of each month). This is natively supported by the Facebook API.
 
    Cannot be used together with **Time Increment**. When switching between Time Increment and Time Increment Period (or vice versa), a full re-sync will be triggered.
+
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.start_date">
-   9. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
+
+3. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
+
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.end_date">
-   10. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
+
+4. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
+
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.insights_lookback_window">
-   11. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+
+5. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28 days. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.include_incrementality">
-   12. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. When enabled, action metrics such as `actions`, `action_values`, and `cost_per_action_type` include an `incrementality` field. This setting applies only to this specific custom insight. For more details, see the global **Include Incrementality** setting described below.
+
+6. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. When enabled, action metrics such as `actions`, `action_values`, and `cost_per_action_type` include an `incrementality` field. This setting applies only to this specific custom insight. For more details, see the global **Include Incrementality** setting in [Advanced settings](#advanced-settings).
+
 </FieldAnchor>
 
+#### Advanced settings
+
+Most users don't need to change these settings.
+
 <FieldAnchor field="page_size">
-10. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
+
+1. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
+
 </FieldAnchor>
 
 <FieldAnchor field="insights_lookback_window">
-11. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+
+2. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28 days. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+
 </FieldAnchor>
 
 <FieldAnchor field="insights_job_timeout">
-12. (Optional) For **Insights Job Timeout**, you may set a custom value in range from 10 to 60. It establishes the maximum amount of time (in minutes) of waiting for the report job to complete.
+
+3. (Optional) For **Insights Job Timeout**, you may set a custom value in range from 10 to 60 minutes. It establishes the maximum amount of time of waiting for the report job to complete.
+
 </FieldAnchor>
 
 <FieldAnchor field="include_incrementality">
-13. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"incrementality"` to the `action_attribution_windows` parameter sent to the Facebook API. Action metrics such as `actions`, `action_values`, and `cost_per_action_type` then include an `incrementality` field containing the incremental lift value attributed to the ad. This field is only populated for ad accounts that have active [Conversion Lift](https://developers.facebook.com/docs/marketing-api/guides/lift-studies/) studies configured in Facebook. For accounts without lift studies, the field is `null`. Disabled by default. For more details on the `incrementality` attribution window, refer to the [Ads Action Stats](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) API reference.
-</FieldAnchor>
 
-14. Click **Set up source** and wait for the tests to complete.
+4. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"incrementality"` to the `action_attribution_windows` parameter sent to the Facebook API. Action metrics such as `actions`, `action_values`, and `cost_per_action_type` then include an `incrementality` field containing the incremental lift value attributed to the ad. This field is only populated for ad accounts that have active [Conversion Lift](https://developers.facebook.com/docs/marketing-api/guides/lift-studies/) studies configured in Facebook. For accounts without lift studies, the field is `null`. Disabled by default. For more details on the `incrementality` attribution window, refer to the [Ads Action Stats](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) API reference.
+
+</FieldAnchor>
 
 <HideInUI>
 
@@ -420,6 +447,10 @@ If the `ad_creatives` stream fails with the error "Please reduce the amount of d
 
 Note that `ad_creatives_from_ads` is slower than `ad_creatives` because it makes individual API calls per creative. It also only returns creatives that are associated with ads — orphaned creatives that are not linked to any ad will not be included.
 
+### Ad creatives without `object_story_spec`
+
+For some Degrees of Freedom creatives, the Graph API rejects requests for the `object_story_spec` field with error `100` / `2446211` ("First Dof Value Should Match Object Story Spec Field"). The `ad_creatives` and `ad_creatives_from_ads` streams emit these creatives without `object_story_spec` instead of failing the sync, and log a warning with the creative ID. `ad_creatives` reads every creative on each sync, so the field comes back once the API returns it again. In incremental mode, `ad_creatives_from_ads` reads a creative again only after its parent ad changes, so [refresh](/platform/operator-guides/refreshes) that stream to backfill `object_story_spec`.
+
 ### Missing records in Campaigns, Ad Sets, or Ads streams {#missing-records-status-filtering}
 
 If you notice that some campaigns, ad sets, or ads are missing from your synced data, the most common cause is the status filtering configuration.
@@ -502,6 +533,12 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.9 | 2026-10-21 | [89624](https://github.com/airbytehq/airbyte/pull/89624) | Keep the custom insights primary key in the configured breakdowns order so it no longer changes between syncs |
+| 6.1.8 | 2026-10-20 | [74884](https://github.com/airbytehq/airbyte/pull/74884) | Retry dropped connections, truncated responses, and read timeouts from the Facebook API, and report them as transient errors if retries are exhausted |
+| 6.1.7 | 2026-10-16 | [89019](https://github.com/airbytehq/airbyte/pull/89019) | Include Meta's user-facing error title and message, plus the error subcode, in otherwise generic Graph API error messages |
+| 6.1.6 | 2026-10-16 | [89047](https://github.com/airbytehq/airbyte/pull/89047) | Fix in-app setup guide rendering in Airbyte Cloud, update access token setup steps to match Meta's current docs, and correct field descriptions |
+| 6.1.5 | 2026-10-16 | [89006](https://github.com/airbytehq/airbyte/pull/89006) | Upgrade to Python 3.13 and python-connector-base 4.1.1 |
+| 6.1.4 | 2026-10-16 | [89020](https://github.com/airbytehq/airbyte/pull/89020) | Fix `ad_creatives` and `ad_creatives_from_ads` failing on Facebook error 2446211 by emitting affected creatives with a null `object_story_spec` |
 | 6.1.3 | 2026-09-30 | [87588](https://github.com/airbytehq/airbyte/pull/87588) | Fix insights streams cursor moving backwards after interrupted sync attempts (causing progressively wider re-reads), clean up stale completed slices in state, and fix cursor advancement for monthly/weekly time increments |
 | 6.1.2 | 2026-09-21 | [86315](https://github.com/airbytehq/airbyte/pull/86315) | Fix ad-account quota errors (code 17/2446079) being retried as transient failures: read rate-limit headers on failed calls and wait out the block (API-provided reset estimate when present, 10-minute re-checks otherwise, up to 1 hour); read every business-use-case entry and the ad-account reset time from the rate-limit headers; the connection check fails fast instead of waiting |
 | 6.1.1 | 2026-08-24 | [74266](https://github.com/airbytehq/airbyte/pull/74266) | feat(source-facebook-marketing): add opt-in engaged view (ev) attribution window (AI-Triage PR) |
@@ -600,6 +637,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | 3.3.2 | 2024-06-06 | [39174](https://github.com/airbytehq/airbyte/pull/39174) | [autopull] Upgrade base image to v1.2.2 |
 | 3.3.1 | 2024-06-15 | [39511](https://github.com/airbytehq/airbyte/pull/39511) | Fix validation of the spec `custom_insights.time_increment` field |
 | 3.3.0 | 2024-06-30 | [33648](https://github.com/airbytehq/airbyte/pull/33648) | Add support to field `source_instagram_media_id` to `ad_creatives` report |
+| 3.2.1 | 2024-06-13 | [39439](https://github.com/airbytehq/airbyte/pull/39439) | Apply configured statuses to ads insight streams |
 | 3.2.0 | 2024-06-05 | [37625](https://github.com/airbytehq/airbyte/pull/37625) | Source Facebook-Marketing: Add Selectable Auth |
 | 3.1.0 | 2024-06-01 | [38845](https://github.com/airbytehq/airbyte/pull/38845) | Update AdsInsights fields - removed   `cost_per_conversion_lead` and `conversion_lead_rate` |
 | 3.0.0 | 2024-04-30 | [36608](https://github.com/airbytehq/airbyte/pull/36608) | Update `body_asset, call_to_action_asset, description_asset, image_asset, link_url_asset, title_asset, video_asset` breakdowns schema. |

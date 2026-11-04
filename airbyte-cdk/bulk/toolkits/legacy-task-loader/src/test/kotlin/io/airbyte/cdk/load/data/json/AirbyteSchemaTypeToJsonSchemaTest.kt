@@ -35,14 +35,14 @@ class AirbyteSchemaTypeToJsonSchemaTest {
                     "friends" to ArrayType(FieldType(StringType, true)),
                     "mixed_array" to
                         ArrayType(
-                            FieldType(UnionType.of(StringType, IntegerType), nullable = true)
+                            FieldType(UnionType.of(StringType, IntegerType), nullable = true),
                         ),
                     "address" to
                         ObjectType(
                             linkedMapOf(
                                 "street" to FieldType(StringType, true),
-                                "city" to FieldType(StringType, true)
-                            )
+                                "city" to FieldType(StringType, true),
+                            ),
                         ),
                     "combined_denormalized" to
                         ObjectType(linkedMapOf("name" to FieldType(StringType, true))),
@@ -52,10 +52,10 @@ class AirbyteSchemaTypeToJsonSchemaTest {
                     "time" to TimeTypeWithTimezone,
                     "time_without_timezone" to TimeTypeWithoutTimezone,
                     "timestamp" to TimestampTypeWithTimezone,
-                    "timestamp_without_timezone" to TimestampTypeWithoutTimezone
+                    "timestamp_without_timezone" to TimestampTypeWithoutTimezone,
                 )
                 .map { it.key to FieldType(it.value, nullable = true) }
-                .let { linkedMapOf(*it.toTypedArray()) }
+                .let { linkedMapOf(*it.toTypedArray()) },
         )
 
     // the json equivalent
@@ -159,7 +159,8 @@ class AirbyteSchemaTypeToJsonSchemaTest {
           },
           "additionalProperties": true
         }
-    """.trimIndent()
+        """
+            .trimIndent()
 
     @Test
     fun testToJsonSchema() {

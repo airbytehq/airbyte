@@ -155,8 +155,9 @@ data class DynamoDbPartition(
                             }
                         }
                     val lowerBound: String? = savedState?.cursor
-                    filter =
-                        lowerBound?.let { DynamoDbCursorFilter(cursorField.id, cursorType, it) }
+                    filter = lowerBound?.let {
+                        DynamoDbCursorFilter(cursorField.id, cursorType, it)
+                    }
                     cursor =
                         DynamoDbCursor(
                             field = cursorField.id,
@@ -352,13 +353,12 @@ data class DynamoDbCursor(
      * where it was when nothing newer was found (like the legacy `StateDecoratingIterator`).
      */
     fun merge(segments: List<DynamoDbTableScan.SegmentCursor>): DynamoDbTableScan.SegmentCursor {
-        val saved: DynamoDbTableScan.SegmentCursor? =
-            lowerBound?.let {
-                DynamoDbTableScan.SegmentCursor(
-                    it,
-                    if (inclusiveLowerBound) 0L else lowerBoundRecordCount,
-                )
-            }
+        val saved: DynamoDbTableScan.SegmentCursor? = lowerBound?.let {
+            DynamoDbTableScan.SegmentCursor(
+                it,
+                if (inclusiveLowerBound) 0L else lowerBoundRecordCount,
+            )
+        }
         val candidates: List<DynamoDbTableScan.SegmentCursor> =
             segments.filter { it.max != null } + listOfNotNull(saved)
         if (candidates.isEmpty()) {

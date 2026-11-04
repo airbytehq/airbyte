@@ -36,6 +36,7 @@ import org.junit.jupiter.api.TestInfo
  * ```kotlin
  * destinationProcessFactoryOverride = DockerizedDestinationFactory("airbyte/destination-foo", "previous_version")
  * ```
+ *
  * Just remember to revert this change before releasing your connector. The tests will always fail
  * if this value is set, to prevent you from forgetting to unset it.
  *
@@ -105,7 +106,7 @@ abstract class RegressionTestSuite(
             Dedupe(
                 primaryKey = listOf(listOf("string")),
                 cursor = listOf("number"),
-            )
+            ),
         )
     }
 
@@ -119,7 +120,7 @@ abstract class RegressionTestSuite(
             Dedupe(
                 primaryKey = listOf(listOf("column")),
                 cursor = listOf("table"),
-            )
+            ),
         )
     }
 
@@ -133,7 +134,7 @@ abstract class RegressionTestSuite(
             Dedupe(
                 primaryKey = listOf(listOf(FUNKY_CHARS_IDENTIFIER)),
                 cursor = listOf("string"),
-            )
+            ),
         )
     }
 
@@ -147,7 +148,7 @@ abstract class RegressionTestSuite(
             Dedupe(
                 primaryKey = listOf(listOf("string")),
                 cursor = listOf(FUNKY_CHARS_IDENTIFIER),
-            )
+            ),
         )
     }
 
@@ -161,7 +162,7 @@ abstract class RegressionTestSuite(
             Dedupe(
                 primaryKey = listOf(listOf("foo!")),
                 cursor = listOf("foo$"),
-            )
+            ),
         )
     }
 
@@ -186,7 +187,7 @@ abstract class RegressionTestSuite(
      */
     open fun testTableIdentifierRegressionDedup() {
         regressionTestFixtures.baseTableIdentifierRegressionTest(
-            Dedupe(primaryKey = listOf(listOf("blah")), cursor = emptyList())
+            Dedupe(primaryKey = listOf(listOf("blah")), cursor = emptyList()),
         )
     }
 }

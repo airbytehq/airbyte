@@ -637,6 +637,7 @@ spec:
           its actual start time.
         title: Start date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        format: date-time
         examples:
           - "2018-02-18T08:00:00Z"
         order: 1

@@ -28,16 +28,16 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
                 val ver =
                     Jsons.treeToValue(
                         it,
-                        PostgresSourceJdbcV2VersionOnlyStreamStateValue::class.java
+                        PostgresSourceJdbcV2VersionOnlyStreamStateValue::class.java,
                     )
                 when (ver?.version) {
                     2 ->
                         PostgresSourceJdbcV2CompatibilityStreamStateValue.toV3StateValue(
                             Jsons.treeToValue(
                                 it,
-                                PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java
+                                PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java,
                             ),
-                            streamFeedBootstrap.feed
+                            streamFeedBootstrap.feed,
                         )
                     3 -> Jsons.treeToValue(it, PostgresSourceJdbcStreamStateValue::class.java)
                     else -> {
@@ -49,12 +49,13 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
 
     val maybeFilenode: Filenode?
         get() = stateValue?.filenode
+
     val maybeCtid: Ctid?
         get() = stateValue?.let { sv -> sv.ctid?.let { Ctid.of(it) } }
 
     override fun validatePartition(
         partition: JdbcPartition<*>,
-        jdbcConnectionFactory: JdbcConnectionFactory
+        jdbcConnectionFactory: JdbcConnectionFactory,
     ) {
         val savedFilenode: Filenode? =
             when (partition) {
@@ -67,12 +68,12 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
             val currentFilenode: Filenode? =
                 PostgresSourceJdbcPartitionFactory.getStreamFilenode(
                     partition.streamState,
-                    jdbcConnectionFactory
+                    jdbcConnectionFactory,
                 )
 
             if (currentFilenode != savedFilenode) {
                 throw TransientErrorException(
-                    "Full vacuum on table ${partition.streamState.stream.id} detected. Filenode changed from ${savedFilenode} to $currentFilenode"
+                    "Full vacuum on table ${partition.streamState.stream.id} detected. Filenode changed from ${savedFilenode} to $currentFilenode",
                 )
             }
         }
