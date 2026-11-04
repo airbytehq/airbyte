@@ -117,7 +117,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------  |
-| 0.2.0   | 2026-02-17 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add SSL certificate authentication support and upgrade Kafka client to 4.1.0   |
+| 0.2.0   | 2026-11-04 | [90980](https://github.com/airbytehq/airbyte/pull/90980) | Add SSL certificate authentication support and upgrade Kafka client to 4.1.0   |
 | 0.1.11  | 2025-03-28 | [56450](https://github.com/airbytehq/airbyte/pull/56450) | Add support for other SASL Mechanisms when SASL_PLAINTEXT protocol is selected |
 | 0.1.10  | 2022-08-04 | [15287](https://github.com/airbytehq/airbyte/pull/15287) | Update Kafka destination to use outputRecordCollector to properly store state  |
 | 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                         |
