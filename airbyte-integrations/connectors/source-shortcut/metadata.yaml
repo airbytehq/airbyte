@@ -43,3 +43,11 @@ data:
     - title: Shortcut rate limits
       url: https://developer.shortcut.com/api/rest/v3#Rate-Limiting
       type: rate_limits
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
