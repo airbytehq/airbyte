@@ -78,8 +78,8 @@ Mirakl recommends calling the order and return endpoints at most once per minute
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                                     | Subject                    |
-| :------ | :--------- | :--------------------------------------------------------------- | :------------------------- |
-| 0.1.0   | 2026-11-04 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | New Source: Mirakl Connect |
+| Version | Date       | Pull Request                                             | Subject                    |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------- |
+| 0.1.0   | 2026-11-04 | [90991](https://github.com/airbytehq/airbyte/pull/90991) | New Source: Mirakl Connect |
 
 </details>
