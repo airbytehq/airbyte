@@ -21,7 +21,7 @@ def test_child_parent_key(stream, parent, key, path):
     child = fixture_record(stream)
     child.pop(key, None)
     with HttpMocker() as mocker:
-        parent_request = search_request(exclusive=True) if parent == "issues" else list_request("knowledge-bases")
+        parent_request = search_request() if parent == "issues" else list_request("knowledge-bases")
         register = mocker.post if parent == "issues" else mocker.get
         register(parent_request, page([parent_record]))
         child_request = list_request(path.format(parent_record["id"]))
@@ -37,7 +37,7 @@ def test_child_parent_key(stream, parent, key, path):
 @freeze_time(NOW)
 def test_no_parents_means_no_child_requests(stream, parent, key, path):
     with HttpMocker() as mocker:
-        request = search_request(exclusive=True) if parent == "issues" else list_request("knowledge-bases")
+        request = search_request() if parent == "issues" else list_request("knowledge-bases")
         register = mocker.post if parent == "issues" else mocker.get
         register(request, page([]))
         output = run(stream)

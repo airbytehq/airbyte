@@ -79,14 +79,11 @@ definitions:
           http_method: POST
           request_body_json:
             filter:
-              operator: "and"
-              subfilters:
-                - field: "updated_at"
-                  operator: "time_is_after"
-                  value: "{{ stream_interval.start_time }}"
-                - field: "updated_at"
-                  operator: "time_is_before"
-                  value: "{{ stream_interval.end_time }}"
+              field: updated_at
+              operator: time_range
+              values:
+                - "{{ stream_interval.start_time }}"
+                - "{{ stream_interval.end_time }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -195,6 +192,12 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/issue_threads"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - issue_id
+              value: "{{ stream_partition.issue_id }}"
 
     tags:
       type: DeclarativeStream

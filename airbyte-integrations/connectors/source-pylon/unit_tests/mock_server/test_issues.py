@@ -17,10 +17,10 @@ def test_issues_search_pagination(empty):
     first = fixture_record("issues")
     second = {**first, "id": "synthetic-second-issue"}
     with HttpMocker() as mocker:
-        initial = search_request(exclusive=True)
+        initial = search_request()
         mocker.post(initial, page([] if empty else [first], None if empty else "next"))
         if not empty:
-            following = search_request(cursor="next", exclusive=True)
+            following = search_request(cursor="next")
             mocker.post(following, page([second]))
         output = run("issues", mode=SyncMode.incremental)
         mocker.assert_number_of_calls(initial, 1)
@@ -33,13 +33,13 @@ def test_issues_search_pagination(empty):
 def test_two_pass_incremental():
     issue = fixture_record("issues")
     with freeze_time(NOW), HttpMocker() as mocker:
-        mocker.post(search_request(exclusive=True), page([issue]))
+        mocker.post(search_request(), page([issue]))
         first = run("issues", mode=SyncMode.incremental)
     assert first.errors == []
     cursor = first.most_recent_state.stream_state.__dict__["updated_at"]
     edited = {**issue, "updated_at": "2026-01-15T12:00:00Z"}
     with freeze_time("2026-01-16T00:00:00Z"), HttpMocker() as mocker:
-        request = search_request(start=cursor, end="2026-01-16T00:00:00Z", exclusive=True)
+        request = search_request(start=cursor, end="2026-01-16T00:00:00Z")
         mocker.post(request, page([edited]))
         second = run("issues", mode=SyncMode.incremental, state=[message.state for message in first.state_messages])
         mocker.assert_number_of_calls(request, 1)
@@ -51,7 +51,7 @@ def test_two_pass_incremental():
 def test_legacy_state_rewinds_to_start_date():
     state = StateBuilder().with_stream_state("issues", {"created_at": "2026-01-12T00:00:00Z"}).build()
     with HttpMocker() as mocker:
-        request = search_request(exclusive=True)
+        request = search_request()
         mocker.post(request, page([fixture_record("issues")]))
         output = run("issues", mode=SyncMode.incremental, state=state)
         mocker.assert_number_of_calls(request, 1)
