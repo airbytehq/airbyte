@@ -1,0 +1,47 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - miraklconnect.com
+      - auth.mirakl.net
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-mirakl-connect
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.45.0@sha256:a4947a37ef760ff501856dbeec22830826c1d214f0e530abfa9831e57f019809
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 506cf9d7-4a21-4359-a616-2324c45d5d36
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-mirakl-connect
+  githubIssueLabel: source-mirakl-connect
+  icon: icon.svg
+  license: ELv2
+  name: Mirakl Connect
+  releaseDate: 2026-11-04
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mirakl-connect
+  suggestedStreams:
+    streams:
+      - orders
+      - returns
+      - products
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  ab_internal:
+    ql: 100
+    sl: 100
+  externalDocumentationUrls:
+    - title: Mirakl Connect API reference
+      url: https://developer.mirakl.com/content/product/connect/rest/connect/openapi3
+      type: api_reference
