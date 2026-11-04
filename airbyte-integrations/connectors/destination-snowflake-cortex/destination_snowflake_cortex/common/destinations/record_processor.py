@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, cast, final
 
 from airbyte import exceptions as exc
 from airbyte.strategies import WriteStrategy
-from airbyte_protocol.models import (
+from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,

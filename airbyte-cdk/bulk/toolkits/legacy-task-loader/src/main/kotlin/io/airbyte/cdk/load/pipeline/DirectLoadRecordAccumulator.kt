@@ -24,7 +24,7 @@ data class DirectLoadAccResult(override val state: BatchState) : WithBatchState
 @Singleton
 @Requires(bean = DirectLoaderFactory::class)
 class DirectLoadRecordAccumulator<S : DirectLoader, K : WithStream>(
-    val directLoaderFactory: DirectLoaderFactory<S>
+    val directLoaderFactory: DirectLoaderFactory<S>,
 ) : BatchAccumulator<S, K, DestinationRecordRaw, DirectLoadAccResult> {
     override suspend fun start(key: K, part: Int): S {
         return directLoaderFactory.create(key.stream, part)
@@ -32,7 +32,7 @@ class DirectLoadRecordAccumulator<S : DirectLoader, K : WithStream>(
 
     override suspend fun accept(
         input: DestinationRecordRaw,
-        state: S
+        state: S,
     ): BatchAccumulatorResult<S, DirectLoadAccResult> {
         state.accept(input).let {
             return when (it) {

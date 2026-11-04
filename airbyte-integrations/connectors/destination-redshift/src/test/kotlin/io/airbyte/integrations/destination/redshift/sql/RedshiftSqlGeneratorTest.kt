@@ -92,11 +92,12 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `namespaceExists queries information_schema`() {
+    fun `namespaceExists queries svv_all_schemas`() {
         val sql = sqlGenerator.namespaceExists("my_schema")
 
         assertTrue(sql.contains("SELECT EXISTS("))
-        assertTrue(sql.contains("FROM information_schema.schemata"))
+        assertTrue(sql.contains("FROM svv_all_schemas"))
+        assertTrue(sql.contains("database_name = current_database()"))
         assertTrue(sql.contains("schema_name = 'my_schema'"))
     }
 
@@ -401,8 +402,8 @@ internal class RedshiftSqlGeneratorTest {
 
         assertTrue(
             sql.contains(
-                """"ns"."final"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at""""
-            )
+                """"ns"."final"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"""",
+            ),
         )
         // Should NOT have the 4-way cursor comparison
         assertFalse(sql.contains("IS NULL AND deduped_source."))
@@ -423,6 +424,8 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("INSERT INTO"))
         assertTrue(sql.contains("NOT EXISTS"))
         assertFalse(sql.contains("_ab_cdc_deleted_at"))
+        // PK columns should have IS NOT NULL filter before NOT EXISTS
+        assertTrue(sql.contains("""deduped_source."id" IS NOT NULL"""))
     }
 
     @Test
@@ -438,6 +441,33 @@ internal class RedshiftSqlGeneratorTest {
             )
 
         assertTrue(sql.contains(""""_ab_cdc_deleted_at" IS NULL"""))
+        // PK columns should have IS NOT NULL filter before NOT EXISTS
+        assertTrue(sql.contains("""deduped_source."id" IS NOT NULL"""))
+    }
+
+    @Test
+    fun `insertNewRows adds IS NOT NULL filter for each composite PK column`() {
+        val target = TableName(namespace = "ns", name = "final")
+        val sql =
+            sqlGenerator.insertNewRows(
+                dedupTableAlias = "deduped_source",
+                targetTableName = target,
+                allTargetColumns =
+                    listOf(""""id"""", """"org_id"""", """"name"""", """"updated_at""""),
+                primaryKeyTargetColumns = listOf(""""id"""", """"org_id""""),
+                cdcHardDeleteEnabled = false,
+            )
+
+        // Each PK column should have an IS NOT NULL filter
+        assertTrue(sql.contains("""deduped_source."id" IS NOT NULL"""))
+        assertTrue(sql.contains("""deduped_source."org_id" IS NOT NULL"""))
+        // IS NOT NULL filters should appear before NOT EXISTS
+        val notNullPos = sql.indexOf("""IS NOT NULL""")
+        val notExistsPos = sql.indexOf("NOT EXISTS")
+        assertTrue(notNullPos < notExistsPos, "IS NOT NULL filter should appear before NOT EXISTS")
+        // Non-PK columns should NOT have IS NOT NULL filter
+        assertFalse(sql.contains("""deduped_source."name" IS NOT NULL"""))
+        assertFalse(sql.contains("""deduped_source."updated_at" IS NOT NULL"""))
     }
 
     // ================================================================
@@ -484,6 +514,8 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("INSERT INTO \"ns\".\"final\""))
         assertTrue(sql.contains("NOT EXISTS"))
         assertTrue(sql.contains("\"_ab_cdc_deleted_at\" IS NULL"))
+        // PK columns should have IS NOT NULL filter in INSERT
+        assertTrue(sql.contains(""""id" IS NOT NULL"""))
         // Cleanup
         assertTrue(sql.contains("DROP TABLE IF EXISTS $dedup;"))
         assertTrue(sql.contains("COMMIT;"))
@@ -516,6 +548,8 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("UPDATE"))
         assertTrue(sql.contains("INSERT INTO"))
         assertFalse(sql.contains("_ab_cdc_deleted_at"))
+        // PK columns should have IS NOT NULL filter in INSERT
+        assertTrue(sql.contains(""""id" IS NOT NULL"""))
         assertTrue(sql.contains("COMMIT;"))
     }
 
@@ -553,11 +587,11 @@ internal class RedshiftSqlGeneratorTest {
         val dedupTableName = match!!.groupValues[1]
         assertTrue(
             dedupTableName.length <= 127,
-            "Dedup temp table name exceeds 127 chars: ${dedupTableName.length}"
+            "Dedup temp table name exceeds 127 chars: ${dedupTableName.length}",
         )
         assertTrue(
             dedupTableName.startsWith(dedupPrefix),
-            "Dedup temp table name should start with $dedupPrefix"
+            "Dedup temp table name should start with $dedupPrefix",
         )
     }
 
@@ -596,7 +630,6 @@ internal class RedshiftSqlGeneratorTest {
                         "new_col" to ColumnType("varchar(65535)", true),
                         "another_col" to ColumnType("bigint", false),
                     ),
-                columnsToRemove = emptyMap(),
                 columnsToModify = emptyMap(),
             )
 
@@ -607,34 +640,19 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `matchSchemas removes columns`() {
-        val tableName = TableName(namespace = "ns", name = "tbl")
-        val sql =
-            sqlGenerator.matchSchemas(
-                tableName,
-                columnsToAdd = emptyMap(),
-                columnsToRemove = mapOf("old_col" to ColumnType("varchar", true)),
-                columnsToModify = emptyMap(),
-            )
-
-        assertTrue(sql.contains("""ALTER TABLE "ns"."tbl" DROP COLUMN "old_col";"""))
-    }
-
-    @Test
     fun `matchSchemas SUPER to VARCHAR uses JSON_SERIALIZE`() {
         val tableName = TableName(namespace = "ns", name = "tbl")
         val sql =
             sqlGenerator.matchSchemas(
                 tableName,
                 columnsToAdd = emptyMap(),
-                columnsToRemove = emptyMap(),
                 columnsToModify =
                     mapOf(
                         "json_col" to
                             ColumnTypeChange(
                                 originalType = ColumnType("super", true),
                                 newType = ColumnType("varchar(65535)", true),
-                            )
+                            ),
                     ),
             )
 
@@ -654,14 +672,13 @@ internal class RedshiftSqlGeneratorTest {
             sqlGenerator.matchSchemas(
                 tableName,
                 columnsToAdd = emptyMap(),
-                columnsToRemove = emptyMap(),
                 columnsToModify =
                     mapOf(
                         "data_col" to
                             ColumnTypeChange(
                                 originalType = ColumnType("varchar(65535)", true),
                                 newType = ColumnType("super", true),
-                            )
+                            ),
                     ),
             )
 
@@ -683,14 +700,13 @@ internal class RedshiftSqlGeneratorTest {
             sqlGenerator.matchSchemas(
                 tableName,
                 columnsToAdd = emptyMap(),
-                columnsToRemove = emptyMap(),
                 columnsToModify =
                     mapOf(
                         "num_col" to
                             ColumnTypeChange(
                                 originalType = ColumnType("bigint", false),
                                 newType = ColumnType("decimal(38,9)", false),
-                            )
+                            ),
                     ),
             )
 
@@ -721,14 +737,17 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("""COPY "ns"."tbl""""))
         assertTrue(sql.contains("FROM 's3://bucket/path/file.csv.gz'"))
         assertTrue(
-            sql.contains("CREDENTIALS 'aws_access_key_id=AKIATEST;aws_secret_access_key=secret123'")
+            sql.contains(
+                "CREDENTIALS 'aws_access_key_id=AKIATEST;aws_secret_access_key=secret123'",
+            ),
         )
         assertTrue(sql.contains("CSV GZIP"))
         assertTrue(sql.contains("REGION 'us-east-1'"))
         assertTrue(sql.contains("TIMEFORMAT 'auto'"))
         assertTrue(sql.contains("ROUNDEC"))
         assertTrue(sql.contains("IGNOREHEADER 1"))
-        assertTrue(sql.contains("EMPTYASNULL"))
+        assertTrue(sql.contains("NULL AS '${RedshiftSqlGenerator.NULL_SENTINEL}'"))
+        assertFalse(sql.contains("EMPTYASNULL"))
     }
 
     @Test
@@ -814,34 +833,19 @@ internal class RedshiftSqlGeneratorTest {
         }
 
         @Test
-        fun `matchSchemas removes columns with CASCADE`() {
-            val tableName = TableName(namespace = "ns", name = "tbl")
-            val sql =
-                cascadeGenerator.matchSchemas(
-                    tableName,
-                    columnsToAdd = emptyMap(),
-                    columnsToRemove = mapOf("old_col" to ColumnType("varchar", true)),
-                    columnsToModify = emptyMap(),
-                )
-
-            assertTrue(sql.contains("""ALTER TABLE "ns"."tbl" DROP COLUMN "old_col" CASCADE;"""))
-        }
-
-        @Test
         fun `matchSchemas type change drops column with CASCADE`() {
             val tableName = TableName(namespace = "ns", name = "tbl")
             val sql =
                 cascadeGenerator.matchSchemas(
                     tableName,
                     columnsToAdd = emptyMap(),
-                    columnsToRemove = emptyMap(),
                     columnsToModify =
                         mapOf(
                             "num_col" to
                                 ColumnTypeChange(
                                     originalType = ColumnType("bigint", false),
                                     newType = ColumnType("decimal(38,9)", false),
-                                )
+                                ),
                         ),
                 )
 

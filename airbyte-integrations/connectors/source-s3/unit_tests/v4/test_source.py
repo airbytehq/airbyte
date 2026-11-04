@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -34,13 +36,40 @@ class SourceTest(unittest.TestCase):
 
     @patch("source_s3.v4.source.emit_configuration_as_airbyte_control_message")
     def test_given_config_is_v3_when_read_config_then_emit_new_config(self, emit_config_mock) -> None:
-        self._source.read_config(str(TEST_FILES_FOLDER.joinpath("v3_config.json")))
+        config = self._source.read_config(str(TEST_FILES_FOLDER.joinpath("v3_config.json")))
         assert emit_config_mock.call_count == 1
+        assert config["credentials"] == {
+            "auth_type": "iam_user",
+            "aws_access_key_id": "a key id",
+            "aws_secret_access_key": "an access key",
+        }
 
     @patch("source_s3.v4.source.emit_configuration_as_airbyte_control_message")
     def test_given_config_is_v4_when_read_config_then_do_not_emit_new_config(self, emit_config_mock) -> None:
-        self._source.read_config(str(TEST_FILES_FOLDER.joinpath("v4_config.json")))
+        config = self._source.read_config(str(TEST_FILES_FOLDER.joinpath("v4_config.json")))
         assert emit_config_mock.call_count == 0
+        assert config["credentials"] == {"auth_type": "default_credentials"}
+
+    @patch("source_s3.v4.source.emit_configuration_as_airbyte_control_message")
+    def test_given_config_is_flat_v4_when_read_config_then_migrate_credentials(self, emit_config_mock) -> None:
+        legacy_config = {
+            "bucket": "a-bucket",
+            "streams": [],
+            "aws_access_key_id": "access",
+            "aws_secret_access_key": "secret",
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = Path(temp_dir) / "config.json"
+            config_path.write_text(json.dumps(legacy_config))
+            migrated_config = self._source.read_config(str(config_path))
+
+        expected_config = {
+            "bucket": "a-bucket",
+            "streams": [],
+            "credentials": {"auth_type": "iam_user", "aws_access_key_id": "access", "aws_secret_access_key": "secret"},
+        }
+        assert migrated_config == expected_config
+        emit_config_mock.assert_called_once_with(expected_config)
 
     def test_when_spec_then_v3_fields_not_required(self) -> None:
         spec = self._source.spec()
@@ -60,6 +89,20 @@ class SourceTest(unittest.TestCase):
     def test_when_spec_then_v3_nested_fields_are_not_required(self) -> None:
         spec = self._source.spec()
         assert not spec.connectionSpecification["properties"]["provider"]["required"]
+
+    def test_when_spec_then_authentication_and_stream_fields_are_ordered(self) -> None:
+        schema = self._source.spec().connectionSpecification
+        properties = schema["properties"]
+        stream_properties = properties["streams"]["items"]["properties"]
+
+        assert "credentials" in schema["required"]
+        assert properties["credentials"]["order"] == 0
+        assert properties["bucket"]["order"] == 1
+        assert properties["streams"]["title"] == "Streams"
+        assert properties["streams"]["order"] == 2
+        assert stream_properties["name"]["order"] == 0
+        assert stream_properties["format"]["order"] == 1
+        assert not {"aws_access_key_id", "aws_secret_access_key", "role_arn"} & properties.keys()
 
     def test_make_default_stream_returns_throttled_stream(self) -> None:
         stream_config = FileBasedStreamConfig(name="s", validation_policy="Emit Record", format=CsvFormat())

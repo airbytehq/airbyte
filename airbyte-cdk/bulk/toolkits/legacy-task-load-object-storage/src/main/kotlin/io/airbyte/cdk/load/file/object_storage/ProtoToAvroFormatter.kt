@@ -83,7 +83,7 @@ class ProtoToAvroFormatter(
     init {
         if (unknownColumns.isNotEmpty()) {
             throw RuntimeException(
-                "Unknown columns $unknownColumns encountered for stream ${stream.mappedDescriptor}"
+                "Unknown columns $unknownColumns encountered for stream ${stream.mappedDescriptor}",
             )
         }
 
@@ -180,7 +180,9 @@ class ProtoToAvroFormatter(
     }
 
     override fun flush() = writer.flush()
+
     override fun close() = writer.close()
+
     private fun buildColumnWriters(): List<ColumnWriter> {
         val accessors = stream.airbyteValueProxyFieldAccessors
 
@@ -199,7 +201,7 @@ class ProtoToAvroFormatter(
                         if (rootLevelFlattening) acc.name
                         else
                             throw RuntimeException(
-                                "Avro format doesn't support non-flattening mode"
+                                "Avro format doesn't support non-flattening mode",
                             ),
                         AirbyteRecordMessageMetaChange.Change.NULLED,
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
@@ -208,99 +210,100 @@ class ProtoToAvroFormatter(
 
             val writer: (GenericRecord, AirbyteValueProxy, MutableList<Meta.Change>) -> Unit =
                 when (acc.type) {
-                    is BooleanType -> { rec, p, _ -> rec.put(fieldName, p.getBoolean(acc)) }
+                    is BooleanType -> { rec, p, _ ->
+                        rec.put(fieldName, p.getBoolean(acc))
+                    }
                     is IntegerType -> { rec, p, ch ->
-                            p.getInteger(acc)?.let { v ->
-                                if (v in longMin..longMax) rec.put(fieldName, v.toLong())
-                                else {
-                                    rec.put(fieldName, null)
-                                    ch.add(
-                                        Meta.Change(
-                                            pathFor(acc.name),
-                                            AirbyteRecordMessageMetaChange.Change.NULLED,
-                                            AirbyteRecordMessageMetaChange.Reason
-                                                .DESTINATION_FIELD_SIZE_LIMITATION,
-                                        ),
-                                    )
-                                }
+                        p.getInteger(acc)?.let { v ->
+                            if (v in longMin..longMax) rec.put(fieldName, v.toLong())
+                            else {
+                                rec.put(fieldName, null)
+                                ch.add(
+                                    Meta.Change(
+                                        pathFor(acc.name),
+                                        AirbyteRecordMessageMetaChange.Change.NULLED,
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_FIELD_SIZE_LIMITATION,
+                                    ),
+                                )
                             }
                         }
+                    }
                     is NumberType -> { rec, p, _ ->
-                            p.getNumber(acc)?.toDouble()?.let { rec.put(fieldName, it) }
-                        }
+                        p.getNumber(acc)?.toDouble()?.let { rec.put(fieldName, it) }
+                    }
                     is StringType -> { rec, p, _ ->
-                            p.getString(acc)?.let { rec.put(fieldName, it) }
-                        }
+                        p.getString(acc)?.let { rec.put(fieldName, it) }
+                    }
                     is DateType -> { rec, p, ch ->
-                            p.getDate(acc)?.let {
-                                runCatching { LocalDate.parse(it).toEpochDay().toInt() }
-                                    .onSuccess { d -> rec.put(fieldName, d) }
-                                    .onFailure {
-                                        rec.put(fieldName, null)
-                                        addError(ch)
-                                    }
-                            }
+                        p.getDate(acc)?.let {
+                            runCatching { LocalDate.parse(it).toEpochDay().toInt() }
+                                .onSuccess { d -> rec.put(fieldName, d) }
+                                .onFailure {
+                                    rec.put(fieldName, null)
+                                    addError(ch)
+                                }
                         }
+                    }
                     is TimeTypeWithTimezone -> { rec, p, ch ->
-                            p.getTimeWithTimezone(acc)?.let {
-                                runCatching { microsOfDayTz(OffsetTime.parse(it)) }
-                                    .onSuccess { t -> rec.put(fieldName, t) }
-                                    .onFailure {
-                                        rec.put(fieldName, null)
-                                        addError(ch)
-                                    }
-                            }
+                        p.getTimeWithTimezone(acc)?.let {
+                            runCatching { microsOfDayTz(OffsetTime.parse(it)) }
+                                .onSuccess { t -> rec.put(fieldName, t) }
+                                .onFailure {
+                                    rec.put(fieldName, null)
+                                    addError(ch)
+                                }
                         }
+                    }
                     is TimeTypeWithoutTimezone -> { rec, p, ch ->
-                            p.getTimeWithoutTimezone(acc)?.let {
-                                runCatching { microsOfDay(LocalTime.parse(it)) }
-                                    .onSuccess { t -> rec.put(fieldName, t) }
-                                    .onFailure {
-                                        rec.put(fieldName, null)
-                                        addError(ch)
-                                    }
-                            }
+                        p.getTimeWithoutTimezone(acc)?.let {
+                            runCatching { microsOfDay(LocalTime.parse(it)) }
+                                .onSuccess { t -> rec.put(fieldName, t) }
+                                .onFailure {
+                                    rec.put(fieldName, null)
+                                    addError(ch)
+                                }
                         }
+                    }
                     is TimestampTypeWithTimezone -> { rec, p, ch ->
-                            p.getTimestampWithTimezone(acc)?.let {
-                                runCatching { epochMicrosTz(OffsetDateTime.parse(it)) }
-                                    .onSuccess { t -> rec.put(fieldName, t) }
-                                    .onFailure {
-                                        rec.put(fieldName, null)
-                                        addError(ch)
-                                    }
-                            }
+                        p.getTimestampWithTimezone(acc)?.let {
+                            runCatching { epochMicrosTz(OffsetDateTime.parse(it)) }
+                                .onSuccess { t -> rec.put(fieldName, t) }
+                                .onFailure {
+                                    rec.put(fieldName, null)
+                                    addError(ch)
+                                }
                         }
+                    }
                     is TimestampTypeWithoutTimezone -> { rec, p, ch ->
-                            p.getTimestampWithoutTimezone(acc)?.let {
-                                runCatching { epochMicros(LocalDateTime.parse(it)) }
-                                    .onSuccess { t -> rec.put(fieldName, t) }
-                                    .onFailure {
-                                        rec.put(fieldName, null)
-                                        addError(ch)
-                                    }
-                            }
+                        p.getTimestampWithoutTimezone(acc)?.let {
+                            runCatching { epochMicros(LocalDateTime.parse(it)) }
+                                .onSuccess { t -> rec.put(fieldName, t) }
+                                .onFailure {
+                                    rec.put(fieldName, null)
+                                    addError(ch)
+                                }
                         }
+                    }
                     is UnknownType -> { rec, _, ch ->
-                            rec.put(fieldName, null)
-                            addError(ch)
-                        }
+                        rec.put(fieldName, null)
+                        addError(ch)
+                    }
                     else -> { rec, p, ch ->
-                            val node = p.getJsonNode(acc)
+                        val node = p.getJsonNode(acc)
 
-                            val converted =
-                                runCatching {
-                                        jsonToAvro(
-                                            node,
-                                            logicalSchema.properties[acc.name]!!.type,
-                                            subSchema,
-                                            ch,
-                                            acc.name,
-                                        )
-                                    }
-                                    .getOrElse { null }
-                            rec.put(fieldName, converted)
+                        val converted = runCatching {
+                            jsonToAvro(
+                                node,
+                                logicalSchema.properties[acc.name]!!.type,
+                                subSchema,
+                                ch,
+                                acc.name,
+                            )
                         }
+                            .getOrElse { null }
+                        rec.put(fieldName, converted)
+                    }
                 }
 
             ColumnWriter(fieldName, acc, subSchema, writer)
@@ -312,7 +315,7 @@ class ProtoToAvroFormatter(
         airbyteSchema: AirbyteType,
         avroSchema: Schema,
         ch: MutableList<Meta.Change>,
-        path: String
+        path: String,
     ): Any? {
         if (node == null || node.isNull) return null
 
@@ -428,7 +431,7 @@ class ProtoToAvroFormatter(
     private fun pickUnionBranch(
         node: JsonNode,
         airbyteUnion: UnionType,
-        avroUnion: Schema
+        avroUnion: Schema,
     ): Pair<AirbyteType, Schema>? {
         for (opt in airbyteUnion.options) {
             if (!nodeMatches(node, opt)) continue // wrong json kind
@@ -482,6 +485,7 @@ class ProtoToAvroFormatter(
         ot.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime().toNanoOfDay() / 1_000
 
     private fun microsOfDay(t: LocalTime): Long = t.toNanoOfDay() / 1_000
+
     private fun epochMicrosTz(odt: OffsetDateTime): Long {
         val inst = odt.toInstant().truncatedTo(ChronoUnit.MICROS)
         return inst.epochSecond * 1_000_000 + inst.nano / 1_000
