@@ -776,19 +776,35 @@ spec:
         order: 0
         title: API Token
         description: >-
-          Your Pylon API token. Generate one in the Pylon dashboard under
-          Settings > API.
+          Create a token under Settings > Integrations & dev > API tokens in Pylon.
+          The token's role controls which streams you can read. Only the US API
+          (api.usepylon.com) is supported; EU tokens starting with pylon_api_eu_ are
+          not supported. Add Airbyte's IP addresses to any IP allowlist on the token.
         airbyte_secret: true
       start_date:
         type: string
         order: 1
         title: Start Date
         description: >-
-          The date from which you want to start syncing data, in UTC. Format:
-          YYYY-MM-DDTHH:MM:SSZ. If not provided, defaults to 1 month ago.
+          Start syncing issues updated since this date, in UTC, using the format
+          YYYY-MM-DDTHH:MM:SSZ. Applies only to issues and its child streams,
+          issue_messages and issue_threads. On every sync, messages and threads are
+          re-read for every issue updated since this date.
+          All other streams always sync in full. Defaults to 30 days ago.
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:
           - "2024-01-01T00:00:00Z"
+      num_workers:
+        type: integer
+        order: 2
+        title: Number of Workers
+        default: 3
+        minimum: 1
+        maximum: 10
+        description: >-
+          The number of concurrent workers used to read Pylon data. Pylon rate limits
+          are shared by every integration using your organization's API tokens.
+          Lower this value if other tools also call Pylon.
     additionalProperties: true
 
 schemas:
