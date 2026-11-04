@@ -324,6 +324,11 @@
       "statusCode": 301
     },
     {
+      "source": "/platform/cloud/managing-airbyte-cloud/review-sync-summary",
+      "destination": "/platform/cloud/managing-airbyte-cloud/review-connection-timeline",
+      "statusCode": 301
+    },
+    {
       "source": "/cloud/managing-airbyte-cloud/review-connection-state",
       "destination": "/platform/cloud/managing-airbyte-cloud/manage-connection-state",
       "statusCode": 301
@@ -505,7 +510,7 @@
     },
     {
       "source": "/understanding-airbyte/connections/full-refresh-append",
-      "destination": "/platform//using-airbyte/core-concepts/sync-modes/full-refresh-append",
+      "destination": "/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append",
       "statusCode": 301
     },
     {
@@ -520,6 +525,21 @@
     },
     {
       "source": "/understanding-airbyte/typing-deduping",
+      "destination": "/platform/using-airbyte/core-concepts/typing-deduping",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/understanding-airbyte/connections/connection-sync-modes",
+      "destination": "/platform/using-airbyte/core-concepts/sync-modes",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/understanding-airbyte/basic-normalization",
+      "destination": "/platform/using-airbyte/core-concepts/typing-deduping",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/using-airbyte/core-concepts/basic-normalization",
       "destination": "/platform/using-airbyte/core-concepts/typing-deduping",
       "statusCode": 301
     },

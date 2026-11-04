@@ -307,6 +307,12 @@ If you synced one of these streams on an earlier connector version and suspect m
 
 Some payment methods, such as offsite or redirect gateways like Klarna, create the transaction a few minutes before Shopify creates the order. Starting in version 4.2.6, the connector emits these transactions when their order is first synced. Such a transaction can be emitted again on following syncs until a newer transaction moves the cursor past the order's creation time, so destinations without deduplication, such as **Incremental | Append**, may see duplicate rows. Upgrading doesn't backfill transactions that earlier versions skipped, so refresh the `transactions` stream or clear its state to recover them.
 
+#### Transaction status changes
+
+Shopify transactions have no `updated_at` field, so the `transactions` stream uses `created_at` as its cursor. Starting in version 4.3.4, an incremental sync also emits every transaction of an order updated since the saved cursor, which is the newest transaction `created_at` already synced, minus the **Lookback Window** if one is set. This lets status changes, such as a refund going from `PENDING` to `SUCCESS`, reach the destination. Any edit to an order, such as a tag or fulfillment change, re-emits all of its transactions, and when no new transactions are created the cursor doesn't move, so the same transactions can be emitted on every sync. Use **Incremental | Append + Deduped** to keep one row per transaction. Upgrading doesn't update rows that earlier versions left stale, so refresh the `transactions` stream to correct them.
+
+This applies to the default GraphQL `transactions` stream. Status changes are not yet captured incrementally by the REST `transactions` stream, which is used when **Add `user_id` to Transactions (slower)** is enabled, or by the `order_refunds` stream. Refresh those streams to correct stale rows.
+
 #### Product category values
 
 The `category` field on the `products` stream comes from Shopify's Standard Product Taxonomy. Shopify updates the taxonomy several times a year and can rename a category or move it in the tree without changing its ID. Because `products` syncs incrementally on `updated_at`, a product is only re-read when it changes, so its `category` values can lag behind the current taxonomy. Use `category.id` as the stable identifier, and refresh the `products` stream to get current values.
@@ -366,6 +372,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
 | 4.4.0 | 2026-10-30 | [90233](https://github.com/airbytehq/airbyte/pull/90233) | Declare the sections of the stepped setup form (Connect account, Review & set up) in the spec and make CHECK section-aware through the `check-section` config key |
+| 4.3.4 | 2026-11-03 | [89704](https://github.com/airbytehq/airbyte/pull/89704) | Emit `transactions` of orders updated since the saved state so transaction status changes, such as refunds going from `PENDING` to `SUCCESS`, are captured by incremental syncs; refresh `transactions` to correct stale rows |
 | 4.3.3 | 2026-11-03 | [90723](https://github.com/airbytehq/airbyte/pull/90723) | Update dependencies |
 | 4.3.2 | 2026-10-30 | [90254](https://github.com/airbytehq/airbyte/pull/90254) | Explain connection test authentication and access scope failures, and improve invalid store name guidance. |
 | 4.3.1 | 2026-10-26 | [89760](https://github.com/airbytehq/airbyte/pull/89760) | Fix `deleted_products` incremental syncs skipping product deletions recorded in the same second as the saved cursor on Shopify API 2026-10 |
