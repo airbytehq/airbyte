@@ -52,6 +52,13 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["page"]
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   tags:
     - language:python
     - cdk:low-code
