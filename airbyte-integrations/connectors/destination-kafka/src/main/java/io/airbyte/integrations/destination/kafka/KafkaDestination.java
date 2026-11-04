@@ -21,17 +21,25 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+import javax.security.auth.login.AppConfigurationEntry;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.config.types.Password;
+import org.apache.kafka.common.security.JaasContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class KafkaDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KafkaDestination.class);
+  private static final String CLOUD_JAAS_ERROR = "On Airbyte Cloud, set SASL JAAS Config to a single "
+      + "org.apache.kafka.common.security.plain.PlainLoginModule entry.";
 
   public static final String COLUMN_NAME_AB_ID = JavaBaseConstants.COLUMN_NAME_AB_ID;
   public static final String COLUMN_NAME_EMITTED_AT = JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
@@ -70,8 +78,22 @@ public class KafkaDestination extends BaseConnector implements Destination {
   }
 
   private void validateCloudSecurity(final JsonNode config) {
-    if (isCloud() && !"SASL_SSL".equalsIgnoreCase(config.path("protocol").path("security_protocol").asText())) {
+    if (!isCloud()) {
+      return;
+    }
+    if (!"SASL_SSL".equalsIgnoreCase(config.path("protocol").path("security_protocol").asText())) {
       throw new ConfigErrorException("Airbyte Cloud requires TLS for Kafka connections. Set Security Protocol to SASL_SSL.");
+    }
+    final List<AppConfigurationEntry> entries;
+    try {
+      entries = JaasContext.loadClientContext(Map.of(SaslConfigs.SASL_JAAS_CONFIG,
+          new Password(config.path("protocol").path("sasl_jaas_config").asText()))).configurationEntries();
+    } catch (final IllegalArgumentException e) {
+      throw new ConfigErrorException(CLOUD_JAAS_ERROR);
+    }
+    if (entries.size() != 1
+        || !"org.apache.kafka.common.security.plain.PlainLoginModule".equals(entries.get(0).getLoginModuleName())) {
+      throw new ConfigErrorException(CLOUD_JAAS_ERROR);
     }
   }
 
