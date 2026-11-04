@@ -24,7 +24,7 @@ def handler(handler_definition: dict):
     return ModelToComponentFactory().create_component(model, handler_definition, config={})
 
 
-def response(status_code: int, body: bytes = b'{}') -> requests.Response:
+def response(status_code: int, body: bytes = b"{}") -> requests.Response:
     result = requests.Response()
     result.status_code = status_code
     result.request = requests.Request("GET", "https://dust.tt/api/v1/w/test/analytics/export").prepare()
@@ -41,7 +41,7 @@ def test_401_fails_fast_as_config_error(handler) -> None:
 
 
 @pytest.mark.parametrize("status_code", [429, 500, 502, 503, 504])
-@pytest.mark.parametrize("body", [b'{}', b''])
+@pytest.mark.parametrize("body", [b"{}", b""])
 def test_transient_errors_retry(handler, status_code: int, body: bytes) -> None:
     assert handler.interpret_response(response(status_code, body)).response_action == ResponseAction.RETRY
 
@@ -52,7 +52,7 @@ def test_client_errors_fail(handler, status_code: int) -> None:
 
 
 def test_success_is_not_retried(handler) -> None:
-    assert handler.interpret_response(response(200, b'[]')).response_action == ResponseAction.SUCCESS
+    assert handler.interpret_response(response(200, b"[]")).response_action == ResponseAction.SUCCESS
 
 
 def test_retry_policy(handler_definition: dict, handler) -> None:
