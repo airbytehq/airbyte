@@ -88,6 +88,7 @@ class BigQuerySourceConfigurationFactoryTest {
         Assertions.assertEquals(
             mapOf(
                 "ProjectId" to "my-project",
+                "EnableDiagnosticTelemetry" to "0",
                 "OAuthServiceAcctEmail" to "airbyte@my-project.iam.gserviceaccount.com",
                 "OAuthPvtKey" to PRIVATE_KEY_PEM,
                 // The Storage Read API is on by default, for the read path and for the driver.
@@ -428,6 +429,7 @@ class BigQuerySourceConfigurationFactoryTest {
         Assertions.assertEquals(
             mapOf(
                 "ProjectId" to "my-project",
+                "EnableDiagnosticTelemetry" to "0",
                 "OAuthAccessToken" to BigQueryEmulator.DUMMY_ACCESS_TOKEN,
                 "EndpointOverrides" to "BIGQUERY=http://localhost:9050",
             ),

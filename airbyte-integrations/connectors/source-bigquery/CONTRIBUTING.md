@@ -4,8 +4,8 @@
 `cdkVersion=1.1.11`) rewrite of the connector. Versions up to 0.4.5, called the legacy connector
 below, were built on the old Java CDK with the native `google-cloud-bigquery` client and lived in
 the same directory; their code was removed in 1.0.0. The connector connects through Google's Apache-2.0 JDBC driver
-(`com.google.cloud:google-cloud-bigquery-jdbc:1.4.0`) and discovers schemas through the native
-`google-cloud-bigquery` 2.71.0 client built from the same credentials. The legacy connector is the
+(`com.google.cloud:google-cloud-bigquery-jdbc:1.7.0`) and discovers schemas through the native
+`google-cloud-bigquery` 2.74.0 client built from the same credentials. The legacy connector is the
 parity oracle for `check` and `discover`. Its `spec` properties (`project_id`, `dataset_id`,
 `credentials_json`) and `required` list are kept so that saved configurations keep working, but the
 spec is laid out like `destination-bigquery`'s (`connection`/`advanced` groups, ordered properties,
