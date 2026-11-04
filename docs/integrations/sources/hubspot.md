@@ -369,6 +369,16 @@ By default, these streams request history for every property on the object, whic
 
 Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. To accommodate for this limitation, we recommend scheduling more frequent syncs.
 
+### Notes on the `deal_pipelines` stream
+
+Starting with version 6.13.3, the `deal_pipelines` stream reads from HubSpot's Pipelines API `2026-09`, because HubSpot retires Pipelines API V1 on December 4, 2026. The connector converts the records back to the V1 shape, so columns, the primary key and the cursor stay the same. A few details of the output differ from earlier versions:
+
+- The new API doesn't return `default`. The connector sets it to `true` when `pipelineId` is `default`, which is HubSpot's built-in deal pipeline, and to `false` for every other pipeline.
+- The new API doesn't return `objectType` or `objectTypeId`. The connector sets them to `DEAL` and `0-3`, the values V1 returned for deal pipelines.
+- Each item in `stages` has a new `writePermissions` field.
+- Stages of the built-in pipeline can have `updatedAt` set to `0` instead of `null`.
+- Stages within a pipeline can be listed in a different order.
+
 ### Notes on the `Forms` and `Form Submissions` stream
 
 This stream only syncs marketing forms.
@@ -508,7 +518,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.14.0 | 2026-11-03 | [88970](https://github.com/airbytehq/airbyte/pull/88970) | Add `listings` stream |
+| 6.14.0 | 2026-11-04 | [88970](https://github.com/airbytehq/airbyte/pull/88970) | Add `listings` stream |
+| 6.13.3 | 2026-11-03 | [90251](https://github.com/airbytehq/airbyte/pull/90251) | Migrate `deal_pipelines` to Pipelines API 2026-09 ahead of the V1 sunset. Columns, primary key and cursor are unchanged; stages gain `writePermissions`. See [Notes on the `deal_pipelines` stream](#notes-on-the-deal_pipelines-stream) |
 | 6.13.2 | 2026-11-03 | [88157](https://github.com/airbytehq/airbyte/pull/88157) | Fix custom object association streams with a `contacts` `from_object`: use the `lastmodifieddate` parent cursor, as the standard association streams do, instead of `hs_lastmodifieddate`, which contacts do not have and which made the stream emit no records. Document association streams as Full Refresh. |
 | 6.13.1 | 2026-11-03 | [89950](https://github.com/airbytehq/airbyte/pull/89950) | Update dependencies |
 | 6.13.0 | 2026-10-14 | [88415](https://github.com/airbytehq/airbyte/pull/88415) | Add the optional `prefix_colliding_custom_objects` config toggle. When enabled, a custom object whose name matches a built-in stream (e.g. `form_submissions`) is exposed as `custom_object_<name>`, so connections can be created without a duplicate stream name error. Off by default, so existing stream names are unchanged. |
