@@ -81,34 +81,29 @@ definitions:
         schema:
           $ref: "#/schemas/tables"
 
-    collaborators:
+    base_collaborators:
       type: DeclarativeStream
-      name: collaborators
-      primary_key: id
+      name: base_collaborators
+      primary_key:
+        - base_id
+        - userId
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: meta/bases/{{ stream_partition.base_id }}/collaborators
+          # https://airtable.com/developers/web/api/get-base-collaborators
+          path: meta/bases/{{ stream_partition.base_id }}
           http_method: GET
+          request_parameters:
+            # Airtable leaves the collaborator keys out of the response without this.
+            include[]: collaborators
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - collaborators
-
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: offset
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: '{{ response.get("offset", {}) }}'
-            stop_condition: '{{ not response.get("offset", {}) }}'
-
+              - individualCollaborators
+              - baseCollaborators
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -117,13 +112,19 @@ definitions:
               partition_field: base_id
               extra_fields:
                 - ["name"]
-                - ["id"]
               stream:
                 $ref: "#/definitions/streams/bases"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["base_id"]
+              value: "{{ stream_slice.base_id }}"
+            - path: ["base_name"]
+              value: "{{ stream_slice.extra_fields.name }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/collaborators"
+          $ref: "#/schemas/base_collaborators"
 
     airtable_stream:
       type: DeclarativeStream
@@ -641,9 +642,8 @@ dynamic_streams:
             - table_id
           value: "{{ components_values.id }}"
 
-#calling the collaborators schema
 streams:
-  - $ref: "#/definitions/streams/collaborators"
+  - $ref: "#/definitions/streams/base_collaborators"
 
 # Rate limits: https://airtable.com/developers/web/api/rate-limits
 # - 5 requests per second per base
@@ -1028,16 +1028,20 @@ schemas:
                 - string
                 - "null"
 
-  collaborators:
+  base_collaborators:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      id:
+      base_id:
         type:
           - string
           - "null"
-      name:
+      base_name:
+        type:
+          - string
+          - "null"
+      userId:
         type:
           - string
           - "null"
@@ -1046,6 +1050,14 @@ schemas:
           - string
           - "null"
       permissionLevel:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      grantedByUserId:
         type:
           - string
           - "null"

@@ -35,7 +35,6 @@ This page contains the setup guide and reference information for the [Airtable](
 3. Select required bases or allow access to all available and press the `Create Token` button.
    ![Add Bases](/.gitbook/assets/source/airtable/add_bases.png)
 4. Save token from the popup window.
-
 <!-- /env:oss -->
 
 ### Step 2: Set up Airtable connector in Airbyte
@@ -57,7 +56,6 @@ This page contains the setup guide and reference information for the [Airtable](
      :::
 
 6. Click **Set up source**.
-
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -69,7 +67,6 @@ This page contains the setup guide and reference information for the [Airtable](
 3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable** from the Source type dropdown.
 4. Select **Personal Access Token** from the Authentication dropdown and enter the Access Token for your Airtable account.
 5. Click **Set up source**.
-
 <!-- /env:oss -->
 
 ### Configuration options
@@ -98,6 +95,10 @@ Incremental sync compares Airtable's `LAST_MODIFIED_TIME()` with the cursor, fal
 
 This source syncs all tables from your Airtable bases using the Metadata API. If you rename or add a column to an existing table, refresh the source schema in Airbyte to update the catalog.
 
+### Base collaborators
+
+The `base_collaborators` stream lists the people added directly to each base, one record per person per base, with `base_id`, `base_name`, `userId`, `email`, `permissionLevel`, `createdTime`, and `grantedByUserId`. It reads Airtable's [Get base collaborators](https://airtable.com/developers/web/api/get-base-collaborators) endpoint with the `schema.bases:read` scope the connector already uses. Workspace members who weren't added to the base directly, and groups, aren't included. Records contain collaborator email addresses.
+
 ### Performance considerations
 
 Airtable enforces the following [rate limits](https://airtable.com/developers/web/api/rate-limits):
@@ -109,44 +110,44 @@ If either limit is exceeded, the API returns a `429` status code and requests mu
 
 ## Data type map
 
-| Integration Type        | Airbyte Type                    | Nullable |
-| :---------------------- | :------------------------------ | -------- |
-| `multipleAttachments`   | `string`                        | Yes      |
-| `autoNumber`            | `number`                        | Yes      |
-| `barcode`               | `string`                        | Yes      |
-| `button`                | `string`                        | Yes      |
-| `checkbox`              | `boolean`                       | Yes      |
-| `singleCollaborator`    | `string`                        | Yes      |
-| `count`                 | `number`                        | Yes      |
-| `createdBy`             | `string`                        | Yes      |
-| `aiText`                | `string`                        | Yes      |
-| `createdTime`           | `datetime` or `date`            | Yes      |
-| `currency`              | `number`                        | Yes      |
-| `email`                 | `string`                        | Yes      |
-| `date`                  | `string`, `format: date`        | Yes      |
-| `duration`              | `number`                        | Yes      |
-| `lastModifiedBy`        | `string`                        | Yes      |
-| `dateTime`              | `datetime`, `format: date-time` | Yes      |
-| `lastModifiedTime`      | `datetime`, `date`, or `string` | Yes      |
-| `multipleRecordLinks`   | `array with strings`            | Yes      |
-| `multilineText`         | `string`                        | Yes      |
-| `multipleCollaborators` | `array with strings`            | Yes      |
-| `multipleSelects`       | `array with strings`            | Yes      |
-| `number`                | `number`                        | Yes      |
-| `percent`               | `number`                        | Yes      |
-| `phoneNumber`           | `string`                        | Yes      |
-| `rating`                | `number`                        | Yes      |
-| `richText`              | `string`                        | Yes      |
-| `singleLineText`        | `string`                        | Yes      |
-| `singleSelect`          | `string`                        | Yes      |
-| `simpleText`            | `string`                        | Yes      |
-| `manualSort`            | `string`                        | Yes      |
-| `externalSyncSource`    | `string`                        | Yes      |
-| `url`                   | `string`                        | Yes      |
-| `formula`               | `string`, `number`, or `array`  | Yes      |
-| `lookup`                | `array` (typed by result field) | Yes      |
-| `multipleLookupValues`  | `array` (typed by result field) | Yes      |
-| `rollup`                | `array` (typed by result field) | Yes      |
+| Integration Type        | Airbyte Type                           | Nullable |
+| :---------------------- | :------------------------------------- | -------- |
+| `multipleAttachments`   | `string`                               | Yes      |
+| `autoNumber`            | `number`                               | Yes      |
+| `barcode`               | `string`                               | Yes      |
+| `button`                | `string`                               | Yes      |
+| `checkbox`              | `boolean`                              | Yes      |
+| `singleCollaborator`    | `string`                               | Yes      |
+| `count`                 | `number`                               | Yes      |
+| `createdBy`             | `string`                               | Yes      |
+| `aiText`                | `string`                               | Yes      |
+| `createdTime`           | `datetime` or `date`                   | Yes      |
+| `currency`              | `number`                               | Yes      |
+| `email`                 | `string`                               | Yes      |
+| `date`                  | `string`, `format: date`               | Yes      |
+| `duration`              | `number`                               | Yes      |
+| `lastModifiedBy`        | `string`                               | Yes      |
+| `dateTime`              | `datetime`, `format: date-time`        | Yes      |
+| `lastModifiedTime`      | `datetime`, `date`, or `string`        | Yes      |
+| `multipleRecordLinks`   | `array with strings`                   | Yes      |
+| `multilineText`         | `string`                               | Yes      |
+| `multipleCollaborators` | `array with strings`                   | Yes      |
+| `multipleSelects`       | `array with strings`                   | Yes      |
+| `number`                | `number`                               | Yes      |
+| `percent`               | `number`                               | Yes      |
+| `phoneNumber`           | `string`                               | Yes      |
+| `rating`                | `number`                               | Yes      |
+| `richText`              | `string`                               | Yes      |
+| `singleLineText`        | `string`                               | Yes      |
+| `singleSelect`          | `string`                               | Yes      |
+| `simpleText`            | `string`                               | Yes      |
+| `manualSort`            | `string`                               | Yes      |
+| `externalSyncSource`    | `string`                               | Yes      |
+| `url`                   | `string`                               | Yes      |
+| `formula`               | `string`, `number`, or `array`         | Yes      |
+| `lookup`                | `array` (typed by result field)        | Yes      |
+| `multipleLookupValues`  | `array` (typed by result field)        | Yes      |
+| `rollup`                | `array` (typed by result field)        | Yes      |
 
 - All fields are nullable, meaning any field value could be empty.
 - `createdTime` and `lastModifiedTime` emit `datetime` or `date` depending on the field's display configuration in Airtable. If no result type is configured for `lastModifiedTime`, it emits `string`.
@@ -164,6 +165,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.8.0 | 2026-11-04 | [90312](https://github.com/airbytehq/airbyte/pull/90312) | Add base_collaborators stream |
 | 4.7.0 | 2026-10-15 | [89000](https://github.com/airbytehq/airbyte/pull/89000) | Add incremental sync support for table streams |
 | 4.6.43 | 2026-10-13 | [88520](https://github.com/airbytehq/airbyte/pull/88520) | Update dependencies |
 | 4.6.42 | 2026-10-06 | [87744](https://github.com/airbytehq/airbyte/pull/87744) | Update dependencies |
