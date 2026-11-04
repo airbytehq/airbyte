@@ -37,3 +37,11 @@ data:
     - title: Judge.me API documentation
       url: https://judge.me/api
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
