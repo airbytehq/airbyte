@@ -17961,8 +17961,8 @@ spec:
                 description: >-
                   Turn this on only to sync a sandbox (test) company from your Intuit
                   Developer account, using the Client ID and Client Secret from your
-                  app's Development credentials. Leave it off to sync your real
-                  QuickBooks company.
+                  app's Development credentials. Leave it off to sync your
+                  production data.
               access_token:
                 type: string
                 order: 6
