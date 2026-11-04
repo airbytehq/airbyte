@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.71 | 2026-11-04 | TBD | Test UX-02 Form UX warning behavior (do not merge) |
+| 0.0.71 | 2026-11-04 | [90963](https://github.com/airbytehq/airbyte/pull/90963) | Test UX-02 Form UX warning behavior (do not merge) |
 | 0.0.70 | 2026-11-03 | [90637](https://github.com/airbytehq/airbyte/pull/90637) | Update dependencies |
 | 0.0.69 | 2026-10-27 | [89991](https://github.com/airbytehq/airbyte/pull/89991) | Update dependencies |
 | 0.0.68 | 2026-10-20 | [89300](https://github.com/airbytehq/airbyte/pull/89300) | Update dependencies |
