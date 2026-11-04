@@ -423,6 +423,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: users
           http_method: GET
+          request_parameters:
+            include_deactivated: "true"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:

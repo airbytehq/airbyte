@@ -16,6 +16,8 @@ def stream_requests(stream, cursor=None):
     path = stream.replace("_", "-")
     if stream == "custom_fields":
         return [list_request(path, cursor, object_type=kind) for kind in ("account", "issue", "contact")]
+    if stream == "users":
+        return [list_request(path, cursor, include_deactivated="true")]
     return [list_request(path, cursor)]
 
 
@@ -71,3 +73,16 @@ def test_check_and_discover():
         "issue_threads",
         "knowledge_base_articles",
     }
+
+
+@freeze_time(NOW)
+def test_users_includes_deactivated_users() -> None:
+    active = {**fixture_record("users"), "is_deactivated": False}
+    deactivated = {**active, "id": "synthetic-deactivated-user", "is_deactivated": True}
+    with HttpMocker() as mocker:
+        request = list_request("users", include_deactivated="true")
+        mocker.get(request, page([active, deactivated]))
+        output = run("users")
+        mocker.assert_number_of_calls(request, 1)
+    assert output.errors == []
+    assert [message.record.data for message in output.records] == [active, deactivated]
