@@ -14703,6 +14703,8 @@ spec:
     required:
     - credentials
     - domain
+    - lookback_window_minutes
+    - num_workers
     additionalProperties: true
     properties:
       credentials:
@@ -14730,10 +14732,11 @@ spec:
                 order: 1
               api_token:
                 type: string
-                title: API Token
-                description: Jira API Token. See the <a href="https://docs.airbyte.com/integrations/sources/jira">docs</a>
-                  for more information on how to generate this key. API Token is used for Authorization
-                  to your account by BasicAuth.
+                title: API token
+                description: >-
+                  Jira API token without scopes. Generate one by following the
+                  <a href="https://docs.airbyte.com/integrations/sources/jira#step-1-set-up-jira">Jira setup guide</a>.
+                  Use it with your Atlassian account email for Basic authentication.
                 airbyte_secret: true
                 order: 2
           - type: object
@@ -14748,8 +14751,13 @@ spec:
                 order: 0
               service_account_token:
                 type: string
-                title: Service Account Token
-                description: Atlassian Service Account API token. Service account API tokens authenticate with Bearer authentication and use Atlassian's Platform API Gateway.
+                title: Service account token
+                description: >-
+                  In admin.atlassian.com, open Directory > Service accounts and select your
+                  service account. Under Credentials, choose Create credential > API token.
+                  This token uses Bearer authentication through Atlassian's Platform API Gateway.
+                  See the <a href="https://docs.airbyte.com/integrations/sources/jira#use-atlassian-service-account-api-tokens">Jira setup guide</a>
+                  for the required scopes.
                 airbyte_secret: true
                 order: 1
           - type: object
@@ -14767,18 +14775,26 @@ spec:
               client_id:
                 type: string
                 title: Client ID
-                description: The Client ID of your Atlassian OAuth application.
+                description: >-
+                  Use the Client ID from your custom Atlassian OAuth 2.0 (3LO) app.
+                  Follow Atlassian's <a href="https://developer.atlassian.com/cloud/oauth/getting-started/implementing-oauth-3lo/#direct-the-user-to-the-authorization-url-to-get-an-authorization-code">OAuth 2.0 documentation</a>
+                  to create the app, then see the <a href="https://docs.airbyte.com/integrations/sources/jira#step-1-set-up-jira">Jira setup guide</a>
+                  to configure it.
                 airbyte_secret: true
                 order: 1
               client_secret:
                 type: string
-                title: Client Secret
-                description: The Client Secret of your Atlassian OAuth application.
+                title: Client secret
+                description: >-
+                  Use the client secret from your custom Atlassian OAuth 2.0 (3LO) app.
+                  Follow Atlassian's <a href="https://developer.atlassian.com/cloud/oauth/getting-started/implementing-oauth-3lo/#exchange-authorization-code-for-access-token">OAuth 2.0 documentation</a>
+                  to create the app, then see the <a href="https://docs.airbyte.com/integrations/sources/jira#step-1-set-up-jira">Jira setup guide</a>
+                  to configure it.
                 airbyte_secret: true
                 order: 2
               refresh_token:
                 type: string
-                title: Refresh Token
+                title: Refresh token
                 description: The Refresh Token obtained after completing the OAuth flow.
                 airbyte_secret: true
                 order: 3
@@ -14805,15 +14821,16 @@ spec:
         order: 3
       start_date:
         type: string
-        title: Start Date
+        title: Start date
         description: The date from which you want to replicate data from Jira, use the
           format YYYY-MM-DDT00:00:00Z. Note that this field only applies to certain
           streams, and only data generated on or after the start date will be replicated.
           Or leave it empty if you want to replicate all data. For more information,
-          refer to the <a href="https://docs.airbyte.com/integrations/sources/jira/">documentation</a>.
+          refer to the <a href="https://docs.airbyte.com/integrations/sources/jira#step-2-set-up-the-jira-connector-in-airbyte">documentation</a>.
         examples:
         - '2021-03-01T00:00:00Z'
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
         format: date-time
         order: 4
       expand_issue_changelog:
@@ -14870,7 +14887,10 @@ spec:
         - 1
         - 2
         - 5
-        description: The number of worker threads to use for the sync.
+        description: >-
+          The number of worker threads used during a sync. Higher values can process
+          multiple streams concurrently and improve throughput, but may increase
+          concurrent API requests and trigger Jira rate limits.
         order: 6
   advanced_auth:
     auth_flow_type: oauth2.0
