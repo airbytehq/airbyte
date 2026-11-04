@@ -382,16 +382,23 @@ jobs:
             CLAIMED=true
           }
 
-          # Deletes the marker when the dispatch fails, so the next wake retries.
+          # An HTTP error (curl exit 22) means GitHub rejected the dispatch, so
+          # the marker is deleted and the next wake retries. Any other failure
+          # (timeout, dropped connection) may have dispatched, so it stays.
           send_dispatch() {
-            local URL="$1" DATA="$2"
+            local URL="$1" DATA="$2" RC=0
             curl -fsS -X POST \
               -H "Authorization: token $GH_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
-              "$URL" -d "$DATA" && return 0
-            echo "::error::Dispatch failed; removing idempotency marker so a later wake can retry"
-            gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/comments/$MARKER_ID" --silent \
-              || echo "::warning::Couldn't remove marker comment $MARKER_ID; retry with force: true"
+              "$URL" -d "$DATA" || RC=$?
+            [[ "$RC" == 0 ]] && return 0
+            if [[ "$RC" == 22 ]]; then
+              echo "::error::Dispatch rejected; removing idempotency marker so a later wake can retry"
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/comments/$MARKER_ID" --silent \
+                || echo "::warning::Couldn't remove marker comment $MARKER_ID; retry with force: true"
+            else
+              echo "::error::Dispatch outcome unknown (curl exit $RC); keeping the marker. Check the stage's runs, and retry with force: true if it didn't start"
+            fi
             exit 1
           }
 
