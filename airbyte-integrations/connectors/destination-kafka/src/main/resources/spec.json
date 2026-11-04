@@ -44,6 +44,17 @@
         "type": "string",
         "examples": ["sample.topic", "{namespace}.{stream}.sample"]
       },
+      "partition_key_field": {
+        "title": "Partition Key Field",
+        "description": "Field(s) from the record to use as Kafka message key for partition routing. Can be a single field name (e.g., 'user_id') or multiple fields separated by commas (e.g., 'user_id,order_id'). Supports nested fields using dot notation (e.g., 'user.id'). If not specified, uses random UUID for round-robin partitioning.",
+        "type": "string",
+        "examples": [
+          "value.user_id",
+          "value.user.id",
+          "value.user_id,value.order_id",
+          "value.customer.email,value.order.date"
+        ]
+      },
       "test_topic": {
         "title": "Test Topic",
         "description": "Topic to test if Airbyte can produce messages.",
