@@ -38,7 +38,7 @@ declarative connector patterns. Read this before making changes to the connector
 
 ## 1. HubspotAssociationsExtractor: Hidden API Calls Inside Record Extraction
 
-The CRM search streams (contacts, companies, deals, tickets, leads, engagements_*, deal_splits) use
+The CRM search streams (contacts, companies, deals, tickets, leads, listings, engagements_*, deal_splits) use
 `HubspotAssociationsExtractor` as their record extractor. This extractor does **not** simply parse the
 HTTP response -- it makes **additional batch POST requests** to the HubSpot Associations v4 API
 (`/crm/v4/associations/{entity}/{association}/batch/read`) for every page of results.
@@ -92,7 +92,7 @@ The custom pagination strategy uses keyset pagination on every page:
 This keeps each query far below HubSpot's 10,000-result cap and avoids skipped records when a record
 leaves the filtered result set while the sync is running.
 
-**Why this matters:** Offset paging over a changing result set can shift later pages and silently skip stable records. The keyset token is always `{"after": 0}` initially and then `{"after": 0, "id": M}`. This strategy affects all CRM search streams: contacts, companies, deals, tickets, leads, all engagement subtypes, deal_splits, and custom objects.
+**Why this matters:** Offset paging over a changing result set can shift later pages and silently skip stable records. The keyset token is always `{"after": 0}` initially and then `{"after": 0, "id": M}`. This strategy affects all CRM search streams: contacts, companies, deals, tickets, leads, listings, all engagement subtypes, deal_splits, and custom objects.
 
 ---
 
