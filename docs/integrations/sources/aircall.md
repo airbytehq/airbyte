@@ -4,14 +4,18 @@ This page contains the setup guide and reference information for the [Aircall](h
 
 ## Prerequisites
 
-- An Aircall account with the **Admin** role. Only Admins can open the Aircall Dashboard, where API keys are created ([Users](https://developers.aircall.io/api-references/#user-v2-overview)).
-- An Aircall API key, made of an **API ID** and an **API token**. The connector authenticates every request with [Basic authentication](https://developers.aircall.io/api-references/#basic-auth-aircall-customers), using the API ID as the username and the API token as the password.
+- An Aircall account with the **Admin** role. Only Admins can authorize apps and open the Aircall Dashboard, where API keys are created ([Users](https://developers.aircall.io/api-references/#user-v2-overview)).
+- One of these authentication methods:
+  - **OAuth 2.0** (default): an Aircall Admin authorizes Airbyte's Aircall app, and the connector sends the access token Aircall returns as a bearer token. The token doesn't expire. On Airbyte Open Source, OAuth needs your own app in Aircall's [Technology Partner programme](https://developers.aircall.io/api-references/#oauth-technology-partners).
+  - **API key**: an **API ID** and an **API token**. The connector authenticates every request with [Basic authentication](https://developers.aircall.io/api-references/#basic-auth-aircall-customers), using the API ID as the username and the API token as the password.
 
 ## Setup guide
 
 ### Step 1: Set up Aircall
 
-Create an Aircall API key:
+On Airbyte Cloud, OAuth 2.0 needs nothing set up in Aircall: you authorize Airbyte's Aircall app in Step 2. On Airbyte Open Source, OAuth 2.0 needs your own Aircall Technology Partner app.
+
+To authenticate with an API key, create one:
 
 1. Log in to the [Aircall Dashboard](https://dashboard.aircall.io/) as an Admin.
 2. Go to **Integrations & API** > [**API Keys**](https://dashboard.aircall.io/integrations/api-keys). Aircall's reference calls this the **API Keys** section of your company's settings.
@@ -28,7 +32,7 @@ Create an Aircall API key:
 2. In the left navigation bar, click **Sources**, then click **New source**.
 3. Select **Aircall** from the list of sources.
 4. Enter a name for the source.
-5. Enter your **API ID** and **API Token**.
+5. Under **Authentication**, select **OAuth 2.0**, click **Authenticate your Aircall account**, and authorize the app as an Aircall Admin. To use an API key instead, select **API Key** and enter your **API ID** and **API Token**.
 6. Optionally, set **Window size (days)**, **Contacts window size (days)** and **Concurrent workers**. See [Configuration options](#configuration-options).
 7. Click **Set up source**.
 
@@ -42,7 +46,7 @@ Create an Aircall API key:
 2. In the left navigation bar, click **Sources**, then click **New source**.
 3. Select **Aircall** from the list of sources.
 4. Enter a name for the source.
-5. Enter your **API ID** and **API Token**.
+5. Under **Authentication**, select **API Key** and enter your **API ID** and **API Token**. To use OAuth 2.0, select **OAuth 2.0**, enter the **Client ID** and **Client Secret** of your Aircall Technology Partner app, set the app's redirect URL to the one Airbyte shows, and click **Authenticate your Aircall account**.
 6. Optionally, set **Window size (days)**, **Contacts window size (days)** and **Concurrent workers**. See [Configuration options](#configuration-options).
 7. Click **Set up source**.
 
@@ -52,13 +56,23 @@ Create an Aircall API key:
 
 | Field | Required | Description |
 | :--- | :--- | :--- |
-| **API ID** | Yes | The API ID of your Aircall API key. |
-| **API Token** | Yes | The API token shown with the API ID when you created the key. |
+| **Authentication** | Yes | **OAuth 2.0** (default) or **API Key**. OAuth stores the access token Aircall returns when an Admin authorizes the app. **API Key** needs the **API ID** and the **API Token** shown with it when you created the key. |
 | **Window size (days)** | No | Days of calls requested at a time, from 1 to 365. Leave it empty for 1 day. A window that holds more than 10,000 calls is split and partly read again, so a larger window only saves requests for companies with few calls. If a sync fails with `could not split its request window`, lower this setting. See [10,000-result limit](#10000-result-limit). |
 | **Contacts window size (days)** | No | Days of newly created contacts requested at a time, from 1 to 365. Leave it empty for 30 days. Lower it if a sync fails with the 10,000-results error for contacts. |
 | **Concurrent workers** | No | Number of parallel requests, from 1 to 4. The default is 2. All workers share one [rate limit](#rate-limit). |
 
 Connections created before version 0.5.0 also have a Start date. The connector no longer uses it, and the form hides it.
+
+Sources created before version 1.1.0 move their API ID and API token under **API Key** the next time the source runs. If you edit such a source before that, the form asks for the API key again, so click **Retest saved source** or run a sync first.
+
+#### Configure the source with the Airbyte API or Terraform
+
+Before version 1.1.0, the API ID and API token were top-level fields. Airbyte moves existing configurations under **API Key** automatically. If you manage the source through the Airbyte API or Terraform, put the settings inside the `credentials` object:
+
+- For OAuth 2.0, set `auth_type` to `oauth2.0` and provide `client_id`, `client_secret` and `access_token`.
+- For an API key, set `auth_type` to `api_key` and provide `api_id` and `api_token`.
+
+A configuration with only the old top-level `api_id` and `api_token` fields is rejected. Don't send them together with `credentials` either: the connector ignores them and removes them on its next run.
 
 ## Supported sync modes
 
@@ -106,7 +120,7 @@ Notes:
 - `company` has no primary key. Aircall returns a single company object with no identifier ([Retrieve Company information](https://developers.aircall.io/api-references/#retrieve-company-information)).
 - `contacts` returns shared contacts only ([List all Contacts](https://developers.aircall.io/api-references/#list-all-contacts)).
 - `users` reads the [User V2 API](https://developers.aircall.io/api-references/#user-v2-overview).
-- `webhooks` uses `webhook_id`, the UUID that identifies a webhook. Aircall treats the integer `id` as the old identifier ([List all Webhooks](https://developers.aircall.io/api-references/#list-all-webhooks)).
+- `webhooks` uses `webhook_id`, the UUID that identifies a webhook. Aircall treats the integer `id` as the old identifier ([List all Webhooks](https://developers.aircall.io/api-references/#list-all-webhooks)). With OAuth 2.0, Aircall returns only the webhooks created with Airbyte's token, so the stream is usually empty; authenticate with an API key to sync your company's webhooks ([Webhook API overview](https://developers.aircall.io/api-references/#webhook-api-overview)).
 - `conversation_engagements` returns the calls, messages, WhatsApp messages, assignments, unassignments, closes and reopens of each conversation. The first sync and every full refresh make at least one request per conversation. Each incremental sync re-reads the engagements of every conversation active since three days before the previous sync, so syncing more often than daily repeats most of that work.
 - `whatsapp_templates` returns the templates of each number, with `number_id` identifying the number.
 
@@ -139,7 +153,7 @@ Some streams need an Aircall add-on or a specific number setup. When your compan
 | `trackers` | The AI Assist or AI Assist Pro package ([List all Trackers](https://developers.aircall.io/api-references/#list-all-trackers)). |
 | `whatsapp_templates` | Only numbers registered for WhatsApp return templates ([List WhatsApp Templates](https://developers.aircall.io/api-references/#list-whatsapp-templates)). |
 
-If a sync fails with `Aircall rejected the API ID and API token` or `Aircall returned HTTP 403`, the API key is wrong or was deleted, or your Aircall plan doesn't include that data. Create a new API key and update the source, or check your plan.
+If a sync fails with `Aircall rejected the credentials` or `Aircall returned HTTP 403`, the API key is wrong or was deleted, the Airbyte integration was deleted in Aircall, or your Aircall plan doesn't include that data. Re-authenticate the source if it uses OAuth 2.0, create a new API key and update the source if it uses one, or check your plan.
 
 ### Upgrading to 1.0.0
 
@@ -156,6 +170,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.1.0 | 2026-11-03 | [90836](https://github.com/airbytehq/airbyte/pull/90836) | Add OAuth 2.0 authentication as the default; existing API key configurations move to the API Key option automatically |
 | 1.0.0 | 2026-11-03 | [90838](https://github.com/airbytehq/airbyte/pull/90838) | Add primary keys to `calls` and `contacts`, key `webhooks` on `webhook_id`, make `numbers` and `teams` full refresh only, and declare the column types the Aircall API documents |
 | 0.6.0 | 2026-11-03 | [90837](https://github.com/airbytehq/airbyte/pull/90837) | Add `conversations`, `conversation_engagements`, `campaigns`, `campaign_outcomes`, `trackers`, `sms_templates` and `whatsapp_templates` streams |
 | 0.5.0 | 2026-11-03 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Read calls incrementally in daily windows that split at Aircall's 10,000-result limit, read contacts in date windows, honour Aircall's rate limit, declare `user_availability` `id` and `availability`, and read numbers and teams once per sync |

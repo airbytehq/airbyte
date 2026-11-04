@@ -19,7 +19,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 _BASE_URL = "https://api.aircall.io/v1"
-_CONFIG = {"api_id": "test-id", "api_token": "test-token"}
+_CONFIG = {"credentials": {"auth_type": "api_key", "api_id": "test-id", "api_token": "test-token"}}
 _NOW = "2026-11-03T00:00:00Z"
 _WINDOW_SECONDS = 86400
 _CONTACTS_EPOCH = 1388534400
@@ -237,15 +237,16 @@ def test_contacts_default_window_count_is_thirty_days() -> None:
     [
         pytest.param(
             401,
-            "Aircall rejected the API ID and API token (HTTP 401). Create a new API key in the Aircall Dashboard "
-            "(Integrations & API > API Keys, https://dashboard.aircall.io/integrations/api-keys) and update the connector.",
+            "Aircall rejected the credentials (HTTP 401). If you use OAuth, re-authenticate the connector. If you use an "
+            "API key, create a new API key in the Aircall Dashboard (Integrations & API > API Keys, "
+            "https://dashboard.aircall.io/integrations/api-keys) and update the connector.",
             id="401",
         ),
         pytest.param(
             403,
-            "Aircall returned HTTP 403 for https://api.aircall.io/v1/calls. Check that the API ID and API token are valid "
-            "(Integrations & API > API Keys, https://dashboard.aircall.io/integrations/api-keys) and that your Aircall "
-            "plan includes this data.",
+            "Aircall returned HTTP 403 for https://api.aircall.io/v1/calls. If you use OAuth, re-authenticate the "
+            "connector; if you use an API key, check that it still exists (Integrations & API > API Keys, "
+            "https://dashboard.aircall.io/integrations/api-keys). Also check that your Aircall plan includes this data.",
             id="403",
         ),
     ],

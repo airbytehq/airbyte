@@ -33,9 +33,18 @@ definitions:
     type: HttpRequester
     url_base: https://api.aircall.io/v1
     authenticator:
-      type: BasicHttpAuthenticator
-      username: '{{ config["api_id"] }}'
-      password: '{{ config["api_token"] }}'
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - credentials
+        - auth_type
+      authenticators:
+        oauth2.0:
+          type: BearerAuthenticator
+          api_token: '{{ config["credentials"]["access_token"] }}'
+        api_key:
+          type: BasicHttpAuthenticator
+          username: '{{ config["credentials"]["api_id"] }}'
+          password: '{{ config["credentials"]["api_token"] }}'
     error_handler:
       $ref: "#/definitions/error_handler"
   # The reference only calls X-AircallApi-Reset a timestamp: its first 10 digits are epoch seconds
@@ -52,20 +61,22 @@ definitions:
       failure_type: config_error
       http_codes: [401]
       error_message: >-
-        Aircall rejected the API ID and API token (HTTP 401).
-        Create a new API key in the Aircall Dashboard (Integrations & API > API
-        Keys, https://dashboard.aircall.io/integrations/api-keys) and update
-        the connector.
+        Aircall rejected the credentials (HTTP 401). If you use OAuth,
+        re-authenticate the connector. If you use an API key, create a new API
+        key in the Aircall Dashboard (Integrations & API > API Keys,
+        https://dashboard.aircall.io/integrations/api-keys) and update the
+        connector.
     forbidden:
       type: HttpResponseFilter
       action: FAIL
       failure_type: config_error
       http_codes: [403]
       error_message: >-
-        Aircall returned HTTP 403 for {{ request_url }}. Check that the API ID
-        and API token are valid (Integrations & API > API Keys,
-        https://dashboard.aircall.io/integrations/api-keys) and that your
-        Aircall plan includes this data.
+        Aircall returned HTTP 403 for {{ request_url }}. If you use OAuth,
+        re-authenticate the connector; if you use an API key, check that it
+        still exists (Integrations & API > API Keys,
+        https://dashboard.aircall.io/integrations/api-keys). Also check that
+        your Aircall plan includes this data.
     # Aircall answers page 201 of an oversized query with 400 and puts the reason in `errors`
     # ("Your query is limited to 10k results ..."); `message` only says BAD_REQUEST.
     result_limit:
@@ -738,27 +749,82 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_id
-      - api_token
+      - credentials
     properties:
-      api_id:
-        type: string
+      credentials:
+        type: object
+        title: Authentication
         description: >-
-          Your Aircall API ID. Create an API key in the Aircall Dashboard under
-          Integrations & API > API Keys
-          (https://dashboard.aircall.io/integrations/api-keys).
-        title: API ID
-        airbyte_secret: true
+          Choose how to authenticate to Aircall. With OAuth 2.0, Aircall returns
+          only the webhooks created with Airbyte's token, so the webhooks stream
+          is usually empty; use API Key to sync your company's webhooks.
         order: 0
-      api_token:
-        type: string
-        description: >-
-          The API token shown with the API ID in the Aircall Dashboard under
-          Integrations & API > API Keys
-          (https://dashboard.aircall.io/integrations/api-keys).
-        title: API Token
-        airbyte_secret: true
-        order: 1
+        oneOf:
+          - type: object
+            title: OAuth 2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - access_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: >-
+                  The Client ID that Aircall issued for your Technology Partner
+                  app.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Client Secret
+                description: >-
+                  The Client Secret that Aircall issued for your Technology
+                  Partner app.
+                airbyte_secret: true
+                order: 2
+              access_token:
+                type: string
+                title: Access Token
+                description: >-
+                  The access token Aircall returns when an Admin installs the
+                  app. Aircall access tokens do not expire.
+                airbyte_secret: true
+                order: 3
+          - type: object
+            title: API Key
+            required:
+              - auth_type
+              - api_id
+              - api_token
+            properties:
+              auth_type:
+                type: string
+                const: api_key
+                order: 0
+              api_id:
+                type: string
+                description: >-
+                  Your Aircall API ID. Create an API key in the Aircall Dashboard
+                  under Integrations & API > API Keys
+                  (https://dashboard.aircall.io/integrations/api-keys).
+                title: API ID
+                airbyte_secret: true
+                order: 1
+              api_token:
+                type: string
+                description: >-
+                  The API token shown with the API ID in the Aircall Dashboard
+                  under Integrations & API > API Keys
+                  (https://dashboard.aircall.io/integrations/api-keys).
+                title: API Token
+                airbyte_secret: true
+                order: 2
       start_date:
         type: string
         description: >-
@@ -767,7 +833,7 @@ spec:
           the other streams always return every record.
         title: Start date (before 0.5.0)
         airbyte_hidden: true
-        order: 2
+        order: 1
       window_in_days:
         type: integer
         minimum: 1
@@ -778,7 +844,7 @@ spec:
           returns at most 10,000 records per window, and a calls window above
           that is split and read again, so larger windows save requests only for
           companies with few calls. Leave empty for 1 day.
-        order: 3
+        order: 2
       contacts_window_in_days:
         type: integer
         minimum: 1
@@ -789,7 +855,7 @@ spec:
           Aircall returns at most 10,000 records per window; lower this if a
           contacts sync fails with the 10,000-results error. Leave empty for 30
           days.
-        order: 4
+        order: 3
       num_workers:
         type: integer
         minimum: 1
@@ -799,8 +865,95 @@ spec:
         description: >-
           Parallel requests. All workers share one budget of 100 requests per
           minute, below Aircall's limit of 120 per company.
-        order: 5
+        order: 4
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: >-
+          https://dashboard.aircall.io/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scope_param}}&{{state_param}}
+        scope: public_api
+        access_token_url: https://api.aircall.io/v1/oauth/token
+        access_token_headers:
+          Content-Type: application/json
+        access_token_params:
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+          grant_type: authorization_code
+        extract_output:
+          - access_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+  # Moves the top-level API key of configs saved before 1.1.0 into `credentials`. ConfigAddFields
+  # evaluates its condition before each field on the config it is changing, so `auth_type` stays last.
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Move the top-level API ID and API token into credentials.
+        transformations:
+          - type: ConfigAddFields
+            condition: "{{ config.get('api_id') is string and config.get('api_token') is string and (config.get('credentials') or {}).get('auth_type') is not string }}"
+            fields:
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - api_id
+                value: "{{ config['api_id'] }}"
+                value_type: string
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - api_token
+                value: "{{ config['api_token'] }}"
+                value_type: string
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - auth_type
+                value: "api_key"
+                value_type: string
+          - type: ConfigRemoveFields
+            condition: "{{ (config.get('credentials') or {}).get('auth_type') is string }}"
+            field_pointers:
+              - - api_id
+              - - api_token
 
 metadata:
   autoImportSchema:

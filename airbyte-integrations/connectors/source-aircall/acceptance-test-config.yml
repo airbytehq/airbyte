@@ -5,6 +5,9 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
+        # 1.1.0 moves api_id and api_token into credentials; the config migration rewrites 1.0.0 configs.
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.0"
   connection:
     tests:
       - config_path: "secrets/config.json"

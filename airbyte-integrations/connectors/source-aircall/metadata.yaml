@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-aircall
   githubIssueLabel: source-aircall
   icon: aircall.svg
@@ -49,6 +49,11 @@ data:
               - numbers
               - teams
               - users
+    unsafeDowngrades:
+      1.1.0:
+        message: >-
+          Version 1.1.0 moves the API ID and API token of saved configurations into `credentials`, and earlier
+          versions cannot read the migrated configuration.
   documentationUrl: https://docs.airbyte.com/integrations/sources/aircall
   tags:
     - cdk:low-code

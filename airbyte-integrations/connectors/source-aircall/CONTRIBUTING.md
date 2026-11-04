@@ -16,6 +16,18 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 7. **Add-on endpoints are gated by a 403 with a specific body** - Requests to conversations, trackers and WhatsApp templates are ignored only on Aircall's gating text; a plain 403 still fails as a credential error.
 8. **Primary keys follow Aircall's documented identifiers** - `webhooks` uses `webhook_id` rather than the legacy `id`, and `company` stays keyless because Aircall returns one company object with no identifier.
 9. **Ids and epoch times stay `number`** - The reference calls them integers, but every value fits in `number` and changing a declared type is breaking, so 1.0.0 only changes the fields whose declared type misrepresented the value: objects stored as text, the integer `priority`, and ISO timestamps declared as plain strings.
+10. **Two authentication modes; OAuth needs a Technology Partner app** - OAuth 2.0 is the default and sends the non-expiring access token as a bearer token; the API key pair is the second option, and configs saved before 1.1.0 migrate to it automatically. With OAuth, `webhooks` returns only the webhooks created with Airbyte's token.
+
+## Authentication and the Aircall partner app
+
+Aircall issues OAuth client credentials only to apps in its Technology Partner programme. Airbyte's partner app and the Cloud OAuth provisioning of its `client_id` and `client_secret` are tracked in [airbytehq/airbyte-internal-issues#18380](https://github.com/airbytehq/airbyte-internal-issues/issues/18380). Self-managed deployments need their own partner app for OAuth, or use the API key option.
+
+| Mode                | `credentials.auth_type` | Request authentication                   |
+| :------------------ | :---------------------- | :--------------------------------------- |
+| OAuth 2.0 (default) | `oauth2.0`              | `Authorization: Bearer <access_token>`   |
+| API Key             | `api_key`               | HTTP Basic with `api_id` and `api_token` |
+
+Mock-server tests use the post-migration `credentials` shape. `unit_tests/test_authentication.py` covers both modes and the migration of top-level `api_id` and `api_token` configs.
 
 ## Testing
 

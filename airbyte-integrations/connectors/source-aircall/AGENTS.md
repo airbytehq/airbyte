@@ -29,15 +29,15 @@ Aircall allows 120 requests per minute per company, shared with the company's ot
 
 ## 5. HTTP errors have distinct recovery behavior
 
-| HTTP status                                                            | Connector behavior                                                                                             |
-| :--------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| 401 or 403                                                             | Configuration error. Invalid keys answer 403; the 403 message names the URL in case the plan lacks it.         |
-| 400 with the 10,000-result text                                        | Calls split the window; contacts fail as a configuration error asking for a smaller `contacts_window_in_days`. |
-| 403 with a feature-gating body                                         | Ignored with a message that names the URL; see section 7.                                                      |
-| Engagements: 400 that mentions 10,000, or 404 "No Conversation exists" | Ignored with the URL; the newest 10,000 engagements of a conversation stay.                                    |
-| Other 400                                                              | CDK default: system error.                                                                                     |
-| 429                                                                    | CDK default (rate limited); waits until `X-AircallApi-Reset`.                                                  |
-| 500, 502, 503, or 504                                                  | CDK default: retried with exponential backoff, or until `X-AircallApi-Reset` when the response has it.         |
+| HTTP status                                                            | Connector behavior                                                                                                          |
+| :--------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| 401 or 403                                                             | Configuration error: re-authenticate OAuth or replace the API key. The 403 message names the URL in case the plan lacks it. |
+| 400 with the 10,000-result text                                        | Calls split the window; contacts fail as a configuration error asking for a smaller `contacts_window_in_days`.              |
+| 403 with a feature-gating body                                         | Ignored with a message that names the URL; see section 7.                                                                   |
+| Engagements: 400 that mentions 10,000, or 404 "No Conversation exists" | Ignored with the URL; the newest 10,000 engagements of a conversation stay.                                                 |
+| Other 400                                                              | CDK default: system error.                                                                                                  |
+| 429                                                                    | CDK default (rate limited); waits until `X-AircallApi-Reset`.                                                               |
+| 500, 502, 503, or 504                                                  | CDK default: retried with exponential backoff, or until `X-AircallApi-Reset` when the response has it.                      |
 
 See [Aircall's error documentation](https://developers.aircall.io/api-references/#errors).
 
@@ -79,3 +79,9 @@ See [List all Conversations](https://developers.aircall.io/api-references/#list-
 The reference calls ids and epoch fields (`calls.id`, `started_at`, `answered_at`, `ended_at`, `duration`, the v1 `id` fields) integers, but the manifest declares them `number`. Every value fits, Snowflake keys on `FLOAT` are exact below 2^53, and changing a declared type is breaking, so 1.0.0 changed only the fields whose declared type misrepresented the value: objects stored as text, the integer `priority`, and ISO timestamps declared as plain strings.
 
 **Why this matters:** Retyping these fields later needs another major release, and `started_at` is the `calls` cursor.
+
+## 10. Two authentication modes; OAuth needs a Technology Partner app
+
+`credentials` is a `oneOf` with OAuth 2.0 first and the API key pair second, selected by `credentials.auth_type` through a `SelectiveAuthenticator`. Aircall issues OAuth client credentials only to [Technology Partner apps](https://developers.aircall.io/api-references/#oauth-technology-partners). The consent URL is `https://dashboard.aircall.io/oauth/authorize` with `scope=public_api`, and the code is exchanged at `POST https://api.aircall.io/v1/oauth/token` with a JSON body. The returned `access_token` does not expire and no refresh token is issued, so OAuth uses a `BearerAuthenticator` and `advanced_auth` extracts only `access_token`. The API key option uses HTTP Basic with `api_id` and `api_token`. The modes return the same data except `webhooks`: with OAuth, Aircall returns only the webhooks created with the OAuth token ([Webhook API overview](https://developers.aircall.io/api-references/#webhook-api-overview)), so the stream is usually empty. A config migration moves the top-level `api_id` and `api_token` of configs saved before 1.1.0 into `credentials` with `auth_type: api_key`, and removes the top-level keys whenever `credentials.auth_type` is set.
+
+**Why this matters:** Aircall answers an invalid bearer token with 403 and the token never expires, so a 401 or 403 under OAuth needs re-authentication, not a refresh. Removing the migration breaks every API key connection created before 1.1.0, and 1.0.0 cannot read a migrated config, so roll forward instead of pinning 1.0.0; `releases.unsafeDowngrades` in `metadata.yaml` records this for rollouts.

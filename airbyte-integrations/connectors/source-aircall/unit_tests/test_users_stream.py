@@ -26,8 +26,7 @@ _STREAM_NAME = "users"
 _V2_USERS_URL = "https://api.aircall.io/v2/users"
 
 _CONFIG = {
-    "api_id": "id",
-    "api_token": "token",
+    "credentials": {"auth_type": "api_key", "api_id": "id", "api_token": "token"},
     "start_date": "2022-03-01T00:00:00.000Z",
 }
 
