@@ -154,8 +154,58 @@ def test_join_channel_read_other_error_logs_warning(requests_mock, token_config,
             # lookback window applied
             {"float_ts": 1753177470.0},
         ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {"channel": "airbyte-for-beginners", "parent_slice": {}},
+                        "cursor": {"float_ts": 1700000000.0},
+                    },
+                    {
+                        "partition": {"channel": "good-reads", "parent_slice": {}},
+                        "cursor": {"float_ts": 1700500000.0},
+                    },
+                ],
+                "parent_state": {
+                    "channel_messages": {
+                        "use_global_cursor": False,
+                        "states": [
+                            {
+                                "partition": {"channel": "airbyte-for-beginners", "parent_slice": {}},
+                                "cursor": {"float_ts": 1700000000.0},
+                            },
+                            {
+                                "partition": {"channel": "good-reads", "parent_slice": {}},
+                                "cursor": {"float_ts": 1700500000.0},
+                            },
+                        ],
+                        "state": {"float_ts": 1700500000.0},
+                    }
+                },
+            },
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"channel": "airbyte-for-beginners", "parent_slice": {}},
+                        "cursor": {"float_ts": 1700000000.0},
+                    },
+                    {
+                        "partition": {"channel": "good-reads", "parent_slice": {}},
+                        "cursor": {"float_ts": 1700500000.0},
+                    },
+                ],
+                "state": {"float_ts": 1700500000.0},
+            },
+            id="parent_state_preserved",
+        ),
+        pytest.param(
+            {"use_global_cursor": True, "state": {"float_ts": "1753263870"}},
+            {"float_ts": 1753177470.0},
+            id="global_state_format",
+        ),
     ),
-    ids=["no_state", "old_format_state", "new_format_state"],
+    ids=["no_state", "old_format_state", "new_format_state", "parent_state_preserved", "global_state_format"],
 )
 def test_threads_state_migration(token_config, threads_stream_state, expected_parent_state):
     stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())

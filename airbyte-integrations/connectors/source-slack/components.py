@@ -168,6 +168,7 @@ class ThreadsStateMigration(StateMigration):
     create slices from N days into the past and read all messages in threads since then. We could optionally filter out records we have
     already read, but that's omitted to keep the logic simple to reason about.
     Good luck.
+    States that already carry parent_state.channel_messages are left untouched so per-channel parent cursors survive between syncs/attempts.
     """
 
     config: Config
@@ -176,7 +177,7 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        return bool(stream_state) and "channel_messages" not in (stream_state.get("parent_state") or {})
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
@@ -187,6 +188,8 @@ class ThreadsStateMigration(StateMigration):
         if stream_state.get("states"):
             for state in stream_state["states"]:
                 start_date_state = max(start_date_state, float(state.get("cursor", {}).get("float_ts", start_date_state)))
+        if stream_state.get("state", {}).get("float_ts"):
+            start_date_state = max(start_date_state, float(stream_state["state"]["float_ts"]))
         # for old-stype state
         if stream_state.get("float_ts"):
             start_date_state = max(start_date_state, float(stream_state["float_ts"]))

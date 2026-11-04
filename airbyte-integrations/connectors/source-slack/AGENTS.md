@@ -8,11 +8,17 @@ When `join_channels` is enabled in the config, the `ChannelsRetriever` automatic
 
 **Why this matters:** The channels stream is not read-only when `join_channels` is enabled. It actively modifies the workspace by joining channels, which is a side effect that no other connector stream produces. The Slack API only returns messages from channels the bot has joined, so this behavior exists to ensure the messages and threads streams can actually retrieve data. If the bot lacks permission to join a channel, it logs a warning but does not fail the sync.
 
+Archived non-member channels are excluded from the `channel_messages` and `threads` partitions, even when `join_channels` is enabled.
+
 ## 2. Dynamic Rate Limit Policy Switching on First 429
 
 The `MessagesAndThreadsApiBudget` starts with an `UnlimitedCallRatePolicy` (no rate limiting) and dynamically switches to a `MovingWindowCallRatePolicy` of 1 request per 60 seconds after the first 429 response. This switch is permanent for the duration of the sync and only applies to OAuth connections (API token connections do not use this budget).
 
 **Why this matters:** The connector starts fast with no rate limiting and then abruptly drops to 1 request per minute after hitting its first 429. This dramatic slowdown is intentional but can make syncs appear to stall. The rate limit policy is not reset between stream reads within the same sync, so hitting a 429 on the messages stream will also throttle the threads stream.
+
+## 3. Threads State Migration Only Rewrites Legacy State
+
+`ThreadsStateMigration` derives `parent_state.channel_messages` from the threads cursor only when the incoming state lacks it. States with existing per-channel parent cursors pass through unchanged so interrupted/resumed syncs don't restart from `start_date`.
 
 ## Incremental Stream Considerations
 

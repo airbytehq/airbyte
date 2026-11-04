@@ -202,6 +202,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.28 | 2026-11-04 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Resume `threads` syncs from saved per-channel message cursors and skip archived channels the bot is not a member of |
 | 3.2.27 | 2026-10-06 | [88029](https://github.com/airbytehq/airbyte/pull/88029) | Update dependencies |
 | 3.2.26 | 2026-09-29 | [87330](https://github.com/airbytehq/airbyte/pull/87330) | Update dependencies |
 | 3.2.24 | 2026-09-22 | [86814](https://github.com/airbytehq/airbyte/pull/86814) | Update dependencies |
