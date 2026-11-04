@@ -217,7 +217,7 @@ class ModuleMeta(FromDictMixin):
     def schema(self) -> Schema:
         if not self.fields:
             raise IncompleteMetaDataException("Not enough data")
-        required = ["id", "Modified_Time"] + [field_.api_name for field_ in self.fields if field_.system_mandatory]
+        required = ["id", "Modified_Time"]
         field_to_properties = {field_.api_name: field_.schema for field_ in self.fields}
         properties = {"id": {"type": "string"}, "Modified_Time": {"type": "string", "format": "date-time"}, **field_to_properties}
         return Schema(description=self.module_name, properties=properties, required=required)
