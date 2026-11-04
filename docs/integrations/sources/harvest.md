@@ -114,7 +114,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.2.59 | 2026-11-03 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Consolidate per-stream error handling into one shared error handler; no change to sync behavior |
+| 1.2.59 | 2026-11-03 | [90945](https://github.com/airbytehq/airbyte/pull/90945) | Consolidate per-stream error handling into one shared error handler; no change to sync behavior |
 | 1.2.58 | 2026-11-03 | [90593](https://github.com/airbytehq/airbyte/pull/90593) | Update dependencies |
 | 1.2.57 | 2026-10-27 | [89929](https://github.com/airbytehq/airbyte/pull/89929) | Update dependencies |
 | 1.2.56 | 2026-10-20 | [89259](https://github.com/airbytehq/airbyte/pull/89259) | Update dependencies |
