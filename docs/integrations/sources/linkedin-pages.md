@@ -123,6 +123,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.2.2 | 2026-11-03 | [78804](https://github.com/airbytehq/airbyte/pull/78804) | Update dependencies |
 | 1.2.1 | 2026-10-30 | [90259](https://github.com/airbytehq/airbyte/pull/90259) | Explain missing LinkedIn scopes and organization access failures in connection checks without echoing raw API errors |
 | 1.2.0 | 2026-10-26 | [89710](https://github.com/airbytehq/airbyte/pull/89710) | Retry rate limits and server errors with backoff, report expired tokens, missing permissions and retired API versions clearly, request only whole days for `DAY` and complete months for `MONTH` time-bound statistics (each month now arrives 2 days after it ends), add a concurrency option, and migrate legacy configs |
 | 1.1.27 | 2026-10-20 | [89366](https://github.com/airbytehq/airbyte/pull/89366) | Update LinkedIn API version to 202610 |
