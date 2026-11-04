@@ -42,3 +42,11 @@ data:
     - title: Castor EDC authentication
       url: https://helpdesk.castoredc.com/article/124-application-programming-interface-api
       type: authentication_guide
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
