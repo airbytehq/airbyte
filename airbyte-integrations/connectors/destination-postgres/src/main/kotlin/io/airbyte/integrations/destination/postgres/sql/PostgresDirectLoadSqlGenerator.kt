@@ -504,7 +504,7 @@ class PostgresDirectLoadSqlGenerator(
         "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)}$dropTableSuffix;"
 
     fun dropView(tableName: TableName): String =
-        "DROP VIEW IF EXISTS ${getFullyQualifiedName(tableName)}$dropTableSuffix;"
+        "DROP VIEW IF EXISTS ${getFullyQualifiedName(tableName)} CASCADE;"
 
     fun countTable(tableName: TableName): String {
         return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${getFullyQualifiedName(tableName)};"

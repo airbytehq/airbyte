@@ -35,10 +35,13 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.postgresql.util.PSQLException
+import org.postgresql.util.PSQLState
 
 internal class PostgresAirbyteClientTest {
     private lateinit var client: PostgresAirbyteClient
@@ -345,6 +348,74 @@ internal class PostgresAirbyteClientTest {
             verify(exactly = 1) { statement.execute(MOCK_SQL_QUERY) }
             verify(exactly = 1) { mockConnection.close() }
         }
+    }
+
+    @Test
+    fun testOverwriteTableDropsViewAndRetries() {
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+        val dropViewSql = "DROP VIEW SQL"
+        val statement =
+            mockk<Statement> {
+                every { execute(MOCK_SQL_QUERY) } throws
+                    PSQLException(
+                        "Localized wrong object type",
+                        PSQLState.WRONG_OBJECT_TYPE,
+                    ) andThen
+                    true
+                every { execute(dropViewSql) } returns true
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.overwriteTable(sourceTableName, targetTableName) } returns
+            MOCK_SQL_QUERY
+        every { sqlGenerator.dropView(targetTableName) } returns dropViewSql
+
+        runBlocking { client.overwriteTable(sourceTableName, targetTableName) }
+
+        verifyOrder {
+            statement.execute(MOCK_SQL_QUERY)
+            statement.execute(dropViewSql)
+            statement.execute(MOCK_SQL_QUERY)
+        }
+        verify(exactly = 2) { statement.execute(MOCK_SQL_QUERY) }
+        verify(exactly = 1) { statement.execute(dropViewSql) }
+        verify(exactly = 3) { mockConnection.close() }
+    }
+
+    @Test
+    fun testOverwriteTablePropagatesUnrelatedErrors() {
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+        val error = PSQLException("is not a table", PSQLState.INSUFFICIENT_PRIVILEGE)
+        val statement =
+            mockk<Statement> {
+                every { execute(MOCK_SQL_QUERY) } throws error
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.overwriteTable(sourceTableName, targetTableName) } returns
+            MOCK_SQL_QUERY
+
+        val actual =
+            assertThrows<PSQLException> {
+                runBlocking { client.overwriteTable(sourceTableName, targetTableName) }
+            }
+
+        assertSame(error, actual)
+        verify(exactly = 1) { statement.execute(MOCK_SQL_QUERY) }
+        verify(exactly = 0) { sqlGenerator.dropView(any()) }
+        verify(exactly = 1) { mockConnection.close() }
     }
 
     @Test

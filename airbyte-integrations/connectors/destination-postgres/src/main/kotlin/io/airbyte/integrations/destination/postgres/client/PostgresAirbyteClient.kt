@@ -170,7 +170,7 @@ class PostgresAirbyteClient(
         try {
             execute(sqlGenerator.overwriteTable(sourceTableName, targetTableName))
         } catch (e: org.postgresql.util.PSQLException) {
-            if (e.sqlState == "42809" && e.message?.contains("is not a table") == true) {
+            if (e.sqlState == "42809") {
                 log.info {
                     "Target ${targetTableName.namespace}.${targetTableName.name} appears to be a view, dropping it before retrying"
                 }

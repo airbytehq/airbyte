@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 internal class PostgresDirectLoadSqlGeneratorTest {
 
@@ -266,6 +268,19 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         """
 
         assertEqualsWithTrimIndent(expected, sql)
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun testDropViewAlwaysCascades(dropCascade: Boolean) {
+        every { postgresConfiguration.dropCascade } returns dropCascade
+        val sqlGenerator = PostgresDirectLoadSqlGenerator(columnManager, postgresConfiguration)
+        val tableName = TableName(namespace = "namespace", name = "target")
+
+        assertEquals(
+            "DROP VIEW IF EXISTS \"namespace\".\"target\" CASCADE;",
+            sqlGenerator.dropView(tableName),
+        )
     }
 
     private fun assertEqualsWithTrimIndent(expected: String, actual: String) {
