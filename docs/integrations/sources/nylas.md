@@ -8,7 +8,7 @@ The Nylas platform provides an integration layer that makes it easy to connect a
 | `api_key` | `string` | API Key.  |  |
 | `api_server` | `string` | API Server.  |  |
 | `start_date` | `string` | Start date.  |  |
-| `end_date` | `string` | End date.  |  |
+| `end_date` | `string` | Optional end date in UTC. Defaults to now if blank. | Now |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -37,6 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.77 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fixed events stream to filter incremental syncs by update time and made End date optional so new events keep syncing |
 | 0.0.76 | 2026-11-03 | [90678](https://github.com/airbytehq/airbyte/pull/90678) | Update dependencies |
 | 0.0.75 | 2026-10-27 | [90023](https://github.com/airbytehq/airbyte/pull/90023) | Update dependencies |
 | 0.0.74 | 2026-10-20 | [89326](https://github.com/airbytehq/airbyte/pull/89326) | Update dependencies |
