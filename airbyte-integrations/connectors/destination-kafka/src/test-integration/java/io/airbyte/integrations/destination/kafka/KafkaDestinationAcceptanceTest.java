@@ -139,7 +139,9 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace) {
-    return retrieveRecords(testEnv, streamName, namespace, Jsons.emptyObject());
+    return retrieveRecords(testEnv, streamName, namespace, Jsons.emptyObject()).stream()
+        .map(record -> record.get(JavaBaseConstants.COLUMN_NAME_DATA))
+        .toList();
   }
 
   @Override
@@ -160,7 +162,7 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     consumer.subscribe(Collections.singletonList(topic));
     consumer.poll(Duration.ofMillis(20000L)).iterator()
-        .forEachRemaining(record -> records.add(record.value().get(JavaBaseConstants.COLUMN_NAME_DATA)));
+        .forEachRemaining(record -> records.add(record.value()));
     consumer.close();
 
     return records;
