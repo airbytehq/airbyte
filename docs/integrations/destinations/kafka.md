@@ -110,7 +110,6 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------  |
-| 0.1.12 | 2026-11-04 | [90996](https://github.com/airbytehq/airbyte/pull/90996) | Require TLS for Kafka broker connections on Airbyte Cloud; preserve self-managed protocols. |
 | 0.1.11  | 2025-03-28 | [56450](https://github.com/airbytehq/airbyte/pull/56450) | Add support for other SASL Mechanisms when SASL_PLAINTEXT protocol is selected |
 | 0.1.10  | 2022-08-04 | [15287](https://github.com/airbytehq/airbyte/pull/15287) | Update Kafka destination to use outputRecordCollector to properly store state  |
 | 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                         |

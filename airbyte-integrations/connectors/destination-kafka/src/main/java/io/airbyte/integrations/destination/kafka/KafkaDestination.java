@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.kafka;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
@@ -13,14 +12,11 @@ import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
-import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import java.util.Iterator;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -39,45 +35,13 @@ public class KafkaDestination extends BaseConnector implements Destination {
   public static final String COLUMN_NAME_STREAM = "_airbyte_stream";
 
   private final StandardNameTransformer namingResolver;
-  private final String deploymentMode;
 
   public KafkaDestination() {
-    this(System.getenv("DEPLOYMENT_MODE"));
-  }
-
-  KafkaDestination(final String deploymentMode) {
-    this.deploymentMode = deploymentMode;
     this.namingResolver = new StandardNameTransformer();
   }
 
   @Override
-  public ConnectorSpecification spec() throws Exception {
-    final ConnectorSpecification spec = super.spec();
-    if (isCloud()) {
-      final ArrayNode protocols = (ArrayNode) spec.getConnectionSpecification().get("properties").get("protocol").get("oneOf");
-      final Iterator<JsonNode> options = protocols.elements();
-      while (options.hasNext()) {
-        if (!"SASL_SSL".equals(options.next().path("properties").path("security_protocol").path("enum").path(0).asText())) {
-          options.remove();
-        }
-      }
-    }
-    return spec;
-  }
-
-  private boolean isCloud() {
-    return "CLOUD".equalsIgnoreCase(deploymentMode);
-  }
-
-  private void validateCloudSecurity(final JsonNode config) {
-    if (isCloud() && !"SASL_SSL".equalsIgnoreCase(config.path("protocol").path("security_protocol").asText())) {
-      throw new ConfigErrorException("Airbyte Cloud requires TLS for Kafka connections. Set Security Protocol to SASL_SSL.");
-    }
-  }
-
-  @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    validateCloudSecurity(config);
     try {
       final String testTopic = config.has("test_topic") ? config.get("test_topic").asText() : "";
       if (!testTopic.isBlank()) {
@@ -109,7 +73,6 @@ public class KafkaDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    validateCloudSecurity(config);
     return new KafkaRecordConsumer(KafkaDestinationConfig.getKafkaDestinationConfig(config),
         catalog,
         outputRecordCollector,
