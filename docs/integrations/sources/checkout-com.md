@@ -90,6 +90,6 @@ The connector retries HTTP 429 and 5xx responses with exponential backoff. The p
 
 | Version | Date       | Pull Request                                             | Subject                  |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------- |
-| 0.1.0   | 2026-11-04 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | New Source: Checkout.com |
+| 0.1.0   | 2026-11-04 | [90992](https://github.com/airbytehq/airbyte/pull/90992) | New Source: Checkout.com |
 
 </details>
