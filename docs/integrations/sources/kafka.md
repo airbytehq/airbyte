@@ -72,7 +72,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                                       | Subject                                                              |
 | :------ | :--------- |:---------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------|
-| 0.4.3 | 2026-11-04 | [90996](https://github.com/airbytehq/airbyte/pull/90996) | Require TLS for Kafka broker connections on Airbyte Cloud; preserve self-managed protocols. |
+| 0.4.3 | 2026-11-04 | [90996](https://github.com/airbytehq/airbyte/pull/90996) | Enable on Airbyte Cloud with TLS-only Kafka broker connections; avoid logging SASL credentials. |
 | 0.4.2 | 2025-07-10 | [62919](https://github.com/airbytehq/airbyte/pull/62919) | Convert to new gradle build flow |
 | 0.4.1 | 2025-04-30 | [59171](https://github.com/airbytehq/airbyte/pull/59171) | Fixing vulnerabilities in dependencies. |
 | 0.4.0   | 2025-03-18 | [55828](https://github.com/airbytehq/airbyte/pull/55828)                                           | Add configurations for AWS MSK IAM and fix JSON format               |

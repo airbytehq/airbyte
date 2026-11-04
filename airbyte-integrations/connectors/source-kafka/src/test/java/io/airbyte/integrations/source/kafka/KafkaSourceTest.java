@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.kafka;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
@@ -23,6 +24,7 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -47,6 +49,8 @@ public class KafkaSourceTest {
     final JsonNode protocols = source(deployment).spec().getConnectionSpecification().get("properties").get("protocol").get("oneOf");
     assertEquals(1, protocols.size());
     assertEquals("SASL_SSL", protocols.get(0).get("properties").get("security_protocol").get("const").asText());
+    assertTrue(StreamSupport.stream(protocols.get(0).get("properties").get("sasl_mechanism").get("enum").spliterator(), false)
+        .anyMatch(mechanism -> "PLAIN".equals(mechanism.asText())));
   }
 
   @ParameterizedTest
