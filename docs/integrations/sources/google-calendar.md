@@ -34,6 +34,14 @@ The `events` stream is incremental on the event's last modification time (`updat
 - **29-day window.** Google rejects `updatedMin` older than 29 days (measured; the limit is undocumented and has been tighter in the past). The connector keeps the newest `updated` it has seen as its cursor; if that cursor is older than 21 days when a sync starts (for example, a calendar with no edits for three weeks, or a connection paused for three weeks) the connector clears the cursor and re-reads the whole calendar (or everything since `start_date`), then continues incrementally. A calendar whose only changes are deletions still advances its cursor (see cancelled events above); one with no changes at all re-reads on every sync until something changes.
 - **Recommended sync mode:** *Incremental | Append + Deduped* with `id` as the primary key. With plain *Append*, each re-read described above adds another copy of every event.
 
+## Google user data
+
+Airbyte's use and transfer to any other app of information received from Google APIs will adhere to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
+
+The use of raw or derived user data received from Google Workspace APIs, including the Google Calendar API, will adhere to the Google User Data Policy, including the Limited Use requirements. Airbyte doesn't use this data to develop, improve or train generalized or non-personalized AI or machine learning models.
+
+The connector only reads Calendar data, and only to sync it to the destination you configure in your connection.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -45,7 +53,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 0.1.4 | 2026-11-02 | [90354](https://github.com/airbytehq/airbyte/pull/90354) | Simplify error handling without changing retry behavior or error messages. |
+| 0.1.5 | 2026-11-04 | [90354](https://github.com/airbytehq/airbyte/pull/90354) | Simplify error handling without changing retry behavior or error messages. |
+| 0.1.4 | 2026-11-03 | [90589](https://github.com/airbytehq/airbyte/pull/90589) | Update dependencies |
 | 0.1.3 | 2026-10-27 | [89924](https://github.com/airbytehq/airbyte/pull/89924) | Update dependencies |
 | 0.1.2 | 2026-10-20 | [89285](https://github.com/airbytehq/airbyte/pull/89285) | Update dependencies |
 | 0.1.1 | 2026-10-13 | [88641](https://github.com/airbytehq/airbyte/pull/88641) | Update dependencies |
