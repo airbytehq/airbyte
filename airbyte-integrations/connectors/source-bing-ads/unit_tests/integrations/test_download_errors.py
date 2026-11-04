@@ -1,13 +1,12 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 from freezegun import freeze_time
+from protocol_helpers import read_helper
+from request_builder import RequestBuilder
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.mock_http import HttpResponse
-
-from protocol_helpers import read_helper
-from request_builder import RequestBuilder
 
 
 EXPIRED_SIGNATURE_RESPONSE = (
