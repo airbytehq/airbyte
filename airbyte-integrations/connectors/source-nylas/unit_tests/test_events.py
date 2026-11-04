@@ -19,13 +19,7 @@ NOW = "2026-11-04T12:00:00Z"
 
 
 def epoch(value):
-    return str(
-        int(
-            datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
-            .replace(tzinfo=timezone.utc)
-            .timestamp()
-        )
-    )
+    return str(int(datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp()))
 
 
 @pytest.mark.parametrize("end_date", [None, "2026-09-15T00:00:00Z"])
@@ -40,12 +34,8 @@ def test_events_end_date(http_mocker: HttpMocker, end_date, response_kind):
         HttpResponse(body=json.dumps({"data": [{"id": "grant-1"}]})),
     )
     http_mocker.get(
-        HttpRequest(
-            url=f"{BASE_URL}/v3/grants/grant-1/calendars", query_params={"limit": "50"}
-        ),
-        HttpResponse(
-            body=json.dumps({"data": [{"id": "calendar-1"}, {"id": "calendar-2"}]})
-        ),
+        HttpRequest(url=f"{BASE_URL}/v3/grants/grant-1/calendars", query_params={"limit": "50"}),
+        HttpResponse(body=json.dumps({"data": [{"id": "calendar-1"}, {"id": "calendar-2"}]})),
     )
     expected_records = []
     event_requests = []
