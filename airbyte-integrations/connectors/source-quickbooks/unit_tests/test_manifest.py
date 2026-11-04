@@ -8,11 +8,18 @@ error filter that can never match Intuit's payload shape, and refresh-token
 rejections that reach the user as a generic authentication failure.
 """
 
+from copy import deepcopy
 from pathlib import Path
 
 import jinja2
 import pytest
 import yaml
+
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import (
+    ConcurrentDeclarativeSource,
+)
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
@@ -60,6 +67,23 @@ def _iter_authenticators(node):
 
 def _fault_predicates(response_filters):
     return [f["predicate"] for f in response_filters if "predicate" in f]
+
+
+def _own_app_option(manifest):
+    return next(
+        option
+        for option in manifest["spec"]["connection_specification"]["properties"]["credentials"]["oneOf"]
+        if option["properties"]["auth_type"].get("const") == "client_credentials"
+    )
+
+
+def _source(config, manifest):
+    return ConcurrentDeclarativeSource(
+        source_config=manifest,
+        config=config,
+        catalog=None,
+        state=None,
+    )
 
 
 def test_every_stream_shares_the_error_handler(manifest):
@@ -157,6 +181,66 @@ def test_every_authenticator_classifies_refresh_token_rejection(manifest):
         assert authenticator["refresh_token_error_status_codes"] == [400, 401]
         assert authenticator["refresh_token_error_key"] == "error"
         assert authenticator["refresh_token_error_values"] == ["invalid_grant", "invalid_client"]
+
+
+def test_own_app_spec_hides_maintained_token_fields_and_requires_sandbox(manifest):
+    option = _own_app_option(manifest)
+
+    assert "sandbox" in option["required"]
+    assert option["properties"]["sandbox"]["default"] is False
+    assert option["properties"]["access_token"]["airbyte_hidden"] is True
+    assert option["properties"]["access_token"]["airbyte_secret"] is True
+    assert option["properties"]["token_expiry_date"]["airbyte_hidden"] is True
+
+
+def test_own_app_sandbox_migration_defaults_missing_value(manifest):
+    config = {
+        "credentials": {
+            "auth_type": "client_credentials",
+            "client_id": "client-id",
+            "client_secret": "client-secret",
+            "refresh_token": "refresh-token",
+            "realm_id": "realm-id",
+        }
+    }
+    un_migrated_config = deepcopy(config)
+    source = _source(deepcopy(config), manifest)
+    migrated_config = deepcopy(un_migrated_config)
+
+    source._spec_component.migrate_config(migrated_config)
+
+    assert migrated_config["credentials"]["sandbox"] is False
+    spec = source.spec(None)
+    check_config_against_spec_or_exit(migrated_config, spec)
+    with pytest.raises(AirbyteTracedException):
+        check_config_against_spec_or_exit(un_migrated_config, spec)
+
+
+def test_own_app_sandbox_migration_preserves_true_value(manifest):
+    config = {
+        "credentials": {
+            "auth_type": "client_credentials",
+            "client_id": "client-id",
+            "client_secret": "client-secret",
+            "refresh_token": "refresh-token",
+            "realm_id": "realm-id",
+            "sandbox": True,
+        }
+    }
+    migrated_config = deepcopy(config)
+
+    _source(config, manifest)._spec_component.migrate_config(migrated_config)
+
+    assert migrated_config["credentials"]["sandbox"] is True
+
+
+def test_own_app_sandbox_migration_does_not_change_oauth_config(manifest):
+    config = {"credentials": {"auth_type": "oauth2.0"}}
+    migrated_config = deepcopy(config)
+
+    _source(config, manifest)._spec_component.migrate_config(migrated_config)
+
+    assert "sandbox" not in migrated_config["credentials"]
 
 
 def test_advanced_auth_is_legacy_oauth_flow(manifest):
