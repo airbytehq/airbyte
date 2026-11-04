@@ -859,7 +859,8 @@
         "title": "Review & set up",
         "order": 2,
         "description": "Name your source and check the optional settings.",
-        "groups": []
+        "groups": [],
+        "check": false
       }
     ]
   }

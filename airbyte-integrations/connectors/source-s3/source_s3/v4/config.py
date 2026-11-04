@@ -61,6 +61,7 @@ SECTIONS: List[Dict[str, Any]] = [
         "order": 2,
         "description": "Name your source and check the optional settings.",
         "groups": [],
+        "check": False,
     },
 ]
 

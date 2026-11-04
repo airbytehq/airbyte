@@ -154,7 +154,7 @@ def test_config_schema_declares_groups_and_sections():
     assert [section["id"] for section in schema["sections"]] == ["bucket_connection", "file_access", "review"]
     assert [section["order"] for section in schema["sections"]] == [0, 1, 2]
     # The bucket and files sections are checked when completed; the review section is covered by the full check.
-    assert [section.get("check") for section in schema["sections"]] == [True, True, None]
+    assert [section.get("check") for section in schema["sections"]] == [True, True, False]
     # Every section group is declared, and every visible property belongs to a group of some section.
     declared_groups = {group["id"] for group in schema["groups"]}
     section_groups = {group for section in schema["sections"] for group in section["groups"]}
