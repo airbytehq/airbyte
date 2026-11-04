@@ -119,6 +119,13 @@ const config: Config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
+        async sidebarItemsGenerator({defaultSidebarItemsGenerator, ...args}) {
+          const items = await defaultSidebarItemsGenerator(args);
+          if (args.item.dirName === "connector-development/config-based/understanding-the-yaml-file/reference") {
+            return items.filter((item) => item.type !== "doc" || item.id !== "connector-development/config-based/understanding-the-yaml-file/reference/index");
+          }
+          return items;
+        },
         editUrl:
           "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
