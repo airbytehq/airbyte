@@ -6,8 +6,8 @@ from copy import deepcopy
 from unittest.mock import MagicMock, Mock
 from urllib.parse import parse_qs, urlparse
 
-from freezegun import freeze_time
 import pytest
+from freezegun import freeze_time
 from requests import Response
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType
