@@ -10,9 +10,11 @@ Keyed on the webinar `uuid` (double URL-encoded in the path), paginated with `pa
 
 from unittest import TestCase
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 
 from .zoom_mocks import (
+    CONFIG,
     ENCODED_UUIDS,
     WEBINAR_1,
     WEBINAR_2,
@@ -70,13 +72,26 @@ class TestReportWebinarParticipants(TestCase):
             http_mocker.get(webinar_1_page_2, json_response({"participants": [_participant("p2")], "next_page_token": ""}))
             http_mocker.get(webinar_2_page_1, json_response({"participants": [_participant("p3")], "next_page_token": ""}))
 
-            output = read_stream(_STREAM)
+            output = read_stream(
+                _STREAM,
+                config={**CONFIG, "start_date": "2026-10-01T00:00:00Z"},
+                sync_mode=SyncMode.full_refresh,
+            )
 
             assert_completed_without_errors(output, _STREAM)
             assert sorted(records_data(output), key=lambda r: r["id"]) == [
-                {**_participant("p1"), "webinar_uuid": WEBINAR_1["uuid"]},
-                {**_participant("p2"), "webinar_uuid": WEBINAR_1["uuid"]},
-                {**_participant("p3"), "webinar_uuid": WEBINAR_2["uuid"]},
+                {
+                    **_participant("p1"),
+                    "webinar_uuid": WEBINAR_1["uuid"],
+                },
+                {
+                    **_participant("p2"),
+                    "webinar_uuid": WEBINAR_1["uuid"],
+                },
+                {
+                    **_participant("p3"),
+                    "webinar_uuid": WEBINAR_2["uuid"],
+                },
             ]
             for paged_request in (webinar_1_page_1, webinar_1_page_2, webinar_2_page_1):
                 http_mocker.assert_number_of_calls(paged_request, 1)
@@ -90,10 +105,19 @@ class TestReportWebinarParticipants(TestCase):
         )
         http_mocker.get(_participants_request(WEBINAR_2["uuid"]), zoom_error(3001, "Meeting does not exist.", status_code=404))
 
-        output = read_stream(_STREAM)
+        output = read_stream(
+            _STREAM,
+            config={**CONFIG, "start_date": "2026-10-01T00:00:00Z"},
+            sync_mode=SyncMode.full_refresh,
+        )
 
         assert_completed_without_errors(output, _STREAM)
-        assert records_data(output) == [{**_participant("p1"), "webinar_uuid": WEBINAR_1["uuid"]}]
+        assert records_data(output) == [
+            {
+                **_participant("p1"),
+                "webinar_uuid": WEBINAR_1["uuid"],
+            }
+        ]
         assert output.is_in_logs("Zoom returned code 3001")
 
     def test_parent_400_yields_no_records(self):
