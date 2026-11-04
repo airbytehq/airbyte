@@ -98,15 +98,15 @@ definitions:
         Skipping the trackers stream: this Aircall company does not have the
         AI Assist or AI Assist Pro package (HTTP 403).
     # Documented 403 bodies: "line is not configured to use whatsapp", "line does not belong to the
-    # company" (a number deleted during the sync); sibling WhatsApp endpoints say "line does not have
-    # WhatsApp capability".
+    # company" (a number deleted during the sync). Live responses for numbers without WhatsApp say
+    # "Line <id> doesn't have WhatsApp capability" with key "Forbidden".
     whatsapp_not_configured:
       type: HttpResponseFilter
       action: IGNORE
       predicate: >-
         {{ response is mapping and 'templates' not in response
         and ('not configured to use whatsapp' in (response | string | lower)
-        or 'does not have whatsapp capability' in (response | string | lower)
+        or 'have whatsapp capability' in (response | string | lower)
         or 'does not belong to the company' in (response | string | lower)) }}
       error_message: >-
         Ignoring {{ request_url }}: this number is not registered for WhatsApp
@@ -200,7 +200,7 @@ definitions:
         lookback_window: P3D
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ (now_utc().timestamp() - 186 * 86400) | int }}"
+          datetime: "{{ (now_utc().timestamp() - 365 * 86400) | int }}"
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
@@ -762,9 +762,9 @@ spec:
       start_date:
         type: string
         description: >-
-          Saved by versions before 0.5.0 and no longer used. Calls are read from
-          the six months of history Aircall keeps; the other streams always return
-          every record.
+          Saved by versions before 0.5.0 and no longer used. Calls start 365 days
+          before the sync, covering the six months of call history Aircall keeps;
+          the other streams always return every record.
         title: Start date (before 0.5.0)
         airbyte_hidden: true
         order: 2

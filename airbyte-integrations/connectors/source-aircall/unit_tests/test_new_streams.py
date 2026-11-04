@@ -489,9 +489,10 @@ def _numbers_request() -> HttpRequest:
         pytest.param("Forbidden access: line is not configured to use whatsapp.", id="not-configured"),
         pytest.param("Forbidden access: line does not have WhatsApp capability.", id="no-capability"),
         pytest.param("Forbidden access: line does not belong to the company.", id="deleted-number"),
+        pytest.param(None, id="live-no-capability"),
     ],
 )
-def test_whatsapp_templates_page_by_token_and_skip_numbers_without_whatsapp(troubleshoot: str) -> None:
+def test_whatsapp_templates_page_by_token_and_skip_numbers_without_whatsapp(troubleshoot: str | None) -> None:
     with HttpMocker() as http_mocker:
         http_mocker.get(_numbers_request(), _json({"numbers": [{"id": 1}, {"id": 2}]}))
         first = _request("/numbers/1/templates")
@@ -507,7 +508,12 @@ def test_whatsapp_templates_page_by_token_and_skip_numbers_without_whatsapp(trou
         )
         # A last page that still carries a token but no templates ends the partition.
         http_mocker.get(last, _json({"templates": [], "pageInfo": {**page_info, "currentToken": 20, "nextToken": 30}}))
-        http_mocker.get(not_whatsapp, _app_error(403, troubleshoot))
+        not_whatsapp_response = (
+            _app_error(403, troubleshoot)
+            if troubleshoot
+            else HttpResponse(body=json.dumps({"message": "Line 2 doesn't have WhatsApp capability", "key": "Forbidden"}), status_code=403)
+        )
+        http_mocker.get(not_whatsapp, not_whatsapp_response)
 
         output = _read("whatsapp_templates")
 

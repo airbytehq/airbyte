@@ -15,9 +15,9 @@ Aircall's `from` and `to` filters use creation date, not the record's update tim
 
 **Why this matters:** Applying a creation-date filter or an old cursor to these streams can permanently omit records that Aircall later edits.
 
-## 3. Calls start within Aircall's six-month retention period
+## 3. Calls start a year back to cover Aircall's call history
 
-Aircall retains only six months of calls. A first sync or a full refresh of calls starts at `now - 186 days` instead of `start_date`; incremental syncs start three days before the saved cursor.
+Aircall retains six months of calls. A first sync or full refresh starts 365 days back, covering all the call history Aircall keeps, instead of using `start_date`; incremental syncs start three days before the saved cursor.
 
 **Why this matters:** Honouring a recent `start_date` would drop calls that the 0.4.x full refreshes returned.
 
@@ -58,11 +58,11 @@ Most Aircall v1 list endpoints use 1-based page numbering. Their first request o
 
 Several endpoints return 403 when the company lacks an add-on, but a revoked API key also returns a plain `{"message": "Forbidden"}` 403 on every endpoint. Each gated stream has its own `DefaultErrorHandler` whose stream filter matches only the gating text and runs before the shared filters, so gateway 403s still fail as configuration errors. An ignored request still costs one call: a company without the Conversations API spends one request per 30-day window of history (157 in 2026) on every sync that selects `conversations`, twice with `conversation_engagements`.
 
-| Streams                                     | Documented 403 body                                                                                                                                                  | Behavior                        |
-| :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------ |
-| `conversations`, `conversation_engagements` | `The Conversations API is not enabled for this Company.` (the filter matches `not enabled`; the reference shows no full body)                                        | Ignore the request.             |
-| `trackers`                                  | `Forbidden access: company cannot access this feature.`                                                                                                              | Ignore the request (AI Assist). |
-| `whatsapp_templates`                        | `Forbidden access: line is not configured to use whatsapp.`, `line does not belong to the company.`; sibling endpoints say `line does not have WhatsApp capability.` | Ignore that number.             |
+| Streams                                     | Documented 403 body                                                                                                                                                                    | Behavior                        |
+| :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------ |
+| `conversations`, `conversation_engagements` | `The Conversations API is not enabled for this Company.` (the filter matches `not enabled`; the reference shows no full body)                                                          | Ignore the request.             |
+| `trackers`                                  | `Forbidden access: company cannot access this feature.`                                                                                                                                | Ignore the request (AI Assist). |
+| `whatsapp_templates`                        | `Forbidden access: line is not configured to use whatsapp.`, `line does not belong to the company.`; live responses say `Line <id> doesn't have WhatsApp capability` (key `Forbidden`) | Ignore that number.             |
 
 See [List all Conversations](https://developers.aircall.io/api-references/#list-all-conversations), [List all Trackers](https://developers.aircall.io/api-references/#list-all-trackers) and [WhatsApp templates](https://developers.aircall.io/api-references/#list-whatsapp-templates).
 
