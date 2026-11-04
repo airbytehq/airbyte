@@ -47,4 +47,12 @@ data:
     - title: ConvertKit authentication
       url: https://developers.convertkit.com/#authentication
       type: authentication_guide
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
