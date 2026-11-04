@@ -37,3 +37,11 @@ data:
     - title: Zoho Campaigns API
       url: https://www.zoho.com/campaigns/help/developers/api-overview.html
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
