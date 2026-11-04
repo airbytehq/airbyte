@@ -54,6 +54,12 @@ FAN_OUT_STREAMS = {"event_type_memberships", "user_availability_schedules", "loc
         "locations",
         "organization_invitations",
         "webhook_subscriptions",
+        "routing_forms",
+        "routing_form_submissions",
+        "contacts",
+        "outgoing_communications",
+        "activity_log_entries",
+        "meeting_recaps",
     ],
 )
 @pytest.mark.parametrize(
@@ -86,6 +92,9 @@ def test_each_requester_classifies_errors(stream: str, status: int, action: Resp
     elif stream in FAN_OUT_STREAMS and status == 404:
         assert resolution.response_action == ResponseAction.IGNORE
         assert resolution.error_message == f"Skipping a member or event type that Calendly no longer returns (404): {URL}"
+    elif stream == "routing_form_submissions" and status == 404:
+        assert resolution.response_action == ResponseAction.IGNORE
+        assert resolution.error_message == "Skipping submissions of a routing form that Calendly no longer returns (404)."
     else:
         assert resolution.response_action == action
         assert resolution.failure_type == failure_type
@@ -105,7 +114,7 @@ def test_each_requester_classifies_errors(stream: str, status: int, action: Resp
             [
                 "owner or admin of the Calendly organization",
                 "read scope of every selected stream",
-                "scheduled events and webhook subscriptions",
+                "scheduled events, webhook subscriptions, activity logs and outgoing communications",
             ],
         ),
         (
