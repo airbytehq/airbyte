@@ -37,3 +37,11 @@ data:
     - title: OpenAQ API documentation
       url: https://docs.openaq.org/
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
