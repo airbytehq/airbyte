@@ -228,6 +228,22 @@ definitions:
       name: accounts
       data_field: accounts
 
+  subaccounts_stream:
+    $ref: "#/definitions/base_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/accounts"
+    $parameters:
+      url: https://api.twilio.com/2010-04-01/Accounts.json
+      name: subaccounts
+      data_field: accounts
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_filter:
+        type: RecordFilter
+        condition: "{{ record.get('owner_account_sid') is not none }}"
+
   addresses_stream:
     $ref: "#/definitions/base_substream_with_uri_from_subresource"
     schema_loader:
@@ -943,6 +959,7 @@ streams:
   - $ref: "#/definitions/voice_pricing_countries_stream"
   - $ref: "#/definitions/messaging_pricing_countries_stream"
   - $ref: "#/definitions/phone_number_pricing_countries_stream"
+  - $ref: "#/definitions/subaccounts_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
