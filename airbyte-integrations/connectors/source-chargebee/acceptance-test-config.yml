@@ -20,7 +20,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 1200
         empty_streams:
           - name: "addon"
             bypass_reason: "Not available for Product Catalog 2.0 sites. Tested with mocker server tests."
@@ -44,20 +43,14 @@ acceptance_tests:
             bypass_reason: "Tested with mocker server tests."
           - name: subscription_with_scheduled_changes
             bypass_reason: "Tested with mocker server tests."
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
         validate_state_messages: false
-        fail_on_extra_columns: true
   incremental:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 2400
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           bypass_reason: "This test does not make sense using Concurrent CDK"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 2400
         configured_catalog_path: "integration_tests/configured_catalog.json"

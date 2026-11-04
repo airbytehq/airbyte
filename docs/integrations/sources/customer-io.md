@@ -7,7 +7,7 @@ The connector reads a Customer.io workspace through the [App API](https://docs.c
 ## Prerequisites
 
 - A Customer.io account in which you are an Account Admin, or a Member with the account-level **Manage API credentials** permission, to create the key
-- An **App API Key** for the workspace you want to sync. Track API keys do not work.
+- A private API key (`sk_`) or an existing legacy App API key for the workspace you want to sync. Public API keys (`pk_`) and Track API keys do not work.
 - The **Region** of your Customer.io account, US or EU
 - If your account restricts API access by IP address, the IP addresses Airbyte connects from on its allowlist
 
@@ -15,14 +15,14 @@ The connector reads a Customer.io workspace through the [App API](https://docs.c
 
 ### Step 1: Set up Customer.io
 
-The connector authenticates with an App API key. Each key belongs to one workspace, and Customer.io shows it only once.
+The connector uses bearer authentication with a [private API key](https://docs.customer.io/accounts/settings/managing-credentials/#public-and-private-keys). Existing legacy App API keys still work, but Customer.io no longer lets you create new ones. If you already have an App API key for the workspace you want to sync, you can keep using it and skip key creation below.
 
 1. Check that you can manage API credentials: you need to be an Account Admin, or a Member with the account-level **Manage API credentials** permission ([Manage your API credentials](https://docs.customer.io/accounts/settings/managing-credentials/)).
-2. In Customer.io, go to **Account Settings** > **API Credentials** ([Where can you find them?](https://docs.customer.io/accounts/settings/managing-credentials/#where-can-you-find-them)).
-3. Add an App API key: give it a name and select the workspace you want to sync ([Adding new credentials](https://docs.customer.io/accounts/settings/managing-credentials/#adding-new-credentials)). Track API keys send data into a workspace and do not work here ([Track API Keys vs App API Keys](https://docs.customer.io/accounts/settings/managing-credentials/#track-api-keys-vs-app-api-keys)). If you restrict the key's scope, make sure it includes the data you want to sync ([Authentication](https://docs.customer.io/integrations/api/app/#authentication)).
-4. Copy the key right away and store it somewhere safe: Customer.io shows App API keys only once ([App API Keys](https://docs.customer.io/accounts/settings/managing-credentials/#app-api-keys)).
+2. In Customer.io, go to **Account Settings** > **API Credentials** and click **Create API key**.
+3. Select the workspace you want to sync and choose **Private API key**. Under **Used in**, you can leave the integration type empty if you only use the key for the App API. Give the key a name and click **Create private key** ([Create a key](https://docs.customer.io/accounts/settings/managing-credentials/#create-a-key)). Do not choose **Public API key** or **Track site ID + key**: neither can read the App API data this connector syncs.
+4. Copy the private key right away and store it somewhere safe: Customer.io shows it only once. If you lose it, create a new key.
 5. Find your account's region, US or EU. Account Admins see it under **Settings** > **Account Settings** > **Data and Privacy**; other roles do not, so ask an Account Admin ([How do I know what region my data is in?](https://docs.customer.io/accounts/settings/data-centers/#how-do-i-know-what-region-my-data-is-in)). A wrong region fails the connection test with a 401 error.
-6. If your account restricts API access by IP address, allow the addresses Airbyte connects from: the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) on Airbyte Cloud, or your deployment's public IP addresses on Self-Managed Airbyte. On the **Manage API Credentials** page, click **Add IP Address**, enter an address, select the workspace and click **Add IP Address**, once per address ([Restrict API access by IP Address](https://docs.customer.io/accounts/settings/managing-credentials/#restrict-api-access-by-ip-address)). Customer.io denies addresses missing from the list, even with a valid key.
+6. If your workspace restricts API access by IP address, allow the addresses Airbyte connects from: the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) on Airbyte Cloud, or your deployment's public IP addresses on Self-Managed Airbyte. On the **API Credentials** page, under **IP address allowlist**, click **Add IP address**, enter an address, select the workspace and click **Add IP address**, once per address ([Restrict API access by IP address](https://docs.customer.io/accounts/settings/managing-credentials/#restrict-api-access-by-ip-address)). Customer.io denies addresses missing from the list, even with a valid key.
 
 ### Step 2: Set up the Customer.io connector in Airbyte
 
@@ -33,7 +33,7 @@ The connector authenticates with an App API key. Each key belongs to one workspa
 
 <FieldAnchor field="app_api_key">
 
-**App API Key**: The App API key you created in Step 1 for the workspace you want to sync ([App API Keys](https://docs.customer.io/accounts/settings/managing-credentials/#app-api-keys)). Airbyte sends it as a bearer token. Track API keys do not work.
+**App API Key**: Enter the private API key (`sk_`) you created in Step 1, or an existing [legacy App API key](https://docs.customer.io/accounts/settings/managing-credentials/#app-api-keys), for the workspace you want to sync. The field is still named **App API Key**, but accepts either credential. Airbyte sends it as a bearer token. Public API keys (`pk_`) and Track API keys do not work.
 
 </FieldAnchor>
 
@@ -185,16 +185,12 @@ How the connector treats Customer.io HTTP errors:
 
 ### Troubleshooting
 
-- **401 errors**: Customer.io rejected the key. Check that it is an App API key, not a Track API key, and that you copied all of it; Customer.io shows a key only once, so create a new one if you lost it. Check that **Region** matches your account (see [Step 1](#step-1-set-up-customerio)). If your account restricts API access by IP address, add the addresses Airbyte connects from to the allowlist ([Step 1](#step-1-set-up-customerio)): Customer.io does not document which error a blocked address gets, so both the 401 and the 403 messages mention it.
+- **401 errors**: Customer.io rejected the key. Check that it is a private API key (`sk_`) or a legacy App API key, not a public API key (`pk_`) or Track API key, and that you copied all of it. Create a new private key if you lost the original. Check that **Region** matches your account (see [Step 1](#step-1-set-up-customerio)). If your workspace restricts API access by IP address, add the addresses Airbyte connects from to the allowlist ([Step 1](#step-1-set-up-customerio)): Customer.io does not document which error a blocked address gets, so both the 401 and the 403 messages mention it. The connector's error message still refers to an App API key; private keys work in the same field.
 - **403 errors**: Customer.io denied the key access to the data the stream reads, or the addresses Airbyte connects from are not on the allowlist. Use a key that can read the data, or deselect the stream.
 - **429 errors or slow syncs**: your other App API traffic shares the 10 requests per second. Schedule syncs when that traffic is low, sync less often, or deselect the expensive streams listed in [Performance considerations](#performance-considerations).
 - **5xx errors**: temporary Customer.io errors. If the sync fails after the retries, check [Customer.io Status](https://status.customerio.com/) and sync again later.
 - **Records missing from incremental streams**: streams that support incremental sync skip records last updated before the Start Date, `activities` skips activities dated more than **Activities Lookback Window (Days)** before the newest activity already synced, and the actions of a new automation or broadcast start from the newest update time saved for the stream (see [Incremental sync and Start Date](#incremental-sync-and-start-date)). For `activities`, raise **Activities Lookback Window (Days)**. For the other streams, move the Start Date earlier or leave it blank, then clear the stream; the clear also removes the rows of records deleted in Customer.io and, in Append modes, earlier versions of each record. Do not clear `activities`: Customer.io guarantees only the last 30 days, so the clear permanently removes older activity from the destination.
 - **Repeated rows**: in Incremental | Append mode, records updated in the hour before the saved cursor arrive again on every sync, and `messages` and `activities` repeat their lookback windows. Use Incremental | Append + Deduped.
-
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -203,7 +199,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
-| 1.1.0 | 2026-10-12 | [88473](https://github.com/airbytehq/airbyte/pull/88473) | Re-read 7 days of `activities` per sync instead of 1 hour, add worker and activity lookback options, declare five fields seen in production, cast digit-string `campaigns.webhook_id` values, and update to source-declarative-manifest 7.35.0 |
+| 1.1.6 | 2026-11-03 | [90493](https://github.com/airbytehq/airbyte/pull/90493) | Update dependencies |
+| 1.1.5 | 2026-11-02 | [90331](https://github.com/airbytehq/airbyte/pull/90331) | Consolidate substream error handling into a single error handler; no behavior change |
+| 1.1.4 | 2026-10-27 | [89851](https://github.com/airbytehq/airbyte/pull/89851) | Update dependencies |
+| 1.1.3 | 2026-10-20 | [89499](https://github.com/airbytehq/airbyte/pull/89499) | Mark the connector as certified |
+| 1.1.2 | 2026-10-20 | [89495](https://github.com/airbytehq/airbyte/pull/89495) | Add the Customer.io OpenAPI spec to the documentation URLs |
+| 1.1.1 | 2026-10-20 | [89163](https://github.com/airbytehq/airbyte/pull/89163) | Update dependencies |
+| 1.1.0 | 2026-10-12 | [88473](https://github.com/airbytehq/airbyte/pull/88473) | Add worker and activity lookback options (7-day default) and declare fields seen in production |
 | 1.0.0 | 2026-10-09 | [88159](https://github.com/airbytehq/airbyte/pull/88159) | Declare `from_id`, `reply_to_id` and `sent_at` as integers and the item types of four ID and tag arrays |
 | 0.8.0 | 2026-10-08 | [88158](https://github.com/airbytehq/airbyte/pull/88158) | Add message, activity, people, segment membership and ESP suppression streams |
 | 0.7.0 | 2026-10-08 | [88135](https://github.com/airbytehq/airbyte/pull/88135) | Add subscription topic, object type, workspace, reporting webhook, snippet and collection streams |
@@ -227,41 +229,41 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.4.2 | 2026-06-02 | [78639](https://github.com/airbytehq/airbyte/pull/78639) | Update dependencies |
 | 0.4.1 | 2026-05-08 | [77895](https://github.com/airbytehq/airbyte/pull/77895) | Upgrade the base image to source-declarative-manifest 7.18.1 |
 | 0.4.0 | 2026-05-08 | [77819](https://github.com/airbytehq/airbyte/pull/77819) | Add pagination, incremental sync, and EU region support |
-| 0.3.19  | 2025-08-20 | [65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo                                 |
-| 0.3.18  | 2025-05-10 | [60049](https://github.com/airbytehq/airbyte/pull/60049) | Update dependencies                         |
-| 0.3.17  | 2025-05-03 | [58875](https://github.com/airbytehq/airbyte/pull/58875) | Update dependencies                         |
-| 0.3.16  | 2025-04-19 | [57766](https://github.com/airbytehq/airbyte/pull/57766) | Update dependencies                         |
-| 0.3.15  | 2025-04-05 | [57225](https://github.com/airbytehq/airbyte/pull/57225) | Update dependencies                         |
-| 0.3.14  | 2025-03-29 | [56546](https://github.com/airbytehq/airbyte/pull/56546) | Update dependencies                         |
-| 0.3.13  | 2025-03-22 | [55918](https://github.com/airbytehq/airbyte/pull/55918) | Update dependencies                         |
-| 0.3.12  | 2025-03-08 | [55311](https://github.com/airbytehq/airbyte/pull/55311) | Update dependencies                         |
-| 0.3.11  | 2025-03-01 | [54942](https://github.com/airbytehq/airbyte/pull/54942) | Update dependencies                         |
-| 0.3.10  | 2025-02-22 | [54374](https://github.com/airbytehq/airbyte/pull/54374) | Update dependencies                         |
-| 0.3.9   | 2025-02-15 | [51670](https://github.com/airbytehq/airbyte/pull/51670) | Update dependencies                         |
-| 0.3.8   | 2025-01-11 | [51062](https://github.com/airbytehq/airbyte/pull/51062) | Update dependencies                         |
-| 0.3.7   | 2025-01-04 | [50582](https://github.com/airbytehq/airbyte/pull/50582) | Update dependencies                         |
-| 0.3.6   | 2024-12-21 | [49999](https://github.com/airbytehq/airbyte/pull/49999) | Update dependencies                         |
-| 0.3.5   | 2024-12-14 | [49490](https://github.com/airbytehq/airbyte/pull/49490) | Update dependencies                         |
-| 0.3.4   | 2024-12-12 | [48923](https://github.com/airbytehq/airbyte/pull/48923) | Update dependencies                         |
-| 0.3.3   | 2024-11-04 | [48225](https://github.com/airbytehq/airbyte/pull/48225) | Update dependencies                         |
-| 0.3.2   | 2024-10-28 | [47464](https://github.com/airbytehq/airbyte/pull/47464) | Update dependencies                         |
-| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version    |
-| 0.3.0   | 2024-08-15 | [44158](https://github.com/airbytehq/airbyte/pull/44158) | Refactor connector to manifest-only format  |
-| 0.2.15  | 2024-08-12 | [43889](https://github.com/airbytehq/airbyte/pull/43889) | Update dependencies                         |
-| 0.2.14  | 2024-08-10 | [43513](https://github.com/airbytehq/airbyte/pull/43513) | Update dependencies                         |
-| 0.2.13  | 2024-08-03 | [43185](https://github.com/airbytehq/airbyte/pull/43185) | Update dependencies                         |
-| 0.2.12  | 2024-07-27 | [42631](https://github.com/airbytehq/airbyte/pull/42631) | Update dependencies                         |
-| 0.2.11  | 2024-07-20 | [42219](https://github.com/airbytehq/airbyte/pull/42219) | Update dependencies                         |
-| 0.2.10  | 2024-07-13 | [41808](https://github.com/airbytehq/airbyte/pull/41808) | Update dependencies                         |
-| 0.2.9   | 2024-07-10 | [41389](https://github.com/airbytehq/airbyte/pull/41389) | Update dependencies                         |
-| 0.2.8   | 2024-07-09 | [41225](https://github.com/airbytehq/airbyte/pull/41225) | Update dependencies                         |
-| 0.2.7   | 2024-07-06 | [40883](https://github.com/airbytehq/airbyte/pull/40883) | Update dependencies                         |
-| 0.2.6   | 2024-06-29 | [40624](https://github.com/airbytehq/airbyte/pull/40624) | Update dependencies                         |
+| 0.3.19 | 2025-08-20 | [65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo |
+| 0.3.18 | 2025-05-11 | [60049](https://github.com/airbytehq/airbyte/pull/60049) | Update dependencies |
+| 0.3.17 | 2025-05-04 | [58875](https://github.com/airbytehq/airbyte/pull/58875) | Update dependencies |
+| 0.3.16 | 2025-04-19 | [57766](https://github.com/airbytehq/airbyte/pull/57766) | Update dependencies |
+| 0.3.15 | 2025-04-05 | [57225](https://github.com/airbytehq/airbyte/pull/57225) | Update dependencies |
+| 0.3.14 | 2025-03-29 | [56546](https://github.com/airbytehq/airbyte/pull/56546) | Update dependencies |
+| 0.3.13 | 2025-03-22 | [55918](https://github.com/airbytehq/airbyte/pull/55918) | Update dependencies |
+| 0.3.12 | 2025-03-08 | [55311](https://github.com/airbytehq/airbyte/pull/55311) | Update dependencies |
+| 0.3.11 | 2025-03-01 | [54942](https://github.com/airbytehq/airbyte/pull/54942) | Update dependencies |
+| 0.3.10 | 2025-02-22 | [54374](https://github.com/airbytehq/airbyte/pull/54374) | Update dependencies |
+| 0.3.9 | 2025-02-18 | [51670](https://github.com/airbytehq/airbyte/pull/51670) | Update dependencies |
+| 0.3.8 | 2025-01-11 | [51062](https://github.com/airbytehq/airbyte/pull/51062) | Update dependencies |
+| 0.3.7 | 2025-01-04 | [50582](https://github.com/airbytehq/airbyte/pull/50582) | Update dependencies |
+| 0.3.6 | 2024-12-21 | [49999](https://github.com/airbytehq/airbyte/pull/49999) | Update dependencies |
+| 0.3.5 | 2024-12-14 | [49490](https://github.com/airbytehq/airbyte/pull/49490) | Update dependencies |
+| 0.3.4 | 2024-12-12 | [48923](https://github.com/airbytehq/airbyte/pull/48923) | Update dependencies |
+| 0.3.3 | 2024-11-05 | [48225](https://github.com/airbytehq/airbyte/pull/48225) | Update dependencies |
+| 0.3.2 | 2024-10-28 | [47464](https://github.com/airbytehq/airbyte/pull/47464) | Update dependencies |
+| 0.3.1 | 2024-08-17 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version |
+| 0.3.0 | 2024-08-16 | [44158](https://github.com/airbytehq/airbyte/pull/44158) | Refactor connector to manifest-only format |
+| 0.2.15 | 2024-08-12 | [43889](https://github.com/airbytehq/airbyte/pull/43889) | Update dependencies |
+| 0.2.14 | 2024-08-11 | [43513](https://github.com/airbytehq/airbyte/pull/43513) | Update dependencies |
+| 0.2.13 | 2024-08-04 | [43185](https://github.com/airbytehq/airbyte/pull/43185) | Update dependencies |
+| 0.2.12 | 2024-07-28 | [42631](https://github.com/airbytehq/airbyte/pull/42631) | Update dependencies |
+| 0.2.11 | 2024-07-21 | [42219](https://github.com/airbytehq/airbyte/pull/42219) | Update dependencies |
+| 0.2.10 | 2024-07-14 | [41808](https://github.com/airbytehq/airbyte/pull/41808) | Update dependencies |
+| 0.2.9 | 2024-07-10 | [41389](https://github.com/airbytehq/airbyte/pull/41389) | Update dependencies |
+| 0.2.8 | 2024-07-10 | [41225](https://github.com/airbytehq/airbyte/pull/41225) | Update dependencies |
+| 0.2.7 | 2024-07-07 | [40883](https://github.com/airbytehq/airbyte/pull/40883) | Update dependencies |
+| 0.2.6 | 2024-06-30 | [40624](https://github.com/airbytehq/airbyte/pull/40624) | Update dependencies |
 | 0.2.5 | 2024-06-27 | [38318](https://github.com/airbytehq/airbyte/pull/38318) | Make the connector compatible with Connector Builder |
-| 0.2.4   | 2024-06-25 | [40369](https://github.com/airbytehq/airbyte/pull/40369) | Update dependencies                         |
-| 0.2.3   | 2024-06-22 | [39953](https://github.com/airbytehq/airbyte/pull/39953) | Update dependencies                         |
-| 0.2.2   | 2024-06-04 | [38980](https://github.com/airbytehq/airbyte/pull/38980) | [autopull] Upgrade base image to v1.2.1     |
-| 0.2.1   | 2024-05-31 | [38812](https://github.com/airbytehq/airbyte/pull/38812) | [autopull] Migrate to base image and poetry |
+| 0.2.4 | 2024-06-26 | [40369](https://github.com/airbytehq/airbyte/pull/40369) | Update dependencies |
+| 0.2.3 | 2024-06-23 | [39953](https://github.com/airbytehq/airbyte/pull/39953) | Update dependencies |
+| 0.2.2 | 2024-06-05 | [38980](https://github.com/airbytehq/airbyte/pull/38980) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.1 | 2024-05-31 | [38812](https://github.com/airbytehq/airbyte/pull/38812) | [autopull] Migrate to base image and poetry |
 | 0.2.0 | 2023-08-29 | [29385](https://github.com/airbytehq/airbyte/pull/29385) | Migrate TS CDK to Low code |
 | 0.1.23 | 2021-11-09 | 126 | Add Customer.io source |
 

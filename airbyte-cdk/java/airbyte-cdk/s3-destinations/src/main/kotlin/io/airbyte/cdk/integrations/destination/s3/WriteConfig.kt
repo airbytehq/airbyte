@@ -18,7 +18,7 @@ constructor(
     val generationId: Long,
     val minimumGenerationId: Long,
     val storedFiles: MutableList<String> = arrayListOf(),
-    val objectsFromOldGeneration: MutableList<String> = arrayListOf()
+    val objectsFromOldGeneration: MutableList<String> = arrayListOf(),
 ) {
 
     fun addStoredFile(file: String) {

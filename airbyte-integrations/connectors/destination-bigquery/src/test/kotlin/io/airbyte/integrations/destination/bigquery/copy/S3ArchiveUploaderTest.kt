@@ -122,7 +122,7 @@ class S3ArchiveUploaderTest {
                     override fun onComplete() {
                         completed.complete(Unit)
                     }
-                }
+                },
             )
             assertArrayEquals(byteArrayOf(11), chunks.poll(5, TimeUnit.SECONDS))
             // The reader has read/closed the file, but its final chunk still awaits demand.
@@ -181,11 +181,13 @@ class S3ArchiveUploaderTest {
             bytes.get(5, TimeUnit.SECONDS)
             assertTrue(closing.await(5, TimeUnit.SECONDS))
             val start = System.nanoTime()
-            val failure =
-                runCatching { body.stop(cleanup, Duration.ofMillis(100)) }.exceptionOrNull()
+            val failure = runCatching {
+                body.stop(cleanup, Duration.ofMillis(100))
+            }
+                .exceptionOrNull()
             assertTrue(
                 failure is java.util.concurrent.TimeoutException ||
-                    failure is java.util.concurrent.ExecutionException
+                    failure is java.util.concurrent.ExecutionException,
             )
             assertTrue(System.nanoTime() - start < TimeUnit.SECONDS.toNanos(2))
             assertEquals(1L, closed.count)
@@ -211,7 +213,7 @@ class S3ArchiveUploaderTest {
             ArchiveFileBody(path) { file, offset ->
                 val input =
                     java.nio.channels.Channels.newInputStream(
-                        java.nio.channels.FileChannel.open(file).position(offset)
+                        java.nio.channels.FileChannel.open(file).position(offset),
                     )
                 if (opened.incrementAndGet() != 1) input
                 else
@@ -255,7 +257,7 @@ class S3ArchiveUploaderTest {
                 .splitCloseable(
                     AsyncRequestBodySplitConfiguration.builder()
                         .chunkSizeInBytes(partSize.toLong())
-                        .build()
+                        .build(),
                 )
                 .subscribe(
                     object : Subscriber<CloseableAsyncRequestBody> {
@@ -272,7 +274,7 @@ class S3ArchiveUploaderTest {
                         override fun onComplete() {
                             ready.complete(Unit)
                         }
-                    }
+                    },
                 )
             ready.get(5, TimeUnit.SECONDS)
             val subscription = AtomicReference<Subscription>()
@@ -288,7 +290,7 @@ class S3ArchiveUploaderTest {
                     override fun onError(t: Throwable) = Unit
 
                     override fun onComplete() = Unit
-                }
+                },
             )
             assertTrue(enteredRead.await(5, TimeUnit.SECONDS))
             if (closePart) parts[1].close() else subscription.get().cancel()
@@ -410,11 +412,13 @@ class S3ArchiveUploaderTest {
                             }
                         }
                     }
-                }
+                },
             )
         try {
-            val actual =
-                runCatching { uploader.upload(file(), "key", "application/gzip") }.exceptionOrNull()
+            val actual = runCatching {
+                uploader.upload(file(), "key", "application/gzip")
+            }
+                .exceptionOrNull()
             assertInstanceOf(IllegalStateException::class.java, actual)
             assertEquals(failure.message, actual!!.message)
             assertTrue(closed.get())
@@ -566,7 +570,7 @@ class S3ArchiveUploaderTest {
                 override fun onComplete() {
                     result.complete(bytes.toByteArray())
                 }
-            }
+            },
         )
     }
 }

@@ -47,6 +47,6 @@ interface JdbcStreamState<A : JdbcSharedState> {
 
     fun validatePartition(
         partition: JdbcPartition<*>,
-        jdbcConnectionFactory: JdbcConnectionFactory
+        jdbcConnectionFactory: JdbcConnectionFactory,
     ) {}
 }

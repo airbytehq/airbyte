@@ -113,7 +113,7 @@ class BigQueryReadApiPartitionsCreatorFactoryTest {
                     BigQueryTableTypes.TableFacts(
                         TableDefinition.Type.TABLE,
                         552_577_444_951L,
-                        275_360_099L
+                        275_360_099L,
                     ),
                 )
             }
@@ -157,7 +157,7 @@ class BigQueryReadApiPartitionsCreatorFactoryTest {
                 readStreams =
                     listOf(
                         "projects/p/locations/us/sessions/CAIS/streams/a",
-                        "projects/p/locations/us/sessions/CAIS/streams/b"
+                        "projects/p/locations/us/sessions/CAIS/streams/b",
                     ),
                 arrowSchema = null,
                 estimatedRowCount = null,
@@ -166,7 +166,7 @@ class BigQueryReadApiPartitionsCreatorFactoryTest {
         val inFlight = BigQueryReadApiTableProgress(session).also { it.markComplete(0) }.snapshot()
         Assertions.assertTrue(
             factory(config, baseTables(event)).make(event.bootstrap(inFlight.toOpaqueStateValue()))
-                is BigQueryReadApiPartitionsCreator
+                is BigQueryReadApiPartitionsCreator,
         )
         // ... and a completed snapshot means there is nothing left to read.
         Assertions.assertEquals(
@@ -184,7 +184,7 @@ class BigQueryReadApiPartitionsCreatorFactoryTest {
             BigQueryTableTypes().also {
                 it.register(
                     view.id,
-                    BigQueryTableTypes.TableFacts(TableDefinition.Type.VIEW, null, null)
+                    BigQueryTableTypes.TableFacts(TableDefinition.Type.VIEW, null, null),
                 )
             }
         Assertions.assertNull(factory(config, viewTypes).make(view.bootstrap()))
@@ -225,8 +225,8 @@ class BigQueryReadApiPartitionsCreatorFactoryTest {
         // A completed full refresh snapshot for a now-incremental stream starts a snapshot too.
         Assertions.assertTrue(
             factory.make(
-                incremental.bootstrap(Jsons.readTree("""{"primary_key":{},"cursors":{}}"""))
-            ) is BigQueryReadApiPartitionsCreator
+                incremental.bootstrap(Jsons.readTree("""{"primary_key":{},"cursors":{}}""")),
+            ) is BigQueryReadApiPartitionsCreator,
         )
 
         // An own in-flight snapshot state with the bound resumes on this path ...
@@ -245,19 +245,19 @@ class BigQueryReadApiPartitionsCreatorFactoryTest {
             BigQueryReadApiTableProgress(
                     session,
                     snapshotTime = snapshotTime,
-                    cursorUpperBound = bound
+                    cursorUpperBound = bound,
                 )
                 .snapshot()
         Assertions.assertTrue(
             factory.make(incremental.bootstrap(inFlight.toOpaqueStateValue()))
-                is BigQueryReadApiPartitionsCreator
+                is BigQueryReadApiPartitionsCreator,
         )
         // ... and a complete one emits the toolkit's cursor checkpoint as its terminal state.
         val complete =
             BigQueryReadApiTableProgress(
                     session,
                     snapshotTime = snapshotTime,
-                    cursorUpperBound = bound
+                    cursorUpperBound = bound,
                 )
                 .also { it.markComplete(0) }
                 .snapshot()
@@ -270,7 +270,7 @@ class BigQueryReadApiPartitionsCreatorFactoryTest {
         Assertions.assertEquals(
             Jsons.readTree("""{"primary_key":{},"cursors":{"id":4242}}"""),
             Jsons.readTree(
-                Jsons.writeValueAsString(readers.single().checkpoint().opaqueStateValue)
+                Jsons.writeValueAsString(readers.single().checkpoint().opaqueStateValue),
             ),
         )
         Assertions.assertEquals(
@@ -288,31 +288,33 @@ class BigQueryReadApiPartitionsCreatorFactoryTest {
         // A cursor checkpoint: the deltas are the query API's.
         Assertions.assertNull(
             factory.make(
-                incremental.bootstrap(Jsons.readTree("""{"primary_key":{},"cursors":{"id":5}}"""))
-            )
+                incremental.bootstrap(Jsons.readTree("""{"primary_key":{},"cursors":{"id":5}}""")),
+            ),
         )
         // A query API snapshot in progress.
         Assertions.assertNull(
             factory.make(
                 incremental.bootstrap(
-                    Jsons.readTree("""{"primary_key":{"id":3},"cursors":{"id":9}}""")
-                )
-            )
+                    Jsons.readTree("""{"primary_key":{"id":3},"cursors":{"id":9}}"""),
+                ),
+            ),
         )
         // A legacy source-bigquery state.
         Assertions.assertNull(
             factory.make(
                 incremental.bootstrap(
-                    Jsons.readTree("""{"stream_name":"event","cursor_field":["id"],"cursor":"3"}""")
-                )
-            )
+                    Jsons.readTree(
+                        """{"stream_name":"event","cursor_field":["id"],"cursor":"3"}""",
+                    ),
+                ),
+            ),
         )
         Assertions.assertTrue(queries.asked.isEmpty(), "no MAX query for declined streams")
 
         // An empty table (no cursor value) is left to the query API too.
         val empty = FixedSnapshotQueries(upperBound = null)
         Assertions.assertNull(
-            factory(config, baseTables(incremental), empty).make(incremental.bootstrap())
+            factory(config, baseTables(incremental), empty).make(incremental.bootstrap()),
         )
         Assertions.assertEquals(1, empty.asked.size)
 
@@ -327,7 +329,7 @@ class BigQueryReadApiPartitionsCreatorFactoryTest {
                 configuredCursor = blob,
             )
         Assertions.assertNull(
-            factory(config, baseTables(oddCursor), queries).make(oddCursor.bootstrap())
+            factory(config, baseTables(oddCursor), queries).make(oddCursor.bootstrap()),
         )
     }
 
@@ -363,8 +365,8 @@ class BigQueryReadApiPartitionsCreatorFactoryTest {
             factory(config, baseTables(incremental), queries, registry)
                 .make(
                     incremental.bootstrap(
-                        Jsons.readTree("""{"primary_key":{},"cursors":{"id":4242}}""")
-                    )
+                        Jsons.readTree("""{"primary_key":{},"cursors":{"id":4242}}"""),
+                    ),
                 ),
         )
         Assertions.assertTrue(queries.asked.isEmpty())

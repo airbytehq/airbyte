@@ -37,8 +37,8 @@ connector's Unix domain sockets, see "Speed mode" below); `BigQuerySourceSpecTes
 There is no `spotlessApply` task for connectors. Format with the ktfmt version CI uses:
 
 ```bash
-curl -sSfL -o /tmp/ktfmt-0.39.jar https://repo1.maven.org/maven2/com/facebook/ktfmt/0.39/ktfmt-0.39-jar-with-dependencies.jar
-find airbyte-integrations/connectors/source-bigquery/src -name '*.kt' | xargs java -jar /tmp/ktfmt-0.39.jar --kotlinlang-style
+curl -sSfL -o /tmp/ktfmt-0.65.jar https://repo1.maven.org/maven2/org/jetbrains/kotlinx/ktfmt/0.65/ktfmt-0.65-with-dependencies.jar
+find airbyte-integrations/connectors/source-bigquery/src -name '*.kt' | xargs java -jar /tmp/ktfmt-0.65.jar --kotlinlang-style
 ```
 
 ## Running the connector locally
@@ -130,6 +130,13 @@ encoder and decoder, including a fixture row compared with its JSON rendering;
 `BigQuerySourceSpeedModeReadTest` (`@Isolated`, sets the `airbyte.connector.data-channel.*` system
 properties for the duration of the read) runs the emulator catalog once on STDIO and once over two
 sockets in each format, playing the destination, and checks records, states and statuses.
+All unit test classes share one JVM and one emulator (`testExecutionConcurrency=1` in
+`gradle.properties`, JUnit class-level concurrency with one thread, which JUnit still supplements
+with a compensating thread whenever a worker blocks), so a class may overlap another: a class that
+sets a JVM-wide system property is `@Isolated` and restores the value it found
+(`BigQuerySourceConfigurationFactoryTest`, `BigQueryConcurrentReadTest`), a class that seeds
+tables uses a dataset of its own and drops it (`BigQueryConcurrentReadTest`), and the whole-project
+`discover` snapshot is compared on the fixture's datasets only.
 
 ## Read path: the Storage Read API, with the query API as fallback
 

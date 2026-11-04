@@ -44,6 +44,12 @@ definitions:
         - predicate: "{{ response.get('code') == 51002 }}"
           action: RETRY
           error_message: "TikTok Marketing API returned a transient server-side error (code 51002). The connector will retry automatically. {{ response.get('message', '') }}"
+        - predicate: "{{ response.get('code') == 51001 }}"
+          action: RETRY
+          error_message: "TikTok Marketing API returned a transient server-side error (code 51001, internal service timeout). The connector will retry automatically. {{ response.get('message', '') }}"
+        - predicate: "{{ response.get('code') == 51043 }}"
+          action: RETRY
+          error_message: "TikTok Marketing API returned a transient server-side error (code 51043, internal service timeout). The connector will retry automatically. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') == 40002 }}"
           action: IGNORE
           error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
@@ -53,7 +59,7 @@ definitions:
           error_message: "Insufficient permissions for this endpoint (error 40001). Verify that the access token has the required scopes and re-authorize the API app. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
-          error_message: "{{ response['message'] }}"
+          error_message: "TikTok Marketing API returned an error (code {{ response.get('code') }}): {{ response.get('message', '') }}"
     authenticator:
       $ref: "#/definitions/authenticator"
     request_body_json: {}
@@ -447,6 +453,12 @@ definitions:
       - predicate: "{{ response.get('code') == 51002 }}"
         action: RETRY
         error_message: "TikTok Marketing API returned a transient server-side error (code 51002). The connector will retry automatically. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 51001 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API returned a transient server-side error (code 51001, internal service timeout). The connector will retry automatically. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 51043 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API returned a transient server-side error (code 51043, internal service timeout). The connector will retry automatically. {{ response.get('message', '') }}"
       - predicate: "{{ response.get('code') == 40002 }}"
         action: IGNORE
         error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
@@ -460,7 +472,7 @@ definitions:
         action: SPLIT_REQUEST_WINDOW
       - predicate: "{{ response.get('code') != 0 }}"
         action: FAIL
-        error_message: "{{ response['message'] }}"
+        error_message: "TikTok Marketing API returned an error (code {{ response.get('code') }}): {{ response.get('message', '') }}"
 
   # Shared by the two daily report retrievers. Splitting stops at cursor_granularity (1 day);
   # the failure_message is only shown when a single day is still too large.
@@ -2302,12 +2314,18 @@ definitions:
             - predicate: "{{ response.get('code') == 51002 }}"
               action: RETRY
               error_message: "TikTok Marketing API returned a transient server-side error (code 51002). The connector will retry automatically. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 51001 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 51001, internal service timeout). The connector will retry automatically. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 51043 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 51043, internal service timeout). The connector will retry automatically. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') == 40002 }}"
               action: IGNORE
               error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') != 0 }}"
               action: FAIL
-              error_message: "{{ response['message'] }}"
+              error_message: "TikTok Marketing API returned an error (code {{ response.get('code') }}): {{ response.get('message', '') }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -2419,12 +2437,18 @@ definitions:
             - predicate: "{{ response.get('code') == 51002 }}"
               action: RETRY
               error_message: "TikTok Marketing API returned a transient server-side error (code 51002). The connector will retry automatically. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 51001 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 51001, internal service timeout). The connector will retry automatically. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 51043 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 51043, internal service timeout). The connector will retry automatically. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') == 40002 }}"
               action: IGNORE
               error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') != 0 }}"
               action: FAIL
-              error_message: "{{ response['message'] }}"
+              error_message: "TikTok Marketing API returned an error (code {{ response.get('code') }}): {{ response.get('message', '') }}"
       record_selector:
         type: RecordSelector
         extractor:

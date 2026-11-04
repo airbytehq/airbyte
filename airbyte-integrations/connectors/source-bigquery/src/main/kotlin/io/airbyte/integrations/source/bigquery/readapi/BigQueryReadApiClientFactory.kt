@@ -31,7 +31,7 @@ object BigQueryReadApiClientFactory {
         val settings: BigQueryReadSettings =
             BigQueryReadSettings.newBuilder()
                 .setHeaderProvider(
-                    FixedHeaderProvider.create("user-agent", BigQueryClientFactory.USER_AGENT)
+                    FixedHeaderProvider.create("user-agent", BigQueryClientFactory.USER_AGENT),
                 )
                 .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
                 .build()

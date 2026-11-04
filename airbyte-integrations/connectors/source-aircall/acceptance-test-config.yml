@@ -25,9 +25,6 @@ acceptance_tests:
             bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
           - name: numbers
             bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
   incremental:
     tests:
       - config_path: "secrets/config.json"

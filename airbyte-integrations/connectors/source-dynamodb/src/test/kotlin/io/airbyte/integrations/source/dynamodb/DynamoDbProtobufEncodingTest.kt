@@ -56,7 +56,7 @@ class DynamoDbProtobufEncodingTest {
     /** The payload [DynamoDbPartitionReader] builds for this item. */
     private fun payload(
         fields: List<EmittedField>,
-        item: Map<String, AttributeValue>
+        item: Map<String, AttributeValue>,
     ): NativeRecordPayload =
         fields.associateTo(mutableMapOf<String, FieldValueEncoder<*>>()) { field ->
             field.id to
@@ -66,7 +66,7 @@ class DynamoDbProtobufEncodingTest {
     /** Encodes a record with the CDK the way the protobuf socket consumer does. */
     private fun encode(
         fields: List<EmittedField>,
-        payload: NativeRecordPayload
+        payload: NativeRecordPayload,
     ): AirbyteRecordMessageProtobuf {
         val builder: AirbyteRecordMessageProtobuf.Builder =
             AirbyteRecordMessageProtobuf.newBuilder()
@@ -92,7 +92,7 @@ class DynamoDbProtobufEncodingTest {
         for ((name, slot) in slots(fields)) {
             actual.set<JsonNode>(
                 name,
-                SpeedModeTestSupport.protobufValueToJson(record.getData(slot))
+                SpeedModeTestSupport.protobufValueToJson(record.getData(slot)),
             )
         }
         Assertions.assertEquals(
@@ -209,7 +209,7 @@ class DynamoDbProtobufEncodingTest {
         // The same numbers nested in a map travel as one JSON text, plain as well.
         val map: AttributeValue =
             DynamoDbJson.fromDynamoDbJson(
-                Jsons.readTree("""{"M": {"a": {"N": "1e5"}, "b": {"L": [{"N": "-0.0000001"}]}}}""")
+                Jsons.readTree("""{"M": {"a": {"N": "1e5"}, "b": {"L": [{"N": "-0.0000001"}]}}}"""),
             )
         Assertions.assertEquals(
             """{"a":100000,"b":[-0.0000001]}""",
@@ -313,7 +313,7 @@ class DynamoDbProtobufEncodingTest {
             listOf("id", "only_a", "only_b").map {
                 EmittedField(
                     it,
-                    DynamoDbFieldType.fromJsonSchema(Jsons.readTree("""{"type":"string"}"""))
+                    DynamoDbFieldType.fromJsonSchema(Jsons.readTree("""{"type":"string"}""")),
                 )
             }
         val first: Map<String, AttributeValue> =
@@ -337,7 +337,7 @@ class DynamoDbProtobufEncodingTest {
                     field.id to
                         FieldValueEncoder(
                             DynamoDbJson.toRecordValue(item.getValue(field.id)),
-                            codec(field)
+                            codec(field),
                         )
                 }
         presentOnly(first).toProtobuf(fields.toSet(), reused, valueBuilder)
@@ -368,12 +368,12 @@ class DynamoDbProtobufEncodingTest {
         val field =
             EmittedField(
                 "c",
-                DynamoDbFieldType.fromJsonSchema(Jsons.readTree("""{"type":"string"}"""))
+                DynamoDbFieldType.fromJsonSchema(Jsons.readTree("""{"type":"string"}""")),
             )
         val nullTyped =
             EmittedField(
                 "n",
-                DynamoDbFieldType.fromJsonSchema(Jsons.readTree("""{"type":"null"}"""))
+                DynamoDbFieldType.fromJsonSchema(Jsons.readTree("""{"type":"null"}""")),
             )
         // Attribute absent from the item.
         val absent: AirbyteRecordMessageProtobuf =

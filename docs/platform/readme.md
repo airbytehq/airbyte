@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Data replication platform
+# Platform
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
@@ -81,7 +81,7 @@ These are great choices for developers who want to automate the way you work wit
 
 ### Airbyte MCP
 
-If you work with an AI agent like Claude, ChatGPT, or VS Code Copilot, the [Airbyte MCP](/platform/airbyte-mcp) lets your agent build, monitor, and troubleshoot your Airbyte data pipelines for you. Describe what you want in plain language, and your agent does the work with your Airbyte permissions. The Airbyte MCP is in open beta.
+If you work with an AI agent like Claude, ChatGPT, or VS Code Copilot, the [Airbyte MCP](/platform/airbyte-mcp) lets your agent build, monitor, and troubleshoot your Airbyte data pipelines for you. Describe what you want in plain language, and your agent does the work with your Airbyte permissions.
 
 ### Terraform
 

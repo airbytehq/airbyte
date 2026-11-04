@@ -50,10 +50,10 @@ class S3CopyMetadataTest {
                 stream.unmappedNamespace,
                 stream.unmappedName,
                 runId,
-                epochSeconds
+                epochSeconds,
             )
         assertTrue(
-            path.endsWith("/streams/public/Orders%2F%E6%97%A5%E6%9C%AC/runs/$runId/$epochSeconds/")
+            path.endsWith("/streams/public/Orders%2F%E6%97%A5%E6%9C%AC/runs/$runId/$epochSeconds/"),
         )
         val context = CsvCopyContext("stream-hash", 42, 12345, "schema-hash", path)
         val schema =
@@ -63,9 +63,9 @@ class S3CopyMetadataTest {
                     "columns" to emptyMap<String, Any>(),
                     "source_schema" to emptyMap<String, Any>(),
                     "primary_key" to emptyList<Any>(),
-                    "cursor" to emptyList<String>()
+                    "cursor" to emptyList<String>(),
                 ),
-                "schema-hash"
+                "schema-hash",
             )
         val complete = metadata.streamComplete(stream)
         val batchId = UUID(0, 7)
@@ -88,7 +88,7 @@ class S3CopyMetadataTest {
         every { stream.minimumGenerationId } returns 0L
         assertEquals(
             mapOf("job_id" to 12345L, "min_generation_id" to 0L),
-            metadata.streamComplete(stream)
+            metadata.streamComplete(stream),
         )
         assertEquals(42L, schema["generation_id"])
         assertEquals(12345L, schema["sync_id"])
@@ -102,7 +102,7 @@ class S3CopyMetadataTest {
         assertTrue(
             headers.entries.sumOf { (key, value) ->
                 (key + value).toByteArray(Charsets.UTF_8).size
-            } < 2048
+            } < 2048,
         )
         // UUIDs and the numeric epoch must also survive serialization to the JSON sidecars.
         val json = String(Jsons.writeValueAsBytes(schema), Charsets.UTF_8)
