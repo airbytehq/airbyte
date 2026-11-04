@@ -46,6 +46,17 @@ data:
   name: S3 Data Lake
   releaseStage: alpha
   releases:
+    unsafeDowngrades:
+      0.4.3:
+        message:
+          'This version writes the `sync_id` and `changes` fields of `_airbyte_meta` as optional
+          rather than required Iceberg fields, so warehouses such as Snowflake, BigQuery and Databricks
+          can read Airbyte-written Iceberg tables. Existing tables are relaxed in place on the next sync
+          and no user action is required to upgrade, but the change is one-way: once a table''s
+          `_airbyte_meta` fields are optional, earlier connector versions fail on that stream with
+          `Schema evolution for column "_airbyte_meta" ... is not allowed`. Do not pin back to a version
+          below this one for streams that have already synced. See the
+          [migration guide](https://docs.airbyte.com/integrations/destinations/s3-data-lake-migrations).'
     rolloutConfiguration:
       enableProgressiveRollout: true
       defaultRolloutMode: autopilot
