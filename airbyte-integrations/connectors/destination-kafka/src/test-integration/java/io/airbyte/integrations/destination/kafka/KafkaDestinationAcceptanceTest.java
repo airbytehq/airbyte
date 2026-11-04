@@ -139,7 +139,7 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace) {
-    return retrieveRecords(testEnv, streamName, namespace, null);
+    return retrieveRecords(testEnv, streamName, namespace, Jsons.emptyObject());
   }
 
   @Override

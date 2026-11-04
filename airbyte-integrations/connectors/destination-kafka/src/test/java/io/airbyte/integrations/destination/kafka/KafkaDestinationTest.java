@@ -18,6 +18,8 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
@@ -64,7 +66,8 @@ class KafkaDestinationTest {
     final KafkaDestination destination = destination("CLOUD");
     final JsonNode config = config(protocol);
     assertThrows(ConfigErrorException.class, () -> destination.check(config));
-    assertThrows(ConfigErrorException.class, () -> destination.getConsumer(config, null, null));
+    assertThrows(ConfigErrorException.class,
+        () -> destination.getConsumer(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), ignored -> {}));
   }
 
   @Test
@@ -72,7 +75,8 @@ class KafkaDestinationTest {
     final KafkaDestination destination = destination("CLOUD");
     final JsonNode config = Jsons.emptyObject();
     assertThrows(ConfigErrorException.class, () -> destination.check(config));
-    assertThrows(ConfigErrorException.class, () -> destination.getConsumer(config, null, null));
+    assertThrows(ConfigErrorException.class,
+        () -> destination.getConsumer(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), ignored -> {}));
   }
 
   @ParameterizedTest
@@ -98,7 +102,8 @@ class KafkaDestinationTest {
       final ConfigErrorException error = assertThrows(ConfigErrorException.class, () -> destination.check(config));
       assertFalse(error.getMessage().contains("sensitive-test-value"));
       assertThrows(ConfigErrorException.class, () -> destination.check(config));
-      assertThrows(ConfigErrorException.class, () -> destination.getConsumer(config, null, null));
+      assertThrows(ConfigErrorException.class,
+          () -> destination.getConsumer(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), ignored -> {}));
       factory.verifyNoInteractions();
     }
   }
@@ -112,7 +117,7 @@ class KafkaDestinationTest {
     try (final MockedStatic<KafkaDestinationConfig> factory = mockStatic(KafkaDestinationConfig.class)) {
       factory.when(() -> KafkaDestinationConfig.getKafkaDestinationConfig(config)).thenReturn(producerConfig);
       assertEquals(Status.SUCCEEDED, destination.check(config).getStatus());
-      assertNotNull(destination.getConsumer(config, null, null));
+      assertNotNull(destination.getConsumer(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), ignored -> {}));
     }
   }
 
@@ -130,7 +135,8 @@ class KafkaDestinationTest {
     }
     try (final MockedStatic<KafkaDestinationConfig> factory = mockStatic(KafkaDestinationConfig.class)) {
       assertThrows(ConfigErrorException.class, () -> destination.check(config));
-      assertThrows(ConfigErrorException.class, () -> destination.getConsumer(config, null, null));
+      assertThrows(ConfigErrorException.class,
+          () -> destination.getConsumer(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), ignored -> {}));
       factory.verifyNoInteractions();
     }
   }
@@ -144,7 +150,7 @@ class KafkaDestinationTest {
     try (final MockedStatic<KafkaDestinationConfig> factory = mockStatic(KafkaDestinationConfig.class)) {
       factory.when(() -> KafkaDestinationConfig.getKafkaDestinationConfig(config)).thenReturn(producerConfig);
       assertEquals(Status.SUCCEEDED, destination.check(config).getStatus());
-      assertNotNull(destination.getConsumer(config, null, null));
+      assertNotNull(destination.getConsumer(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), ignored -> {}));
       factory.verify(() -> KafkaDestinationConfig.getKafkaDestinationConfig(config));
     }
   }
@@ -158,7 +164,7 @@ class KafkaDestinationTest {
     try (final MockedStatic<KafkaDestinationConfig> factory = mockStatic(KafkaDestinationConfig.class)) {
       factory.when(() -> KafkaDestinationConfig.getKafkaDestinationConfig(config)).thenReturn(producerConfig);
       assertEquals(Status.SUCCEEDED, destination.check(config).getStatus());
-      assertNotNull(destination.getConsumer(config, null, null));
+      assertNotNull(destination.getConsumer(config, new ConfiguredAirbyteCatalog().withStreams(List.of()), ignored -> {}));
       factory.verify(() -> KafkaDestinationConfig.getKafkaDestinationConfig(config));
     }
   }
