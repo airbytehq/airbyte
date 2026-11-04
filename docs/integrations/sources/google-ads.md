@@ -392,6 +392,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.10 | 2026-11-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Raise the minimum supported Python version to 3.11 |
 | 6.1.9 | 2026-11-03 | [90594](https://github.com/airbytehq/airbyte/pull/90594) | Update dependencies |
 | 6.1.8 | 2026-11-02 | [88944](https://github.com/airbytehq/airbyte/pull/88944) | Correct the suggested streams to the current stream names (13 of the 16 used names from before 2.0.0). |
 | 6.1.7 | 2026-10-27 | [89917](https://github.com/airbytehq/airbyte/pull/89917) | Update dependencies |
