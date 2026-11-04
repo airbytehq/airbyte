@@ -1944,6 +1944,7 @@ class Transaction(ShopifyBulkQuery):
                         id
                         currency: currencyCode
                         order_created_at: createdAt
+                        order_updated_at: updatedAt
                         transactions {
                             id
                             errorCode
@@ -2087,6 +2088,7 @@ class Transaction(ShopifyBulkQuery):
         "id",
         Field(name="currencyCode", alias="currency"),
         Field(name="createdAt", alias="order_created_at"),
+        Field(name="updatedAt", alias="order_updated_at"),
         Field(name="transactions", fields=transaction_fields),
     ]
 
@@ -2175,6 +2177,7 @@ class Transaction(ShopifyBulkQuery):
                     transaction["order_id"] = record.get("id")
                     transaction["currency"] = record.get("currency")
                     transaction["order_created_at"] = self.tools.from_iso8601_to_rfc3339(record, "order_created_at")
+                    transaction["order_updated_at"] = self.tools.from_iso8601_to_rfc3339(record, "order_updated_at")
                     yield self.process_transaction(transaction)
 
 
