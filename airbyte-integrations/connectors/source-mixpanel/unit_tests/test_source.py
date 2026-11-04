@@ -141,3 +141,13 @@ def test_config_validation(config, expected_is_success, expected_error_message, 
     assert is_success is expected_is_success, f"Actual connection status doesn't match with expected value. Actual error message {message}"
     if not is_success:
         assert expected_error_message in message
+
+
+def test_spec_marks_project_secret_as_deprecated():
+    spec = SourceMixpanel(MagicMock(), {}, MagicMock()).spec(logging.getLogger("airbyte"))
+    options = spec.connectionSpecification["properties"]["credentials"]["oneOf"]
+    project_secret = next(option for option in options if option["properties"]["option_title"]["const"] == "Project Secret")
+
+    assert project_secret["title"] == "Project Secret (Deprecated)"
+    assert "March 3, 2027" in project_secret["description"]
+    assert project_secret["required"] == ["api_secret"]
