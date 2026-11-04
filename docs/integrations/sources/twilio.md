@@ -104,6 +104,8 @@ These three streams ignore **Replication Start Date** and read from the earliest
 
 Conversations uses a single date window. Executions uses fixed 28-day windows because Twilio Studio limits each date range to one calendar month. Steps uses the same sliced execution requests to find its parent executions.
 
+Execution request windows include their start and exclude their end. The connector adds one second to each internal slice end so adjacent requests leave no gap, including records created at the sync's current-time boundary. Conversations includes both date boundaries.
+
 ### Pricing streams
 
 The `voice_pricing_countries`, `messaging_pricing_countries`, and `phone_number_pricing_countries` streams return per-country price lists from Twilio's Pricing API. Each stream first pages through the list of supported countries, then makes one additional request per country to fetch that country's prices, so a sync of these streams makes more API requests than there are supported countries. Prices are specific to the account you authenticate with: `base_price` is Twilio's list price and `current_price` includes any volume or custom discounts on your account. Each record is keyed by `iso_country`.

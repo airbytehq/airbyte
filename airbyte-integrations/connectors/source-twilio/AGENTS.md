@@ -16,6 +16,8 @@ Both cursors use a fixed 2010-01-01 floor rather than Replication Start Date, pr
 
 `step` uses incremental_dependency on executions, retaining flow_sid as an extra field. Its global child cursor has a far-future end, no request options, and no client-side filtering; nested parent_state resumes executions per flow. Conversation children intentionally use base_conversations_stream without an incremental cursor or dependency so they still enumerate all conversations.
 
+Studio DateCreatedFrom is inclusive and DateCreatedTo is exclusive. Convert each inclusive CDK slice end to DateCreatedTo by adding one second, including the final slice ending at now. Adjacent API ranges meet without gaps; the final range can span 28 days plus one second. Conversations StartDate and EndDate are both inclusive and retain the required day-boundary suffixes.
+
 ### Future incremental stream candidates
 
 None identified yet.

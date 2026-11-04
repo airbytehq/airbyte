@@ -16,6 +16,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 CONVERSATIONS = "https://conversations.twilio.com/v1/Conversations"
 FLOWS = "https://studio.twilio.com/v1/Flows"
 NOW = "2022-11-16T12:03:11Z"
+EXCLUSIVE_NOW = "2022-11-16T12:03:12Z"
 
 
 def register(requests_mock, url: str, field: str, records: list, **params):
@@ -104,11 +105,7 @@ def test_executions_partition_state(requests_mock, stream, lookback):
         ]
         states.append({"partition": {"sid": flow, "parent_slice": {}}, "cursor": {"date_created": cursor}})
         for index, (lower, next_lower) in enumerate(windows):
-            upper = (
-                (datetime.fromisoformat(next_lower.replace("Z", "+00:00")) - timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-                if index == 0
-                else NOW
-            )
+            upper = next_lower if index == 0 else EXCLUSIVE_NOW
             sid = f"FN{flow}{index}"
             matchers.append(
                 register(
@@ -155,7 +152,7 @@ def test_executions_partition_state(requests_mock, stream, lookback):
                     "executions",
                     [{"sid": f"FN{flow}1", "flow_sid": flow, "date_created": lower}],
                     DateCreatedFrom=lower,
-                    DateCreatedTo=NOW,
+                    DateCreatedTo=EXCLUSIVE_NOW,
                 )
             )
         resumed = read_from_stream(config, stream, SyncMode.incremental, state_for(stream, saved))
@@ -185,8 +182,41 @@ def test_executions_cold_full_refresh_window_bound(requests_mock):
     assert not output.records
     for slices in windows.values():
         slices.sort()
-        assert all(timedelta(0) <= upper - lower <= timedelta(days=28) for lower, upper in slices)
+        assert all(timedelta(0) <= upper - lower <= timedelta(days=28, seconds=1) for lower, upper in slices)
         assert len(slices) > 1
         assert slices[0][0] == datetime.fromisoformat("2010-01-01T00:00:00+00:00")
-        assert slices[-1][1] == datetime.fromisoformat(NOW.replace("Z", "+00:00"))
-        assert all(left[1] + timedelta(seconds=1) == right[0] for left, right in zip(slices, slices[1:]))
+        assert slices[-1][1] == datetime.fromisoformat(EXCLUSIVE_NOW.replace("Z", "+00:00"))
+        assert all(left[1] == right[0] for left, right in zip(slices, slices[1:]))
+
+
+@freeze_time("2010-02-02T00:00:00Z")
+@pytest.mark.parametrize("stream", ["executions", "step"])
+@pytest.mark.parametrize("mode", [SyncMode.full_refresh, SyncMode.incremental])
+def test_execution_exclusive_boundaries(requests_mock, stream, mode):
+    register(requests_mock, FLOWS, "flows", [{"sid": "FW1"}])
+    dates = ["2010-01-28T23:59:59Z", "2010-01-29T00:00:00Z", "2010-02-02T00:00:00Z"]
+    records = [{"sid": f"FN{index}", "flow_sid": "FW1", "date_created": date} for index, date in enumerate(dates)]
+    windows = []
+
+    def executions_response(request, context):
+        query = parse_qs(urlparse(request.url).query)
+        assert set(query) == {"PageSize", "DateCreatedFrom", "DateCreatedTo"}
+        assert query["PageSize"] == ["1000"]
+        lower, upper = query["DateCreatedFrom"][0], query["DateCreatedTo"][0]
+        windows.append((lower, upper))
+        return {"executions": [record for record in records if lower <= record["date_created"] < upper]}
+
+    requests_mock.get(f"{FLOWS}/FW1/Executions", json=executions_response)
+    if stream == "step":
+        for record in records:
+            register(requests_mock, f"{FLOWS}/FW1/Executions/{record['sid']}/Steps", "steps", [record])
+    initial = {"states": [{"partition": {"sid": "FW1", "parent_slice": {}}, "cursor": {"date_created": "2010-01-01T00:00:00Z"}}]}
+    if stream == "step":
+        initial = {"parent_state": {"executions": initial}}
+    state = state_for(stream, initial) if mode == SyncMode.incremental else None
+    output = read_from_stream(TEST_CONFIG, stream, mode, state)
+    assert sorted(record.record.data["sid"] for record in output.records) == ["FN0", "FN1", "FN2"]
+    assert sorted(windows) == [
+        ("2010-01-01T00:00:00Z", "2010-01-29T00:00:00Z"),
+        ("2010-01-29T00:00:00Z", "2010-02-02T00:00:01Z"),
+    ]

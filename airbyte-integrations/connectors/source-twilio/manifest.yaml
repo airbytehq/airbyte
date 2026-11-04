@@ -570,12 +570,12 @@ definitions:
         type: RequestOption
         field_name: DateCreatedFrom
         inject_into: request_parameter
-      end_time_option:
-        type: RequestOption
-        field_name: DateCreatedTo
-        inject_into: request_parameter
     retriever:
       $ref: "#/definitions/base_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_parameters:
+          DateCreatedTo: "{{ format_datetime(str_to_datetime(stream_interval.end_time) + duration('PT1S'), '%Y-%m-%dT%H:%M:%SZ') }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
