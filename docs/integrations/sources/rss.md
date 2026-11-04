@@ -42,6 +42,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 1.0.32 | 2026-05-09 | [airbytehq/airbyte#76196](https://github.com/airbytehq/airbyte/issues/76196) | Stop appending `/` to feed URL so query-string parameters survive (fixes #76196) |
 | 1.0.31 | 2025-02-01 | [51897](https://github.com/airbytehq/airbyte/pull/51897) | Update dependencies |
 | 1.0.30 | 2025-01-11 | [51334](https://github.com/airbytehq/airbyte/pull/51334) | Update dependencies |
 | 1.0.29 | 2025-01-04 | [50935](https://github.com/airbytehq/airbyte/pull/50935) | Update dependencies |
