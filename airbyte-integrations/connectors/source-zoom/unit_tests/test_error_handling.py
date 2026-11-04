@@ -215,7 +215,7 @@ def test_child_streams_skip_deleted_resource_3001(stream_name, parent_resource, 
 _MISSING_SCOPE = _zoom_error(4711, "Invalid access token, does not contain scopes:[meeting:read:list_meetings:admin].")
 
 
-# `users` uses the shared handler alone; the meetings chain puts it last in a composite handler.
+# `users` uses the shared handler; the meetings chain uses a handler that adds the 3161 skip before the shared filters.
 @pytest.mark.parametrize(
     "stream_name, mocks",
     [

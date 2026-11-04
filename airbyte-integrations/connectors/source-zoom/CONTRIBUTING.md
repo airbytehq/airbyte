@@ -26,8 +26,8 @@ The response filters below are defined in `manifest.yaml`. Mock-server coverage 
 
 | Zoom response | Action | Where |
 | :------------ | :----- | :---- |
-| Code `124` | Refresh the access token and retry the request. | Shared `definitions.zoom_error_handler`, attached to every requester; `test_authenticator.py` |
-| Code `4711` | Fail with a configuration error that names the missing scope. | Shared `definitions.zoom_error_handler` on all requesters; additional stream-specific scope filters on `report_user_meetings`, `report_daily`, `chat_channels`, and `zoom_events`; `test_error_handling.py` and stream integration tests |
+| Code `124` | Refresh the access token and retry the request. | Shared `definitions.zoom_token_refresh_filter`, listed in the single `DefaultErrorHandler` of every requester; `test_authenticator.py` and `test_error_handlers.py` |
+| Code `4711` | Fail with a configuration error that names the missing scope. | Shared `definitions.zoom_missing_scope_filter`, listed after any stream-specific filters; `report_user_meetings`, `report_daily`, `chat_channels`, and `zoom_events` use their own scope filter instead; handlers that skip every HTTP 400 also skip 4711; `test_error_handlers.py`, `test_error_handling.py` and stream integration tests |
 | Code `3161` | Ignore the user's standard meeting-list partition rather than failing the sync. | User-to-meeting parent requesters; the `test_error_handling.py` skip matrix no longer includes the session-based `report_meetings` or `report_meeting_participants` streams |
 | Code `3001` | Ignore the affected resource when a meeting or webinar was deleted or no longer has report data. | `meetings`, `meeting_registrants`, `meeting_polls`, `meeting_registration_questions`, `webinar_registration_questions`, `webinar_tracking_sources`, `report_webinars`, and `report_webinar_participants`; deleted-meeting case in `test_error_handling.py`. Session-based `report_meetings` and `report_meeting_participants` ignore HTTP `400`/`404` instead |
 | Code `300` | Ignore the response. | `meeting_registrants`; `report_user_meetings` and `report_daily` when Zoom reports a date outside its six-month window |
