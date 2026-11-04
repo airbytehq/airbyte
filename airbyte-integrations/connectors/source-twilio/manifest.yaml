@@ -976,15 +976,15 @@ spec:
     properties:
       account_sid:
         airbyte_secret: true
-        description: Twilio account SID
+        description: Your Twilio Account SID. Find it in the Twilio Console at https://www.twilio.com/console
         order: 1
-        title: Account ID
+        title: Account sid
         type: string
       auth_token:
         airbyte_secret: true
-        description: Twilio Auth Token.
+        description: Your Twilio Auth Token. Find it in the Twilio Console at https://www.twilio.com/console. Used together with Account SID to authenticate API requests.
         order: 2
-        title: Auth Token
+        title: Auth token
         type: string
       start_date:
         description:
@@ -995,11 +995,12 @@ spec:
         format: date-time
         order: 3
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        title: Replication Start Date
+        pattern_descriptor: UTC date and time in ISO 8601 format, e.g. 2020-10-01T00:00:00Z
+        title: Replication start date
         type: string
       lookback_window:
         default: 0
-        description: How far into the past to look for records. (in minutes)
+        description: How far into the past (in minutes) to look for records when performing an incremental sync. A value of 0 means only new records after the sync starts will be captured.
         examples:
           - 60
         maximum: 576000
@@ -1015,10 +1016,10 @@ spec:
         default: 3
         examples: [1, 2, 3]
         order: 5
-        description: The number of worker threads to use for the sync.
+        description: The number of worker threads to use for the sync. Higher values may speed up synchronization but increase API load on your Twilio account.
       slice_step_duration:
         type: string
-        title: Slice Step Duration
+        title: Slice step duration
         description: The time window size for each data slice when syncing incremental streams. Smaller windows may help avoid timeouts for accounts with large data volumes.
         default: P1M
         enum:
