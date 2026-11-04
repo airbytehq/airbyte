@@ -206,7 +206,13 @@ class PostgresDirectLoadSqlGenerator(
     internal fun getExtractedAtIndexName(tableName: TableName): String =
         EXTRACTED_AT_INDEX_PREFIX + tableName.name
 
-    fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
+    fun overwriteTable(
+        sourceTableName: TableName,
+        targetTableName: TableName,
+        replaceView: Boolean = false,
+    ): String {
+        val dropTargetSql =
+            if (replaceView) dropView(targetTableName) else dropTable(targetTableName)
         val moveSchemaSql =
             if (sourceTableName.namespace != targetTableName.namespace) {
                 "\nALTER TABLE ${getNamespace(sourceTableName)}.${getName(targetTableName)} SET SCHEMA ${getNamespace(targetTableName)};"
@@ -216,7 +222,7 @@ class PostgresDirectLoadSqlGenerator(
 
         return """
             BEGIN TRANSACTION;
-            DROP TABLE IF EXISTS ${getFullyQualifiedName(targetTableName)}$dropTableSuffix;
+            $dropTargetSql
             ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getName(targetTableName)};$moveSchemaSql
             COMMIT;
             """

@@ -354,16 +354,16 @@ internal class PostgresAirbyteClientTest {
     fun testOverwriteTableDropsViewAndRetries() {
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val targetTableName = TableName(namespace = "namespace", name = "target")
-        val dropViewSql = "DROP VIEW SQL"
+        val replaceViewSql = "REPLACE VIEW SQL"
         val statement =
             mockk<Statement> {
                 every { execute(MOCK_SQL_QUERY) } throws
                     PSQLException(
                         "Localized wrong object type",
                         PSQLState.WRONG_OBJECT_TYPE,
-                    ) andThen
-                    true
-                every { execute(dropViewSql) } returns true
+                    )
+                every { execute("ROLLBACK;") } returns true
+                every { execute(replaceViewSql) } returns true
                 every { close() } just Runs
             }
         val mockConnection =
@@ -374,18 +374,21 @@ internal class PostgresAirbyteClientTest {
         every { dataSource.connection } returns mockConnection
         every { sqlGenerator.overwriteTable(sourceTableName, targetTableName) } returns
             MOCK_SQL_QUERY
-        every { sqlGenerator.dropView(targetTableName) } returns dropViewSql
+        every {
+            sqlGenerator.overwriteTable(sourceTableName, targetTableName, replaceView = true)
+        } returns replaceViewSql
 
         runBlocking { client.overwriteTable(sourceTableName, targetTableName) }
 
         verifyOrder {
             statement.execute(MOCK_SQL_QUERY)
-            statement.execute(dropViewSql)
-            statement.execute(MOCK_SQL_QUERY)
+            statement.execute("ROLLBACK;")
+            mockConnection.close()
+            statement.execute(replaceViewSql)
         }
-        verify(exactly = 2) { statement.execute(MOCK_SQL_QUERY) }
-        verify(exactly = 1) { statement.execute(dropViewSql) }
-        verify(exactly = 3) { mockConnection.close() }
+        verify(exactly = 1) { statement.execute(MOCK_SQL_QUERY) }
+        verify(exactly = 1) { statement.execute(replaceViewSql) }
+        verify(exactly = 2) { mockConnection.close() }
     }
 
     @Test
@@ -396,6 +399,7 @@ internal class PostgresAirbyteClientTest {
         val statement =
             mockk<Statement> {
                 every { execute(MOCK_SQL_QUERY) } throws error
+                every { execute("ROLLBACK;") } returns true
                 every { close() } just Runs
             }
         val mockConnection =
@@ -414,7 +418,12 @@ internal class PostgresAirbyteClientTest {
 
         assertSame(error, actual)
         verify(exactly = 1) { statement.execute(MOCK_SQL_QUERY) }
-        verify(exactly = 0) { sqlGenerator.dropView(any()) }
+        verify(exactly = 0) { sqlGenerator.overwriteTable(any(), any(), replaceView = true) }
+        verifyOrder {
+            statement.execute(MOCK_SQL_QUERY)
+            statement.execute("ROLLBACK;")
+            mockConnection.close()
+        }
         verify(exactly = 1) { mockConnection.close() }
     }
 

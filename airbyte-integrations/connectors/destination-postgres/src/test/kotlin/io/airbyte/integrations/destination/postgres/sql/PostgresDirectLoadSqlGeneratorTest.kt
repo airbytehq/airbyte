@@ -283,6 +283,27 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         )
     }
 
+    @Test
+    fun testOverwriteViewIsAtomic() {
+        val sourceTableName = TableName(namespace = "source_namespace", name = "source")
+        val targetTableName = TableName(namespace = "target_namespace", name = "target")
+
+        assertEqualsWithTrimIndent(
+            """
+            BEGIN TRANSACTION;
+            DROP VIEW IF EXISTS "target_namespace"."target" CASCADE;
+            ALTER TABLE "source_namespace"."source" RENAME TO "target";
+            ALTER TABLE "source_namespace"."target" SET SCHEMA "target_namespace";
+            COMMIT;
+            """,
+            postgresDirectLoadSqlGenerator.overwriteTable(
+                sourceTableName,
+                targetTableName,
+                replaceView = true,
+            ),
+        )
+    }
+
     private fun assertEqualsWithTrimIndent(expected: String, actual: String) {
         assertEquals(expected.trimIndent(), actual.trimIndent())
     }

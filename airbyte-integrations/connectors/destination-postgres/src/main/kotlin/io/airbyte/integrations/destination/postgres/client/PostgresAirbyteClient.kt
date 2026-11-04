@@ -168,14 +168,23 @@ class PostgresAirbyteClient(
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
         try {
-            execute(sqlGenerator.overwriteTable(sourceTableName, targetTableName))
+            execute(
+                sqlGenerator.overwriteTable(sourceTableName, targetTableName),
+                rollbackOnFailure = true,
+            )
         } catch (e: org.postgresql.util.PSQLException) {
             if (e.sqlState == "42809") {
                 log.info {
                     "Target ${targetTableName.namespace}.${targetTableName.name} appears to be a view, dropping it before retrying"
                 }
-                execute(sqlGenerator.dropView(targetTableName))
-                execute(sqlGenerator.overwriteTable(sourceTableName, targetTableName))
+                execute(
+                    sqlGenerator.overwriteTable(
+                        sourceTableName,
+                        targetTableName,
+                        replaceView = true,
+                    ),
+                    rollbackOnFailure = true,
+                )
             } else {
                 throw e
             }
@@ -524,11 +533,24 @@ class PostgresAirbyteClient(
         }
     }
 
-    private fun execute(query: String) {
+    private fun execute(query: String, rollbackOnFailure: Boolean = false) {
         log.info { query.trimIndent() }
         try {
             dataSource.connection.use { connection ->
-                connection.createStatement().use { it.execute(query) }
+                connection.createStatement().use { statement ->
+                    try {
+                        statement.execute(query)
+                    } catch (e: Exception) {
+                        if (rollbackOnFailure) {
+                            try {
+                                statement.execute("ROLLBACK;")
+                            } catch (rollbackException: Exception) {
+                                e.addSuppressed(rollbackException)
+                            }
+                        }
+                        throw e
+                    }
+                }
             }
         } catch (e: org.postgresql.util.PSQLException) {
             // Handle dependent objects error (e.g., views depending on tables/columns)
