@@ -43,3 +43,11 @@ data:
     - title: Bugsnag Status
       url: https://status.bugsnag.com/
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
