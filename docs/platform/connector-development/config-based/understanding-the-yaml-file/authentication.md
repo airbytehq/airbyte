@@ -49,7 +49,7 @@ authenticator:
   api_token: "Bearer hello"
 ```
 
-For more information see [ApiKeyAuthenticator Reference](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/ApiKeyAuthenticator)
+For more information see [ApiKeyAuthenticator Reference](reference/ApiKeyAuthenticator.md)
 
 ### BearerAuthenticator
 
@@ -81,7 +81,7 @@ authenticator:
 
 More information on bearer authentication can be found [here](https://swagger.io/docs/specification/authentication/bearer-authentication/).
 
-For more information see [BearerAuthenticator Reference](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/BearerAuthenticator)
+For more information see [BearerAuthenticator Reference](reference/BearerAuthenticator.md)
 
 ### BasicHttpAuthenticator
 
@@ -124,7 +124,7 @@ authenticator:
   username: "hello"
 ```
 
-For more information see [BasicHttpAuthenticator Reference](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/BasicHttpAuthenticator)
+For more information see [BasicHttpAuthenticator Reference](reference/BasicHttpAuthenticator.md)
 
 ### OAuth
 
@@ -285,7 +285,7 @@ authenticator:
     test: "test custom payload"
 ```
 
-For more information see [JwtAuthenticator Reference](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/JwtAuthenticator)
+For more information see [JwtAuthenticator Reference](reference/JwtAuthenticator.md)
 
 ## Related
 
