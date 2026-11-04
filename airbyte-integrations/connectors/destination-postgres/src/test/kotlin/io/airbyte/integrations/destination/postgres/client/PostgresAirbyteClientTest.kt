@@ -392,7 +392,7 @@ internal class PostgresAirbyteClientTest {
     fun testOverwriteTablePropagatesUnrelatedErrors() {
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val targetTableName = TableName(namespace = "namespace", name = "target")
-        val error = PSQLException("is not a table", PSQLState.INSUFFICIENT_PRIVILEGE)
+        val error = PSQLException("is not a table", PSQLState.CONNECTION_FAILURE)
         val statement =
             mockk<Statement> {
                 every { execute(MOCK_SQL_QUERY) } throws error
