@@ -1,6 +1,8 @@
 name: Gradle Dependency Analysis
 on:
   pull_request:
+    paths-ignore:
+      - "**/*.md"
 
 jobs:
   dependencies-diff:

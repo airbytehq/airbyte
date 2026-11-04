@@ -56,6 +56,13 @@ def test_flatten_exemptions_are_exactly_the_approved_fields():
     assert {stream: set(fields) for stream, fields in FLATTEN_EXEMPTIONS.items()} == EXPECTED_EXEMPTION_KEYS
 
 
+def test_manifest_declares_http_api_budget_with_policies():
+    api_budget = make_source(config=CONFIG)._source_config["api_budget"]
+
+    assert api_budget["type"] == "HTTPAPIBudget"
+    assert api_budget["policies"]
+
+
 @pytest.mark.parametrize(
     "schema",
     [
@@ -121,13 +128,17 @@ def test_every_stream_has_a_flat_declared_schema(stream_name, stream):
         assert field_name in properties, f"{stream_name}: cursor field {field_name!r} is undeclared"
 
 
-def test_flat_schema_contract_covers_all_42_streams():
-    assert len(_discovered_streams()) == 42
+def test_flat_schema_contract_covers_all_39_streams():
+    assert len(_discovered_streams()) == 39
 
 
 def test_known_primary_keys_and_incremental_cursor_are_exposed():
     streams = _discovered_streams()
     assert _primary_key_fields(streams["issues"]) == ["id"]
     assert _primary_key_fields(streams["pull_requests"]) == ["id"]
-    assert _primary_key_fields(streams["workflow_job_steps"]) == ["job_id", "number"]
     assert _field_names(streams["issues"].cursor_field) == ["updated_at"]
+    asset_download_urls = streams["releases"].get_json_schema()["properties"]["asset_download_urls"]
+    assert asset_download_urls.get("type") == ["null", "array"]
+    assert asset_download_urls.get("items", {}).get("type") == ["null", "string"]
+    assert "steps" not in streams["workflow_jobs"].get_json_schema()["properties"]
+    assert "weeks" not in streams["contributor_activity"].get_json_schema()["properties"]
