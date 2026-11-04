@@ -143,20 +143,25 @@ def test_check_fails_on_invalid_credentials():
     assert "invalid_client" in status.message
 
 
-def _requesters(node):
+def _requesters(node, manifest):
     if isinstance(node, dict):
         if isinstance(node.get("requester"), dict):
-            yield node["requester"]
+            requester = node["requester"]
+            if "$ref" in requester:
+                requester = manifest
+                for path_segment in node["requester"]["$ref"].removeprefix("#/").split("/"):
+                    requester = requester[path_segment]
+            yield requester
         for value in node.values():
-            yield from _requesters(value)
+            yield from _requesters(value, manifest)
     elif isinstance(node, list):
         for value in node:
-            yield from _requesters(value)
+            yield from _requesters(value, manifest)
 
 
 def test_every_requester_uses_the_shared_authenticator_and_token_refresh_handler():
-    """The manifest inlines every requester, so a copy that misses the shared blocks would ship silently."""
-    requesters = list(_requesters(yaml.safe_load(_MANIFEST_PATH.read_text())))
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    requesters = list(_requesters(manifest, manifest))
     assert requesters
     for requester in requesters:
         assert requester.get("authenticator") == "#/definitions/authenticator"

@@ -6,6 +6,9 @@ const {
   DESTINATIONS_DOCS,
   ENTERPRISE_CONNECTORS_DOCS,
 } = require("./src/scripts/constants");
+const {
+  getChangelogPages,
+} = require("./src/scripts/connector-changelog-pages");
 
 function getFilenamesInDir(prefix, dir, excludes) {
   return fs
@@ -66,6 +69,15 @@ function getFilenamesInDir(prefix, dir, excludes) {
         key: `${prefix}${filename}`,
       };
     });
+}
+
+function getChangelogSidebarItems(docId) {
+  return getChangelogPages(docId).map(({ id, label }) => ({
+    type: "doc",
+    id,
+    label,
+    key: id,
+  }));
 }
 
 function loadConnectorRegistry() {
@@ -179,6 +191,26 @@ const sourcePostgres = {
       id: "sources/postgres/postgres-troubleshooting",
       key: "sources-postgres-troubleshooting",
     },
+    ...getChangelogSidebarItems("sources/postgres"),
+  ],
+};
+
+const sourceHubspot = {
+  type: "category",
+  label: "HubSpot",
+  key: "sources-hubspot-category",
+  link: {
+    type: "doc",
+    id: "sources/hubspot",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Migration Guide",
+      id: "sources/hubspot-migrations",
+      key: "sources-hubspot-migrations",
+    },
+    ...getChangelogSidebarItems("sources/hubspot"),
   ],
 };
 
@@ -245,6 +277,7 @@ function getSourceConnectors(registry) {
   const sources = getFilenamesInDir("sources/", SOURCES_DOCS, [
     "readme",
     "postgres",
+    "hubspot",
     "mongodb",
     "mssql",
     "mysql",
@@ -252,6 +285,7 @@ function getSourceConnectors(registry) {
 
   const specialSources = [
     sourcePostgres,
+    sourceHubspot,
     sourceMongoDB,
     sourceMysql,
     sourceMssql,
