@@ -6,12 +6,12 @@ This connector is manifest-only: `manifest.yaml` serves every stream (with every
 
 ## Behavior that differs from the legacy Python connector
 
-These are deliberate; `AGENTS.md` ("Manifest design notes") has the reasoning and the tests that pin them.
+These are deliberate. `AGENTS.md` has the reasoning: "Manifest design notes › Error handling" for the first three, "Migration to manifest-only" for the last two.
 
-- A repository that keeps answering 502/504 fails the stream instead of being skipped silently.
-- 404 and 409 skip the repository on the first response instead of after five retries.
-- Skipped repositories are logged at INFO and the message cannot name the repository.
-- Incremental streams re-emit the record whose cursor equals the stored state once per sync.
+- A repository that keeps answering 502/504 fails the stream instead of being skipped silently (`test_repeated_502_fails_the_stream`).
+- 404 and 409 skip the repository on the first response instead of after the retries run out (5, or 7 on `comments`; `test_inaccessible_repository_is_skipped`).
+- Skipped repositories are logged at INFO, and the shared skip messages do not name the repository (the stargazers ones do, from `request_url`).
+- Incremental streams re-emit the record whose cursor equals the stored state once per sync (`test_start_date_filters_older_records_and_keeps_the_boundary`).
 - State is checkpointed per partition, so an interrupted sync restarts the repository it was reading.
 
 ## Manifest comments

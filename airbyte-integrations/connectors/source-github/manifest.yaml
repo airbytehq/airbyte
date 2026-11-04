@@ -10,7 +10,7 @@ definitions:
        or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
 
   # Per-page size of the legacy `large_stream` REST streams (`pull_requests`, `comments`, `issues`).
-  # Hardcoded legacy default; `page_size_for_large_streams` left the spec in 1.0.1. See AGENTS.md before raising it.
+  # Hardcoded legacy default; `page_size_for_large_streams` left the spec in 1.0.1. See AGENTS.md "Page sizes" before raising it.
   large_stream_page_size: "10"
 
   requester_base:
@@ -102,12 +102,10 @@ definitions:
     - type: WaitUntilTimeFromHeader
       header: "X-RateLimit-Reset"
       min_wait: 60
-      # The cap is compared against the computed wait, not the raw reset timestamp, and it is
-      # applied after `min_wait` — so during check, where the cap is 1s, even the 60s floor below
-      # is refused.
+      # The cap is compared against the computed wait, after `min_wait` (61s in check, so the floor still fits).
       max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
       # 60s floor from the legacy backoff; it also applies to headerless 5xx/timeouts (known CDK gap).
-      # Only waited out when no spare token exists. See AGENTS.md "Backoff floor".
+      # Waited out only when rotating cannot help (no spare token, or a secondary limit). See AGENTS.md "Backoff floor".
 
   # Must stay first: filters run before `response.ok`, so a 200 with `Retry-After` would be rate-limited.
   # 200 only: a 202 is `contributor_activity`'s "still computing, retry" signal.
@@ -154,7 +152,7 @@ definitions:
     error_message: "GitHub rate limit exhausted (X-RateLimit-Remaining: 0). Waiting for the rate limit window to reset before retrying."
 
   # 410 skip for a per-repository feature that is turned off ("Issues are disabled for this repo.").
-  # The predicate must name the feature and keep `!= ''` and `\\b`; see AGENTS.md before editing.
+  # The predicate must name the feature and keep `!= ''` and `\\b`; see AGENTS.md "Error handling" before editing.
   disabled_feature_skip_filter:
     type: HttpResponseFilter
     predicate: >-
@@ -462,7 +460,7 @@ definitions:
 
   # Shared partition routers. The two org routers are NOT interchangeable (the wrong one broke 2.2.0):
   # `organization_partition_router` (config-derived) is for `repositories` only; org-scoped streams use
-  # `organization_resolution_partition_router` (payload-confirmed). See AGENTS.md "Organizations".
+  # `organization_resolution_partition_router` (payload-confirmed). See AGENTS.md "Organizations must be payload-confirmed".
   repository_partition_router:
     type: UnionPartitionRouter
     partition_field: repository
@@ -1682,7 +1680,8 @@ definitions:
         field_path: []
     paginator:
       $ref: "#/definitions/page_link_paginator"
-    # Payload-confirmed router only: these endpoints exist only for real orgs. See AGENTS.md "Organizations".
+    # Payload-confirmed router only: these endpoints exist only for real orgs.
+    # See AGENTS.md "Organizations must be payload-confirmed".
     partition_router:
       $ref: "#/definitions/organization_resolution_partition_router"
 
@@ -17312,7 +17311,7 @@ definitions:
 
   # `schemas/shared/user.json`, hoisted so the inline schema below can reference it. A
   # JSON-Schema `$ref` to a *file* does not work in a manifest - it resolves to the bare string
-  # and drops the sibling keys. See AGENTS.md; shared sub-schemas belong here, under `#/`.
+  # and drops the sibling keys. See AGENTS.md "Workflow run attempts: two silent traps"; shared sub-schemas belong here, under `#/`.
   github_user_schema:
     type:
       - "null"
@@ -17437,7 +17436,7 @@ definitions:
           type: CursorPagination
           cursor_value: "{{ response['previous_attempt_url'] }}"
           # Ends at attempt 1 (null `previous_attempt_url`); the rest is a loop guard (no page cap) that stops
-          # only when the chain provably failed to descend. See AGENTS.md "Workflow run attempts".
+          # only when the chain provably failed to descend. See AGENTS.md "Workflow runs and attempts".
           stop_condition: >-
             {{ not response.get('previous_attempt_url')
             or (response.get('url') is string

@@ -163,15 +163,15 @@ Things worth knowing before touching either half:
     (`GITHUB_DEFAULT_ERROR_MAPPING`) and only skipped once the retries were spent, so a
     transient 404 recovered where a migrated stream now drops that repository from a COMPLETE
     sync. Same CDK limitation as above; accepted, not fixed.
-  - **Skips are logged at INFO, and cannot name the repository.** Legacy logged
-    `Skipping <stream> for repository <repo>` at WARNING. `stream_partition` is not reachable
-    from `error_message` — referencing it raises rather than rendering blank. The stream name is
-    reachable via `{{ parameters.… }}`, but only with a `$parameters` entry on each stream and a
+  - **Skips are logged at INFO, and the shared skip messages do not name the repository.**
+    Legacy logged `Skipping <stream> for repository <repo>` at WARNING. `stream_partition` is not
+    reachable from `error_message` — referencing it raises rather than rendering blank; the
+    repository can still be parsed out of `request_url`, as the stargazers filters do. The
+    stream name is reachable via `{{ parameters.… }}`, but only with a `$parameters` entry on each stream and a
     per-stream copy of every skip filter, since a `$ref`d filter sees `parameters == {}`; not
     worth losing the shared definitions for. The CDK follow-up (slice access in
     `HttpResponseFilter`) fixes both halves.
-- Incremental streams migrated from here on share two more differences from the Python contract,
-  details in "Manifest design notes › Incremental REST streams":
+- Incremental streams migrated from here on share two more differences from the Python contract:
   - **The boundary record is re-emitted.** `SemiIncrementalMixin.read_records` kept records
     strictly newer than the cursor (`cursor_value > start_point`); the CDK's client-side filter
     compares `start <= cursor <= end` (`ConcurrentCursor.should_be_synced`), so it cannot
@@ -180,6 +180,7 @@ Things worth knowing before touching either half:
   - **`is_sorted = "asc"` has no declarative equivalent.** Its only effect was
     `state_checkpoint_interval = page_size`, i.e. a STATE message per page. Concurrent
     declarative cursors checkpoint per partition, so an interrupted sync restarts the partition.
+    Step 4 made the same trade for the organization-scoped streams.
 - Every migrated incremental stream needs `state_migrations: [LegacyToPerPartitionStateMigration]`.
   The Python state shape was `{<partition>: {<cursor_field>: <value>}}`, which the CDK does not
   recognise; without the migration an upgraded connection silently re-reads from `start_date`.
@@ -253,6 +254,9 @@ not interchangeable:
 The asymmetric `parent_key`s are load-bearing, not an inconsistency to tidy: _list org repos_
 returns `owner` but no `organization`, while _get a repository_ returns both, so using
 `owner/login` on the explicit-repo branch would hand user logins back to the org-scoped streams.
+`repository_partition_router` yields the deduplicated union of wildcard-expanded repos and
+validated explicit repos; a user-owned explicit repo has no `organization` object, so it
+contributes a repository but not an organization.
 
 2.2.0 wired the org-scoped streams to the config-derived router, and every affected sync died on
 the platform heartbeat (airbytehq/oncall#13422). Step 4 moved `organizations`/`teams`/`users` into
@@ -296,9 +300,9 @@ grouped by the definition the comment sits on. Read the matching section before 
 
 ### Config fragments and null-safe defaults
 
-- The wildcard fragments (`wildcard_organizations`, the explicit-repo list and
-  `wildcard_repository_filter`) are hoisted into `definitions` so the two routers that expand
-  wildcards and the two record filters that match against them cannot drift. `$ref` in value
+- The wildcard fragments (`wildcard_organizations` and `wildcard_repository_filter`) are
+  hoisted into `definitions` so the two routers that expand wildcards and the two record filters
+  that match against them cannot drift. `$ref` in value
   position resolves to the scalar before component construction, so they behave exactly like
   the literal strings.
 - `wildcard_organizations` matches the star wherever it sits in the repo part (`org/*`,
@@ -313,9 +317,9 @@ grouped by the definition the comment sits on. Read the matching section before 
   (reachable through the API, Terraform or embedded use) renders as the literal `"None"`:
   - `max_waiting_time` became `"PTNoneM"` and every command failed at startup with
     `ISO8601Error: Unrecognised ISO 8601 date format: ''` (isodate splits on the `T` and reports
-    the empty date half). It uses `is not none` rather than `or 120` because `check` overrides
-    the value on purpose and a falsy test would read a 0 as absent. The backoff caps use the
-    same guard; a null would otherwise reach the multiplication as `None`.
+    the empty date half). It uses `is not none` rather than `or 120` so a user-set 0 is not read
+    as absent and replaced by 120. The backoff caps use the same guard; a null would otherwise
+    reach the multiplication as `None`.
   - `num_workers` raised `ValueError: default_concurrency did not evaluate to an integer` while
     the source was being constructed, failing every command.
   - `start_date` reached `MinMaxDatetime` as `"None"` and aborted the stream, so it uses `or`:
@@ -385,9 +389,11 @@ ahead of the 404/403/409 filters:
    to be kept. `response.get('message') is not none` is required because InterpolatedBoolean
    compares the rendered string against a false-values list that does not include `"None"`.
 
-Unmatched responses (401, 429, 5xx, ...) fall back to the CDK default mapping. Only the terminal
-403/409 handling differs per requester, so the filters are separate definitions composed into
-the handlers.
+Every REST handler fails 401 as a config error through `unauthorized_fail_filter`; only
+`graphql_error_handler` leaves 401 to the CDK default mapping. Other unmatched responses (429,
+5xx, ...) fall back to that mapping on every handler. The terminal 403/404/409/410 handling differs
+per requester (fail or skip, stargazers and attempt-chain messages, which handlers carry the 410
+skip), so the filters are separate definitions composed into the handlers.
 
 `success_filter` comes first in every handler. `DefaultErrorHandler.interpret_response`
 evaluates `response_filters` before it checks `response.ok` and returns on the first match, so
@@ -412,17 +418,22 @@ Deliberate divergences from legacy (they point opposite ways; both are deliberat
   `GITHUB_DEFAULT_ERROR_MAPPING`, removed in 2.7.0), so it only skipped after `max_retries = 5`.
   For a persistent 404/409 the outcome is the same and faster. For a transient one (GitHub is
   eventually consistent and does answer 404 for a repository that exists) the repository is now
-  dropped from a sync that still reports COMPLETE. Accepted because the blips are rare and the
+  dropped from a sync that still reports COMPLETE. Parity is not declarative for the same reason
+  as 502/504: `DefaultErrorHandler` has no "retry N times, then ignore". Accepted because the blips are rare and the
   alternative is retrying every deleted repository five times; revisit with the CDK follow-up.
 - **Skip logging.** The `IGNORE` path logs the filter's `error_message` at INFO
   (`http_client.py`); legacy logged `Skipping <stream> for repository <repo>` at WARNING, so a
   scope-starved token can produce a zero-record COMPLETE sync whose only trace is unattributed
-  INFO lines. `stream_partition` is not reachable: `HttpResponseFilter._create_error_message`
-  passes only `config`, `response` and `headers`, and referencing the slice raises
-  `undeclared variables` instead of rendering blank. The stream name is reachable through
+  INFO lines. The shared skip messages do not name the repository. `stream_partition` is not
+  reachable: `HttpResponseFilter._create_error_message` passes only `config`, `response` and
+  `headers`, and referencing the slice raises `undeclared variables` instead of rendering blank.
+  The repository can be parsed out of `request_url` (the stargazers filters do; see below), which
+  is the cheap way to name it in the shared filters too. The stream name is reachable through
   `{{ parameters.get(...) }}`, but a `$ref`d filter carries `parameters == {}`, so recovering it
-  costs a `$parameters` entry per stream plus a per-stream copy of every skip filter. Follow-up:
-  give `HttpResponseFilter` access to the stream slice in the CDK, which fixes both halves.
+  costs a `$parameters` entry per stream plus a per-stream copy of every skip filter. That trades
+  the shared definitions (and the filter order they encode) for one word in a log line, so it is
+  not done. Follow-up: give `HttpResponseFilter` access to the stream slice in the CDK, which
+  fixes both halves (same bucket as the token rotation follow-up).
 
 Per-filter notes:
 
@@ -437,8 +448,9 @@ Per-filter notes:
   (`regex_search` returns an empty string on no match, so `is not none` renders "True" and skips
   everything); and `\\b`, not `\b` (Jinja parses its own string literals, so `\b` reaches `re`
   as a backspace and the filter quietly stops matching).
-- `strict_access_error_handler` has no `disabled_feature_skip_filter`: its endpoints
-  (`/orgs/{org}/repos`, `/repos/{owner}/{repo}`) never send that 410, and including it would let
+- `strict_access_error_handler` has no `disabled_feature_skip_filter`: its endpoint
+  (`/orgs/{org}/repos`) never sends that 410 (nor does `/repos/{owner}/{repo}`, whose
+  `resolve_explicit_repository_error_handler` has no 410 skip either), and including it would let
   an envelope mentioning a disabled feature match before `forbidden_fail_filter` and turn the
   403 `check` relies on into a silent skip.
 - `forbidden_fail_filter`: legacy re-raised 403 for the org listing (the `Organizations` branch
@@ -446,7 +458,9 @@ Per-filter notes:
   scopes/SSO message, which is what lets `check` catch a bad token. Not on `repository_stats`:
   legacy resolved explicit entries with `RepositoryStats`, a plain `GithubStream`, which skipped a
   403 with a warning.
-- `resolve_explicit_repository_error_handler`: a 403 on an explicit `org/repo` (a SAML-protected
+- `resolve_explicit_repository_error_handler`: `repository_stats` gives the canonical `full_name`
+  and `organization.login` for each explicit entry, and an entry that answers 404 or 403 is
+  skipped. A 403 on an explicit `org/repo` (a SAML-protected
   org is the common case) raised while partitions are being generated kills the partition
   generator, so the stream would read nothing at all. Skipping keeps legacy's warn-and-continue.
   `check` still catches a bad token: with every entry skipped the resolved list is empty and
@@ -454,7 +468,8 @@ Per-filter notes:
 - `forbidden_skip_filter`: one repository the token cannot read must not fail the other
   partitions. It runs after the rate-limit filters, so a secondary-limit 403 is still retried.
   The message covers repository and organization partitions (`organizations`/`teams`/`users`
-  share the handler) and lists `read:org` first, the scope legacy named for the org streams.
+  share the handler) and lists `read:org` first, the scope legacy named for the org streams
+  (legacy: 404 "isn't available for organization", 403 "may be missing the `read:org` scope").
 - `empty_repository_skip_filter`: 409 "Git Repository is empty." for a repository with no commits
   (`branches`, `tags`). Legacy IGNOREd that exact message and retried other 409s until it
   skipped, so skipping every 409 gives the same outcome without spending the retry budget.
@@ -491,10 +506,10 @@ floored:
 
 | Response | here | legacy |
 | :--- | :--- | :--- |
-| 403 + `Retry-After: 30` | 30s | 60s (floor missing) |
+| 403 + `Retry-After: 30` | 30s (floor missing) | 60s |
 | 403 + `X-RateLimit-Reset` now+10 | 60s | 60s |
 | 403 + reset already past | 60s | 60s |
-| 500 / timeout, no such headers | 60s | expo (floor leaking) |
+| 500 / timeout, no such headers | 60s (floor leaking) | expo |
 
 `WaitTimeFromHeader` has no `min_wait`, so `Retry-After` is used raw; `WaitUntilTimeFromHeader`
 returns `min_wait` outright when its header is absent instead of flooring a computed wait; and
@@ -505,11 +520,13 @@ strategies, and `HttpClient` takes the first truthy one); dropping `min_wait` fi
 stale reset then falls to `backoff.expo` and spends the retries at 1, 2, 4, 8, 16s against a limit
 that has not refilled. The fix belongs in the CDK: `WaitUntilTimeFromHeader` should return `None`
 when its header is missing and `WaitTimeFromHeader` should gain `min_wait`; four other connectors
-combine these strategies. Until then a headerless 5xx or timeout waits 60s per attempt, up to 5.
+combine these strategies. Until then a headerless 5xx or timeout waits 60s per attempt, up to `max_retries` (5; 7 on `comments`).
 
-The wait is only paid when rotating cannot help: a primary rate limit spends the rejected token's
-pool and `HttpClient` retries in 0.1s on a spare token (see "Authentication" above). A secondary
-limit is still waited out.
+The wait is only paid when rotating cannot help: CDK 7.26.0 reconciles the authenticator's
+counters against every response, so a primary rate limit spends the rejected token's pool and
+`HttpClient` retries in 0.1s on a spare token (see "Authentication" above). This covers the
+reactive rotation legacy's backoff strategy did at the 10-minute mark. A secondary limit is still
+waited out: GitHub scopes it per account, so another token of the same account is rejected too.
 
 ### Pagination
 
@@ -531,15 +548,17 @@ ends pagination.
 
 - `repositories` is listed `sort=updated&direction=desc`, so the data-feed stop ends pagination
   at the first page whose last record is at or below the partition cursor (legacy
-  `Repositories.is_sorted = "desc"`); without it every sync walked the org's whole listing. The
+  `Repositories.is_sorted = "desc"`); without it every sync walked the org's whole listing (`ceil(repos/100)` requests per org per
+  sync instead of about 1). The
   CDK drops that boundary page's older records. `ConcurrentPerPartitionCursor` seeds a partition
   with no state from the *global* cursor, so repos of an org added to `repositories` after the
   first sync are emitted only if updated after that cursor.
-- `server_side_since_cursor` (`comments`, `issues`, `review_comments`): GitHub's `since` returns
-  `updated_at >= since`; legacy added it from `SemiIncrementalMixin.get_starting_point`
+- `server_side_since_cursor` (`comments`, `issues`, `review_comments`, and `commits` with
+  `cursor_field: created_at`): GitHub's `since` returns `updated_at >= since`; legacy added it from `SemiIncrementalMixin.get_starting_point`
   (`max(start_date, per-repository state)`). No `is_client_side_incremental`: see the boundary
-  record bullet above. No `end_time_option`, `step` or `cursor_granularity`, so each repository is
-  one open-ended window paginated by `rel="next"`, as legacy did.
+  record bullet above. No `end_time_option`, `step` or `cursor_granularity`, so each partition
+  (a repository, or a branch for `commits`) is one open-ended window paginated by `rel="next"`, as
+  legacy did.
 - `issues` restates `per_page` because `request_parameters` replaces the shared dict instead of
   merging. `state`/`sort`/`direction` are `Issues.stream_base_params`; without `state=all` GitHub
   returns open issues only. The `asc` ordering is kept so the request shape and record order are
@@ -617,8 +636,8 @@ ends pagination.
   `backoff_seconds` multiplied by the attempt number, about seven requests over two minutes. From
   100 (`reviews`, `issue_reactions`, `pull_request_comment_reactions`, `projects_v2`) it is 100,
   50, 25, 12, 6, 3 and the sixth reduction is one past `max_attempts`, so those streams fail at 3
-  and never reach the floor; no message may assume it was reached. Raising the budget changes how
-  long a stuck partition holds a sync open. `REDUCE_PAGE_SIZE` bypasses the error handler's retry
+  and never reach the floor; no message may assume it was reached. Raising `max_attempts` to 6
+  would let them reach it, but changes how long a stuck partition holds a sync open. `REDUCE_PAGE_SIZE` bypasses the error handler's retry
   budget and backoff, so these settings are the whole GraphQL 502/504 contract, kept comparable
   to other streams' (a 502/504 looks the same whether the query was too slow or GitHub had a
   passing problem). `reset_policy: NEVER` keeps the reduced size for the partition, since
@@ -632,7 +651,8 @@ ends pagination.
 ### GraphQL streams
 
 - `releases` (`CREATED_AT DESC`) and `pull_request_stats` (`UPDATED_AT DESC`) use `is_data_feed`.
-  For `releases`, ASC bought nothing, since the declarative cursor checkpoints once per partition,
+  The CDK drops the boundary page's records outside the window, leaving the same records the
+  legacy client-side filter emitted. For `releases`, ASC bought nothing, since the declarative cursor checkpoints once per partition,
   and without the stop every sync walked the full release history at 10 per page. For
   `pull_request_stats` it is the declarative form of legacy's `is_sorted = "desc"` exit, which
   existed because walking every pull request exhausted the GraphQL point budget and tripped
@@ -643,7 +663,7 @@ ends pagination.
   undeclared variable. The test is which document the token carries, not whether there is a
   token: the listing paginates too (`typename: PullRequest` re-roots at the listing with no node
   id), and dropping the variables on its second page made GitHub answer `data: null`, so only the
-  newest `graphql_large_stream_page_size` pull requests were ever scanned.
+  first page (100) of pull requests was ever scanned.
 
 ### `check`
 
