@@ -197,7 +197,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 2.0.1 | 2026-11-03 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Use one error handler per request so the error-handling order is explicit; sync behavior is unchanged |
+| 2.0.1 | 2026-11-03 | [90955](https://github.com/airbytehq/airbyte/pull/90955) | Use one error handler per request so the error-handling order is explicit; sync behavior is unchanged |
 | 2.0.0 | 2026-11-03 | [89722](https://github.com/airbytehq/airbyte/pull/89722) | Add session-based meeting reports, composite keys and date-time typing; retain Full Refresh for webinar reports; honor Retry-After on 429 |
 | 1.5.1 | 2026-11-03 | [90076](https://github.com/airbytehq/airbyte/pull/90076) | Update dependencies |
 | 1.5.0 | 2026-10-22 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams; the new streams need additional Zoom app scopes |
