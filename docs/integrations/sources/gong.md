@@ -117,7 +117,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 1.6.0 | 2026-11-03 | [TBD](https://github.com/mirakl/airbyte/pulls) | Add `scorecards_review_method` option to fetch AI-scored (`AUTOMATIC`) answered scorecards; defaults to `MANUAL` |
+| 1.6.0 | 2026-11-03 | [90976](https://github.com/airbytehq/airbyte/pull/90976) | Add `scorecards_review_method` option to fetch AI-scored (`AUTOMATIC`) answered scorecards; defaults to `MANUAL` |
 | 1.5.7 | 2026-11-10 | [91548](https://github.com/airbytehq/airbyte/pull/91548) | Update dependencies |
 | 1.5.6 | 2026-11-03 | [90575](https://github.com/airbytehq/airbyte/pull/90575) | Update dependencies |
 | 1.5.5 | 2026-10-27 | [84435](https://github.com/airbytehq/airbyte/pull/84435) | Update external documentation URLs and enable autopilot rollouts |
