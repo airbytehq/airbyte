@@ -97,7 +97,28 @@ You should now have all the requirements needed to configure Kafka as a destinat
 
 More info about this can be found in the [Kafka producer configs documentation site](https://kafka.apache.org/documentation/#producerconfigs).
 
-_NOTE_: Some configurations for SSL are not available yet.
+### Secure connections on Airbyte Cloud
+
+Airbyte Cloud requires TLS encryption for Kafka broker connections. The **Protocol** field offers only **SASL SSL** (`SASL_SSL`), and **SASL Mechanism** offers only `PLAIN`. Connection checks and write setup reject other protocols or mechanisms before creating a Kafka producer, including configurations submitted through the API. The Kafka client uses TLS for the broker connection and does not fall back to plaintext if the TLS handshake fails.
+
+On Airbyte Cloud, **SASL JAAS Config** must contain exactly one `org.apache.kafka.common.security.plain.PlainLoginModule` entry. Missing, malformed, or unsupported JAAS configurations are rejected before connecting to Kafka.
+
+Airbyte Open Source continues to support **PLAINTEXT**, **SASL PLAINTEXT**, and **SASL SSL**, without these Cloud-only restrictions. Custom SSL truststore and client-certificate settings are not exposed by this connector.
+
+#### Confluent Cloud API-key authentication
+
+To configure authentication to a Confluent Cloud Kafka cluster:
+
+1. Set **Bootstrap servers** to your cluster's bootstrap endpoint.
+2. Set **Protocol** to **SASL SSL**.
+3. Set **SASL mechanism** to `PLAIN`.
+4. Set **SASL JAAS config** to the following, replacing the placeholders with your Kafka API key and secret:
+
+   ```text
+   org.apache.kafka.common.security.plain.PlainLoginModule required username="YOUR_KAFKA_API_KEY" password="YOUR_KAFKA_API_SECRET";
+   ```
+
+The API key must have permission to write to the target topics. This destination writes JSON records; it does not provide Avro serialization or Schema Registry integration.
 
 ## Namespace support
 
@@ -110,6 +131,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------  |
+| 0.1.12 | 2026-11-04 | [90997](https://github.com/airbytehq/airbyte/pull/90997) | Enable on Airbyte Cloud with TLS-only Kafka broker connections; avoid logging SASL credentials. |
 | 0.1.11  | 2025-03-28 | [56450](https://github.com/airbytehq/airbyte/pull/56450) | Add support for other SASL Mechanisms when SASL_PLAINTEXT protocol is selected |
 | 0.1.10  | 2022-08-04 | [15287](https://github.com/airbytehq/airbyte/pull/15287) | Update Kafka destination to use outputRecordCollector to properly store state  |
 | 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                         |
