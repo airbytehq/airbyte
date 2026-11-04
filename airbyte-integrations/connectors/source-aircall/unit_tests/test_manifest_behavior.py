@@ -233,36 +233,6 @@ def test_contacts_default_window_count_is_thirty_days() -> None:
 
 
 @pytest.mark.parametrize(
-    "stream_name",
-    [
-        pytest.param("numbers", id="numbers"),
-        pytest.param("teams", id="teams"),
-    ],
-)
-def test_numbers_and_teams_emit_records_with_past_state(stream_name: str) -> None:
-    with freeze_time(_NOW), HttpMocker() as http_mocker:
-        request = _request(f"/{stream_name}", {"per_page": "50"})
-        http_mocker.get(
-            request,
-            _response(
-                stream_name,
-                [
-                    {"id": 1, "created_at": "2023-10-03T18:35:43.000Z"},
-                    {"id": 2, "created_at": "2025-10-03T18:35:43Z"},
-                ],
-            ),
-        )
-        state = StateBuilder().with_stream_state(stream_name, {"created_at": "2025-06-01T00:00:00.000Z"}).build()
-
-        output = _read_stream(stream_name, SyncMode.incremental, state=state)
-
-        assert output.errors == []
-        http_mocker.assert_number_of_calls(request, 1)
-        assert [record.record.data["id"] for record in output.records] == [1, 2]
-        assert output.most_recent_state.stream_state.created_at == "2025-10-03T18:35:43.000000+0000"
-
-
-@pytest.mark.parametrize(
     "status_code,message",
     [
         pytest.param(

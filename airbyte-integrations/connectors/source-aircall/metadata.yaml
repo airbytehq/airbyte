@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
-  dockerImageTag: 0.6.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-aircall
   githubIssueLabel: source-aircall
   icon: aircall.svg
@@ -18,6 +18,37 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
+    breakingChanges:
+      1.0.0:
+        message: >-
+          Version 1.0.0 adds primary keys to `calls` (`id`) and `contacts` (`id`), keys `webhooks` on `webhook_id`,
+          makes `numbers` and `teams` full refresh only, and declares the types the Aircall API documents:
+          `calls.contact`, `assigned_to`, `transferred_by` and `transferred_to` become objects, `numbers.priority`
+          an integer and `users.created_at` a timestamp. After upgrading, refresh the source schema and switch
+          `numbers` and `teams` to `Full Refresh | Overwrite`. Clearing `calls`, or switching it from an append mode to
+          an Overwrite mode, permanently deletes calls older than six months, which Aircall no longer returns: copy the
+          table first. Some destinations need a step before the first sync, such as Snowflake for append-mode `calls`
+          and ClickHouse for append-mode `users`. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/aircall-migrations#upgrading-to-100).
+        upgradeDeadline: "2026-11-17"
+        deadlineAction: disable
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - calls
+              - contacts
+              - webhooks
+              - numbers
+              - teams
+              - users
   documentationUrl: https://docs.airbyte.com/integrations/sources/aircall
   tags:
     - cdk:low-code
@@ -68,12 +99,4 @@ data:
     - title: Status page
       url: https://status.aircall.com/
       type: status_page
-  releases:
-    rolloutConfiguration:
-      defaultRolloutMode: autopilot
-      autopilotConfig:
-        autoStart: true
-        autoPromoteStages: true
-        strategy: fast
-      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
