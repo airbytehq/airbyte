@@ -402,6 +402,10 @@ module.exports = {
               label: "Access management",
               items: [
                 {
+                  type: "doc",
+                  id: "access-management/manage-users",
+                },
+                {
                   type: "category",
                   label: "Single Sign-On (SSO)",
                   link: {
@@ -479,7 +483,7 @@ module.exports = {
             type: "doc",
             id: "context-layer/readme",
           },
-          items: ["context-layer/manage-access"],
+          items: ["context-layer/manage-access", "context-layer/agent-access", "context-layer/search"],
         },
         sectionHeader("Deploy and upgrade Airbyte"),
         deployAirbyte,
