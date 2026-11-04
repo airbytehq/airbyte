@@ -90,7 +90,7 @@ def test_incremental_sync_resumes_from_state():
 def test_incremental_paginates_with_exact_page_parameters():
     config = ConfigBuilder().with_start_date(1788346800).build()
     first_request = _activity_request(1788346800, 1788350400)
-    second_request = _activity_request(1788346800, 1788350400, page=1)
+    second_request = _activity_request(1788346800, 1788350400, page=2)
     first_page = [{"id": f"activity-{i}", "created_at": "2026-09-02T11:10:00.000000Z"} for i in range(100)]
 
     with HttpMocker() as http_mocker:

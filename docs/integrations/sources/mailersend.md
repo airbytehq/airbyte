@@ -32,7 +32,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
-| 0.2.27 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix `activity` stream returning no records by sending the required `date_to` parameter and parsing ISO 8601 `created_at` cursor values |
+| 0.2.27 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix `activity` stream returning no records by sending the required `date_to` parameter, parsing ISO 8601 `created_at` cursor values, and no longer re-reading the first page when paginating |
 | 0.2.25 | 2025-05-24 | [60696](https://github.com/airbytehq/airbyte/pull/60696) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59865](https://github.com/airbytehq/airbyte/pull/59865) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59278](https://github.com/airbytehq/airbyte/pull/59278) | Update dependencies |

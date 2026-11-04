@@ -41,6 +41,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
+            start_from_page: 1
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
