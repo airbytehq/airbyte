@@ -867,6 +867,40 @@ schemas:
         items:
           type: object
           additionalProperties: true
+      associated_account_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      latest_vendor_activity_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      logo_url:
+        type:
+          - "null"
+          - string
+      parent_account_id:
+        type:
+          - "null"
+          - string
+      subaccount_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
 
   contacts:
     type: object
@@ -927,6 +961,24 @@ schemas:
           - array
         items:
           type: object
+          additionalProperties: true
+      external_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            external_id:
+              type:
+                - "null"
+                - string
+            label:
+              type:
+                - "null"
+                - string
           additionalProperties: true
 
   issues:
@@ -1080,6 +1132,399 @@ schemas:
         items:
           type: object
           additionalProperties: true
+      active_time_by_user:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            active_time_seconds:
+              type:
+                - "null"
+                - integer
+            business_hours_active_time_seconds:
+              type:
+                - "null"
+                - integer
+            user_id:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      active_time_seconds:
+        type:
+          - "null"
+          - integer
+      business_hours_active_time_seconds:
+        type:
+          - "null"
+          - integer
+      business_hours_time_in_status_seconds:
+        type:
+          - "null"
+          - object
+        additionalProperties:
+          type:
+            - "null"
+            - integer
+      child_issues:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            number:
+              type:
+                - "null"
+                - integer
+            title:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      external_incidents:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            external_id:
+              type:
+                - "null"
+                - string
+            link:
+              type:
+                - "null"
+                - string
+            reference:
+              type:
+                - "null"
+                - string
+            source:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      first_resolution_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      first_response_assignee_id_at_breach:
+        type:
+          - "null"
+          - string
+      first_response_breach_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      first_response_resolving_user_id:
+        type:
+          - "null"
+          - string
+      follow_up:
+        type:
+          - "null"
+          - object
+        properties:
+          assignee_id_at_breach:
+            type:
+              - "null"
+              - string
+          breach_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+          business_hours_seconds:
+            type:
+              - "null"
+              - integer
+          resolving_user_id:
+            type:
+              - "null"
+              - string
+          seconds:
+            type:
+              - "null"
+              - integer
+          time:
+            type:
+              - "null"
+              - string
+            format: date-time
+        additionalProperties: true
+      is_issue_group:
+        type:
+          - "null"
+          - boolean
+      next_reply:
+        type:
+          - "null"
+          - object
+        properties:
+          assignee_id_at_breach:
+            type:
+              - "null"
+              - string
+          breach_time:
+            type:
+              - "null"
+              - string
+            format: date-time
+          business_hours_seconds:
+            type:
+              - "null"
+              - integer
+          resolving_user_id:
+            type:
+              - "null"
+              - string
+          seconds:
+            type:
+              - "null"
+              - integer
+          time:
+            type:
+              - "null"
+              - string
+            format: date-time
+        additionalProperties: true
+      parent_issue_group:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          number:
+            type:
+              - "null"
+              - integer
+          title:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+      resolution_assignee_id_at_breach:
+        type:
+          - "null"
+          - string
+      resolution_breach_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      resolution_resolving_user_id:
+        type:
+          - "null"
+          - string
+      team_slas:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            first_resolution:
+              type:
+                - "null"
+                - object
+              properties:
+                assignee_id_at_breach:
+                  type:
+                    - "null"
+                    - string
+                breach_time:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                business_hours_seconds:
+                  type:
+                    - "null"
+                    - integer
+                resolving_user_id:
+                  type:
+                    - "null"
+                    - string
+                seconds:
+                  type:
+                    - "null"
+                    - integer
+                time:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+              additionalProperties: true
+            first_response:
+              type:
+                - "null"
+                - object
+              properties:
+                assignee_id_at_breach:
+                  type:
+                    - "null"
+                    - string
+                breach_time:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                business_hours_seconds:
+                  type:
+                    - "null"
+                    - integer
+                resolving_user_id:
+                  type:
+                    - "null"
+                    - string
+                seconds:
+                  type:
+                    - "null"
+                    - integer
+                time:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+              additionalProperties: true
+            follow_up:
+              type:
+                - "null"
+                - object
+              properties:
+                assignee_id_at_breach:
+                  type:
+                    - "null"
+                    - string
+                breach_time:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                business_hours_seconds:
+                  type:
+                    - "null"
+                    - integer
+                resolving_user_id:
+                  type:
+                    - "null"
+                    - string
+                seconds:
+                  type:
+                    - "null"
+                    - integer
+                time:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+              additionalProperties: true
+            next_reply:
+              type:
+                - "null"
+                - object
+              properties:
+                assignee_id_at_breach:
+                  type:
+                    - "null"
+                    - string
+                breach_time:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                business_hours_seconds:
+                  type:
+                    - "null"
+                    - integer
+                resolving_user_id:
+                  type:
+                    - "null"
+                    - string
+                seconds:
+                  type:
+                    - "null"
+                    - integer
+                time:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+              additionalProperties: true
+            resolution:
+              type:
+                - "null"
+                - object
+              properties:
+                assignee_id_at_breach:
+                  type:
+                    - "null"
+                    - string
+                breach_time:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                business_hours_seconds:
+                  type:
+                    - "null"
+                    - integer
+                resolving_user_id:
+                  type:
+                    - "null"
+                    - string
+                seconds:
+                  type:
+                    - "null"
+                    - integer
+                time:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+              additionalProperties: true
+            team_id:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      time_in_status_seconds:
+        type:
+          - "null"
+          - object
+        additionalProperties:
+          type:
+            - "null"
+            - integer
+      workspace_email:
+        type:
+          - "null"
+          - string
+      workspace_phone_number:
+        type:
+          - "null"
+          - string
 
   issue_messages:
     type: object
@@ -1128,6 +1573,50 @@ schemas:
           - array
         items:
           type: string
+      author_unverified:
+        type:
+          - "null"
+          - boolean
+      reactions:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            count:
+              type:
+                - "null"
+                - integer
+            name:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      slack_info:
+        type:
+          - "null"
+          - object
+        properties:
+          channel_id:
+            type:
+              - "null"
+              - string
+          message_ts:
+            type:
+              - "null"
+              - string
+          permalink:
+            type:
+              - "null"
+              - string
+          thread_ts:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
 
   issue_threads:
     type: object
@@ -1195,6 +1684,92 @@ schemas:
         items:
           type: object
           additionalProperties: true
+      assignment_configuration:
+        type:
+          - "null"
+          - object
+        properties:
+          assignable_user_statuses:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          assignment_method:
+            type:
+              - "null"
+              - string
+          only_assign_if_user_active:
+            type:
+              - "null"
+              - boolean
+          override_existing_assignee:
+            type:
+              - "null"
+              - boolean
+          team_schedule_id:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+      schedule:
+        type:
+          - "null"
+          - object
+        properties:
+          blocks:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                days:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                end_time:
+                  type:
+                    - "null"
+                    - string
+                recurrence:
+                  type:
+                    - "null"
+                    - string
+                start_time:
+                  type:
+                    - "null"
+                    - string
+                team_id:
+                  type:
+                    - "null"
+                    - string
+                user_id:
+                  type:
+                    - "null"
+                    - string
+                week_offset:
+                  type:
+                    - "null"
+                    - integer
+              additionalProperties: true
+          id:
+            type:
+              - "null"
+              - string
+          timezone:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
 
   users:
     type: object
@@ -1229,6 +1804,94 @@ schemas:
         type:
           - "null"
           - string
+      is_deactivated:
+        type:
+          - "null"
+          - boolean
+      role:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          slug:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+      role_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      roles:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            slug:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+      skills:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            attribute:
+              type:
+                - "null"
+                - string
+            attribute_type:
+              type:
+                - "null"
+                - string
+            values:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  level:
+                    type:
+                      - "null"
+                      - integer
+                  value:
+                    type:
+                      - "null"
+                      - string
+                additionalProperties: true
+          additionalProperties: true
 
   custom_fields:
     type: object
@@ -1278,6 +1941,44 @@ schemas:
         type:
           - "null"
           - string
+      default_value:
+        type:
+          - "null"
+          - string
+      default_values:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      number_metadata:
+        type:
+          - "null"
+          - object
+        properties:
+          currency:
+            type:
+              - "null"
+              - string
+          decimal_places:
+            type:
+              - "null"
+              - integer
+          duration_display_format:
+            type:
+              - "null"
+              - string
+          duration_input_unit:
+            type:
+              - "null"
+              - string
+          format:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
 
   knowledge_bases:
     type: object
@@ -1304,6 +2005,10 @@ schemas:
           - array
         items:
           type: string
+      active_theme_id:
+        type:
+          - "null"
+          - string
 
   knowledge_base_articles:
     type: object
@@ -1345,6 +2050,95 @@ schemas:
           - "null"
           - object
         additionalProperties: true
+      approval_info:
+        type:
+          - "null"
+          - object
+        properties:
+          requested_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          reviewed_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          reviewed_by_user_id:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+      author_user_id:
+        type:
+          - "null"
+          - string
+      collection_id:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      current_draft_content_markdown:
+        type:
+          - "null"
+          - string
+      current_published_content_html:
+        type:
+          - "null"
+          - string
+      current_published_content_markdown:
+        type:
+          - "null"
+          - string
+      is_unlisted:
+        type:
+          - "null"
+          - boolean
+      last_edited_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      last_published_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            hex_color:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            object_type:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
 
   ticket_forms:
     type: object

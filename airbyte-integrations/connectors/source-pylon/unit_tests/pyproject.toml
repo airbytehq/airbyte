@@ -14,6 +14,7 @@ airbyte-cdk = "7.45.1"
 pytest = "^8"
 freezegun = "^1"
 requests-mock = "^1"
+jsonschema = { version = "^4", extras = ["format"] }
 
 [tool.pytest.ini_options]
 filterwarnings = [
