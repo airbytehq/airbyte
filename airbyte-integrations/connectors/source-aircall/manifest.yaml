@@ -198,7 +198,7 @@ definitions:
         lookback_window: P3D
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ (now_utc().timestamp() - 186 * 86400) | int }}"
+          datetime: "{{ (now_utc().timestamp() - 365 * 86400) | int }}"
           datetime_format: "%s"
         end_datetime:
           type: MinMaxDatetime
@@ -788,9 +788,9 @@ spec:
       start_date:
         type: string
         description: >-
-          Saved by versions before 0.5.0 and no longer used. Calls are read from
-          the six months of history Aircall keeps; the other streams always return
-          every record.
+          Saved by versions before 0.5.0 and no longer used. Calls start 365 days
+          before the sync, covering the six months of call history Aircall keeps;
+          the other streams always return every record.
         title: Start date (before 0.5.0)
         airbyte_hidden: true
         order: 2
