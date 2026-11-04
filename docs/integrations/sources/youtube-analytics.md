@@ -137,6 +137,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 2.0.2 | 2026-11-04 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Replace the icon with YouTube's official icon from brand.youtube and remove the added ANALYTICS wordmark |
 | 2.0.1 | 2026-11-04 | [90433](https://github.com/airbytehq/airbyte/pull/90433) | Merge the report download error handlers into one handler; no behaviour change |
 | 2.0.0 | 2026-11-04 | [89628](https://github.com/airbytehq/airbyte/pull/89628) | Correct the declared types of report metric fields to match YouTube's metric definitions |
 | 1.6.1 | 2026-11-03 | [90800](https://github.com/airbytehq/airbyte/pull/90800) | Update dependencies |
