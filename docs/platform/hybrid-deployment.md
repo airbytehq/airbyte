@@ -40,18 +40,13 @@ export const faqs = [
       'No. Data planes send outbound requests to the control plane and do not require inbound requests.',
   },
   {
-    question: 'Can I use Private Links?',
-    answer:
-      'Airbyte Cloud Private Links are an AWS-only add-on for Pro plans and above. They connect Airbyte Cloud to AWS sources and destinations.',
-  },
-  {
     question: 'Can I use separate regions?',
     answer:
       'Each workspace uses one region. Set the workspace region in Workspace settings or with the API.',
   },
 ];
 
-Airbyte manages the control plane in Airbyte Cloud, and you run data planes in your own infrastructure. Your records are extracted, processed, and loaded in your data plane. The control plane also receives connector configuration and metadata, including table and column names and cursor and primary key values; see [What data leaves your network](#what-data-leaves-your-network).
+Airbyte manages the control plane in Airbyte Cloud, and you run data planes in your own infrastructure. Your records are extracted, processed, and loaded in your data plane. The control plane receives configuration and metadata; see [What data leaves your network](#what-data-leaves-your-network).
 
 ## What is Enterprise Flex
 
@@ -91,8 +86,6 @@ Data planes send outbound HTTPS requests to the control plane at `https://cloud.
 
 Configure the same external secrets manager on the control plane and data plane. Enterprise Flex data planes support AWS Secrets Manager, Google Secret Manager, Azure Key Vault, and HashiCorp Vault; data planes support access key authentication only. See [Secrets manager requirements](/platform/enterprise-flex/data-plane#secrets-manager-requirements).
 
-Airbyte Cloud Private Links are an AWS-only add-on for Pro plans and above. They connect Airbyte Cloud to AWS sources and destinations; see [Private Links](/platform/operating-airbyte/privatelink).
-
 Data in transit uses TLS or other encrypted channels. For information about Airbyte's security practices and certifications, see [Security](/platform/operating-airbyte/security).
 
 ## Supported connectors
@@ -128,9 +121,9 @@ Enterprise Flex lets you run self-managed data planes in your own infrastructure
 In this example, Workspace 1 uses Airbyte's managed data plane in `eu-west-3`. Workspaces 2 and 3 use self-managed data planes in `us-west-2` and `ap-southeast-4`.
 
 - Workspace 1 handles data that can use an Airbyte-managed data plane.
-- Workspaces 2 and 3 keep records in their data planes. Their configuration and metadata, including cursor and primary key values, reach the control plane.
+- Workspaces 2 and 3 keep records in their self-managed data planes. See [What data leaves your network](#what-data-leaves-your-network) for what reaches the control plane.
 
-![Example hybrid deployment with three workspaces: Workspace 1 uses a managed data plane in eu-west-3, while Workspaces 2 and 3 use customer-owned data planes in us-west-2 and ap-southeast-4. Records stay in the customer-owned data planes, while connector configuration and metadata such as cursor and primary key values reach the control plane.](./enterprise-flex/img/flex-enterprise-example.png)
+![Example hybrid deployment with three workspaces: Workspace 1 uses a managed data plane in eu-west-3, while Workspaces 2 and 3 use customer-owned data planes in us-west-2 and ap-southeast-4. Records stay in the customer-owned data planes, while connector configuration and metadata reach the control plane.](./enterprise-flex/img/flex-enterprise-example.png)
 
 ## Limitations
 
