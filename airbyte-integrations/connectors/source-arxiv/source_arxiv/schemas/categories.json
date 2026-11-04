@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "arXiv subject category identifier."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable arXiv subject category name."
+    },
+    "group": {
+      "type": "string",
+      "description": "Top-level category group."
+    }
+  },
+  "required": ["id", "name", "group"]
+}
