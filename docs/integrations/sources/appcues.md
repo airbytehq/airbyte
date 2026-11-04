@@ -49,7 +49,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | ----- | ---------------- |
-| 0.0.67 | 2026-11-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Simplify rate-limit error handling configuration with no change in retry behavior |
+| 0.0.67 | 2026-11-03 | [90935](https://github.com/airbytehq/airbyte/pull/90935) | Simplify rate-limit error handling configuration with no change in retry behavior |
 | 0.0.66 | 2026-11-03 | [90474](https://github.com/airbytehq/airbyte/pull/90474) | Update dependencies |
 | 0.0.65 | 2026-10-27 | [89795](https://github.com/airbytehq/airbyte/pull/89795) | Update dependencies |
 | 0.0.64 | 2026-10-20 | [89101](https://github.com/airbytehq/airbyte/pull/89101) | Update dependencies |
