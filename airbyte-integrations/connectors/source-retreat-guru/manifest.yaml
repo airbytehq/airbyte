@@ -1,0 +1,1951 @@
+version: 7.10.0
+
+type: DeclarativeSource
+
+description: >-
+  A source connector for Retreat Booking Guru, a retreat center management
+  platform. Syncs registrations, programs, transactions, payments, items, leads,
+  people, teachers, lodgings, venues, and venue_uses.
+
+check:
+  type: CheckStream
+  stream_names:
+    - registrations
+
+definitions:
+  linked:
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 20
+          start_from_page: 1
+          inject_on_first_request: true
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        api_token: "{{ config['token'] }}"
+        inject_into:
+          type: RequestOption
+          field_name: token
+          inject_into: request_parameter
+
+streams:
+  - type: DeclarativeStream
+    name: registrations
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 20
+          start_from_page: 1
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: https://odyssey.secure.retreat.guru/api/v1/registrations
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - submitted
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          room:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          nights:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          lodging:
+            type:
+              - string
+              - "null"
+          program:
+            type:
+              - string
+              - "null"
+          room_id:
+            type:
+              - number
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          self_url:
+            type:
+              - string
+              - "null"
+          full_name:
+            type:
+              - string
+              - "null"
+          items_url:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          person_id:
+            type:
+              - number
+              - "null"
+          questions:
+            type:
+              - object
+              - "null"
+            properties:
+              phone:
+                type:
+                  - string
+                  - "null"
+              gender:
+                type:
+                  - string
+                  - "null"
+              address:
+                anyOf:
+                  - type: string
+                  - type: object
+                    properties:
+                      zip:
+                        type: string
+                      city:
+                        type: string
+                      state:
+                        type: string
+                      address:
+                        type: string
+                      country:
+                        type: string
+                      address2:
+                        type: string
+              comments:
+                type:
+                  - string
+                  - "null"
+              diet_notes:
+                type:
+                  - string
+                  - "null"
+              newsletter:
+                type:
+                  - string
+                  - "null"
+              discount_code:
+                type:
+                  - string
+                  - "null"
+              disclaimer_confirmation:
+                type:
+                  - string
+                  - "null"
+              jake_porter_fees_disclaimer:
+                type:
+                  - string
+                  - "null"
+          submitted:
+            type: string
+          admin_link:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          guest_type:
+            type:
+              - string
+              - "null"
+          lodging_id:
+            type:
+              - number
+              - "null"
+          person_url:
+            type:
+              - string
+              - "null"
+          program_id:
+            type:
+              - number
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          balance_due:
+            type:
+              - number
+              - "null"
+          grand_total:
+            type:
+              - number
+              - "null"
+          program_url:
+            type:
+              - string
+              - "null"
+          total_items:
+            type:
+              - number
+              - "null"
+          total_taxes:
+            type:
+              - number
+              - "null"
+          payments_url:
+            type:
+              - string
+              - "null"
+          optional_items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                price:
+                  type:
+                    - number
+                    - "null"
+          total_payments:
+            type:
+              - number
+              - "null"
+          guest_edit_link:
+            type:
+              - string
+              - "null"
+          transactions_url:
+            type:
+              - string
+              - "null"
+          program_categories:
+            type:
+              - array
+              - "null"
+          registration_total:
+            type:
+              - number
+              - "null"
+          guest_statement_link:
+            type:
+              - string
+              - "null"
+          sub_registration_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          program_external_code:
+            type:
+              - string
+              - "null"
+          online_event_page_link:
+            type:
+              - string
+              - "null"
+          parent_registration_id:
+            type:
+              - number
+              - "null"
+          parent_registration_url:
+            type:
+              - string
+              - "null"
+          registration_form_questions_link:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: submitted
+      start_datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: max_date
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: min_date
+        inject_into: request_parameter
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: programs
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 20
+          start_from_page: 1
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: https://odyssey.secure.retreat.guru/api/v1/programs
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - start_date
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          notes:
+            type:
+              - array
+              - "null"
+          tasks:
+            type:
+              - array
+              - "null"
+          images:
+            anyOf:
+              - type: array
+              - type: object
+                properties:
+                  full:
+                    type: object
+                    properties:
+                      alt:
+                        type: string
+                      url:
+                        type: string
+                      width:
+                        type: number
+                      height:
+                        type: number
+                  large:
+                    type: object
+                    properties:
+                      alt:
+                        type: string
+                      url:
+                        type: string
+                      width:
+                        type: number
+                      height:
+                        type: number
+                  medium:
+                    type: object
+                    properties:
+                      alt:
+                        type: string
+                      url:
+                        type: string
+                      width:
+                        type: number
+                      height:
+                        type: number
+                  thumbnail:
+                    type: object
+                    properties:
+                      alt:
+                        type: string
+                      url:
+                        type: string
+                      width:
+                        type: number
+                      height:
+                        type: number
+          public:
+            type:
+              - boolean
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          address:
+            type:
+              - string
+              - "null"
+          content:
+            type:
+              - string
+              - "null"
+          excerpt:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          form_ids:
+            type:
+              - object
+              - "null"
+            properties:
+              waitlist:
+                type:
+                  - number
+                  - "null"
+              person-admin:
+                type:
+                  - number
+                  - "null"
+              registration:
+                type:
+                  - number
+                  - "null"
+              registration-admin:
+                type:
+                  - number
+                  - "null"
+              registration-summary:
+                type:
+                  - number
+                  - "null"
+          location:
+            type:
+              - string
+              - "null"
+          self_url:
+            type:
+              - string
+              - "null"
+          date_type:
+            type:
+              - string
+              - "null"
+          is_online:
+            type:
+              - boolean
+              - "null"
+          items_url:
+            type:
+              - string
+              - "null"
+          admin_link:
+            type:
+              - string
+              - "null"
+          categories:
+            type:
+              - array
+              - "null"
+          start_date:
+            type: string
+          post_status:
+            type:
+              - string
+              - "null"
+          max_capacity:
+            type:
+              - number
+              - "null"
+          payments_url:
+            type:
+              - string
+              - "null"
+          pricing_type:
+            type:
+              - string
+              - "null"
+          program_info:
+            type:
+              - object
+              - "null"
+            properties:
+              location:
+                type:
+                  - string
+                  - "null"
+              contact_name:
+                type:
+                  - string
+                  - "null"
+              alternate_url:
+                type:
+                  - string
+                  - "null"
+              contact_email:
+                type:
+                  - string
+                  - "null"
+              contact_phone:
+                type:
+                  - string
+                  - "null"
+              contact_title:
+                type:
+                  - string
+                  - "null"
+              datetime_title:
+                type:
+                  - string
+                  - "null"
+              location_title:
+                type:
+                  - string
+                  - "null"
+              datetime_details:
+                type:
+                  - string
+                  - "null"
+              location_address:
+                type:
+                  - string
+                  - "null"
+              extra_display_fields:
+                type:
+                  - array
+                  - "null"
+              location_address_title:
+                type:
+                  - string
+                  - "null"
+          program_link:
+            type:
+              - string
+              - "null"
+          program_type:
+            type:
+              - string
+              - "null"
+          teachers_url:
+            type:
+              - string
+              - "null"
+          external_code:
+            type:
+              - string
+              - "null"
+          updated_at_gmt:
+            type:
+              - string
+              - "null"
+          venue_uses_url:
+            type:
+              - string
+              - "null"
+          list_until_date:
+            type:
+              - string
+              - "null"
+          pricing_options:
+            type:
+              - object
+              - array
+              - "null"
+            additionalProperties: true
+          available_spaces:
+            type:
+              - number
+              - "null"
+          name_no_analyzer:
+            type:
+              - string
+              - "null"
+          transactions_url:
+            type:
+              - string
+              - "null"
+          waitlist_enabled:
+            type:
+              - boolean
+              - "null"
+          registrations_url:
+            type:
+              - string
+              - "null"
+          deposit_percentage:
+            type:
+              - number
+              - "null"
+          program_has_capacity:
+            type:
+              - boolean
+              - "null"
+          hide_from_marketplace:
+            type:
+              - number
+              - "null"
+          updated_at_local_time:
+            type:
+              - string
+              - "null"
+          online_event_page_link:
+            type:
+              - string
+              - "null"
+          custom_thank_you_go_direct:
+            type:
+              - boolean
+              - "null"
+          program_registration_status:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: start_date
+      start_datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: max_date
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: min_date
+        inject_into: request_parameter
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: venues
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://odyssey.secure.retreat.guru/api/v1/venues
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://odyssey.secure.retreat.guru/api/v1/transactions
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 20
+          start_from_page: 1
+          inject_on_first_request: true
+    name: transactions
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          self_url:
+            type:
+              - string
+              - "null"
+          submitted:
+            type:
+              - string
+              - "null"
+          trans_date:
+            type: string
+          class:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          glcode:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          program_id:
+            type:
+              - number
+              - "null"
+          program_name:
+            type:
+              - string
+              - "null"
+          program_url:
+            type:
+              - string
+              - "null"
+          program_external_code:
+            type:
+              - string
+              - "null"
+          person_id:
+            type:
+              - number
+              - "null"
+          person_name:
+            type:
+              - string
+              - "null"
+          person_first_name:
+            type:
+              - string
+              - "null"
+          person_last_name:
+            type:
+              - string
+              - "null"
+          person_email:
+            type:
+              - string
+              - "null"
+          registration_id:
+            type:
+              - number
+              - "null"
+          registration_url:
+            type:
+              - string
+              - "null"
+          details_url:
+            type:
+              - string
+              - "null"
+          associated_transaction:
+            type:
+              - number
+              - "null"
+          charge_amount:
+            type:
+              - number
+              - "null"
+          credit_amount:
+            type:
+              - number
+              - "null"
+          notes:
+            type:
+              - string
+              - "null"
+          staff_name:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+          - trans_date
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: trans_date
+      start_datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: max_date
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: min_date
+        inject_into: request_parameter
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://odyssey.secure.retreat.guru/api/v1/payments
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 20
+          start_from_page: 1
+          inject_on_first_request: true
+    name: payments
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          self_url:
+            type:
+              - string
+              - "null"
+          submitted:
+            type:
+              - string
+              - "null"
+          trans_date:
+            type: string
+          class:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          glcode:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          program_id:
+            type:
+              - number
+              - "null"
+          program_name:
+            type:
+              - string
+              - "null"
+          program_url:
+            type:
+              - string
+              - "null"
+          program_external_code:
+            type:
+              - string
+              - "null"
+          person_id:
+            type:
+              - number
+              - "null"
+          person_name:
+            type:
+              - string
+              - "null"
+          person_first_name:
+            type:
+              - string
+              - "null"
+          person_last_name:
+            type:
+              - string
+              - "null"
+          person_email:
+            type:
+              - string
+              - "null"
+          registration_id:
+            type:
+              - number
+              - "null"
+          registration_url:
+            type:
+              - string
+              - "null"
+          associated_transaction:
+            type:
+              - number
+              - "null"
+          charge_amount:
+            type:
+              - number
+              - "null"
+          credit_amount:
+            type:
+              - number
+              - "null"
+          notes:
+            type:
+              - string
+              - "null"
+          staff_name:
+            type:
+              - string
+              - "null"
+          fund_method:
+            type:
+              - string
+              - "null"
+          merchant_name:
+            type:
+              - string
+              - "null"
+          merchant_trans_id:
+            type:
+              - string
+              - "null"
+          merchant_profile:
+            type:
+              - string
+              - "null"
+          merchant_account:
+            type:
+              - string
+              - "null"
+          merchant_cc_details:
+            anyOf:
+              - type: array
+              - type: object
+                properties:
+                  type:
+                    type: string
+                  card_id:
+                    type: string
+                  last_four:
+                    type: string
+                  exp_month:
+                    type: number
+                  exp_year:
+                    type: number
+                  image:
+                    type: string
+                  holder_name:
+                    type: string
+          grand_total:
+            type:
+              - number
+              - "null"
+        required:
+          - id
+          - trans_date
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: trans_date
+      start_datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: max_date
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: min_date
+        inject_into: request_parameter
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://odyssey.secure.retreat.guru/api/v1/items
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 20
+          start_from_page: 1
+          inject_on_first_request: true
+    name: items
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          self_url:
+            type:
+              - string
+              - "null"
+          submitted:
+            type:
+              - string
+              - "null"
+          trans_date:
+            type: string
+          class:
+            type:
+              - string
+              - "null"
+          category:
+            type:
+              - string
+              - "null"
+          glcode:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          program_id:
+            type:
+              - number
+              - "null"
+          program_name:
+            type:
+              - string
+              - "null"
+          program_url:
+            type:
+              - string
+              - "null"
+          program_external_code:
+            type:
+              - string
+              - "null"
+          person_id:
+            type:
+              - number
+              - "null"
+          person_name:
+            type:
+              - string
+              - "null"
+          person_first_name:
+            type:
+              - string
+              - "null"
+          person_last_name:
+            type:
+              - string
+              - "null"
+          person_email:
+            type:
+              - string
+              - "null"
+          registration_id:
+            type:
+              - number
+              - "null"
+          registration_url:
+            type:
+              - string
+              - "null"
+          associated_registration_id:
+            type:
+              - number
+              - "null"
+          associated_registration_url:
+            type:
+              - string
+              - "null"
+          charge_amount:
+            type:
+              - number
+              - "null"
+          credit_amount:
+            type:
+              - number
+              - "null"
+          notes:
+            type:
+              - string
+              - "null"
+          staff_name:
+            type:
+              - string
+              - "null"
+          is_addon:
+            type:
+              - boolean
+              - "null"
+          discount_amount:
+            type:
+              - number
+              - "null"
+          discount_percent:
+            type:
+              - number
+              - "null"
+          subtotal:
+            type:
+              - number
+              - "null"
+          tax_1_info:
+            type:
+              - string
+              - "null"
+          tax_1_amount:
+            type:
+              - number
+              - "null"
+          tax_2_info:
+            type:
+              - string
+              - "null"
+          tax_2_amount:
+            type:
+              - number
+              - "null"
+          grand_total:
+            type:
+              - number
+              - "null"
+          revenue:
+            type:
+              - object
+              - array
+              - "null"
+            additionalProperties: true
+          quantity:
+            type:
+              - number
+              - "null"
+          price_per_item:
+            type:
+              - number
+              - "null"
+        required:
+          - id
+          - trans_date
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: trans_date
+      start_datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: max_date
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: min_date
+        inject_into: request_parameter
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://odyssey.secure.retreat.guru/api/v1/leads
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 20
+          start_from_page: 1
+          inject_on_first_request: true
+    name: leads
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          self_url:
+            type:
+              - string
+              - "null"
+          submitted:
+            type:
+              - string
+              - "null"
+          lead_type:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          full_name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          program:
+            type:
+              - string
+              - "null"
+          program_id:
+            type:
+              - number
+              - "null"
+          program_url:
+            type:
+              - string
+              - "null"
+          program_categories:
+            type:
+              - array
+              - "null"
+          program_external_code:
+            type:
+              - string
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          registration_id:
+            type:
+              - number
+              - "null"
+          menu_order:
+            type:
+              - number
+              - "null"
+          program_link:
+            type:
+              - string
+              - "null"
+          program_image:
+            type:
+              - string
+              - "null"
+          registration_link:
+            type:
+              - string
+              - "null"
+          questions:
+            type:
+              - object
+              - "null"
+            properties:
+              phone:
+                type:
+                  - string
+                  - "null"
+              gender:
+                type:
+                  - string
+                  - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://odyssey.secure.retreat.guru/api/v1/people
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 20
+          start_from_page: 1
+          inject_on_first_request: true
+    name: people
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: number
+          full_name:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          registered:
+            type:
+              - string
+              - "null"
+          questions:
+            type:
+              - object
+              - "null"
+            properties:
+              firstname:
+                type:
+                  - string
+                  - "null"
+              lastname:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              address:
+                anyOf:
+                  - type: string
+                  - type: object
+                    properties:
+                      country:
+                        type: string
+                      address:
+                        type: string
+                      city:
+                        type: string
+                      state:
+                        type: string
+                      zip:
+                        type: string
+                      address2:
+                        type: string
+              newsletter:
+                type:
+                  - string
+                  - "null"
+              gender:
+                type:
+                  - string
+                  - "null"
+              birth-date:
+                type:
+                  - string
+                  - "null"
+              second-phone:
+                type:
+                  - string
+                  - "null"
+              diet:
+                type:
+                  - string
+                  - "null"
+              diet-notes:
+                type:
+                  - string
+                  - "null"
+              emergency-contact:
+                type:
+                  - string
+                  - "null"
+              medical:
+                type:
+                  - string
+                  - "null"
+              marketing:
+                type:
+                  - string
+                  - "null"
+              person-notes:
+                type:
+                  - string
+                  - "null"
+              person-skills:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://odyssey.secure.retreat.guru/api/v1/teachers
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 20
+          start_from_page: 1
+          inject_on_first_request: true
+    name: teachers
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          self_url:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          name_no_analyzer:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          content:
+            type:
+              - string
+              - "null"
+          categories:
+            type:
+              - array
+              - "null"
+          hide_from_marketplace:
+            type:
+              - boolean
+              - "null"
+          programs_url:
+            type:
+              - string
+              - "null"
+          images:
+            anyOf:
+              - type: array
+              - type: object
+                properties:
+                  thumbnail:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                      width:
+                        type: number
+                      height:
+                        type: number
+                      alt:
+                        type: string
+                  medium:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                      width:
+                        type: number
+                      height:
+                        type: number
+                      alt:
+                        type: string
+                  large:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                      width:
+                        type: number
+                      height:
+                        type: number
+                      alt:
+                        type: string
+                  full:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                      width:
+                        type: number
+                      height:
+                        type: number
+                      alt:
+                        type: string
+          website:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+          post_status:
+            type:
+              - string
+              - "null"
+          video_url:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://odyssey.secure.retreat.guru/api/v1/lodgings
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+    name: lodgings
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          self_url:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          occupancy_type:
+            type:
+              - string
+              - "null"
+          max_occupancy:
+            type:
+              - number
+              - "null"
+          base_price:
+            type:
+              - number
+              - "null"
+          images:
+            type:
+              - object
+              - array
+              - "null"
+            additionalProperties: true
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://odyssey.secure.retreat.guru/api/v1/venue_uses
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['token'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+    name: venue_uses
+    primary_key:
+      - id
+
+spec:
+  type: Spec
+  documentation_url: https://odyssey.secure.retreat.guru/api
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - token
+      - start_date
+    properties:
+      token:
+        type: string
+        description: The token to use for authentication
+        order: 0
+        title: Token
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: Start date for data sync in YYYY-MM-DD format (e.g. 2020-01-01)
+        title: Start Date
+        order: 1
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://odyssey.secure.retreat.guru/api
+  testedStreams:
+    venues:
+      isStale: false
+      hasRecords: false
+      streamHash: db54985bf12e1c0b89a66a2cdaa616882893d5e2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    programs:
+      isStale: false
+      hasRecords: true
+      streamHash: 9637da08b287dbeb2679bcfc236db272364c0ff0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    venue_uses:
+      isStale: false
+      hasRecords: false
+      streamHash: 603166e599c6dbdc2e1eb19c640146a58ad146fd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    registrations:
+      isStale: false
+      hasRecords: true
+      streamHash: e04770baa9d0826cfde37ec4389ecbbbf44d2d3d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    transactions:
+      streamHash: 1de444139c8b5d42d9bac934bc2dcef6f99f468e
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    payments:
+      streamHash: 6dd8c0aaa003aaca4107c435cd1998b459578c68
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    items:
+      streamHash: 0c54281c6681b3ceb09542377313282cde97ad28
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    leads:
+      streamHash: 911bbbcabb04fe9d5630367a35bf1b76534ec458
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    people:
+      streamHash: 03fa77ec657e5725a8bc65c68915af7ad439f5bf
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    teachers:
+      streamHash: 946cfb8992d6368e14f2852d9ab34db802b6bbca
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lodgings:
+      streamHash: 1dea1a5c893c3cfe972b2bd18f991e69506f55a9
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  autoImportSchema:
+    venues: true
+    programs: true
+    venue_uses: true
+    registrations: true
+    transactions: true
+    payments: true
+    items: true
+    template: true
+    leads: true
+    people: true
+    teachers: true
+    lodgings: true
+
+dynamic_streams: []
