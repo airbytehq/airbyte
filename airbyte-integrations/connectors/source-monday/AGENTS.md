@@ -47,3 +47,11 @@ The Monday.com GraphQL API supports filtering by `updated_at` on boards and item
 ### Future incremental stream candidates
 
 - **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+
+## 4. Error handling: single handler, filter order
+
+The requester uses one `DefaultErrorHandler`. Its response filters are ordered so the body-code rules run before the HTTP status rule: `COMPLEXITY_BUDGET_EXHAUSTED` and `FIELD_LIMIT_EXCEEDED` trigger retries, `CursorExpiredError` resets pagination, and HTTP 403 skips the slice when the token cannot access the requested entity. A matching body-code filter therefore takes precedence over the 403 skip.
+
+Other GraphQL error codes in HTTP-200 responses are deliberately not converted into failures. Monday can return useful partial data alongside application errors such as `ASSET_UNAVAILABLE`, so failing the sync on every `errors` entry would discard valid records. Retries honor the `Retry-After` header first and otherwise wait 60 seconds.
+
+**Why this matters:** Keep the body-code filters ahead of the 403 filter and do not add a generic GraphQL-error failure rule; both changes can alter partial-data sync outcomes. Preserve the header-first, 60-second fallback order when editing retry behavior.
