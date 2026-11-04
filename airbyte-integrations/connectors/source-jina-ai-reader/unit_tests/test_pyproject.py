@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-import tomllib
 from pathlib import Path
 
+import tomllib
 from packaging.specifiers import SpecifierSet
 
 
