@@ -1,83 +1,149 @@
 # Aircall
 
-This page contains the setup guide and reference information for the [Aircall](https://developers.aircall.io/api-references/#rest-api) source
+This page contains the setup guide and reference information for the [Aircall](https://aircall.io/) source connector. The connector reads calls, contacts, users, numbers, teams, conversations, campaigns and other company data from the [Aircall Public API](https://developers.aircall.io/api-references/).
 
 ## Prerequisites
 
-Create an API key in the Aircall Dashboard under **Integrations & API > API Keys**. The API ID and API token are both required.
+- An Aircall account with the **Admin** role. Only Admins can open the Aircall Dashboard, where API keys are created ([Users](https://developers.aircall.io/api-references/#user-v2-overview)).
+- An Aircall API key, made of an **API ID** and an **API token**. The connector authenticates every request with [Basic authentication](https://developers.aircall.io/api-references/#basic-auth-aircall-customers), using the API ID as the username and the API token as the password.
 
 ## Setup guide
 
-### Step 1: Set up Aircall connection
+### Step 1: Set up Aircall
 
-- Create an API key in **Integrations & API > API Keys** in the Aircall Dashboard.
-- Enter the required API ID and API token.
-- Available params
-  - `api_id`: Your Aircall API ID.
-  - `api_token`: The API token shown with the API ID.
-  - `window_in_days` (Window size): optional days of calls per request window, default 1. Calls split a window that hits Aircall's 10,000-result limit on their own; larger windows save requests only for companies with few calls.
-  - `contacts_window_in_days` (Contacts window size): optional days of new contacts per request window, default 30. Lower it if a contacts sync fails with the 10,000-results error.
-  - `num_workers`: optional concurrent workers, from 1 to 4 (default 2). All workers share one budget of 100 requests per minute, below Aircall's company-wide limit of 120.
+Create an Aircall API key:
+
+1. Log in to the [Aircall Dashboard](https://dashboard.aircall.io/) as an Admin.
+2. Go to **Integrations & API** > [**API Keys**](https://dashboard.aircall.io/integrations/api-keys). Aircall's reference calls this the **API Keys** section of your company's settings.
+3. Click **Add a new API key**.
+4. Copy the **API ID** and the **API token**. Aircall doesn't store the token in plain text and can't show it again, so keep it somewhere safe. If you lose it, create a new key ([Basic authentication](https://developers.aircall.io/api-references/#basic-auth-aircall-customers)).
 
 ### Step 2: Set up the Aircall connector in Airbyte
 
+<!-- env:cloud -->
+
 #### For Airbyte Cloud
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Aircall connector and select **Aircall** from the Source type dropdown.
-4. Enter your API ID and API token.
-5. Click **Set up source**.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**, then click **New source**.
+3. Select **Aircall** from the list of sources.
+4. Enter a name for the source.
+5. Enter your **API ID** and **API Token**.
+6. Optionally, set **Window size (days)**, **Contacts window size (days)** and **Concurrent workers**. See [Configuration options](#configuration-options).
+7. Click **Set up source**.
 
-#### For Airbyte OSS
+<!-- /env:cloud -->
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. Enter your API ID and API token.
-4. Click **Set up source**.
+<!-- env:oss -->
+
+#### For Airbyte Open Source
+
+1. Open your Airbyte Open Source dashboard.
+2. In the left navigation bar, click **Sources**, then click **New source**.
+3. Select **Aircall** from the list of sources.
+4. Enter a name for the source.
+5. Enter your **API ID** and **API Token**.
+6. Optionally, set **Window size (days)**, **Contacts window size (days)** and **Concurrent workers**. See [Configuration options](#configuration-options).
+7. Click **Set up source**.
+
+<!-- /env:oss -->
+
+### Configuration options
+
+| Field | Required | Description |
+| :--- | :--- | :--- |
+| **API ID** | Yes | The API ID of your Aircall API key. |
+| **API Token** | Yes | The API token shown with the API ID when you created the key. |
+| **Window size (days)** | No | Days of calls requested at a time, from 1 to 365. Leave it empty for 1 day. A window that holds more than 10,000 calls is split and partly read again, so a larger window only saves requests for companies with few calls. If a sync fails with `could not split its request window`, lower this setting. See [10,000-result limit](#10000-result-limit). |
+| **Contacts window size (days)** | No | Days of newly created contacts requested at a time, from 1 to 365. Leave it empty for 30 days. Lower it if a sync fails with the 10,000-results error for contacts. |
+| **Concurrent workers** | No | Number of parallel requests, from 1 to 4. The default is 2. All workers share one [rate limit](#rate-limit). |
+
+Connections created before version 0.5.0 also have a Start date. The connector no longer uses it, and the form hides it.
 
 ## Supported sync modes
 
-The Aircall source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Aircall source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync             | Yes        |
-| Incremental Sync              | Yes        |
-| Replicate Incremental Deletes | No         |
-| SSL connection                | Yes        |
-| Namespaces                    | No         |
+| Feature | Supported? |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental Sync | Yes |
+| Replicate Incremental Deletes | No |
+| SSL connection | Yes |
+| Namespaces | No |
+
+Three streams support incremental sync. Each incremental sync reads the last three days again, so use `Incremental | Append + Deduped` to keep one row per record.
+
+- `calls` uses `started_at`. Calls still in progress and edits made soon after a call reach the destination. Later edits to older calls, such as a tag added weeks later, arrive only with a [Refresh and Retain Records](https://docs.airbyte.com/platform/operator-guides/refreshes#refresh-and-retain-records) sync. Clearing `calls`, a Refresh and Remove Records sync or an Overwrite mode deletes calls older than six months for good (see [Six months of call history](#six-months-of-call-history)).
+- `conversations` uses the time of the last call or message. Closing, reopening or assigning a conversation without a new call or message doesn't change that time, so those changes arrive with the next activity or a full refresh.
+- `conversation_engagements` reads the engagements of the conversations that `conversations` returns, so incremental syncs read only conversations active since three days before the previous sync.
+
+Every other stream is full refresh only. Aircall filters some of these lists, such as contacts, numbers and users, by creation date and none of them by update date, so an incremental sync would miss edits to existing records ([List all Contacts](https://developers.aircall.io/api-references/#list-all-contacts), [List all Numbers](https://developers.aircall.io/api-references/#list-all-numbers)).
 
 ## Supported Streams
 
-| Stream                   | Sync mode                 | Notes                                                                                                                                                                                                                                                                                                                                                                                                           |
-| :----------------------- | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| calls                    | Full refresh, incremental | Incremental syncs read the last three days again. See below.                                                                                                                                                                                                                                                                                                                                                    |
-| company                  | Full refresh              | Used for connection checks. No primary key; Aircall returns one company object without an identifier.                                                                                                                                                                                                                                                                                                           |
-| contacts                 | Full refresh              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| numbers                  | Full refresh              | Full refresh only since 1.0.0; the endpoint can't filter by update time.                                                                                                                                                                                                                                                                                                                                        |
-| tags                     | Full refresh              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| user_availability        | Full refresh              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| users                    | Full refresh              | Uses the Aircall User V2 API.                                                                                                                                                                                                                                                                                                                                                                                   |
-| teams                    | Full refresh              | Full refresh only since 1.0.0; the endpoint can't filter by update time.                                                                                                                                                                                                                                                                                                                                        |
-| webhooks                 | Full refresh              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| conversations            | Full refresh, incremental | Needs the Conversations API. Incremental syncs pick up conversations with a new call or message; a close, reopen or assignment without new activity arrives with the next activity or a full refresh.                                                                                                                                                                                                           |
-| conversation_engagements | Full refresh, incremental | Needs the Conversations API. The first sync makes one request per conversation. Incremental syncs read the engagements of every conversation with activity since three days before the last sync, so a daily schedule keeps them small; closes, reopens and assignments without a new call or message arrive only with a full refresh. Aircall returns at most the newest 10,000 engagements of a conversation. |
-| campaigns                | Full refresh              | Outbound campaigns.                                                                                                                                                                                                                                                                                                                                                                                             |
-| campaign_outcomes        | Full refresh              | Outcomes agents can set on campaign calls.                                                                                                                                                                                                                                                                                                                                                                      |
-| trackers                 | Full refresh              | Needs AI Assist or AI Assist Pro; returns no records without it.                                                                                                                                                                                                                                                                                                                                                |
-| sms_templates            | Full refresh              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| whatsapp_templates       | Full refresh              | Read per number; numbers not registered for WhatsApp return no templates.                                                                                                                                                                                                                                                                                                                                       |
+| Stream | Sync modes | Primary key | Plan or add-on |
+| :--- | :--- | :--- | :--- |
+| [`calls`](https://developers.aircall.io/api-references/#list-all-calls) | Full refresh, incremental | `id` | All plans |
+| [`campaign_outcomes`](https://developers.aircall.io/api-references/#list-all-campaign-outcomes) | Full refresh | `id` | Outbound Campaigns |
+| [`campaigns`](https://developers.aircall.io/api-references/#list-all-campaigns) | Full refresh | `id` | Outbound Campaigns |
+| [`company`](https://developers.aircall.io/api-references/#retrieve-company-information) | Full refresh | None | All plans |
+| [`contacts`](https://developers.aircall.io/api-references/#list-all-contacts) | Full refresh | `id` | All plans |
+| [`conversation_engagements`](https://developers.aircall.io/api-references/#list-the-engagements-of-a-conversation) | Full refresh, incremental | `id` | Conversations API |
+| [`conversations`](https://developers.aircall.io/api-references/#list-all-conversations) | Full refresh, incremental | `id` | Conversations API |
+| [`numbers`](https://developers.aircall.io/api-references/#list-all-numbers) | Full refresh | `id` | All plans |
+| [`sms_templates`](https://developers.aircall.io/api-references/#list-sms-templates) | Full refresh | `id` | All plans |
+| [`tags`](https://developers.aircall.io/api-references/#list-all-tags) | Full refresh | `id` | All plans |
+| [`teams`](https://developers.aircall.io/api-references/#list-all-teams) | Full refresh | `id` | All plans |
+| [`trackers`](https://developers.aircall.io/api-references/#list-all-trackers) | Full refresh | `id` | AI Assist or AI Assist Pro |
+| [`user_availability`](https://developers.aircall.io/api-references/#retrieve-list-of-users-availability) | Full refresh | `id` | All plans |
+| [`users`](https://developers.aircall.io/api-references/#list-all-users-v2) | Full refresh | `id` | All plans |
+| [`webhooks`](https://developers.aircall.io/api-references/#list-all-webhooks) | Full refresh | `webhook_id` | All plans |
+| [`whatsapp_templates`](https://developers.aircall.io/api-references/#list-whatsapp-templates) | Full refresh | `number_id`, `id` | Numbers registered for WhatsApp |
 
-## API method example
+Notes:
 
-GET https://api.aircall.io/v1/numbers
+- `company` has no primary key. Aircall returns a single company object with no identifier ([Retrieve Company information](https://developers.aircall.io/api-references/#retrieve-company-information)).
+- `contacts` returns shared contacts only ([List all Contacts](https://developers.aircall.io/api-references/#list-all-contacts)).
+- `users` reads the [User V2 API](https://developers.aircall.io/api-references/#user-v2-overview).
+- `webhooks` uses `webhook_id`, the UUID that identifies a webhook. Aircall treats the integer `id` as the old identifier ([List all Webhooks](https://developers.aircall.io/api-references/#list-all-webhooks)).
+- `conversation_engagements` returns the calls, messages, WhatsApp messages, assignments, unassignments, closes and reopens of each conversation. The first sync and every full refresh make at least one request per conversation. Each incremental sync re-reads the engagements of every conversation active since three days before the previous sync, so syncing more often than daily repeats most of that work.
+- `whatsapp_templates` returns the templates of each number, with `number_id` identifying the number.
 
-## Performance considerations
+## Limitations and troubleshooting
 
-The connector uses Aircall's [v1 API](https://developers.aircall.io/api-references/), and the [User V2 API](https://developers.aircall.io/api-references/#list-all-users-v2) for users. Calls, contacts and conversations are read in date windows because Aircall returns at most [10,000 records per query](https://developers.aircall.io/api-references/#pagination); a calls window that hits the limit is split and read again, and conversations continue from the last record's time. Without the Conversations API, every sync that selects `conversations` or `conversation_engagements` still spends one request per 30 days of history on the refused windows, so deselect both streams when the API is not enabled. The connector uses 100 of the [120 requests per minute](https://developers.aircall.io/api-references/#rate-limiting) Aircall allows each company, leaving room for the company's other integrations. Calls start 365 days back, covering the six months of call history Aircall keeps; the Start date saved by versions before 0.5.0 is no longer used.
+### 10,000-result limit
 
-Incremental syncs of `calls`, `conversations` and `conversation_engagements` read the last three days again, and a day with more than 10,000 calls is read more than once, so a sync mode without deduplication stores those records again. Use `Incremental | Append + Deduped` (primary key `id`) to keep one row per record; an Overwrite mode keeps only the last six months of calls.
+Aircall returns at most 10,000 calls, contacts, conversations or engagements for a single query, even with pagination ([Pagination](https://developers.aircall.io/api-references/#pagination), [List all Conversations](https://developers.aircall.io/api-references/#list-all-conversations)). The connector works around it per stream:
+
+- `calls` are requested one day at a time by default (**Window size (days)**). A window with more than 10,000 calls is split into smaller time ranges and read again, so some of its calls are sent more than once; `Incremental | Append + Deduped` keeps one row per call.
+- `contacts` are requested 30 days of creation date at a time (**Contacts window size (days)**). If a sync fails with `Aircall returns at most 10,000 contacts per request window`, lower that setting. A single day with more than 10,000 new contacts can't be read.
+- `conversations` continue from the time of the last record after every 10,000 records.
+- `conversation_engagements` returns at most the newest 10,000 engagements of a conversation; older ones aren't synced.
+
+### Six months of call history
+
+Aircall keeps only six months of call history in the API ([List all Calls](https://developers.aircall.io/api-references/#list-all-calls)). The connector reads `calls` from 365 days back on every full refresh and on the first incremental sync, which covers all the history Aircall keeps. Older calls aren't returned, so syncing `calls` in an Overwrite mode, clearing it, or running a Refresh and Remove Records sync deletes calls older than six months from the destination for good. Keep `calls` in `Incremental | Append + Deduped`, and use [Refresh and Retain Records](https://docs.airbyte.com/platform/operator-guides/refreshes#refresh-and-retain-records) to re-read the last six months. To get older calls, ask [Aircall Support](https://support.aircall.io/) for a one-time export.
+
+### Rate limit
+
+Aircall allows 120 requests per minute per company, shared by every API key and integration on your Aircall account ([Rate limiting](https://developers.aircall.io/api-references/#rate-limiting)). The connector uses at most 100 of them and, when Aircall rejects a request for exceeding the limit, waits until Aircall resets the counter. Raising **Concurrent workers** doesn't raise the limit. Aircall Support can raise the limit for your API keys.
+
+### Streams that sync no records
+
+Some streams need an Aircall add-on or a specific number setup. When your company doesn't have it, Aircall refuses the requests, and the connector logs a message for each refused request instead of failing the sync:
+
+| Stream | Requirement |
+| :--- | :--- |
+| `conversations`, `conversation_engagements` | The Conversations API must be enabled for your company ([List all Conversations](https://developers.aircall.io/api-references/#list-all-conversations)). Without it, each sync still spends one request per 30 days since January 2014 on each of the two streams, about 157 each, so deselect both streams. |
+| `trackers` | The AI Assist or AI Assist Pro package ([List all Trackers](https://developers.aircall.io/api-references/#list-all-trackers)). |
+| `whatsapp_templates` | Only numbers registered for WhatsApp return templates ([List WhatsApp Templates](https://developers.aircall.io/api-references/#list-whatsapp-templates)). |
+
+If a sync fails with `Aircall rejected the API ID and API token` or `Aircall returned HTTP 403`, the API key is wrong or was deleted, or your Aircall plan doesn't include that data. Create a new API key and update the source, or check your plan.
+
+### Upgrading to 1.0.0
+
+Version 1.0.0 adds primary keys to `calls` and `contacts`, changes the `webhooks` primary key to `webhook_id`, makes `numbers` and `teams` full refresh only, and changes several column types. Some destinations need a step before you upgrade or before the first 1.0.0 sync: ClickHouse for `Full Refresh | Append` `users` ([Before you upgrade](aircall-migrations.md#before-you-upgrade)) and Snowflake for append-mode `calls` ([If you keep an append-mode calls table](aircall-migrations.md#if-you-keep-an-append-mode-calls-table)). After upgrading, refresh the source schema and switch `numbers` and `teams` from an Incremental mode to `Full Refresh | Overwrite`. Clearing `calls` or switching it to an Overwrite mode deletes calls older than six months for good. Follow the [migration guide](aircall-migrations.md#upgrading-to-100).
 
 ## IP allow list
 
