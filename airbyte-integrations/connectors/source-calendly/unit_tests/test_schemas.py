@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+from pathlib import Path
 
 import pytest
 import yaml
@@ -98,6 +99,25 @@ ORIGINAL_TYPE_FORMAT_DIGESTS = {
     "scheduled_events": "8278e5678f3dffa2c708abb5361e90d37ce88984418a266236471afc9ed719cc",
     "event_invitees": "d957a5847b327f05233dbd95d3a0a4c4d9d17e91e450098afadf03f1437e34f3",
 }
+# Type and format of every field of the streams added in 0.3.0; changing one later is a breaking change.
+NEW_STREAM_TYPE_FORMAT_DIGESTS = {
+    "teams": "e17372cf36eef2e8fab9e35e6242bed3e79ec2f50dc6698c228a337ca6b5133e",
+    "event_type_memberships": "c9f561cf00d99f141d62ae09f22ec7b70e8da067408c2c4d10f324fe9447d638",
+    "group_relationships": "b7c5950718c99589c1a6af74d4ad4bf70ad504c9f2571fc29451ca831ba9a151",
+    "user_availability_schedules": "6b0cf23283e6b0f174bd6d15182473fb86737f885b5b4609b141813dcd17e4bb",
+    "locations": "7202a100bfe2ed7d224bc33d04cd8284fce2b42d104944cef0a4fda69ffd0cbd",
+    "organization_invitations": "7bdb1e823f1a749e36687c2fff8ac4aa29aba54599ff06c2860ea42c72ace5fc",
+    "webhook_subscriptions": "d3f5bdd154f461d545499766a6eaca61e6cc4596dbda8120617b2dc36e8f6a56",
+}
+NEW_STREAM_PRIMARY_KEYS = {
+    "teams": ["uri"],
+    "event_type_memberships": ["uri"],
+    "group_relationships": ["uri"],
+    "user_availability_schedules": ["uri"],
+    "locations": [],
+    "organization_invitations": ["uri"],
+    "webhook_subscriptions": ["uri"],
+}
 
 
 def schema_fields(node: dict, path: str = "") -> dict:
@@ -155,3 +175,35 @@ def test_documented_nested_fields_and_types() -> None:
         "utm_term",
         "salesforce_uuid",
     }
+
+
+def test_new_stream_primary_keys_are_required_strings() -> None:
+    manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
+    assert {
+        stream: manifest["definitions"]["streams"][stream]["primary_key"] for stream in NEW_STREAM_PRIMARY_KEYS
+    } == NEW_STREAM_PRIMARY_KEYS
+    schemas = manifest["schemas"]
+    for stream, primary_key in NEW_STREAM_PRIMARY_KEYS.items():
+        schema = schemas[stream]
+        assert set(primary_key).issubset(schema["required"])
+        for field in primary_key:
+            assert schema["properties"][field]["type"] == "string"
+
+
+def test_suggested_streams_remain_the_existing_five() -> None:
+    metadata_path = Path(__file__).parents[1] / "metadata.yaml"
+    metadata = yaml.safe_load(metadata_path.read_text())
+    assert metadata["data"]["suggestedStreams"]["streams"] == [
+        "scheduled_events",
+        "event_invitees",
+        "event_types",
+        "organization_memberships",
+        "api_user",
+    ]
+
+
+@pytest.mark.parametrize("stream", NEW_STREAM_TYPE_FORMAT_DIGESTS)
+def test_new_stream_schemas_keep_their_types_and_formats(stream: str) -> None:
+    schema = yaml.safe_load(_YAML_FILE_PATH.read_text())["schemas"][stream]
+    assert schema["additionalProperties"] is True
+    assert hashlib.sha256(json.dumps(schema_fields(schema), sort_keys=True).encode()).hexdigest() == NEW_STREAM_TYPE_FORMAT_DIGESTS[stream]
