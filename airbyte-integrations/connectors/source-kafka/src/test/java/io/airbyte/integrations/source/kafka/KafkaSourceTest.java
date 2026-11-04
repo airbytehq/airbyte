@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.kafka;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
@@ -40,7 +43,9 @@ public class KafkaSourceTest {
   }
 
   private JsonNode config(final String protocol) {
-    return Jsons.jsonNode(java.util.Map.of("protocol", java.util.Map.of("security_protocol", protocol)));
+    return Jsons.jsonNode(java.util.Map.of("protocol", java.util.Map.of("security_protocol", protocol,
+        "sasl_mechanism", "PLAIN",
+        "sasl_jaas_config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"test\" password=\"test\";")));
   }
 
   @ParameterizedTest
@@ -78,6 +83,51 @@ public class KafkaSourceTest {
     assertThrows(ConfigErrorException.class, () -> source.check(config));
     assertThrows(ConfigErrorException.class, () -> source.discover(config));
     assertThrows(ConfigErrorException.class, () -> source.read(config, null, null));
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = {
+    "com.sun.security.auth.module.JndiLoginModule required;",
+    "com.example.CustomLoginModule required;",
+    "org.apache.kafka.common.security.plain.PlainLoginModuleSuffix required;",
+    "org.apache.kafka.common.security.plain.PlainLoginModule required; com.example.CustomLoginModule required;",
+    "org.apache.kafka.common.security.plain.PlainLoginModule required password=\"sensitive-test-value\"",
+    "not valid JAAS sensitive-test-value"
+  })
+  void cloudRejectsUnsupportedOrInvalidJaasBeforeConnecting(final String jaas) {
+    final KafkaSource source = source("CLOUD");
+    final JsonNode config = config("SASL_SSL");
+    final ObjectNode protocol = (ObjectNode) config.get("protocol");
+    if (jaas == null) {
+      protocol.remove("sasl_jaas_config");
+    } else {
+      protocol.put("sasl_jaas_config", jaas);
+    }
+    try (final MockedStatic<KafkaFormatFactory> factory = mockStatic(KafkaFormatFactory.class)) {
+      final ConfigErrorException error = assertThrows(ConfigErrorException.class, () -> source.check(config));
+      assertFalse(error.getMessage().contains("sensitive-test-value"));
+      assertThrows(ConfigErrorException.class, () -> source.check(config));
+      assertThrows(ConfigErrorException.class, () -> source.discover(config));
+      assertThrows(ConfigErrorException.class, () -> source.read(config, null, null));
+      factory.verifyNoInteractions();
+    }
+  }
+
+  @Test
+  void ossDoesNotValidateLoginModules() throws Exception {
+    final KafkaSource source = source("OSS");
+    final JsonNode config = config("SASL_SSL");
+    ((ObjectNode) config.get("protocol")).put("sasl_jaas_config", "com.example.CustomLoginModule required;");
+    final KafkaFormat format = mock(KafkaFormat.class);
+    when(format.isAccessible()).thenReturn(true);
+    when(format.getStreams()).thenReturn(List.of());
+    try (final MockedStatic<KafkaFormatFactory> factory = mockStatic(KafkaFormatFactory.class)) {
+      factory.when(() -> KafkaFormatFactory.getFormat(config)).thenReturn(format);
+      assertEquals(Status.SUCCEEDED, source.check(config).getStatus());
+      source.discover(config);
+      source.read(config, null, null);
+    }
   }
 
   @ParameterizedTest
@@ -119,6 +169,33 @@ public class KafkaSourceTest {
     final JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config.json"));
     final KafkaFormat kafkaFormat = KafkaFormatFactory.getFormat(configJson);
     assertInstanceOf(AvroFormat.class, kafkaFormat);
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "PLAIN, org.apache.kafka.common.security.plain.PlainLoginModule",
+    "SCRAM-SHA-256, org.apache.kafka.common.security.scram.ScramLoginModule",
+    "SCRAM-SHA-512, org.apache.kafka.common.security.scram.ScramLoginModule",
+    "GSSAPI, com.sun.security.auth.module.Krb5LoginModule",
+    "OAUTHBEARER, org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule",
+    "AWS_MSK_IAM, software.amazon.msk.auth.iam.IAMLoginModule"
+  })
+  void cloudAllowsSupportedLoginModules(final String mechanism, final String loginModule) throws Exception {
+    final KafkaSource source = source("CLOUD");
+    final JsonNode config = config("SASL_SSL");
+    final ObjectNode protocol = (ObjectNode) config.get("protocol");
+    protocol.put("sasl_mechanism", mechanism);
+    protocol.put("sasl_jaas_config", loginModule + " required password=\"a; quoted value\";");
+    final KafkaFormat format = mock(KafkaFormat.class);
+    when(format.isAccessible()).thenReturn(true);
+    when(format.getStreams()).thenReturn(List.of());
+    try (final MockedStatic<KafkaFormatFactory> factory = mockStatic(KafkaFormatFactory.class)) {
+      factory.when(() -> KafkaFormatFactory.getFormat(config)).thenReturn(format);
+      assertEquals(Status.SUCCEEDED, source.check(config).getStatus());
+      source.discover(config);
+      source.read(config, null, null);
+      verify(format).read();
+    }
   }
 
 }
