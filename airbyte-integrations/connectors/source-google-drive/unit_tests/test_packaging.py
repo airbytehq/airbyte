@@ -2,8 +2,10 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
-import tomllib
 from pathlib import Path
+
+import tomllib
+
 
 PYPROJECT_PATH = Path(__file__).parent.parent / "pyproject.toml"
 
