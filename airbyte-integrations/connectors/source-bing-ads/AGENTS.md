@@ -14,7 +14,23 @@ Bing Ads bulk report streams download files from Azure Blob Storage URLs. These 
 
 **Why this matters:** If you assume all bulk downloads are properly gzip-compressed, you will encounter intermittent failures. Azure Blob Storage does not always apply compression consistently, so the decoder must handle both compressed and uncompressed responses for the same stream.
 
-## 3. Download URLs Expire and Are Refreshed Before Each Download
+## 3. Bulk Delta Downloads Have a 30-Day Limit
+
+The eight bulk entity streams request `EntityData` through [DownloadCampaignsByAccountIds](https://learn.microsoft.com/en-us/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13). `LastSyncTimeInUTC` selects entity changes, and Microsoft rejects timestamps older than 30 days. The connector omits this parameter when the slice starts before the 30-day cutoff, causing a full download. The reporting `lookback_window` does not apply to these streams because rewinding entity deltas adds redundant reads and can trigger this fallback.
+
+The connector currently saves the maximum record `Modified Time`, so inactive accounts can still fall back to full downloads. Microsoft recommends using the account record's `Sync Time` from the previous download; adopting that would require a separate cursor/state change.
+
+**Why this matters:** Applying a report conversion window to bulk entities can turn every sync into a full download. Report streams, including budget summary and custom reports, retain lookback to re-read dated metrics that may change later.
+
+## 4. Campaigns Are Only Returned for Explicitly Requested Campaign Types
+
+The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campaigns whose type is listed in the `CampaignType` request field (and only `Search` campaigns when the field is omitted). The manifest therefore sends every documented [CampaignType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/campaigntype?view=bingads-13) value. When Microsoft adds a new campaign type, it must be added to this list.
+
+The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
+
+**Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Download URLs Expire and Are Refreshed Before Each Download
 
 Report (`GenerateReport/Poll`) and bulk (`BulkDownloadStatus/Query`) jobs return pre-signed Azure Blob Storage SAS URLs that expire minutes after they are issued. Large syncs queue many downloads, so the URL captured at job completion is often expired by the time it is used. `BingAdsReportDownloadRequester` and `BingAdsBulkDownloadRequester` re-poll for a fresh URL immediately before each download, and the manifest's `download_url_error_handler` hands a `403` back to them so they can re-poll and retry (up to `max_download_attempts`) instead of failing with a generic permission error.
 

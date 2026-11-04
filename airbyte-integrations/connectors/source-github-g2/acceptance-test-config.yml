@@ -1,4 +1,5 @@
 connector_image: airbyte/source-github-g2:dev
+bypass_reason: "No test config in GSM for this connector"
 test_strictness_level: "high"
 acceptance_tests:
   spec:
