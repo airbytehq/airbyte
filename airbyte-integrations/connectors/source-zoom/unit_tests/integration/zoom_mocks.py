@@ -41,8 +41,18 @@ CONFIG = {
     }
 }
 
-WEBINAR_1 = {"id": 81111111111, "uuid": "wPUYIy/pR2mPs5r9no2GmA==", "topic": "Webinar one"}
-WEBINAR_2 = {"id": 82222222222, "uuid": "/abc//d==", "topic": "Webinar two"}
+WEBINAR_1 = {
+    "id": 81111111111,
+    "uuid": "wPUYIy/pR2mPs5r9no2GmA==",
+    "topic": "Webinar one",
+    "created_at": "2026-09-01T10:00:00Z",
+}
+WEBINAR_2 = {
+    "id": 82222222222,
+    "uuid": "/abc//d==",
+    "topic": "Webinar two",
+    "created_at": "2026-10-10T10:00:00Z",
+}
 WEBINARS = [WEBINAR_1, WEBINAR_2]
 ENCODED_UUIDS = {
     WEBINAR_1["uuid"]: "wPUYIy%252FpR2mPs5r9no2GmA%253D%253D",
@@ -54,16 +64,6 @@ _TOKEN_REQUEST = HttpRequest(
     query_params={"grant_type": "account_credentials", "account_id": "test_account_id"},
 )
 _WEBINARS_NEXT_PAGE_TOKEN = "webinars-page-2"
-
-# Pre-existing drift: `AddFields` injects `webinar_id` from `stream_partition.parent_id` (an int) while these
-# schemas declare it `["null", "string"]`. Fixing it changes the emitted type, so it is a separate, breaking change.
-# Remove a stream from this map once its schema and `AddFields` agree.
-KNOWN_SCHEMA_DRIFT = {
-    "webinar_registrants": {"webinar_id"},
-    "webinar_polls": {"webinar_id"},
-    "webinar_registration_questions": {"webinar_id"},
-    "webinar_tracking_sources": {"webinar_id"},
-}
 
 
 def json_response(body: Any, status_code: int = 200) -> HttpResponse:
@@ -148,7 +148,7 @@ def read_stream(
 @lru_cache(maxsize=None)
 def _stream_schema_validators() -> Dict[str, Draft7Validator]:
     catalog = discover(get_source(config=CONFIG), CONFIG).catalog.catalog
-    return {stream.name: Draft7Validator(stream.json_schema) for stream in catalog.streams}
+    return {stream.name: Draft7Validator(stream.json_schema, format_checker=Draft7Validator.FORMAT_CHECKER) for stream in catalog.streams}
 
 
 def records_data(output: EntrypointOutput) -> List[Dict[str, Any]]:
@@ -156,17 +156,11 @@ def records_data(output: EntrypointOutput) -> List[Dict[str, Any]]:
 
 
 def assert_records_match_schema(output: EntrypointOutput, stream_name: str) -> None:
-    """Every record validates against the discovered schema, except the fields listed in `KNOWN_SCHEMA_DRIFT`."""
+    """Every record validates against the discovered schema."""
     validator = _stream_schema_validators()[stream_name]
-    known_drift = KNOWN_SCHEMA_DRIFT.get(stream_name, set())
-    drifted_fields = set()
     for record in records_data(output):
-        for error in validator.iter_errors(record):
-            field = error.absolute_path[0] if error.absolute_path else None
-            assert field in known_drift, f"{stream_name} record does not match its schema: {error.message}"
-            drifted_fields.add(field)
-    if output.records:
-        assert drifted_fields == known_drift, f"{stream_name} no longer drifts on {known_drift - drifted_fields}; update KNOWN_SCHEMA_DRIFT"
+        errors = list(validator.iter_errors(record))
+        assert not errors, f"{stream_name} record does not match its schema: {[error.message for error in errors]}"
 
 
 def assert_completed_without_errors(output: EntrypointOutput, stream_name: str) -> None:
