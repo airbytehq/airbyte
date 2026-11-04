@@ -85,6 +85,7 @@ For quota details, see [Reports API limits and quotas](https://developers.google
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2026-11-03 | [90573](https://github.com/airbytehq/airbyte/pull/90573) | Update dependencies |
 | 0.0.1 | 2026-10-26 | [88377](https://github.com/airbytehq/airbyte/pull/88377) | Initial release by [@Joshua-omolewa](https://github.com/Joshua-omolewa) via Connector Builder |
 
 </details>

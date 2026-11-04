@@ -4,7 +4,7 @@
 
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 
