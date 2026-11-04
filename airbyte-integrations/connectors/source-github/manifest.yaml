@@ -99,16 +99,20 @@ definitions:
   rate_limit_backoff_strategies:
     # Both waits are capped by Max Waiting Time (`check` overrides it to 1, a 61s cap). Needs CDK >= 7.28.1.
     # `is not none` keeps null at 120 min; `+ 1` keeps a 1-minute budget above the 60s `min_wait` floor.
-    - type: WaitTimeFromHeader
-      header: "Retry-After"
-      max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
-    - type: WaitUntilTimeFromHeader
-      header: "X-RateLimit-Reset"
-      min_wait: 60
-      # The cap is compared against the computed wait, after `min_wait` (61s in check, so the floor still fits).
-      max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
-      # 60s floor from the legacy backoff; it also applies to headerless 5xx/timeouts (known CDK gap).
-      # Waited out only when rotating cannot help (no spare token, or a secondary limit). See AGENTS.md "Backoff floor".
+    # Gated on rate-limited responses: 5xx/timeouts use CDK exponential backoff (airbytehq/oncall#13837).
+    - type: CustomBackoffStrategy
+      class_name: source_declarative_manifest.components.RateLimitedResponseBackoffStrategy
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+        - type: WaitUntilTimeFromHeader
+          header: "X-RateLimit-Reset"
+          min_wait: 60
+          # The cap is compared against the computed wait, after `min_wait` (61s in check, so the floor still fits).
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+          # 60s floor from the legacy backoff. Waited out only when rotating cannot help
+          # (no spare token, or a secondary limit). See AGENTS.md "Backoff floor".
 
   # Must stay first: filters run before `response.ok`, so a 200 with `Retry-After` would be rate-limited.
   # 200 only: a 202 is `contributor_activity`'s "still computing, retry" signal.
@@ -15505,10 +15509,15 @@ definitions:
     max_retries: 5
     # No `WaitUntilTimeFromHeader` here: it answers its `min_wait` whenever the reset header is
     # absent, which would turn every 202 into a 60-second wait instead of the 90 below.
+    # The Retry-After wait is wrapped in `RateLimitedResponseBackoffStrategy` like the shared list;
+    # every `Retry-After` response counts as rate limited, so behavior is unchanged.
     backoff_strategies:
-      - type: WaitTimeFromHeader
-        header: "Retry-After"
-        max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+      - type: CustomBackoffStrategy
+        class_name: source_declarative_manifest.components.RateLimitedResponseBackoffStrategy
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: "Retry-After"
+            max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
       - type: ConstantBackoffStrategy
         backoff_time_in_seconds: 90
     response_filters:
@@ -20045,6 +20054,7 @@ streams:
 
 # Runs the same repository resolution as the streams (nothing resolved: "no stream slices were found").
 # `max_waiting_time: 1` fails fast on an exhausted quota; 1 rather than 0 so the 61s cap still retries a blip.
+# Headerless 5xx use exponential backoff and never consult that cap.
 check:
   type: CheckStream
   stream_names: [branches]

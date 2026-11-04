@@ -92,7 +92,8 @@ Things worth knowing before touching either half:
     as "None", which the CDK's boolean does not treat as false.
   - `contributor_activity` retries 202 with a 90s constant backoff. `WaitUntilTimeFromHeader` must
     not sit in front of it in `backoff_strategies`, because it answers `min_wait` whenever its
-    header is absent and would turn every 202 into a 60s wait.
+    header is absent and would turn every 202 into a 60s wait. Its `Retry-After` strategy is
+    wrapped in `RateLimitedResponseBackoffStrategy` like `rate_limit_backoff_strategies`.
   - `commits` slices per branch through `components.CommitsBranchPartitionRouter`, a
     `SubstreamPartitionRouter` over `repository_branches_resolver` that keeps the configured
     branches that exist and falls back to the default branch otherwise, exactly like
@@ -116,7 +117,9 @@ Things worth knowing before touching either half:
   mirroring `GITHUB_DEFAULT_ERROR_MAPPING`. When migrating a stream, pick the handler that
   matches what the legacy `GithubStreamABC.read_records` did for it, and remember that 410 is absent from
   the CDK default mapping — an endpoint GitHub answers 410 on needs a filter or it burns five
-  retries behind the 60s backoff floor before failing.
+  retries with exponential backoff before failing.
+- `rate_limit_backoff_strategies` is wrapped in `RateLimitedResponseBackoffStrategy`, so header
+  waits only apply to rate-limited responses; 5xx/timeouts get the CDK default exponential backoff.
 - `stargazers` uses `stargazers_error_handler` — `skip_inaccessible_error_handler` with 404/403
   filters naming GitHub's admin/collaborator restriction on the stargazers listing; keep its
   filter list in step when changing `skip_inaccessible_error_handler`. Each skip message starts
@@ -440,7 +443,7 @@ Per-filter notes:
 - `disabled_feature_skip_filter`: GitHub answers 410 when the feature backing an endpoint is off
   for the repository ("Issues are disabled for this repo."), and legacy skipped exactly those
   (`is_gone_with_feature_disabled`). 410 is absent from the CDK default mapping, so without the
-  filter it would be retried five times behind the 60s floor and fail. It is a predicate, not
+  filter it would be retried five times with exponential backoff and fail. It is a predicate, not
   `http_codes: [410]` + `error_message_contains`, because `HttpResponseFilter` ORs its conditions
   and that would skip every 410. The predicate keys off the error envelope (`response is
   mapping`); `| string` keeps a non-string `message` from raising. See the 410 bullet above for
@@ -491,8 +494,8 @@ Per-filter notes:
 rate-limit wait, not only the ones the authenticator decides before sending. `check` runs with
 `max_waiting_time: 1`, a 61s cap, so it fails fast on an exhausted quota instead of sleeping until
 the reset. The `+ 1` keeps the budget inclusive: the CDK compares with `>=`, so a 1-minute budget
-would otherwise equal the `min_wait: 60` floor and every headerless 5xx would fail instead of
-retrying. `check` uses 1 rather than 0 for the same reason. Requires CDK >= 7.28.1
+would otherwise equal the `min_wait: 60` floor and a rate-limited response without a reset header
+(a 429 or a secondary-limit 403 with no headers) would fail instead of retrying. `check` uses 1 rather than 0 for the same reason. Requires CDK >= 7.28.1
 (airbytehq/airbyte-python-cdk#1126): before it, `HttpClient` asked for a spare token only after a
 strategy returned a wait, and a cap raises instead, so a budget shorter than the reset distance
 ended the stream rather than rotating (measured on 7.28.0: a 30-minute budget against a 60-minute
@@ -509,18 +512,25 @@ floored:
 | 403 + `Retry-After: 30` | 30s (floor missing) | 60s |
 | 403 + `X-RateLimit-Reset` now+10 | 60s | 60s |
 | 403 + reset already past | 60s | 60s |
-| 500 / timeout, no such headers | 60s (floor leaking) | expo |
+| 500 + `X-RateLimit-Reset` now+3000 | expo | expo |
+| 500 / timeout, no such headers | expo | expo |
 
 `WaitTimeFromHeader` has no `min_wait`, so `Retry-After` is used raw; `WaitUntilTimeFromHeader`
 returns `min_wait` outright when its header is absent instead of flooring a computed wait; and
 the strategies are shared by every retryable response on the requesters that inherit them.
+`components.RateLimitedResponseBackoffStrategy` contains both effects by gating the two strategies
+on a rate-limit response: headerless ordinary retries no longer inherit `min_wait`, and a reset
+header on a 5xx is ignored (GitHub sends one on 500s; waiting for it spent the 600s `max_time`
+retry budget in one sleep, airbytehq/oncall#13837). The `Retry-After` floor is still missing.
 Alternatives measured and rejected: a `CompositeErrorHandler` with `min_wait` on a rate-limit-only
 branch changes nothing (`CompositeErrorHandler.backoff_strategies` flattens every child's
-strategies, and `HttpClient` takes the first truthy one); dropping `min_wait` fixes the leak but a
+strategies, and `HttpClient` takes the first truthy one, which is why the component gate is
+needed); dropping `min_wait` fixes the leak but a
 stale reset then falls to `backoff.expo` and spends the retries at 1, 2, 4, 8, 16s against a limit
-that has not refilled. The fix belongs in the CDK: `WaitUntilTimeFromHeader` should return `None`
+that has not refilled. A CDK fix would still be right for other connectors: `WaitUntilTimeFromHeader` should return `None`
 when its header is missing and `WaitTimeFromHeader` should gain `min_wait`; four other connectors
-combine these strategies. Until then a headerless 5xx or timeout waits 60s per attempt, up to `max_retries` (5; 7 on `comments`).
+combine these strategies. Headerless 5xx and timeouts use the CDK default exponential backoff
+(1/2/4/8/16s), as legacy did.
 
 The wait is only paid when rotating cannot help: CDK 7.26.0 reconciles the authenticator's
 counters against every response, so a primary rate limit spends the rejected token's pool and
@@ -673,8 +683,9 @@ ends pagination.
 page of `repos/{repo}/branches`. `config_overrides.max_waiting_time: 1` makes the authenticator
 raise "Rate limit is exceeded for all provided tokens." on an exhausted quota instead of sleeping
 up to 120 minutes. 1 rather than 0 because the caps resolve to `max_waiting_time * 60 + 1` and the
-floor is 60s: a 1s cap would fail the first transient error (500, 429 without headers) with the
-rate-limit message, while 61s retries a blip.
+floor is 60s: a 1s cap would fail the first rate-limited response without a reset header (429 or
+secondary-limit 403) with the rate-limit message, while 61s retries a blip. Headerless 5xx use
+exponential backoff and never consult that cap.
 
 ## Incremental Stream Considerations
 
