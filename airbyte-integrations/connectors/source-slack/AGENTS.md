@@ -14,6 +14,12 @@ The `MessagesAndThreadsApiBudget` starts with an `UnlimitedCallRatePolicy` (no r
 
 **Why this matters:** The connector starts fast with no rate limiting and then abruptly drops to 1 request per minute after hitting its first 429. This dramatic slowdown is intentional but can make syncs appear to stall. The rate limit policy is not reset between stream reads within the same sync, so hitting a 429 on the messages stream will also throttle the threads stream.
 
+## 3. Thread Replies Are Bounded by the Thread Cursor and Skipped from `latest_reply`
+
+The `threads` stream sends its per-thread cursor as `oldest`/`latest` (with `inclusive`) on `conversations.replies`, so each sync reads only replies newer than the saved cursor minus the lookback window. `ThreadRepliesHttpRequester` returns `None` instead of sending the request when the parent message's `latest_reply` (passed through the partition's `extra_fields`) is finite and strictly older than that request's `oldest`; a missing, invalid or non-finite `latest_reply` still sends the request.
+
+**Why this matters:** Slack returns the thread's parent message on every page of a bounded replies call, so the parent row is re-emitted whenever a request is made and left out when the request is skipped. Replies older than the window are never re-read, so edits to them are not picked up, and a thread that first appears after its replies were posted (a channel joined later, a widened `channel_filter`) starts from the global cursor minus the lookback window. Unit-test mocks for `conversations.replies` must return the parent regardless of `oldest`.
+
 ## Incremental Stream Considerations
 
 The Slack API supports `oldest`/`latest` timestamp filtering on conversations.history and related endpoints. The connector uses Python custom components (`JoinChannelsStream`) referenced from the manifest.

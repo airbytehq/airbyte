@@ -182,7 +182,7 @@ Because this throttle can slow down a sync that includes other streams, consider
 
 #### Threads stream performance
 
-Incremental Threads syncs request replies within the saved cursor and lookback window. When Slack supplies a valid latest-reply timestamp before that window, the connector skips the replies request. Missing or invalid timestamps still trigger a read. This does not expand the parent-message history covered by the configured lookback window.
+Incremental Threads syncs request replies within the saved cursor and lookback window. When Slack supplies a valid latest-reply timestamp before that window, the connector skips the replies request. Missing or invalid timestamps still trigger a read. This does not expand the parent-message history covered by the configured lookback window. Replies older than the saved thread cursor minus the lookback window are not re-read, so later edits to those replies are not synced, and a thread that first appears after its replies were posted (for example, in a channel the bot joined later) is read from the current cursor minus the lookback window. Increase the **Threads Lookback window** or refresh the stream to re-read older replies. Slack returns the thread's parent message with every replies request, so the parent row is re-synced whenever a request is made; the `channel_messages` stream always carries the current parent.
 
 For workspaces with many quiet channels, increasing `channel_messages_window_size` can reduce empty history requests. The supported range is 1–365 days; the default remains 100. Larger windows retain pagination and the same overall history range.
 
@@ -206,7 +206,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.2.28 | 2026-10-14 | [88924](https://github.com/airbytehq/airbyte/pull/88924) | Honor thread cursor bounds, skip replies older than the requested window, and allow larger history windows |
+| 3.2.28 | 2026-11-04 | [88924](https://github.com/airbytehq/airbyte/pull/88924) | Honor thread cursor bounds, skip replies older than the requested window, and allow larger history windows |
 | 3.2.27 | 2026-10-06 | [88029](https://github.com/airbytehq/airbyte/pull/88029) | Update dependencies |
 | 3.2.26 | 2026-09-29 | [87330](https://github.com/airbytehq/airbyte/pull/87330) | Update dependencies |
 | 3.2.25 | 2026-09-28 | [86496](https://github.com/airbytehq/airbyte/pull/86496) | Preserve thread parent checkpoints on restart and skip archived channels the bot cannot join |

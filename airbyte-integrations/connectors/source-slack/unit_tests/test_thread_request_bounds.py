@@ -35,12 +35,14 @@ def test_thread_requests_honor_saved_cursor_and_keep_paginated_boundary_replies(
     def replies(request, context):
         oldest = float(request.qs.get("oldest", ["0"])[0])
         latest = float(request.qs.get("latest", ["9999999999"])[0])
-        eligible = [ts for ts in timestamps if oldest <= float(ts) <= latest]
+        # Slack returns the parent on every page of a bounded replies call; oldest and latest only filter the replies.
+        eligible = [ts for ts in timestamps[1:] if oldest <= float(ts) <= latest]
         offset = int(request.qs.get("cursor", ["0"])[0])
         next_cursor = str(offset + 1) if offset + 1 < len(eligible) else ""
+        page = [{"ts": ts, "thread_ts": root} for ts in eligible[offset : offset + 1]]
         return {
             "ok": True,
-            "messages": [{"ts": ts, "thread_ts": root} for ts in eligible[offset : offset + 1]],
+            "messages": [{"ts": root, "thread_ts": root, "reply_count": 3}, *page],
             "has_more": bool(next_cursor),
             "response_metadata": {"next_cursor": next_cursor},
         }
@@ -72,7 +74,7 @@ def test_thread_requests_honor_saved_cursor_and_keep_paginated_boundary_replies(
     )
     output = read(get_source(config, "threads", state), config=config, catalog=catalog, state=state)
     assert not output.errors
-    assert {r.record.data["ts"] for r in output.records} == set(timestamps[1:])
+    assert {r.record.data["ts"] for r in output.records} == set(timestamps)
     assert endpoint.call_count == 3
     for request in endpoint.request_history:
         assert float(request.qs["oldest"][0]) == expected_oldest
@@ -110,7 +112,7 @@ def test_thread_requests_skip_only_proven_older_replies(requests_mock, token_con
     if latest_reply is not None:
         parent["latest_reply"] = latest_reply
     requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": [parent]})
-    endpoint = requests_mock.get("https://slack.com/api/conversations.replies", json={"ok": True, "messages": []})
+    endpoint = requests_mock.get("https://slack.com/api/conversations.replies", json={"ok": True, "messages": [parent]})
     state = (
         StateBuilder()
         .with_stream_state(
@@ -136,7 +138,7 @@ def test_thread_requests_skip_only_proven_older_replies(requests_mock, token_con
     )
     output = read(get_source(config, "threads", state), config=config, catalog=catalog, state=state)
     assert not output.errors
-    assert not output.records
+    assert {r.record.data["ts"] for r in output.records} == ({root} if expected_requests else set())
     assert endpoint.call_count == expected_requests
     parent_state = output.most_recent_state.stream_state.parent_state["channel_messages"]
     assert float(parent_state["states"][0]["cursor"]["float_ts"]) == float(root)
@@ -161,7 +163,11 @@ def test_thread_requests_preserve_initial_backfill_and_older_partition_cursors(r
         json={"ok": True, "messages": [{"ts": root, "thread_ts": root, "reply_count": 1, "latest_reply": latest}]},
     )
     endpoint = requests_mock.get(
-        "https://slack.com/api/conversations.replies", json={"ok": True, "messages": [{"ts": latest, "thread_ts": root}]}
+        "https://slack.com/api/conversations.replies",
+        json={
+            "ok": True,
+            "messages": [{"ts": root, "thread_ts": root, "reply_count": 1, "latest_reply": latest}, {"ts": latest, "thread_ts": root}],
+        },
     )
     if existing_partition:
         checkpoint = "1769904000"
@@ -199,6 +205,6 @@ def test_thread_requests_preserve_initial_backfill_and_older_partition_cursors(r
     )
     output = read(get_source(config, "threads", state), config=config, catalog=catalog, state=state)
     assert not output.errors
-    assert {r.record.data["ts"] for r in output.records} == {latest}
+    assert {r.record.data["ts"] for r in output.records} == {root, latest}
     assert endpoint.call_count == 1
     assert float(endpoint.request_history[0].qs["oldest"][0]) == float(checkpoint)
