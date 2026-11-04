@@ -533,7 +533,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.11 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix insights cursor moving backwards after interrupted attempts and not advancing for weekly/monthly time increments |
+| 6.1.11 | 2026-11-04 | [91013](https://github.com/airbytehq/airbyte/pull/91013) | Fix insights cursor moving backwards after interrupted attempts and not advancing for weekly/monthly time increments |
 | 6.1.10 | 2026-11-04 | [90974](https://github.com/airbytehq/airbyte/pull/90974) | Update CDK to 7.45 |
 | 6.1.9 | 2026-10-21 | [89624](https://github.com/airbytehq/airbyte/pull/89624) | Keep the custom insights primary key in the configured breakdowns order so it no longer changes between syncs |
 | 6.1.8 | 2026-10-20 | [74884](https://github.com/airbytehq/airbyte/pull/74884) | Retry dropped connections, truncated responses, and read timeouts from the Facebook API, and report them as transient errors if retries are exhausted |
