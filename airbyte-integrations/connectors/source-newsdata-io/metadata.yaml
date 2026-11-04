@@ -37,3 +37,11 @@ data:
     - title: NewsData.io API documentation
       url: https://newsdata.io/documentation
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
