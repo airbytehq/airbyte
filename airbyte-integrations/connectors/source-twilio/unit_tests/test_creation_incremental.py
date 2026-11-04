@@ -41,14 +41,19 @@ def test_discover_incremental(name):
 @pytest.mark.parametrize("lookback,start", [(None, "2010-01-01"), (0, "2022-11-10"), (60, "2022-11-09")])
 def test_conversations(requests_mock, lookback, start):
     matcher = register(
-        requests_mock, CONVERSATIONS, "conversations",
+        requests_mock,
+        CONVERSATIONS,
+        "conversations",
         [{"sid": "CH1", "date_created": "Thu, 10 Nov 2022 12:00:00 +0000"}],
-        StartDate=f"{start}T00:00:00Z", EndDate="2022-11-16T23:59:59Z",
+        StartDate=f"{start}T00:00:00Z",
+        EndDate="2022-11-16T23:59:59Z",
     )
     state = state_for("conversations", {"date_created": "2022-11-10"}) if lookback is not None else None
     output = read_from_stream(
-        {**TEST_CONFIG, "lookback_window": lookback or 0}, "conversations",
-        SyncMode.incremental if state else SyncMode.full_refresh, state,
+        {**TEST_CONFIG, "lookback_window": lookback or 0},
+        "conversations",
+        SyncMode.incremental if state else SyncMode.full_refresh,
+        state,
     )
     assert matcher.call_count == 1
     assert len(output.records) == 1
@@ -73,7 +78,9 @@ def test_conversation_children_keep_full_parent(requests_mock):
 def test_conversations_empty_or_missing(requests_mock, status):
     matcher = requests_mock.get(
         f"{CONVERSATIONS}?{urlencode({'PageSize': 1000, 'StartDate': '2010-01-01T00:00:00Z', 'EndDate': '2022-11-16T23:59:59Z'})}",
-        json={"conversations": []}, status_code=status, complete_qs=True,
+        json={"conversations": []},
+        status_code=status,
+        complete_qs=True,
     )
     output = read_from_stream(TEST_CONFIG, "conversations", SyncMode.incremental)
     assert not output.records
@@ -88,11 +95,16 @@ def test_executions_partition_state(requests_mock):
     for flow, day in [("FW1", "10"), ("FW2", "11")]:
         cursor = f"2022-11-{day}T12:00:00Z"
         states.append({"partition": {"sid": flow, "parent_slice": {}}, "cursor": {"date_created": cursor}})
-        matchers.append(register(
-            requests_mock, f"{FLOWS}/{flow}/Executions", "executions",
-            [{"sid": f"FN{day}", "flow_sid": flow, "date_created": "2022-11-15T12:00:00Z"}],
-            DateCreatedFrom=cursor, DateCreatedTo=NOW,
-        ))
+        matchers.append(
+            register(
+                requests_mock,
+                f"{FLOWS}/{flow}/Executions",
+                "executions",
+                [{"sid": f"FN{day}", "flow_sid": flow, "date_created": "2022-11-15T12:00:00Z"}],
+                DateCreatedFrom=cursor,
+                DateCreatedTo=NOW,
+            )
+        )
     output = read_from_stream(TEST_CONFIG, "executions", SyncMode.incremental, state_for("executions", {"states": states}))
     assert len(output.records) == 2
     assert all(matcher.call_count == 1 for matcher in matchers)
@@ -105,21 +117,29 @@ def test_executions_partition_state(requests_mock):
 def test_step_nested_parent_state(requests_mock):
     register(requests_mock, FLOWS, "flows", [{"sid": "FW1"}])
     first = register(
-        requests_mock, f"{FLOWS}/FW1/Executions", "executions",
+        requests_mock,
+        f"{FLOWS}/FW1/Executions",
+        "executions",
         [{"sid": "FN1", "flow_sid": "FW1", "date_created": "2022-11-15T12:00:00Z"}],
-        DateCreatedFrom="2010-01-01T00:00:00Z", DateCreatedTo=NOW,
+        DateCreatedFrom="2010-01-01T00:00:00Z",
+        DateCreatedTo=NOW,
     )
     child = register(
-        requests_mock, f"{FLOWS}/FW1/Executions/FN1/Steps", "steps",
+        requests_mock,
+        f"{FLOWS}/FW1/Executions/FN1/Steps",
+        "steps",
         [{"sid": "FT1", "date_created": "2022-11-15T12:01:00Z"}],
     )
     output = read_from_stream(TEST_CONFIG, "step", SyncMode.incremental)
     saved = final_state(output)
     assert saved["parent_state"]["executions"]["states"][0]["cursor"] == {"date_created": "2022-11-15T12:00:00Z"}
     second = register(
-        requests_mock, f"{FLOWS}/FW1/Executions", "executions",
+        requests_mock,
+        f"{FLOWS}/FW1/Executions",
+        "executions",
         [{"sid": "FN1", "flow_sid": "FW1", "date_created": "2022-11-15T12:00:00Z"}],
-        DateCreatedFrom="2022-11-15T12:00:00Z", DateCreatedTo=NOW,
+        DateCreatedFrom="2022-11-15T12:00:00Z",
+        DateCreatedTo=NOW,
     )
     resumed = read_from_stream(TEST_CONFIG, "step", SyncMode.incremental, state_for("step", saved))
     assert len(output.records) == len(resumed.records) == 1
