@@ -332,6 +332,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.5 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fixed `review_comments` failing with HTTP 500 on large repositories by requesting 100 records per page. |
 | 2.8.4 | 2026-11-03 | [90166](https://github.com/airbytehq/airbyte/pull/90166) | Retry GitHub 5xx errors and timeouts with exponential backoff instead of waiting for the rate-limit reset |
 | 2.8.3 | 2026-11-03 | [90557](https://github.com/airbytehq/airbyte/pull/90557) | Update dependencies |
 | 2.8.1 | 2026-10-27 | [89848](https://github.com/airbytehq/airbyte/pull/89848) | Update dependencies |
