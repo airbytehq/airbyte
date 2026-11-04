@@ -20,7 +20,8 @@ data:
   dockerImageTag: 0.0.75-rc.1
   dockerRepository: airbyte/source-mux
   releases:
-    enableProgressiveRollout: true
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   githubIssueLabel: source-mux
   icon: icon.svg
   license: ELv2
