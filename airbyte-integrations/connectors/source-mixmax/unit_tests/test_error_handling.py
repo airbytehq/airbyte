@@ -41,8 +41,7 @@ def _strip_parameters(value):
 
 
 def _request(stream_name: str) -> HttpRequest:
-    path = "livefeed" if stream_name == "livefeed" else "codesnippets"
-    return HttpRequest(url=f"https://api.mixmax.com/v1/{path}", query_params=ANY_QUERY_PARAMS)
+    return HttpRequest(url=f"https://api.mixmax.com/v1/{stream_name}", query_params=ANY_QUERY_PARAMS)
 
 
 def _read_stream(stream_name: str, expecting_exception: bool = False):
@@ -61,14 +60,14 @@ def _rate_limited_response() -> HttpResponse:
     return HttpResponse(body=json.dumps({"error": "Rate limits hit"}), status_code=429)
 
 
-def test_manifest_has_no_composite_error_handler() -> None:
+def test_every_error_handler_is_a_single_default_error_handler() -> None:
     manifest = _resolved_manifest()
-    composite_handlers = []
+    error_handler_types = []
 
     def walk(node):
         if isinstance(node, dict):
-            if node.get("type") == "".join(("Composite", "ErrorHandler")):
-                composite_handlers.append(node)
+            if "error_handler" in node:
+                error_handler_types.append(node["error_handler"]["type"])
             for value in node.values():
                 walk(value)
         elif isinstance(node, list):
@@ -76,7 +75,8 @@ def test_manifest_has_no_composite_error_handler() -> None:
                 walk(value)
 
     walk(manifest)
-    assert not composite_handlers
+    assert error_handler_types
+    assert set(error_handler_types) == {"DefaultErrorHandler"}
 
 
 @pytest.mark.parametrize("stream_name", STREAM_NAMES)
