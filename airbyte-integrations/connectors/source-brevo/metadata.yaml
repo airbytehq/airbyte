@@ -48,3 +48,11 @@ data:
     - title: Brevo Status
       url: https://status.brevo.com/
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
