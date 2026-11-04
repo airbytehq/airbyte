@@ -45,7 +45,9 @@ class TestSalesloftErrorHandler(TestCase):
     @HttpMocker()
     def test_normal_response_yields_records(self, http_mocker: HttpMocker) -> None:
         record = {"id": 1, "subject": "Test email", "body": "Hello"}
-        http_mocker.get(_REQUEST, HttpResponse(body=json.dumps({"data": [record], "metadata": {"paging": {"next_page": None}}}), status_code=200))
+        http_mocker.get(
+            _REQUEST, HttpResponse(body=json.dumps({"data": [record], "metadata": {"paging": {"next_page": None}}}), status_code=200)
+        )
 
         output = _read_emails()
 
