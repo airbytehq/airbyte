@@ -375,10 +375,24 @@ jobs:
               CLAIMED=true
               return 0
             fi
-            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --silent -f body="${KEY}
+            local BODY="${KEY}
           ↪️ Hydra v2 handoff: dispatching \`$WORKFLOW\` (\`$NEXT_ACTION\`) for head \`${HEAD_SHA:0:7}\`. [Workflow run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+            MARKER_ID=$(gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --jq '.id' -f body="$BODY")
             echo "idempotency=$RESULT" | tee -a "$GITHUB_OUTPUT"
             CLAIMED=true
+          }
+
+          # Deletes the marker when the dispatch fails, so the next wake retries.
+          send_dispatch() {
+            local URL="$1" DATA="$2"
+            curl -fsS -X POST \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "$URL" -d "$DATA" && return 0
+            echo "::error::Dispatch failed; removing idempotency marker so a later wake can retry"
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/comments/$MARKER_ID" --silent \
+              || echo "::warning::Couldn't remove marker comment $MARKER_ID; retry with force: true"
+            exit 1
           }
 
           dispatch_airbyte() {
@@ -389,11 +403,8 @@ jobs:
               echo "::notice::WOULD dispatch $WORKFLOW for PR #$PR_NUMBER"
               return 0
             fi
-            curl -fsS -X POST \
-              -H "Authorization: token $GH_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/airbytehq/airbyte/actions/workflows/$WORKFLOW/dispatches" \
-              -d "{\"ref\":\"master\",\"inputs\":{\"pr\":\"$PR_NUMBER\"}}"
+            send_dispatch "https://api.github.com/repos/airbytehq/airbyte/actions/workflows/$WORKFLOW/dispatches" \
+              "{\"ref\":\"master\",\"inputs\":{\"pr\":\"$PR_NUMBER\"}}"
             echo "::notice::Dispatched $WORKFLOW for PR #$PR_NUMBER"
           }
 
@@ -406,11 +417,8 @@ jobs:
               echo "::notice::WOULD dispatch $WORKFLOW for oncall issue #$ISSUE"
               return 0
             fi
-            curl -fsS -X POST \
-              -H "Authorization: token $GH_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/airbytehq/oncall/actions/workflows/$WORKFLOW/dispatches" \
-              -d "{\"ref\":\"main\",\"inputs\":{\"issue-number\":\"$ISSUE\"}}"
+            send_dispatch "https://api.github.com/repos/airbytehq/oncall/actions/workflows/$WORKFLOW/dispatches" \
+              "{\"ref\":\"main\",\"inputs\":{\"issue-number\":\"$ISSUE\"}}"
             echo "::notice::Dispatched $WORKFLOW for issue #$ISSUE"
           }
 
