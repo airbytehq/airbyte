@@ -1,52 +1,168 @@
 ---
 products: enterprise-flex
+description: "Airbyte Enterprise Flex is a hybrid deployment: a managed cloud control plane with data planes in your own infrastructure."
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+# Enterprise Flex: hybrid deployment for Airbyte
 
-# Enterprise Flex
+import Head from '@docusaurus/Head';
+import Heading from '@theme/Heading';
 
-Airbyte Enterprise Flex is a hybrid solution that consists of a fully managed Cloud control plane that supports separate data planes that run in your own infrastructure. It's ideal for organizations with data sovereignty and compliance requirements who need to carefully manage data movement while also minimizing the time and effort needed to self-manage Airbyte.
+export const faqs = [
+  {
+    question: 'What is a hybrid deployment?',
+    answer:
+      'Airbyte manages the control plane in Airbyte Cloud, and you run data planes in your own infrastructure. You can also use Airbyte-managed data planes for workspaces that do not need a self-managed data plane.',
+  },
+  {
+    question: 'How does Enterprise Flex differ from other Cloud plans?',
+    answer:
+      'Enterprise Flex lets you run self-managed data planes in your own infrastructure alongside Airbyte-managed data planes. See Airbyte pricing for a full plan comparison.',
+  },
+  {
+    question: 'Can I run a data plane on EKS, GKE, AKS, or Airbox?',
+    answer:
+      'For Helm, use EKS on EC2, GKE on GCE (including Autopilot), or AKS. EKS on Fargate is not supported. Airbox deploys a data plane on a single machine with Docker.',
+  },
+  {
+    question: 'What is a data plane?',
+    answer:
+      'The data plane initiates jobs, syncs data, completes jobs, and reports job status to the control plane. It is where your records are extracted, processed, and loaded.',
+  },
+  {
+    question: 'Does my data leave my network?',
+    answer:
+      'Records are extracted, processed, and loaded in your data plane. The control plane receives connector configuration and metadata, including table and column names and cursor and primary key values. Connector Builder test data passes through the control plane during development and testing.',
+  },
+  {
+    question: 'Do data planes need inbound ports?',
+    answer:
+      'No. Data planes send outbound requests to the control plane and do not require inbound requests.',
+  },
+  {
+    question: 'Can I use Private Links?',
+    answer:
+      'Airbyte Cloud Private Links are an AWS-only add-on for Pro plans and above. They connect Airbyte Cloud to AWS sources and destinations.',
+  },
+  {
+    question: 'Can I use separate regions?',
+    answer:
+      'Each workspace uses one region. Set the workspace region in Workspace settings or with the API.',
+  },
+];
 
-## Overview
+Airbyte manages the control plane in Airbyte Cloud, and you run data planes in your own infrastructure. Your records are extracted, processed, and loaded in your data plane. The control plane also receives connector configuration and metadata, including table and column names and cursor and primary key values; see [What data leaves your network](#what-data-leaves-your-network).
 
-Many organizations collect data in all types of operational systems from users around the world. However, you might face strict requirements around how you can process and store data, as well as who can access it. These requirements comes in many forms.
+## What is Enterprise Flex
 
-- **Compliance**: GDPR (European Union), PIPEDA (Canada), HIPAA (USA), APPs (Australia), PIPL (China), and other frameworks govern the management of data, and can punish non-compliance with significant financial penalties.
+Your organization might need to meet regulatory or internal requirements for where you process and store data, or who can access it.
 
-- **Data sovereignty**: When sensitive data crosses borders, it can be subject to prying eyes and foreign regulations it isn't meant for. Keeping data within a specific country or geographical region helps ensure privacy and control over that data.
+- **Compliance**: Regulations and internal policies can define how you process and manage data.
+- **Data sovereignty**: You might need to keep data processing and storage within a specific country or region.
+- **Security and operational policies**: Your policies might require data to stay within infrastructure that you control.
 
-- **Security and operational policies**: Some data, like trade secrets or sensitive industry information, is so valuable that external exposure could present a major incident.
+With Enterprise Flex, Airbyte manages the control plane, including the user interface, API, Terraform provider, and orchestration. You can run self-managed data planes in your own infrastructure and use Airbyte-managed data planes for workspaces that do not need a self-managed data plane.
 
-While these requirements are critical, organizations also have finite time and expertise. Managing these operational and compliance requirements with more infrastructure often means increased maintenance commitments, higher spend, and greater complexity.
+## Control plane and data plane
 
-Enterprise Flex addresses these needs by offering fully managed Cloud workspaces (a control plane) that connect to separate data planes you manage in your own infrastructure. You can also use fully managed data planes for less sensitive data that doesn't need to remain in your own infrastructure. Each Cloud workspace uses one region and data plane, so a single Airbyte instance with multiple workspaces is an ideal way to segregate data and connections. Enterprise Flex also supports other enterprise-grade abilities such as external secrets managers and AWS PrivateLink connectivity in addition to all other features in Cloud Pro.
+| Responsibility | Control plane | Data plane |
+| --- | --- | --- |
+| Operation | Airbyte manages it in Airbyte Cloud. | You manage a self-managed data plane in your infrastructure. |
+| Work | Provides the user interface, APIs, Terraform provider, and orchestration. | Initiates jobs, syncs data, completes jobs, and reports job status to the control plane. |
+| Records | Stores connector configuration and metadata, including table and column names. | Extracts, processes, and loads records. |
 
-| Feature             | Description                                                                                                                                                             |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| User Management     | Enable multiple users to concurrently move data from a single Airbyte deployment.                                                                                       |
-| Single Sign-On      | Manage user access to Airbyte from your Okta, Azure Entra ID or OIDC-compatible identity provider.                                                                      |
-| Multiple Workspaces | Manage multiple isolated projects or teams on a single Airbyte deployment.                                                                                              |
-| Role-Based Access   | Manage user permissions and access across workspaces from a single pane of glass.                                                                                       |
-| Column Hashing      | Protect sensitive information by hashing personally identifiable information (PII) as it moves through your pipelines.                                                  |
-| External Secrets    | Bring your own secrets manager to securely reference your credentials for data sources and destinations.                                                                |
-| Audit logs          | Review [user and platform activity](/platform/access-management/audit-logs) to maintain compliance while using Airbyte.                                                 |
-| AWS PrivateLink     | Connect to data sources or destinations in your VPC securely to Airbyte data planes.                                                                                    |
-| Support with SLAs   | [Priority assistance](https://docs.airbyte.com/operator-guides/contact-support/#airbyte-enterprise-self-hosted-support) with deploying, managing and upgrading Airbyte. |
+![Airbyte Enterprise Flex hybrid deployment architecture showing a control plane exchanging requests, responses, job metadata, and job state with a data plane, which moves data between a source and destination and connects to log storage and a secrets manager](./enterprise-flex/img/enterprise-flex-architecture.png)
 
-### Enterprise Flex versus Pro
+## What data leaves your network
 
-Enterprise Flex includes all features that are standard in Pro with the additional capabilities of running self-managed data planes, referencing your own secrets manager, and PrivateLink support.
+| Information | Where it is handled |
+| --- | --- |
+| Records | Extracted, processed, and loaded in your data plane. |
+| Credentials | Credentials you enter in the UI are written by the control plane to your secrets manager. Configure the same secrets manager on the control plane and data plane. |
+| Connector configuration, table names, and column names | Stored by the control plane. |
+| Cursor and primary key values | Stored by the control plane, regardless of the data plane's location. |
+| Job status | Reported by the data plane to the control plane. |
+| Logs and state | Job logs and state are stored in data plane storage. Data plane components write structured JSON logs to stdout starting with Helm chart version 2.1.0; collect them with your own log collector. |
+| Connector Builder test data | Processed through the control plane during development and testing. Published connectors use the workspace's region for syncs. |
 
-Any Airbyte Cloud environment can be easily upgraded to Enterprise Flex. To learn more about upgrading to Enterprise Flex, [talk to sales](https://airbyte.com/company/talk-to-sales).
+## Network and security
+
+Data planes send outbound HTTPS requests to the control plane at `https://cloud.airbyte.com` and authenticate with a data plane client ID and secret. They do not require inbound requests.
+
+Configure the same external secrets manager on the control plane and data plane. Enterprise Flex data planes support AWS Secrets Manager, Google Secret Manager, Azure Key Vault, and HashiCorp Vault; data planes support access key authentication only. See [Secrets manager requirements](/platform/enterprise-flex/data-plane#secrets-manager-requirements).
+
+Airbyte Cloud Private Links are an AWS-only add-on for Pro plans and above. They connect Airbyte Cloud to AWS sources and destinations; see [Private Links](/platform/operating-airbyte/privatelink).
+
+Data in transit uses TLS or other encrypted channels. For information about Airbyte's security practices and certifications, see [Security](/platform/operating-airbyte/security).
+
+## Supported connectors
+
+Connectors you configure in a workspace run on that workspace's data plane. Browse the [connector catalog](/integrations/).
+
+Connector Builder sends test data through the control plane during development and testing. On customer-owned Enterprise Flex data planes, you can't use agent access for sources or destinations, and search isn't available for connections. See [Connector Builder](/platform/connector-development/connector-builder-ui/overview) and [Sources, destinations, and connectors](/platform/move-data/sources-destinations-connectors).
+
+## Sizing
+
+Use [Scaling Airbyte](/platform/operator-guides/scaling-airbyte) to plan capacity for your data planes. For infrastructure requirements, see the [Helm prerequisites](/platform/enterprise-flex/data-plane#infrastructure-prerequisites) and [Airbox requirements](/platform/enterprise-flex/data-plane-util#infrastructure-requirements).
+
+## Deployment options
+
+### Helm
+
+Deploy with Helm to EKS on EC2, GKE on GCE (including Autopilot), or AKS. EKS on Fargate isn't supported; Airbyte recommends Helm for production workloads. See [Get started with Enterprise Flex](/platform/enterprise-flex/getting-started) and [Deploy a data plane with Helm](/platform/enterprise-flex/data-plane).
+
+### Airbox
+
+Airbox deploys a data plane on a single machine with Docker and is an option for teams with limited Kubernetes expertise. Airbox doesn't support `values.yaml` customization. See [Deploy a data plane with Airbox](/platform/enterprise-flex/data-plane-util).
+
+### Regions
+
+Each workspace uses one region, which you can set in **Workspace settings** or with the API. Airbyte Cloud control planes run on GCP in the United States. Airbyte-managed data planes are available in the United States on GCP and in the European Union on AWS. See [Set data residency](/platform/cloud/managing-airbyte-cloud/manage-data-residency).
+
+## Enterprise Flex and other plans
+
+Enterprise Flex lets you run self-managed data planes in your own infrastructure alongside Airbyte-managed data planes. See [Airbyte pricing](https://airbyte.com/pricing) for a full plan comparison. To upgrade, [talk to sales](https://airbyte.com/company/talk-to-sales).
 
 ## An example hybrid deployment
 
-Every organization's precise needs differ, so you can implement Enterprise Flex in the way that suits you best. In this example, you have three workspaces.
+In this example, Workspace 1 uses Airbyte's managed data plane in `eu-west-3`. Workspaces 2 and 3 use self-managed data planes in `us-west-2` and `ap-southeast-4`.
 
-- Workspace 1 contains non-sensitive data and uses Airbyte's fully managed European region.
+- Workspace 1 handles data that can use an Airbyte-managed data plane.
+- Workspaces 2 and 3 keep records in their data planes. Their configuration and metadata, including cursor and primary key values, reach the control plane.
 
-- Workspaces 2 and 3, which contain sensitive data from the United States and Australia, run on your own infrastructure. Only metadata ever reaches the control plane.
+![Example hybrid deployment with three workspaces: Workspace 1 uses a managed data plane in eu-west-3, while Workspaces 2 and 3 use customer-owned data planes in us-west-2 and ap-southeast-4. Records stay in the customer-owned data planes, while connector configuration and metadata such as cursor and primary key values reach the control plane.](./enterprise-flex/img/flex-enterprise-example.png)
 
-![In this example, you have three workspaces. Workspace 1 contains non-sensitive data and uses Airbyte's fully managed European workspace. Workspaces 2 and 3, which contain sensitive data from the United States and Australia, run on your own infrastructure. Only metadata ever reaches the control plane.](img/flex-enterprise-example.png)
+## Limitations
+
+- The control plane stores cursor and primary key values, regardless of the data plane's location. If you can't store a field's data in the United States, don't use it as a cursor or primary key. See [Limitations and considerations](/platform/enterprise-flex/getting-started#limitations-and-considerations).
+- Connector Builder processes test data through the control plane during development and testing. Published connector syncs use the workspace's region. See [Connector Builder data residency](/platform/cloud/managing-airbyte-cloud/manage-data-residency#connector-builder-data-residency).
+- Each workspace uses one region. See [Set data residency](/platform/cloud/managing-airbyte-cloud/manage-data-residency).
+- The control plane and data plane must use the same secrets manager. Data planes support access key authentication only, and changing connector secret storage causes existing connectors to fail. See [Secrets manager requirements](/platform/enterprise-flex/data-plane#secrets-manager-requirements).
+
+## FAQ
+
+{faqs.map((faq, index) => (
+  <div key={faq.question}>
+    <Heading as="h3" id={`faq-${index + 1}`}>
+      {faq.question}
+    </Heading>
+    <p>{faq.answer}</p>
+  </div>
+))}
+
+<Head>
+  <script type="application/ld+json">
+    {JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
+    })}
+  </script>
+</Head>
