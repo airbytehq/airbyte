@@ -15,9 +15,9 @@ Aircall's `from` and `to` filters use creation date, not the record's update tim
 
 **Why this matters:** Applying a creation-date filter or an old cursor to these streams can permanently omit records that Aircall later edits.
 
-## 3. Calls start within Aircall's six-month retention period
+## 3. Calls start a year back to cover Aircall's call history
 
-Aircall retains only six months of calls. A first sync or a full refresh of calls starts at `now - 186 days` instead of `start_date`; incremental syncs start three days before the saved cursor.
+Aircall retains six months of calls. A first sync or full refresh starts 365 days back, covering all the call history Aircall keeps, instead of using `start_date`; incremental syncs start three days before the saved cursor.
 
 **Why this matters:** Honouring a recent `start_date` would drop calls that the 0.4.x full refreshes returned.
 
