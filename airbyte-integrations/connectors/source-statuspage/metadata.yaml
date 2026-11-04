@@ -47,4 +47,12 @@ data:
     - title: Statuspage authentication
       url: https://developer.statuspage.io/#section/Authentication
       type: authentication_guide
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
