@@ -103,10 +103,11 @@ class Users(Stream, IncrementalMixin):
 
         updated_at = self.state.get("updated_at", "")
 
-        # Resume from the last checkpoint: users before `loop_offset` were
-        # already emitted, so an interrupted sync continues where it stopped
-        # instead of regenerating them.
+        # Resume an interrupted pass, but start a new full pass when the
+        # checkpoint is from a completed pass.
         loop_offset = self.state.get("loop_offset", 0)
+        if loop_offset >= self.count:
+            loop_offset = 0
 
         median_record_byte_size = 450
         yield generate_estimate(self.name, self.count - loop_offset, median_record_byte_size)
