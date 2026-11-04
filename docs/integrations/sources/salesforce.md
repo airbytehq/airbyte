@@ -83,6 +83,8 @@ If you are using Airbyte Open Source, obtain the following OAuth credentials to 
 - Client Secret
 - Refresh Token
 
+Salesforce restricts the creation of new connected apps as of the Spring '26 release and recommends using an [External Client App](https://help.salesforce.com/s/articleView?id=connected_app_create_api_integration.htm&type=5) for new bring-your-own-app setups. Use the External Client App's consumer key and consumer secret as the Client ID and Client Secret below.
+
 To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) with the following modifications:
 
 1. If your Salesforce URL is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
@@ -342,6 +344,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 2.10.5 | 2026-11-03 | [84432](https://github.com/airbytehq/airbyte/pull/84432) | Update Salesforce API documentation links and OAuth setup guidance |
 | 2.10.4 | 2026-10-30 | [90253](https://github.com/airbytehq/airbyte/pull/90253) | Explain Salesforce OAuth, API permission, and IP restriction failures with actionable guidance and sandbox login hints. |
 | 2.10.3 | 2026-10-23 | [87665](https://github.com/airbytehq/airbyte/pull/87665) | Let REST streams use the refreshed access token, so a session invalidated mid-pagination no longer fails the sync, and mask rotated refresh tokens in logs |
 | 2.10.2 | 2026-10-20 | [89072](https://github.com/airbytehq/airbyte/pull/89072) | Fix syncs hanging indefinitely when a Salesforce OAuth token refresh or describe request stalls, by adding a request timeout |
