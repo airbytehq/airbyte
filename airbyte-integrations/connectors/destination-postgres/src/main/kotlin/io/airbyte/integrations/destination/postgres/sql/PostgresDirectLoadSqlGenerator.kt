@@ -215,7 +215,7 @@ class PostgresDirectLoadSqlGenerator(
             if (replaceView) dropView(targetTableName) else dropTable(targetTableName)
         val moveSchemaSql =
             if (sourceTableName.namespace != targetTableName.namespace) {
-                "\nALTER TABLE ${getNamespace(sourceTableName)}.${getName(targetTableName)} SET SCHEMA ${getNamespace(targetTableName)};"
+                "\n            ALTER TABLE ${getNamespace(sourceTableName)}.${getName(targetTableName)} SET SCHEMA ${getNamespace(targetTableName)};"
             } else {
                 ""
             }
