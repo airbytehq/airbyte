@@ -29,3 +29,7 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Expired Download Links Are Transient
+
+Bing Ads report and bulk files use pre-signed Azure Blob SAS URLs. A 403 response containing `Signature not valid in the specified time frame` indicates the SAS link was expired or not yet valid, so the connector classifies it as a transient error and lets the sync retry. The filter must match the signature message instead of using `http_codes: [403]`: `HttpResponseFilter` ORs its matching conditions, and matching every 403 would also classify real permission failures as transient. The composite handler passes successful streamed downloads before inspecting their bodies; unmatched 403 responses retain the default config error.
