@@ -40,6 +40,7 @@ public class KafkaDestinationConfig {
   }
 
   private KafkaProducer<String, JsonNode> buildKafkaProducer(final JsonNode config) {
+    final String dnsLookup = config.get("client_dns_lookup").asText();
     final Map<String, Object> props = ImmutableMap.<String, Object>builder()
         .put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.get("bootstrap_servers").asText())
         .putAll(propertiesByProtocol(config))
@@ -52,7 +53,7 @@ public class KafkaDestinationConfig {
         .put(ProducerConfig.LINGER_MS_CONFIG, config.get("linger_ms").asLong())
         .put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION,
             config.get("max_in_flight_requests_per_connection").asInt())
-        .put(ProducerConfig.CLIENT_DNS_LOOKUP_CONFIG, config.get("client_dns_lookup").asText())
+        .put(ProducerConfig.CLIENT_DNS_LOOKUP_CONFIG, "default".equals(dnsLookup) ? "use_all_dns_ips" : dnsLookup)
         .put(ProducerConfig.BUFFER_MEMORY_CONFIG, config.get("buffer_memory").asLong())
         .put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, config.get("max_request_size").asInt())
         .put(ProducerConfig.RETRIES_CONFIG, config.get("retries").asInt())
