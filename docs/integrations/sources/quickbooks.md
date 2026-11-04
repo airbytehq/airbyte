@@ -10,7 +10,7 @@ This page contains the setup guide and reference information for the QuickBooks 
 - **Refresh Token**: for the own-app option, this is the OAuth 2.0 token the connector exchanges for access tokens. The easiest way to get one is Intuit's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground). Select the `com.intuit.quickbooks.accounting` scope when you authorize; the connector can't read data without it. The connector obtains and maintains the **Access Token** and **Token Expiry Date** from the refresh token.
 - **Realm ID**: for the own-app option, the labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) of the company you want to replicate data for.
 - **Start Date** (optional): the earliest date-time to replicate data from, as a UTC timestamp in the form `YYYY-MM-DDTHH:MM:SSZ`, such as `2026-01-01T00:00:00Z`. Offsets and fractional seconds aren't accepted. Airbyte doesn't replicate data from before this date. If you leave it empty, the connector sets it to 1 year before its first run and saves that date to the configuration.
-- **Sandbox** (required for the own-app option; defaults to off): whether to replicate data from Intuit's sandbox environment instead of production.
+- **Sandbox** (required for the own-app option; defaults to off): turn on only to sync a sandbox (test) company from your Intuit Developer account, using your app's Development credentials. Leave it off for a real QuickBooks company, which uses your app's Production credentials.
 
 ## Setup guide
 
@@ -57,7 +57,7 @@ Under **Authentication**, choose **Use your own Intuit app**.
 3. **Refresh Token** - Refresh token used to get new access token every time the current one is expired
 4. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
 5. **Start date** - The date starting from which you'd like to replicate data.
-6. **Sandbox** (required; defaults to off) - Turn on to use Intuit's sandbox environment with your app's development keys.
+6. **Sandbox** (required; defaults to off) - Turn on only to sync a sandbox (test) company with your app's Development credentials. Leave it off for a real QuickBooks company.
 7. **Page Size** (optional) - Records requested per query page (Intuit's `MAXRESULTS`, default 1,000, which is also the maximum).
 
 The connector obtains the **Access Token** and maintains the **Token Expiry Date** after each refresh.
@@ -150,7 +150,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version       | Date         | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------- | ------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 5.4.0 | 2026-11-04 | [91003](https://github.com/airbytehq/airbyte/pull/91003) | **Sandbox** is required for the own-app option (existing configs default to off); **Access Token** and **Token Expiry Date** are hidden because the connector maintains them |
+| 5.4.0 | 2026-11-04 | [91003](https://github.com/airbytehq/airbyte/pull/91003) | **Sandbox** is required for the own-app option (existing configs default to off); **Access Token** and **Token Expiry Date** are hidden because the connector maintains them; clarify when to turn on **Sandbox** |
 | 5.3.0 | 2026-11-03 | [90869](https://github.com/airbytehq/airbyte/pull/90869) | Transaction and other non-reference incremental streams query in 365-day windows instead of 30-day windows, so syncs send far fewer requests |
 | 5.2.0 | 2026-11-03 | [90868](https://github.com/airbytehq/airbyte/pull/90868) | Start Date is optional; if left empty, it's set to 1 year before the connector's first run and saved to the configuration |
 | 5.1.2 | 2026-10-30 | [90260](https://github.com/airbytehq/airbyte/pull/90260) | Revert the 5.1.2-rc.1 change that read incremental streams in one query window once they had saved state; those streams use 30-day windows again. Reference streams (accounts, classes, departments, employees, payment methods, tax agencies, tax codes, tax rates, terms) still read their whole date range in one query window |
