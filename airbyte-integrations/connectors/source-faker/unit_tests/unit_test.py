@@ -184,6 +184,25 @@ def test_read_products_count():
     assert [record["id"] for record in records] == list(range(1, 11))
 
 
+@pytest.mark.parametrize(
+    "products_count,records_per_slice",
+    [(50, 20), (7, 3), (100, 30), (10, 5), (1, 1000)],
+)
+def test_read_products_count_not_multiple_of_slice_size(products_count, records_per_slice):
+    source = SourceFaker()
+    config = {"count": 1000, "products_count": products_count, "records_per_slice": records_per_slice, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    iterator = source.read(logger, config, catalog, {})
+
+    records = [row.record.data for row in iterator if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == list(range(1, products_count + 1))
+
+
 def test_read_big_random_data():
     source = SourceFaker()
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
