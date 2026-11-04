@@ -47,6 +47,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.3.1 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix `users` stream emitting no records on syncs after the first one |
 | 7.2.1 | 2026-07-10 | [81653](https://github.com/airbytehq/airbyte/pull/81653) | chore(source-faker): dummy version bump for progressive rollout (autopilot) testing |
 | 7.2.0 | 2026-07-09 | [81556](https://github.com/airbytehq/airbyte/pull/81556) | Promoted release candidate to GA |
 | 7.2.0-rc.2 | 2026-06-24 | [80776](https://github.com/airbytehq/airbyte/pull/80776) | Test autopilot progressive rollout lifecycle |
@@ -66,7 +67,6 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 | 6.2.35 | 2025-10-07 | [67290](https://github.com/airbytehq/airbyte/pull/67290) | Update dependencies |
 | 6.2.34 | 2025-09-30 | [65779](https://github.com/airbytehq/airbyte/pull/65779) | Update dependencies |
 | 6.2.33 | 2025-09-03 | [65914](https://github.com/airbytehq/airbyte/pull/65914) | Upgrade CDK to 6.28.0 and remove pendulum dependency |
-| 7.3.1 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix `users` stream emitting no records on syncs after the first one |
 | 6.2.32 | 2025-08-23 | [65273](https://github.com/airbytehq/airbyte/pull/65273) | Update dependencies |
 | 6.2.31 | 2025-08-16 | [65006](https://github.com/airbytehq/airbyte/pull/65006) | Update dependencies |
 | 6.2.30 | 2025-08-09 | [64799](https://github.com/airbytehq/airbyte/pull/64799) | Update dependencies |
