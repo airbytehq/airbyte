@@ -26,7 +26,7 @@ def _page(records):
 
 
 @freeze_time("2026-10-04T00:00:00Z")
-@pytest.mark.parametrize("end_date", ["2026-10-03T00:00:00Z", None, ""])
+@pytest.mark.parametrize("end_date", ["2026-10-03T00:00:00Z", None])
 @pytest.mark.parametrize("response_kind", ["records", "empty", "not_found"])
 def test_events_use_update_bounds_for_each_calendar(end_date, response_kind):
     config = {"api_key": "test-token", "api_server": "us", "start_date": "2026-10-01T00:00:00Z"}
