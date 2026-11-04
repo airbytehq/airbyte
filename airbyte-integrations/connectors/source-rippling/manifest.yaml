@@ -1,0 +1,3672 @@
+version: 7.45.0
+type: DeclarativeSource
+description: Sync workers, users, org structure, time and leave, IT, talent, custom objects and audit data from
+  the Rippling REST Platform API v2. Workers, time entries, app users, worker time splits, compensation band details,
+  worker changes and the activity log sync incrementally using the API's server-side filter.
+check:
+  type: CheckStream
+  stream_names:
+  - companies
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: '{{ config.get(''num_workers'', 3) }}'
+  max_concurrency: 10
+definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 6
+    response_filters:
+    - type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      http_codes:
+      - 401
+      error_message: Rippling rejected the API token (HTTP 401). Tokens are revoked when their owner is terminated
+        or the token is unused for 30 days; create a new token under Tools > Developer > API Tokens.
+    - type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      http_codes:
+      - 403
+      error_message: Rippling returned HTTP 403. The token is missing the scope for this stream, or the token owner's
+        permission profile or company plan does not include it. Add the scope to the token or deselect the stream.
+    - type: HttpResponseFilter
+      action: RETRY
+      http_codes:
+      - 429
+      - 500
+      - 502
+      - 503
+      - 504
+    backoff_strategies:
+    - type: WaitTimeFromHeader
+      header: Retry-After
+    - type: ExponentialBackoffStrategy
+      factor: 5
+  base_requester:
+    type: HttpRequester
+    url_base: https://rest.ripplingapis.com
+    http_method: GET
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config[''api_token''] }}'
+    request_headers:
+      Accept: application/json
+      Rippling-Api-Version: '{{ config.get(''api_version'') or ''2024-08-01'' }}'
+    error_handler:
+      $ref: '#/definitions/error_handler'
+  record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+      - results
+  paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    page_token_option:
+      type: RequestPath
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: '{{ response.get(''next_link'') }}'
+      stop_condition: '{{ not response.get(''next_link'') }}'
+  start_datetime: &id002
+    type: MinMaxDatetime
+    datetime: '{{ config.get(''start_date'') or ''1970-01-01T00:00:00Z'' }}'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+  cursor_datetime_formats: &id001
+  - '%Y-%m-%dT%H:%M:%S.%f%z'
+  - '%Y-%m-%dT%H:%M:%S%z'
+  - '%Y-%m-%dT%H:%M:%S.%fZ'
+  - '%Y-%m-%dT%H:%M:%SZ'
+  updated_at_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats: *id001
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime: *id002
+  applied_on_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: applied_on
+    cursor_datetime_formats: *id001
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime: *id002
+  occurred_at_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: occurred_at
+    cursor_datetime_formats: *id001
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config.get(''start_date'') or ''1970-01-01T00:00:00Z'' }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      min_datetime: '{{ (now_utc() - duration(''P89D'')).strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+  streams:
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /companies/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            parent_legal_entity_id:
+              type:
+              - 'null'
+              - string
+            parent_legal_entity:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            legal_entities_id:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            legal_entities:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+            physical_address:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                  - 'null'
+                  - string
+                formatted:
+                  type:
+                  - 'null'
+                  - string
+                street_address:
+                  type:
+                  - 'null'
+                  - string
+                locality:
+                  type:
+                  - 'null'
+                  - string
+                region:
+                  type:
+                  - 'null'
+                  - string
+                postal_code:
+                  type:
+                  - 'null'
+                  - string
+                country:
+                  type:
+                  - 'null'
+                  - string
+            primary_email:
+              type:
+              - 'null'
+              - string
+            legal_name:
+              type:
+              - 'null'
+              - string
+            doing_business_as_name:
+              type:
+              - 'null'
+              - string
+            phone:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+          required:
+          - id
+    workers:
+      type: DeclarativeStream
+      name: workers
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /workers/
+          request_parameters:
+            filter: updated_at ge {{ format_datetime(stream_interval.start_time, '%Y-%m-%dT%H:%M:%S') }}
+            order_by: updated_at asc
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/updated_at_cursor'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            user_id:
+              type:
+              - 'null'
+              - string
+            user:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            is_manager:
+              type:
+              - 'null'
+              - boolean
+            manager_id:
+              type:
+              - 'null'
+              - string
+            manager:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            legal_entity_id:
+              type:
+              - 'null'
+              - string
+            legal_entity:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            country:
+              type:
+              - 'null'
+              - string
+            start_date:
+              type:
+              - 'null'
+              - string
+            end_date:
+              type:
+              - 'null'
+              - string
+            number:
+              type:
+              - 'null'
+              - integer
+            work_email:
+              type:
+              - 'null'
+              - string
+            personal_email:
+              type:
+              - 'null'
+              - string
+            status:
+              type:
+              - 'null'
+              - string
+            location:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                  - 'null'
+                  - string
+                work_location_id:
+                  type:
+                  - 'null'
+                  - string
+            employment_type_id:
+              type:
+              - 'null'
+              - string
+            employment_type:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            gender:
+              type:
+              - 'null'
+              - string
+            date_of_birth:
+              type:
+              - 'null'
+              - string
+            race:
+              type:
+              - 'null'
+              - string
+            ethnicity:
+              type:
+              - 'null'
+              - string
+            citizenship:
+              type:
+              - 'null'
+              - string
+            compensation_id:
+              type:
+              - 'null'
+              - string
+            compensation:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            overtime_exemption:
+              type:
+              - 'null'
+              - string
+            department_id:
+              type:
+              - 'null'
+              - string
+            department:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            teams_id:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            teams:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+            title:
+              type:
+              - 'null'
+              - string
+            title_effective_date:
+              type:
+              - 'null'
+              - string
+            level_id:
+              type:
+              - 'null'
+              - string
+            level:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            job_function_id:
+              type:
+              - 'null'
+              - string
+            job_function:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            termination_details:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                  - 'null'
+                  - string
+                reason:
+                  type:
+                  - 'null'
+                  - string
+            pay_schedule_id:
+              type:
+              - 'null'
+              - string
+            work_schedule:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            compensation_grade:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                label:
+                  type:
+                  - 'null'
+                  - string
+            original_start_date:
+              type:
+              - 'null'
+              - string
+            custom_fields:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+            country_fields:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                us:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                ca:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                nz:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+            business_partners_id:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            business_partners:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+          required:
+          - id
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /users/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            active:
+              type:
+              - 'null'
+              - boolean
+            username:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                formatted:
+                  type:
+                  - 'null'
+                  - string
+                given_name:
+                  type:
+                  - 'null'
+                  - string
+                middle_name:
+                  type:
+                  - 'null'
+                  - string
+                family_name:
+                  type:
+                  - 'null'
+                  - string
+                preferred_given_name:
+                  type:
+                  - 'null'
+                  - string
+                preferred_family_name:
+                  type:
+                  - 'null'
+                  - string
+            display_name:
+              type:
+              - 'null'
+              - string
+            emails:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            phone_numbers:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            addresses:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            photos:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            preferred_language:
+              type:
+              - 'null'
+              - string
+            locale:
+              type:
+              - 'null'
+              - string
+            timezone:
+              type:
+              - 'null'
+              - string
+            number:
+              type:
+              - 'null'
+              - string
+          required:
+          - id
+    compensations:
+      type: DeclarativeStream
+      name: compensations
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /compensations/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            annual_compensation:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                currency_type:
+                  type:
+                  - 'null'
+                  - string
+                value:
+                  type:
+                  - 'null'
+                  - string
+            annual_salary_equivalent:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                currency_type:
+                  type:
+                  - 'null'
+                  - string
+                value:
+                  type:
+                  - 'null'
+                  - string
+            hourly_wage:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                currency_type:
+                  type:
+                  - 'null'
+                  - string
+                value:
+                  type:
+                  - 'null'
+                  - string
+            monthly_compensation:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                currency_type:
+                  type:
+                  - 'null'
+                  - string
+                value:
+                  type:
+                  - 'null'
+                  - string
+            on_target_commission:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                currency_type:
+                  type:
+                  - 'null'
+                  - string
+                value:
+                  type:
+                  - 'null'
+                  - string
+            relocation_reimbursement:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                currency_type:
+                  type:
+                  - 'null'
+                  - string
+                value:
+                  type:
+                  - 'null'
+                  - string
+            signing_bonus:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                currency_type:
+                  type:
+                  - 'null'
+                  - string
+                value:
+                  type:
+                  - 'null'
+                  - string
+            target_annual_bonus:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                currency_type:
+                  type:
+                  - 'null'
+                  - string
+                value:
+                  type:
+                  - 'null'
+                  - string
+            weekly_compensation:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                currency_type:
+                  type:
+                  - 'null'
+                  - string
+                value:
+                  type:
+                  - 'null'
+                  - string
+            target_annual_bonus_percent:
+              type:
+              - 'null'
+              - number
+            bonus_schedule:
+              type:
+              - 'null'
+              - string
+            payment_type:
+              type:
+              - 'null'
+              - string
+            payment_terms:
+              type:
+              - 'null'
+              - string
+            salary_effective_date:
+              type:
+              - 'null'
+              - string
+          required:
+          - id
+    employment_types:
+      type: DeclarativeStream
+      name: employment_types
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /employment-types/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            label:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+            type:
+              type:
+              - 'null'
+              - string
+            compensation_time_period:
+              type:
+              - 'null'
+              - string
+            amount_worked:
+              type:
+              - 'null'
+              - string
+          required:
+          - id
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /custom-fields/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+            description:
+              type:
+              - 'null'
+              - string
+            required:
+              type:
+              - 'null'
+              - boolean
+            type:
+              type:
+              - 'null'
+              - string
+            options:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+          required:
+          - id
+    departments:
+      type: DeclarativeStream
+      name: departments
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /departments/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+            parent_id:
+              type:
+              - 'null'
+              - string
+            parent:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            reference_code:
+              type:
+              - 'null'
+              - string
+            department_hierarchy_id:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            department_hierarchy:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+          required:
+          - id
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /teams/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            parent_id:
+              type:
+              - 'null'
+              - string
+            parent:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            name:
+              type:
+              - 'null'
+              - string
+          required:
+          - id
+    titles:
+      type: DeclarativeStream
+      name: titles
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /titles/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+          required:
+          - id
+    levels:
+      type: DeclarativeStream
+      name: levels
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /levels/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+            parent_id:
+              type:
+              - 'null'
+              - string
+            parent:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            global_level:
+              type:
+              - 'null'
+              - integer
+            description:
+              type:
+              - 'null'
+              - string
+            scope_of_responsibilities:
+              type:
+              - 'null'
+              - string
+            experience_requirements:
+              type:
+              - 'null'
+              - string
+            rank:
+              type:
+              - 'null'
+              - integer
+            track_id:
+              type:
+              - 'null'
+              - string
+            track:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+          required:
+          - id
+    tracks:
+      type: DeclarativeStream
+      name: tracks
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /tracks/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+            is_default:
+              type:
+              - 'null'
+              - boolean
+            order:
+              type:
+              - 'null'
+              - integer
+            start_global_level:
+              type:
+              - 'null'
+              - integer
+          required:
+          - id
+    job_functions:
+      type: DeclarativeStream
+      name: job_functions
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /job-functions/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+          required:
+          - id
+    work_locations:
+      type: DeclarativeStream
+      name: work_locations
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /work-locations/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+            address:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                  - 'null'
+                  - string
+                formatted:
+                  type:
+                  - 'null'
+                  - string
+                street_address:
+                  type:
+                  - 'null'
+                  - string
+                locality:
+                  type:
+                  - 'null'
+                  - string
+                region:
+                  type:
+                  - 'null'
+                  - string
+                postal_code:
+                  type:
+                  - 'null'
+                  - string
+                country:
+                  type:
+                  - 'null'
+                  - string
+          required:
+          - id
+    legal_entities:
+      type: DeclarativeStream
+      name: legal_entities
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /legal-entities/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            tax_identifier:
+              type:
+              - 'null'
+              - string
+            country:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                code:
+                  type:
+                  - 'null'
+                  - string
+            legal_name:
+              type:
+              - 'null'
+              - string
+            entity_level:
+              type:
+              - 'null'
+              - string
+            registration_date:
+              type:
+              - 'null'
+              - string
+            mailing_address:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                  - 'null'
+                  - string
+                formatted:
+                  type:
+                  - 'null'
+                  - string
+                street_address:
+                  type:
+                  - 'null'
+                  - string
+                locality:
+                  type:
+                  - 'null'
+                  - string
+                region:
+                  type:
+                  - 'null'
+                  - string
+                postal_code:
+                  type:
+                  - 'null'
+                  - string
+                country:
+                  type:
+                  - 'null'
+                  - string
+            physical_address:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                type:
+                  type:
+                  - 'null'
+                  - string
+                formatted:
+                  type:
+                  - 'null'
+                  - string
+                street_address:
+                  type:
+                  - 'null'
+                  - string
+                locality:
+                  type:
+                  - 'null'
+                  - string
+                region:
+                  type:
+                  - 'null'
+                  - string
+                postal_code:
+                  type:
+                  - 'null'
+                  - string
+                country:
+                  type:
+                  - 'null'
+                  - string
+            parent_id:
+              type:
+              - 'null'
+              - string
+            parent:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            management_type:
+              type:
+              - 'null'
+              - string
+            company_id:
+              type:
+              - 'null'
+              - string
+            company:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+          required:
+          - id
+    business_partners:
+      type: DeclarativeStream
+      name: business_partners
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /business-partners/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            business_partner_group_id:
+              type:
+              - 'null'
+              - string
+            business_partner_group:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            client_group_id:
+              type:
+              - 'null'
+              - string
+            client_group:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            client_group_member_count:
+              type:
+              - 'null'
+              - integer
+          required:
+          - id
+    business_partner_groups:
+      type: DeclarativeStream
+      name: business_partner_groups
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /business-partner-groups/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+            domain:
+              type:
+              - 'null'
+              - string
+            default_business_partner_id:
+              type:
+              - 'null'
+              - string
+            default_business_partner:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+          required:
+          - id
+    supergroups:
+      type: DeclarativeStream
+      name: supergroups
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /supergroups/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            display_name:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+            app_owner_id:
+              type:
+              - 'null'
+              - string
+            group_type:
+              type:
+              - 'null'
+              - string
+            sub_group_type:
+              type:
+              - 'null'
+              - string
+            read_only:
+              type:
+              - 'null'
+              - boolean
+            description:
+              type:
+              - 'null'
+              - string
+            parent:
+              type:
+              - 'null'
+              - string
+            mutually_exclusive_key:
+              type:
+              - 'null'
+              - string
+            cumulatively_exhaustive_default:
+              type:
+              - 'null'
+              - boolean
+            include_terminated:
+              type:
+              - 'null'
+              - boolean
+            allow_non_employees:
+              type:
+              - 'null'
+              - boolean
+            can_override_role_states:
+              type:
+              - 'null'
+              - boolean
+            priority:
+              type:
+              - 'null'
+              - integer
+            is_invisible:
+              type:
+              - 'null'
+              - boolean
+            ignore_prov_group_matching:
+              type:
+              - 'null'
+              - boolean
+          required:
+          - id
+    leave_types:
+      type: DeclarativeStream
+      name: leave_types
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /leave-types/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            type:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+            description:
+              type:
+              - 'null'
+              - string
+            is_paid:
+              type:
+              - 'null'
+              - boolean
+            is_managed_by_external_system:
+              type:
+              - 'null'
+              - boolean
+          required:
+          - id
+    leave_requests:
+      type: DeclarativeStream
+      name: leave_requests
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /leave-requests/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            requester_id:
+              type:
+              - 'null'
+              - string
+            requester:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            status:
+              type:
+              - 'null'
+              - string
+            start_date:
+              type:
+              - 'null'
+              - string
+            start_time:
+              type:
+              - 'null'
+              - string
+            end_date:
+              type:
+              - 'null'
+              - string
+            end_time:
+              type:
+              - 'null'
+              - string
+            comments:
+              type:
+              - 'null'
+              - string
+            number_of_minutes_requested:
+              type:
+              - 'null'
+              - number
+            leave_policy_id:
+              type:
+              - 'null'
+              - string
+            leave_type_id:
+              type:
+              - 'null'
+              - string
+            leave_event_id:
+              type:
+              - 'null'
+              - string
+            leave_type:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            reason_for_leave:
+              type:
+              - 'null'
+              - string
+            reviewer_id:
+              type:
+              - 'null'
+              - string
+            reviewer:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            reviewed_at:
+              type:
+              - 'null'
+              - string
+            days_take_off:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            is_managed_by_external_system:
+              type:
+              - 'null'
+              - boolean
+          required:
+          - id
+    leave_balances:
+      type: DeclarativeStream
+      name: leave_balances
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /leave-balances/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            leave_type_id:
+              type:
+              - 'null'
+              - string
+            leave_type:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            is_balance_unlimited:
+              type:
+              - 'null'
+              - boolean
+            balance_including_future_requests:
+              type:
+              - 'null'
+              - number
+            balance_excluding_future_requests:
+              type:
+              - 'null'
+              - number
+            balance_including_future_requests_in_days:
+              type:
+              - 'null'
+              - number
+            balance_excluding_future_requests_in_days:
+              type:
+              - 'null'
+              - number
+          required:
+          - id
+    time_entries:
+      type: DeclarativeStream
+      name: time_entries
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /time-entries/
+          request_parameters:
+            filter: updated_at ge {{ format_datetime(stream_interval.start_time, '%Y-%m-%dT%H:%M:%S') }}
+            order_by: updated_at asc
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/updated_at_cursor'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            start_time:
+              type:
+              - 'null'
+              - string
+            end_time:
+              type:
+              - 'null'
+              - string
+            comments:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            job_shifts:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            breaks:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            premiums:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            piece_rate_premiums:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            segments:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            time_entry_summary:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                over_time_hours:
+                  type:
+                  - 'null'
+                  - string
+                double_over_time_hours:
+                  type:
+                  - 'null'
+                  - string
+                regular_hours:
+                  type:
+                  - 'null'
+                  - string
+                duration:
+                  type:
+                  - 'null'
+                  - string
+            time_card_id:
+              type:
+              - 'null'
+              - string
+            time_card:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            tags:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            idempotency_key:
+              type:
+              - 'null'
+              - string
+            create_extra_hours_run:
+              type:
+              - 'null'
+              - boolean
+            status:
+              type:
+              - 'null'
+              - string
+            pay_period:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                start_date:
+                  type:
+                  - 'null'
+                  - string
+                end_date:
+                  type:
+                  - 'null'
+                  - string
+                pay_schedule_id:
+                  type:
+                  - 'null'
+                  - string
+            shift_input_values:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+          required:
+          - id
+    time_cards:
+      type: DeclarativeStream
+      name: time_cards
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /time-cards/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            pay_period:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                start_date:
+                  type:
+                  - 'null'
+                  - string
+                end_date:
+                  type:
+                  - 'null'
+                  - string
+                pay_schedule_id:
+                  type:
+                  - 'null'
+                  - string
+            summary:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                earnings:
+                  type:
+                  - 'null'
+                  - string
+                hours_worked_by_job_code:
+                  type:
+                  - 'null'
+                  - array
+                premiums:
+                  type:
+                  - 'null'
+                  - string
+                approved_hours:
+                  type:
+                  - 'null'
+                  - string
+                paid_hours:
+                  type:
+                  - 'null'
+                  - string
+                total_hours:
+                  type:
+                  - 'null'
+                  - string
+                total_paid_time_off_hours:
+                  type:
+                  - 'null'
+                  - string
+                total_holiday_hours:
+                  type:
+                  - 'null'
+                  - string
+                total_unpaid_time_off_hours:
+                  type:
+                  - 'null'
+                  - string
+                regular_hours:
+                  type:
+                  - 'null'
+                  - string
+                overtime_hours:
+                  type:
+                  - 'null'
+                  - string
+                double_overtime_hours:
+                  type:
+                  - 'null'
+                  - string
+                unpaid_break_hours_by_entry:
+                  type:
+                  - 'null'
+                  - string
+          required:
+          - id
+    worker_time_splits:
+      type: DeclarativeStream
+      name: worker_time_splits
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /worker-time-splits/
+          request_parameters:
+            filter: updated_at ge {{ format_datetime(stream_interval.start_time, '%Y-%m-%dT%H:%M:%S') }}
+            order_by: updated_at asc
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/updated_at_cursor'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            is_enabled:
+              type:
+              - 'null'
+              - boolean
+            splits:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            job_codes_id:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            job_codes:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+          required:
+          - id
+    schedules:
+      type: DeclarativeStream
+      name: schedules
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /schedules/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+            managers_id:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            observers_id:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            members_id:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            managers:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+            observers:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+            members:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+            can_edit:
+              type:
+              - 'null'
+              - boolean
+            settings:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                timezone:
+                  type:
+                  - 'null'
+                  - string
+          required:
+          - id
+    devices:
+      type: DeclarativeStream
+      name: devices
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /devices/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            serial_number:
+              type:
+              - 'null'
+              - string
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            platform:
+              type:
+              - 'null'
+              - string
+            model:
+              type:
+              - 'null'
+              - string
+            os_name:
+              type:
+              - 'null'
+              - string
+            os_version:
+              type:
+              - 'null'
+              - string
+            lifecycle_state:
+              type:
+              - 'null'
+              - string
+            enrollment_status:
+              type:
+              - 'null'
+              - string
+            mdm_provider:
+              type:
+              - 'null'
+              - string
+            is_managed:
+              type:
+              - 'null'
+              - boolean
+            is_encrypted:
+              type:
+              - 'null'
+              - boolean
+            last_checkin_at:
+              type:
+              - 'null'
+              - string
+            last_mdm_sync_at:
+              type:
+              - 'null'
+              - string
+            pending_actions_id:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            pending_actions:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+          required:
+          - id
+    app_users:
+      type: DeclarativeStream
+      name: app_users
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /app-users/
+          request_parameters:
+            filter: updated_at ge {{ format_datetime(stream_interval.start_time, '%Y-%m-%dT%H:%M:%S') }}
+            order_by: updated_at asc
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/updated_at_cursor'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            app_handle:
+              type:
+              - 'null'
+              - string
+            app_display_name:
+              type:
+              - 'null'
+              - string
+            spoke_user_identifier:
+              type:
+              - 'null'
+              - string
+            external_username:
+              type:
+              - 'null'
+              - string
+            external_email:
+              type:
+              - 'null'
+              - string
+            push_state:
+              type:
+              - 'null'
+              - string
+            match_state:
+              type:
+              - 'null'
+              - string
+          required:
+          - id
+    software_deployments:
+      type: DeclarativeStream
+      name: software_deployments
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /software-deployments/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            software_id:
+              type:
+              - 'null'
+              - string
+            software:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            ma_device_group_id:
+              type:
+              - 'null'
+              - string
+            group_id:
+              type:
+              - 'null'
+              - string
+            active_group_type:
+              type:
+              - 'null'
+              - string
+            is_report_syncing_in_progress:
+              type:
+              - 'null'
+              - boolean
+          required:
+          - id
+    job_requisitions:
+      type: DeclarativeStream
+      name: job_requisitions
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /job-requisitions/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+            status:
+              type:
+              - 'null'
+              - string
+          required:
+          - id
+    headcount_positions:
+      type: DeclarativeStream
+      name: headcount_positions
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /headcount-positions/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            position_id:
+              type:
+              - 'null'
+              - string
+            position_type:
+              type:
+              - 'null'
+              - string
+            position_sub_type:
+              type:
+              - 'null'
+              - string
+            department_id:
+              type:
+              - 'null'
+              - string
+            department:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            work_location_id:
+              type:
+              - 'null'
+              - string
+            work_location:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            level_id:
+              type:
+              - 'null'
+              - string
+            level:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            teams_id:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - string
+            teams:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+            job_requisition_id:
+              type:
+              - 'null'
+              - string
+            job_requisition:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            recruiter_id:
+              type:
+              - 'null'
+              - string
+            recruiter:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            headcount_owner_id:
+              type:
+              - 'null'
+              - string
+            headcount_owner:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            notes:
+              type:
+              - 'null'
+              - string
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            backfill_for_id:
+              type:
+              - 'null'
+              - string
+            backfill_for:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            title:
+              type:
+              - 'null'
+              - string
+            employment_type_id:
+              type:
+              - 'null'
+              - string
+            employment_type:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            in_budget:
+              type:
+              - 'null'
+              - boolean
+            target_start_date:
+              type:
+              - 'null'
+              - string
+            current_start_date:
+              type:
+              - 'null'
+              - string
+            end_date:
+              type:
+              - 'null'
+              - string
+            priority_id:
+              type:
+              - 'null'
+              - string
+            priority:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            job_function_id:
+              type:
+              - 'null'
+              - string
+            job_function:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            location_factor_id:
+              type:
+              - 'null'
+              - string
+            location_factor:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            actual_compensation:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                base_pay:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                bonus:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                commission:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                tax_and_benefits:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                total_cash:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                total_equity:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+            comp_band_compensation:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                base_pay:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                bonus:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                commission:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                tax_and_benefits:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                total_cash:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                total_equity:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+          required:
+          - id
+    compensation_bands_details:
+      type: DeclarativeStream
+      name: compensation_bands_details
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /compensation-bands-details/
+          request_parameters:
+            filter: updated_at ge {{ format_datetime(stream_interval.start_time, '%Y-%m-%dT%H:%M:%S') }}
+            order_by: updated_at asc
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/updated_at_cursor'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            internal_job_code:
+              type:
+              - 'null'
+              - string
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+          required:
+          - id
+    object_categories:
+      type: DeclarativeStream
+      name: object_categories
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /object-categories/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+            description:
+              type:
+              - 'null'
+              - string
+          required:
+          - id
+    custom_objects:
+      type: DeclarativeStream
+      name: custom_objects
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /custom-objects/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+            description:
+              type:
+              - 'null'
+              - string
+            api_name:
+              type:
+              - 'null'
+              - string
+            plural_label:
+              type:
+              - 'null'
+              - string
+            category_id:
+              type:
+              - 'null'
+              - string
+            native_category_id:
+              type:
+              - 'null'
+              - string
+            managed_package_install_id:
+              type:
+              - 'null'
+              - string
+            enable_history:
+              type:
+              - 'null'
+              - boolean
+            owner_id:
+              type:
+              - 'null'
+              - string
+          required:
+          - id
+    custom_object_records:
+      type: DeclarativeStream
+      name: custom_object_records
+      primary_key:
+      - custom_object_api_name
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /custom-objects/{{ stream_partition.custom_object_api_name }}/records/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: '#/definitions/streams/custom_objects'
+            parent_key: api_name
+            partition_field: custom_object_api_name
+      transformations:
+      - type: AddFields
+        fields:
+        - path:
+          - custom_object_api_name
+          value: '{{ stream_partition.custom_object_api_name }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            name:
+              type:
+              - 'null'
+              - string
+            external_id:
+              type:
+              - 'null'
+              - string
+            created_by:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                display_value:
+                  type:
+                  - 'null'
+                  - string
+                image:
+                  type:
+                  - 'null'
+                  - string
+            last_modified_by:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                display_value:
+                  type:
+                  - 'null'
+                  - string
+                image:
+                  type:
+                  - 'null'
+                  - string
+            owner_role:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                display_value:
+                  type:
+                  - 'null'
+                  - string
+                image:
+                  type:
+                  - 'null'
+                  - string
+            system_updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            custom_object_api_name:
+              type: string
+          required:
+          - id
+    worker_change_fields:
+      type: DeclarativeStream
+      name: worker_change_fields
+      primary_key:
+      - field_key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /worker-change-fields/
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            field_key:
+              type: string
+            field_display_name:
+              type:
+              - 'null'
+              - string
+            category:
+              type:
+              - 'null'
+              - string
+            value_type:
+              type:
+              - 'null'
+              - string
+          required:
+          - field_key
+    worker_changes:
+      type: DeclarativeStream
+      name: worker_changes
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /worker-changes/
+          request_parameters:
+            filter: applied_on ge {{ format_datetime(stream_interval.start_time, '%Y-%m-%dT%H:%M:%S') }}
+            order_by: applied_on asc
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/applied_on_cursor'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            referenced_transaction_id:
+              type:
+              - 'null'
+              - string
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            changed_by_id:
+              type:
+              - 'null'
+              - string
+            changed_by:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            applied_on:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            effective_on:
+              type:
+              - 'null'
+              - string
+            event_type:
+              type:
+              - 'null'
+              - string
+            import_type:
+              type:
+              - 'null'
+              - string
+            reason_code:
+              type:
+              - 'null'
+              - string
+            changes:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+          required:
+          - id
+    activity_log:
+      type: DeclarativeStream
+      name: activity_log
+      primary_key:
+      - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /activity-log/
+          request_parameters:
+            filter: occurred_at ge {{ format_datetime(stream_interval.start_time, '%Y-%m-%dT%H:%M:%S') }}
+            order_by: occurred_at asc
+        record_selector:
+          $ref: '#/definitions/record_selector'
+        paginator:
+          $ref: '#/definitions/paginator'
+      incremental_sync:
+        $ref: '#/definitions/occurred_at_cursor'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+            created_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            updated_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            occurred_at:
+              type:
+              - 'null'
+              - string
+              format: date-time
+            event_type:
+              type:
+              - 'null'
+              - string
+            status:
+              type:
+              - 'null'
+              - string
+            actor_type:
+              type:
+              - 'null'
+              - string
+            worker_id:
+              type:
+              - 'null'
+              - string
+            worker:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+            targets:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                - string
+                additionalProperties: true
+            source_app_handle:
+              type:
+              - 'null'
+              - string
+            reason:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                code:
+                  type:
+                  - 'null'
+                  - string
+                message:
+                  type:
+                  - 'null'
+                  - string
+            request_context:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                ip_address:
+                  type:
+                  - 'null'
+                  - string
+                device:
+                  type:
+                  - 'null'
+                  - string
+                browser:
+                  type:
+                  - 'null'
+                  - string
+                operating_system:
+                  type:
+                  - 'null'
+                  - string
+                city:
+                  type:
+                  - 'null'
+                  - string
+                state:
+                  type:
+                  - 'null'
+                  - string
+                country:
+                  type:
+                  - 'null'
+                  - string
+                latitude:
+                  type:
+                  - 'null'
+                  - string
+                longitude:
+                  type:
+                  - 'null'
+                  - string
+                accuracy_radius:
+                  type:
+                  - 'null'
+                  - string
+          required:
+          - id
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+    - api_token
+    additionalProperties: true
+    properties:
+      api_token:
+        type: string
+        title: API Token
+        description: A Rippling API token created under Tools > Developer > API Tokens. The token can only read
+          what its owner's permission profile and selected scopes allow.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Incremental streams only read records
+          changed on or after this date on the first sync. Leave empty to read all history.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+        - '2024-01-01T00:00:00Z'
+        format: date-time
+        order: 1
+      api_version:
+        type: string
+        title: API Version
+        description: Dated Rippling API version sent in the Rippling-Api-Version header. Defaults to 2024-08-01.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+        - '2024-08-01'
+        order: 2
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: Number of streams read in parallel. Rippling allows 600 requests per 10 seconds per endpoint.
+        minimum: 1
+        maximum: 10
+        default: 3
+        order: 3
+metadata:
+  autoImportSchema: {}
+  testedStreams: {}
+  assist: {}
+streams:
+- $ref: '#/definitions/streams/companies'
+- $ref: '#/definitions/streams/workers'
+- $ref: '#/definitions/streams/users'
+- $ref: '#/definitions/streams/compensations'
+- $ref: '#/definitions/streams/employment_types'
+- $ref: '#/definitions/streams/custom_fields'
+- $ref: '#/definitions/streams/departments'
+- $ref: '#/definitions/streams/teams'
+- $ref: '#/definitions/streams/titles'
+- $ref: '#/definitions/streams/levels'
+- $ref: '#/definitions/streams/tracks'
+- $ref: '#/definitions/streams/job_functions'
+- $ref: '#/definitions/streams/work_locations'
+- $ref: '#/definitions/streams/legal_entities'
+- $ref: '#/definitions/streams/business_partners'
+- $ref: '#/definitions/streams/business_partner_groups'
+- $ref: '#/definitions/streams/supergroups'
+- $ref: '#/definitions/streams/leave_types'
+- $ref: '#/definitions/streams/leave_requests'
+- $ref: '#/definitions/streams/leave_balances'
+- $ref: '#/definitions/streams/time_entries'
+- $ref: '#/definitions/streams/time_cards'
+- $ref: '#/definitions/streams/worker_time_splits'
+- $ref: '#/definitions/streams/schedules'
+- $ref: '#/definitions/streams/devices'
+- $ref: '#/definitions/streams/app_users'
+- $ref: '#/definitions/streams/software_deployments'
+- $ref: '#/definitions/streams/job_requisitions'
+- $ref: '#/definitions/streams/headcount_positions'
+- $ref: '#/definitions/streams/compensation_bands_details'
+- $ref: '#/definitions/streams/object_categories'
+- $ref: '#/definitions/streams/custom_objects'
+- $ref: '#/definitions/streams/custom_object_records'
+- $ref: '#/definitions/streams/worker_change_fields'
+- $ref: '#/definitions/streams/worker_changes'
+- $ref: '#/definitions/streams/activity_log'
