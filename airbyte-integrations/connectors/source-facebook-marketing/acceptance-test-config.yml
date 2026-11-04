@@ -22,9 +22,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
   basic_read:
     tests:
-      # Reading every discovered stream does not fit the CI time budget.
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
           - name: "ads_insights_action_product_id"
             bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
@@ -43,6 +41,32 @@ acceptance_tests:
           - name: "ads_insights_platform_and_device"
             bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
           - name: "ads_insights_region"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_action_carousel_card"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_action_conversion_device"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_action_reaction"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_action_video_sound"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_action_video_type"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_delivery_device"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_delivery_platform"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_delivery_platform_and_device_platform"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_demographics_age"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_demographics_comscore_market_region"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_demographics_country"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "ads_insights_demographics_gender"
+            bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
+          - name: "customcustom_insight_stream"
             bypass_reason: "The window of this config (March 2023) is older than the 37 months of insights that Meta keeps, so the stream returns no rows; move the window in the test secret, then remove this entry"
   incremental:
     tests:
