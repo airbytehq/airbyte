@@ -313,7 +313,7 @@ grouped by the definition the comment sits on. Read the matching section before 
 - `wildcard_repository_filter` passes everything when the config has no wildcard (legacy
   `Repositories(pattern=None)`). That clause is inert for the resolver stream: with no wildcards
   it has no partitions.
-- A `.get(key, default)` default only applies when the key is *absent*. A present-but-null value
+- A `.get(key, default)` default only applies when the key is _absent_. A present-but-null value
   (reachable through the API, Terraform or embedded use) renders as the literal `"None"`:
   - `max_waiting_time` became `"PTNoneM"` and every command failed at startup with
     `ISO8601Error: Unrecognised ISO 8601 date format: ''` (isodate splits on the `T` and reports
@@ -551,7 +551,7 @@ ends pagination.
   `Repositories.is_sorted = "desc"`); without it every sync walked the org's whole listing (`ceil(repos/100)` requests per org per
   sync instead of about 1). The
   CDK drops that boundary page's older records. `ConcurrentPerPartitionCursor` seeds a partition
-  with no state from the *global* cursor, so repos of an org added to `repositories` after the
+  with no state from the _global_ cursor, so repos of an org added to `repositories` after the
   first sync are emitted only if updated after that cursor.
 - `server_side_since_cursor` (`comments`, `issues`, `review_comments`, and `commits` with
   `cursor_field: created_at`): GitHub's `since` returns `updated_at >= since`; legacy added it from `SemiIncrementalMixin.get_starting_point`
@@ -623,7 +623,7 @@ ends pagination.
   scopes/SSO) or FORBIDDEN. The status-only skip filters never see it, so without this the generic
   body filter would retry it until the attempts run out and fail the stream.
 - `graphql_error_handler.response_filters` order is the contract, because `DefaultErrorHandler`
-  stops at the first match and a query timeout arrives as `errors` on a 200 *and* on a 502/504:
+  stops at the first match and a query timeout arrives as `errors` on a 200 _and_ on a 502/504:
   1. body predicates: rate limit first (a page-size reduction is the wrong answer to a spent
      quota), then page-size reduction (above the generic body filter, or a timed-out page is
      retried at the same size), then not-found skip, then the generic body error;
