@@ -8,6 +8,7 @@ public enum KafkaProtocol {
 
   PLAINTEXT,
   SASL_PLAINTEXT,
-  SASL_SSL
+  SASL_SSL,
+  SSL
 
 }
