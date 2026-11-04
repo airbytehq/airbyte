@@ -1373,7 +1373,7 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/base_requester"
-        path: /crm-pipelines/v1/pipelines/deals
+        path: /crm/pipelines/2026-09/deals
       record_selector:
         type: RecordSelector
         transform_before_filtering: true
@@ -1404,6 +1404,8 @@ definitions:
       schema:
         $ref: "#/schemas/deal_pipelines"
     transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.DealPipelinesV1ShapeTransformation
       - type: AddFields
         fields:
           - path: ["updatedAt"]
@@ -3131,15 +3133,15 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "$parameters", "cursor_filter_property_field"]
-          value: "hs_lastmodifieddate"
+          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contacts' else 'hs_lastmodifieddate' }}"
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "incremental_sync", "cursor_field"]
-          value: "hs_lastmodifieddate"
+          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contacts' else 'hs_lastmodifieddate' }}"
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: [ "retriever", "partition_router", "underlying_partition_router", "parent_stream_configs", "0", "stream", "transformations", "0", "fields", "0", "path", "0"]
-          value: "hs_lastmodifieddate"
+          value: "{{ 'lastmodifieddate' if components_values['from_object'] == 'contacts' else 'hs_lastmodifieddate' }}"
 
 
 spec:

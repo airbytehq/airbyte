@@ -147,12 +147,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -332,7 +330,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -511,7 +509,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -777,7 +775,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -1138,7 +1136,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -1353,12 +1351,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -1658,7 +1654,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -1845,7 +1841,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -2245,7 +2241,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -2612,12 +2608,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -2760,7 +2754,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -3060,12 +3054,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -3274,7 +3266,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -3725,7 +3717,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -3857,7 +3849,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -4422,7 +4414,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -4633,7 +4625,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -4964,12 +4956,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -5099,7 +5089,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -5542,7 +5532,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -6001,7 +5991,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -6406,7 +6396,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -6766,7 +6756,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -6948,7 +6938,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -7396,12 +7386,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -7535,12 +7523,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -7722,12 +7708,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -7920,12 +7904,10 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: PT0S
       transformations:
       - type: AddFields
         fields:
@@ -8079,7 +8061,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -8274,7 +8256,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -8449,7 +8431,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -8723,7 +8705,7 @@ definitions:
             page_size: "{{ (config.max_results or 1000) | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        step: P30D
+        step: P365D
         cursor_field: airbyte_cursor
         end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
         start_datetime: "{{ config.start_date }}"
@@ -9028,12 +9010,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -9213,7 +9193,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -9392,7 +9372,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -9658,7 +9638,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -10019,7 +9999,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -10234,12 +10214,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -10538,7 +10516,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -10725,7 +10703,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -11125,7 +11103,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -11492,12 +11470,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -11640,7 +11616,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -11940,12 +11916,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -12154,7 +12128,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -12605,7 +12579,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -12737,7 +12711,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -13302,7 +13276,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -13513,7 +13487,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -13844,12 +13818,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -13979,7 +13951,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -14421,7 +14393,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -14880,7 +14852,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -15285,7 +15257,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -15645,7 +15617,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -15827,7 +15799,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -16275,12 +16247,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -16414,12 +16384,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -16601,12 +16569,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -16799,12 +16765,10 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-    cursor_granularity: PT0S
   transformations:
   - type: AddFields
     fields:
@@ -16958,7 +16922,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -17153,7 +17117,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -17328,7 +17292,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -17602,7 +17566,7 @@ streams:
         page_size: "{{ (config.max_results or 1000) | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
-    step: P30D
+    step: P365D
     cursor_field: airbyte_cursor
     end_datetime: "{{ now_utc().isoformat('T', 'seconds') }}"
     start_datetime: "{{ config.start_date }}"
@@ -17826,12 +17790,20 @@ spec:
                 path: ["max_results"]
                 value: "{{ 1000 }}"
                 value_type: integer
+      - type: ConfigMigration
+        description: Default an empty Start Date to 1 year before the first run.
+        transformations:
+          - type: ConfigAddFields
+            condition: "{{ not config.get('start_date') }}"
+            fields:
+              - type: AddedFieldDefinition
+                path: ["start_date"]
+                value: "{{ day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - credentials
-      - start_date
     properties:
       start_date:
         type: string
@@ -17840,11 +17812,11 @@ spec:
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
-        - "2021-03-20T00:00:00Z"
+        - "2026-01-01T00:00:00Z"
         description: >-
-          The default value to use if no bookmark exists for an endpoint
-          (rfc3339 date string). E.g, 2021-03-20T00:00:00Z. Any data before this
-          date will not be replicated.
+          UTC date-time in the format YYYY-MM-DDTHH:MM:SSZ. Data last updated
+          before this date won't be replicated. If not set, defaults to 1 year
+          ago.
       max_results:
         type: integer
         order: 2
