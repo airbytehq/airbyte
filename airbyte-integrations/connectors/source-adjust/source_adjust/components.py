@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+import pkgutil
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-import source_adjust.model
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 
 
@@ -14,10 +15,8 @@ class AdjustSchemaLoader(JsonFileSchemaLoader):
     config: Mapping[str, Any]
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Prune the schema to only include selected fields to synchronize.
-        """
-        schema = source_adjust.model.Report.schema()
+        """Load the frozen pydantic-v1 Report schema."""
+        schema = json.loads(pkgutil.get_data("source_adjust", "schemas/report.json"))
         properties = schema["properties"]
 
         required = schema["required"]
