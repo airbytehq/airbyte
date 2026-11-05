@@ -8,7 +8,7 @@ Each report stream starts by listing jobs through the YouTube Reporting API's `/
 
 The `report` stream lists files from `/jobs/{id}/reports` for each matching job. Each report stream then downloads the listed file using its `downloadUrl`. `CustomDecoder` uses `csv.DictReader`, so CSV values arrive as strings. The report streams' record selector sets `schema_normalization: Default`, which casts each value to the type its schema declares; a value that cannot be cast, such as an empty cell in an integer column, stays a string. An `AddFields` transformation also casts `date` to an integer.
 
-The `jobs`, `report`, and `report_types` streams follow YouTube's `nextPageToken` through `next_page_token_paginator`. On the first page, `JobRequester._job_exists` checks for a matching job and keeps reading pages until it finds one or runs out, so a match on a later page does not create a duplicate job. If no page matches, it creates the job and lists the first page again. Either way, the paginator then requests the later pages again, so the later listing pages are requested twice whenever the match is not on the first page or no page matches.
+The `jobs` and `report` streams follow YouTube's `nextPageToken` through `next_page_token_paginator`. On the first page, `JobRequester._job_exists` checks for a matching job and keeps reading pages until it finds one or runs out, so a match on a later page does not create a duplicate job. If no page matches, it creates the job and lists the first page again. Either way, the paginator then requests the later pages again, so the later listing pages are requested twice whenever the match is not on the first page or no page matches.
 
 Only report downloads handle a 404. The download requester puts an `action: IGNORE` filter for 404 ahead of the shared error handler, so a report file YouTube has already removed (most likely after its retention period) is skipped with a log message and the rest of the sync continues. That file's rows are not synced, and a later sync cannot recover them. A 404 on a listing endpoint still fails the sync.
 
@@ -49,13 +49,11 @@ For any successful HTTP response whose JSON body contains an `error` key, `JobRe
 
 **Why this matters:** Rejected credentials, a missing channel, a 403, a refresh-token failure, a skipped 404 download, and an API error in a successful response each produce a different message and failure path. Changing a filter's order, `action`, or request stage can change what users see.
 
-## 5. Content Owner Parameter and Static Extra Request Parameters
+## 5. Content Owner Parameter
 
-`ContentOwnerRequester` adds `onBehalfOfContentOwner` only when `content_owner_id` is set. It also merges the manifest's `extra_request_parameters` as static values; these values are not interpolated.
+`ContentOwnerRequester` adds `onBehalfOfContentOwner` only when `content_owner_id` is set.
 
-Do not rename `extra_request_parameters` to `request_parameters`. The factory forwards manifest keys that match a component's type hints, so a `request_parameters` field on this class would also receive any Jinja-templated `request_parameters` a stream declares later. `ContentOwnerRequester` merges values verbatim without interpolation, so such a template would reach YouTube as literal `{{ ... }}` text. No stream sets `request_parameters` today; the `report` stream sends `createdAfter` through its incremental `start_time_option`.
-
-**Why this matters:** Keep content-owner context conditional and extra parameters static. Renaming the custom field would make any future templated request parameter reach the API uninterpolated.
+**Why this matters:** Keep content-owner context conditional: a request on behalf of a content owner fails for a user who is not one.
 
 ## 6. Two Chained State Migrations
 
