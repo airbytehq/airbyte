@@ -7,13 +7,14 @@ import pytest
 import requests
 
 from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType, SyncMode
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.streams.call_rate import HttpRequestMatcher, MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
-from unit_tests.conftest import get_stream_by_name, oauth_config, token_config
+from unit_tests.conftest import get_source, get_stream_by_name, oauth_config, token_config
 
 
 def test_channel_members_extractor(token_config, components_module):
@@ -160,6 +161,88 @@ def test_join_channel_read_other_error_logs_warning(requests_mock, token_config,
 def test_threads_state_migration(token_config, threads_stream_state, expected_parent_state):
     stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
     assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
+
+
+def test_threads_state_migration_preserves_current_parent_state(token_config):
+    threads_stream_state = {
+        "use_global_cursor": False,
+        "state": {"float_ts": "1753263870"},
+        "lookback_window": 86400,
+        "states": [
+            {
+                "partition": {"float_ts": "1753000000.0", "parent_slice": {"channel": "C1", "parent_slice": {}}},
+                "cursor": {"float_ts": "1753263870"},
+            }
+        ],
+        "parent_state": {
+            "channel_messages": {
+                "use_global_cursor": False,
+                "state": {"float_ts": "1753263000.0"},
+                "lookback_window": 86400,
+                "states": [
+                    {"partition": {"channel": "C1", "parent_slice": {}}, "cursor": {"float_ts": "1753263000.0"}},
+                    {"partition": {"channel": "C2", "parent_slice": {}}, "cursor": {"float_ts": "1753200000.0"}},
+                ],
+                "parent_state": {"channels": {}},
+            }
+        },
+    }
+    stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
+
+    channel_message_states = stream.cursor.state["parent_state"]["channel_messages"]["states"]
+    channel_cursors = {state["partition"]["channel"]: float(state["cursor"]["float_ts"]) for state in channel_message_states}
+    assert channel_cursors == {"C1": 1753263000.0, "C2": 1753200000.0}
+
+
+def test_threads_state_migration_uses_global_cursor(token_config):
+    threads_stream_state = {"use_global_cursor": True, "state": {"float_ts": "1753263870"}}
+    stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
+
+    assert stream.cursor.state["parent_state"]["channel_messages"]["float_ts"] == 1753177470.0
+
+
+def test_channel_messages_skips_archived_non_member_channels(token_config, requests_mock):
+    config = {
+        **token_config,
+        "include_archived_channels": True,
+        "join_channels": True,
+        "channel_filter": ["member-channel", "joinable-channel", "archived-channel"],
+    }
+    channels = [
+        {"id": "C001", "name": "member-channel", "is_member": True, "is_archived": False},
+        {"id": "C002", "name": "joinable-channel", "is_member": False, "is_archived": False},
+        {"id": "C003", "name": "archived-channel", "is_member": False, "is_archived": True},
+    ]
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel&exclude_archived=false",
+        json={"channels": channels},
+    )
+    requests_mock.post("https://slack.com/api/conversations.join", json={"ok": True})
+    history_request = requests_mock.get(
+        "https://slack.com/api/conversations.history",
+        complete_qs=False,
+        json={"ok": True, "messages": []},
+    )
+    state = StateBuilder().with_stream_state("channel_messages", {}).build()
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "channel_messages", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+
+    output = read(get_source(config, "channel_messages", state), config=config, catalog=catalog, state=state)
+    requested_channels = {request.qs.get("channel", [None])[0].lower() for request in history_request.request_history}
+
+    assert not output.errors
+    assert {"c001", "c002"}.issubset(requested_channels)
+    assert "c003" not in requested_channels
 
 
 def test_read_records_yields_all_channels_when_join_disabled(token_config, requests_mock, components_module):

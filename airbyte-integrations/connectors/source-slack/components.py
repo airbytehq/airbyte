@@ -176,6 +176,13 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state:
+            return False
+
+        channel_messages_state = stream_state.get("parent_state", {}).get("channel_messages")
+        if isinstance(channel_messages_state, dict) and ("states" in channel_messages_state or "state" in channel_messages_state):
+            return False
+
         return True
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -187,6 +194,9 @@ class ThreadsStateMigration(StateMigration):
         if stream_state.get("states"):
             for state in stream_state["states"]:
                 start_date_state = max(start_date_state, float(state.get("cursor", {}).get("float_ts", start_date_state)))
+        global_cursor = stream_state.get("state", {}).get("float_ts")
+        if global_cursor is not None:
+            start_date_state = max(start_date_state, float(global_cursor))
         # for old-stype state
         if stream_state.get("float_ts"):
             start_date_state = max(start_date_state, float(stream_state["float_ts"]))
