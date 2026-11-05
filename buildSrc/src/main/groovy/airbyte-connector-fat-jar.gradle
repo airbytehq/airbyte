@@ -1,0 +1,145 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.file.FileCollection
+import org.gradle.api.plugins.JavaApplication
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.bundling.ZipEntryCompression
+import org.yaml.snakeyaml.Yaml
+
+import java.util.jar.JarFile
+
+/**
+ * Builds a connector's self-contained ("fat") jar and publishes it as io.airbyte.connectors:<connector>:<version>,
+ * where <connector> is the image name from metadata.yaml's dockerRepository and <version> is the image tag being
+ * published. The platform runs connector checks from these jars instead of from the connector image.
+ *
+ * Tasks:
+ *   connectorFatJar     builds build/connector-fat-jar/<connector>-<version>-fat.jar
+ *   publishConnectorJar publishes it to CloudRepo (CLOUDREPO_USER / CLOUDREPO_PASSWORD)
+ *   publishConnectorJarPublicationToLocalConnectorJarsRepository
+ *                       publishes it to build/connector-jar-repo, to inspect what would be uploaded
+ *
+ * The version defaults to metadata.yaml's dockerImageTag; pass -PconnectorJarVersion=<tag> to publish a preview or
+ * release candidate tag. The jar is built only when one of these tasks runs: it is not part of assemble or build.
+ */
+class AirbyteConnectorFatJarPlugin implements Plugin<Project> {
+
+    static final String GROUP_ID = 'io.airbyte.connectors'
+    static final String CLOUDREPO_URL = 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars/'
+
+    // The manifest attributes Package.getImplementationVersion() and its siblings read.
+    static final List<String> PACKAGE_ATTRIBUTES = [
+            'Implementation-Title', 'Implementation-Version', 'Implementation-Vendor',
+            'Specification-Title', 'Specification-Version', 'Specification-Vendor',
+    ]
+
+    @Override
+    void apply(Project project) {
+        project.plugins.apply('maven-publish')
+
+        def metadata = new Yaml().load(project.file('metadata.yaml').text)
+        String dockerRepository = metadata.data.dockerRepository
+        String artifactId = dockerRepository.split('/').last()
+        String version = project.findProperty('connectorJarVersion') ?: metadata.data.dockerImageTag
+        FileCollection runtimeClasspath = project.configurations.runtimeClasspath
+
+        // A ShadowJar task on its own rather than the Shadow plugin: the plugin adds a fat jar and two more
+        // distribution archives to assemble, which every connector image build runs.
+        def fatJar = project.tasks.register('connectorFatJar', ShadowJar) { ShadowJar jar ->
+            jar.group = 'build'
+            jar.description = "Builds the self-contained jar published as ${GROUP_ID}:${artifactId}:${version}."
+            jar.archiveBaseName.set(artifactId)
+            jar.archiveVersion.set(version)
+            jar.archiveClassifier.set('fat')
+            jar.destinationDirectory.set(project.layout.buildDirectory.dir('connector-fat-jar'))
+            jar.from(project.sourceSets.main.output)
+            jar.configurations = [runtimeClasspath]
+
+            // The root build stores every Zip entry uncompressed, which more than doubles a fat jar.
+            jar.entryCompression = ZipEntryCompression.DEFLATED
+            // Duplicates must reach the transformers below, which merge them.
+            jar.duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            // Debezium, Kafka, JDBC drivers and Jackson register implementations in META-INF/services.
+            jar.mergeServiceFiles()
+            jar.transform(Log4j2PluginsCacheFileTransformer)
+            // Signatures of signed dependencies (BouncyCastle) no longer match the merged jar, and the JVM rejects
+            // them. META-INF/maven holds the dependencies' own POMs, which publishing tools can mistake for this
+            // jar's POM.
+            jar.exclude('META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/INDEX.LIST', 'META-INF/maven/**')
+
+            jar.doFirst {
+                jar.manifest.attributes(
+                        'Main-Class': project.extensions.getByType(JavaApplication).mainClass.get(),
+                        'Multi-Release': 'true',
+                )
+                addPackageManifestSections(jar, runtimeClasspath)
+            }
+        }
+
+        project.extensions.configure(PublishingExtension) { PublishingExtension publishing ->
+            publishing.publications.register('connectorJar', MavenPublication) { MavenPublication publication ->
+                publication.groupId = GROUP_ID
+                publication.artifactId = artifactId
+                publication.version = version
+                // Only the jar: its POM declares no dependencies, since the jar carries them all.
+                publication.artifact(fatJar) { it.classifier = null }
+                publication.pom {
+                    name = artifactId
+                    description = "Self-contained jar of ${dockerRepository}:${version}. Requires Java 21."
+                    url = metadata.data.documentationUrl
+                    licenses { license { name = metadata.data.license } }
+                }
+            }
+            publishing.repositories.maven {
+                name = 'cloudrepo'
+                url = CLOUDREPO_URL
+                credentials {
+                    username = System.getenv('CLOUDREPO_USER')
+                    password = System.getenv('CLOUDREPO_PASSWORD')
+                }
+            }
+            publishing.repositories.maven {
+                name = 'localConnectorJars'
+                url = project.layout.buildDirectory.dir('connector-jar-repo')
+            }
+        }
+
+        project.tasks.register('publishConnectorJar') {
+            group = 'publishing'
+            description = "Publishes ${GROUP_ID}:${artifactId}:${version} to CloudRepo."
+            dependsOn('publishConnectorJarPublicationToCloudrepoRepository')
+        }
+    }
+
+    /**
+     * Merging jars keeps only this jar's manifest, so Package.getImplementationVersion() returns null for every
+     * dependency; the Bulk CDK's CDC reader calls it on Debezium and fails on the null. Copy each dependency's
+     * attributes into a manifest section per package. The first jar on the runtime classpath that has a package owns
+     * it, as on a normal classpath.
+     */
+    private static void addPackageManifestSections(ShadowJar jar, FileCollection classpath) {
+        Set<String> seen = [] as Set
+        classpath.files.findAll { it.name.endsWith('.jar') }.each { File file ->
+            new JarFile(file).withCloseable { JarFile dependency ->
+                def mainAttributes = dependency.manifest?.mainAttributes
+                Map<String, String> attributes = PACKAGE_ATTRIBUTES
+                        .collectEntries { [(it): mainAttributes?.getValue(it)] }
+                        .findAll { it.value } as Map<String, String>
+                dependency.entries()
+                        .findAll { !it.directory && it.name.endsWith('.class') && !it.name.startsWith('META-INF/') }
+                        .collect { it.name.substring(0, it.name.lastIndexOf('/') + 1) }
+                        .unique()
+                        .findAll { it && seen.add(it) }
+                        .each { String pkg ->
+                            if (!attributes.isEmpty()) {
+                                jar.manifest.attributes(attributes, pkg)
+                            }
+                        }
+            }
+        }
+    }
+}

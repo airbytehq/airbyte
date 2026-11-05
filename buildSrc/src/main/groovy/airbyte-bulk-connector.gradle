@@ -154,6 +154,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
     void apply(Project project) {
 
         project.plugins.apply('application')
+        project.plugins.apply('airbyte-connector-fat-jar')
 
         project.application {
             applicationDefaultJvmArgs = [
