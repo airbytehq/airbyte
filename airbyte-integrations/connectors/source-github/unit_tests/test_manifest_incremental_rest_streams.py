@@ -48,9 +48,18 @@ MIGRATED_STREAMS = [
     ("issues", "issues"),
     ("review_comments", "pulls/comments"),
 ]
+LARGE_PAGE_SIZE_STREAMS = [
+    ("comments", "issues/comments"),
+    ("issues", "issues"),
+]
 
 _TOKEN_CONFIG = {"credentials": {"personal_access_token": "token"}}
 _START_DATE = "2022-02-02T10:10:01Z"
+_PAGE_SIZE_CONFIGS = [
+    pytest.param({}, id="no_config"),
+    pytest.param({"page_size_for_large_streams": 42}, id="deprecated_key_present"),
+    pytest.param({"page_size_for_large_streams": None}, id="deprecated_key_null"),
+]
 
 
 def _config(*repositories, **overrides):
@@ -254,17 +263,11 @@ def test_legacy_state_migrates_to_per_partition_state(stream_name, endpoint, rat
 
 @pytest.mark.parametrize(
     "page_size_config",
-    [
-        pytest.param({}, id="no_config"),
-        pytest.param({"page_size_for_large_streams": 42}, id="deprecated_key_present"),
-        pytest.param({"page_size_for_large_streams": None}, id="deprecated_key_null"),
-    ],
+    _PAGE_SIZE_CONFIGS,
 )
-@pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
+@pytest.mark.parametrize(("stream_name", "endpoint"), LARGE_PAGE_SIZE_STREAMS)
 def test_page_size_is_the_large_stream_page_size(stream_name, endpoint, page_size_config, rate_limit_mock_response, requests_mock):
-    """All three were `large_stream = True`, so their `per_page` is
-    `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM` (10) rather than the 100 the full-refresh
-    group sends.
+    """`comments` and `issues` still use the large-stream page size of 10.
 
     The deprecated `page_size_for_large_streams` no longer changes it. The key left the spec in
     1.0.1, so a config still carrying it was set through the API or Terraform, and a null there
@@ -277,6 +280,46 @@ def test_page_size_is_the_large_stream_page_size(stream_name, endpoint, page_siz
 
     assert error is None
     assert [request.qs["per_page"] for request in _listings(requests_mock, endpoint)] == [["10"]]
+
+
+@pytest.mark.parametrize("page_size_config", _PAGE_SIZE_CONFIGS)
+def test_review_comments_page_size_is_100(page_size_config, rate_limit_mock_response, requests_mock):
+    config = _config("docker/compose", **page_size_config)
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    requests_mock.get("https://api.github.com/repos/docker/compose/pulls/comments", json=[])
+
+    _, _, _, error = _read(config, "review_comments")
+
+    assert error is None
+    assert [request.qs["per_page"] for request in _listings(requests_mock, "pulls/comments")] == [["100"]]
+
+
+@patch("time.sleep")
+def test_review_comments_completes_when_github_times_out_small_pages(sleep_mock, rate_limit_mock_response, requests_mock):
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    listing_url = "https://api.github.com/repos/docker/compose/pulls/comments"
+    requests_mock.get(
+        listing_url,
+        additional_matcher=lambda request: request.qs.get("per_page") == ["10"],
+        status_code=500,
+        json={"message": "Server Error"},
+    )
+    requests_mock.get(
+        listing_url,
+        additional_matcher=lambda request: request.qs.get("per_page") == ["100"],
+        json=[
+            {"id": 1, "updated_at": "2022-03-01T00:00:00Z"},
+            {"id": 2, "updated_at": "2022-03-02T00:00:00Z"},
+        ],
+    )
+
+    records, statuses, _, error = _read(config, "review_comments")
+
+    assert error is None
+    assert statuses[-1] == "COMPLETE"
+    assert [record["id"] for record in records] == [1, 2]
+    assert all(request.qs.get("per_page") != ["10"] for request in _listings(requests_mock, "pulls/comments"))
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
@@ -313,9 +356,10 @@ def test_pagination_follows_next_link_with_after_cursor(stream_name, endpoint, r
     The whole next URL must be followed, with `after` decoded exactly once."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
+    page_size = "100" if stream_name == "review_comments" else "10"
     next_url = (
         f"https://api.github.com/repositories/1/{endpoint}"
-        "?per_page=10&state=all&sort=updated&direction=asc&since=2022-02-02T10%3A10%3A01Z"
+        f"?per_page={page_size}&state=all&sort=updated&direction=asc&since=2022-02-02T10%3A10%3A01Z"
         "&page={page}&after={cursor}"
     )
     after_cursors = {
@@ -363,7 +407,7 @@ def test_pagination_follows_next_link_with_after_cursor(stream_name, endpoint, r
         assert set(query["state"]) == {"all"}
         assert set(query["sort"]) == {"updated"}
         assert set(query["direction"]) == {"asc"}
-        assert set(query["per_page"]) == {"10"}
+        assert set(query["per_page"]) == {page_size}
 
 
 def test_issues_sends_the_legacy_base_params(rate_limit_mock_response, requests_mock):

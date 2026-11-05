@@ -307,7 +307,7 @@ Two smaller changes in the same release:
 
 #### `review_comments` page size
 
-Since version 2.8.2, `review_comments` requests 100 comments per page instead of 10. On very large repositories GitHub could time out on the smaller page size and return HTTP 500. The larger page size means fewer requests, but each one returns more data and takes longer, so sync speed for this stream may change compared with earlier versions. The other large streams still use 10 per page.
+Since version 2.8.5, `review_comments` requests 100 comments per page instead of 10. On very large repositories GitHub could time out on the smaller page size and return HTTP 500. The larger page size means fewer requests, but each one returns more data and takes longer, so sync speed for this stream may change compared with earlier versions. The other large streams still use 10 per page.
 
 #### Permissions and scopes
 
@@ -332,6 +332,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.5 | 2026-11-04 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Request 100 comments per page on `review_comments`, so very large repositories no longer fail with HTTP 500 |
 | 2.8.4 | 2026-11-03 | [90166](https://github.com/airbytehq/airbyte/pull/90166) | Retry GitHub 5xx errors and timeouts with exponential backoff instead of waiting for the rate-limit reset |
 | 2.8.3 | 2026-11-03 | [90557](https://github.com/airbytehq/airbyte/pull/90557) | Update dependencies |
 | 2.8.1 | 2026-10-27 | [89848](https://github.com/airbytehq/airbyte/pull/89848) | Update dependencies |
