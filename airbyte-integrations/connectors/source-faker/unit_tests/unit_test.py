@@ -2,11 +2,27 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+from datetime import datetime
+
 import jsonschema
 import pytest
+from pytest_mock import MockerFixture
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteStateMessage,
+    AirbyteStateMessageSerializer,
+    AirbyteStateType,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    StreamDescriptor,
+    Type,
+)
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
 
 
 class MockLogger:
@@ -124,9 +140,6 @@ def test_read_always_updated():
             record_rows_count = record_rows_count + 1
 
     assert record_rows_count == 10
-
-    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
-    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
 
     stream_descriptor = StreamDescriptor(name="users", namespace=None)
     stream_state = AirbyteStreamState(stream_descriptor=stream_descriptor, stream_state=AirbyteStateBlob(updated_at="something"))
@@ -273,9 +286,6 @@ def test_ensure_no_purchases_without_users():
 
 
 def test_read_users_resumes_from_checkpoint():
-    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
-    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
-
     source = SourceFaker()
     config = {"count": 10, "records_per_slice": 5, "parallelism": 1}
     stream_dict = {
@@ -293,3 +303,79 @@ def test_read_users_resumes_from_checkpoint():
 
     records = [row.record.data for row in iterator if row.type is Type.RECORD]
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
+
+
+@pytest.fixture
+def users_catalog() -> ConfiguredAirbyteCatalog:
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+        "cursor_field": ["updated_at"],
+        "primary_key": [["id"]],
+    }
+    return ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+
+@pytest.mark.parametrize(
+    "always_updated,count,records_per_slice,parallelism",
+    [(True, 1000, 1000, 4), (True, 10, 3, 1), (False, 10, 3, 1)],
+)
+def test_read_users_consecutive_syncs(
+    users_catalog: ConfiguredAirbyteCatalog,
+    mocker: MockerFixture,
+    always_updated: bool,
+    count: int,
+    records_per_slice: int,
+    parallelism: int,
+) -> None:
+    config = {
+        "count": count,
+        "seed": -1,
+        "records_per_slice": records_per_slice,
+        "always_updated": always_updated,
+        "parallelism": parallelism,
+    }
+    clock = mocker.patch("source_faker.user_generator.datetime")
+    state: list[AirbyteStateMessage] = []
+    for sync in range(3):
+        clock.datetime.now.return_value = datetime(2026, 1, sync + 1)
+        messages = list(SourceFaker().read(logging.getLogger(__name__), config, users_catalog, state))
+        records = [message.record.data for message in messages if message.type is Type.RECORD and message.record is not None]
+        expected_count = count if sync == 0 or always_updated else 0
+        assert len(records) == expected_count
+        assert [record["id"] for record in records] == list(range(1, expected_count + 1))
+        assert all(record["updated_at"] == f"2026-01-0{sync + 1}T00:00:00+00:00" for record in records)
+        final_state = [message.state for message in messages if message.type is Type.STATE and message.state is not None][-1]
+        serialized_state = AirbyteStateMessageSerializer.dump(final_state)
+        state = [AirbyteStateMessageSerializer.load(serialized_state)]
+        assert serialized_state["stream"]["stream_state"]["loop_offset"] == count
+
+
+@pytest.mark.parametrize("loop_offset", [None, 0, 5, 10, 12])
+def test_read_users_saved_offsets(users_catalog: ConfiguredAirbyteCatalog, loop_offset: int | None) -> None:
+    config = {"count": 10, "records_per_slice": 3, "parallelism": 1, "always_updated": True}
+    saved_state = {"seed": -1, "updated_at": "2024-01-01T00:00:00+00:00"}
+    if loop_offset is not None:
+        saved_state["loop_offset"] = loop_offset
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="users"),
+                stream_state=AirbyteStateBlob(**saved_state),
+            ),
+        )
+    ]
+    messages = list(SourceFaker().read(logging.getLogger(__name__), config, users_catalog, state))
+    records = [message.record.data for message in messages if message.type is Type.RECORD and message.record is not None]
+    first_id = 6 if loop_offset == 5 else 1
+    assert [record["id"] for record in records] == list(range(first_id, 11))
+    estimates = [
+        message.trace.estimate
+        for message in messages
+        if message.type is Type.TRACE and message.trace is not None and message.trace.estimate is not None
+    ]
+    assert estimates[0].row_estimate == len(records)
+    final_state = [message.state for message in messages if message.type is Type.STATE and message.state is not None][-1]
+    assert AirbyteStateMessageSerializer.dump(final_state)["stream"]["stream_state"]["loop_offset"] == 10
