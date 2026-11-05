@@ -38,6 +38,16 @@ def schemas_are_valid():
         jsonschema.Draft7Validator.check_schema(schema)
 
 
+def test_spec_includes_dataset_label():
+    source = SourceFaker()
+    spec = source.spec(logger)
+    properties = spec.connectionSpecification["properties"]
+
+    assert "dataset_label" in properties, "dataset_label should be exposed in the spec"
+    assert properties["dataset_label"]["type"] == "string"
+    assert properties["dataset_label"]["default"] == ""
+
+
 def test_source_streams():
     source = SourceFaker()
     config = {"count": 1, "parallelism": 1}
