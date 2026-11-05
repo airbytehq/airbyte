@@ -69,6 +69,7 @@ def test_wrong_region_remediation(region: str, base: str) -> None:
     assert output.records == []
     assert any(
         message.trace.error.failure_type == FailureType.config_error
-        and "Set Region to match the token: pylon_api_eu_ means EU, pylon_api_ means US, and older unprefixed tokens use the region where the Pylon tenant is hosted." in message.trace.error.message
+        and "Set Region to match the token: pylon_api_eu_ means EU, pylon_api_ means US, and older unprefixed tokens use the region where the Pylon tenant is hosted."
+        in message.trace.error.message
         for message in output.errors
     )

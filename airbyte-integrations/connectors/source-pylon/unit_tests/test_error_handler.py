@@ -82,7 +82,10 @@ def test_retry_after_precedes_exponential_backoff(error_handler) -> None:
 @pytest.mark.parametrize(
     "code,expected_text",
     [
-        ("wrong_region_token", "Set Region to match the token: pylon_api_eu_ means EU, pylon_api_ means US, and older unprefixed tokens use the region where the Pylon tenant is hosted."),
+        (
+            "wrong_region_token",
+            "Set Region to match the token: pylon_api_eu_ means EU, pylon_api_ means US, and older unprefixed tokens use the region where the Pylon tenant is hosted.",
+        ),
         ("invalid_api_token", "IP allowlist"),
         ("invalid_authorization_header", "without a 'Bearer ' prefix or spaces"),
         ("organization_deactivated", "Contact Pylon support"),
