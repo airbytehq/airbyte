@@ -3,12 +3,12 @@
 import json
 
 import pytest
-from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from unit_tests.conftest import get_source
 
 
 CONFIG = {"start_date": "2026-09-03", "auth_hash": "test-auth-hash", "restid": "42"}
@@ -43,4 +43,3 @@ def test_read_booking(bookings):
     assert records == bookings
     assert all("status" not in record for record in records)
     assert not output.errors
-
