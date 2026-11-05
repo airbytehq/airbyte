@@ -47,7 +47,7 @@ def _read(expecting_exception: bool = False) -> EntrypointOutput:
 
 def _events_request(calendar_id: str) -> HttpRequest:
     return HttpRequest(
-        f"https://api.us.nylas.com/v3/grants/grant-1/events",
+        "https://api.us.nylas.com/v3/grants/grant-1/events",
         query_params={
             "limit": "50",
             "calendar_id": calendar_id,
