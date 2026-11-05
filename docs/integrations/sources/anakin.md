@@ -68,6 +68,6 @@ Anakin allows 60 search requests and 20 inline scrape requests per minute per us
 
 | Version | Date       | Pull Request                                         | Subject         |
 | :------ | :--------- | :--------------------------------------------------- | :-------------- |
-| 0.1.0   | 2026-10-26 | [89757](https://github.com/airbytehq/airbyte/pull/89757) | Initial release |
+| 0.1.0   | 2026-11-05 | [91054](https://github.com/airbytehq/airbyte/pull/91054) | Initial release |
 
 </details>
