@@ -30,11 +30,7 @@ def test_check_succeeds_without_a_retired_annotations_job(tmp_path, creation_sta
         query_params={},
         body={"name": "Airbyte reporting job", "reportTypeId": "channel_annotations_a1"},
     )
-    reports_request = (
-        YoutubeAnalyticsRequestBuilder.reports_endpoint("basic-job")
-        .with_created_after("1990-01-01T00:00:00.000000Z")
-        .build()
-    )
+    reports_request = YoutubeAnalyticsRequestBuilder.reports_endpoint("basic-job").with_created_after("1990-01-01T00:00:00.000000Z").build()
     download_request = YoutubeAnalyticsRequestBuilder.download_endpoint("basic-report").build()
 
     with HttpMocker() as http_mocker:
