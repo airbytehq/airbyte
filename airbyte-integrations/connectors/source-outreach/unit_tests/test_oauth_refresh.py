@@ -1,8 +1,10 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 import json
 from copy import deepcopy
 from pathlib import Path
-from urllib.parse import parse_qs
 from unittest.mock import patch
+from urllib.parse import parse_qs
 
 import requests
 
