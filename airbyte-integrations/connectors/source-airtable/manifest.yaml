@@ -121,6 +121,7 @@ definitions:
               value: "{{ stream_slice.base_id }}"
             - path: ["base_name"]
               value: "{{ stream_slice.extra_fields.name }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:

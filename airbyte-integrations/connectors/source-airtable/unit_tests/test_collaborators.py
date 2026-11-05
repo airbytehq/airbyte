@@ -3,8 +3,10 @@
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+import pytest
 import requests_mock
 import yaml
+from jsonschema import validate
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
@@ -112,3 +114,15 @@ def test_primary_key_is_unique_across_bases():
         ("app1", "Base One", "usr1", "create"),
         ("app2", "Base Two", "usr1", "read"),
     ]
+
+
+@pytest.mark.parametrize("base_name", ["2026", "True", "None"])
+def test_base_name_preserves_string_values(monkeypatch, base_name):
+    monkeypatch.setitem(_BASES, "app1", base_name)
+
+    records, _ = _read()
+
+    record = next(record for record in records if record["base_id"] == "app1")
+    assert record["base_name"] == base_name
+    schema = yaml.safe_load(_MANIFEST_PATH.read_text())["schemas"][_STREAM]
+    validate(record, schema)
