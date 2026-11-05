@@ -202,7 +202,7 @@ def test_read_big_random_data():
 
 def test_with_purchases():
     source = SourceFaker()
-    config = {"count": 1000, "parallelism": 1}
+    config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
     stream_dicts = [
         {
             "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
@@ -270,3 +270,18 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+
+
+def test_default_records_per_slice_checkpoints_every_1000_records():
+    source = SourceFaker()
+    config = {"count": 2500, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    messages = list(source.read(logger, config, catalog, {}))
+
+    assert sum(1 for m in messages if m.type is Type.RECORD) == 2500
+    assert sum(1 for m in messages if m.type is Type.STATE) == 2, "Expected checkpoints at 1000 and 2000 records"
