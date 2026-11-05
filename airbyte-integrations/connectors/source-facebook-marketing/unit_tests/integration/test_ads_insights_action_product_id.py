@@ -8,8 +8,10 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import Dict, List, Optional, Union
 from unittest import TestCase
+from urllib.parse import parse_qs
 
 import freezegun
+import pytest
 from source_facebook_marketing.streams.async_job import Status
 
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
@@ -28,7 +30,7 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
-from .request_builder import RequestBuilder, get_account_request
+from .request_builder import API_VERSION, RequestBuilder, get_account_request
 from .response_builder import build_response, error_reduce_amount_of_data_response, get_account_response
 from .utils import config, encode_request_body, read_output
 
@@ -243,6 +245,35 @@ def _ads_insights_action_product_id_record() -> RecordBuilder:
         records_path=FieldPath("data"),
         record_cursor_path=FieldPath(_CURSOR_FIELD),
     )
+
+
+@pytest.mark.parametrize("include_incrementality", [True, False])
+@freezegun.freeze_time("2023-01-10T00:00:00Z")
+def test_custom_insights_inherit_incrementality_in_job_request(requests_mock, include_incrementality):
+    config_builder = config()
+    connector_config = config_builder.build()
+    connector_config["include_incrementality"] = include_incrementality
+    connector_config["custom_insights"] = [
+        {"name": "Incrementality", "fields": ["account_id"], "breakdowns": [], "action_breakdowns": []}
+    ]
+    base_url = f"https://graph.facebook.com/{API_VERSION}/"
+    requests_mock.get(f"{base_url}act_{ACCOUNT_ID}/", text=get_account_response().body)
+    throttle_response = _update_api_throttle_limit_response()
+    requests_mock.get(f"{base_url}act_{ACCOUNT_ID}/insights", text=throttle_response.body, headers=throttle_response.headers)
+    job_start = requests_mock.post(f"{base_url}act_{ACCOUNT_ID}/insights", text=_job_start_response(_REPORT_RUN_ID).body)
+    requests_mock.post(base_url, text=_job_status_response(_JOB_ID).body)
+    requests_mock.get(
+        f"{base_url}{_JOB_ID}/insights",
+        text=_insights_response().with_record(_ads_insights_action_product_id_record()).build().body,
+    )
+
+    output = read_output(config_builder, "custom_incrementality", SyncMode.full_refresh)
+
+    assert len(output.records) == 1
+    assert job_start.call_count == 1
+    job_params = parse_qs(job_start.last_request.text)
+    windows = json.loads(job_params["action_attribution_windows"][0])
+    assert ("incrementality" in windows) is include_incrementality
 
 
 @freezegun.freeze_time("2023-01-10T00:00:00Z")
