@@ -279,3 +279,69 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+def _block(block_id: str, last_edited_time: str, has_children: bool = False) -> dict:
+    return {
+        "object": "block",
+        "id": block_id,
+        "type": "paragraph",
+        "last_edited_time": last_edited_time,
+        "has_children": has_children,
+        "parent": {"type": "page_id", "page_id": "page-1"},
+    }
+
+
+def test_blocks_incremental_read_emits_only_blocks_edited_since_state(requests_mock):
+    """A block edited before the saved cursor is not re-emitted, but its children are still read and new ones emitted."""
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json={"results": [{"object": "page", "id": "page-1", "last_edited_time": "2024-07-01T00:00:00.000Z", "properties": {}}], "has_more": False},
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        json={
+            "results": [
+                _block("unchanged-parent", "2023-01-01T00:00:00.000Z", has_children=True),
+                _block("unchanged", "2023-01-01T00:00:00.000Z"),
+                _block("edited", "2024-07-01T00:00:00.000Z"),
+            ],
+            "has_more": False,
+        },
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/unchanged-parent/children?page_size=100",
+        json={
+            "results": [
+                _block("unchanged-child", "2023-01-01T00:00:00.000Z"),
+                _block("edited-child", "2024-07-02T00:00:00.000Z"),
+            ],
+            "has_more": False,
+        },
+    )
+
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "blocks",
+            {"use_global_cursor": True, "state": {"last_edited_time": "2024-06-01T00:00:00.000Z"}, "lookback_window": 0, "states": []},
+        )
+        .build()
+    )
+
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+
+    assert sorted(record.record.data["id"] for record in output.records) == ["edited", "edited-child"]
+    assert output.most_recent_state.stream_state.state["last_edited_time"] == "2024-07-02T00:00:00.000000Z"
