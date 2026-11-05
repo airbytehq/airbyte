@@ -543,7 +543,7 @@ jobs:
             (if $target != null then "<\(.GITHUB_SERVER_URL)/\($target.repo)/issues/\($target.number)|\(.TARGET)>"
              else .TARGET end) as $target_text |
             {channel: .SLACK_CHANNEL, unfurl_links: false, unfurl_media: false,
-             text: (["Hydra v2 assess: \(.GITHUB_SERVER_URL)/\(.GITHUB_REPOSITORY)/pull/\(.PR_NUMBER)",
+             text: (["Hydra v2 assess: <\(.GITHUB_SERVER_URL)/\(.GITHUB_REPOSITORY)/pull/\(.PR_NUMBER)|#\(.PR_NUMBER)>",
                      "next_action: \(.NEXT_ACTION) | target: \($target_text)",
                      "Reason: \(.REASON)",
                      (if .BLOCKERS != "" then "Blockers: \(.BLOCKERS)" else empty end),
