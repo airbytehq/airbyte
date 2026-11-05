@@ -39,7 +39,12 @@ def test_incremental_state_advances_and_resumes(stream_name: str, timestamp: str
         first = read(get_source(CONFIG), config=CONFIG, catalog=catalog)
 
     assert not first.errors
+    assert len(first.records) == (2 if stream_name == "applications" else 4)
     assert {message.record.data["id"] for message in first.records} == {"older", "newest"}
+    assert {message.record.data["modified_at"] for message in first.records} == {
+        "2026-10-02T17:05:11.904417Z",
+        expected_cursor,
+    }
     state = first.most_recent_state.stream_state.__dict__
     if stream_name == "applications":
         assert state == {"modified_at": expected_cursor}
@@ -58,4 +63,6 @@ def test_incremental_state_advances_and_resumes(stream_name: str, timestamp: str
         second = read(get_source(CONFIG, state=saved_state), config=CONFIG, catalog=catalog, state=saved_state)
 
     assert not second.errors
+    assert len(second.records) == len(first.records)
+    assert {message.record.data["id"] for message in second.records} == {"older", "newest"}
     assert second.most_recent_state.stream_state.__dict__ == state
