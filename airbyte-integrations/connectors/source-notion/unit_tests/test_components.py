@@ -296,7 +296,10 @@ def test_blocks_incremental_read_emits_only_blocks_edited_since_state(requests_m
     """A block edited before the saved cursor is not re-emitted, but its children are still read and new ones emitted."""
     requests_mock.post(
         "https://api.notion.com/v1/search",
-        json={"results": [{"object": "page", "id": "page-1", "last_edited_time": "2024-07-01T00:00:00.000Z", "properties": {}}], "has_more": False},
+        json={
+            "results": [{"object": "page", "id": "page-1", "last_edited_time": "2024-07-01T00:00:00.000Z", "properties": {}}],
+            "has_more": False,
+        },
     )
     requests_mock.get(
         "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
