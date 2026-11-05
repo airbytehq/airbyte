@@ -56,6 +56,75 @@ def async_job_mock_fixture(mocker):
 
 
 class TestBaseInsightsStream:
+    @pytest.fixture
+    def checkpoint_stream(self, mocker, api, async_manager_mock):
+        def make_job(**kwargs):
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = kwargs["interval"]
+            job.get_result.return_value = []
+            return job
+
+        mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob", side_effect=make_job)
+        async_manager_mock.completed_jobs.side_effect = lambda: iter(list(async_manager_mock.call_args.kwargs["jobs"]))
+
+        def make_stream(**kwargs):
+            return AdsInsights(
+                api=api,
+                account_ids=["123"],
+                start_date=datetime(2026, 7, 15),
+                end_date=datetime(2026, 10, 31),
+                insights_lookback_window=30,
+                **kwargs,
+            )
+
+        return make_stream
+
+    @freeze_time("2026-11-05")
+    def test_checkpoint_cursor_does_not_regress_after_interruption(self, checkpoint_stream):
+        stream = checkpoint_stream()
+        slices = iter(
+            stream.stream_slices(
+                sync_mode=SyncMode.incremental,
+                stream_state={"123": {"date_start": "2026-09-20"}, "time_increment": 1},
+            )
+        )
+        for _ in range(8):
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=next(slices)))
+
+        assert stream.state["123"]["date_start"] >= "2026-09-20"
+
+    @freeze_time("2026-11-05")
+    def test_checkpoint_omits_stale_slices(self, checkpoint_stream):
+        stream = checkpoint_stream()
+        slices = list(
+            stream.stream_slices(
+                sync_mode=SyncMode.incremental,
+                stream_state={
+                    "123": {"date_start": "2026-09-20", "slices": ["2026-07-01", "2026-09-20", "2026-09-25"]},
+                    "time_increment": 1,
+                },
+            )
+        )
+        list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=slices[-1]))
+
+        assert stream.state["123"]["slices"] == ["2026-09-25", "2026-10-31"]
+
+    @freeze_time("2026-11-05")
+    @pytest.mark.parametrize(
+        "period,first_start,second_start",
+        [
+            (TimeIncrementPeriod.monthly, "2026-07-01", "2026-08-01"),
+            (TimeIncrementPeriod.weekly, "2026-07-13", "2026-07-20"),
+        ],
+    )
+    def test_checkpoint_advances_aligned_period_cursor(self, checkpoint_stream, period, first_start, second_start):
+        stream = checkpoint_stream(time_increment_period=period)
+        slices = iter(stream.stream_slices(sync_mode=SyncMode.incremental))
+        list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=next(slices)))
+        assert stream.state["123"].get("date_start") == first_start
+        list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=next(slices)))
+        assert stream.state["123"]["date_start"] == second_start
+
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,
@@ -308,10 +377,7 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
-                        ],
+                        "slices": [],
                     },
                     "time_increment": 1,
                 },
@@ -354,7 +420,7 @@ class TestBaseInsightsStream:
                     },
                     "time_increment": 1,
                 },
-                None,
+                {"unknown_account": {AdsInsights.cursor_field: "2010-10-03", "slices": []}, "time_increment": 1},
             ),
             (
                 {
