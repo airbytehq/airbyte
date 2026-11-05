@@ -334,7 +334,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.9.0 | 2026-11-05 | PR TBD | Added incremental sync support to the `pull_request_commits` stream. |
+| 2.9.0 | 2026-11-05 | [91127](https://github.com/airbytehq/airbyte/pull/91127) | Added incremental sync support to the `pull_request_commits` stream. |
 | 2.8.5 | 2026-11-04 | [90970](https://github.com/airbytehq/airbyte/pull/90970) | Shorten manifest comments and move the design rationale to the connector docs; no behavior change |
 | 2.8.4 | 2026-11-03 | [90166](https://github.com/airbytehq/airbyte/pull/90166) | Retry GitHub 5xx errors and timeouts with exponential backoff instead of waiting for the rate-limit reset |
 | 2.8.3 | 2026-11-03 | [90557](https://github.com/airbytehq/airbyte/pull/90557) | Update dependencies |
