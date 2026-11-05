@@ -12,6 +12,11 @@ const val JDBC_PROPERTY_PREFIX = "airbyte.connector.extract.jdbc"
 data class DefaultJdbcConstants(
     val withSampling: Boolean = WITH_SAMPLING,
     val maxSampleSize: Int = TABLE_SAMPLE_SIZE,
+    /**
+     * Whether concurrent reads re-estimate the size of a table whose 1 / 2^16 sample is full (over
+     * ~67M rows) from sparser samples.
+     */
+    val withSparserSampling: Boolean = WITH_SPARSER_SAMPLING,
     /** How many bytes per second we can expect the database to send to the connector. */
     val expectedThroughputBytesPerSecond: Long = THROUGHPUT_BYTES_PER_SECOND,
     /** Smallest possible fetchSize value. */
@@ -49,6 +54,7 @@ data class DefaultJdbcConstants(
 
         // Sampling defaults.
         const val WITH_SAMPLING: Boolean = false
+        const val WITH_SPARSER_SAMPLING: Boolean = false
         const val TABLE_SAMPLE_SIZE: Int = 1024
         const val THROUGHPUT_BYTES_PER_SECOND: Long = 10L shl 20
 

@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.4 — 2026-11-05
+
+[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — Add the `with-sparser-sampling` JDBC setting, off by default. With it on, `JdbcConcurrentPartitionsCreator` re-estimates the size of a table whose 1 / 2^16 sample is full (over ~67M rows) from sparser samples, at 1 / 2^20, 1 / 2^24 and 1 / 2^28, instead of estimating every such table at ~67M rows, so the number of partitions grows with the table's real size. With it off, partitions are created as before.
+
 ### 1.2.3 — 2026-10-21
 
 [#89633](https://github.com/airbytehq/airbyte/pull/89633) — Fix the Docker Scout critical/high findings on the extract classpath. `extract-jdbc` moves BouncyCastle to `1.86` (`bcpkix`, `bcprov`; `bctls` `1.86.2`) in place of the `1.77`/`1.78.1` mix (CVE-2024-29857, CVE-2025-14813, CVE-2026-8763, CVE-2026-13506). `extract-cdc` adds published `api` constraints on the Debezium transitive chain: Kafka `4.1.2` (CVE-2026-33557, CVE-2026-35554), Jetty `12.0.40`, `org.lz4:lz4-java` `1.8.1` (CVE-2025-12183), `at.yawk.lz4:lz4-java` `1.12.0` (CVE-2026-106451 in the `1.10.1` that Kafka `4.1.2` depends on) and plexus-utils `3.6.2` (CVE-2025-67030); connectors pick them up by bumping `cdkVersion`, with no build change of their own. `bulk-cdk-core-base` is re-pinned to `1.0.8` (sshd-mina `2.20.0`, mina-core `2.0.31`, bcprov `1.86`).
