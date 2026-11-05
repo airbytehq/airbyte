@@ -88,6 +88,57 @@ def _alert_state_date(output):
 
 
 class TestTwilioStream:
+    @freeze_time("2026-05-22 12:00:00+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,resource,cursor_field,date_parameter",
+        [
+            ("messages", "Messages", "date_sent", "DateSent"),
+            ("recordings", "Recordings", "date_created", "DateCreated"),
+        ],
+    )
+    def test_incremental_partition_state_advances_across_monthly_slices(
+        self, requests_mock, stream_name, resource, cursor_field, date_parameter
+    ):
+        cfg = {**TEST_CONFIG, "start_date": "2026-02-22T12:00:00Z", "slice_step_duration": "P1M"}
+        now = "2026-05-22 12:00:00Z"
+        windows = [
+            ("2026-02-22 12:00:00Z", "2026-03-22 11:59:59Z"),
+            ("2026-03-22 12:00:00Z", "2026-04-22 11:59:59Z"),
+            ("2026-04-22 12:00:00Z", now),
+        ]
+        record_dates = ["2026-03-01T12:00:00Z", "2026-04-01T12:00:00Z", "2026-05-22T12:00:00Z"]
+        records_by_start = {
+            window[0]: [{"sid": f"record-{index}", "account_sid": "AC123", cursor_field: record_date}]
+            for index, (window, record_date) in enumerate(zip(windows, record_dates))
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        requested_windows = []
+
+        def response(request, context):
+            query = parse_qs(urlparse(request.url).query)
+            lower = query[f"{date_parameter}>"][0]
+            upper = query[f"{date_parameter}<"][0]
+            requested_windows.append((lower, upper))
+            return {stream_name: records_by_start.get(lower, [])}
+
+        requests_mock.get(f"{BASE}/Accounts/AC123/{resource}.json", json=response)
+
+        output = read_from_stream(cfg, stream_name, SyncMode.incremental)
+
+        assert sorted(requested_windows) == windows
+        assert sorted(record.record.data["sid"] for record in output.records) == ["record-0", "record-1", "record-2"]
+        state = output.most_recent_state.stream_state.__dict__
+        assert len(state["states"]) == 1
+        assert state["states"][0]["cursor"][cursor_field] == now
+
+        requested_windows.clear()
+        resumed_state = StateBuilder().with_stream_state(stream_name, state).build()
+        with freeze_time("2026-05-23 12:00:00+00:00"):
+            resumed_output = read_from_stream(cfg, stream_name, SyncMode.incremental, resumed_state)
+
+        assert requested_windows == [(now, "2026-05-23 12:00:00Z")]
+        assert not resumed_output.records
+
     def test_next_page_token(self, requests_mock):
         accounts_page_1_json = {
             "accounts": [
