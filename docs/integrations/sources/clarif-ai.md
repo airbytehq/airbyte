@@ -15,9 +15,9 @@ API Documentation: https://docs.clarifai.com/api-guide/api-overview/helpful-api-
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| applications | id | DefaultPaginator | ✅ |   ✅  |
-| datasets | id | DefaultPaginator | ✅ |   ✅  |
-| models | id | DefaultPaginator | ✅ |   ✅  |
+| applications | id | DefaultPaginator | ✅ | ✅ |
+| datasets | id | DefaultPaginator | ✅ | ✅ |
+| models | id | DefaultPaginator | ✅ | ✅ |
 | model_versions | id | DefaultPaginator | ✅ |   ❌  |
 | worklows | id | DefaultPaginator | ✅ |   ❌  |
 | app_inputs | id | DefaultPaginator | ✅ |   ❌  |
