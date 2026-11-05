@@ -46,6 +46,7 @@ Every report stream in this connector is generated dynamically via `ConfigCompon
 - The API path switches between `:runReport` and `:runPivotReport` based on whether pivots are configured
 - Pagination is conditionally disabled (`NoPagination`) for pivot reports since the GA4 API doesn't support pagination on pivot queries
 - The incremental sync cursor is auto-detected by scanning dimensions for date-like fields (`date`, `yearWeek`, `yearMonth`, `year`), with the first match becoming the cursor field
+- Each cursor dimension gets its own `cursor_datetime_formats` entry (`date`: `%Y%m%d`, `yearMonth`: `%Y%m`, `yearWeek`: `%Y%W`, `year`: `%Y`). Never share one list: `strptime` matches `yearWeek` and `yearMonth` values against the wrong format (week `202605` parses as 2026-05-01 with `%Y%m`), which moves the state ahead of the data. `%Y%W` reads a week as January 1 of its year, because `strptime` ignores `%W` without a weekday, so a `yearWeek` stream re-reads the current year on every incremental sync. `test_cursor_formats.py` pins this
 - Stream naming follows a backward-compatible convention: the first property ID uses the plain report name, while additional property IDs get a `Property<id>` suffix (e.g., `devices` vs `devicesProperty5729978930`). With `single_stream_per_report` enabled the single stream gets a `Consolidated` suffix instead (`devicesConsolidated`)
 - The schema is constructed at build time by fetching metadata from the GA4 API and filtering it against the requested metrics, then adding dimension fields via schema transformations
 
