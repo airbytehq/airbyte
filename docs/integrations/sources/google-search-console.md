@@ -272,7 +272,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.18 | 2026-11-05 | TBD | Preserve string types for Search Analytics dimensions, including numeric-looking queries |
+| 2.1.18 | 2026-11-05 | [91068](https://github.com/airbytehq/airbyte/pull/91068) | Preserve string types for Search Analytics dimensions, including numeric-looking queries |
 | 2.1.17 | 2026-10-13 | [88645](https://github.com/airbytehq/airbyte/pull/88645) | Update dependencies |
 | 2.1.16 | 2026-10-06 | [87882](https://github.com/airbytehq/airbyte/pull/87882) | Update dependencies |
 | 2.1.15 | 2026-09-29 | [87207](https://github.com/airbytehq/airbyte/pull/87207) | Update dependencies |
