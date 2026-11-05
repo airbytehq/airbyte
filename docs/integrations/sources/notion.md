@@ -122,7 +122,7 @@ Notion rate limits each connection to an average of three requests per second on
 
 The connector sends requests in parallel. Use the **Number of concurrent workers** setting (1 to 10, default 3) to control parallelism. More workers can speed up large syncs, but make it more likely that the connector hits Notion's rate limits.
 
-The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages with deeply nested content can generate a large number of API requests, which can slow down syncs for workspaces with complex page structures. If Notion returns a 404 error because a block isn't shared with your connection, the connector skips that block instead of failing the sync.
+The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages with deeply nested content can generate a large number of API requests, which can slow down syncs for workspaces with complex page structures.
 
 ## Troubleshooting
 
@@ -136,6 +136,8 @@ Notion [personal access tokens](https://developers.notion.com/guides/get-started
 
 The connector only syncs content that you share with your connection. If pages, data sources, or blocks are missing, confirm that you shared the parent page with your connection, or that you selected the page during the OAuth flow.
 
+For the Pages, Data Sources, Comments, and Blocks streams, the connector skips any request that Notion answers with an HTTP 400 or 404 error instead of failing the sync. Notion returns a 404 error for content that isn't shared with your connection, and a 400 error for problems such as an invalid pagination cursor. The sync still succeeds, but the records from the skipped request are missing. The Users stream doesn't skip these errors.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -147,7 +149,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.32 | 2026-11-03 | [90393](https://github.com/airbytehq/airbyte/pull/90393) | Consolidate each stream's error handling into a single error handler |
+| 4.0.32 | 2026-11-05 | [90393](https://github.com/airbytehq/airbyte/pull/90393) | Consolidate each stream's error handling into a single error handler |
 | 4.0.31 | 2026-11-03 | [90664](https://github.com/airbytehq/airbyte/pull/90664) | Update dependencies |
 | 4.0.30 | 2026-10-27 | [90033](https://github.com/airbytehq/airbyte/pull/90033) | Update dependencies |
 | 4.0.29 | 2026-10-20 | [89299](https://github.com/airbytehq/airbyte/pull/89299) | Update dependencies |
