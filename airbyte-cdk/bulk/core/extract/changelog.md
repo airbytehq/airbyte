@@ -9,7 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 ### 1.2.4 — 2026-11-05
 
-[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — Add the `with-sparser-sampling` JDBC setting, off by default. With it on, `JdbcConcurrentPartitionsCreator` re-estimates the size of a table whose 1 / 2^16 sample is full (over ~67M rows) from sparser samples, at 1 / 2^20, 1 / 2^24 and 1 / 2^28, instead of estimating every such table at ~67M rows, so the number of partitions grows with the table's real size. With it off, partitions are created as before.
+[#91065](https://github.com/airbytehq/airbyte/pull/91065) — Add the `with-sparser-sampling` JDBC setting, off by default. With it on, `JdbcConcurrentPartitionsCreator` re-estimates the size of a table whose 1 / 2^16 sample is full (over ~67M rows) from sparser samples, at 1 / 2^20, 1 / 2^24 and 1 / 2^28, instead of estimating every such table at ~67M rows, so the number of partitions grows with the table's real size. With it off, partitions are created as before.
 
 ### 1.2.3 — 2026-10-21
 
