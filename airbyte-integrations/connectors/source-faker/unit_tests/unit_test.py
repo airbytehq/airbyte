@@ -270,3 +270,16 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+import json
+from pathlib import Path
+
+def test_spec_json_includes_dataset_label():
+    spec_path = Path(__file__).resolve().parent.parent / "source_faker" / "spec.json"
+    spec = json.loads(spec_path.read_text())
+    properties = spec["connectionSpecification"]["properties"]
+
+    assert "dataset_label" in properties, "dataset_label should be exposed in the spec"
+    assert properties["dataset_label"]["type"] == "string"
+    assert properties["dataset_label"]["default"] == ""
+
+
