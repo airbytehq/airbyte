@@ -526,5 +526,27 @@
         "name": "VendorDirectFulfillmentShipping"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_SALES_AND_TRAFFIC_REPORT_BY_DATE"
+      },
+      "stream_state": {
+        "queryEndDate": "2121-11-04T12:18:50Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH"
+      },
+      "stream_state": {
+        "queryEndDate": "2121-11-04T12:18:51Z"
+      }
+    }
   }
 ]
