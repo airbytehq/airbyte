@@ -14,6 +14,10 @@ The `MessagesAndThreadsApiBudget` starts with an `UnlimitedCallRatePolicy` (no r
 
 ## Incremental Stream Considerations
 
+The `threads` state migration only initializes parent history state for legacy checkpoints without `parent_state.channel_messages`. Existing nested parent checkpoints must be preserved, including when no thread partitions completed before an interruption. History resumes from each channel cursor with the configured lookback applied once.
+
+Message and thread partitions exclude archived channels only when the bot is not a member. Archived member channels remain readable; active non-member channels remain eligible when auto-join is enabled. The top-level channels and channel-members streams retain their existing scope.
+
 The Slack API supports `oldest`/`latest` timestamp filtering on conversations.history and related endpoints. The connector uses Python custom components (`JoinChannelsStream`) referenced from the manifest.
 
 **Connector type:** Python custom components (hybrid manifest + Python)
