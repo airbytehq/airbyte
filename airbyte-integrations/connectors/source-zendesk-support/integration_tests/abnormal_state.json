@@ -1,0 +1,358 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "articles" },
+      "stream_state": { "updated_at": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "audit_logs" },
+      "stream_state": { "created_at": "2099-11-03T19:59:35Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "custom_roles" },
+      "stream_state": { "updated_at": "2099-07-24T16:53:03Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "group_memberships" },
+      "stream_state": { "updated_at": "2099-07-26T00:21:33Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "groups" },
+      "stream_state": { "updated_at": "2099-07-05T10:59:39Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "macros" },
+      "stream_state": { "updated_at": "2099-04-18T00:27:13Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "organizations" },
+      "stream_state": { "updated_at": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "satisfaction_ratings" },
+      "stream_state": { "updated_at": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ticket_audits" },
+      "stream_state": { "created_at": "2099-11-03T19:59:38Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ticket_comments" },
+      "stream_state": { "created_at": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ticket_fields" },
+      "stream_state": { "updated_at": "2099-08-18T11:23:08Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ticket_forms" },
+      "stream_state": { "updated_at": "2099-07-15T14:28:15Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ticket_metrics" },
+      "stream_state": { "_ab_updated_at": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ticket_metric_events" },
+      "stream_state": { "time": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "tickets" },
+      "stream_state": { "generated_timestamp": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "topics" },
+      "stream_state": { "updated_at": "2099-06-22T00:32:21Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "users" },
+      "stream_state": { "updated_at": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "organization_memberships" },
+      "stream_state": { "updated_at": "2099-01-19T15:55:51Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "schedules" },
+      "stream_state": { "updated_at": "2099-07-05T10:55:43Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "sla_policies" },
+      "stream_state": { "updated_at": "2099-07-03T14:21:51Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ticket_skips" },
+      "stream_state": { "updated_at": "2099-06-27T08:30:01Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "posts" },
+      "stream_state": { "updated_at": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "article_votes" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "article_id": 7253351877519, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253391127951, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253391134863, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253391120527, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 12138789487375, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253394935055, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253394952591, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          }
+        ],
+        "state": { "updated_at": "4070908800" },
+        "lookback_window": 3,
+        "parent_state": { "articles": { "updated_at": "4070908800" } }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "article_comments" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "article_id": 7253351877519, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253391127951, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253391134863, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253391120527, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 12138789487375, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253394935055, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253394952591, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          }
+        ],
+        "state": { "updated_at": "4070908800" },
+        "lookback_window": 5,
+        "parent_state": { "articles": { "updated_at": "4070908800" } }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "article_comment_votes" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "id": {
+                "article_id": 7253394935055,
+                "comment_id": 10195848527119
+              },
+              "parent_slice": {
+                "article_id": 7253394935055,
+                "parent_slice": {}
+              }
+            },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": {
+              "id": {
+                "article_id": 7253394935055,
+                "comment_id": 7253381447311
+              },
+              "parent_slice": {
+                "article_id": 7253394935055,
+                "parent_slice": {}
+              }
+            },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": {
+              "id": {
+                "article_id": 7253394935055,
+                "comment_id": 7253366869647
+              },
+              "parent_slice": {
+                "article_id": 7253394935055,
+                "parent_slice": {}
+              }
+            },
+            "cursor": { "updated_at": "4070908800" }
+          }
+        ],
+        "state": { "updated_at": "4070908800" },
+        "lookback_window": 7,
+        "parent_state": {
+          "article_comments": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "article_id": 7253351877519,
+                  "parent_slice": {}
+                },
+                "cursor": { "updated_at": "4070908800" }
+              },
+              {
+                "partition": {
+                  "article_id": 7253391127951,
+                  "parent_slice": {}
+                },
+                "cursor": { "updated_at": "4070908800" }
+              },
+              {
+                "partition": {
+                  "article_id": 7253391134863,
+                  "parent_slice": {}
+                },
+                "cursor": { "updated_at": "4070908800" }
+              },
+              {
+                "partition": {
+                  "article_id": 7253391120527,
+                  "parent_slice": {}
+                },
+                "cursor": { "updated_at": "4070908800" }
+              },
+              {
+                "partition": {
+                  "article_id": 12138789487375,
+                  "parent_slice": {}
+                },
+                "cursor": { "updated_at": "4070908800" }
+              },
+              {
+                "partition": {
+                  "article_id": 7253394935055,
+                  "parent_slice": {}
+                },
+                "cursor": { "updated_at": "4070908800" }
+              },
+              {
+                "partition": {
+                  "article_id": 7253394952591,
+                  "parent_slice": {}
+                },
+                "cursor": { "updated_at": "4070908800" }
+              }
+            ],
+            "state": { "updated_at": "4070908800" },
+            "lookback_window": 5,
+            "parent_state": { "articles": { "updated_at": "4070908800" } }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "user_identities" },
+      "stream_state": { "updated_at": "4070908800" }
+    }
+  }
+]
