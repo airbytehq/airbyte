@@ -328,7 +328,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.0 | 2026-11-05 | [PR](https://github.com/airbytehq/airbyte/compare/master...devin/1793916635-bing-ads-bulk-incremental) | Added incremental Bulk API streams for campaigns, ad groups, and ads while preserving existing full-refresh streams. |
+| 3.1.0 | 2026-11-05 | [91146](https://github.com/airbytehq/airbyte/pull/91146) | Added incremental Bulk API streams for campaigns, ad groups, and ads while preserving existing full-refresh streams. |
 | 3.0.21 | 2026-11-03 | [88968](https://github.com/airbytehq/airbyte/pull/88968) | Add actionable messages for Microsoft Entra refresh token errors |
 | 3.0.20 | 2026-11-03 | [89720](https://github.com/airbytehq/airbyte/pull/89720) | Sync App, Hotel and Objective-based campaigns (and their ad groups and ads), which were previously skipped |
 | 3.0.19 | 2026-11-03 | [90478](https://github.com/airbytehq/airbyte/pull/90478) | Update dependencies |
