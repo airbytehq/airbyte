@@ -1,5 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
+import java.util.jar.JarFile
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicatesStrategy
@@ -9,8 +10,6 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.ZipEntryCompression
 import org.yaml.snakeyaml.Yaml
-
-import java.util.jar.JarFile
 
 /**
  * Builds a connector's self-contained ("fat") jar and publishes it as io.airbyte.connectors:<connector>:<version>,
