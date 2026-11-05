@@ -29,8 +29,8 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #      and skips when that key is already on the PR, so repeat wakes on the
 #      same head don't dispatch the same stage twice. A new push changes the
 #      key. To retry a stage on the same head, dispatch with `force: true`.
-#   6. Post actionable assess results (including dry-runs) to Slack when
-#      HYDRA_HANDOFF_V2_SLACK_CHANNEL is set, excluding idempotency skips.
+#   6. Post actionable assess results (including dry-runs) to Slack in
+#      #hydra-handoff-watcher, excluding idempotency skips.
 #
 # Dry-run: controlled by workflow_dispatch input (preferred) or by the
 # HYDRA_HANDOFF_V2_DRY_RUN repo variable (default: 'true' until the dispatcher
@@ -510,9 +510,9 @@ jobs:
 
       - name: Resolve Variables
         id: resolve-vars
-        if: ${{ !cancelled() && steps.eligibility.outputs.eligible == 'true' && vars.HYDRA_HANDOFF_V2_SLACK_CHANNEL != '' }}
+        if: ${{ !cancelled() && steps.eligibility.outputs.eligible == 'true' }}
         env:
-          SLACK_CHANNEL: ${{ vars.HYDRA_HANDOFF_V2_SLACK_CHANNEL }}
+          SLACK_CHANNEL: C0CF6T8MVNH # #hydra-handoff-watcher
           PR_NUMBER: ${{ needs.gate.outputs.pr }}
           NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
           TARGET: ${{ steps.assess.outputs.target }}
