@@ -1,0 +1,84 @@
+name: Diagnostic MSSQL Dependency Comparison
+
+on:
+  pull_request:
+    paths:
+      - ".github/scripts/mssql-dependency-snapshot.init.gradle"
+      - ".github/workflows/mssql-dependency-diagnostic.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    name: Snapshot MSSQL (${{ matrix.label }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: master
+            ref: 724c5ec27731d2959a3e4bdd4207e2a9e5cc3574
+          - label: mirror
+            ref: 070073e782fe3c2e1bd8e143ed384b873733c19e
+    steps:
+      - name: Check out diagnostic helper
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: diagnostic
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+      - name: Check out frozen source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ matrix.ref }}
+          path: source
+          persist-credentials: false
+      - name: Set up Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Resolve local-CDK graphs and hash external artifacts
+        working-directory: source
+        env:
+          LABEL: ${{ matrix.label }}
+        run: >
+          ./gradlew :airbyte-integrations:connectors:destination-mssql:mssqlDependencySnapshot
+          --init-script "$GITHUB_WORKSPACE/diagnostic/.github/scripts/mssql-dependency-snapshot.init.gradle"
+          -PsnapshotFile="$RUNNER_TEMP/mssql-$LABEL.txt"
+          --no-daemon --no-build-cache --no-scan --console=plain --max-workers=2
+          -Dorg.gradle.jvmargs=-Xmx3g
+          2>&1 | tee "$RUNNER_TEMP/gradle-$LABEL.log"
+      - name: Upload diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mssql-${{ matrix.label }}
+          path: |
+            ${{ runner.temp }}/mssql-${{ matrix.label }}.txt
+            ${{ runner.temp }}/gradle-${{ matrix.label }}.log
+          retention-days: 7
+
+  compare:
+    name: Compare complete local-CDK graphs and artifact hashes
+    needs: snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Download both snapshots
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: mssql-*
+          merge-multiple: true
+      - name: Compare snapshots
+        run: diff -u mssql-master.txt mssql-mirror.txt | tee dependency-diff.txt
+      - name: Upload comparison
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mssql-comparison
+          path: dependency-diff.txt
+          retention-days: 7

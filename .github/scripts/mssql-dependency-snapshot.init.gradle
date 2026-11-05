@@ -1,0 +1,43 @@
+import java.security.MessageDigest
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.result.UnresolvedDependencyResult
+
+gradle.beforeProject { project ->
+    if (project.path == ':airbyte-integrations:connectors:destination-mssql') {
+        project.ext.set('cdkVersion', 'local')
+    }
+}
+
+gradle.projectsEvaluated {
+    def connector = gradle.rootProject.findProject(':airbyte-integrations:connectors:destination-mssql')
+    if (connector == null) return
+    connector.tasks.register('mssqlDependencySnapshot') {
+        doLast {
+            assert connector.property('cdkVersion') == 'local'
+            def snapshot = []
+            ['runtimeClasspath', 'integrationTestRuntimeClasspath', 'integrationTestLegacyRuntimeClasspath'].each { name ->
+                def configuration = connector.configurations.getByName(name)
+                def result = configuration.incoming.resolutionResult
+                def unresolved = result.allDependencies.findAll { it instanceof UnresolvedDependencyResult }
+                if (!unresolved.empty) {
+                    throw new GradleException("Unresolved dependencies in ${name}: ${unresolved*.attempted}")
+                }
+                snapshot.add("CONFIGURATION ${name}")
+                snapshot.addAll(result.allComponents.collect { "COMPONENT ${it.id.displayName}" }.sort())
+                snapshot.addAll(result.allDependencies.collect {
+                    "EDGE ${it.from.id.displayName} -> ${it.requested.displayName} => ${it.selected.id.displayName}"
+                }.sort())
+                def externalArtifacts = configuration.incoming.artifactView {
+                    componentFilter { it instanceof ModuleComponentIdentifier }
+                }.artifacts.artifacts
+                snapshot.addAll(externalArtifacts.collect { artifact ->
+                    def hash = MessageDigest.getInstance('SHA-256').digest(artifact.file.bytes).encodeHex()
+                    "ARTIFACT ${artifact.id.displayName} ${artifact.file.name} ${hash}"
+                }.sort())
+            }
+            def output = new File(connector.property('snapshotFile'))
+            output.text = snapshot.join('\n') + '\n'
+            println "Dependency snapshot: ${output} (${snapshot.size()} entries)"
+        }
+    }
+}
