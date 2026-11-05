@@ -12,10 +12,19 @@ check:
     - applications
 
 definitions:
+  modified_at_normalization:
+    type: AddFields
+    fields:
+      - path:
+          - modified_at
+        value: >-
+          {{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('modified_at') else record.get('modified_at') }}
   streams:
     applications:
       type: DeclarativeStream
       name: applications
+      transformations:
+        - $ref: "#/definitions/modified_at_normalization"
       primary_key:
         - id
       retriever:
@@ -78,6 +87,8 @@ definitions:
     datasets:
       type: DeclarativeStream
       name: datasets
+      transformations:
+        - $ref: "#/definitions/modified_at_normalization"
       primary_key:
         - id
       retriever:
@@ -149,6 +160,8 @@ definitions:
     models:
       type: DeclarativeStream
       name: models
+      transformations:
+        - $ref: "#/definitions/modified_at_normalization"
       primary_key:
         - id
       retriever:
