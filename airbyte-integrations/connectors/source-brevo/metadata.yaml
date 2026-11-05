@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e2276f19-1c19-4d4e-ae6c-7df3c9c4ad49
-  dockerImageTag: 0.2.52
+  dockerImageTag: 0.2.53
   dockerRepository: airbyte/source-brevo
   githubIssueLabel: source-brevo
   icon: icon.svg
@@ -48,3 +48,11 @@ data:
     - title: Brevo Status
       url: https://status.brevo.com/
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
