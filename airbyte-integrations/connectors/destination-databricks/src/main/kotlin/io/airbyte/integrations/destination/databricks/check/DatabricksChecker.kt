@@ -44,7 +44,7 @@ class DatabricksChecker(
             "You must agree to the Databricks JDBC Driver Terms & Conditions to use this connector."
         }
         val namespace = config.schema.lowercase()
-        val tableName = "_airbyte_check_${Instant.now().epochSecond}"
+        val tableName = buildCheckTableName()
         val table = TableName(namespace = namespace, name = tableName)
         checkTableName = table
 
@@ -97,6 +97,11 @@ class DatabricksChecker(
     }
 
     companion object {
+        internal fun buildCheckTableName(): String {
+            val checkId = UUID.randomUUID().toString().replace("-", "")
+            return "_airbyte_check_${Instant.now().epochSecond}_$checkId"
+        }
+
         /** Builds a minimal [DestinationStream] with meta columns only (no user columns). */
         internal fun buildCheckStream(
             namespace: String,
