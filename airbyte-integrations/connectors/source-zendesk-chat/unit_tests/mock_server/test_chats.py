@@ -35,14 +35,14 @@ _BASE_URL = f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat"
 _SEARCH_URL = f"{_BASE_URL}/chats/search"
 _CHATS_URL = f"{_BASE_URL}/chats"
 
-# The parent search runs in one-day windows between the cursor (or `start_date`) and "now". Freezing "now" keeps
+# The parent search runs in 30-day windows between the cursor (or `start_date`) and "now". Freezing "now" keeps
 # the set of windows, and therefore the set of requests to mock, deterministic.
-_NOW = "2021-01-03T12:00:00Z"
+_NOW = "2021-03-02T12:00:00Z"
 _START_DATETIME = datetime(2021, 1, 1, tzinfo=timezone.utc)
 _WINDOWS = [
-    ("2021-01-01T00:00:00Z", "2021-01-01T23:59:59Z"),
-    ("2021-01-02T00:00:00Z", "2021-01-02T23:59:59Z"),
-    ("2021-01-03T00:00:00Z", _NOW),
+    ("2021-01-01T00:00:00Z", "2021-01-30T23:59:59Z"),
+    ("2021-01-31T00:00:00Z", "2021-03-01T23:59:59Z"),
+    ("2021-03-02T00:00:00Z", _NOW),
 ]
 
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
@@ -136,7 +136,7 @@ class ChatsTest(TestCase):
 
     @HttpMocker()
     def test_when_read_then_chats_found_by_search_are_fetched_by_id(self, http_mocker: HttpMocker) -> None:
-        """Chats are located with one search per day window and then fetched in full with `chats?ids=`."""
+        """Chats are located with one search per 30-day window and then fetched in full with `chats?ids=`."""
         chats = [_chat(_chat_id(1), "2021-01-01T10:00:00Z"), _chat(_chat_id(2), "2021-01-01T11:00:00Z")]
         http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([_search_result(c["id"], c["timestamp"]) for c in chats]))
         _mock_empty_windows(http_mocker, _WINDOWS[1:])
@@ -168,12 +168,13 @@ class ChatsTest(TestCase):
     def test_given_10000_results_when_read_then_window_is_split(self, http_mocker: HttpMocker) -> None:
         """
         Zendesk serves at most 10,000 results per search (250 pages of 40). A first page whose `count` reaches that cap is
-        not read; the day is split in halves and each half is searched on its own, so nothing is lost or emitted twice.
+        not read; the 30-day window is split in halves and each half is searched on its own, so nothing is lost or emitted
+        twice.
         """
         overflow_page = _search_response([_search_result(_chat_id(99), "2021-01-01T00:00:01Z")], count=10000, next_page=2)
-        first_half = ("2021-01-01T00:00:00Z", "2021-01-01T11:59:59Z")
-        second_half = ("2021-01-01T12:00:00Z", "2021-01-01T23:59:59Z")
-        chats = [_chat(_chat_id(1), "2021-01-01T10:00:00Z"), _chat(_chat_id(2), "2021-01-01T15:00:00Z")]
+        first_half = ("2021-01-01T00:00:00Z", "2021-01-15T23:59:59Z")
+        second_half = ("2021-01-16T00:00:00Z", "2021-01-30T23:59:59Z")
+        chats = [_chat(_chat_id(1), "2021-01-10T10:00:00Z"), _chat(_chat_id(2), "2021-01-20T15:00:00Z")]
         http_mocker.get(_search_request(*_WINDOWS[0]), overflow_page)
         http_mocker.get(_search_request(*first_half), _search_response([_search_result(chats[0]["id"], chats[0]["timestamp"])]))
         http_mocker.get(_search_request(*second_half), _search_response([_search_result(chats[1]["id"], chats[1]["timestamp"])]))
@@ -187,7 +188,7 @@ class ChatsTest(TestCase):
 
     @HttpMocker()
     def test_given_every_window_at_cap_when_read_then_fail_after_ten_splits(self, http_mocker: HttpMocker) -> None:
-        """The CDK splits a window at most ten times (a day shrinks to about 84 seconds), then the sync fails explicitly."""
+        """The CDK splits a window at most ten times (30 days shrink to about 42 minutes), then the sync fails explicitly."""
         at_cap = _search_response([_search_result(_chat_id(99), "2021-01-01T00:00:01Z")], count=10000, next_page=2)
         any_search = HttpRequest(_SEARCH_URL, query_params=ANY_QUERY_PARAMS)
         http_mocker.get(any_search, at_cap)
@@ -240,7 +241,7 @@ class ChatsTest(TestCase):
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:
         """The stream cursor is `timestamp`; the state also carries the parent search cursor."""
-        chats = [_chat(_chat_id(1), "2021-01-01T10:00:00Z"), _chat(_chat_id(2), "2021-01-02T08:00:00Z")]
+        chats = [_chat(_chat_id(1), "2021-01-01T10:00:00Z"), _chat(_chat_id(2), "2021-02-02T08:00:00Z")]
         http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([_search_result(chats[0]["id"], chats[0]["timestamp"])]))
         http_mocker.get(_search_request(*_WINDOWS[1]), _search_response([_search_result(chats[1]["id"], chats[1]["timestamp"])]))
         _mock_empty_windows(http_mocker, _WINDOWS[2:])
@@ -251,14 +252,14 @@ class ChatsTest(TestCase):
 
         assert len(output.records) == 2
         latest_state = output.most_recent_state.stream_state.__dict__
-        assert latest_state["state"] == {"timestamp": "2021-01-02T08:00:00Z"}
-        assert latest_state["parent_state"] == {"chats_search": {"timestamp": "2021-01-02T08:00:00Z"}}
+        assert latest_state["state"] == {"timestamp": "2021-02-02T08:00:00Z"}
+        assert latest_state["parent_state"] == {"chats_search": {"timestamp": "2021-02-02T08:00:00Z"}}
 
     def _assert_legacy_state_is_migrated(self, http_mocker: HttpMocker, legacy_cursor_value: Any) -> None:
         """
         A state written before 2.0.0 (`{"update_timestamp": <epoch seconds or ISO>}`) seeds both cursors. With a cursor of
-        2021-01-02T00:00:00Z the search restarts one day earlier (lookback), so the first window is 2021-01-01, and a chat
-        started before the cursor but updated inside the window is emitted again.
+        2021-01-02T00:00:00Z the search restarts one day earlier (lookback), so the first window starts on 2021-01-01, and a
+        chat started before the cursor but updated inside a later window is emitted again.
         """
         old_chat = _chat(_chat_id(1), "2020-12-15T10:00:00Z")
         http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([]))

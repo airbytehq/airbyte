@@ -258,7 +258,7 @@ definitions:
       description: >-
         Internal parent of the `chats` stream, not exposed in the catalog. Zendesk stops serving
         the Incremental Exports API to third-party integrations between 2026-12-02 and 2027-01-19,
-        so chats are located with Search Chats in one-day windows of `update_timestamp` and then
+        so chats are located with Search Chats in 30-day windows of `update_timestamp` and then
         fetched in full by id (see `chats`). Search results are sorted by `timestamp` and capped
         at 10,000 results (250 pages of 40) per query:
         https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#search-chats
@@ -323,7 +323,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         cursor_granularity: PT1S
-        step: P1D
+        step: P30D
         lookback_window: P1D
         start_datetime:
           type: MinMaxDatetime
@@ -337,7 +337,7 @@ definitions:
       type: DeclarativeStream
       description: >-
         Chats Stream. Chat ids come from the internal `chats_search` parent (Search Chats in
-        one-day windows of `update_timestamp`); full records are fetched 50 ids per request from
+        30-day windows of `update_timestamp`); full records are fetched 50 ids per request from
         List Chats, which returns a `docs` map keyed by chat id:
         https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#list-chats
       retriever:
