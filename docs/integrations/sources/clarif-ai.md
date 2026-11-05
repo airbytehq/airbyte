@@ -39,7 +39,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.77 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fixed incremental state advancement for applications, datasets, and models with nanosecond timestamps. |
+| 0.0.77 | 2026-11-04 | [91042](https://github.com/airbytehq/airbyte/pull/91042) | Fixed incremental state advancement for applications, datasets, and models with nanosecond timestamps. |
 | 0.0.76 | 2026-11-04 | [90341](https://github.com/airbytehq/airbyte/pull/90341) | Simplify error handler configuration with no behavior change |
 | 0.0.75 | 2026-11-03 | [90511](https://github.com/airbytehq/airbyte/pull/90511) | Update dependencies |
 | 0.0.74 | 2026-10-27 | [89863](https://github.com/airbytehq/airbyte/pull/89863) | Update dependencies |
