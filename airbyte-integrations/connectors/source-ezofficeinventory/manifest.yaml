@@ -30,19 +30,17 @@ definitions:
             include_custom_fields: "true"
             show_document_details: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -84,19 +82,17 @@ definitions:
             include_custom_fields: "true"
             show_document_details: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -139,19 +135,17 @@ definitions:
             include_custom_fields: "true"
             show_document_details: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -193,19 +187,17 @@ definitions:
             include_custom_fields: "true"
             show_document_details: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -244,19 +236,17 @@ definitions:
           request_parameters:
             include_custom_fields: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -296,19 +286,17 @@ definitions:
             status: all
             include_custom_fields: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -347,19 +335,17 @@ definitions:
           request_parameters:
             show_document_details: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -398,19 +384,17 @@ definitions:
           path: /groups/get_sub_groups.api
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -449,19 +433,17 @@ definitions:
           request_parameters:
             include_custom_fields: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -500,19 +482,17 @@ definitions:
           path: /print_label_templates.api
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -549,19 +529,17 @@ definitions:
           path: /assets/custom_attributes.api
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -598,19 +576,17 @@ definitions:
           path: /purchase_orders.api
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -647,19 +623,17 @@ definitions:
           path: /bundles.api
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -694,19 +668,17 @@ definitions:
           path: /baskets.api
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -741,19 +713,17 @@ definitions:
           path: /inventory/{{ stream_partition['inventory_id'] }}/history.api
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -807,19 +777,17 @@ definitions:
           path: /assets/{{ stream_partition['asset_id'] }}/history_paginate.api
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -873,19 +841,17 @@ definitions:
           path: /stock_assets/{{ stream_partition['asset_stock_id'] }}/history.api
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: Retry-After
-                    min_wait: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Too many calls to the API - Rate Limit Hit
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                header: Retry-After
+                min_wait: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Too many calls to the API - Rate Limit Hit
         record_selector:
           type: RecordSelector
           extractor:

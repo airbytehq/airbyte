@@ -6,8 +6,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.48.18'
     useLocalCdk = false
 }
 
@@ -25,10 +24,32 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+configurations.configureEach {
+    exclude group: 'net.i2p.crypto', module: 'eddsa'
+}
+
 dependencies {
+    implementation platform('com.fasterxml.jackson:jackson-bom:2.22.3')
+    implementation platform('org.apache.logging.log4j:log4j-bom:2.25.5')
+    implementation 'org.apache.kafka:kafka-clients:3.9.2'
+    implementation 'org.apache.kafka:connect-json:3.9.2'
 
-    implementation 'org.apache.kafka:kafka-clients:2.8.0'
-    implementation 'org.apache.kafka:connect-json:2.8.0'
+    constraints {
+        implementation 'at.yawk.lz4:lz4-java:1.11.4'
+        implementation 'com.google.guava:guava:33.7.2-jre'
+        implementation 'org.apache.commons:commons-lang3:3.18.0'
+        implementation 'org.xerial.snappy:snappy-java:1.1.10.12'
+        implementation 'org.apache.mina:mina-core:2.0.31'
+        implementation 'net.minidev:json-smart:2.6.0'
+        ['bcprov', 'bcpkix', 'bcutil', 'bctls'].each {
+            implementation "org.bouncycastle:${it}-jdk18on:1.85"
+        }
+        ['sshd-common', 'sshd-core', 'sshd-mina'].each {
+            implementation "org.apache.sshd:${it}:2.17.1"
+        }
+    }
 
+    testImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:${airbyteJavaConnector.cdkVersionRequired}")
+    integrationTestJavaImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:${airbyteJavaConnector.cdkVersionRequired}")
     testImplementation 'org.testcontainers:kafka:1.21.4'
 }
