@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.1.46" 
+version = "1.1.47"
 name = "source-smartsheets"
 description = "Source implementation for Smartsheets."
 authors = [ "Nate Nowack <contact@airbyte.io>",]
@@ -16,10 +16,10 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_smartsheets"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = ">=3.10,<3.14"
 smartsheet-python-sdk = "==2.177.1"
 urllib3 = "==1.26.18"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "^7"
 
 [tool.poetry.scripts]
 source-smartsheets = "source_smartsheets.run:run"
