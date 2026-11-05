@@ -57,6 +57,12 @@ when creating a new bucket). We currently do not support buckets using customer-
 keys (CMEK). You can view this setting under the "Configuration" tab of your GCS bucket, in the
 `Encryption type` row.
 
+The **Staging File Format** option sets the format of the staged files. **CSV (gzip)** is the
+default. **Avro** stages Avro files with snappy-compressed blocks: BigQuery reads an Avro file with
+several workers and a gzipped CSV file with one, and Avro takes far less CPU to write, so syncs of
+large volumes load faster. The rows loaded are the same with either format. Avro does not apply in
+legacy raw tables mode, where the files are always gzipped CSV.
+
 #### Using Batched Standard Inserts
 
 A simpler setup with no external staging required. Uses the BigQuery SDK to stream data directly. Suitable for smaller data volumes or quick testing. These staging files are managed by BigQuery and deleted automatically after the load is complete.
@@ -280,6 +286,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.0 | 2026-11-02 | [90416](https://github.com/airbytehq/airbyte/pull/90416) | GCS Staging: new option **Staging File Format**, `CSV (gzip)` by default or `Avro`, which stages Avro files with snappy compression for faster load jobs and less CPU in the destination. |
 | 3.2.2 | 2026-10-22 | [89648](https://github.com/airbytehq/airbyte/pull/89648) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1; AWS SDK 2.57.2; google-cloud-bigquery 2.73.0. |
 | 3.2.1 | 2026-10-06 | [88144](https://github.com/airbytehq/airbyte/pull/88144) | Fix Standard Inserts committing a partial batch to BigQuery when a sync fails or is cancelled. |
 | 3.2.0 | 2026-10-01 | [87631](https://github.com/airbytehq/airbyte/pull/87631) | Add optional Fusion S3 archiving for GCS Staging and Standard Inserts loads (off by default; enabled through environment configuration). |
