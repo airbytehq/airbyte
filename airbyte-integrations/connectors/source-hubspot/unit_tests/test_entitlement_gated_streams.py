@@ -139,7 +139,7 @@ def test_empty_page_yields_no_records_and_no_error(stream_name, requests_mock, c
     assert len(output.errors) == 0
 
 
-@pytest.mark.parametrize("stream_name", list(GATED_STREAMS))
+@pytest.mark.parametrize("stream_name", [name for name in GATED_STREAMS if name != "listings"])
 def test_missing_entitlement_403_raises_actionable_error(stream_name, requests_mock, config):
     """A portal without the paid product answers 403; the sync must fail loudly, not silently."""
     entity, _ = GATED_STREAMS[stream_name]
@@ -156,3 +156,15 @@ def test_missing_entitlement_403_raises_actionable_error(stream_name, requests_m
     assert output.errors, f"{stream_name} swallowed a 403"
     assert "Access denied (403)" in output.errors[0].trace.error.message
     assert f"to access stream {stream_name}" in output.errors[0].trace.error.message
+
+
+@pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
+def test_listings_403_is_ignored(requests_mock, config, sync_mode):
+    mock_dynamic_schema_requests_with_skip(requests_mock, [])
+    requests_mock.post("https://api.hubapi.com/crm/v3/objects/listings/search", status_code=403, json={})
+
+    output = read_from_stream(config, "listings", sync_mode)
+
+    assert not output.records
+    assert not output.errors
+    assert any("Skipping listings stream" in log.log.message and "crm.objects.listings.read" in log.log.message for log in output.logs)

@@ -2238,6 +2238,22 @@ definitions:
 
   listings_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
+    retriever:
+      $ref: "#/definitions/base_crm_search_incremental_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_crm_search_incremental_stream/retriever/requester"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes: [403]
+                  error_message: >-
+                    Skipping listings stream: access denied (403). Grant crm.objects.listings.read
+                    and activate Listings in your HubSpot portal to sync this stream.
+            - $ref: "#/definitions/base_error_handler"
     $parameters:
       name: listings
       # HubSpot's v3 reference documents listings only by object type id (0-420); the name also resolves on v3,

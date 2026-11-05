@@ -763,7 +763,6 @@ def test_cast_record_fields_if_needed(
             "https://api.hubapi.com/crm/v3/objects/leads/search",
             "POST",
         ),
-        ("listings", "crm.objects.listings.read", "https://api.hubapi.com/crm/v3/objects/listings/search", "POST"),
         ("tickets", "tickets", "https://api.hubapi.com/crm/v3/objects/ticket/search", "POST"),
         ("users", "crm.objects.users.read, settings.users.read", "https://api.hubapi.com/settings/v3/users", "GET"),
     ],
