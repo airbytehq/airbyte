@@ -6,7 +6,18 @@ import jsonschema
 import pytest
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    StreamDescriptor,
+    Type,
+)
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
 
 
 class MockLogger:
@@ -293,3 +304,38 @@ def test_read_users_resumes_from_checkpoint():
 
     records = [row.record.data for row in iterator if row.type is Type.RECORD]
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
+
+
+def test_read_users_consecutive_syncs():
+    config = {"count": 10, "seed": -1, "records_per_slice": 5, "always_updated": True, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    state = {}
+    for _ in range(2):
+        messages = list(SourceFaker().read(logger, config, catalog, state))
+        records = [message.record for message in messages if message.type is Type.RECORD]
+        assert len(records) == config["count"]
+        assert [record.data["id"] for record in records] == list(range(1, 11))
+        state = [message.state for message in messages if message.type is Type.STATE][-1:]
+
+
+@pytest.mark.parametrize("loop_offset, expected_ids", [(5, [6, 7, 8, 9, 10]), (11, list(range(1, 11)))])
+def test_read_users_checkpoint(loop_offset, expected_ids):
+    config = {"count": 10, "seed": -1, "records_per_slice": 5, "always_updated": True, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users"),
+        stream_state=AirbyteStateBlob(seed=-1, updated_at="2026-11-05T00:00:00+00:00", loop_offset=loop_offset),
+    )
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+    messages = list(SourceFaker().read(logger, config, catalog, state))
+    assert [message.record.data["id"] for message in messages if message.type is Type.RECORD] == expected_ids

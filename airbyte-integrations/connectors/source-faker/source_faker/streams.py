@@ -107,6 +107,8 @@ class Users(Stream, IncrementalMixin):
         # already emitted, so an interrupted sync continues where it stopped
         # instead of regenerating them.
         loop_offset = self.state.get("loop_offset", 0)
+        if loop_offset >= self.count:
+            loop_offset = 0
 
         median_record_byte_size = 450
         yield generate_estimate(self.name, self.count - loop_offset, median_record_byte_size)
