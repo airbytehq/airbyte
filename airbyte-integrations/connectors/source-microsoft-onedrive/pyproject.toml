@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.44"
+version = "0.2.45"
 name = "source-microsoft-onedrive"
 description = "Source implementation for Microsoft OneDrive."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,19 +16,17 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_microsoft_onedrive"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.14"
 Office365-REST-Python-Client = "==2.5.5"
 smart-open = "==6.4.0"
-msal = "==1.25.0"
-# override transitive dependency that had a vulnerability https://nvd.nist.gov/vuln/detail/CVE-2023-6730
-transformers = "4.38.2"
+msal = "==1.27.0"
 
 [tool.poetry.scripts]
 source-microsoft-onedrive = "source_microsoft_onedrive.run:run"
 
 [tool.poetry.dependencies.airbyte-cdk]
 extras = [ "file-based",]
-version = "^1"
+version = "^7"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.11.0"
