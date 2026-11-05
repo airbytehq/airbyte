@@ -533,6 +533,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.12 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix insights cursor moving backwards after re-reading the lookback window, which widened the re-read window after interrupted attempts; monthly/weekly insights cursors now advance |
 | 6.1.11 | 2026-11-04 | [90896](https://github.com/airbytehq/airbyte/pull/90896) | Raise minimum supported Python version to 3.11 |
 | 6.1.10 | 2026-11-04 | [90974](https://github.com/airbytehq/airbyte/pull/90974) | Update CDK to 7.45 |
 | 6.1.9 | 2026-10-21 | [89624](https://github.com/airbytehq/airbyte/pull/89624) | Keep the custom insights primary key in the configured breakdowns order so it no longer changes between syncs |

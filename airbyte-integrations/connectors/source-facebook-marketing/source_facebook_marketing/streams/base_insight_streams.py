@@ -263,7 +263,9 @@ class AdsInsights(FBMarketingIncrementalStream):
             raise traced_exception(exc)
 
         self._completed_slices[account_id].add(job.interval.start)
-        if job.interval.start == self._next_cursor_values[account_id]:
+        # `<=` because weekly/monthly periods snap the first interval to a period boundary
+        # before the (unaligned) next cursor value.
+        if job.interval.start <= self._next_cursor_values[account_id]:
             self._advance_cursor(account_id)
 
     @property
@@ -276,7 +278,10 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                cursor_value = self._cursor_values.get(account_id)
+                new_state[account_id]["slices"] = sorted(
+                    {d.isoformat() for d in self._completed_slices[account_id] if not cursor_value or d > cursor_value}
+                )
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -417,10 +422,12 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
-            if self._cursor_values:
+            if self._cursor_values is None:
+                self._cursor_values = {}
+            # Re-reading the lookback window must never move the saved cursor backwards.
+            current_cursor = self._cursor_values.get(account_id)
+            if current_cursor is None or ts_start > current_cursor:
                 self._cursor_values[account_id] = ts_start
-            else:
-                self._cursor_values = {account_id: ts_start}
 
     def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
         """Generator of async jobs

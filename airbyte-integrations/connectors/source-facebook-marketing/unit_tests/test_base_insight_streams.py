@@ -307,10 +307,7 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
-                        ],
+                        "slices": [],
                     },
                     "time_increment": 1,
                 },
@@ -353,7 +350,13 @@ class TestBaseInsightsStream:
                     },
                     "time_increment": 1,
                 },
-                None,
+                # slices already covered by the cursor are dropped from the saved state
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": [],
+                    },
+                },
             ),
             (
                 {
@@ -554,9 +557,9 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert (
-            len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1
-        ), "should be 37 slices because we ignore slices which are within insights_lookback_period"
+        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1, (
+            "should be 37 slices because we ignore slices which are within insights_lookback_period"
+        )
         assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
         assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + timedelta(days=1)
 
@@ -1187,9 +1190,9 @@ class TestBaseInsightsStream:
 
         # Check for missing breakdowns
         missing_breakdowns = [b for b in valid_breakdowns if b not in breakdowns_properties]
-        assert (
-            not missing_breakdowns
-        ), f"Schema file 'ads_insights_breakdowns.json' is missing definitions for breakdowns: {missing_breakdowns}"
+        assert not missing_breakdowns, (
+            f"Schema file 'ads_insights_breakdowns.json' is missing definitions for breakdowns: {missing_breakdowns}"
+        )
 
 
 class TestCalendarAlignedPeriods:
@@ -1900,3 +1903,95 @@ class TestCheckBreakdowns:
             stream.check_breakdowns(account_id=some_config["account_ids"][0])
 
         assert account.get_insights.call_count == 2
+
+
+class TestInsightsCursorAcrossAttempts:
+    """The saved cursor must never move backwards when lookback slices are re-read."""
+
+    @staticmethod
+    def _complete_job(mocker, stream, account_id, start, end):
+        job = mocker.Mock(spec=InsightAsyncJob)
+        job.get_result.return_value = []
+        job.interval = DateInterval(start, end)
+        list(
+            stream.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice={"insight_job": job, "account_id": account_id},
+            )
+        )
+
+    @freeze_time("2026-10-01")
+    def test_reading_lookback_slice_does_not_move_cursor_backwards(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2026, 9, 30),
+            insights_lookback_window=30,
+        )
+        stream.state = {account_id: {"date_start": "2026-09-20"}, "time_increment": 1}
+        lookback_start = date(2026, 8, 21)
+        assert stream._next_cursor_values[account_id] == lookback_start
+
+        self._complete_job(mocker, stream, account_id, lookback_start, lookback_start)
+
+        assert stream.state[account_id]["date_start"] == "2026-09-20"
+
+    @freeze_time("2026-10-01")
+    def test_cursor_advances_past_saved_value_after_lookback_is_reread(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2026, 9, 30),
+            insights_lookback_window=30,
+        )
+        stream.state = {account_id: {"date_start": "2026-09-20"}, "time_increment": 1}
+        day = date(2026, 8, 21)
+        while day <= date(2026, 9, 25):
+            self._complete_job(mocker, stream, account_id, day, day)
+            day += timedelta(days=1)
+
+        state = stream.state
+        assert state[account_id]["date_start"] == "2026-09-25"
+        assert state[account_id]["slices"] == []
+
+    @freeze_time("2026-10-01")
+    def test_state_drops_slices_covered_by_cursor(self, api, some_config):
+        account_id = some_config["account_ids"][0]
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2026, 9, 30),
+            insights_lookback_window=30,
+        )
+        stream.state = {
+            account_id: {"date_start": "2026-09-24", "slices": ["2026-09-05", "2026-09-24", "2026-09-27"]},
+            "time_increment": 1,
+        }
+
+        assert stream.state[account_id] == {"date_start": "2026-09-24", "slices": ["2026-09-27"]}
+
+    @freeze_time("2026-10-15")
+    def test_monthly_period_cursor_advances(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2026, 10, 14),
+            insights_lookback_window=30,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        stream.state = {
+            account_id: {"date_start": "2026-08-01"},
+            "time_increment": stream.time_increment,
+            "time_increment_period": "monthly",
+        }
+        for start in (date(2026, 7, 1), date(2026, 8, 1), date(2026, 9, 1)):
+            self._complete_job(mocker, stream, account_id, start, stream._month_end(start))
+
+        assert stream.state[account_id]["date_start"] == "2026-09-01"
