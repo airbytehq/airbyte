@@ -1,5 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -65,18 +66,17 @@ def test_thirty_day_window_seam_loses_no_seconds(requests_mock):
     edge = datetime(2026, 1, 31, tzinfo=timezone.utc)
     timestamps = [(edge + timedelta(seconds=offset)).strftime("%Y-%m-%dT%H:%M:%SZ") for offset in (-2, -1, 0, 1)]
     records = [{**fixture_record("issues"), "id": f"seam-{index}", "updated_at": stamp} for index, stamp in enumerate(timestamps)]
+    windows = []
 
     def respond(request, context):
         assert request.headers["Authorization"] == f"Bearer {TOKEN}"
         body = request.json()
         assert body["limit"] == 999
         time_filter = body["filter"]
-        if time_filter["operator"] == "time_range":
-            start, end = time_filter["values"]
-            selected = [record for record in records if start <= record["updated_at"] <= end]
-        else:
-            start, end = [item["value"] for item in time_filter["subfilters"]]
-            selected = [record for record in records if start < record["updated_at"] < end]
+        assert time_filter["operator"] == "time_range"
+        start, end = time_filter["values"]
+        selected = [record for record in records if start <= record["updated_at"] <= end]
+        windows.append((start, end))
         return {"data": selected, "pagination": {"has_next_page": False}}
 
     requests_mock.post(f"{BASE}/issues/search", json=respond)
@@ -85,3 +85,59 @@ def test_thirty_day_window_seam_loses_no_seconds(requests_mock):
     assert requests_mock.call_count == 2
     emitted = {message.record.data["updated_at"] for message in output.records}
     assert emitted == set(timestamps), f"Lost whole seconds at the 30-day seam: {sorted(set(timestamps) - emitted)}"
+    assert sorted(windows) == [
+        (START, "2026-01-30T23:59:59Z"),
+        ("2026-01-31T00:00:00Z", "2026-02-01T00:00:00Z"),
+    ]
+    first, second = sorted(windows)
+    assert datetime.fromisoformat(second[0]) - datetime.fromisoformat(first[1]) == timedelta(seconds=1)
+    assert Counter(message.record.data["id"] for message in output.records) == Counter(record["id"] for record in records)
+
+
+@freeze_time("2026-02-01T00:00:00Z")
+def test_interrupted_read_resumes_from_last_emitted_state(requests_mock):
+    checkpoint = "2026-01-30T23:59:59Z"
+    end = "2026-02-01T00:00:00Z"
+    records = [
+        {**fixture_record("issues"), "id": identifier, "updated_at": stamp}
+        for identifier, stamp in (
+            ("resume-before", "2026-01-30T23:59:58Z"),
+            ("resume-checkpoint", checkpoint),
+            ("resume-after", "2026-01-31T00:00:00Z"),
+            ("resume-final", end),
+        )
+    ]
+    windows = []
+
+    def respond(request, context):
+        time_filter = request.json()["filter"]
+        assert time_filter["operator"] == "time_range"
+        start, stop = time_filter["values"]
+        windows.append((start, stop))
+        if start == "2026-01-31T00:00:00Z":
+            context.status_code = 400
+            return {"code": "invalid_request_body", "errors": ["Synthetic interrupted window"]}
+        return {"data": [record for record in records if start <= record["updated_at"] <= stop]}
+
+    requests_mock.post(f"{BASE}/issues/search", json=respond)
+    config = {**CONFIG, "num_workers": 1}
+    first = run("issues", cfg=config, mode=SyncMode.incremental, expecting_exception=True)
+    assert first.errors
+    assert first.state_messages
+    messages = list(first.get_message_iterator())
+    assert next(index for index, message in enumerate(messages) if message.state) < next(
+        index for index, message in enumerate(messages) if message.trace and message.trace.error
+    )
+    assert first.most_recent_state.stream_state.__dict__["updated_at"] == checkpoint
+    assert windows == [(START, checkpoint), ("2026-01-31T00:00:00Z", end)]
+    assert [message.record.data["id"] for message in first.records] == ["resume-before", "resume-checkpoint"]
+
+    windows.clear()
+    resumed = run("issues", cfg=config, mode=SyncMode.incremental, state=[first.state_messages[-1].state])
+    assert resumed.errors == []
+    assert windows == [(checkpoint, end)]
+    assert [message.record.data["id"] for message in resumed.records] == ["resume-checkpoint", "resume-after", "resume-final"]
+    combined = Counter(message.record.data["id"] for output in (first, resumed) for message in output.records)
+    assert combined == Counter({"resume-before": 1, "resume-checkpoint": 2, "resume-after": 1, "resume-final": 1})
+    assert set(combined) == {record["id"] for record in records}
+    assert resumed.most_recent_state.stream_state.__dict__["updated_at"] == end
