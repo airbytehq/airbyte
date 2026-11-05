@@ -141,6 +141,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 2.0.3 | 2026-11-05 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Promote the connector to Certified (Generally Available) support |
 | 2.0.2 | 2026-11-04 | [91024](https://github.com/airbytehq/airbyte/pull/91024) | Replace the icon with YouTube's official icon from brand.youtube and remove the added ANALYTICS wordmark |
 | 2.0.1 | 2026-11-04 | [90433](https://github.com/airbytehq/airbyte/pull/90433) | Merge the report download error handlers into one handler; no behaviour change |
 | 2.0.0 | 2026-11-04 | [89628](https://github.com/airbytehq/airbyte/pull/89628) | Correct the declared types of report metric fields to match YouTube's metric definitions |
