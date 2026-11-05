@@ -2848,6 +2848,13 @@ definitions:
       datetime: '{{ config["reports_start_date"] if config.get("reports_start_date") else format_datetime(now_utc() - duration("P1Y"), "%Y-%m-%d") }}'
       datetime_format: "%Y-%m-%d"
 
+  incremental_bulk_entity_datetime_cursor:
+    $ref: "#/definitions/incremental_bulk_datetime_cursor"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "1970-01-01"
+      datetime_format: "%Y-%m-%d"
+
   transformations:
     # Shared by multiple performance report streams (account + ad)
     performance_report_common_transformations:
@@ -6389,18 +6396,24 @@ dynamic_streams:
                 $ref: "#/schemas/budget"
           - name: campaigns_bulk
             DownloadEntities: ["Campaigns"]
+            incremental_sync:
+              $ref: "#/definitions/incremental_bulk_entity_datetime_cursor"
             schema_loader:
               type: InlineSchemaLoader
               schema:
                 $ref: "#/schemas/campaigns_bulk"
           - name: ad_groups_bulk
             DownloadEntities: ["AdGroups"]
+            incremental_sync:
+              $ref: "#/definitions/incremental_bulk_entity_datetime_cursor"
             schema_loader:
               type: InlineSchemaLoader
               schema:
                 $ref: "#/schemas/ad_groups_bulk"
           - name: ads_bulk
             DownloadEntities: ["Ads"]
+            incremental_sync:
+              $ref: "#/definitions/incremental_bulk_entity_datetime_cursor"
             schema_loader:
               type: InlineSchemaLoader
               schema:
@@ -6414,6 +6427,10 @@ dynamic_streams:
           create_or_update: true
           field_path: ["$parameters", "DownloadEntities"]
           value: "{{components_values['DownloadEntities']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["incremental_sync"]
+          value: "{{components_values.get('incremental_sync', stream_template_config['incremental_sync'])}}"
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: ["schema_loader"]

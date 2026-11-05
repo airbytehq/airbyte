@@ -119,6 +119,7 @@ def test_bulk_entities_resume_and_fall_back_after_30_days(
     requests_mock: Mocker, bulk_accounts: None, config: dict, stream_name: str, entity: str, record_type: str
 ) -> None:
     config["lookback_window"] = 30
+    config["reports_start_date"] = "2024-02-25"
     with freeze_time("2024-02-26"):
         _mock_downloads(requests_mock, record_type, ["02/24/2024 12:00:00.000", "02/25/2024 12:00:00.000"])
         first = _read(stream_name, config, SyncMode.incremental)
@@ -126,6 +127,7 @@ def test_bulk_entities_resume_and_fall_back_after_30_days(
         _assert_records_and_state(first, "2024-02-25T12:00:00.000+0000")
 
     requests_mock.reset_mock()
+    config["reports_start_date"] = "2024-02-27"
     with freeze_time("2024-02-27"):
         # Bulk deltas are inclusive: the saved cursor record can overlap the previous read.
         _mock_downloads(requests_mock, record_type, ["02/25/2024 12:00:00.000", "02/26/2024 12:00:00.000"], first_id=101)

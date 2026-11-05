@@ -20,6 +20,8 @@ The bulk entity streams, including `campaigns_bulk`, `ad_groups_bulk`, and `ads_
 
 The connector currently saves the maximum record `Modified Time`, so inactive accounts can still fall back to full downloads. Microsoft recommends using the account record's `Sync Time` from the previous download; adopting that would require a separate cursor/state change.
 
+The three new entity streams override the initial cursor with `1970-01-01`, so their first download omits `LastSyncTimeInUTC` even when `reports_start_date` is recent. Saved per-account cursors still select deltas on subsequent reads. Existing bulk streams retain their original start-date behavior.
+
 **Why this matters:** Applying a report conversion window to bulk entities can turn every sync into a full download. Report streams, including budget summary and custom reports, retain lookback to re-read dated metrics that may change later.
 
 ## 4. Campaigns and Ads Are Only Returned for Explicitly Requested Types
