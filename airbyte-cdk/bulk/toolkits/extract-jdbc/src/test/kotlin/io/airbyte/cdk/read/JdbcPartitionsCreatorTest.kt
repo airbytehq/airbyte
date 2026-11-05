@@ -199,6 +199,96 @@ class JdbcPartitionsCreatorTest {
     }
 
     @Test
+    fun testConcurrentSnapshotWithEvenSplitBoundaries() {
+        val stream = stream(withCursor = false)
+        val sharedState =
+            sharedState(
+                constants =
+                    DefaultJdbcConstants(
+                        withSampling = true,
+                        maxSampleSize = 4,
+                        withEvenSplitBoundaries = true,
+                        expectedThroughputBytesPerSecond = 400_000L,
+                    ),
+                mockedQueries =
+                    arrayOf(
+                        TestFixtures.MockedQuery(
+                            expectedQuerySpec =
+                                SelectQuerySpec(
+                                    SelectColumns(id, ts, msg),
+                                    FromSample(
+                                        stream().name,
+                                        stream().namespace,
+                                        sampleRateInvPow2 = 16,
+                                        sampleSize = 4,
+                                        where = NoWhere,
+                                    ),
+                                    NoWhere,
+                                    OrderBy(id),
+                                ),
+                            expectedParameters = SelectQuerier.Parameters(fetchSize = null),
+                            idDateString(10000, "2024-08-01", "foo"),
+                        ),
+                        TestFixtures.MockedQuery(
+                            expectedQuerySpec =
+                                SelectQuerySpec(
+                                    SelectColumns(id, ts, msg),
+                                    FromSample(
+                                        stream().name,
+                                        stream().namespace,
+                                        sampleRateInvPow2 = 8,
+                                        sampleSize = 4,
+                                        where = NoWhere,
+                                    ),
+                                    NoWhere,
+                                    OrderBy(id),
+                                ),
+                            expectedParameters = SelectQuerier.Parameters(fetchSize = null),
+                            idDateString(10000, "2024-08-01", "foo"),
+                            idDateString(20000, "2024-08-02", "bar"),
+                            idDateString(30000, "2024-08-03", "baz"),
+                            idDateString(40000, "2024-08-04", "quux"),
+                        ),
+                    ),
+            )
+        val factory = sharedState.factory()
+        val initialPartition =
+            factory.create(stream.bootstrap(opaqueStateValue = null)).asPartition()
+        factory.assertFailures()
+        val readers = JdbcConcurrentPartitionsCreator(initialPartition, factory).runInTest()
+        val partitions: List<DefaultJdbcSplittableSnapshotPartition> =
+            concurrentPartitions(stream, readers)
+        // The table is estimated to fill 3 partitions, so the split boundaries are the sampled
+        // rows at positions 4 / 3 and 8 / 3, rounded down.
+        Assertions.assertEquals(
+            listOf(
+                null to listOf(IntCodec.encode(20000)),
+                listOf(IntCodec.encode(20000)) to listOf(IntCodec.encode(30000)),
+                listOf(IntCodec.encode(30000)) to null,
+            ),
+            partitions.map { it.lowerBound to it.upperBound },
+        )
+    }
+
+    @Test
+    fun testEvenlySpaced() {
+        val sorted: List<Int> = (0..7).toList()
+        Assertions.assertEquals(
+            listOf<Int>(),
+            JdbcConcurrentPartitionsCreator.evenlySpaced(sorted, 0),
+        )
+        Assertions.assertEquals(
+            listOf(2, 5),
+            JdbcConcurrentPartitionsCreator.evenlySpaced(sorted, 2),
+        )
+        Assertions.assertEquals(
+            listOf(2, 4, 6),
+            JdbcConcurrentPartitionsCreator.evenlySpaced(sorted, 3),
+        )
+        Assertions.assertEquals(sorted, JdbcConcurrentPartitionsCreator.evenlySpaced(sorted, 8))
+    }
+
+    @Test
     fun testConcurrentSnapshotWithoutSampling() {
         val stream = stream(withCursor = false)
         val sharedState = sharedState()
