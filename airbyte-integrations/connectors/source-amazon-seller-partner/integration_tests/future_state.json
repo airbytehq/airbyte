@@ -454,7 +454,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "LastUpdatedDate": "2121-07-01T00:00:00+00:00"
+        "LastUpdatedDate": "2121-07-01T00:00:00Z"
       },
       "stream_descriptor": {
         "name": "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
