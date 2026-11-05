@@ -94,7 +94,12 @@ object DatabricksDataCleaner : DestinationCleaner {
                     "Dropping ${schemasToDrop.size} of ${schemas.size} test schemas (>$RETENTION_DAYS days old)"
                 }
                 schemasToDrop.forEach { schema ->
-                    stmt.execute("DROP SCHEMA IF EXISTS `${config.database}`.`$schema` CASCADE")
+                    try {
+                        stmt.execute("DROP SCHEMA IF EXISTS `${config.database}`.`$schema` CASCADE")
+                    } catch (e: Exception) {
+                        // Concurrent CI jobs run this cleaner too; a schema may already be gone.
+                        log.warn(e) { "Failed to drop test schema $schema, continuing" }
+                    }
                 }
             }
         }
