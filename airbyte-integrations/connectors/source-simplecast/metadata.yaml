@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 776ca64c-95eb-47ec-a54d-9db3d16435d0
-  dockerImageTag: 0.0.68
+  dockerImageTag: 0.0.69-rc.1
   dockerRepository: airbyte/source-simplecast
   githubIssueLabel: source-simplecast
   icon: icon.svg
@@ -25,6 +25,9 @@ data:
   name: SimpleCast
   releaseDate: 2024-10-03
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/simplecast
   tags:
