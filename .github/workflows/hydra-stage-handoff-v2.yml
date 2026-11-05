@@ -29,6 +29,8 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #      and skips when that key is already on the PR, so repeat wakes on the
 #      same head don't dispatch the same stage twice. A new push changes the
 #      key. To retry a stage on the same head, dispatch with `force: true`.
+#   6. Post actionable assess results (including dry-runs) to Slack in
+#      #hydra-handoff-watcher, excluding idempotency skips.
 #
 # Dry-run: controlled by workflow_dispatch input (preferred) or by the
 # HYDRA_HANDOFF_V2_DRY_RUN repo variable (default: 'true' until the dispatcher
@@ -505,6 +507,59 @@ jobs:
               exit 1
               ;;
           esac
+
+      - name: Resolve Variables
+        id: resolve-vars
+        if: ${{ !cancelled() && steps.eligibility.outputs.eligible == 'true' }}
+        env:
+          SLACK_CHANNEL: C0CF6T8MVNH # #hydra-handoff-watcher
+          PR_NUMBER: ${{ needs.gate.outputs.pr }}
+          NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
+          TARGET: ${{ steps.assess.outputs.target }}
+          REASON: ${{ steps.assess.outputs.reason }}
+          BLOCKERS: ${{ steps.assess.outputs.blockers }}
+          HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
+          DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+          IDEMPOTENCY: ${{ steps.dispatch.outputs.idempotency }}
+          DISPATCH_OUTCOME: ${{ steps.dispatch.outcome }}
+        run: |
+          set -euo pipefail
+          NOTIFY=$(jq -nr 'env | .NEXT_ACTION as $action |
+            (["prove", "review", "ready", "resolve_conflicts", "fix", "triage", "fix_ci", "escalate"] | index($action) != null)
+            and (.IDEMPOTENCY != "skipped")')
+          echo "notify=$NOTIFY" | tee -a "$GITHUB_OUTPUT"
+          PAYLOAD_FILE="$RUNNER_TEMP/handoff-slack-payload.json"
+          jq -n 'env |
+            (if .DISPATCH_OUTCOME != "success" then "failed (step outcome: \(.DISPATCH_OUTCOME))"
+             elif .NEXT_ACTION == "fix_ci" or .NEXT_ACTION == "escalate" then "not handled (\(.NEXT_ACTION))"
+             elif ((["prove", "review", "ready", "resolve_conflicts"] | index(env.NEXT_ACTION) != null)
+                   and .TARGET != "airbytehq/airbyte#\(.PR_NUMBER)")
+                  or ((["fix", "triage"] | index(env.NEXT_ACTION) != null)
+                      and (.TARGET | test("^airbytehq/oncall#[0-9]+$") | not))
+               then "skipped because target is another item"
+             elif .DRY_RUN == "true" then "would dispatch"
+             else "dispatched" end) as $dispatch |
+            (.TARGET | capture("^(?<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)#(?<number>[0-9]+)$")? // null) as $target |
+            (if $target != null then "<\(.GITHUB_SERVER_URL)/\($target.repo)/issues/\($target.number)|\(.TARGET)>"
+             else .TARGET end) as $target_text |
+            {channel: .SLACK_CHANNEL, unfurl_links: false, unfurl_media: false,
+             text: (["Hydra v2 assess: <\(.GITHUB_SERVER_URL)/\(.GITHUB_REPOSITORY)/pull/\(.PR_NUMBER)|#\(.PR_NUMBER)>",
+                     "next_action: \(.NEXT_ACTION) | target: \($target_text)",
+                     "Reason: \(.REASON)",
+                     (if .BLOCKERS != "" then "Blockers: \(.BLOCKERS)" else empty end),
+                     "Head: \(.HEAD_SHA[0:7]) | dry-run: \(if .DRY_RUN == "true" then "yes" else "no" end)",
+                     "Dispatch: \($dispatch)",
+                     "<\(.GITHUB_SERVER_URL)/\(.GITHUB_REPOSITORY)/actions/runs/\(.GITHUB_RUN_ID)|Workflow run>"] | join("\n"))}' \
+            > "$PAYLOAD_FILE"
+          echo "payload-file=$PAYLOAD_FILE" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Post assess result to Slack
+        if: ${{ !cancelled() && steps.resolve-vars.outputs.notify == 'true' }}
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload-file-path: ${{ steps.resolve-vars.outputs.payload-file }}
 
       - name: Summarize
         if: always()
