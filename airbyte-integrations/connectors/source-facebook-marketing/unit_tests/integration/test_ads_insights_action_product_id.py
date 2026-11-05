@@ -253,9 +253,7 @@ def test_custom_insights_inherit_incrementality_in_job_request(requests_mock, in
     config_builder = config()
     connector_config = config_builder.build()
     connector_config["include_incrementality"] = include_incrementality
-    connector_config["custom_insights"] = [
-        {"name": "Incrementality", "fields": ["account_id"], "breakdowns": [], "action_breakdowns": []}
-    ]
+    connector_config["custom_insights"] = [{"name": "Incrementality", "fields": ["account_id"], "breakdowns": [], "action_breakdowns": []}]
     base_url = f"https://graph.facebook.com/{API_VERSION}/"
     requests_mock.get(f"{base_url}act_{ACCOUNT_ID}/", text=get_account_response().body)
     throttle_response = _update_api_throttle_limit_response()
