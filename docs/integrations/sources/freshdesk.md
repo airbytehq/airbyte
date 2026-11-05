@@ -90,6 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.3.14 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Emit `sla_policies` stream `id` as an integer when the Freshdesk API returns it as a numeric string. |
 | 3.3.13 | 2026-11-03 | [90355](https://github.com/airbytehq/airbyte/pull/90355) | Show the stream-specific error message when Freshdesk returns 401 Unauthorized. |
 | 3.3.12 | 2026-11-03 | [90556](https://github.com/airbytehq/airbyte/pull/90556) | Update dependencies |
 | 3.3.11 | 2026-10-27 | [89767](https://github.com/airbytehq/airbyte/pull/89767) | Show clear error messages when the satisfaction_ratings or surveys streams return 403 because the Freshdesk plan lacks the Surveys feature. |
