@@ -38,19 +38,19 @@ def fixture_record(stream):
     return json.loads(path.read_text())
 
 
-def list_request(path, cursor=None, **params):
+def list_request(path, cursor=None, base=BASE, **params):
     query = {"limit": "999", **params}
     if cursor:
         query["cursor"] = cursor
-    return HttpRequest(f"{BASE}/{path.lstrip('/')}", query_params=query, headers={"Authorization": f"Bearer {TOKEN}"})
+    return HttpRequest(f"{base}/{path.lstrip('/')}", query_params=query, headers={"Authorization": f"Bearer {TOKEN}"})
 
 
-def search_request(start=START, end=NOW, cursor=None):
+def search_request(start=START, end=NOW, cursor=None, base=BASE):
     time_filter = {"field": "updated_at", "operator": "time_range", "values": [start, end]}
     body = {"filter": time_filter, "limit": 999}
     if cursor:
         body["cursor"] = cursor
-    return HttpRequest(f"{BASE}/issues/search", body=body, headers={"Authorization": f"Bearer {TOKEN}"})
+    return HttpRequest(f"{base}/issues/search", body=body, headers={"Authorization": f"Bearer {TOKEN}"})
 
 
 def page(records, next_cursor=None):

@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.models import declarative_component_schema 
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.streams.call_rate import CallRateLimitHit, HttpAPIBudget
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
-from mock_server.helpers import BASE, NOW, error, fixture_record, list_request, page, run
+from mock_server.helpers import BASE, CONFIG, NOW, error, fixture_record, list_request, page, run
 
 
 @pytest.mark.parametrize("status,headers,wait", [(429, {"Retry-After": "7"}, 8), (429, {}, 11), (500, {}, 11)])
@@ -44,24 +44,25 @@ def test_retry_limit_is_enforced(status: int) -> None:
     assert output.errors
 
 
+@pytest.mark.parametrize("region,base", [("us", BASE), ("eu", "https://api.eu.usepylon.com")])
 @freeze_time(NOW)
-def test_http_response_updates_the_live_budget() -> None:
+def test_http_response_updates_the_live_budget(region: str, base: str) -> None:
     record = fixture_record("tags")
     with (
         patch.object(HttpAPIBudget, "update_from_response", autospec=True, side_effect=HttpAPIBudget.update_from_response) as update,
         HttpMocker() as mocker,
     ):
-        request = list_request("tags")
+        request = list_request("tags", base=base)
         response = HttpResponse(json.dumps({"data": [record]}), headers={"X-Rate-Limit-Remaining": "0"})
         mocker.get(request, response)
-        output = run("tags")
+        output = run("tags", cfg={**CONFIG, "region": region})
         mocker.assert_number_of_calls(request, 1)
         update.assert_called_once()
         live_budget, prepared_request, received_response = update.call_args.args
         assert received_response.headers["X-Rate-Limit-Remaining"] == "0"
         with pytest.raises(CallRateLimitHit):
             live_budget.acquire_call(prepared_request, block=False)
-        live_budget.acquire_call(requests.Request("GET", BASE + "/teams"), block=False)
+        live_budget.acquire_call(requests.Request("GET", base + "/teams"), block=False)
     assert output.errors == []
     assert [message.record.data for message in output.records] == [record]
 
@@ -94,10 +95,11 @@ def budget(manifest_path: Path) -> HttpAPIBudget:
 
 
 @pytest.mark.parametrize("method,path,limit", ENDPOINTS)
-def test_budget_semantics(budget: HttpAPIBudget, method: str, path: str, limit: int) -> None:
+@pytest.mark.parametrize("base", [BASE, "https://api.eu.usepylon.com"])
+def test_budget_semantics(budget: HttpAPIBudget, method: str, path: str, limit: int, base: str) -> None:
     with freeze_time(NOW) as clock:
-        request = requests.Request(method, BASE + path)
-        other_request = requests.Request("GET", BASE + ("/contacts" if path == "/accounts" else "/accounts"))
+        request = requests.Request(method, base + path)
+        other_request = requests.Request("GET", base + ("/contacts" if path == "/accounts" else "/accounts"))
         policy = budget.get_matching_policy(request)
         assert policy is not None
         assert budget.get_matching_policy(other_request) is not policy
@@ -142,16 +144,16 @@ def test_empty_response_does_not_exhaust_budget(budget: HttpAPIBudget) -> None:
 
 
 @pytest.mark.parametrize("method,path,limit", ENDPOINTS)
-def test_matchers_are_endpoint_scoped(budget: HttpAPIBudget, method: str, path: str, limit: int) -> None:
+@pytest.mark.parametrize("base", [BASE, "https://api.eu.usepylon.com"])
+def test_matchers_are_endpoint_scoped(budget: HttpAPIBudget, method: str, path: str, limit: int, base: str) -> None:
     assert len(budget._policies) == len(ENDPOINTS)
-    request = requests.Request(method, BASE + path + "?limit=999")
+    request = requests.Request(method, base + path + "?limit=999")
     policy = budget.get_matching_policy(request)
     assert policy is not None
     assert sum(candidate.matches(request) for candidate in budget._policies) == 1
     assert budget.get_matching_policy(requests.Request("DELETE", BASE + path)) is None
     assert budget.get_matching_policy(requests.Request(method, BASE + path + "/extra")) is None
     assert budget.get_matching_policy(requests.Request(method, BASE + "/prefix" + path)) is None
-    assert budget.get_matching_policy(requests.Request(method, "https://other.example" + path)) is None
     if "synthetic-id" in path:
         assert budget.get_matching_policy(requests.Request(method, BASE + path.replace("synthetic-id", "another-id"))) is policy
 

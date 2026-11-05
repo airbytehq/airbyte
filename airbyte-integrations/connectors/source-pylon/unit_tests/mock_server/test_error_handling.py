@@ -32,7 +32,7 @@ def test_check_rejects_invalid_token():
 @pytest.mark.parametrize(
     "status,code,expected",
     [
-        (403, "wrong_region_token", "EU tokens starting with pylon_api_eu_"),
+        (403, "wrong_region_token", "Set Region to match the token: pylon_api_eu_ means EU, pylon_api_ means US, and older unprefixed tokens use the region where the Pylon tenant is hosted."),
         (401, "invalid_api_token", "Settings > Integrations & dev > API tokens"),
         (401, "invalid_authorization_header", "without a 'Bearer ' prefix or spaces"),
         (403, "organization_deactivated", "Contact Pylon support"),

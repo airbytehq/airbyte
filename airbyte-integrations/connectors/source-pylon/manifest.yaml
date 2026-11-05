@@ -20,7 +20,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/activity-types$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -30,7 +29,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/issue-statuses$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -40,7 +38,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: POST
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/issues/search$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -50,7 +47,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/issues/[^/]+/messages$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -60,7 +56,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/issues/[^/]+/threads$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -70,7 +65,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/knowledge-bases/[^/]+/articles$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -80,7 +74,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/accounts$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -90,7 +83,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/contacts$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -100,7 +92,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/tags$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -110,7 +101,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/teams$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -120,7 +110,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/users$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -130,7 +119,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/custom-fields$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -140,7 +128,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/knowledge-bases$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -150,7 +137,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/ticket-forms$
     - type: MovingWindowCallRatePolicy
       rates:
@@ -160,7 +146,6 @@ api_budget:
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
-          url_base: https://api.usepylon.com
           url_path_pattern: ^/user-roles$
 
 description: >-
@@ -647,7 +632,7 @@ definitions:
 
   base_requester:
     type: HttpRequester
-    url_base: https://api.usepylon.com
+    url_base: "{{ 'https://api.eu.usepylon.com' if config.get('region', 'us') == 'eu' else 'https://api.usepylon.com' }}"
     connect_timeout_in_seconds: 30
     read_timeout_in_seconds: 300
     authenticator:
@@ -669,8 +654,9 @@ definitions:
         failure_type: config_error
         predicate: "{{ response.get('code') == 'wrong_region_token' }}"
         error_message: >-
-          The Pylon token belongs to another region. Use a US API token for
-          api.usepylon.com; EU tokens starting with pylon_api_eu_ are not supported.
+          The Pylon token belongs to a different region than the selected Region.
+          Set Region to match the token: pylon_api_eu_ means EU, pylon_api_ means US,
+          and older unprefixed tokens use the region where the Pylon tenant is hosted.
       - type: HttpResponseFilter
         action: FAIL
         failure_type: config_error
@@ -777,13 +763,27 @@ spec:
         title: API Token
         description: >-
           Create a token under Settings > Integrations & dev > API tokens in Pylon.
-          The token's role controls which streams you can read. Only the US API
-          (api.usepylon.com) is supported; EU tokens starting with pylon_api_eu_ are
-          not supported. Add Airbyte's IP addresses to any IP allowlist on the token.
+          The token's role controls which streams you can read.
+          Add Airbyte's IP addresses to any IP allowlist on the token.
+          Choose Region to match the token prefix: pylon_api_eu_ means EU,
+          pylon_api_ means US; for older tokens without a prefix, choose the region
+          where your Pylon tenant is hosted.
         airbyte_secret: true
+      region:
+        type: string
+        enum: ["us", "eu"]
+        default: us
+        order: 1
+        title: Region
+        description: >-
+          Select the region where your Pylon tenant is hosted. US uses
+          https://api.usepylon.com and tokens prefixed with pylon_api_. EU uses
+          https://api.eu.usepylon.com and tokens prefixed with pylon_api_eu_.
+          Defaults to US. For older tokens without a prefix, choose the region where
+          your Pylon tenant is hosted.
       start_date:
         type: string
-        order: 1
+        order: 2
         title: Start Date
         description: >-
           Start syncing issues updated since this date, in UTC, using the format
@@ -796,7 +796,7 @@ spec:
           - "2024-01-01T00:00:00Z"
       num_workers:
         type: integer
-        order: 2
+        order: 3
         title: Number of Workers
         default: 3
         minimum: 1

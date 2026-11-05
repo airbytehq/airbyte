@@ -14,6 +14,7 @@ data:
   allowedHosts:
     hosts:
       - "api.usepylon.com"
+      - "api.eu.usepylon.com"
   registryOverrides:
     oss:
       enabled: true

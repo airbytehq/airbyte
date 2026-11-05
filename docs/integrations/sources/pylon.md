@@ -19,6 +19,12 @@ Enter your **API Token**. This is the Bearer token used to authenticate all requ
 
 </FieldAnchor>
 
+<FieldAnchor field="region">
+
+Select **Region** to match your Pylon tenant and API token. **US** (the default) uses `https://api.usepylon.com` with tokens prefixed `pylon_api_`. **EU** uses `https://api.eu.usepylon.com` with tokens prefixed `pylon_api_eu_`. For older tokens without a prefix, choose the region where your Pylon tenant is hosted. Existing configurations without Region continue to use US.
+
+</FieldAnchor>
+
 <FieldAnchor field="start_date">
 
 Optionally, enter a **Start Date** in UTC format (`YYYY-MM-DDTHH:MM:SSZ`). This controls how far back the connector syncs data for the Issues stream and its child streams (Issue Messages and Issue Threads). If not provided, defaults to 30 days ago.
@@ -92,7 +98,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.0.31 | 2026-11-04 | [91022](https://github.com/airbytehq/airbyte/pull/91022) | Add documented fields, deactivated users, inclusive issue windows, parent IDs, actionable errors, request budgets, and configurable concurrency. |
+| 0.0.31 | 2026-11-04 | [91022](https://github.com/airbytehq/airbyte/pull/91022) | Add EU region support, documented fields, deactivated users, inclusive issue windows, parent IDs, actionable errors, request budgets, and configurable concurrency. |
 | 0.0.30 | 2026-11-03 | [90398](https://github.com/airbytehq/airbyte/pull/90398) | Simplify error handling while preserving retry and rate-limit behavior. |
 | 0.0.29 | 2026-11-03 | [90704](https://github.com/airbytehq/airbyte/pull/90704) | Update dependencies |
 | 0.0.29 | 2026-10-27 | [87522](https://github.com/airbytehq/airbyte/pull/87522) | Add parent IDs to child stream records: `issue_id` on `issue_messages`, `knowledge_base_id` on `knowledge_base_articles` |
