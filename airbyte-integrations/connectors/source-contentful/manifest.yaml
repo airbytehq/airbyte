@@ -127,16 +127,6 @@ streams:
               - updated_at
             value: "{{ record['sys']['updatedAt'] }}"
             value_type: string
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '2015-01-01T00:00:00.000Z') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%fZ"
   - type: DeclarativeStream
     name: entries
     retriever:
@@ -154,7 +144,9 @@ streams:
         error_handler:
           $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_parameters:
-          $ref: "#/definitions/linked/HttpRequester/request_parameters"
+          order: sys.updatedAt
+          locale: "{{ config['locale'] }}"
+          include: "0"
       record_selector:
         type: RecordSelector
         extractor:
@@ -224,7 +216,9 @@ streams:
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '2015-01-01T00:00:00.000Z') }}"
+        datetime: >-
+          {{ format_datetime(config.get('start_date') or
+          '2015-01-01T00:00:00.000Z', '%Y-%m-%dT%H:%M:%S.%fZ') }}
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_time_option:
@@ -307,7 +301,9 @@ streams:
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '2015-01-01T00:00:00.000Z') }}"
+        datetime: >-
+          {{ format_datetime(config.get('start_date') or
+          '2015-01-01T00:00:00.000Z', '%Y-%m-%dT%H:%M:%S.%fZ') }}
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_time_option:
@@ -461,8 +457,8 @@ spec:
       start_date:
         type: string
         description: >-
-          Earliest sys.updatedAt to sync on the first incremental run (ISO
-          8601).
+          Earliest sys.updatedAt to sync for entries and assets on the first
+          incremental run (ISO 8601, e.g. 2024-01-01T00:00:00Z).
         order: 4
         title: Start Date
         format: date-time
