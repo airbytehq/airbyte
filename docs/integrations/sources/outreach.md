@@ -68,7 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
-| 1.1.53 | 2026-11-05 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Persist rotated OAuth refresh tokens and refresh expired access tokens mid-sync instead of failing long syncs |
+| 1.1.53 | 2026-11-05 | [91154](https://github.com/airbytehq/airbyte/pull/91154) | Persist rotated OAuth refresh tokens and refresh expired access tokens mid-sync instead of failing long syncs |
 | 1.1.52 | 2026-11-03 | [90625](https://github.com/airbytehq/airbyte/pull/90625) | Update dependencies |
 | 1.1.51 | 2026-10-27 | [90022](https://github.com/airbytehq/airbyte/pull/90022) | Update dependencies |
 | 1.1.49 | 2026-10-20 | [89347](https://github.com/airbytehq/airbyte/pull/89347) | Update dependencies |
