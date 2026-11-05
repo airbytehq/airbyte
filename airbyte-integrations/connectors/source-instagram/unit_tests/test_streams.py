@@ -15,7 +15,7 @@ from .utils import read_full_refresh
 
 
 # can we make this only initialized once
-def mock_accounts_request(requests_mock, some_config):
+def mock_accounts_request(requests_mock):
     requests_mock.register_uri(
         "GET",
         account_url,
@@ -81,12 +81,11 @@ def mock_user_insights_requests(requests_mock, values):
 
 
 @pytest.mark.parametrize(
-    "values,slice_dates,expected",
+    "values,expected",
     [
         # the state is updated to the value of `end_time`
         pytest.param(
             {"end_time": "2025-07-01 07:00:00+0000", "value": {"one": 1}},
-            {"start_time": "2025-07-01T00:00:00+00:00", "end_time": "2025-07-01T23:59:59+00:00"},
             {
                 "lookback_window": 0,
                 "state": {"date": "2025-07-01T07:00:00+00:00"},
@@ -101,7 +100,6 @@ def mock_user_insights_requests(requests_mock, values):
         # the state checkpoints at `start_date` for the partition
         pytest.param(
             {"end_time": None, "value": {"two": 2}},
-            {"start_time": "2025-07-01T00:00:00+00:00", "end_time": "2025-07-01T23:59:59+00:00"},
             # the state checkpoints at `start_date` for the partition
             {
                 "lookback_window": 0,
@@ -116,7 +114,6 @@ def mock_user_insights_requests(requests_mock, values):
         # the state is updated to the value of `end_time`
         pytest.param(
             {"end_time": "2025-07-01T07:00:00+00:00", "value": None},
-            {"start_time": "2025-07-01T00:00:00+00:00", "end_time": "2025-07-01T23:59:59+00:00"},
             {
                 "lookback_window": 0,
                 "state": {"date": "2025-07-01T07:00:00+00:00"},
@@ -131,7 +128,6 @@ def mock_user_insights_requests(requests_mock, values):
         # the state checkpoints at `start_date` for the partition
         pytest.param(
             {"end_time": None, "value": None},
-            {"start_time": "2025-07-01T00:00:00+00:00", "end_time": "2025-07-01T23:59:59+00:00"},
             {
                 "lookback_window": 0,
                 "parent_state": {},
@@ -145,7 +141,7 @@ def mock_user_insights_requests(requests_mock, values):
     ],
 )
 @freezegun.freeze_time("2025-07-01T23:59:59Z")
-def test_user_insights_state(requests_mock, values, slice_dates, expected):
+def test_user_insights_state(requests_mock, values, expected):
     """
     This test shows how `STATE` is managed based on the scenario for Incremental Read.
     """
@@ -154,7 +150,7 @@ def test_user_insights_state(requests_mock, values, slice_dates, expected):
 
     config = {"start_date": "2025-07-01T00:00:00Z", "access_token": "unknown_token"}
 
-    mock_accounts_request(requests_mock=requests_mock, some_config=config)
+    mock_accounts_request(requests_mock=requests_mock)
     requests_mock.register_uri(
         "GET",
         f"{GRAPH_URL}/instagram_business_account_id/insights",
@@ -214,7 +210,7 @@ def test_common_error_retry(components_module, error_response, requests_mock, ac
     # The API budget's 429 handling waits on a real monotonic clock; budget throttling is not under test here
     mocker.patch.object(HttpAPIBudget, "update_from_response")
     config = {"start_date": "2025-07-01T00:00:00Z", "access_token": "unknown_token"}
-    mock_accounts_request(requests_mock=requests_mock, some_config=config)
+    mock_accounts_request(requests_mock=requests_mock)
     mock_user_insights_day_request(requests_mock, {"end_time": "2025-07-01 07:00:00+0000", "value": 4}, error_response)
     mock_user_insights_requests(requests_mock, {"end_time": "2025-07-01 07:00:00+0000", "value": 4})
 

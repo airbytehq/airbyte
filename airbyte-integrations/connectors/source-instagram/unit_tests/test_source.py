@@ -3,7 +3,6 @@
 #
 
 import logging
-from importlib.metadata import version
 
 from airbyte_cdk.models import (
     AirbyteStream,
@@ -19,10 +18,6 @@ from .conftest import GRAPH_URL, account_url, get_source, mock_fb_account_respon
 
 
 logger = logging.getLogger("airbyte")
-
-
-def test_airbyte_cdk_major_version() -> None:
-    assert int(version("airbyte-cdk").split(".")[0]) >= 7
 
 
 account_url_response = {
