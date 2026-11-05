@@ -31,7 +31,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.69-rc.1 | 2026-11-05 | TBD | Fixed duplicate records and non-terminating syncs for categories, distribution channels, and analytics. |
+| 0.0.69-rc.1 | 2026-11-05 | [91038](https://github.com/airbytehq/airbyte/pull/91038) | Fixed duplicate records and non-terminating syncs for categories, distribution channels, and analytics. |
 | 0.0.68 | 2026-11-03 | [90733](https://github.com/airbytehq/airbyte/pull/90733) | Update dependencies |
 | 0.0.67 | 2026-10-20 | [89404](https://github.com/airbytehq/airbyte/pull/89404) | Update dependencies |
 | 0.0.66 | 2026-10-13 | [88781](https://github.com/airbytehq/airbyte/pull/88781) | Update dependencies |
