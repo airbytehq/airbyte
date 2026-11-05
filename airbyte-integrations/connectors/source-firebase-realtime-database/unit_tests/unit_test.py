@@ -5,6 +5,7 @@
 import string
 
 import pytest
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, SyncMode, Type
 from source_firebase_realtime_database.firebase_rtdb import Records, database_url_from
 from source_firebase_realtime_database.source import SourceFirebaseRealtimeDatabase
 
@@ -85,3 +86,13 @@ def test_records():
     actual = list(records)
 
     assert actual == expected
+
+
+def test_discover_catalog_is_serializable():
+    # Regression test: airbyte-cdk >= 7 serializes messages with serpyco_rs, which
+    # rejects plain strings in `supported_sync_modes` ("full_refresh" is not one of [...]).
+    catalog = SourceFirebaseRealtimeDatabase().discover(None, {"database_name": "my-database", "path": "users"})
+    serialized = AirbyteMessageSerializer.dump(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
+
+    assert catalog.streams[0].supported_sync_modes == [SyncMode.full_refresh]
+    assert serialized["catalog"]["streams"][0]["supported_sync_modes"] == ["full_refresh"]
