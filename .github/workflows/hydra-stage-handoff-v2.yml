@@ -23,6 +23,11 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #      blockers array.
 #   4. Switch on next_action and dispatch the matching slash-command workflow
 #      via curl. No Devin session is launched for the decision itself.
+#   5. Idempotency (HYD-372): each dispatch first records a hidden
+#      `hydra_handoff_v2` marker comment keyed on (pr, head_sha, next_action)
+#      and skips when that key is already on the PR, so repeat wakes on the
+#      same head don't dispatch the same stage twice. A new push changes the
+#      key. To retry a stage on the same head, dispatch with `force: true`.
 #
 # Dry-run: controlled by workflow_dispatch input (preferred) or by the
 # HYDRA_HANDOFF_V2_DRY_RUN repo variable (default: 'true' until the dispatcher
@@ -77,6 +82,11 @@ on:
         required: false
         type: boolean
         default: true
+      force:
+        description: "Force. Dispatch even if the same next_action was already dispatched for this PR's head SHA. Use it to retry a stage that failed without pushing."
+        required: false
+        type: boolean
+        default: false
 
 run-name: "Hydra v2 handoff for PR #${{ github.event.inputs.pr || github.event.client_payload.pr || github.event.check_run.pull_requests[0].number || github.event.workflow_run.pull_requests[0].number }}"
 
@@ -309,7 +319,11 @@ jobs:
           TARGET=$(jq -r '.assessment.target // ""' <<<"$OUT")
           BLOCKERS=$(jq -r '(.assessment.blockers // []) | join("; ")' <<<"$OUT")
           MARK_READY=$(jq -r '.assessment.mark_ready_for_review // false' <<<"$OUT")
+          # The head hydra assessed, so the idempotency key matches the decision.
+          HEAD_SHA=$(jq -r --arg ref "airbytehq/airbyte#$PR_NUMBER" \
+            'first(.prs[]? | select(.ref == $ref) | .facts.head_sha) // ""' <<<"$OUT")
           echo "next_action=$NEXT_ACTION" | tee -a "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
           echo "reason=$REASON" >> "$GITHUB_OUTPUT"
           echo "target=$TARGET" >> "$GITHUB_OUTPUT"
           echo "blockers=$BLOCKERS" >> "$GITHUB_OUTPUT"
@@ -318,10 +332,13 @@ jobs:
 
       - name: Dispatch next action
         if: steps.eligibility.outputs.eligible == 'true'
+        id: dispatch
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           PR_NUMBER: ${{ needs.gate.outputs.pr }}
           NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
+          HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
+          FORCE: ${{ github.event.inputs.force }}
           TARGET: ${{ steps.assess.outputs.target }}
           REASON: ${{ steps.assess.outputs.reason }}
           BLOCKERS: ${{ steps.assess.outputs.blockers }}
@@ -329,32 +346,87 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Sets CLAIMED=true when this run may dispatch WORKFLOW. The marker
+          # is posted before the dispatch, and the handoff job is serialised
+          # per PR, so a queued wake sees it and skips. Only [bot] comments
+          # count, so outside commenters can't block a dispatch.
+          claim_dispatch() {
+            local WORKFLOW="$1"
+            CLAIMED=false
+            [[ -z "$HEAD_SHA" ]] \
+              && echo "::error::hydra output has no head_sha for airbytehq/airbyte#$PR_NUMBER; refusing to dispatch without an idempotency key" \
+              && exit 1
+            local KEY_FIELDS="pr=$PR_NUMBER; head_sha=$HEAD_SHA; next_action=$NEXT_ACTION"
+            local KEY="<!-- hydra_handoff_v2: $KEY_FIELDS -->"
+            echo "idempotency_key=$KEY_FIELDS" | tee -a "$GITHUB_OUTPUT"
+            local BODIES
+            BODIES=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+              --jq '.[] | select(.user.login | endswith("[bot]")) | .body')
+            if [[ "$FORCE" != "true" ]] && grep -qF "$KEY" <<<"$BODIES"; then
+              echo "::notice::Skipping dispatch: $NEXT_ACTION was already dispatched for PR #$PR_NUMBER at $HEAD_SHA"
+              echo "idempotency=skipped" | tee -a "$GITHUB_OUTPUT"
+              return 0
+            fi
+            local RESULT=recorded
+            [[ "$FORCE" == "true" ]] && RESULT=forced
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "::notice::WOULD record idempotency key ($RESULT): $KEY"
+              echo "idempotency=would-be-$RESULT" | tee -a "$GITHUB_OUTPUT"
+              CLAIMED=true
+              return 0
+            fi
+            local BODY="${KEY}
+          ↪️ Hydra v2 handoff: dispatching \`$WORKFLOW\` (\`$NEXT_ACTION\`) for head \`${HEAD_SHA:0:7}\`. [Workflow run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+            MARKER_ID=$(gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --jq '.id' -f body="$BODY")
+            echo "idempotency=$RESULT" | tee -a "$GITHUB_OUTPUT"
+            CLAIMED=true
+          }
+
+          # When the request never reached GitHub (curl 6/7: DNS, connect) or
+          # GitHub rejected it (22: HTTP error), the marker is deleted so the
+          # next wake retries. Other failures (timeouts, dropped connections)
+          # may have dispatched, so the marker stays.
+          send_dispatch() {
+            local URL="$1" DATA="$2" RC=0
+            curl -fsS -X POST \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "$URL" -d "$DATA" || RC=$?
+            [[ "$RC" == 0 ]] && return 0
+            if [[ "$RC" =~ ^(6|7|22)$ ]]; then
+              echo "::error::Dispatch not accepted (curl exit $RC); removing idempotency marker so a later wake can retry"
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/comments/$MARKER_ID" --silent \
+                || echo "::warning::Couldn't remove marker comment $MARKER_ID; retry with force: true"
+            else
+              echo "::error::Dispatch outcome unknown (curl exit $RC); keeping the marker. Check the stage's runs, and retry with force: true if it didn't start"
+            fi
+            exit 1
+          }
+
           dispatch_airbyte() {
             local WORKFLOW="$1"
+            claim_dispatch "$WORKFLOW"
+            [[ "$CLAIMED" == "true" ]] || return 0
             if [[ "$DRY_RUN" == "true" ]]; then
               echo "::notice::WOULD dispatch $WORKFLOW for PR #$PR_NUMBER"
               return 0
             fi
-            curl -fsS -X POST \
-              -H "Authorization: token $GH_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/airbytehq/airbyte/actions/workflows/$WORKFLOW/dispatches" \
-              -d "{\"ref\":\"master\",\"inputs\":{\"pr\":\"$PR_NUMBER\"}}"
+            send_dispatch "https://api.github.com/repos/airbytehq/airbyte/actions/workflows/$WORKFLOW/dispatches" \
+              "{\"ref\":\"master\",\"inputs\":{\"pr\":\"$PR_NUMBER\"}}"
             echo "::notice::Dispatched $WORKFLOW for PR #$PR_NUMBER"
           }
 
           dispatch_oncall() {
             local WORKFLOW="$1"
             local ISSUE="$2"
+            claim_dispatch "$WORKFLOW"
+            [[ "$CLAIMED" == "true" ]] || return 0
             if [[ "$DRY_RUN" == "true" ]]; then
               echo "::notice::WOULD dispatch $WORKFLOW for oncall issue #$ISSUE"
               return 0
             fi
-            curl -fsS -X POST \
-              -H "Authorization: token $GH_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/airbytehq/oncall/actions/workflows/$WORKFLOW/dispatches" \
-              -d "{\"ref\":\"main\",\"inputs\":{\"issue-number\":\"$ISSUE\"}}"
+            send_dispatch "https://api.github.com/repos/airbytehq/oncall/actions/workflows/$WORKFLOW/dispatches" \
+              "{\"ref\":\"main\",\"inputs\":{\"issue-number\":\"$ISSUE\"}}"
             echo "::notice::Dispatched $WORKFLOW for issue #$ISSUE"
           }
 
@@ -429,6 +501,9 @@ jobs:
           REASON: ${{ steps.assess.outputs.reason }}
           TARGET: ${{ steps.assess.outputs.target }}
           BLOCKERS: ${{ steps.assess.outputs.blockers }}
+          HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
+          IDEMPOTENCY: ${{ steps.dispatch.outputs.idempotency }}
+          IDEMPOTENCY_KEY: ${{ steps.dispatch.outputs.idempotency_key }}
           DRY_RUN: ${{ steps.mode.outputs.dry_run }}
           PR_NUMBER: ${{ needs.gate.outputs.pr }}
         run: |
@@ -440,6 +515,8 @@ jobs:
             [[ -n "${REASON:-}" ]] && echo "- Reason: ${REASON}"
             [[ -n "${TARGET:-}" ]] && echo "- Target: ${TARGET}"
             [[ -n "${BLOCKERS:-}" ]] && echo "- Blockers: ${BLOCKERS}"
+            [[ -n "${HEAD_SHA:-}" ]] && echo "- Head SHA: \`${HEAD_SHA}\`"
+            [[ -n "${IDEMPOTENCY:-}" ]] && echo "- Idempotency: ${IDEMPOTENCY} (\`${IDEMPOTENCY_KEY}\`)"
             echo "- Dry run: ${DRY_RUN:-unknown}"
             true
           } | tee -a "$GITHUB_STEP_SUMMARY"

@@ -3,10 +3,10 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "board_issues",
-        "namespace": null
+        "name": "board_issues"
       },
       "stream_state": {
+        "use_global_cursor": false,
         "states": [
           {
             "partition": {
@@ -14,7 +14,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "updated": "2222-10-12T13:43:50.735-0700"
+              "updated": "2222-10-12T13:43:50-0700"
             }
           },
           {
@@ -23,7 +23,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "updated": "2222-07-05T12:57:51.258-0700"
+              "updated": "2222-07-05T12:57:51-0700"
             }
           },
           {
@@ -32,14 +32,25 @@
               "parent_slice": {}
             },
             "cursor": {
-              "updated": "2222-05-08T03:04:45.139-0700"
+              "updated": "2222-05-08T03:04:45-0700"
+            }
+          },
+          {
+            "partition": {
+              "board_id": 62,
+              "parent_slice": {}
+            },
+            "cursor": {
+              "updated": "2222-09-24T11:40:32-0700"
             }
           }
-        ]
+        ],
+        "state": {
+          "updated": "2222-09-24T11:40:32-0700"
+        },
+        "lookback_window": 4,
+        "parent_state": {}
       }
-    },
-    "sourceStats": {
-      "recordCount": 1.0
     }
   },
   {
@@ -905,6 +916,60 @@
     },
     "sourceStats": {
       "recordCount": 1.0
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "issue_changelogs"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {
+          "updated": "2222-09-24T11:40:32-0700"
+        },
+        "lookback_window": 16,
+        "parent_state": {
+          "issues": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": {
+                  "parent_slice": {},
+                  "project_id": "10000"
+                },
+                "cursor": {
+                  "updated": "2222-09-24T11:40:32-0700"
+                }
+              },
+              {
+                "partition": {
+                  "parent_slice": {},
+                  "project_id": "10016"
+                },
+                "cursor": {
+                  "updated": "2222-04-27T06:44:14-0700"
+                }
+              },
+              {
+                "partition": {
+                  "parent_slice": {},
+                  "project_id": "10064"
+                },
+                "cursor": {
+                  "updated": "2222-01-22T11:18:04-0800"
+                }
+              }
+            ],
+            "state": {
+              "updated": "2222-09-24T11:40:32-0700"
+            },
+            "lookback_window": 9
+          }
+        }
+      }
     }
   }
 ]
