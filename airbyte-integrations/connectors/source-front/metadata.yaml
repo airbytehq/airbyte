@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ae390de9-bdd5-4bfa-9d14-34010b44ca50
-  dockerImageTag: 0.0.64
+  dockerImageTag: 0.0.65
   dockerRepository: airbyte/source-front
   githubIssueLabel: source-front
   icon: icon.svg
@@ -46,3 +46,11 @@ data:
     - title: Front Status
       url: https://status.front.com/
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
