@@ -483,44 +483,8 @@ definitions:
           - path:
               - search_type
             value: "{{ stream_partition['search_type'] }}"
-      - type: AddFields
-        fields:
-          - path:
-              - date
-            value: "{{ record['keys'][0] }}"
-            value_type: string
-          - path:
-              - country
-            value: "{{ record['keys'][1] }}"
-            value_type: string
-          - path:
-              - device
-            value: "{{ record['keys'][2] }}"
-            value_type: string
-          - path:
-              - page
-            value: "{{ record['keys'][3] }}"
-            value_type: string
-          - path:
-              - query
-            value: "{{ record['keys'][4] }}"
-            value_type: string
-      - type: RemoveFields
-        field_pointers:
-          - - keys
-      # The purpose of the following transformation is to
-      # cast the query value as a string. The GSC API allows
-      # users to make queries with a wide array of datatypes resulting
-      # in occasional non-string values. This transformation ensures
-      # the Airbyte Entrypoint can serialize these non-string values.
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - query
-            value: "{{ record['query'] }}"
-            value_type: string
-        condition: "{{ record.get('query', False) }}"
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
@@ -755,32 +719,8 @@ definitions:
           - path:
               - search_type
             value: "{{ stream_partition['search_type'] }}"
-      - type: AddFields
-        fields:
-          - path:
-              - date
-            value: "{{ record['keys'][0] }}"
-            value_type: string
-          - path:
-              - query
-            value: "{{ record['keys'][1] }}"
-            value_type: string
-      - type: RemoveFields
-        field_pointers:
-          - - keys
-      # The purpose of the following transformation is to
-      # cast the query value as a string. The GSC API allows
-      # users to make queries with a wide array of datatypes resulting
-      # in occasional non-string values. This transformation ensures
-      # the Airbyte Entrypoint can serialize these non-string values.
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - query
-            value: "{{ record['query'] }}"
-            value_type: string
-        condition: "{{ record.get('query', False) }}"
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
@@ -1203,31 +1143,8 @@ definitions:
           - path:
               - search_appearance
             value: "{{ stream_partition.get('search_appearance') }}"
-      - type: AddFields
-        fields:
-          - path:
-              - date
-            value: "{{ record['keys'][0] }}"
-            value_type: string
-          - path:
-              - country
-            value: "{{ record['keys'][1] }}"
-            value_type: string
-          - path:
-              - device
-            value: "{{ record['keys'][2] }}"
-            value_type: string
-          - path:
-              - query
-            value: "{{ record['keys'][3] }}"
-            value_type: string
-          - path:
-              - page
-            value: "{{ record['keys'][4] }}"
-            value_type: string
-      - type: RemoveFields
-        field_pointers:
-          - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
@@ -1266,27 +1183,8 @@ definitions:
           - path:
               - search_appearance
             value: "{{ stream_partition.get('search_appearance') }}"
-      - type: AddFields
-        fields:
-          - path:
-              - date
-            value: "{{ record['keys'][0] }}"
-            value_type: string
-          - path:
-              - country
-            value: "{{ record['keys'][1] }}"
-            value_type: string
-          - path:
-              - device
-            value: "{{ record['keys'][2] }}"
-            value_type: string
-          - path:
-              - query
-            value: "{{ record['keys'][3] }}"
-            value_type: string
-      - type: RemoveFields
-        field_pointers:
-          - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:

@@ -25,6 +25,8 @@ the `keys` array response. If you reorder the `dimensions` list in a stream's re
 updating the corresponding `AddFields` transformations, fields will be silently swapped (e.g., country
 values will appear in the device field and vice versa).
 
+Copy query dimension values from `keys` without Jinja: `literal_eval` can change primary-key values, including quoted queries.
+
 ---
 
 ## 2. Configurable Rate Limits with Low Default Quotas
