@@ -76,7 +76,7 @@ Create a [service principal](https://docs.databricks.com/en/dev-tools/auth/oauth
 ## Supported sync modes
 
 | Sync mode | Supported? |
-| :--- | :--- | :--- |
+| :--- | :--- |
 | [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
 | [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
