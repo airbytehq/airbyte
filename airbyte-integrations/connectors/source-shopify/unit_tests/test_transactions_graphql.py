@@ -3,7 +3,7 @@
 #
 
 import json
-from typing import List
+from typing import List, Optional
 
 import pytest
 from source_shopify.streams.streams import TransactionsGraphql
@@ -12,12 +12,22 @@ from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(
+    order_id: int,
+    order_created_at: str,
+    transaction_id: int,
+    transaction_created_at: str,
+    order_updated_at: Optional[str] = None,
+    status: str = "SUCCESS",
+    kind: str = "SALE",
+) -> str:
+    order_updated_at_field = f'"order_updated_at":"{order_updated_at}",' if order_updated_at is not None else ""
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
-        f'"order_created_at":"{order_created_at}","transactions":['
+        f'"order_created_at":"{order_created_at}",'
+        f'{order_updated_at_field}"transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
-        f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
+        f'"kind":"{kind}","amount":"57.23","createdAt":"{transaction_created_at}","status":"{status}",'
         f'"processedAt":"{transaction_created_at}","gateway":"bogus","paymentId":"c25048437719229.1",'
         f'"accountNumber":"1","formattedGateway":"bogus","manuallyCapturable":false,"receipt":"{{}}",'
         f'"parentTransaction":null,"authorization":null,'
@@ -26,6 +36,44 @@ def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, tran
         f'"amountSet":{{"shop_money":{{"amount":"57.23","currency":"USD"}}}},"fees":[],"paymentDetails":{{}}'
         f"}}]}}"
     )
+
+
+def test_transactions_graphql_emits_status_change_of_transaction_predating_state(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+) -> None:
+    state_value = "2026-10-22T14:59:10+00:00"
+    lines = [
+        _order_jsonl(
+            1,
+            "2026-10-21T10:00:00Z",
+            2001,
+            "2026-10-22T09:00:00Z",
+            order_updated_at="2026-10-22T15:12:00Z",
+            status="SUCCESS",
+            kind="REFUND",
+        ),
+        _order_jsonl(
+            2,
+            "2026-10-21T10:00:00Z",
+            2002,
+            "2026-10-22T09:00:00Z",
+            order_updated_at="2026-10-22T12:00:00Z",
+        ),
+    ]
+
+    _, records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        lines,
+        state_value=state_value,
+    )
+
+    assert [record["id"] for record in records] == [2001]
+    assert records[0]["status"] == "SUCCESS"
+    assert all("order_updated_at" not in record and "order_created_at" not in record for record in records)
 
 
 def test_transactions_graphql_emits_transactions_predating_state_with_new_order(
@@ -95,6 +143,27 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
             _order_jsonl(1, "2026-09-11T05:49:43Z", 1001, "2026-09-11T05:07:00Z"),
             [1001],
             id="order_created_at_equal_to_state_is_emitted",
+        ),
+        pytest.param(
+            _order_jsonl(
+                1,
+                "2026-09-11T04:00:00Z",
+                1001,
+                "2026-09-11T05:07:00Z",
+                order_updated_at="2026-09-11T05:49:43Z",
+            ),
+            [1001],
+            id="order_updated_at_equal_to_state_is_emitted",
+        ),
+        pytest.param(
+            json.dumps(
+                {
+                    **json.loads(_order_jsonl(1, "2026-09-11T04:00:00Z", 1001, "2026-09-11T05:07:00Z")),
+                    "order_updated_at": None,
+                }
+            ),
+            [],
+            id="null_order_updated_at_and_old_order_created_at_is_dropped",
         ),
         pytest.param(
             _order_jsonl_without_order_created_at(
