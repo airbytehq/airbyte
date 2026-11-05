@@ -1,4 +1,4 @@
-# Clarif-ai migration guide
+# Clarif-ai Migration Guide
 
 ## Upgrading to 1.0.0
 
