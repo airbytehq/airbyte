@@ -55,7 +55,7 @@ permissions:
 jobs:
   run-canary:
     name: Run database harness canary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Validate inputs
         id: validate-inputs

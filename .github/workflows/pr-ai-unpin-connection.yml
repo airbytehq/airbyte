@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   ai-unpin:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: AI Unpin Connections
     steps:
       - name: No-op

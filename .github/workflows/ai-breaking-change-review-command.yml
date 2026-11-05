@@ -43,7 +43,7 @@ permissions:
 jobs:
   ai-breaking-change-review:
     name: Review breaking change with AI
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Get job variables
         id: job-vars

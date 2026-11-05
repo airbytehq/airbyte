@@ -18,7 +18,7 @@ jobs:
       github.event.issue.pull_request &&
       (github.event.comment.user.login == 'devin-ai-integration[bot]' || github.event.comment.user.login == 'airbyte-support-bot') &&
       contains(github.event.comment.body, '<!-- pr_ai_review_result:')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Parse review result marker
         id: parse-marker

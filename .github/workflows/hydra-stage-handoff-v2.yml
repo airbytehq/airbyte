@@ -101,7 +101,7 @@ jobs:
   # jobs, so it can't stand in for the 7. Dispatch wakes pass straight through.
   gate:
     name: Wait for required checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Drop CI events that aren't a required check on a same-repo PR before the
     # runner starts. Fork PRs (and pushes to master) have empty
     # pull_requests[], so the index check drops them.
@@ -218,7 +218,7 @@ jobs:
     name: Compute next_action and dispatch
     needs: gate
     if: needs.gate.outputs.ready == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Serialise handoff runs per PR so burst-firing events don't
     # double-dispatch. cancel-in-progress is deliberately false: cancelling
     # after a slash-command dispatch has fired would leave a session running

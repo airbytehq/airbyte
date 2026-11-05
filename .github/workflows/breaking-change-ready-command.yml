@@ -38,7 +38,7 @@ permissions:
 jobs:
   breaking-change-ready:
     name: Check author conversations and notify reviewers
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Get job variables
         id: job-vars
