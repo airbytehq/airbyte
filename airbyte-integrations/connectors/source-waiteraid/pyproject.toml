@@ -1,0 +1,18 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-waiteraid"
+version = "0.2.25"
+description = "Mock-server tests for the Waiteraid manifest-only connector."
+authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+
+[tool.poetry.group.dev.dependencies]
+airbyte-cdk = { version = "==6.61.6", extras = ["dev"] }
+pytest = "^7.4"
+requests-mock = "^1.11.0"
