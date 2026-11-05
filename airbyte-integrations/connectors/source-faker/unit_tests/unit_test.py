@@ -38,6 +38,16 @@ def schemas_are_valid():
         jsonschema.Draft7Validator.check_schema(schema)
 
 
+def test_spec_includes_environment_tag():
+    source = SourceFaker()
+    spec = source.spec(logger)
+    properties = spec.connectionSpecification["properties"]
+
+    assert "environment_tag" in properties, "environment_tag should be exposed in the spec"
+    assert properties["environment_tag"]["type"] == "string"
+    assert properties["environment_tag"]["default"] == ""
+
+
 def test_source_streams():
     source = SourceFaker()
     config = {"count": 1, "parallelism": 1}
