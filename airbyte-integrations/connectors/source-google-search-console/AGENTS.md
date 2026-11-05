@@ -46,18 +46,11 @@ Google Cloud Console quota and adjust `requests_per_minute` accordingly. The con
 
 ## 3. AggregationType Override for Compatibility
 
-Some Google Search Console implementations return a 400 error for certain `aggregationType` values
-(`byPage`, `byProperty`). This is customer-specific and depends on how their Search Console property is
-configured. The connector provides an `always_use_aggregation_type_auto` boolean config that, when
-enabled, overrides all stream-specific `aggregationType` values to `auto`.
-
-The error handler explicitly matches HTTP 400 responses and surfaces a message telling the user to
-enable this setting.
-
-**Why this matters:** Without this override, certain streams (like `search_analytics_page_report` which
-uses `byPage` or `search_analytics_site_report_by_site` which uses `byProperty`) will fail with a 400
-error for some customers. The error looks like a connector bug but is actually a Google API limitation
-based on the customer's property type. This config option is the escape hatch.
+Google's [Search Analytics API](https://developers.google.com/webmaster-tools/v1/searchanalytics/query)
+does not support `byProperty` for `discover` or `googleNews` search types, so the connector automatically
+sends `auto` for those partitions. This is a Google API limitation, not customer-specific.
+`always_use_aggregation_type_auto` remains the escape hatch for other cases and overrides all
+stream-specific `aggregationType` values to `auto`.
 
 ## Incremental Stream Considerations
 
