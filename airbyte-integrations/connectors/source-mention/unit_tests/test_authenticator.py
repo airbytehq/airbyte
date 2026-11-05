@@ -13,9 +13,9 @@ _CONFIG = {"api_key": "test_key", "stats_start_date": "2026-09-01T00:00:00Z"}
 
 def test_api_key_is_sent_as_bearer_token(requests_mock):
     requests_mock.get(_ACCOUNT_ME_URL, json={"account": {"id": "acc1", "name": "x"}})
-    catalog = CatalogBuilder().with_stream(
-        ConfiguredAirbyteStreamBuilder().with_name("account_me").with_sync_mode(SyncMode.full_refresh)
-    ).build()
+    catalog = (
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name("account_me").with_sync_mode(SyncMode.full_refresh)).build()
+    )
 
     output = read(get_source(config=_CONFIG), config=_CONFIG, catalog=catalog)
 
