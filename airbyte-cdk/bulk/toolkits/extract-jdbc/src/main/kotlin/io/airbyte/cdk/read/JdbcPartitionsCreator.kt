@@ -298,9 +298,9 @@ open class JdbcConcurrentPartitionsCreator<
     }
 
     /**
-     * Picks split boundaries at evenly spaced sampled rows, for partitions of about
-     * [JdbcSharedState.targetPartitionByteSize]. A table estimated larger than one partition always
-     * gets at least one boundary.
+     * Picks split boundaries at evenly spaced sampled rows. The number of partitions is
+     * [expectedTableByteSize] divided by [JdbcSharedState.targetPartitionByteSize], rounded up, so
+     * a table estimated larger than one partition always gets at least one boundary.
      */
     private fun evenlySpacedSplitBoundaries(
         sample: Sample<Pair<OpaqueStateValue?, Long>>,
