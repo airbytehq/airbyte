@@ -38,6 +38,14 @@ def schemas_are_valid():
         jsonschema.Draft7Validator.check_schema(schema)
 
 
+def test_spec_does_not_include_always_updated():
+    source = SourceFaker()
+    spec = source.spec(logger)
+    properties = spec.connectionSpecification["properties"]
+
+    assert "always_updated" not in properties, "always_updated field should be removed from the spec"
+
+
 def test_source_streams():
     source = SourceFaker()
     config = {"count": 1, "parallelism": 1}
