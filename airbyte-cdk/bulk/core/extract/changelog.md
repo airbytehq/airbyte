@@ -9,7 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 ### 1.2.5 — 2026-11-05
 
-[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — Add the `with-even-split-boundaries` JDBC setting, off by default. With it on, `JdbcConcurrentPartitionsCreator` picks split boundaries at evenly spaced sampled rows instead of by secondary sampling, so partitions hold about the same number of rows and a table estimated larger than one partition always gets at least one boundary. With it off, boundaries are picked as before.
+[#91067](https://github.com/airbytehq/airbyte/pull/91067) — Add the `with-even-split-boundaries` JDBC setting, off by default. With it on, `JdbcConcurrentPartitionsCreator` picks split boundaries at evenly spaced sampled rows instead of by secondary sampling, so partitions hold about the same number of rows and a table estimated larger than one partition always gets at least one boundary. With it off, boundaries are picked as before.
 
 ### 1.2.3 — 2026-10-21
 
