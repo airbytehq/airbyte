@@ -83,6 +83,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.55 | 2026-11-05 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Fix `discover` failing with `"full_refresh" is not one of ["full_refresh", "incremental"]` by emitting `SyncMode` enums in `supported_sync_modes` |
 | 0.1.54 | 2026-11-03 | [90548](https://github.com/airbytehq/airbyte/pull/90548) | Update dependencies |
 | 0.1.53 | 2026-10-27 | [89874](https://github.com/airbytehq/airbyte/pull/89874) | Update dependencies |
 | 0.1.52 | 2026-10-20 | [89214](https://github.com/airbytehq/airbyte/pull/89214) | Update dependencies |
