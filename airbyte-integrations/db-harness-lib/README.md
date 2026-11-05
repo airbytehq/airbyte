@@ -48,7 +48,7 @@ substitution.
 
 To test a fix that has not merged yet, publish a pre-release from its PR with
 the Airbyte Ops MCP tool `publish_connector_to_airbyte_registry` (the
-[`publish-connector-prerelease`](https://github.com/airbytehq/ai-skills/tree/main/.agents/skills/publish-connector-prerelease)
+[`publish-connector-prerelease`](https://github.com/airbytehq/ai-skills/tree/main/plugins/common-skills/skills/publish-connector-prerelease)
 skill in `airbytehq/ai-skills` covers the invocation), and pass the resulting
 `<version>-preview.<7-char-sha>` tag as `--test-version`. The harness pulls
 any published tag and only builds from the checkout when `--test-version` is
