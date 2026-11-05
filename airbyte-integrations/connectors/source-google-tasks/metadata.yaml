@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 751c2519-1446-416e-9736-9b98585f8125
-  dockerImageTag: 0.0.75
+  dockerImageTag: 0.0.76
   dockerRepository: airbyte/source-google-tasks
   githubIssueLabel: source-google-tasks
   icon: icon.svg
@@ -44,3 +44,11 @@ data:
     - title: Google Workspace Status
       url: https://www.google.com/appsstatus/
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
