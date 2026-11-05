@@ -43,3 +43,11 @@ data:
     - title: EZOfficeInventory rate limits
       url: https://ezofficeinventory.com/developers/docs/rate-limiting
       type: rate_limits
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
