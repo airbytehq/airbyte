@@ -5,11 +5,12 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #
 # Shape:
 #   1. Trigger fires: workflow_dispatch, repository_dispatch (session
-#      completion), or a required CI check completing (check_run for the
-#      octavia-bot Summary check, workflow_run for the other six). CI wakes
-#      exit in the `gate` job until all 7 required checks have completed. The
-#      remaining Phase 2 triggers — pull_request synchronize/labeled and the
-#      weekend cron — land in separate PRs.
+#      completion), `hyd-chain-v2` being added to a PR (pull_request labeled),
+#      or a required CI check completing (check_run for the octavia-bot
+#      Summary check, workflow_run for the other six). CI wakes exit in the
+#      `gate` job until all 7 required checks have completed. The remaining
+#      Phase 2 triggers — pull_request synchronize and the weekend cron — land
+#      in separate PRs.
 #   2. Fast pre-flight: skip the PR unless OPEN + hyd-chain-v2 + no hyd-pause +
 #      no community/fork. The v2 label is intentionally separate from `hyd-chain`
 #      so this workflow and the existing hydra-stage-handoff.yml can run in
@@ -47,6 +48,12 @@ on:
   # {pr, head_sha, source_stage} in the client_payload.
   repository_dispatch:
     types: [handoff]
+  # Opt-in kickstart (HYD-378): one handoff pass when `hyd-chain-v2` is added,
+  # instead of waiting for the next stage or CI wake. The gate's `if:` drops
+  # every other label. Labels added with GITHUB_TOKEN don't fire this, so
+  # automation that adds the label must use an App token.
+  pull_request:
+    types: [labeled]
   # Required-CI-check completions. The 7 required checks on `master` come
   # from two kinds of producer, and each needs its own trigger:
   #   - "Connector CI Checks Summary" is posted by the octavia-bot GitHub App
@@ -88,7 +95,7 @@ on:
         type: boolean
         default: false
 
-run-name: "Hydra v2 handoff for PR #${{ github.event.inputs.pr || github.event.client_payload.pr || github.event.check_run.pull_requests[0].number || github.event.workflow_run.pull_requests[0].number }}"
+run-name: "Hydra v2 handoff for PR #${{ github.event.inputs.pr || github.event.client_payload.pr || github.event.pull_request.number || github.event.check_run.pull_requests[0].number || github.event.workflow_run.pull_requests[0].number }}"
 
 # GITHUB_TOKEN is unused: all reads/writes go through the Octavia app token.
 permissions: {}
@@ -98,15 +105,20 @@ jobs:
   # handoff's concurrency group. CI wakes only pass once all 7 required checks
   # on the PR head SHA have completed (any conclusion; red CI still routes to
   # fix_ci). The Connector CI Checks Summary only rolls up Connector CI's own
-  # jobs, so it can't stand in for the 7. Dispatch wakes pass straight through.
+  # jobs, so it can't stand in for the 7. Dispatch and label wakes pass straight through.
   gate:
     name: Wait for required checks
     runs-on: ubuntu-latest
-    # Drop CI events that aren't a required check on a same-repo PR before the
+    # Drop CI events that aren't a required check on a same-repo PR, and
+    # label events other than hyd-chain-v2 on a same-repo PR, before the
     # runner starts. Fork PRs (and pushes to master) have empty
     # pull_requests[], so the index check drops them.
     if: |
-      (github.event_name != 'check_run' && github.event_name != 'workflow_run') ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'repository_dispatch' ||
+      (github.event_name == 'pull_request' &&
+        github.event.label.name == 'hyd-chain-v2' &&
+        github.event.pull_request.head.repo.full_name == github.repository) ||
       (github.event_name == 'check_run' &&
         github.event.check_run.pull_requests[0] != null &&
         github.event.check_run.name == 'Connector CI Checks Summary') ||
@@ -118,18 +130,19 @@ jobs:
         env:
           INPUT_PR: ${{ github.event.inputs.pr }}
           CLIENT_PR: ${{ github.event.client_payload.pr }}
+          LABELED_PR: ${{ github.event.pull_request.number }}
           CHECK_PR: ${{ github.event.check_run.pull_requests[0].number }}
           WORKFLOW_RUN_PR: ${{ github.event.workflow_run.pull_requests[0].number }}
         run: |
           set -euo pipefail
-          PR="${INPUT_PR:-${CLIENT_PR:-${CHECK_PR:-$WORKFLOW_RUN_PR}}}"
+          PR="${INPUT_PR:-${CLIENT_PR:-${LABELED_PR:-${CHECK_PR:-$WORKFLOW_RUN_PR}}}}"
           if [[ -z "$PR" ]]; then
-            echo "::error::no PR number resolved from inputs, client_payload, check_run, or workflow_run"
+            echo "::error::no PR number resolved from inputs, client_payload, pull_request, check_run, or workflow_run"
             exit 1
           fi
           echo "number=$PR" | tee -a "$GITHUB_OUTPUT"
 
-      - name: Pass dispatch wakes through
+      - name: Pass dispatch and label wakes through
         id: ci-wake
         if: github.event_name != 'check_run' && github.event_name != 'workflow_run'
         run: echo "ready=true" | tee -a "$GITHUB_OUTPUT"
