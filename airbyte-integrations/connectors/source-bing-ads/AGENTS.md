@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Expired Download URLs Are Not Credential Errors
+
+Report and bulk downloads use temporary signed URLs. `BingAdsDownloadErrorHandler` treats Azure's HTTP 403 `AuthenticationFailed` response containing `Signature not valid in the specified time frame` as a transient error; a subsequent sync obtains a new URL. Other forbidden responses, including `AuthorizationPermissionMismatch`, retain their default configuration-error classification. The handler only inspects 403 bodies: reading successful streamed responses during error handling would consume files before the decoders read them.
+
+**Why this matters:** A temporary download URL expiring does not require users to re-authenticate. Do not replace this handler with an unguarded response-body filter, or retry the same expired URL.

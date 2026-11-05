@@ -2613,6 +2613,10 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  download_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.BingAdsDownloadErrorHandler
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2659,6 +2663,7 @@ definitions:
       class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/download_error_handler"
       report_poll_authenticator: "#/definitions/authenticator"
     download_decoder:
       type: CustomDecoder
@@ -2726,6 +2731,7 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
