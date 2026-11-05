@@ -5,12 +5,17 @@
 import datetime
 import json
 
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.models import AirbyteEstimateTraceMessage, AirbyteTraceMessage, EstimateType, TraceType
 
 
 def read_json(filepath):
-    with open(filepath, "r") as f:
-        return json.loads(f.read())
+    try:
+        with open(filepath, "r") as f:
+            return json.loads(f.read())
+    except (OSError, json.JSONDecodeError) as exc:
+        message = "Bundled dataset file is unreadable or malformed."
+        raise AirbyteTracedException(message=message, failure_type=FailureType.system_error) from exc
 
 
 def format_airbyte_time(d: datetime):
