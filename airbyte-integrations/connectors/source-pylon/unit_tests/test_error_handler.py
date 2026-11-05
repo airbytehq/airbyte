@@ -63,19 +63,38 @@ def test_response_classification(error_handler, status_code: int, expected_actio
         assert resolution.failure_type == FailureType.transient_error
 
 
-def test_retry_after_precedes_exponential_backoff(error_handler) -> None:
+def test_retry_headers_precede_exponential_backoff(error_handler) -> None:
     assert error_handler.max_retries == 5
-    assert len(error_handler.backoff_strategies) == 2
-    header, exponential = error_handler.backoff_strategies
+    assert len(error_handler.backoff_strategies) == 3
+    retry_after, x_retry_after, exponential = error_handler.backoff_strategies
     response = requests.Response()
     response.status_code = 429
     response.headers["Retry-After"] = "7"
-    assert header.backoff_time(response, attempt_count=0) == 7
+    response.headers["X-Retry-After"] = "13"
+    assert retry_after.backoff_time(response, attempt_count=0) == 7
+    assert x_retry_after.backoff_time(response, attempt_count=0) == 13
     assert error_handler.backoff_time(response, attempt_count=0) == 7
     response.headers.clear()
-    assert header.backoff_time(response, attempt_count=0) is None
+    assert retry_after.backoff_time(response, attempt_count=0) is None
+    assert x_retry_after.backoff_time(response, attempt_count=0) is None
     assert [exponential.backoff_time(response, attempt_count=attempt) for attempt in range(3)] == [5, 10, 20]
     assert [error_handler.backoff_time(response, attempt_count=attempt) for attempt in range(3)] == [5, 10, 20]
+
+
+@pytest.mark.parametrize(
+    "headers,expected",
+    [
+        ({"Retry-After": "7"}, [7, 7, 7]),
+        ({"X-Retry-After": "13"}, [13, 13, 13]),
+        ({"Retry-After": "7", "X-Retry-After": "121"}, [7, 7, 7]),
+        ({}, [5, 10, 20]),
+    ],
+)
+def test_retry_header_fallback(error_handler: DefaultErrorHandler, headers: dict[str, str], expected: list[int]) -> None:
+    response = requests.Response()
+    response.status_code = 429
+    response.headers.update(headers)
+    assert [error_handler.backoff_time(response, attempt_count=attempt) for attempt in range(3)] == expected
 
 
 @pytest.mark.parametrize("status", [400, 401, 403])
@@ -127,10 +146,11 @@ def test_generic_unauthorized_error_handles_missing_codes(error_handler: Default
 
 
 @pytest.mark.parametrize("header_value", ["120", "121"])
-def test_excessive_retry_after_stops_instead_of_waiting(error_handler: DefaultErrorHandler, header_value: str) -> None:
+@pytest.mark.parametrize("header", ["Retry-After", "X-Retry-After"])
+def test_excessive_retry_after_stops_instead_of_waiting(error_handler: DefaultErrorHandler, header: str, header_value: str) -> None:
     response = requests.Response()
     response.status_code = 429
-    response.headers["Retry-After"] = header_value
+    response.headers[header] = header_value
     with pytest.raises(AirbyteTracedException) as exc:
         error_handler.backoff_time(response, attempt_count=0)
     assert exc.value.failure_type == FailureType.transient_error

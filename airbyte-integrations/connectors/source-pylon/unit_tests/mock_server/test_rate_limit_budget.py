@@ -16,7 +16,16 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from mock_server.helpers import BASE, CONFIG, NOW, error, fixture_record, list_request, page, run
 
 
-@pytest.mark.parametrize("status,headers,wait", [(429, {"Retry-After": "7"}, 8), (429, {}, 11), (500, {}, 11)])
+@pytest.mark.parametrize(
+    "status,headers,wait",
+    [
+        (429, {"Retry-After": "7"}, 8),
+        (429, {"X-Retry-After": "13"}, 14),
+        (429, {"Retry-After": "7", "X-Retry-After": "121"}, 8),
+        (429, {}, 11),
+        (500, {}, 11),
+    ],
+)
 @freeze_time(NOW)
 def test_retryable_response_recovers(status: int, headers: dict[str, str], wait: int) -> None:
     with patch("time.sleep") as sleep, patch("airbyte_cdk.sources.streams.call_rate.APIBudget.acquire_call"), HttpMocker() as mocker:
@@ -29,6 +38,18 @@ def test_retryable_response_recovers(status: int, headers: dict[str, str], wait:
         assert [call.args[0] for call in sleep.call_args_list if call.args[0] > 0] == [wait]
     assert output.errors == []
     assert [message.record.data for message in output.records] == [record]
+
+
+@freeze_time(NOW)
+def test_excessive_x_retry_after_fails_without_retrying() -> None:
+    with patch("time.sleep") as sleep, patch("airbyte_cdk.sources.streams.call_rate.APIBudget.acquire_call"), HttpMocker() as mocker:
+        request = list_request("tags")
+        mocker.get(request, error(429, headers={"X-Retry-After": "121"}))
+        output = run("tags", expecting_exception=True)
+        mocker.assert_number_of_calls(request, 1)
+        assert not [call for call in sleep.call_args_list if call.args[0] > 0]
+    assert output.records == []
+    assert output.errors
 
 
 @pytest.mark.parametrize("status", [429, 500])

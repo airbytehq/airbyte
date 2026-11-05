@@ -646,6 +646,9 @@ definitions:
       - type: WaitTimeFromHeader
         header: Retry-After
         max_waiting_time_in_seconds: 120
+      - type: WaitTimeFromHeader
+        header: X-Retry-After
+        max_waiting_time_in_seconds: 120
       - type: ExponentialBackoffStrategy
         factor: 5
     response_filters:
