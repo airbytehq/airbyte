@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 64a0240a-81a4-4e40-8002-e063b17cfbbe
-  dockerImageTag: 0.1.68
+  dockerImageTag: 0.1.69
   dockerRepository: airbyte/source-chameleon
   githubIssueLabel: source-chameleon
   icon: icon.svg
@@ -43,3 +43,11 @@ data:
     - title: Chameleon rate limits
       url: https://developers.chameleon.io/reference/rate-limiting
       type: rate_limits
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
