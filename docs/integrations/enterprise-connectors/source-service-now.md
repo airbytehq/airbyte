@@ -67,6 +67,7 @@ Airbyte’s incubating ServiceNow enterprise source connector currently offers F
 
 The connector is still incubating; this section exists to satisfy Airbyte's QA checks.
 
+- 0.2.0
 - 0.1.0
 
 </details>
