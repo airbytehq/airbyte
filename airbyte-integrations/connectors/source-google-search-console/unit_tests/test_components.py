@@ -7,11 +7,10 @@ from pathlib import Path
 import pytest
 import requests
 import yaml
+from conftest import find_stream
 
 from airbyte_cdk.sources.declarative.models import AddFields
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
-
-from conftest import find_stream
 
 
 @pytest.mark.parametrize(
