@@ -255,6 +255,24 @@ def test_contacts_full_refresh_reads_list_endpoint_and_merges_property_chunks(re
     assert record[f"properties_{fake_properties_list[-1]}"] == property_values[fake_properties_list[-1]]
 
 
+@pytest.mark.parametrize("with_state", [False, True], ids=["without-state", "with-state"])
+def test_contacts_discover_schema_without_state(requests_mock, config, with_state):
+    mock_dynamic_schema_requests_with_skip(requests_mock, ["contact"])
+    dynamic_properties = [{"name": "my_custom_prop", "type": "string"}]
+    mock_v3_properties(requests_mock, "contact", dynamic_properties)
+    requests_mock.get("https://api.hubapi.com/properties/v2/contact/properties", json=dynamic_properties)
+
+    state = StateBuilder().with_stream_state("contacts", {"updatedAt": "2022-03-01T00:00:00Z"}).build() if with_state else None
+    output = discover(get_source(config, state), config)
+    schema = next(stream.json_schema for stream in output.catalog.catalog.streams if stream.name == "contacts")
+    schema_properties = schema.get("properties", {})
+
+    assert schema_properties, f"Expected a non-empty contacts schema, got {schema!r}"
+    assert {"id", "updatedAt"}.issubset(schema_properties)
+    assert "my_custom_prop" in schema_properties["properties"]["properties"]
+    assert "properties_my_custom_prop" in schema_properties
+
+
 @freezegun.freeze_time("2022-03-10T14:42:00Z")
 def test_contacts_incremental_with_state_uses_search_endpoint(requests_mock, config):
     mock_dynamic_schema_requests_with_skip(requests_mock, ["contact"])

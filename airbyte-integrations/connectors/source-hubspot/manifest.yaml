@@ -2273,23 +2273,11 @@ definitions:
       incremental_sync:
         $ref: "#/definitions/incremental_sync"
         is_client_side_incremental: true
+      schema_loader:
+        $ref: "#/definitions/contacts_search_stream/schema_loader"
     incremental_stream:
       $ref: "#/definitions/contacts_search_stream"
       name: contacts
-    schema_loader:
-      - type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/contacts"
-      - $ref: "#/definitions/base_dynamic_schema_loader"
-        schema_transformations:
-          - type: CustomTransformation
-            class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-            field_mapping:
-              hs_lifecyclestage_: "hs_v2_date_entered_"
-              hs_date_exited_: "hs_v2_date_exited_"
-              hs_time_in_: "hs_v2_latest_time_in_"
-          - type: CustomTransformation
-            class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
 
   deal_splits_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
