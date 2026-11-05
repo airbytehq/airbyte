@@ -3,7 +3,7 @@
 #
 
 import json
-from typing import List
+from typing import List, Optional
 
 import pytest
 from source_shopify.streams.streams import TransactionsGraphql
@@ -12,12 +12,14 @@ from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(
+    order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str, order_updated_at: Optional[str] = None
+) -> str:
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
-        f'"order_created_at":"{order_created_at}","transactions":['
+        f'"order_created_at":"{order_created_at}","order_updated_at":{json.dumps(order_updated_at)},"transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
-        f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
+        f'"kind":"REFUND","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
         f'"processedAt":"{transaction_created_at}","gateway":"bogus","paymentId":"c25048437719229.1",'
         f'"accountNumber":"1","formattedGateway":"bogus","manuallyCapturable":false,"receipt":"{{}}",'
         f'"parentTransaction":null,"authorization":null,'
@@ -85,12 +87,33 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
         stream_state_cache.cached_state.pop("transactions", None)
 
     assert all("order_created_at" not in record for record in records)
+    assert all("order_updated_at" not in record for record in records)
     return stream, records
 
 
 @pytest.mark.parametrize(
     "order_jsonl, expected_ids",
     [
+        pytest.param(
+            _order_jsonl(1, "2026-09-11T04:00:00Z", 1001, "2026-09-11T05:07:00Z", "2026-09-11T06:00:00Z"),
+            [1001],
+            id="updated_refund_on_old_order_is_emitted",
+        ),
+        pytest.param(
+            _order_jsonl(1, "2026-09-11T04:00:00Z", 1001, "2026-09-11T05:07:00Z", "2026-09-11T05:49:43Z"),
+            [1001],
+            id="order_updated_at_equal_to_state_is_emitted",
+        ),
+        pytest.param(
+            _order_jsonl(1, "2026-09-11T04:00:00Z", 1001, "2026-09-11T05:07:00Z", "2026-09-11T05:30:00Z"),
+            [],
+            id="old_order_update_is_dropped",
+        ),
+        pytest.param(
+            _order_jsonl(1, "2026-09-11T06:00:00Z", 1001, "2026-09-11T05:07:00Z", "2026-09-11T06:30:00Z"),
+            [1001],
+            id="both_order_timestamps_newer_than_state",
+        ),
         pytest.param(
             _order_jsonl(1, "2026-09-11T05:49:43Z", 1001, "2026-09-11T05:07:00Z"),
             [1001],
@@ -112,7 +135,7 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
         ),
     ],
 )
-def test_transactions_graphql_older_than_state_order_created_at_edge_cases(
+def test_transactions_graphql_older_than_state_order_timestamps(
     requests_mock,
     bulk_job_completed_response,
     auth_config,
@@ -128,6 +151,7 @@ def test_transactions_graphql_older_than_state_order_created_at_edge_cases(
     )
 
     assert [record["id"] for record in test_records] == expected_ids
+    assert all(record["kind"] == "REFUND" and record["status"] == "SUCCESS" for record in test_records)
 
 
 def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bounded(

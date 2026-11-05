@@ -16,6 +16,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProductImage,
     ShopifyBulkQuery,
     ShopifyBulkTemplates,
+    Transaction,
 )
 from source_shopify.streams.streams import Customers, Products
 
@@ -38,6 +39,16 @@ def test_products_schema_includes_nullable_category() -> None:
     schema = json.loads(schema_path.read_text())
 
     assert schema["properties"]["category"]["type"] == ["null", "object"]
+
+
+def test_transaction_query_includes_order_timestamps(auth_config) -> None:
+    query = Transaction(auth_config).get(
+        filter_field="updated_at",
+        start="2026-01-01T00:00:00+00:00",
+        end="2026-01-02T00:00:00+00:00",
+    )
+
+    assert "order_created_at: createdAt order_updated_at: updatedAt transactions {" in " ".join(query.split())
 
 
 def test_query_status() -> None:
