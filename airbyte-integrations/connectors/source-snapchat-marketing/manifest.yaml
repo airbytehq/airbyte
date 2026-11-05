@@ -23,27 +23,25 @@ definitions:
             else 'organizations/' ~ stream_partition['organization_id'] }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    failure_type: config_error
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      {% if config.get('organization_ids') %}Snapchat could not find one or more of the configured organizations ({{ config['organization_ids'] | join(', ') }}). Verify the values in the Organization IDs field and that the authenticated user has access to these organizations.{% else %}Snapchat could not find the organizations for the authenticated user. Verify that the authenticated user has access to at least one Snapchat organization.{% endif %}
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  {% if config.get('organization_ids') %}Snapchat could not find one or more of the configured organizations ({{ config['organization_ids'] | join(', ') }}). Verify the values in the Organization IDs field and that the authenticated user has access to these organizations.{% else %}Snapchat could not find the organizations for the authenticated user. Verify that the authenticated user has access to at least one Snapchat organization.{% endif %}
         record_selector:
           type: RecordSelector
           extractor:
@@ -102,27 +100,25 @@ definitions:
             'adaccounts/' ~ stream_partition['ad_account_id'] }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    failure_type: config_error
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      {% if config.get('ad_account_ids') %}Snapchat could not find one or more of the configured ad accounts ({{ config['ad_account_ids'] | join(', ') }}). Verify the values in the Ad Account IDs field and that the authenticated user has access to these ad accounts.{% else %}Snapchat could not find the ad accounts for one of the organizations. Verify the values in the Organization IDs field and that the authenticated user has access to these organizations.{% endif %}
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  {% if config.get('ad_account_ids') %}Snapchat could not find one or more of the configured ad accounts ({{ config['ad_account_ids'] | join(', ') }}). Verify the values in the Ad Account IDs field and that the authenticated user has access to these ad accounts.{% else %}Snapchat could not find the ad accounts for one of the organizations. Verify the values in the Organization IDs field and that the authenticated user has access to these organizations.{% endif %}
         record_selector:
           type: RecordSelector
           extractor:
@@ -184,20 +180,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/creatives
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -254,20 +248,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/ads
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -324,20 +316,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/adsquads
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -394,20 +384,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/segments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -464,20 +452,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/media
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -534,20 +520,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/campaigns
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -612,20 +596,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -726,20 +708,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -839,20 +819,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -911,20 +889,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1359,20 +1335,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1836,20 +1810,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2271,20 +2243,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2719,20 +2689,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3196,20 +3164,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3631,20 +3597,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4079,20 +4043,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4556,20 +4518,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:

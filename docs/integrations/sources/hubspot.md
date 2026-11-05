@@ -92,6 +92,7 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 | `leads`                     | `crm.objects.leads.read`, `crm.schemas.leads.read`                                                   |
 | `list_memberships`          | `crm.lists.read`                                                                                             |
 | `line_items`                | `e-commerce`                                                                                                 |
+| `listings`                  | `crm.objects.listings.read`                                                                                  |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
 | `contacts_property_history` | `crm.objects.contacts.read`                                                                                  |
@@ -295,6 +296,7 @@ The HubSpot source connector supports the following streams:
 - [Leads](https://developers.hubspot.com/docs/api/crm/leads) \(Incremental\)
 - [List Memberships](https://developers.hubspot.com/docs/reference/api/crm/lists#retrieve-records-with-list-memberships) \(Full Refresh\)
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
+- [Listings](https://developers.hubspot.com/docs/api-reference/latest/crm/objects/listings/guide) \(Incremental\)
 - [Marketing Emails](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3-v3/marketing-emails/get-marketing-v3-emails-) \(Incremental\)
 - [Owners](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental\)
 - [Owners Archived](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental)
@@ -516,6 +518,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.14.0 | 2026-11-04 | [88970](https://github.com/airbytehq/airbyte/pull/88970) | Add `listings` stream |
 | 6.13.3 | 2026-11-03 | [90251](https://github.com/airbytehq/airbyte/pull/90251) | Migrate `deal_pipelines` to Pipelines API 2026-09 ahead of the V1 sunset. Columns, primary key and cursor are unchanged; stages gain `writePermissions`. See [Notes on the `deal_pipelines` stream](#notes-on-the-deal_pipelines-stream) |
 | 6.13.2 | 2026-11-03 | [88157](https://github.com/airbytehq/airbyte/pull/88157) | Fix custom object association streams with a `contacts` `from_object`: use the `lastmodifieddate` parent cursor, as the standard association streams do, instead of `hs_lastmodifieddate`, which contacts do not have and which made the stream emit no records. Document association streams as Full Refresh. |
 | 6.13.1 | 2026-11-03 | [89950](https://github.com/airbytehq/airbyte/pull/89950) | Update dependencies |
