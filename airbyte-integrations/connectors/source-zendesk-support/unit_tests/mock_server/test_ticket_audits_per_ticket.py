@@ -338,7 +338,7 @@ class TestTicketAuditsPerTicketIncremental(TestCase):
 
 
 class TestTicketAuditsPerTicketApiBudget(TestCase):
-    """Like the per-ticket `ticket_metrics` calls, the per-ticket audits endpoint matches no `api_budget`
+    """Like the other per-ticket endpoints, the per-ticket audits endpoint matches no `api_budget`
     policy: it runs at the connector's concurrency and relies on 429 + Retry-After backoff."""
 
     @staticmethod

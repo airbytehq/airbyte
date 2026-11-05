@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import logging
 from typing import Any, List, Mapping, Optional
 
 import requests
@@ -7,6 +8,9 @@ import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_parse
+
+
+logger = logging.getLogger("airbyte")
 
 
 class ZendeskSupportAuditCommentsExtractor(RecordExtractor):
@@ -164,13 +168,136 @@ class TicketMetricEventsStateMigration(StateMigration):
 
     @staticmethod
     def _to_unix_timestamp(value: Any) -> Optional[int]:
-        if value is None or isinstance(value, bool):
-            return None
+        return _to_unix_timestamp(value)
+
+
+def _to_unix_timestamp(value: Any) -> Optional[int]:
+    """Parses a unix timestamp (int or numeric string) or an ISO 8601 datetime into epoch seconds."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        pass
+    try:
+        return int(ab_datetime_parse(str(value)).timestamp())
+    except (TypeError, ValueError):
+        return None
+
+
+class ZendeskSupportTicketMetricSetsExtractor(RecordExtractor):
+    """Extracts the `metric_sets` side-load of a ticket list page.
+
+    `GET /api/v2/tickets?sort=-updated_at&include=metric_sets` returns, next to the page's `tickets`,
+    one metric set per listed ticket under `metric_sets`, with the same shape as
+    `GET /tickets/{ticket_id}/metrics`. The ticket list is sorted and bounded on the tickets'
+    `updated_at`, and a metric set carries no field that follows the ticket (its own `updated_at` can
+    be years older than the ticket's), so each metric set is joined to its ticket on the same page by
+    `ticket_id` and stamped with the ticket's `updated_at`, as a unix timestamp, as `_ab_updated_at`,
+    the stream's cursor. That is the value the list is sorted and filtered on, so the stream saves the
+    same resume point as `tickets`. The ticket's `generated_timestamp`, which the per-ticket path wrote
+    there, is not used: Zendesk bumps it on system-only updates that leave `updated_at` alone, so a
+    ticket deep in a long walk could carry a value later than every ticket on the first page and push
+    the saved cursor past tickets updated while the walk ran, which the next sync would skip. No extra
+    request is needed: Zendesk side-loads the metric set on the page that lists the ticket. A metric
+    set whose ticket is not on the page (not observed on live data) is stamped with its own
+    `updated_at`, and the record filter keeps or drops it on that value.
+    """
+
+    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
         try:
-            return int(value)
-        except (TypeError, ValueError):
-            pass
-        try:
-            return int(ab_datetime_parse(str(value)).timestamp())
-        except (TypeError, ValueError):
+            body = response.json()
+        except requests.exceptions.JSONDecodeError:
+            return []
+        if not isinstance(body, Mapping):
+            return []
+
+        tickets_updated_at = {
+            ticket.get("id"): ticket.get("updated_at") for ticket in body.get("tickets") or [] if isinstance(ticket, Mapping)
+        }
+        metric_sets = body.get("metric_sets")
+        if tickets_updated_at and metric_sets is None:
+            # The page lists tickets but carries no side-load at all: Zendesk ignored `include=metric_sets`.
+            # Without this warning the stream would report success with no records and a frozen state.
+            logger.warning(
+                "The ticket list page carries no `metric_sets` side-load although it lists %d tickets; "
+                "`ticket_metrics` emits nothing for this page.",
+                len(tickets_updated_at),
+            )
+
+        records = []
+        for metric_set in metric_sets or []:
+            cursor_value = _to_unix_timestamp(tickets_updated_at.get(metric_set.get("ticket_id")))
+            if cursor_value is None:
+                cursor_value = _to_unix_timestamp(metric_set.get("updated_at"))
+            if cursor_value is not None:
+                metric_set["_ab_updated_at"] = cursor_value
+            records.append(metric_set)
+        return records
+
+
+class TicketMetricsStateMigration(StateMigration):
+    """Converts a `ticket_metrics` state written before this change into the flat `_ab_updated_at` cursor.
+
+    Before 6.0.0 `ticket_metrics` was a `StateDelegatingStream`. Its full-refresh path (`GET
+    /ticket_metrics`) wrote `{"_ab_updated_at": "<epoch>"}`, the newest metric set `updated_at` it
+    read, which is the shape this stream saves and is left alone. Its incremental path was a per-ticket
+    substream of `tickets`, so its state has the per-partition shape, with the parent cursor under
+    `parent_state`:
+
+        {"use_global_cursor": false, "lookback_window": 0,
+         "state": {"_ab_updated_at": "<epoch>"},
+         "states": [{"partition": {"ticket_id": 1, "parent_slice": {}}, "cursor": {"_ab_updated_at": "<epoch>"}}],
+         "parent_state": {"tickets": {"generated_timestamp": "<epoch>"}}}   # 5.5.0 to 5.7.0 (export parent)
+         "parent_state": {"tickets": {"updated_at": "<epoch>"}}}            # 5.2.0 to 5.4.x and the 6.0.0 branch
+
+    The stream now walks the ticket list like `tickets` and cursors on the ticket's `updated_at`, so
+    the resume point is the parent `tickets` cursor: with `incremental_dependency` the CDK only
+    advanced `parent_state` once every ticket before it had its metrics read, while the global `state`
+    kept the previous sync's value between checkpoints. A 6.0.0 parent cursor (`updated_at`) is used
+    as is. A 5.x parent cursor (`generated_timestamp`) gets the one-hour rewind of
+    `TicketsStateMigration`, so the first sync after the upgrade reaches the same tickets as `tickets`
+    does. The CDK runs a stream's own migrations on its full state and only runs a parent's migrations
+    on `parent_state` while building a substream; this stream has no parent any more, so this
+    migration always sees the raw parent cursor and handles both keys itself. Without a parent cursor
+    the fallback is the saved `_ab_updated_at` (the global `state`, or a flat value next to other
+    keys) or a flat `generated_timestamp` (the cursor before 4.3.0); the per-ticket path filled both
+    with a ticket's `generated_timestamp`, so they get the same one-hour rewind.
+
+    Any other shape without a usable cursor (for example a full-refresh marker) becomes `{}`, so the
+    next sync reads from `start_date` as a first sync does.
+    """
+
+    CURSOR_FIELD = "_ab_updated_at"
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and set(stream_state.keys()) != {self.CURSOR_FIELD}
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if not self.should_migrate(stream_state):
+            return stream_state
+        cursor_value = self._parent_tickets_cursor(stream_state.get("parent_state"))
+        if cursor_value is None:
+            generated_timestamp_candidates = (
+                _to_unix_timestamp(self._get(stream_state.get("state"), self.CURSOR_FIELD)),
+                _to_unix_timestamp(stream_state.get(self.CURSOR_FIELD)),
+                _to_unix_timestamp(stream_state.get("generated_timestamp")),
+            )
+            saved_value = next((value for value in generated_timestamp_candidates if value is not None), None)
+            if saved_value is not None:
+                cursor_value = max(saved_value - TicketsStateMigration.REWIND_SECONDS, 0)
+        return {self.CURSOR_FIELD: str(cursor_value)} if cursor_value is not None else {}
+
+    @staticmethod
+    def _get(mapping: Any, key: str) -> Any:
+        return mapping.get(key) if isinstance(mapping, Mapping) else None
+
+    @classmethod
+    def _parent_tickets_cursor(cls, parent_state: Any) -> Optional[int]:
+        tickets_state = cls._get(parent_state, "tickets")
+        if not isinstance(tickets_state, Mapping) or not tickets_state:
             return None
+        tickets_migration = TicketsStateMigration()
+        if tickets_migration.should_migrate(tickets_state):
+            tickets_state = tickets_migration.migrate(tickets_state)
+        return _to_unix_timestamp(tickets_state.get("updated_at"))
