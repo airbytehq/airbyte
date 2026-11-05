@@ -244,6 +244,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.10.41 | 2026-11-03 | [90891](https://github.com/airbytehq/airbyte/pull/90891) | Require Python 3.11 or newer for local connector development. |
+| 0.10.40 | 2026-11-03 | [90561](https://github.com/airbytehq/airbyte/pull/90561) | Update dependencies |
 | 0.10.39 | 2026-10-27 | [89875](https://github.com/airbytehq/airbyte/pull/89875) | Update dependencies |
 | 0.10.38 | 2026-10-20 | [89230](https://github.com/airbytehq/airbyte/pull/89230) | Update dependencies |
 | 0.10.37 | 2026-10-13 | [88608](https://github.com/airbytehq/airbyte/pull/88608) | Update dependencies |

@@ -110,17 +110,17 @@ def test_lookback_window_validation(lookback_window: str, expected_internal_mess
         (
             400,
             {"error": "invalid_grant", "error_description": "expired access/refresh token"},
-            "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce.",
+            "Salesforce authentication is expired or revoked. Re-authenticate the source and check is_sandbox: sandbox orgs use test.salesforce.com.",
         ),
         (
             400,
             {"error": "invalid_grant", "error_description": "Authentication failure."},
-            'An error occurred: {"error": "invalid_grant", "error_description": "Authentication failure."}',
+            "Salesforce authentication is expired or revoked. Re-authenticate the source and check is_sandbox: sandbox orgs use test.salesforce.com.",
         ),
         (
             401,
             {"error": "Unauthorized", "error_description": "Unautorized"},
-            'An error occurred: {"error": "Unauthorized", "error_description": "Unautorized"}',
+            "Salesforce login failed. Re-authenticate the source and check the Connected App credentials and is_sandbox setting.",
         ),
     ],
 )
@@ -134,6 +134,7 @@ def test_login_authentication_error_handler(stream_config, requests_mock, login_
     with pytest.raises(AirbyteTracedException) as err:
         source.check_connection(logger, stream_config)
     assert err.value.message == expected_error_msg
+    assert err.value.failure_type == FailureType.config_error
 
 
 def _register_login(requests_mock, **extra):

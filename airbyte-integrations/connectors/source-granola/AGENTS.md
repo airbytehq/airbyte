@@ -35,17 +35,17 @@ The Granola API has no way to return deleted notes on the stream that lists them
 
 ## Incremental Stream Considerations
 
-The Granola API connector has 3 streams: `notes` (incremental with `updated_at` cursor), `detailed_notes` and `note_transcripts` (children of notes via `SubstreamPartitionRouter`). No FR parent streams remain.
+The Granola API connector has 3 streams: `notes` (incremental with `updated_at` cursor), `detailed_notes` (an incremental child of `notes`), and `note_transcripts` (a deferred full-refresh child of `notes`). No FR parent streams remain.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | notes | medium | top-level parent | updated_at | updated_at | incremental | |
-| detailed_notes | medium | child | none | none | deferred_child | |
-| note_transcripts | medium | child | none | none | deferred_child | |
+| detailed_notes | medium | child | updated_at | parent `notes.updated_at` | incremental (`incremental_dependency` + `global_substream_cursor`) | |
+| note_transcripts | medium | child | none | none | deferred_child | No primary key or segment ID; Append repeats segments. |
 
 ### Cursor is `updated_at` with a single slice
 
-`GET /v1/notes` exposes `updated_after` but no `updated_before`, so the cursor sends one unbounded slice — there is no `step` or `end_time_option`, because stepped windows without an upper bound would return overlapping data. A note edited after a sync is re-emitted on the next incremental sync. `detailed_notes` and `note_transcripts` have no `incremental_dependency`, so their parent `notes` read is a full re-read from `start_date` on every sync; they already picked up edited notes before 1.0.0.
+`GET /v1/notes` exposes `updated_after` but no `updated_before`, so the cursor sends one unbounded slice — there is no `step` or `end_time_option`, because stepped windows without an upper bound would return overlapping data. A note edited after a sync is re-emitted on the next incremental sync. `detailed_notes` now has `incremental_dependency: true` and `global_substream_cursor: true`, so its detail requests follow the parent `notes` cursor instead of re-reading all notes from `start_date`. `note_transcripts` remains a deferred full-refresh child: transcript segments have no primary key or ID, and incremental Append would duplicate them.
 
 The single slice means the `notes` read does not checkpoint mid-stream: a failure restarts from the stored cursor, or from `start_date` on the first sync after upgrading from pre-1.0.0 state. This was accepted because a full read of a production workspace took about 30s over 10 pages, and the child streams, which dominate sync time, have never checkpointed mid-stream.
 
@@ -55,4 +55,4 @@ The cursor sends `updated_after` as a second-granular date-time (`datetime_forma
 
 ### Future incremental stream candidates
 
-- **Child streams (2 streams):** `detailed_notes`, `note_transcripts` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.
+- **Child stream (1 stream):** `note_transcripts` — partitioned via `SubstreamPartitionRouter`. It has no primary key or segment ID, so incremental Append would duplicate transcript segments.
