@@ -488,18 +488,23 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
+            value_type: string
           - path:
               - page
             value: "{{ record['keys'][3] }}"
+            value_type: string
           - path:
               - query
             value: "{{ record['keys'][4] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -562,9 +567,11 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -608,6 +615,7 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -655,9 +663,11 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][1] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -701,9 +711,11 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - page
             value: "{{ record['keys'][1] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -748,9 +760,11 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - query
             value: "{{ record['keys'][1] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -808,15 +822,19 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
+            value_type: string
           - path:
               - page
             value: "{{ record['keys'][3] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -862,12 +880,15 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -913,12 +934,15 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -1064,6 +1088,7 @@ definitions:
           - path:
               - searchAppearance
             value: "{{ record['keys'][0] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -1183,18 +1208,23 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
+            value_type: string
           - path:
               - query
             value: "{{ record['keys'][3] }}"
+            value_type: string
           - path:
               - page
             value: "{{ record['keys'][4] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -1241,15 +1271,19 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
+            value_type: string
           - path:
               - query
             value: "{{ record['keys'][3] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -1295,15 +1329,19 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
+            value_type: string
           - path:
               - query
             value: "{{ record['keys'][3] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys

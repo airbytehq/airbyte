@@ -8,6 +8,33 @@ import pytest
 import requests
 import yaml
 
+from airbyte_cdk.sources.declarative.models import AddFields
+from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+
+
+@pytest.mark.parametrize("dimension_value", ["2024", "0", "1.20", "00123", "True", "None", "normal query", ""])
+def test_key_dimensions_remain_strings(dimension_value: str) -> None:
+    manifest = yaml.safe_load((Path(__file__).parent.parent / "manifest.yaml").read_text())
+    factory = ModelToComponentFactory()
+    checked_streams = set()
+    for name, definition in manifest["definitions"].items():
+        for transformation in definition.get("transformations", []):
+            if transformation["type"] != "AddFields":
+                continue
+            fields = transformation["fields"]
+            if not all("record['keys']" in field["value"] for field in fields):
+                continue
+            record = {"keys": [dimension_value] * len(fields)}
+            component_definition = {**transformation, "fields": [{"type": "AddedFieldDefinition", **field} for field in fields]}
+            component = factory.create_component(AddFields, component_definition, config={})
+            component.transform(record)
+            for field in fields:
+                assert record[field["path"][0]] == dimension_value, (name, field["path"])
+                assert isinstance(record[field["path"][0]], str)
+            checked_streams.add(name)
+    assert "search_analytics_keyword_page_report_stream" in checked_streams
+    assert "search_analytics_keyword_site_report_by_page_stream" in checked_streams
+
 
 @pytest.mark.parametrize(
     "stream_state,expected_should_migrate,expected_migrated_state",
