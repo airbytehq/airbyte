@@ -17,7 +17,9 @@ import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.sql.Statement
 import java.time.ZoneOffset
+import java.util.concurrent.Executors
 
 const val CONFIG_PATH = "secrets/oauth_config.json"
 const val PAT_CONFIG_PATH = "secrets/pat_config.json"
@@ -61,17 +63,22 @@ object DatabricksExpectedRecordMapper : ExpectedRecordMapper {
  *
  * Unity Catalog caps a catalog at 10,000 schemas and each CI run leaves a few hundred behind, so
  * the CDK default of 30 days exhausts the quota (`UC_RESOURCE_QUOTA_EXCEEDED`).
+ *
+ * Drops run on [DROP_PARALLELISM] connections: this runs inside a test's `@AfterEach` (10 minute
+ * timeout) and a serial `DROP SCHEMA ... CASCADE` takes ~0.7s, so a day's worth of schemas would
+ * not finish in time.
  */
 object DatabricksDataCleaner : DestinationCleaner {
     private val log = KotlinLogging.logger {}
     private const val RETENTION_DAYS = 2L
+    private const val DROP_PARALLELISM = 8
 
     override fun cleanup() {
         val config = DatabricksTestConfigProvider.configFromFile()
         val dataSource = DatabricksTestDataSourceProvider.get(config)
+        val schemas = mutableListOf<String>()
         dataSource.connection.use { conn ->
             conn.createStatement().use { stmt ->
-                val schemas = mutableListOf<String>()
                 stmt
                     .executeQuery(
                         """
@@ -86,22 +93,49 @@ object DatabricksDataCleaner : DestinationCleaner {
                             schemas.add(rs.getString("schema_name"))
                         }
                     }
+            }
+        }
 
-                val schemasToDrop = schemas.filter {
-                    IntegrationTest.isNamespaceOld(it, RETENTION_DAYS)
-                }
-                log.info {
-                    "Dropping ${schemasToDrop.size} of ${schemas.size} test schemas (>$RETENTION_DAYS days old)"
-                }
-                schemasToDrop.forEach { schema ->
-                    try {
-                        stmt.execute("DROP SCHEMA IF EXISTS `${config.database}`.`$schema` CASCADE")
-                    } catch (e: Exception) {
-                        // Concurrent CI jobs run this cleaner too; a schema may already be gone.
-                        log.warn(e) { "Failed to drop test schema $schema, continuing" }
+        val schemasToDrop =
+            schemas.filter { IntegrationTest.isNamespaceOld(it, RETENTION_DAYS) }
+        log.info {
+            "Dropping ${schemasToDrop.size} of ${schemas.size} test schemas (>$RETENTION_DAYS days old)"
+        }
+        if (schemasToDrop.isEmpty()) {
+            return
+        }
+
+        val start = System.currentTimeMillis()
+        val executor = Executors.newFixedThreadPool(DROP_PARALLELISM)
+        try {
+            val chunkSize = (schemasToDrop.size + DROP_PARALLELISM - 1) / DROP_PARALLELISM
+            schemasToDrop
+                .chunked(chunkSize)
+                .map { chunk ->
+                    executor.submit {
+                        dataSource.connection.use { conn ->
+                            conn.createStatement().use { stmt ->
+                                chunk.forEach { schema ->
+                                    dropSchema(stmt, config.database, schema)
+                                }
+                            }
+                        }
                     }
                 }
-            }
+                .forEach { it.get() }
+        } finally {
+            executor.shutdown()
+        }
+        val elapsedSeconds = (System.currentTimeMillis() - start) / 1000
+        log.info { "Dropped ${schemasToDrop.size} test schemas in ${elapsedSeconds}s" }
+    }
+
+    private fun dropSchema(stmt: Statement, catalog: String, schema: String) {
+        try {
+            stmt.execute("DROP SCHEMA IF EXISTS `$catalog`.`$schema` CASCADE")
+        } catch (e: Exception) {
+            // Concurrent CI jobs run this cleaner too; a schema may already be gone.
+            log.warn(e) { "Failed to drop test schema $schema, continuing" }
         }
     }
 }
