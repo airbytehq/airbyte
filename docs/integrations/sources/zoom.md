@@ -1,97 +1,190 @@
 # Zoom
 
-## Overview
+<HideInUI>
 
-The following connector allows airbyte users to fetch various meetings & webinar data points from the [Zoom](https://zoom.us) source. This connector is built entirely using the [low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview/).
+This page explains how to set up the Zoom source connector and which Zoom data it syncs.
 
-Most streams support Full Refresh syncs, which copy all rows in the tables and columns you set up for replication into the destination. The `report_user_meetings` stream also supports Incremental syncs. The `report_daily` stream performs a Full Refresh on each sync and re-reads the last six months of daily reports.
+</HideInUI>
 
-### Output schema
+## Prerequisites
 
-Currently this source supports the following output streams/endpoints from Zoom:
+- A Zoom account on a Pro plan or higher. Webinar and report-webinar streams also require the Zoom Webinars add-on; `zoom_events` requires a Webinars Plus or Zoom Events license.
+- An account owner or admin who can create an account-level app and grant the required admin scopes.
+- An account-level **General** app set to **Admin-managed** for OAuth2.0, or a **Server-to-Server OAuth** app.
+- For OAuth2.0, have the app's **Client ID**, **Client Secret**, and **Refresh Token** ready. Airbyte Cloud obtains these when you authenticate.
+- For Server-to-Server OAuth, have the **Account ID**, **Client ID**, and **Client Secret** ready.
 
-- [Users](https://marketplace.zoom.us/docs/api-reference/zoom-api/users/users)
-- [Meetings](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetings)
-  - [Meeting Registrants](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetingregistrants)
-  - [Meeting Polls](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetingpolls)
-  - [Meeting Poll Results](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/listpastmeetingpolls)
-  - [Meeting Questions](https://marketplace.zoom.us/docs/api-reference/zoom-api/meetings/meetingregistrantsquestionsget)
-- [Webinars](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinars)
-  - [Webinar Panelists](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarpanelists)
-  - [Webinar Registrants](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarregistrants)
-  - [Webinar Absentees](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarabsentees)
-  - [Webinar Polls](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarpolls)
-  - [Webinar Poll Results](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/listpastwebinarpollresults)
-  - [Webinar Questions](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/webinarregistrantsquestionsget)
-  - [Webinar Tracking Sources](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/gettrackingsources)
-  - [Webinar Q&A Results](https://marketplace.zoom.us/docs/api-reference/zoom-api/webinars/listpastwebinarqa)
-- [Report Meetings](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportmeetingdetails)
-- [Report Meeting Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportmeetingparticipants)
-- [Report Webinars](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinardetails)
-- [Report Webinar Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinarparticipants)
-- [Report User Meetings](https://developers.zoom.us/docs/api/meetings/#tag/Reports/GET/report/users/%7BuserId%7D/meetings)
-- [Report Daily](https://developers.zoom.us/docs/api/meetings/#tag/Reports/GET/report/daily)
-- [Chat Channels](https://developers.zoom.us/docs/api/team-chat/#tag/Chat-Channels/GET/chat/users/%7BuserId%7D/channels)
-- [Zoom Events](https://developers.zoom.us/docs/api/events/#tag/Events/GET/zoom_events/events)
+Both authentication methods use an account-level app. For the scopes to grant, see [Required scopes](#required-scopes).
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+## Setup guide
 
-### Required scopes and plans
+### Step 1: Create a Zoom app
 
-`report_user_meetings` requires the classic `report:read:admin` scope (or granular `report:read:user:admin`) and a Pro or higher plan. `report_daily` requires the classic `report:read:admin` scope (or granular `report:read:daily_usage:admin`) and a Pro or higher plan; Zoom only serves these reports for roughly the last six months. `chat_channels` requires the classic `chat_channel:read:admin` scope (or granular `team_chat:read:list_user_channels:admin`). `zoom_events` requires the classic `zoom_events_basic:read:admin` scope (or granular `zoom_events:read:list_events:admin`) and a Webinars Plus or Zoom Events license.
+#### OAuth2.0 General app
 
-If you set up your Zoom app before version 1.5.0, add the scopes for any of these four streams you want to sync. With OAuth2.0, then re-authenticate the source in Airbyte so the new token includes the added scopes. Server-to-Server OAuth requests a new token on every sync, so it needs no reconnection. Streams you already sync don't need new scopes.
+1. Sign in to the [Zoom App Marketplace](https://marketplace.zoom.us/) and select **Develop** > **Build App**. Follow [Zoom's instructions for creating a General app](https://developers.zoom.us/docs/integrations/create/).
+2. Create a **General** app and choose **Admin-managed**. A user-managed app cannot list account users.
+3. If Airbyte asks for a redirect URL, add the URL it provides to the app's OAuth redirect URL and OAuth allow list.
 
-### Features
+#### Server-to-Server OAuth app
 
-| Feature                       | Supported?  |
-| :---------------------------- | :---------- |
-| Full Refresh Sync             | Yes         |
-| Incremental Sync              | Yes (`report_user_meetings`) |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection                | Yes         |
-| Namespaces                    | No          |
+1. In the Zoom App Marketplace, select **Develop** > **Build App**, then create a **Server-to-Server OAuth** app using [Zoom's instructions](https://developers.zoom.us/docs/internal-apps/s2s-oauth/).
+2. On the **App credentials** page, copy the **Account ID**, **Client ID**, and **Client Secret**.
+3. On the **Scopes** page, add the [required scopes](#required-scopes).
+4. Activate the app. Zoom does not issue access tokens for apps that are not activated.
 
-### Performance considerations
+#### Required scopes
 
-Most of the endpoints this connector access is restricted by standard Zoom [requests limitation](https://marketplace.zoom.us/docs/api-reference/rate-limits#rate-limit-changes), with a few exceptions. For more info, please check zoom API documentation. We’ve added appropriate retries if we hit the rate-limiting threshold.
+Add these granular scopes to your Zoom app. If your app uses Zoom's classic scopes, add `user:read:admin`, `meeting:read:admin`, `webinar:read:admin`, `report:read:admin`, `chat_channel:read:admin`, and `zoom_events_basic:read:admin` instead.
 
-Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+| Streams | Granular scopes |
+| :------ | :-------------- |
+| All streams (lists account users) | `user:read:list_users:admin` |
+| `meetings`, `meeting_registrants`, `meeting_polls`, `meeting_poll_results`, `meeting_registration_questions` (lists each user's meetings) | `meeting:read:list_meetings:admin` |
+| `meetings` | `meeting:read:meeting:admin` |
+| `meeting_registrants` | `meeting:read:list_registrants:admin` |
+| `meeting_polls` | `meeting:read:list_polls:admin` |
+| `meeting_poll_results` | `meeting:read:list_poll_results:admin` |
+| `meeting_registration_questions` | `meeting:read:list_registration_questions:admin` |
+| `webinars`, `webinar_panelists`, `webinar_registrants`, `webinar_absentees`, `webinar_polls`, `webinar_poll_results`, `webinar_registration_questions`, `webinar_tracking_sources`, `webinar_qna_results` | `webinar:read:list_webinars:admin`, `webinar:read:webinar:admin` |
+| `webinar_panelists` | `webinar:read:list_panelists:admin` |
+| `webinar_registrants` | `webinar:read:list_registrants:admin` |
+| `webinar_absentees` | `webinar:read:list_absentees:admin` |
+| `webinar_polls` | `webinar:read:list_polls:admin` |
+| `webinar_poll_results` | `webinar:read:list_past_polls:admin` |
+| `webinar_registration_questions` | `webinar:read:list_registration_questions:admin` |
+| `webinar_tracking_sources` | `webinar:read:list_tracking_sources:admin` |
+| `webinar_qna_results` | `webinar:read:past_qa:admin` |
+| `report_meetings`, `report_meeting_participants` | `report:read:meeting:admin` |
+| `report_meeting_participants` | `report:read:list_meeting_participants:admin` |
+| `report_webinars`, `report_webinar_participants` | `report:read:webinar:admin` |
+| `report_webinar_participants` | `report:read:list_webinar_participants:admin` |
+| `report_meetings`, `report_meeting_participants`, `report_user_meetings` | `report:read:user:admin` |
+| `report_daily` | `report:read:daily_usage:admin` |
+| `chat_channels` | `team_chat:read:list_user_channels:admin` |
+| `zoom_events` | `zoom_events:read:list_events:admin` |
 
-## Getting started
+If you set up your Zoom app before version 1.5.0, add the scopes for any of the four new streams you want to sync. OAuth2.0 users must then re-authenticate so the new token includes the scopes. Server-to-Server OAuth requests a new token on every sync, so it needs no reconnection.
 
-### Setup guide
+Before upgrading to source-zoom 2.0.0, add `report:read:user:admin` or the classic `report:read:admin` scope to the Zoom app for connections that sync `report_meetings` or `report_meeting_participants`. OAuth2.0 users must re-authenticate after adding the scope. See the [Zoom 2.0.0 migration guide](zoom-migrations.md#upgrading-to-200).
 
-The connector reads account-wide data, so both authentication methods need an account-level Zoom app with the [scopes](#scopes) below.
+### Step 2: Set up the Zoom connector in Airbyte
 
-#### OAuth2.0
+In Airbyte, create a Zoom source and select the authentication method that matches your app.
 
-1. In Airbyte, select **OAuth2.0**.
-2. If Airbyte asks for a client ID and client secret, [create a General app](https://developers.zoom.us/docs/integrations/create/) in the Zoom App Marketplace first:
-   1. Select **Admin-managed**. A user-managed app can't list your account's users, so the connection test fails.
-   2. Add the redirect URL that Airbyte shows to the app's OAuth redirect URL and OAuth allow list.
-   3. Add the [scopes](#scopes), then enter the app's client ID and client secret in Airbyte.
-3. Click **Authenticate your Zoom account** and sign in as a Zoom account owner or admin.
+<!-- env:cloud -->
 
-Zoom refresh tokens expire after 90 days, so re-authenticate the source if it doesn't sync for that long. Authorizing the same Zoom app again, for example for a second source, revokes the tokens issued earlier.
+**For Airbyte Cloud:**
 
-#### Server-to-Server OAuth
+For OAuth2.0, select **OAuth2.0** and authorize your Zoom account:
 
-Read [How to generate your Server-to-Server OAuth app](https://developers.zoom.us/docs/internal-apps/s2s-oauth/) and add the [scopes](#scopes).
+1. Click **Authenticate your Zoom account** and sign in as a Zoom account owner or admin.
 
-Existing Server-to-Server OAuth configurations are migrated automatically. If you manage the source through the Airbyte API or Terraform, send these settings inside the `credentials` object with `auth_type` set to `server_to_server`. A configuration with only the old top-level `account_id`, `client_id`, `client_secret`, and `authorization_endpoint` fields is rejected, and the connector removes those fields once `credentials.auth_type` is set.
+For Server-to-Server OAuth, select that authentication method and enter the app credentials:
+
+1. Enter the **Account ID** from the app's **App credentials** page.
+2. Enter the **Client ID** from the app's **App credentials** page.
+3. Enter the **Client Secret** from the app's **App credentials** page.
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+**For Airbyte Open Source:**
+
+For OAuth2.0, select **OAuth2.0** and enter the values for your admin-managed General app:
+
+1. Enter the app's **Client ID**.
+2. Enter the app's **Client Secret**.
+3. Enter the **Refresh Token** issued after an account owner or admin authorizes your app.
+
+For Server-to-Server OAuth, select that authentication method and enter the app credentials:
+
+1. Enter the **Account ID** from the app's **App credentials** page.
+2. Enter the **Client ID** from the app's **App credentials** page.
+3. Enter the **Client Secret** from the app's **App credentials** page.
+
+<!-- /env:oss -->
+
+Zoom refresh tokens expire after 90 days. Re-authenticate if the source does not sync for that long. Zoom issues a new refresh token whenever the connector refreshes its access token, and the connector saves the new token to the source configuration. Authorizing the same Zoom app again, for example for a second source, revokes previously issued tokens. Server-to-Server OAuth apps do not use refresh tokens; the connector requests a new access token with the app credentials.
 
 #### Start Date
 
-**Start Date** (optional, `start_date`): UTC date-time from which to replicate the `report_user_meetings` and `report_daily` streams (`report_daily` starts at the beginning of that month). Zoom only serves these reports for roughly the last six months, so earlier dates are clamped to that window. Leave empty to sync everything Zoom still serves.
+**Start Date** (optional, `start_date`): UTC date-time filter for `meetings` and `webinars`. These streams include only records created on or after this date, including in Full Refresh; leave it empty to sync everything Zoom still serves. `report_user_meetings`, `report_daily`, `report_meetings`, and `report_meeting_participants` start from this date and are limited to Zoom's roughly six months of report retention; `report_daily` starts at the beginning of that month. `report_webinars` and `report_webinar_participants` are not filtered by `start_date`.
 
-#### Scopes
+Incremental `meetings` and `webinars` syncs use `created_at` with a 30-day lookback. Edits to meetings or webinars created before that window—including reschedules, settings, and occurrences—are not re-read by incremental syncs. Run a Full Refresh or reset to pick them up. With Incremental | Append + Deduped, those rows remain as last synced.
 
-`user:read:list_users:admin`, `meeting:read:list_meetings:admin`, `meeting:read:meeting:admin`, `meeting:read:list_registrants:admin`, `meeting:read:list_polls:admin`, `meeting:read:list_poll_results:admin`, `meeting:read:list_registration_questions:admin`, `webinar:read:list_webinars:admin`, `webinar:read:webinar:admin`, `webinar:read:list_panelists:admin`, `webinar:read:list_registrants:admin`, `webinar:read:list_absentees:admin`, `webinar:read:list_polls:admin`, `webinar:read:list_past_polls:admin`, `webinar:read:list_registration_questions:admin`, `webinar:read:list_tracking_sources:admin`, `webinar:read:past_qa:admin`, `report:read:meeting:admin`, `report:read:list_meeting_participants:admin`, `report:read:webinar:admin`, `report:read:list_webinar_participants:admin`.
+#### Configure the source with the Airbyte API or Terraform
 
-`report:read:user:admin`, `report:read:daily_usage:admin`, `team_chat:read:list_user_channels:admin`, `zoom_events:read:list_events:admin`.
+Before version 1.4.0, Server-to-Server OAuth settings were top-level fields. Airbyte migrates existing configurations automatically. If you manage the source through the Airbyte API or Terraform, put the settings inside the `credentials` object:
 
-Apps that use Zoom's classic scopes need `user:read:admin`, `meeting:read:admin`, `webinar:read:admin`, `report:read:admin`, `chat_channel:read:admin`, and `zoom_events_basic:read:admin` instead.
+- For OAuth2.0, set `auth_type` to `oauth2.0` and provide `client_id`, `client_secret`, and `refresh_token`.
+- For Server-to-Server OAuth, set `auth_type` to `server_to_server` and provide `account_id`, `client_id`, and `client_secret`.
+
+Use the [Required scopes](#required-scopes) table above to configure the app scopes.
+
+A configuration with only the old top-level `account_id`, `client_id`, `client_secret`, and `authorization_endpoint` fields is rejected. Once `credentials.auth_type` is set, the connector removes those top-level fields.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :-------- | :--------- |
+| Full Refresh | Yes |
+| Incremental | Yes (`meetings`, `webinars`, `report_meetings`, `report_meeting_participants`, `report_user_meetings`) |
+| Namespaces | No |
+
+`meetings` and `webinars` use `created_at` as the Incremental cursor with a 30-day lookback. Updates to meetings or webinars created more than 30 days ago are not re-read. `report_meetings` uses `end_time`, `report_meeting_participants` uses `meeting_end_time`, and `report_user_meetings` uses `end_time` as their Incremental cursors. These three streams re-read the last day on each sync. `report_webinars`, `report_webinar_participants`, and `report_daily` support Full Refresh only; `report_daily` re-reads approximately the last six months.
+
+Use Incremental for `report_meetings` and `report_meeting_participants`. A Full Refresh makes one Heavy-rate-limited request per past meeting session in the roughly six-month report window.
+
+## Supported streams
+
+The connector reads account users, then each user's meetings and webinars, and then details for those meetings and webinars. It also syncs meeting and webinar reports, daily account reports, chat channels, and Zoom Events.
+
+| Stream | Endpoint | Primary key |
+| :----- | :------- | :---------- |
+| `users` | [GET /users](https://developers.zoom.us/docs/api/users/#tag/users/GET/users) | `id` |
+| `meetings` | [GET /meetings/&#123;meetingId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/meetings/GET/meetings/{meetingId}) | `id` |
+| `meeting_registrants` | [GET /meetings/&#123;meetingId&#125;/registrants](https://developers.zoom.us/docs/api/meetings/#tag/invitation-&-registration/GET/meetings/{meetingId}/registrants) | `id` |
+| `meeting_polls` | [GET /meetings/&#123;meetingId&#125;/polls](https://developers.zoom.us/docs/api/meetings/#tag/polls/GET/meetings/{meetingId}/polls) | `meeting_id`, `id` |
+| `meeting_poll_results` | [GET /past_meetings/&#123;meetingId&#125;/polls](https://developers.zoom.us/docs/api/meetings/#tag/polls/GET/past_meetings/{meetingId}/polls) | — |
+| `meeting_registration_questions` | [GET /meetings/&#123;meetingId&#125;/registrants/questions](https://developers.zoom.us/docs/api/meetings/#tag/invitation-&-registration/GET/meetings/{meetingId}/registrants/questions) | `meeting_id` |
+| `webinars` | [GET /webinars/&#123;webinarId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}) | `id` |
+| `webinar_panelists` | [GET /webinars/&#123;webinarId&#125;/panelists](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/panelists) | `webinar_id`, `id` |
+| `webinar_registrants` | [GET /webinars/&#123;webinarId&#125;/registrants](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/registrants) | `webinar_id`, `id` |
+| `webinar_absentees` | [GET /past_webinars/&#123;webinarId&#125;/absentees](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/past_webinars/{webinarId}/absentees) | `id` |
+| `webinar_polls` | [GET /webinars/&#123;webinarId&#125;/polls](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/polls) | `webinar_id`, `id` |
+| `webinar_poll_results` | [GET /past_webinars/&#123;webinarId&#125;/polls](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/past_webinars/{webinarId}/polls) | — |
+| `webinar_registration_questions` | [GET /webinars/&#123;webinarId&#125;/registrants/questions](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/registrants/questions) | `webinar_id` |
+| `webinar_tracking_sources` | [GET /webinars/&#123;webinarId&#125;/tracking_sources](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/webinars/{webinarId}/tracking_sources) | `id` |
+| `webinar_qna_results` | [GET /past_webinars/&#123;webinarId&#125;/qa](https://developers.zoom.us/docs/api/meetings/#tag/webinars/GET/past_webinars/{webinarId}/qa) | — |
+| `report_meetings` | [GET /report/meetings/&#123;meetingId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/meetings/{meetingId}) | `uuid` |
+| `report_meeting_participants` | [GET /report/meetings/&#123;meetingId&#125;/participants](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/meetings/{meetingId}/participants) | `meeting_uuid`, `user_id` |
+| `report_webinars` | [GET /report/webinars/&#123;webinarId&#125;](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/webinars/{webinarId}) | `uuid` |
+| `report_webinar_participants` | [GET /report/webinars/&#123;webinarId&#125;/participants](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/webinars/{webinarId}/participants) | `webinar_uuid`, `user_id` |
+| `report_user_meetings` | [GET /report/users/&#123;userId&#125;/meetings](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/users/{userId}/meetings) | `uuid` |
+| `report_daily` | [GET /report/daily](https://developers.zoom.us/docs/api/meetings/#tag/reports/GET/report/daily) | `date` |
+| `chat_channels` | [GET /chat/users/&#123;userId&#125;/channels](https://developers.zoom.us/docs/api/chat/#tag/chat-channels/GET/chat/users/{userId}/channels) | `id`, `user_id` |
+| `zoom_events` | [GET /zoom_events/events](https://developers.zoom.us/docs/api/events/#tag/events/GET/zoom_events/events) | `event_id` |
+
+## Limitations and troubleshooting
+
+Webinar streams require the Zoom Webinars add-on, and `zoom_events` requires a Webinars Plus or Zoom Events license. Zoom may return no records for streams that your account or host does not have access to. Report data is available for roughly six months. Past-meeting reports omit sessions with fewer than two participants and return a separate row for each eligible session of a recurring meeting.
+
+- If Zoom rejects the OAuth token request, the connection test or sync fails with a configuration error. For OAuth2.0, `invalid_grant` means the refresh token expired or was revoked; re-authenticate the source. `invalid_client` indicates an incorrect client ID or secret, or a deactivated app. For Server-to-Server OAuth, `invalid_request` means the Account ID is incorrect, and `unsupported_grant_type` means the selected authentication method does not match the app type. An S2S error message may say the refresh token was rejected even though S2S apps do not use refresh tokens.
+- If Zoom returns code `4711`, the access token lacks a required scope. Add the missing scope from [Required scopes](#required-scopes) to the Zoom app and re-authenticate if you use OAuth2.0. Streams that ignore HTTP `400` responses return no records instead of reporting missing scopes.
+- If Zoom rejects an expired access token with code `124`, the connector refreshes the token and retries the request.
+- Zoom returns active users for the account. Meetings and webinars for inactive or pending users are not synced.
+- Zoom's meeting and webinar list endpoints return scheduled, unexpired meetings and webinars. Instant or expired meetings and webinars, and their registrants, polls, and webinar reports, are not returned. `report_meetings` and `report_meeting_participants` read past meeting sessions from `report_user_meetings`, so they include instant and ended meetings.
+- If a user cannot host or schedule meetings, Zoom can return code `3161`; the connector skips that user's meeting partition instead of failing the sync.
+- If a meeting or webinar was deleted or no longer has report data, Zoom can return code `3001`; the connector skips that resource.
+- Some stream requesters ignore HTTP `400` or `404` responses, so those streams can return no records instead of failing. If an expected stream is empty, check your Zoom plan, the host's license, and the scopes on your app.
+
+### Rate limits
+
+Zoom applies [rate limits](https://developers.zoom.us/docs/api/rate-limits/) per account, shared across apps installed on that account, and limits depend on your plan. The report endpoints used by `report_meetings`, `report_meeting_participants`, `report_user_meetings`, and related streams, along with `GET /past_webinars/{webinarId}/absentees`, are in the Heavy category and share a daily cap across all apps on your account. In Full Refresh, `report_meetings` and `report_meeting_participants` make one Heavy-rate-limited request per past meeting session in the roughly six-month retention window, so Incremental is recommended.
+
+When Zoom returns HTTP `429`, the connector honors Zoom's `Retry-After` header. If the wait is 10 minutes or longer, the stream stops instead of waiting; if the header is missing, the connector uses exponential backoff.
 
 ## IP allow list
 
@@ -104,6 +197,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 2.0.0 | 2026-11-03 | [89722](https://github.com/airbytehq/airbyte/pull/89722) | Add session-based meeting reports, composite keys and date-time typing; retain Full Refresh for webinar reports; honor Retry-After on 429 |
 | 1.5.1 | 2026-11-03 | [90076](https://github.com/airbytehq/airbyte/pull/90076) | Update dependencies |
 | 1.5.0 | 2026-10-22 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams; the new streams need additional Zoom app scopes |
 | 1.4.1 | 2026-10-21 | [89087](https://github.com/airbytehq/airbyte/pull/89087) | Add registry metadata, spec titles and clearer Server-to-Server field descriptions |
