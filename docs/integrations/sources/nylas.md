@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.77 | 2026-11-05 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Skip calendars that return 404 Not Found in the events stream instead of failing the sync |
+| 0.0.77 | 2026-11-05 | [91149](https://github.com/airbytehq/airbyte/pull/91149) | Skip calendars that return 404 Not Found in the events stream instead of failing the sync |
 | 0.0.76 | 2026-11-03 | [90678](https://github.com/airbytehq/airbyte/pull/90678) | Update dependencies |
 | 0.0.75 | 2026-10-27 | [90023](https://github.com/airbytehq/airbyte/pull/90023) | Update dependencies |
 | 0.0.74 | 2026-10-20 | [89326](https://github.com/airbytehq/airbyte/pull/89326) | Update dependencies |
