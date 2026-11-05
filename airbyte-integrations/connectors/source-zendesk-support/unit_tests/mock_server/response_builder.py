@@ -233,28 +233,6 @@ class UserIdentitiesRecordBuilder(ZendeskSupportRecordBuilder):
         return self
 
 
-class TicketMetricsRecordBuilder(ZendeskSupportRecordBuilder):
-    @classmethod
-    def ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
-        record_template = cls.extract_record("ticket_metrics", __file__, NestedPath(["ticket_metrics", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
-
-    @classmethod
-    def stateless_ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
-        """Alias for ticket_metrics_record() for backward compatibility."""
-        return cls.ticket_metrics_record()
-
-    @classmethod
-    def stateful_ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
-        """Record builder for stateful ticket metrics (single ticket metric)."""
-        record_template = cls.extract_record("stateful_ticket_metrics", __file__, FieldPath("ticket_metric"))
-        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
-
-    def with_id(self, id: int) -> "TicketMetricsRecordBuilder":
-        self._record["id"] = id
-        return self
-
-
 class TicketsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def tickets_record(cls) -> "TicketsRecordBuilder":
@@ -588,32 +566,39 @@ class UsersResponseBuilder(HttpResponseBuilder):
         return self
 
 
-class TicketMetricsResponseBuilder(HttpResponseBuilder):
-    @classmethod
-    def ticket_metrics_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketMetricsResponseBuilder":
-        return cls(
-            find_template("ticket_metrics", __file__),
-            FieldPath("ticket_metrics"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
+class TicketMetricSetsResponseBuilder(HttpResponseBuilder):
+    """Response of the ticket list with `include=metric_sets` (`GET /api/v2/tickets?include=metric_sets`):
+    the page's tickets under `tickets` and one metric set per listed ticket under `metric_sets`, with
+    cursor pagination through `meta.has_more` and `links.next`. Call `with_pagination()` to mark the
+    page as not last."""
 
     @classmethod
-    def stateless_ticket_metrics_response(cls) -> "TicketMetricsResponseBuilder":
-        """Response builder for stateless ticket metrics (list of metrics)."""
-        return cls(
-            find_template("stateless_ticket_metrics", __file__),
-            FieldPath("ticket_metrics"),
-            CursorBasedPaginationStrategy(),
-        )
+    def tickets_with_metric_sets_response(cls, next_page_url: Optional[str] = None) -> "TicketMetricSetsResponseBuilder":
+        template = find_template("tickets_with_metric_sets", __file__)
+        builder = cls(template, FieldPath("tickets"), CursorBasedPaginationStrategy(next_page_url))
+        builder._metric_set_template = template["metric_sets"][0]
+        template["metric_sets"] = []
+        return builder
 
-    @classmethod
-    def stateful_ticket_metrics_response(cls) -> "TicketMetricsResponseBuilder":
-        """Response builder for stateful ticket metrics (single ticket metric)."""
-        return cls(
-            find_template("stateful_ticket_metrics", __file__),
-            FieldPath("ticket_metric"),
-            CursorBasedPaginationStrategy(),
-        )
+    def with_ticket(
+        self,
+        ticket: TicketsRecordBuilder,
+        with_metric_set: bool = True,
+        metric_set_id: Optional[int] = None,
+        metric_set_updated_at: Optional[str] = None,
+    ) -> "TicketMetricSetsResponseBuilder":
+        """Add a ticket to the page and, unless `with_metric_set` is false, its metric set to the side-load."""
+        self.with_record(ticket)
+        if with_metric_set:
+            ticket_id = ticket.build()["id"]
+            metric_set = dict(self._metric_set_template)
+            metric_set["id"] = metric_set_id if metric_set_id is not None else ticket_id * 1000
+            metric_set["ticket_id"] = ticket_id
+            metric_set["url"] = f"https://d3v-airbyte.zendesk.com/api/v2/ticket_metrics/{metric_set['id']}.json"
+            if metric_set_updated_at is not None:
+                metric_set["updated_at"] = metric_set_updated_at
+            self._response["metric_sets"].append(metric_set)
+        return self
 
 
 class TicketsResponseBuilder(HttpResponseBuilder):

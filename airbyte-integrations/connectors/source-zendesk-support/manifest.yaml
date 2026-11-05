@@ -196,11 +196,14 @@ definitions:
       cursor_value: "{{ response.get('links', {}).get('next') }}"
       # The page is sorted newest first, so once its last record is older than the slice start every
       # later page is too. `sorted_path` names the sorted list in the response when it is not the
-      # stream name (`user_identities` sorts on `users` but extracts `identities`).
+      # stream name (`user_identities` sorts on `users` but extracts `identities`), and
+      # `sorted_cursor_field` names the field the list is sorted on when it is not the stream's
+      # cursor field (`ticket_metrics` sorts on the tickets' `updated_at` but cursors on
+      # `_ab_updated_at`, which only the extracted records carry).
       stop_condition: >-
         {{ not response.get('meta', {}).get('has_more', false)
         or not response.get(parameters.get('sorted_path') or parameters.get('name'))
-        or (timestamp(response[parameters.get('sorted_path') or parameters.get('name')][-1][parameters.get('cursor_field', 'updated_at')]) | int)
+        or (timestamp(response[parameters.get('sorted_path') or parameters.get('name')][-1][parameters.get('sorted_cursor_field') or parameters.get('cursor_field', 'updated_at')]) | int)
         < (stream_slice.get('start_time', 0) | int) }}
       page_size: 100
     page_token_option:
@@ -1264,11 +1267,12 @@ definitions:
   # endpoint serves archived tickets too; since 6.0.0 the ticket list never returns an archived
   # ticket (5.7.0's Incremental Ticket Export did), so the `closed_tickets_search` parent lists
   # them from the search index. The cost is one request per created or
-  # updated ticket against the account-wide plan limit. Like the per-ticket `ticket_metrics` calls,
+  # updated ticket against the account-wide plan limit. Like the other per-ticket substreams,
   # the endpoint has no `api_budget` policy: it runs at the connector's concurrency and relies on
   # 429 + Retry-After backoff. Each changed ticket re-emits all of its audits; `id` deduplicates
-  # them. The cursor mirrors the stateful `ticket_metrics` path (`_ab_updated_at` = the parent
-  # ticket's `generated_timestamp`, which the ticket list still returns), but uses a global
+  # them. The cursor is `_ab_updated_at` = the parent ticket's `generated_timestamp` (which the
+  # ticket list still returns), as on the other per-ticket substreams (`ticket_metrics`, which has
+  # no parent cursor to resume from, stamps the ticket's `updated_at` instead), but uses a global
   # substream cursor: a per-ticket state would grow one entry per ticket.
   ticket_audits_per_ticket_stream:
     type: DeclarativeStream
@@ -1523,8 +1527,9 @@ definitions:
   # before the slice start (see `sorted_list_stream`). The list endpoint omits archived tickets
   # (closed about 120 days ago or longer) and deleted tickets: `tickets_search` reads archived
   # tickets, the per-ticket substreams reach them through `closed_tickets_search_stream`, and
-  # `deleted_tickets` reads deletions. `generated_timestamp` is still returned and is
-  # still what the per-ticket substreams use as their `_ab_updated_at` cursor. See AGENTS.md §1.
+  # `deleted_tickets` reads deletions. `generated_timestamp` is still returned and is still what the
+  # per-ticket substreams use as their `_ab_updated_at` cursor; `ticket_metrics` uses the ticket's
+  # `updated_at` (see `ticket_metrics_stream`). See AGENTS.md §1.
   tickets_stream:
     $ref: "#/definitions/sorted_list_stream"
     retriever:
@@ -1605,110 +1610,53 @@ definitions:
       schema:
         $ref: "#/schemas/tickets"
 
+  # `ticket_metrics` walks the same ticket list as `tickets` (`GET /api/v2/tickets?sort=-updated_at`,
+  # see AGENTS.md §1) with `include=metric_sets`: every page carries one metric set per listed
+  # ticket in a `metric_sets` array, with the same shape as `GET /tickets/{ticket_id}/metrics`, so the
+  # stream costs one list page per 100 changed tickets and no per-ticket request. The paginator's
+  # `stop_condition` reads the page's `tickets` (`sorted_path`) and their `updated_at`
+  # (`sorted_cursor_field`), because the list is sorted on the tickets and the metric sets carry no
+  # sortable field of their own. `ZendeskSupportTicketMetricSetsExtractor` joins each metric set to
+  # its ticket on the same page by `ticket_id` and stamps it with the ticket's `updated_at`, as a
+  # unix timestamp, as `_ab_updated_at`, the stream's cursor field since 4.3.0. The per-ticket path
+  # wrote the ticket's `generated_timestamp` there; that value is not used, because a system-only
+  # update bumps it without touching `updated_at`, and a ticket deep in a long walk would push the
+  # saved cursor past tickets updated while the walk ran. With the ticket's `updated_at` the
+  # inherited record filter keeps exactly the metric sets whose ticket `tickets` keeps and the state
+  # is the same resume point `tickets` saves. A first sync, a cleared stream and a full-refresh sync
+  # read the metric sets of the tickets updated since `start_date`, like `tickets`, where 5.x read
+  # every unarchived metric set the account had. `TicketMetricsStateMigration` turns the 5.x
+  # substream state and the 6.0.0 `StateDelegatingStream` state into the flat
+  # `{"_ab_updated_at": ...}` this stream saves.
   ticket_metrics_stream:
-    type: StateDelegatingStream
-    name: "ticket_metrics"
+    $ref: "#/definitions/sorted_list_stream"
+    retriever:
+      $ref: "#/definitions/sorted_list_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort: "-updated_at"
+          support_type_scope: "all"
+          include: "metric_sets"
+      record_selector:
+        $ref: "#/definitions/sorted_list_stream/retriever/record_selector"
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_declarative_manifest.components.ZendeskSupportTicketMetricSetsExtractor
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TicketMetricsStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/ticket_metrics"
-    full_refresh_stream:
-      $ref: "#/definitions/base_incremental_stream"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ticket_metrics"
+    $parameters:
       name: "ticket_metrics"
+      path: "tickets"
+      sorted_path: "tickets"
+      sorted_cursor_field: "updated_at"
+      cursor_field: "_ab_updated_at"
       primary_key: "id"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_datetime_formats:
-          - "%s"
-        datetime_format: "%s"
-        cursor_field: "_ab_updated_at"
-        start_datetime:
-          datetime: "0" # not used as the API does not take filters in and we don't define a step so there is only one request
-      retriever:
-        $ref: "#/definitions/retriever"
-        ignore_stream_slicer_parameters_on_paginated_requests: true
-        requester:
-          $ref: "#/definitions/retriever/requester"
-          path: "ticket_metrics"
-        paginator:
-          $ref: "#/definitions/links_next_paginator"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: ["ticket_metrics"]
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - "_ab_updated_at"
-              value: "{{ format_datetime(record['updated_at'], '%s') }}"
-    incremental_stream:
-      $ref: "#/definitions/base_incremental_stream"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ticket_metrics"
-      name: "ticket_metrics"
-      primary_key: "id"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_datetime_formats:
-          - "%s"
-        datetime_format: "%s"
-        cursor_field: "_ab_updated_at"
-        start_datetime:
-          datetime: "0" # not used as we should start from the state value
-      retriever:
-        $ref: "#/definitions/retriever"
-        ignore_stream_slicer_parameters_on_paginated_requests: true
-        requester:
-          $ref: "#/definitions/retriever/requester"
-          path: "tickets/{{ stream_partition.ticket_id }}/metrics"
-          error_handler:
-            type: DefaultErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-            response_filters:
-              - $ref: "#/definitions/oauth_token_refresh_response_filter"
-              - http_codes: [403]
-                action: IGNORE
-                failure_type: config_error
-                error_message: "Please ensure the authenticated user has access to stream: {self.name}. If the issue persists, contact Zendesk support."
-              - http_codes: [404]
-                action: IGNORE
-                failure_type: config_error
-                error_message: "Not found. Ticket was deleted. If the issue persists, contact Zendesk support."
-        paginator:
-          type: NoPagination
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: ["ticket_metric"]
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: "id"
-              partition_field: "ticket_id"
-              extra_fields:
-                - ["generated_timestamp"]
-              stream:
-                $ref: "#/definitions/tickets_stream"
-              incremental_dependency: true
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - "_ab_updated_at"
-              value: "{{ record['generated_timestamp'] if 'generated_timestamp' in record else stream_slice.extra_fields['generated_timestamp'] }}"
-              value_type: "integer"
 
   topics_stream:
     $ref: "#/definitions/semi_incremental_stream"

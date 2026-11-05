@@ -185,21 +185,6 @@ class ZendeskSupportRequestBuilder:
         return cls.users_endpoint(authenticator).with_include("identities")
 
     @classmethod
-    def ticket_metrics_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /ticket_metrics endpoint (alias for stateless)."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "ticket_metrics").with_authenticator(authenticator)
-
-    @classmethod
-    def stateless_ticket_metrics_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /ticket_metrics endpoint (stateless)."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "ticket_metrics").with_authenticator(authenticator)
-
-    @classmethod
-    def stateful_ticket_metrics_endpoint(cls, authenticator: Authenticator, ticket_id: int) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /tickets/{ticket_id}/metrics endpoint (stateful)."""
-        return cls(cls.DEFAULT_SUBDOMAIN, f"tickets/{ticket_id}/metrics").with_authenticator(authenticator)
-
-    @classmethod
     def tickets_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
         """Create a request builder for the first page of the ticket list
         (`/tickets?sort=-updated_at&support_type_scope=all&page[size]=100`).
@@ -216,6 +201,14 @@ class ZendeskSupportRequestBuilder:
             .with_query_param("support_type_scope", "all")
             .with_page_size(100)
         )
+
+    @classmethod
+    def ticket_metrics_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the first page of the ticket list with the metric sets side-load
+        (`/tickets?sort=-updated_at&support_type_scope=all&include=metric_sets&page[size]=100`), which is
+        what the `ticket_metrics` stream reads.
+        """
+        return cls.tickets_endpoint(authenticator).with_include("metric_sets")
 
     @classmethod
     def tickets_search_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
