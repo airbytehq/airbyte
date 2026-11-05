@@ -2,6 +2,10 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Sample Data Migration Guide
 
+## Upgrading to 8.0.0
+
+The `always_updated` configuration field has been removed from the connection spec. The option is no longer available when configuring connections. Existing saved values remain honored by the runtime, but new configurations use the default (`true`). Review connections that rely on `always_updated: false` before recreating their configuration.
+
 ## Upgrading to 7.0.0
 
 This is a test breaking change to validate breaking change infrastructure. No actual schema or functionality changes were made. No user action is required.
