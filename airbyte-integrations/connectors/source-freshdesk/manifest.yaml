@@ -905,6 +905,13 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/sla_policies"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['id'] | int }}"
+              value_type: integer
     solution_articles:
       type: DeclarativeStream
       name: solution_articles
