@@ -77,6 +77,15 @@ class PipelineEventBookkeepingRouter(
     private val terminalStreamStatus = ConcurrentHashMap<DestinationStream.Descriptor, Boolean>()
     private val checkpointIndexes = ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>()
     private val unopenedStreams = ConcurrentHashSet(catalog.streams.map { it.mappedDescriptor })
+    private val completedStreams = ConcurrentHashSet<DestinationStream.Descriptor>()
+    private val completions = AtomicInteger(0)
+
+    /** The number of streams that read COMPLETE on any data channel; it only grows. */
+    val completionCount: Int
+        get() = completions.get()
+
+    /** Holds at least [completionCount] streams when read after it. */
+    fun completedStreams(): Set<DestinationStream.Descriptor> = completedStreams.toSet()
 
     private fun recordTerminalStatus(
         descriptor: DestinationStream.Descriptor,
@@ -138,6 +147,9 @@ class PipelineEventBookkeepingRouter(
             is DestinationRecordStreamComplete -> {
                 log.info { "Read COMPLETE for stream ${stream.mappedDescriptor}" }
                 recordTerminalStatus(stream.mappedDescriptor, isComplete = true)
+                if (completedStreams.add(stream.mappedDescriptor)) {
+                    completions.incrementAndGet()
+                }
                 if (!markEndOfStreamAtEndOfSync) {
                     manager.markEndOfStream(true)
                 }

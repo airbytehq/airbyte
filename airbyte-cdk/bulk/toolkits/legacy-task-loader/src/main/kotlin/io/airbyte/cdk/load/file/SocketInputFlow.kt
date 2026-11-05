@@ -38,10 +38,24 @@ class SocketInputFlow(
         pipelineEventBookkeepingRouter.use {
             socket.connect { inputStream ->
                 var messagesRead = 0L
+                var completionsSeen = 0
                 inputFormatReader.read(inputStream).forEach { message ->
                     messagesRead++
                     if (messagesRead % logPerNRecords == 0L) {
                         log.info { "Read $messagesRead messages from ${socket.socketPath}" }
+                    }
+
+                    // A stream's COMPLETE arrives on one socket only. Without this, every other
+                    // socket's pipeline would hold an open object and its buffer for the stream
+                    // until EOF, and on a sync of many streams those add up to the heap.
+                    val completions = pipelineEventBookkeepingRouter.completionCount
+                    if (completions != completionsSeen) {
+                        completionsSeen = completions
+                        val completedElsewhere =
+                            pipelineEventBookkeepingRouter.completedStreams() - sawEndOfStream
+                        if (completedElsewhere.isNotEmpty()) {
+                            collector.emit(PipelineHeartbeat(completedElsewhere))
+                        }
                     }
 
                     when (message) {
