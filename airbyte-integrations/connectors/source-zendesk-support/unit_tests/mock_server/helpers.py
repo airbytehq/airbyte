@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-from datetime import timedelta
-from typing import List, Optional, Tuple
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional, Sequence, Tuple
 
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -18,6 +18,8 @@ from .response_builder import (
     TicketFormsResponseBuilder,
     TicketsRecordBuilder,
     TicketsResponseBuilder,
+    TicketsSearchRecordBuilder,
+    TicketsSearchResponseBuilder,
 )
 from .utils import datetime_to_string
 
@@ -137,6 +139,38 @@ def given_ticket_list(http_mocker: HttpMocker, authenticator: Authenticator, tic
     for ticket_id, updated_at in tickets:
         response = response.with_record(TicketsRecordBuilder.tickets_record().with_id(ticket_id).with_cursor(updated_at))
     http_mocker.get(ZendeskSupportRequestBuilder.tickets_endpoint(authenticator).build(), response.build())
+
+
+def closed_tickets_search_query(start_time: int) -> str:
+    """The `query` parameter the `closed_tickets_search` parent sends for a walk starting at `start_time`
+    (a unix timestamp): the slice start in ISO 8601 plus the `status:closed` term."""
+    return f"updated_at>={datetime.fromtimestamp(start_time, timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')} status:closed"
+
+
+def given_closed_ticket_search(
+    http_mocker: HttpMocker, authenticator: Authenticator, tickets: Sequence[Tuple[int, int]] = (), query: Optional[str] = None
+) -> None:
+    """Mock one page of the `closed_tickets_search` parent walk of the per-ticket substreams
+    (`GET /search/export?filter[type]=ticket&page[size]=1000&query=updated_at>=<slice start> status:closed`),
+    which is how those streams reach archived tickets. Each ticket is `(id, updated_at as a unix timestamp)`;
+    the record's `generated_timestamp` is set to the same instant. With `query` the request must carry exactly
+    that `query` parameter (see `closed_tickets_search_query`); without it any query matches.
+    """
+    request = ZendeskSupportRequestBuilder.tickets_search_endpoint(authenticator)
+    if query is None:
+        request = request.with_any_query_params()
+    else:
+        request = request.with_page_size(1000).with_query_param("filter[type]", "ticket").with_query_param("query", query)
+    response = TicketsSearchResponseBuilder.tickets_search_response()
+    for ticket_id, updated_at in tickets:
+        response = response.with_record(
+            TicketsSearchRecordBuilder.tickets_search_record()
+            .with_id(ticket_id)
+            .with_field(FieldPath("updated_at"), datetime.fromtimestamp(updated_at, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+            .with_field(FieldPath("generated_timestamp"), updated_at)
+            .with_field(FieldPath("status"), "closed")
+        )
+    http_mocker.get(request.build(), response.build())
 
 
 def given_tickets_with_state(

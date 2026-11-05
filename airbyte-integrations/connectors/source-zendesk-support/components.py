@@ -91,6 +91,38 @@ class TicketsStateMigration(StateMigration):
         return {"updated_at": str(max(cursor_value - self.REWIND_SECONDS, 0))}
 
 
+class ClosedTicketsSearchStateMigration(StateMigration):
+    """Seeds the `closed_tickets_search` parent cursor from a state saved before that parent existed.
+
+    The per-ticket substreams (`ticket_audits_per_ticket`, `ticket_events`, `ticket_comments` and
+    `ticket_metric_events`) have two parents since 6.0.0: the `tickets` list and `closed_tickets_search`,
+    an Export Search of the closed tickets updated since the cursor, which is how archived tickets are
+    reached. A flat pre-6.0.0 state (one cursor value) seeds both parents through the CDK factory. A
+    nested state whose `parent_state` lacks `closed_tickets_search` (5.7.0 `ticket_audits_per_ticket`
+    states carry only `tickets`) reaches this migration as the child's global cursor instead, keyed on
+    the child's cursor field (`_ab_updated_at`, `timestamp` or `created_at`). That value is the newest
+    ticket the substream has read, so it is re-keyed onto `updated_at` and rewound by one hour, as
+    `TicketsStateMigration` does for the `tickets` parent, so the first sync re-reads the closed
+    tickets changed around the saved cursor rather than every closed ticket since `start_date`. State
+    that already carries `updated_at` is left alone; a state with several values or an unparsable
+    value drops the cursor so the parent walks from `start_date`.
+    """
+
+    REWIND_SECONDS = 3600
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and "updated_at" not in stream_state
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        values = [value for value in stream_state.values() if not isinstance(value, (dict, list))]
+        if len(values) != 1 or len(values) != len(stream_state):
+            return {}
+        cursor_value = TicketMetricEventsStateMigration._to_unix_timestamp(values[0])
+        if cursor_value is None:
+            return {}
+        return {"updated_at": str(max(cursor_value - self.REWIND_SECONDS, 0))}
+
+
 class TicketMetricEventsStateMigration(StateMigration):
     """Migrates a 5.x `ticket_metric_events` state to the per-ticket cursor of 6.0.0.
 
@@ -102,8 +134,10 @@ class TicketMetricEventsStateMigration(StateMigration):
     with the future breach moment, so a saved `time` can lie ahead of the last sync. The migration
     clamps the value to the migration time, rewinds it by one hour (the rewind `TicketsStateMigration`
     applies to the parent cursor, on top of the parent's own lookback window) and uses the result as
-    both the global cursor and the parent `updated_at` cursor, so the first 6.0.0 sync walks the
-    tickets changed since the last export. A state that already carries `_ab_updated_at`, `state` or
+    the global cursor and as the `updated_at` cursor of both parents (`tickets` and
+    `closed_tickets_search`), so the first 6.0.0 sync walks the tickets changed since the last
+    export. The parents are seeded here rather than by the CDK's flat-state fallback because the
+    factory reads the migrated state, which is no longer flat. A state that already carries `_ab_updated_at`, `state` or
     `parent_state` is left alone; an unparsable value drops the state so the next sync re-reads from
     `start_date`.
     """
@@ -123,7 +157,10 @@ class TicketMetricEventsStateMigration(StateMigration):
             return {}
         now = int(ab_datetime_now().timestamp())
         value = str(max(min(cursor_value, now) - self.REWIND_SECONDS, 0))
-        return {"_ab_updated_at": value, "parent_state": {"tickets": {"updated_at": value}}}
+        return {
+            "_ab_updated_at": value,
+            "parent_state": {"tickets": {"updated_at": value}, "closed_tickets_search": {"updated_at": value}},
+        }
 
     @staticmethod
     def _to_unix_timestamp(value: Any) -> Optional[int]:

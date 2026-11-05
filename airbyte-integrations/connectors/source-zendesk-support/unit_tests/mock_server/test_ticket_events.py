@@ -8,7 +8,7 @@ Incremental Ticket Event Export it replaces.
 """
 
 from datetime import timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 from unittest import TestCase
 
 import freezegun
@@ -19,7 +19,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 
 from .config import ConfigBuilder
-from .helpers import given_ticket_list
+from .helpers import closed_tickets_search_query, given_closed_ticket_search, given_ticket_list
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import ErrorResponseBuilder, TicketAuditsPerTicketResponseBuilder, TicketAuditsRecordBuilder
 from .utils import datetime_to_string, read_stream
@@ -77,8 +77,16 @@ def _given_audits(http_mocker: HttpMocker, ticket_id: int, audits: List[TicketAu
     http_mocker.get(_audits_request(ticket_id), response.build())
 
 
-def _given_tickets(http_mocker: HttpMocker, tickets: List[Tuple[int, int]]) -> None:
+def _given_tickets(
+    http_mocker: HttpMocker,
+    tickets: List[Tuple[int, int]],
+    closed_tickets: Sequence[Tuple[int, int]] = (),
+    closed_query: Optional[str] = None,
+) -> None:
+    """Mock both parent walks: the ticket list and the `closed_tickets_search` walk (`closed_tickets`, where
+    archived tickets are listed; `closed_query` pins its exact query)."""
     given_ticket_list(http_mocker, _AUTHENTICATOR, tickets)
+    given_closed_ticket_search(http_mocker, _AUTHENTICATOR, closed_tickets, closed_query)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -203,12 +211,13 @@ class TestTicketEventsStreamIncremental(TestCase):
 
     @HttpMocker()
     def test_given_5_x_state_when_read_then_the_parent_walk_starts_from_the_saved_cursor(self, http_mocker: HttpMocker) -> None:
-        """A 5.x state is the flat `{"timestamp": "<unix timestamp>"}` cursor of the export. The CDK seeds the
-        parent `tickets` cursor from that single value, and every audit of a visited ticket is emitted."""
+        """A 5.x state is the flat `{"timestamp": "<unix timestamp>"}` cursor of the export. The CDK seeds both
+        parent cursors (`tickets` and `closed_tickets_search`) from that single value, so the search walk starts
+        one hour (its lookback) before the saved cursor, and every audit of a visited ticket is emitted."""
         previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
         latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"timestamp": str(previous)}).build()
-        _given_tickets(http_mocker, [(101, latest)])
+        _given_tickets(http_mocker, [(101, latest)], closed_query=closed_tickets_search_query(previous - 3600))
         _given_audits(
             http_mocker,
             101,
@@ -227,6 +236,7 @@ class TestTicketEventsStreamIncremental(TestCase):
         new_state = output.most_recent_state.stream_state.__dict__
         assert new_state["state"] == {"timestamp": str(latest)}
         assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}
+        assert new_state["parent_state"]["closed_tickets_search"] == {"updated_at": str(previous)}
 
     @HttpMocker()
     def test_given_6_0_state_when_read_then_only_changed_tickets_are_visited_and_all_their_audits_are_re_emitted(
@@ -246,13 +256,13 @@ class TestTicketEventsStreamIncremental(TestCase):
                     "use_global_cursor": True,
                     "state": {"timestamp": str(previous)},
                     "lookback_window": 0,
-                    "parent_state": {"tickets": {"updated_at": str(previous)}},
+                    "parent_state": {"tickets": {"updated_at": str(previous)}, "closed_tickets_search": {"updated_at": str(previous)}},
                 },
             )
             .build()
         )
         # 102 is older than the parent cursor minus one hour, so the walk stops before visiting it.
-        _given_tickets(http_mocker, [(101, latest), (102, previous - 7200)])
+        _given_tickets(http_mocker, [(101, latest), (102, previous - 7200)], closed_query=closed_tickets_search_query(previous - 3600))
         _given_audits(
             http_mocker,
             101,
@@ -270,3 +280,27 @@ class TestTicketEventsStreamIncremental(TestCase):
         new_state = output.most_recent_state.stream_state.__dict__
         assert new_state["state"] == {"timestamp": str(latest)}
         assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestTicketEventsArchivedTickets(TestCase):
+    @HttpMocker()
+    def test_given_archived_ticket_listed_by_the_search_parent_when_read_then_its_audits_are_emitted_as_events(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """The ticket list never returns an archived ticket; the `closed_tickets_search` parent does, so the
+        audits a bulk update adds to an archived ticket still reach `ticket_events`."""
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, [(101, start_time + 10)], closed_tickets=[(185, start_time + 5)])
+        _given_audits(http_mocker, 101, [_audit(1001, 101, _at(_START_DATE, days=1))])
+        _given_audits(http_mocker, 185, [_audit(1851, 185, _at(_START_DATE, days=2))])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config())
+
+        assert len(output.errors) == 0
+        assert sorted((record.record.data["id"], record.record.data["ticket_id"]) for record in output.records) == [
+            (1001, 101),
+            (1851, 185),
+        ]
+        state = output.most_recent_state.stream_state.__dict__
+        assert state["parent_state"]["closed_tickets_search"] == {"updated_at": str(start_time + 5)}

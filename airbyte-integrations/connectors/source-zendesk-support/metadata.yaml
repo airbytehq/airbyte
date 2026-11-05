@@ -71,9 +71,11 @@ data:
           `ticket_events` and `ticket_metric_events` ticket by ticket, as `ticket_metrics`,
           `side_conversations` and `ticket_audits_per_ticket` already did. The `tickets` cursor changes
           from `generated_timestamp` to `updated_at` and the `ticket_metric_events` cursor from `time`
-          to `_ab_updated_at`; saved state is migrated automatically and no reset is required. Archived tickets, deleted tickets, deleted users (`active: false`) and deleted organizations
-          are no longer replicated by these streams: use `tickets_search` for archived tickets and
-          `deleted_tickets` for deleted tickets. Incremental syncs no longer pick up ticket updates that
+          to `_ab_updated_at`; saved state is migrated automatically and no reset is required. Deleted tickets, deleted users (`active: false`) and deleted organizations
+          are no longer replicated by these streams; use `deleted_tickets` for deleted tickets. `tickets`,
+          `side_conversations` and incremental syncs of `ticket_metrics` no longer reach archived tickets (use
+          `tickets_search` for archived ticket records), while `ticket_comments`, `ticket_events`,
+          `ticket_metric_events` and `ticket_audits_per_ticket` find them through Zendesk's search index. Incremental syncs no longer pick up ticket updates that
           change only `generated_timestamp`, and a ticket's metric events are read only when the ticket
           itself changes. Incremental sync modes keep the rows already in your destination; a sync mode
           that replaces the table, or a cleared stream, rebuilds it without those records, so back up

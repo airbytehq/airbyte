@@ -10,7 +10,7 @@ archived tickets. It is always discovered; users opt in by selecting it in the c
 import json
 import logging
 from datetime import timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -28,6 +28,7 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from ..conftest import _YAML_FILE_PATH, get_source
 from .config import ConfigBuilder
+from .helpers import closed_tickets_search_query, given_closed_ticket_search
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import (
     ErrorResponseBuilder,
@@ -55,18 +56,27 @@ def _config() -> Dict[str, Any]:
     )
 
 
-def _given_tickets(http_mocker: HttpMocker, start_time: int, tickets: List[Dict[str, int]]) -> None:
-    """Mock the parent ticket list. Each ticket is {"id": ..., "updated_at": <unix timestamp>}; the builder
-    sets `generated_timestamp` to the same instant, which is what `_ab_updated_at` is derived from.
+def _given_tickets(
+    http_mocker: HttpMocker,
+    start_time: int,
+    tickets: List[Dict[str, int]],
+    closed_tickets: Sequence[Tuple[int, int]] = (),
+    closed_query: Optional[str] = None,
+) -> None:
+    """Mock both parent walks. Each ticket of the list is {"id": ..., "updated_at": <unix timestamp>}; the
+    builder sets `generated_timestamp` to the same instant, which is what `_ab_updated_at` is derived from.
 
     The list request carries no start time: the parent filters client-side, so a ticket older than
-    `start_time` would be dropped before any audits are requested for it.
+    `start_time` would be dropped before any audits are requested for it. `closed_tickets` are the
+    `(id, updated_at)` pairs the `closed_tickets_search` parent returns (archived tickets are only listed
+    there); `closed_query` pins the exact search query, otherwise any query matches.
     """
     response = TicketsResponseBuilder.tickets_response()
     for ticket in tickets:
         assert ticket["updated_at"] >= start_time
         response = response.with_record(TicketsRecordBuilder.tickets_record().with_id(ticket["id"]).with_cursor(ticket["updated_at"]))
     http_mocker.get(ZendeskSupportRequestBuilder.tickets_endpoint(_AUTHENTICATOR).build(), response.build())
+    given_closed_ticket_search(http_mocker, _AUTHENTICATOR, closed_tickets, closed_query)
 
 
 def _audit(audit_id: int, ticket_id: int) -> TicketAuditsRecordBuilder:
@@ -350,3 +360,151 @@ class TestTicketAuditsPerTicketApiBudget(TestCase):
             is not None
         )
         assert budget.get_matching_policy(self._request("/api/v2/tickets.json?page%5Bafter%5D=abc&page%5Bsize%5D=100")) is not None
+
+    def test_closed_ticket_search_walk_matches_the_search_policy_on_every_page(self) -> None:
+        """The second parent walks Export Search Results; its `links.next` URLs end in `.json`, and both
+        spellings must share the search policy (one policy per endpoint, shared with `tickets_search`)."""
+        budget = self._budget(_config())
+        first_page = budget.get_matching_policy(
+            self._request(
+                "/api/v2/search/export?filter%5Btype%5D=ticket&page%5Bsize%5D=1000&query=updated_at%3E%3D2026-01-01T00%3A00%3A00Z+status%3Aclosed"
+            )
+        )
+        next_page = budget.get_matching_policy(
+            self._request("/api/v2/search/export.json?filter%5Btype%5D=ticket&page%5Bafter%5D=abc&page%5Bsize%5D=1000")
+        )
+        assert first_page is not None
+        assert next_page is first_page
+        assert budget.get_matching_policy(self._request("/api/v2/search?query=type%3Aticket")) is not first_page
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestTicketAuditsPerTicketArchivedTickets(TestCase):
+    """The partition router has a second parent, `closed_tickets_search`: an Export Search of the closed
+    tickets updated since its cursor. The ticket list never returns an archived ticket, so that walk is how
+    archived tickets (and their audits added by a bulk update) are reached."""
+
+    @HttpMocker()
+    def test_given_no_state_when_read_then_the_search_walk_starts_at_start_date_and_the_archived_ticket_is_read(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(
+            http_mocker,
+            start_time,
+            [{"id": 101, "updated_at": start_time + 10}],
+            closed_tickets=[(185, start_time + 5)],
+            closed_query=closed_tickets_search_query(start_time),
+        )
+        _given_audits(http_mocker, 101, [1001])
+        _given_audits(http_mocker, 185, [1851])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config())
+
+        assert len(output.errors) == 0
+        records = {record.record.data["id"]: record.record.data for record in output.records}
+        assert sorted(records) == [1001, 1851]
+        # The search record's `generated_timestamp` feeds `_ab_updated_at`, as the list's does.
+        assert records[1851]["_ab_updated_at"] == start_time + 5
+        state = output.most_recent_state.stream_state.__dict__
+        assert state["parent_state"] == {
+            "tickets": {"updated_at": str(start_time + 10)},
+            "closed_tickets_search": {"updated_at": str(start_time + 5)},
+        }
+        assert state["state"] == {"_ab_updated_at": str(start_time + 10)}
+
+    @HttpMocker()
+    def test_given_closed_ticket_listed_by_both_parents_when_read_then_its_audits_are_still_emitted(self, http_mocker: HttpMocker) -> None:
+        """A closed ticket that is not archived yet is returned by the list and by the search. The per-partition
+        cursor skips the second copy while the first is still being processed and reads it again otherwise, so
+        the audits come back once or twice; `id` deduplicates downstream."""
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, start_time, [{"id": 101, "updated_at": start_time + 10}], closed_tickets=[(101, start_time + 10)])
+        _given_audits(http_mocker, 101, [1001])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config())
+
+        assert len(output.errors) == 0
+        assert {record.record.data["id"] for record in output.records} == {1001}
+        assert 1 <= len(output.records) <= 2
+        state = output.most_recent_state.stream_state.__dict__
+        assert state["parent_state"] == {
+            "tickets": {"updated_at": str(start_time + 10)},
+            "closed_tickets_search": {"updated_at": str(start_time + 10)},
+        }
+
+    @HttpMocker()
+    def test_given_5_7_state_when_read_then_the_search_parent_is_seeded_from_the_global_cursor(self, http_mocker: HttpMocker) -> None:
+        """A 5.7.0 state carries `parent_state.tickets` only. The CDK hands the search parent the global
+        cursor instead, and `ClosedTicketsSearchStateMigration` re-keys it onto `updated_at` minus one hour, so
+        with the parent's one-hour lookback the search walk starts two hours before the saved cursor rather
+        than at `start_date`."""
+        previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "use_global_cursor": True,
+                    "state": {"_ab_updated_at": str(previous)},
+                    "lookback_window": 0,
+                    "parent_state": {"tickets": {"generated_timestamp": str(previous)}},
+                },
+            )
+            .build()
+        )
+        _given_tickets(
+            http_mocker,
+            previous - 7200,
+            [{"id": 101, "updated_at": previous - 1800}],
+            closed_tickets=[(185, previous - 3000)],
+            closed_query=closed_tickets_search_query(previous - 7200),
+        )
+        _given_audits(http_mocker, 101, [1001])
+        _given_audits(http_mocker, 185, [1851])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
+
+        assert len(output.errors) == 0
+        assert sorted(record.record.data["id"] for record in output.records) == [1001, 1851]
+        new_state = output.most_recent_state.stream_state.__dict__
+        assert new_state["parent_state"]["tickets"] == {"updated_at": str(previous - 1800)}
+        assert new_state["parent_state"]["closed_tickets_search"] == {"updated_at": str(previous - 3000)}
+
+    @HttpMocker()
+    def test_given_state_with_both_parents_when_read_then_the_search_walk_resumes_from_its_own_cursor(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
+        search_previous = previous - 86400
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    "use_global_cursor": True,
+                    "state": {"_ab_updated_at": str(previous)},
+                    "lookback_window": 0,
+                    "parent_state": {
+                        "tickets": {"updated_at": str(previous)},
+                        "closed_tickets_search": {"updated_at": str(search_previous)},
+                    },
+                },
+            )
+            .build()
+        )
+        _given_tickets(
+            http_mocker,
+            previous - 3600,
+            [{"id": 101, "updated_at": previous}],
+            closed_query=closed_tickets_search_query(search_previous - 3600),
+        )
+        _given_audits(http_mocker, 101, [1001])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
+
+        assert len(output.errors) == 0
+        assert [record.record.data["id"] for record in output.records] == [1001]
+        new_state = output.most_recent_state.stream_state.__dict__
+        # No closed ticket changed, so the search cursor stays where it was.
+        assert new_state["parent_state"]["closed_tickets_search"] == {"updated_at": str(search_previous)}

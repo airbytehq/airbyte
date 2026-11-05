@@ -183,20 +183,24 @@ def test_ticket_metric_events_state_migration_should_migrate(stream_state, expec
     assert migration.should_migrate(stream_state) is expected
 
 
+def _both_parents(updated_at: str) -> dict:
+    return {"tickets": {"updated_at": updated_at}, "closed_tickets_search": {"updated_at": updated_at}}
+
+
 @freezegun.freeze_time("2026-06-01T00:00:00Z")
 @pytest.mark.parametrize(
     "stream_state, expected",
     [
-        # Rewound by one hour and used for both the global cursor and the parent `tickets` cursor.
-        ({"time": "1780000000"}, {"_ab_updated_at": "1779996400", "parent_state": {"tickets": {"updated_at": "1779996400"}}}),
-        ({"time": 1780000000}, {"_ab_updated_at": "1779996400", "parent_state": {"tickets": {"updated_at": "1779996400"}}}),
+        # Rewound by one hour and used for the global cursor and for both parent cursors.
+        ({"time": "1780000000"}, {"_ab_updated_at": "1779996400", "parent_state": _both_parents("1779996400")}),
+        ({"time": 1780000000}, {"_ab_updated_at": "1779996400", "parent_state": _both_parents("1779996400")}),
         # An ISO-8601 value, as older versions wrote it, is parsed first.
-        ({"time": "2026-05-28T00:00:00Z"}, {"_ab_updated_at": "1779922800", "parent_state": {"tickets": {"updated_at": "1779922800"}}}),
+        ({"time": "2026-05-28T00:00:00Z"}, {"_ab_updated_at": "1779922800", "parent_state": _both_parents("1779922800")}),
         # The export dated SLA `breach` events with the future breach moment: a value past the migration
         # time (2026-06-01T00:00:00Z = 1780272000) is clamped to it before the rewind.
-        ({"time": "1790000000"}, {"_ab_updated_at": "1780268400", "parent_state": {"tickets": {"updated_at": "1780268400"}}}),
+        ({"time": "1790000000"}, {"_ab_updated_at": "1780268400", "parent_state": _both_parents("1780268400")}),
         # Never rewinds below the epoch.
-        ({"time": "100"}, {"_ab_updated_at": "0", "parent_state": {"tickets": {"updated_at": "0"}}}),
+        ({"time": "100"}, {"_ab_updated_at": "0", "parent_state": _both_parents("0")}),
         # An unparsable cursor drops the state so the next sync starts from `start_date`.
         ({"time": "not-a-timestamp"}, {}),
         ({"time": None}, {}),
@@ -204,4 +208,45 @@ def test_ticket_metric_events_state_migration_should_migrate(stream_state, expec
 )
 def test_ticket_metric_events_state_migration_migrate(stream_state, expected, components_module):
     migration = components_module.TicketMetricEventsStateMigration()
+    assert migration.migrate(stream_state) == expected
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        # The global cursor of a per-ticket substream, handed to the parent when `parent_state` predates it.
+        ({"_ab_updated_at": "1780000000"}, True),
+        ({"timestamp": "1780000000"}, True),
+        ({"created_at": "1780000000"}, True),
+        ({"generated_timestamp": "1780000000"}, True),
+        # Already keyed on the parent's cursor.
+        ({"updated_at": "1780000000"}, False),
+        ({}, False),
+        (None, False),
+    ],
+)
+def test_closed_tickets_search_state_migration_should_migrate(stream_state, expected, components_module):
+    migration = components_module.ClosedTicketsSearchStateMigration()
+    assert migration.should_migrate(stream_state) is expected
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        # Re-keyed onto `updated_at` and rewound by one hour, whatever the child's cursor field was.
+        ({"_ab_updated_at": "1780000000"}, {"updated_at": "1779996400"}),
+        ({"timestamp": 1780000000}, {"updated_at": "1779996400"}),
+        ({"created_at": "2026-05-28T00:00:00Z"}, {"updated_at": "1779922800"}),
+        ({"generated_timestamp": "1780000000"}, {"updated_at": "1779996400"}),
+        # Never rewinds below the epoch.
+        ({"_ab_updated_at": "100"}, {"updated_at": "0"}),
+        # Anything but a single scalar cursor value drops the cursor: the parent walks from `start_date`.
+        ({"_ab_updated_at": "not-a-timestamp"}, {}),
+        ({"_ab_updated_at": None}, {}),
+        ({"_ab_updated_at": "1780000000", "lookback_window": 0}, {}),
+        ({"states": [{"partition": {"ticket_id": 1}, "cursor": {"_ab_updated_at": "1780000000"}}]}, {}),
+    ],
+)
+def test_closed_tickets_search_state_migration_migrate(stream_state, expected, components_module):
+    migration = components_module.ClosedTicketsSearchStateMigration()
     assert migration.migrate(stream_state) == expected

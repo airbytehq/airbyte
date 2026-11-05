@@ -10,7 +10,7 @@ usable cursor because Zendesk dates SLA `breach` events with the future breach m
 """
 
 from datetime import timedelta
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 from unittest import TestCase
 
 import freezegun
@@ -21,7 +21,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 
 from .config import ConfigBuilder
-from .helpers import given_ticket_list
+from .helpers import closed_tickets_search_query, given_closed_ticket_search, given_ticket_list
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import ErrorResponseBuilder, TicketMetricEventsRecordBuilder, TicketMetricEventsResponseBuilder
 from .utils import datetime_to_string, read_stream
@@ -64,8 +64,16 @@ def _given_metric_events(http_mocker: HttpMocker, ticket_id: int, events: List[T
     http_mocker.get(ZendeskSupportRequestBuilder.ticket_metric_events_endpoint(_AUTHENTICATOR, ticket_id).build(), response.build())
 
 
-def _given_tickets(http_mocker: HttpMocker, tickets: List[Tuple[int, int]]) -> None:
+def _given_tickets(
+    http_mocker: HttpMocker,
+    tickets: List[Tuple[int, int]],
+    closed_tickets: Sequence[Tuple[int, int]] = (),
+    closed_query: Optional[str] = None,
+) -> None:
+    """Mock both parent walks: the ticket list and the `closed_tickets_search` walk (`closed_tickets`, where
+    archived tickets are listed; `closed_query` pins its exact query)."""
     given_ticket_list(http_mocker, _AUTHENTICATOR, tickets)
+    given_closed_ticket_search(http_mocker, _AUTHENTICATOR, closed_tickets, closed_query)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -209,14 +217,14 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
                     "use_global_cursor": True,
                     "state": {"_ab_updated_at": str(previous)},
                     "lookback_window": 0,
-                    "parent_state": {"tickets": {"updated_at": str(previous)}},
+                    "parent_state": {"tickets": {"updated_at": str(previous)}, "closed_tickets_search": {"updated_at": str(previous)}},
                 },
             )
             .build()
         )
-        # The parent walk resumes from the saved parent cursor, not from start_date; the whole history of a
+        # The parent walks resume from the saved parent cursors, not from start_date; the whole history of a
         # changed ticket comes back, including events older than the saved cursor.
-        _given_tickets(http_mocker, [(101, latest)])
+        _given_tickets(http_mocker, [(101, latest)], closed_query=closed_tickets_search_query(previous - 3600))
         _given_metric_events(
             http_mocker,
             101,
@@ -238,13 +246,14 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
     @HttpMocker()
     def test_given_5_x_state_when_read_then_the_parent_walk_starts_one_hour_before_the_saved_cursor(self, http_mocker: HttpMocker) -> None:
         """A 5.x state is the flat `{"time": "<unix timestamp>"}` cursor of the export. The migration turns
-        it into the parent `tickets` cursor, rewound by one hour, so the first 6.0.0 sync walks the tickets
-        changed since the saved cursor instead of every ticket since `start_date`."""
+        it into both parent cursors (`tickets` and `closed_tickets_search`), rewound by one hour, so the first
+        6.0.0 sync walks the tickets changed since the saved cursor instead of every ticket since `start_date`;
+        the search walk starts a further hour earlier (its lookback)."""
         previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
         latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"time": str(previous)}).build()
         # One ticket updated 30 minutes before the saved cursor (inside the one-hour rewind) and one after.
-        _given_tickets(http_mocker, [(102, latest), (101, previous - 1800)])
+        _given_tickets(http_mocker, [(102, latest), (101, previous - 1800)], closed_query=closed_tickets_search_query(previous - 7200))
         _given_metric_events(http_mocker, 101, [_event(1001, 101, datetime_to_string(_NOW.subtract(timedelta(days=3, minutes=30))))])
         _given_metric_events(http_mocker, 102, [_event(2001, 102, datetime_to_string(_NOW.subtract(timedelta(days=1))))])
 
@@ -255,6 +264,8 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         new_state = output.most_recent_state.stream_state.__dict__
         assert new_state["state"] == {"_ab_updated_at": str(latest)}
         assert new_state["parent_state"]["tickets"] == {"updated_at": str(latest)}
+        # No closed ticket was listed, so the search cursor stays at the migrated value.
+        assert new_state["parent_state"]["closed_tickets_search"] == {"updated_at": str(previous - 3600)}
 
     @HttpMocker()
     def test_given_5_x_state_dated_in_the_future_when_read_then_the_parent_walk_starts_from_the_clock(
@@ -265,8 +276,9 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         slice; the migration clamps it to the migration time before the one-hour rewind."""
         future = int(_NOW.add(timedelta(days=2)).timestamp())
         updated_at = int(_NOW.subtract(timedelta(minutes=30)).timestamp())
+        now = int(_NOW.timestamp())
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"time": str(future)}).build()
-        _given_tickets(http_mocker, [(101, updated_at)])
+        _given_tickets(http_mocker, [(101, updated_at)], closed_query=closed_tickets_search_query(now - 7200))
         _given_metric_events(http_mocker, 101, [_event(1001, 101, datetime_to_string(_NOW.subtract(timedelta(minutes=30))))])
 
         output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
@@ -276,11 +288,13 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         new_state = output.most_recent_state.stream_state.__dict__
         assert new_state["state"] == {"_ab_updated_at": str(updated_at)}
         assert new_state["parent_state"]["tickets"] == {"updated_at": str(updated_at)}
+        assert new_state["parent_state"]["closed_tickets_search"] == {"updated_at": str(now - 3600)}
 
     @HttpMocker()
     def test_given_5_x_parent_state_when_read_then_parent_cursor_is_migrated_onto_updated_at(self, http_mocker: HttpMocker) -> None:
         """A `parent_state` that still carries the parent's old `generated_timestamp` cursor goes through the
-        `tickets` state migration: rewound by one hour onto `updated_at`."""
+        `tickets` state migration: rewound by one hour onto `updated_at`. Such a state predates the
+        `closed_tickets_search` parent, which is seeded from the global cursor the same way."""
         previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
         state = (
             StateBuilder()
@@ -295,7 +309,7 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
             )
             .build()
         )
-        _given_tickets(http_mocker, [(101, previous - 1800)])
+        _given_tickets(http_mocker, [(101, previous - 1800)], closed_query=closed_tickets_search_query(previous - 7200))
         _given_metric_events(http_mocker, 101, [_event(1001, 101, datetime_to_string(_NOW.subtract(timedelta(days=3, minutes=30))))])
 
         output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
@@ -305,3 +319,27 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         new_state = output.most_recent_state.stream_state.__dict__
         # The parent cursor moves on to the re-read ticket, which is newer than the migrated value.
         assert new_state["parent_state"]["tickets"] == {"updated_at": str(previous - 1800)}
+        assert new_state["parent_state"]["closed_tickets_search"] == {"updated_at": str(previous - 3600)}
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class TestTicketMetricEventsArchivedTickets(TestCase):
+    @HttpMocker()
+    def test_given_archived_ticket_listed_by_the_search_parent_when_read_then_its_metric_events_are_emitted(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """The ticket list never returns an archived ticket; the `closed_tickets_search` parent does, so a new
+        connection still backfills the metric events of tickets archived before its first sync."""
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(http_mocker, [(101, start_time + 10)], closed_tickets=[(185, start_time + 5)])
+        _given_metric_events(http_mocker, 101, [_event(1001, 101, _at(_START_DATE, days=1))])
+        _given_metric_events(http_mocker, 185, [_event(1851, 185, _at(_START_DATE, days=2))])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config())
+
+        assert len(output.errors) == 0
+        records = {record.record.data["id"]: record.record.data for record in output.records}
+        assert sorted(records) == [1001, 1851]
+        assert records[1851]["_ab_updated_at"] == start_time + 5
+        state = output.most_recent_state.stream_state.__dict__
+        assert state["parent_state"]["closed_tickets_search"] == {"updated_at": str(start_time + 5)}

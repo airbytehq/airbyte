@@ -19,12 +19,14 @@ api_budget:
       matchers:
         - url_path_pattern: '^/api/v2/tickets(\.json)?$'
 
+    # Export Search Results: `tickets_search` and the `closed_tickets_search` parent of the per-ticket
+    # substreams. `links.next` URLs use `/api/v2/search/export.json`.
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 100
           interval: PT1M
       matchers:
-        - url_path_pattern: "^/api/v2/search/export$"
+        - url_path_pattern: '^/api/v2/search/export(\.json)?$'
 
     - type: MovingWindowCallRatePolicy
       rates:
@@ -993,11 +995,12 @@ definitions:
       cursor_field: "created_at"
       primary_key: "id"
 
-  # `ticket_comments` reads the Comment events of every audit of the tickets the `tickets` stream
-  # returns, replacing the Incremental Ticket Event Export. The extractor copies the audit's
-  # `ticket_id`, `created_at` and `via` onto each comment and derives `timestamp`, which keeps the
-  # record shape 5.x emitted. The cursor stays `created_at` with unix-timestamp state; a 5.x state
-  # is a single value the CDK uses to seed the parent `tickets` cursor, so no migration is needed.
+  # `ticket_comments` reads the Comment events of every audit of the tickets either parent returns
+  # (`per_ticket_partition_router`), replacing the Incremental Ticket Event Export. The extractor
+  # copies the audit's `ticket_id`, `created_at` and `via` onto each comment and derives `timestamp`,
+  # which keeps the record shape 5.x emitted. The cursor stays `created_at` with unix-timestamp
+  # state; a 5.x state is a single value the CDK uses to seed both parent cursors, so no migration
+  # is needed.
   ticket_comments_stream:
     type: DeclarativeStream
     name: "ticket_comments"
@@ -1096,7 +1099,7 @@ definitions:
       primary_key: "id"
 
   # Cursor for the per-ticket substreams that carry a record cursor of their own (`ticket_events`,
-  # `ticket_comments`, both on the audit's `created_at`): the parent `tickets` walk is bounded by
+  # `ticket_comments`, both on the audit's `created_at`): the parent walks are bounded by
   # `parent_state`, and this cursor tracks the newest record seen. One global value is kept instead
   # of one entry per ticket. The cursor never filters records: a changed ticket re-emits its whole
   # audit history from `start_date` on, because the global value is not the time that ticket was last read (a ticket
@@ -1108,7 +1111,93 @@ definitions:
     $ref: "#/definitions/sorted_list_incremental_sync"
     global_substream_cursor: true
 
-  # One request per ticket the `tickets` stream returns (`incremental_dependency`), reading
+  # Second parent of the per-ticket substreams: the closed tickets updated since the slice start,
+  # read from Export Search Results
+  # (`GET /search/export?filter[type]=ticket&query=updated_at>=<start> status:closed`). The ticket
+  # list never returns an archived ticket (Zendesk archives closed tickets about 120 days after they
+  # close), so on its own the `tickets` parent neither backfills the history of archived tickets on
+  # a first sync nor sees an archived ticket that a bulk update changed; the search index does list
+  # them. `status:closed` keeps the overlap with the list small: only closed tickets are archived
+  # and a closed ticket cannot change status, so every archived ticket matches, while a closed
+  # ticket that is not archived yet is listed by both parents and read twice (`id` deduplicates
+  # downstream). Archiving itself leaves `updated_at` unchanged, so the walk lists an archived
+  # ticket only when something changes it. One walk per sync: no `step` and no upper bound in the
+  # query, `page[size]` 1000 (the endpoint's maximum), cursor pagination on `links.next`, which
+  # carries the query (hence `ignore_stream_slicer_parameters_on_paginated_requests`). The record
+  # `updated_at` feeds the cursor and `generated_timestamp` is carried as an extra field, as on the
+  # `tickets` parent; both can lag the live ticket, which the index refreshes within minutes of a
+  # change (the one-hour lookback covers that). `ClosedTicketsSearchStateMigration` seeds the cursor
+  # when a saved `parent_state` predates this parent. Not a user-facing stream: it exists only under
+  # `parent_state`. See AGENTS.md §7.
+  closed_tickets_search_stream:
+    type: DeclarativeStream
+    name: "closed_tickets_search"
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "search/export"
+        request_parameters:
+          query: "updated_at>={{ format_datetime(stream_interval['start_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }} status:closed"
+          "filter[type]": "ticket"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.get('links', {}).get('next', '') }}"
+          stop_condition: "{{ not response.get('meta', {}).get('has_more', False) }}"
+          page_size: 1000
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: "page[size]"
+          inject_into: request_parameter
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["results"]
+    incremental_sync:
+      $ref: "#/definitions/sorted_list_incremental_sync"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.ClosedTicketsSearchStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/tickets"
+    $parameters:
+      name: "closed_tickets_search"
+      cursor_field: "updated_at"
+
+  # Partition router of the per-ticket substreams (`ticket_audits_per_ticket`, `ticket_events`,
+  # `ticket_comments` and `ticket_metric_events`): one partition per ticket either parent lists.
+  # `incremental_dependency` stores both parent cursors under `parent_state`; a flat 5.x state (one
+  # cursor value) seeds both of them.
+  per_ticket_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        parent_key: "id"
+        partition_field: "ticket_id"
+        extra_fields:
+          - ["generated_timestamp"] # `_ab_updated_at` of `ticket_audits_per_ticket` and `ticket_metric_events`
+        stream:
+          $ref: "#/definitions/tickets_stream"
+        incremental_dependency: true
+      - type: ParentStreamConfig
+        parent_key: "id"
+        partition_field: "ticket_id"
+        extra_fields:
+          - ["generated_timestamp"]
+        stream:
+          $ref: "#/definitions/closed_tickets_search_stream"
+        incremental_dependency: true
+
+  # One request per ticket either parent returns (`per_ticket_partition_router`), reading
   # `GET /tickets/{ticket_id}/audits.json`. Shared by `ticket_audits_per_ticket`, `ticket_events`
   # and `ticket_comments`; each stream supplies its own `record_selector`. The endpoint returns the
   # whole audit history of the ticket, oldest first, so a changed ticket re-emits all of its audits,
@@ -1147,24 +1236,15 @@ definitions:
         field_path: ["audits"]
       schema_normalization: Default
     partition_router:
-      type: SubstreamPartitionRouter
-      parent_stream_configs:
-        - type: ParentStreamConfig
-          parent_key: "id"
-          partition_field: "ticket_id"
-          extra_fields:
-            - ["generated_timestamp"] # used by `ticket_audits_per_ticket` only
-          stream:
-            $ref: "#/definitions/tickets_stream"
-          incremental_dependency: true
+      $ref: "#/definitions/per_ticket_partition_router"
 
   # `ticket_audits_per_ticket` stream. Always discovered, but not in `suggestedStreams`, so users opt
   # in by selecting it in the connection's catalog. `ticket_audits` reads the account-wide
   # GET /ticket_audits list, which Zendesk documents as excluding archived tickets; this stream
-  # reads GET /tickets/{ticket_id}/audits.json for every ticket the `tickets` stream returns. That
-  # endpoint serves archived tickets too, but since 6.0.0 the ticket list never returns an archived
-  # ticket (5.7.0's Incremental Ticket Export did), so the stream reaches the same tickets as
-  # `ticket_audits` and differs in cost and cursor. The cost is one request per created or
+  # reads GET /tickets/{ticket_id}/audits.json for every ticket either parent returns. That
+  # endpoint serves archived tickets too; since 6.0.0 the ticket list never returns an archived
+  # ticket (5.7.0's Incremental Ticket Export did), so the `closed_tickets_search` parent lists
+  # them from the search index. The cost is one request per created or
   # updated ticket against the account-wide plan limit. Like the per-ticket `ticket_metrics` calls,
   # the endpoint has no `api_budget` policy: it runs at the connector's concurrency and relies on
   # 429 + Retry-After backoff. Each changed ticket re-emits all of its audits; `id` deduplicates
@@ -1255,8 +1335,8 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
-  # `ticket_metric_events` reads `GET /tickets/{ticket_id}/metric_events` for every ticket the
-  # `tickets` stream returns (`incremental_dependency`), replacing the Incremental Ticket Metric
+  # `ticket_metric_events` reads `GET /tickets/{ticket_id}/metric_events` for every ticket either
+  # parent returns (`per_ticket_partition_router`), replacing the Incremental Ticket Metric
   # Event Export. The response is an object keyed by metric name whose values are the event lists,
   # hence the `["*", "*"]` extractor; it is not paginated. A changed ticket re-emits its whole
   # metric event history (`id` deduplicates). The cursor is `_ab_updated_at`, the parent ticket's
@@ -1315,16 +1395,7 @@ definitions:
           field_path: ["*", "*"]
         schema_normalization: Default
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: "id"
-            partition_field: "ticket_id"
-            extra_fields:
-              - ["generated_timestamp"]
-            stream:
-              $ref: "#/definitions/tickets_stream"
-            incremental_dependency: true
+        $ref: "#/definitions/per_ticket_partition_router"
     transformations:
       - type: AddFields
         fields:
@@ -1336,13 +1407,13 @@ definitions:
       name: "ticket_metric_events"
       cursor_field: "_ab_updated_at"
 
-  # `ticket_events` reads every audit of the tickets the `tickets` stream returns, replacing the
+  # `ticket_events` reads every audit of the tickets either parent returns, replacing the
   # Incremental Ticket Event Export, and maps each audit onto the export's record shape:
   # `child_events` from `events`, `updater_id` from `author_id`, `timestamp` from `created_at`,
   # `via` from `via.channel` and `system` from `metadata.system`. The child events keep the Ticket
   # Audits API shape (`type` instead of `event_type`, `field_name`/`value` for changes, and
   # Notification events the export left out). The cursor stays `timestamp` with unix-timestamp
-  # state; a 5.x state is a single value the CDK uses to seed the parent `tickets` cursor.
+  # state; a 5.x state is a single value the CDK uses to seed both parent cursors.
   ticket_events_stream:
     type: DeclarativeStream
     name: "ticket_events"
@@ -1432,7 +1503,8 @@ definitions:
   # third-party integrations, so the list is walked newest first and the read stops once a page ends
   # before the slice start (see `sorted_list_stream`). The list endpoint omits archived tickets
   # (closed about 120 days ago or longer) and deleted tickets: `tickets_search` reads archived
-  # tickets and `deleted_tickets` reads deletions. `generated_timestamp` is still returned and is
+  # tickets, the per-ticket substreams reach them through `closed_tickets_search_stream`, and
+  # `deleted_tickets` reads deletions. `generated_timestamp` is still returned and is
   # still what the per-ticket substreams use as their `_ab_updated_at` cursor. See AGENTS.md §1.
   tickets_stream:
     $ref: "#/definitions/sorted_list_stream"
