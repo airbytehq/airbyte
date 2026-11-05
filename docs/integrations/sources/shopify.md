@@ -365,7 +365,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 4.3.6 | 2026-11-05 | TBD | Fixed `transactions` incremental syncs missing status updates of existing transactions, such as refunds moving from pending to success. |
+| 4.3.6 | 2026-11-05 | [91150](https://github.com/airbytehq/airbyte/pull/91150) | Fixed `transactions` incremental syncs missing status updates of existing transactions, such as refunds moving from pending to success. |
 | 4.3.5 | 2026-11-03 | [90900](https://github.com/airbytehq/airbyte/pull/90900) | Require Python 3.11 or newer, retaining support through Python 3.13 |
 | 4.3.3 | 2026-11-03 | [90723](https://github.com/airbytehq/airbyte/pull/90723) | Update dependencies |
 | 4.3.2 | 2026-10-30 | [90254](https://github.com/airbytehq/airbyte/pull/90254) | Explain connection test authentication and access scope failures, and improve invalid store name guidance. |
