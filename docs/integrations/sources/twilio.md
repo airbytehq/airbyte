@@ -167,7 +167,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.1.10 | 2026-11-05 | TBD | Fix incremental state for `messages` and `recordings` not advancing, which caused every sync to re-read history |
+| 1.1.10 | 2026-11-05 | [91143](https://github.com/airbytehq/airbyte/pull/91143) | Fix incremental state for `messages` and `recordings` not advancing, which caused every sync to re-read history |
 | 1.1.9 | 2026-11-03 | [90752](https://github.com/airbytehq/airbyte/pull/90752) | Update dependencies |
 | 1.1.8 | 2026-10-27 | [90064](https://github.com/airbytehq/airbyte/pull/90064) | Update dependencies |
 | 1.1.7 | 2026-10-20 | [89453](https://github.com/airbytehq/airbyte/pull/89453) | Update dependencies |
