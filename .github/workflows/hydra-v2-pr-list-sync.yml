@@ -1,0 +1,57 @@
+name: "Hydra: Sync v2 PR List"
+# Maintains the PR list read by the job-level `if:` in hydra-stage-handoff-v2.yml.
+# check_run/workflow_run payloads have no labels, so run workflow_dispatch once to seed.
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, closed]
+  workflow_dispatch:
+
+run-name: "Hydra: sync v2 PR list"
+
+permissions: {}
+
+jobs:
+  sync:
+    name: Sync hyd-chain-v2 PR list
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+        (github.event.label.name == 'hyd-chain-v2' ||
+          (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'hyd-chain-v2'))))
+    concurrency:
+      group: hydra-v2-pr-list
+      cancel-in-progress: false
+    steps:
+      - name: Authenticate as GitHub App
+        id: get-app-token
+        uses: actions/create-github-app-token@v3.0.0
+        with:
+          owner: airbytehq
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+          permission-pull-requests: read
+          permission-variables: write
+
+      - name: Resolve opted-in PRs
+        id: prs
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          LIST=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --label hyd-chain-v2 --limit 1000 --json number,isCrossRepository --jq '[.[] | select(.isCrossRepository | not) | .number] | sort | tostring')
+          echo "list=$LIST" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Write HYDRA_V2_PRS variable
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_LIST: ${{ steps.prs.outputs.list }}
+        run: |
+          gh variable set HYDRA_V2_PRS --repo "$GITHUB_REPOSITORY" --body "$PR_LIST"
+          {
+            echo "## Hydra v2 PR list"
+            echo ""
+            echo "\`$PR_LIST\`"
+          } >> "$GITHUB_STEP_SUMMARY"
