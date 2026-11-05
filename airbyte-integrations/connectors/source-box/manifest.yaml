@@ -14,16 +14,39 @@ check:
     - events
 
 definitions:
+  events_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: RESET_SYNC_TOKEN
+        predicate: "{{ response.get('status') == 400 and 'stream_position' in (response.get('message', '') | lower) }}"
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes: [429]
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes: [500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511]
   streams:
     events:
       type: DeclarativeStream
       name: events
+      incremental_sync:
+        type: SyncTokenCursor
+        token_path: [next_stream_position]
+        token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: stream_position
+        completion_condition: "{{ response.chunk_size == 0 }}"
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
           path: /2.0/events
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/events_error_handler"
+        ignore_stream_slicer_parameters_on_paginated_requests: true
         record_selector:
           type: RecordSelector
           extractor:
@@ -197,6 +220,14 @@ definitions:
     admin_logs:
       type: DeclarativeStream
       name: admin_logs
+      incremental_sync:
+        type: SyncTokenCursor
+        token_path: [next_stream_position]
+        token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: stream_position
+        completion_condition: "{{ response.chunk_size == 0 }}"
       primary_key:
         - event_id
       retriever:
@@ -205,6 +236,9 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /2.0/events?stream_type=admin_logs
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/events_error_handler"
+        ignore_stream_slicer_parameters_on_paginated_requests: true
         record_selector:
           type: RecordSelector
           extractor:
