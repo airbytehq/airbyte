@@ -69,7 +69,8 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
    - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_run_attempts`, `workflow_runs`, `workflows`.
 
-   - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
+   - `pull_request_commits` selects pull requests updated on or after the **Start Date** and emits all commits belonging to those pull requests, regardless of commit author date.
+   - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `repositories`, `tags`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL, for example `https://github.company.org`. Leave empty to use `https://api.github.com/`.
@@ -105,7 +106,6 @@ This connector outputs the following full refresh streams:
 - [Collaborators](https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators)
 - [Issue labels](https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#list-labels-for-a-repository)
 - [Organizations](https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations)
-- [Pull request commits](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-commits-on-a-pull-request)
 - [Tags](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags)
 - [TeamMembers](https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#list-team-members)
 - [TeamMemberships](https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#get-team-membership-for-a-user)
@@ -115,6 +115,7 @@ This connector outputs the following full refresh streams:
 
 This connector outputs the following incremental streams:
 
+- [Pull request commits](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-commits-on-a-pull-request)
 - [Comments](https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#list-issue-comments-for-a-repository)
 - [Commit comment reactions](https://docs.github.com/en/rest/reference/reactions?apiVersion=2022-11-28#list-reactions-for-a-commit-comment)
 - [Commit comments](https://docs.github.com/en/rest/commits/comments?apiVersion=2022-11-28#list-commit-comments-for-a-repository)
@@ -209,7 +210,6 @@ This connector outputs the following incremental streams:
    - `collaborators`
    - `issue_labels`
    - `organizations`
-   - `pull_request_commits`
    - `tags`
    - `teams`
    - `users`
@@ -221,6 +221,8 @@ This connector outputs the following incremental streams:
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Limitations & Troubleshooting
+
+The `pull_request_commits` stream supports Full Refresh and Incremental sync. In incremental mode it uses `pull_request_updated_at` (the parent PR's `updated_at`) as its cursor and resumes the parent pull requests per repository. Every commit of each selected PR is emitted, even if its author date predates the sync window. Commits removed from a PR by a force-push or rebase are not deleted from the destination in incremental mode (the primary key is `sha`); **Full Refresh | Overwrite** removes them.
 
 <details>
 <summary>
@@ -332,6 +334,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.9.0 | 2026-11-05 | PR TBD | Added incremental sync support to the `pull_request_commits` stream. |
 | 2.8.5 | 2026-11-04 | [90970](https://github.com/airbytehq/airbyte/pull/90970) | Shorten manifest comments and move the design rationale to the connector docs; no behavior change |
 | 2.8.4 | 2026-11-03 | [90166](https://github.com/airbytehq/airbyte/pull/90166) | Retry GitHub 5xx errors and timeouts with exponential backoff instead of waiting for the rate-limit reset |
 | 2.8.3 | 2026-11-03 | [90557](https://github.com/airbytehq/airbyte/pull/90557) | Update dependencies |
