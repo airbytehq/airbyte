@@ -4,10 +4,6 @@ products: cloud, oss-community
 
 # Airbyte MCP tools
 
-:::info Open beta
-The Airbyte MCP is in open beta. Features and tools may change. It's available to all Airbyte Cloud organizations. You can also [run the Airbyte MCP with self-managed Airbyte Core](self-managed.md), with known issues.
-:::
-
 The Airbyte MCP gives your agent a set of tools. Your agent chooses which tools to call based on your prompt, so you don't need to call them by name. This page lists each tool so you know what your agent can and can't do.
 
 Your agent acts on behalf of the Airbyte user who signed in to the Airbyte MCP. If you connect with an [Airbyte application](install.md#connect-without-a-browser), that's the user who created the application. Every tool acts with that user's Airbyte permissions. If their Airbyte [role](/platform/access-management/rbac) doesn't allow an action, the tool fails.
@@ -90,12 +86,12 @@ These tools display interactive views in clients that support [MCP Apps](https:/
 
 ## Direct reads
 
-These tools read data directly from sources and destinations. They only work after an organization admin [enables the context layer](../context-layer/manage-access.md) and turns on agent access for the source or destination. They're read-only. They're only available in Airbyte Cloud.
+These tools read data directly from sources and destinations. They only work after an organization admin [enables agent access](../context-layer/manage-access.md#manage-agent-access) and agent access is on for the source or destination. They're read-only. They're only available in Airbyte Cloud. See [Agent access limitations](../context-layer/agent-access.md#limitations).
 
 | Tool | Description |
 | :--- | :--- |
 | `get_agent_skill_docs` | Get a connector skill: the entities, actions, and parameters a source or destination supports for direct reads. Your agent reads this before it reads data. |
-| `execute_external_api_query` | Read live records from a source's API. Supports the `list` and `get` actions. |
+| `execute_external_api_query` | Read live records from a source's API. Supports `list`, `get`, and `search` when the connector offers them. |
 | `execute_external_sql_query` | Run a read-only SQL query on a Snowflake or BigQuery destination. Only `SELECT` statements and `SHOW TABLES` are allowed. |
 
 ### Connector skills
@@ -108,8 +104,43 @@ Every connector's API is different. A connector skill is a short document that t
 | :--- | :--- | :--- |
 | `list` | Return a page of records for an entity, with optional filters. | List open Zendesk tickets. |
 | `get` | Return one record by its ID. | Get the HubSpot contact with ID `123`. |
+| `search` | Search with the connector's own API, when supported. This isn't context layer search. | Search a source's API for contacts by email. |
 
 Direct reads can't create, update, or delete records.
+
+## Search
+
+These tools work with the [context layer search index](../context-layer/search.md) in Airbyte Cloud. An organization administrator must enable **Semantic search**, and the connection must have search enabled. Unlike a direct read's `search` action, context layer search queries indexed synced data rather than a connector's API.
+
+| Tool | Description |
+| :--- | :--- |
+| `execute_external_search_query` | Search a source or destination's indexed data by keyword, meaning, or both. Hybrid is the default. Searches are read-only. |
+| `get_cloud_search_status` | Check indexed streams and backfill progress for a source or destination. |
+| `request_cloud_search_index_backfill` | Request indexing of data already in a connection's destination. Supports Snowflake and BigQuery; uses destination compute. |
+
+Searches count toward the same monthly usage limit as direct reads. For examples and setup, see [Search your data](../context-layer/search.md).
+
+### Search query parameters
+
+The agent supplies these parameters to `execute_external_search_query`.
+
+| Parameter | What it controls |
+| :--- | :--- |
+| `prompt` | The words or question to search for. |
+| `search_type` | The mode: `keyword`, `semantic`, or `hybrid`. Defaults to `hybrid`. |
+| `limit` | The maximum number of results, from 1 to 100. Defaults to 10. |
+| `streams` | The streams to search. Omit it to search every indexed stream, or pass an empty list to search none. Each entry includes `stream_name` and can include `namespace` to distinguish streams with the same name. |
+| `streams[].source_id` | The source that owns a stream. Required for each stream in a destination search. Optional in a source search, where it must match the source you're searching. |
+| `streams[].fields` | The fields to return in each result's `entity_data`. This is an output projection, not a match filter: other indexed fields can still match and appear in the context. Omit it for the full indexed payload, or use an empty list for no payload fields. |
+| `lookback_seconds` | Restrict results to records whose cursor falls within this many seconds. |
+| `min_similarity` | The minimum semantic similarity for a match. Applies to semantic and hybrid searches only. |
+| `max_similarity_diff` | The maximum similarity gap from the best semantic match in an index. Applies to semantic and hybrid searches only. |
+| `max_context_chars` | Limit the text context returned for each result. A shortened keyword context stays centered on the match. |
+| `destination_id` | Choose which destination's index to use for a source search. Required when the source syncs to multiple enabled destinations. |
+
+### Backfill parameters
+
+For `request_cloud_search_index_backfill`, provide the connection ID. Optionally, provide `streams` to backfill specific selected streams and `backfill_start_time` to limit history. Omit `streams` to backfill every selected stream, or omit `backfill_start_time` for full history. Backfills use destination compute but don't change destination records.
 
 ## Connector registry and documentation
 
