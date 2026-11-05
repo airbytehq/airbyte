@@ -354,5 +354,389 @@
       "stream_descriptor": { "name": "user_identities" },
       "stream_state": { "updated_at": "4070908800" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "article_attachments" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "article_id": 7253351877519, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253391127951, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253391134863, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253391120527, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 12138789487375, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253394935055, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "article_id": 7253394952591, "parent_slice": {} },
+            "cursor": { "updated_at": "4070908800" }
+          }
+        ],
+        "state": { "updated_at": "4070908800" },
+        "lookback_window": 4,
+        "parent_state": { "articles": { "updated_at": "4070908800" } }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "organization_fields" },
+      "stream_state": { "updated_at": "2099-07-10T08:36:58Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "post_comment_votes" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [],
+        "lookback_window": 0,
+        "parent_state": {
+          "post_comments": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": { "parent_slice": {}, "post_id": 7253351904271 },
+                "cursor": { "updated_at": "4070908800" }
+              },
+              {
+                "partition": { "parent_slice": {}, "post_id": 7253375870607 },
+                "cursor": { "updated_at": "4070908800" }
+              },
+              {
+                "partition": { "parent_slice": {}, "post_id": 7253375879055 },
+                "cursor": { "updated_at": "4070908800" }
+              },
+              {
+                "partition": { "parent_slice": {}, "post_id": 7253391145359 },
+                "cursor": { "updated_at": "4070908800" }
+              },
+              {
+                "partition": { "parent_slice": {}, "post_id": 7253394967055 },
+                "cursor": { "updated_at": "4070908800" }
+              }
+            ],
+            "lookback_window": 0,
+            "parent_state": { "posts": { "updated_at": "4070908800" } }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "post_comments" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "parent_slice": {}, "post_id": 7253351904271 },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "parent_slice": {}, "post_id": 7253375870607 },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "parent_slice": {}, "post_id": 7253375879055 },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "parent_slice": {}, "post_id": 7253391145359 },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "parent_slice": {}, "post_id": 7253394967055 },
+            "cursor": { "updated_at": "4070908800" }
+          }
+        ],
+        "lookback_window": 0,
+        "parent_state": { "posts": { "updated_at": "4070908800" } }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "post_votes" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "parent_slice": {}, "post_id": 7253351904271 },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "parent_slice": {}, "post_id": 7253375870607 },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "parent_slice": {}, "post_id": 7253375879055 },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "parent_slice": {}, "post_id": 7253391145359 },
+            "cursor": { "updated_at": "4070908800" }
+          },
+          {
+            "partition": { "parent_slice": {}, "post_id": 7253394967055 },
+            "cursor": { "updated_at": "4070908800" }
+          }
+        ],
+        "lookback_window": 0,
+        "parent_state": { "posts": { "updated_at": "4070908800" } }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ticket_activities" },
+      "stream_state": { "updated_at": "2099-01-01T00:00:00Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ticket_audits_per_ticket" },
+      "stream_state": {
+        "use_global_cursor": true,
+        "state": { "_ab_updated_at": "4070908800" },
+        "lookback_window": 7,
+        "parent_state": { "tickets": { "generated_timestamp": "4070908800" } }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "side_conversations" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 145 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 1 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 146 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 151 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 149 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 153 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 141 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 152 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 155 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 156 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 157 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 158 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 154 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 5 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 147 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 161 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 150 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 160 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 159 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 162 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 163 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 172 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 173 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 174 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 176 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 177 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 178 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 181 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 179 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 183 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 184 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 186 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 187 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 188 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 175 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 180 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 182 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 185 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 189 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 190 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 191 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 194 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 192 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          },
+          {
+            "partition": { "parent_slice": {}, "ticket_id": 193 },
+            "cursor": { "updated_at": "2099-01-01T00:00:00Z" }
+          }
+        ],
+        "lookback_window": 0,
+        "parent_state": { "tickets": { "generated_timestamp": "4070908800" } }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "ticket_events" },
+      "stream_state": { "timestamp": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "tickets_search" },
+      "stream_state": { "updated_at": "4070908800" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "triggers" },
+      "stream_state": { "updated_at": "2099-06-26T10:48:19Z" }
+    }
   }
 ]
