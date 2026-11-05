@@ -5,9 +5,10 @@
 import string
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, SyncMode, Type
 from source_firebase_realtime_database.firebase_rtdb import Records, database_url_from
 from source_firebase_realtime_database.source import SourceFirebaseRealtimeDatabase
+
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, SyncMode, Type
 
 
 @pytest.mark.parametrize(
