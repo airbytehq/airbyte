@@ -1,0 +1,406 @@
+version: 6.60.0  # TODO: match the CDK version your local Airbyte / Connector Builder uses
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - applications
+
+# Pigment limit: 500 requests / 5 min per IP across all public endpoints.
+# Budget below leaves headroom; substreams fan out quickly.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: FixedWindowCallRatePolicy
+      period: PT5M
+      call_limit: 400
+      matchers: []  # empty = applies to every request
+
+definitions:
+  # ---------- Auth ----------
+  metadata_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['metadata_api_key'] }}"
+
+  # ---------- Shared requester for metadata endpoints ----------
+  metadata_requester:
+    type: HttpRequester
+    url_base: https://pigment.app/api/v1
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/metadata_authenticator"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes: [429]
+          action: RATE_LIMITED
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
+      max_retries: 6
+
+  # Error handler for endpoints that return 403 for some applications/blocks
+  # (skips them instead of failing the sync; keeps 429 backoff).
+  skip_forbidden_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [403]
+        action: IGNORE
+        error_message: "Endpoint not accessible for this application/block with the provided API key; skipping"
+      - type: HttpResponseFilter
+        http_codes: [429]
+        action: RATE_LIMITED
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 60
+    max_retries: 6
+
+  # TODO: verify the response shape with curl. If the API wraps results
+  # (e.g. {"data": [...]}), set field_path: ["data"]. A bare array uses [].
+  record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  # ---------- Streams ----------
+  applications_stream:
+    type: DeclarativeStream
+    name: applications
+    primary_key: [id]
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/metadata_requester"
+        path: /applications
+      record_selector:
+        $ref: "#/definitions/record_selector"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/applications"
+
+  blocks_stream:
+    type: DeclarativeStream
+    name: blocks
+    primary_key: [id]
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/metadata_requester"
+        path: /blocks
+        request_parameters:
+          applicationId: "{{ stream_partition.application_id }}"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/applications_stream"
+            parent_key: id
+            partition_field: application_id
+    transformations:
+      # Stamp the parent id on each block so the views stream can use it
+      - type: AddFields
+        fields:
+          - path: [application_id]
+            value: "{{ stream_partition.application_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/blocks"
+
+  views_stream:
+    type: DeclarativeStream
+    name: views
+    primary_key: [id]
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/metadata_requester"
+        path: /views
+        request_parameters:
+          applicationId: "{{ stream_partition.extra_fields['application_id'] }}"
+          blockId: "{{ stream_partition.block_id }}"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/blocks_stream"
+            parent_key: id
+            partition_field: block_id
+            extra_fields:
+              - [application_id]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [application_id]
+            value: "{{ stream_partition.extra_fields['application_id'] }}"
+          - path: [block_id]
+            value: "{{ stream_partition.block_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/views"
+
+  import_configurations_stream:
+    type: DeclarativeStream
+    name: import_configurations
+    primary_key: [id]
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/metadata_requester"
+        path: /importConfigurations
+        request_parameters:
+          applicationId: "{{ stream_partition.extra_fields['application_id'] }}"
+          blockId: "{{ stream_partition.block_id }}"
+        # Some blocks/applications return 403 for this endpoint; skip them.
+        error_handler:
+          $ref: "#/definitions/skip_forbidden_error_handler"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/blocks_stream"
+            parent_key: id
+            partition_field: block_id
+            extra_fields:
+              - [application_id]
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [application_id]
+            value: "{{ stream_partition.extra_fields['application_id'] }}"
+          - path: [block_id]
+            value: "{{ stream_partition.block_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/import_configurations"
+
+  data_flows_stream:
+    type: DeclarativeStream
+    name: data_flows
+    primary_key: [id]  # TODO: confirm with a non-empty response
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/metadata_requester"
+        path: /dataFlows
+        request_parameters:
+          applicationId: "{{ stream_partition.application_id }}"
+        # Returns 403 for some applications with this key; skip them.
+        error_handler:
+          $ref: "#/definitions/skip_forbidden_error_handler"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/applications_stream"
+            parent_key: id
+            partition_field: application_id
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [application_id]
+            value: "{{ stream_partition.application_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/data_flows"
+
+  # ---------- Export requester (Export API key, CSV responses) ----------
+  # Note: the export endpoints live under /api, not /api/v1.
+  export_requester:
+    type: HttpRequester
+    url_base: https://pigment.app/api
+    http_method: GET
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['export_api_key'] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes: [429]
+          action: RATE_LIMITED
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
+      max_retries: 6
+
+  # Exports the data of each view listed in the `export_view_ids` config option.
+  # Responses are CSV (';' delimited, header row), and the columns differ per view,
+  # so the schema is open (additionalProperties: true). Full refresh only.
+  export_view_stream:
+    type: DeclarativeStream
+    name: export_view
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/export_requester"
+        path: "/export/view/{{ stream_partition.view_id }}"
+      decoder:
+        type: CsvDecoder
+        encoding: utf-8-sig  # strips the BOM Pigment puts before the first header
+        delimiter: ";"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+          # Set here as well: the extractor is what actually parses the response body.
+          decoder:
+            type: CsvDecoder
+            encoding: utf-8-sig
+            delimiter: ";"
+      partition_router:
+        type: ListPartitionRouter
+        values: "{{ config.get('export_view_ids', []) }}"
+        cursor_field: view_id
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [pigment_view_id]
+            value: "{{ stream_partition.view_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/export_view"
+
+  # ---------- PHASE 2 (not enabled): raw block exports ----------
+  # Responses are CSV with ';' separators and the columns vary per block,
+  # so this needs a CsvDecoder plus a dynamic/inferred schema.
+  #
+  # export_list_stream:
+  #   type: DeclarativeStream
+  #   name: export_list
+  #   retriever:
+  #     type: SimpleRetriever
+  #     requester:
+  #       type: HttpRequester
+  #       url_base: https://pigment.app/api/v1
+  #       path: "/export/list/{{ stream_partition.block_id }}"
+  #       authenticator:
+  #         type: BearerAuthenticator
+  #         api_token: "{{ config['export_api_key'] }}"
+  #     decoder:
+  #       type: CsvDecoder
+  #       delimiter: ";"
+  #     record_selector:
+  #       type: RecordSelector
+  #       extractor:
+  #         type: DpathExtractor
+  #         field_path: []
+  #     partition_router: ...  # parent = blocks filtered to type == list
+
+streams:
+  - $ref: "#/definitions/applications_stream"
+  - $ref: "#/definitions/blocks_stream"
+  - $ref: "#/definitions/views_stream"
+  - $ref: "#/definitions/import_configurations_stream"
+  - $ref: "#/definitions/data_flows_stream"
+  - $ref: "#/definitions/export_view_stream"
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - metadata_api_key
+    additionalProperties: true
+    properties:
+      metadata_api_key:
+        type: string
+        title: Modeling Metadata API Key
+        description: Pigment API key of type "Modeling Metadata".
+        airbyte_secret: true
+        order: 0
+      export_api_key:
+        type: string
+        title: Export API Key
+        description: Pigment Export API key. Required only for the export_view stream.
+        airbyte_secret: true
+        order: 1
+      export_view_ids:
+        type: array
+        title: View IDs to Export
+        description: IDs of the Pigment views whose data the export_view stream should export. Leave empty to skip that stream's data.
+        items:
+          type: string
+        order: 2
+
+# Minimal schemas: tighten once you've seen real responses from the trial workspace.
+schemas:
+  applications:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id: { type: string }
+      name: { type: [string, "null"] }
+  blocks:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id: { type: string }
+      name: { type: [string, "null"] }
+      type: { type: [string, "null"] }
+      application_id: { type: [string, "null"] }
+  views:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id: { type: string }
+      name: { type: [string, "null"] }
+      type: { type: [string, "null"] }
+      application_id: { type: [string, "null"] }
+      block_id: { type: [string, "null"] }
+  import_configurations:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id: { type: string }
+      name: { type: [string, "null"] }
+      application_id: { type: [string, "null"] }
+      block_id: { type: [string, "null"] }
+  data_flows:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id: { type: string }
+      name: { type: [string, "null"] }
+      application_id: { type: [string, "null"] }
+  export_view:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    # Columns vary per exported view; all CSV values arrive as strings.
+    additionalProperties: true
+    properties:
+      pigment_view_id: { type: [string, "null"] }
+      # Columns of the sample view used during development. Typed destinations only
+      # create columns that are declared here; other views' columns need declaring too.
+      Version: { type: [string, "null"] }
+      Support Channel: { type: [string, "null"] }
+      Month: { type: [string, "null"] }
+      Cost per Ticket: { type: [string, "null"] }
