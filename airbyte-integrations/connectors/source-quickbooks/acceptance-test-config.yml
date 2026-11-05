@@ -7,7 +7,7 @@ acceptance_tests:
     tests:
       - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
-          disable_for_version: "1.0.0"
+          disable_for_version: "5.3.0" # sandbox became required for own-app auth; a config migration defaults it to false
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -55,6 +55,8 @@ acceptance_tests:
             bypass_reason: "The CI sandbox company returns no Purchase records for the configured start date. The 5 purchases records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: refund_receipts
             bypass_reason: "The CI sandbox company returns no RefundReceipt records for the configured start date. The single refund_receipts record in `integration_tests/expected_records.jsonl` was captured in 2023 from a different sandbox company and is not asserted against."
+          - name: reimburse_charges
+            bypass_reason: "The CI sandbox company returns no ReimburseCharge records for the configured start date."
           - name: sales_receipts
             bypass_reason: "The CI sandbox company returns no SalesReceipt records for the configured start date. The 4 sales_receipts records in `integration_tests/expected_records.jsonl` were captured in 2023 from a different sandbox company and are not asserted against."
           - name: tax_agencies

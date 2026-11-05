@@ -7,6 +7,48 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.3 — 2026-10-21
+
+[#89633](https://github.com/airbytehq/airbyte/pull/89633) — Fix the Docker Scout critical/high findings on the extract classpath. `extract-jdbc` moves BouncyCastle to `1.86` (`bcpkix`, `bcprov`; `bctls` `1.86.2`) in place of the `1.77`/`1.78.1` mix (CVE-2024-29857, CVE-2025-14813, CVE-2026-8763, CVE-2026-13506). `extract-cdc` adds published `api` constraints on the Debezium transitive chain: Kafka `4.1.2` (CVE-2026-33557, CVE-2026-35554), Jetty `12.0.40`, `org.lz4:lz4-java` `1.8.1` (CVE-2025-12183), `at.yawk.lz4:lz4-java` `1.12.0` (CVE-2026-106451 in the `1.10.1` that Kafka `4.1.2` depends on) and plexus-utils `3.6.2` (CVE-2025-67030); connectors pick them up by bumping `cdkVersion`, with no build change of their own. `bulk-cdk-core-base` is re-pinned to `1.0.8` (sshd-mina `2.20.0`, mina-core `2.0.31`, bcprov `1.86`).
+
+### 1.2.2 — 2026-10-21
+
+[#86422](https://github.com/airbytehq/airbyte/pull/86422) — Treat an empty `{}` stream state as a cold start in `DefaultJdbcPartitionFactory` so retried full-refresh streams are re-read instead of being silently skipped.
+
+### 1.2.1 — 2026-10-20
+
+[#89583](https://github.com/airbytehq/airbyte/pull/89583) — Declare the Debezium `3.4.3.Final` artifacts in `extract-cdc` with explicit versions instead of importing the Debezium BOM, whose Testcontainers 2.0.2 constraint made the test fixtures unpublishable (extract 1.2.0 was only partially published). The CDK no longer sets versions for connectors' Debezium artifacts, and the BOM's JUnit 6 and Jackson 2.19 constraints no longer reach connector classpaths.
+
+#### Follow-up for connectors
+
+##### Debezium connector artifact: explicit version
+
+Declare the connector's Debezium artifact with the version the CDK's `extract-cdc` toolkit uses, for example `implementation 'io.debezium:debezium-connector-mysql:3.4.3.Final'`, and change it whenever that toolkit's Debezium version changes.
+
+### 1.2.0 — 2026-10-20
+
+**Do not use: only `bulk-cdk-core-extract` was published, without its toolkits. Use 1.2.1.**
+
+[#89012](https://github.com/airbytehq/airbyte/pull/89012) — Upgrade Debezium to `3.4.3.Final` in `extract-cdc`. Fixes source-mysql CDC syncs failing with `Incumbent CDC state is invalid ... "other" is null` once a failover, upgrade or restore adds a server UUID that the saved offset does not have (DBZ-9682, [#75558](https://github.com/airbytehq/airbyte/issues/75558)). The Debezium engine now gets 5 minutes to shut down and to start its task (`record.processing.shutdown.timeout.ms`, `internal.task.management.timeout.ms`), replacing `debezium.embedded.shutdown.pause.before.interrupt.ms`, which Debezium no longer reads.
+
+#### Follow-up for connectors
+
+##### Snapshot modes: `schema_only`, `schema_only_recovery` removed
+
+Use `no_data` and `recovery` instead.
+
+##### source-postgres: `flush.lsn.source` → `lsn.flush.mode`
+
+Replace `flush.lsn.source=true` with `lsn.flush.mode=connector` and `flush.lsn.source=false` with `lsn.flush.mode=manual`; the deprecated property is still mapped the same way. The JDBC driver's keep-alive no longer advances the replication slot, so while the captured tables are idle only `heartbeat.action.query` moves it.
+
+##### source-postgres: PostgreSQL 13
+
+Debezium no longer supports PostgreSQL 13 (DBZ-9376); document PostgreSQL 14 as the minimum version for CDC.
+
+##### source-mssql: Debezium version pins
+
+Drop the `3.4.3.Final` version on `debezium-embedded` in `build.gradle`, which the CDK provides; keep it on `debezium-connector-sqlserver`.
+
 ### 1.1.22 — 2026-10-16
 
 [#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.

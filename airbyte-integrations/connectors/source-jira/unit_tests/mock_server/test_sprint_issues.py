@@ -13,7 +13,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from mock_server.config import ConfigBuilder
 from mock_server.request_builder import JiraRequestBuilder
-from mock_server.response_builder import JiraAgileResponseBuilder, JiraPaginatedResponseBuilder
+from mock_server.response_builder import JiraPaginatedResponseBuilder, JiraSoftwareIssuesResponseBuilder
 
 
 _NOW = datetime.now(timezone.utc)
@@ -28,7 +28,7 @@ class TestSprintIssuesStream(TestCase):
 
     This is an incremental substream that depends on sprints as parent.
     Uses SprintIssuesSubstreamPartitionRouter custom component.
-    Endpoint: /rest/agile/1.0/sprint/{sprintId}/issue
+    Endpoint: /rest/software/1.0/sprint/{sprintId}/issue
     Extract field: issues
     Primary key: id (composite: sprintId-issueId)
     Cursor field: updated
@@ -105,11 +105,11 @@ class TestSprintIssuesStream(TestCase):
 
         http_mocker.get(
             JiraRequestBuilder.sprint_issues_endpoint(_DOMAIN, "1").with_any_query_params().build(),
-            JiraAgileResponseBuilder("issues").with_records(sprint1_issues).with_pagination(start_at=0, max_results=50, total=1).build(),
+            JiraSoftwareIssuesResponseBuilder().with_records(sprint1_issues).build(),
         )
         http_mocker.get(
             JiraRequestBuilder.sprint_issues_endpoint(_DOMAIN, "2").with_any_query_params().build(),
-            JiraAgileResponseBuilder("issues").with_records(sprint2_issues).with_pagination(start_at=0, max_results=50, total=1).build(),
+            JiraSoftwareIssuesResponseBuilder().with_records(sprint2_issues).build(),
         )
 
         source = get_source(config=config)
@@ -175,7 +175,7 @@ class TestSprintIssuesStream(TestCase):
 
         http_mocker.get(
             JiraRequestBuilder.sprint_issues_endpoint(_DOMAIN, "1").with_any_query_params().build(),
-            JiraAgileResponseBuilder("issues").with_records(sprint_issues).with_pagination(start_at=0, max_results=50, total=1).build(),
+            JiraSoftwareIssuesResponseBuilder().with_records(sprint_issues).build(),
         )
 
         source = get_source(config=config)
@@ -231,7 +231,7 @@ class TestSprintIssuesStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 0
-        assert not any(log.log.level == "ERROR" for log in output.logs)
+        assert output.errors == []
 
     @HttpMocker()
     def test_sprint_with_no_issues(self, http_mocker: HttpMocker):
@@ -275,7 +275,7 @@ class TestSprintIssuesStream(TestCase):
 
         http_mocker.get(
             JiraRequestBuilder.sprint_issues_endpoint(_DOMAIN, "1").with_any_query_params().build(),
-            JiraAgileResponseBuilder("issues").with_records([]).with_pagination(start_at=0, max_results=50, total=0).build(),
+            JiraSoftwareIssuesResponseBuilder().with_records([]).build(),
         )
 
         source = get_source(config=config)
@@ -283,4 +283,80 @@ class TestSprintIssuesStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 0
-        assert not any(log.log.level == "ERROR" for log in output.logs)
+        assert output.errors == []
+
+    @HttpMocker()
+    def test_cursor_pagination(self, http_mocker: HttpMocker):
+        config = ConfigBuilder().with_domain(_DOMAIN).build()
+        boards = [{"id": 1, "name": "Board 1", "type": "scrum"}]
+        http_mocker.get(
+            JiraRequestBuilder.boards_endpoint(_DOMAIN).with_any_query_params().build(),
+            JiraPaginatedResponseBuilder("values")
+            .with_records(boards)
+            .with_pagination(start_at=0, max_results=50, total=1, is_last=True)
+            .build(),
+        )
+
+        sprints = [{"id": 1, "name": "Sprint 1", "state": "active", "boardId": 1}]
+        http_mocker.get(
+            JiraRequestBuilder.sprints_endpoint(_DOMAIN, "1").with_any_query_params().build(),
+            JiraPaginatedResponseBuilder("values")
+            .with_records(sprints)
+            .with_pagination(start_at=0, max_results=50, total=1, is_last=True)
+            .build(),
+        )
+
+        issue_fields = [{"id": "customfield_10001", "name": "Story Points", "custom": True}]
+        http_mocker.get(
+            JiraRequestBuilder.issue_fields_endpoint(_DOMAIN).build(),
+            HttpResponse(body=json.dumps(issue_fields), status_code=200),
+        )
+
+        page_1_request = (
+            JiraRequestBuilder.sprint_issues_endpoint(_DOMAIN, "1")
+            .with_fields(["customfield_10001", "key", "status", "created", "updated"])
+            .with_jql("updated >= 1609459200000 ORDER BY updated asc")
+            .with_max_results(50)
+            .build()
+        )
+        page_2_request = (
+            JiraRequestBuilder.sprint_issues_endpoint(_DOMAIN, "1")
+            .with_fields(["customfield_10001", "key", "status", "created", "updated"])
+            .with_jql("updated >= 1609459200000 ORDER BY updated asc")
+            .with_max_results(50)
+            .with_next_page_token("page-2-token")
+            .build()
+        )
+        page_1_issue = {
+            "id": "10001",
+            "key": "PROJ-1",
+            "fields": {
+                "customfield_10001": 1,
+                "created": "2024-01-01T10:00:00.000+0000",
+                "updated": "2024-01-15T10:00:00.000+0000",
+                "status": {"name": "To Do", "id": "10000"},
+            },
+        }
+        page_2_issue = {
+            "id": "10002",
+            "key": "PROJ-2",
+            "fields": {
+                "customfield_10001": 2,
+                "created": "2024-01-02T10:00:00.000+0000",
+                "updated": "2024-01-16T10:00:00.000+0000",
+                "status": {"name": "Done", "id": "10001"},
+            },
+        }
+        http_mocker.get(
+            page_1_request,
+            JiraSoftwareIssuesResponseBuilder().with_records([page_1_issue]).with_next_page_token("page-2-token").build(),
+        )
+        http_mocker.get(page_2_request, JiraSoftwareIssuesResponseBuilder().with_records([page_2_issue]).build())
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert [record.record.data["issueId"] for record in output.records] == ["10001", "10002"]
+        http_mocker.assert_number_of_calls(page_1_request, 1)
+        http_mocker.assert_number_of_calls(page_2_request, 1)

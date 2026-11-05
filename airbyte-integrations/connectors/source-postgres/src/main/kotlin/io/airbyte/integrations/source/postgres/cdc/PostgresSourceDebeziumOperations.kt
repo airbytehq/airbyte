@@ -126,8 +126,10 @@ class PostgresSourceDebeziumOperations(
             .with("converters", "datetime")
             .with("datetime.type", PostgresCustomConverter::class.java.name)
             .with("include.unknown.datatypes", "true")
-            // TODO: This will eventually be deprecated in favor of lsn.flush.mode
-            .with("flush.lsn.source", cdcConfig.debeziumCommitsLsn.toString())
+            // Debezium 3.4 maps the deprecated `flush.lsn.source` true/false to these two modes.
+            // Neither lets the pgjdbc keep-alive advance the slot, so an idle database relies on
+            // `heartbeat.action.query` to prevent WAL growth.
+            .with("lsn.flush.mode", if (cdcConfig.debeziumCommitsLsn) "connector" else "manual")
             .with("plugin.name", "pgoutput")
             .with("slot.name", cdcConfig.replicationSlot)
             .with("publication.name", cdcConfig.publication)
