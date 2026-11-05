@@ -15,14 +15,18 @@ API Documentation: https://docs.clarifai.com/api-guide/api-overview/helpful-api-
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| applications | id | DefaultPaginator | ✅ |   ❌  |
-| datasets | id | DefaultPaginator | ✅ |   ❌  |
-| models | id | DefaultPaginator | ✅ |   ❌  |
+| applications | id | DefaultPaginator | ✅ |   ✅  |
+| datasets | id | DefaultPaginator | ✅ |   ✅  |
+| models | id | DefaultPaginator | ✅ |   ✅  |
 | model_versions | id | DefaultPaginator | ✅ |   ❌  |
 | worklows | id | DefaultPaginator | ✅ |   ❌  |
 | app_inputs | id | DefaultPaginator | ✅ |   ❌  |
 | app_inputs_jobs | id | DefaultPaginator | ✅ |   ❌ |
 | app_concepts | id | DefaultPaginator | ✅ |   ❌  |
+
+## Incremental sync
+
+The `applications`, `datasets`, and `models` streams use `modified_at` as their incremental cursor. These streams normalize `modified_at` timestamps to UTC with microsecond precision, including when the API returns nanosecond timestamps.
 
 ## IP allow list
 
@@ -35,6 +39,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.77 | 2026-11-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fixed incremental state advancement for applications, datasets, and models with nanosecond timestamps. |
 | 0.0.76 | 2026-11-04 | [90341](https://github.com/airbytehq/airbyte/pull/90341) | Simplify error handler configuration with no behavior change |
 | 0.0.75 | 2026-11-03 | [90511](https://github.com/airbytehq/airbyte/pull/90511) | Update dependencies |
 | 0.0.74 | 2026-10-27 | [89863](https://github.com/airbytehq/airbyte/pull/89863) | Update dependencies |
