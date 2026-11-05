@@ -201,6 +201,37 @@ def test_templates_parse_response():
         assert list(records) == [{"id": 1, "createdAt": dateutil_parse("2022-01-01")}]
 
 
+@responses.activate
+def test_templates_paginates_from_first_request(mocker):
+    mocker.patch("source_iterable.streams.TEMPLATES_PAGE_SIZE", 2)
+    stream = Templates(authenticator=None, start_date="2026-01-01T00:00:00", end_date="2026-01-10T00:00:00")
+    stream.template_types = ["Base"]
+    stream.message_types = ["Email"]
+    stream.state = {}
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/templates",
+        json={"templates": [{"createdAt": "2026-01-02", "id": 1}, {"createdAt": "2026-01-03", "id": 2}]},
+        match=[responses.matchers.query_param_matcher({"page": "1", "pageSize": "2"}, strict_match=False)],
+    )
+    responses.add(
+        responses.GET,
+        "https://api.iterable.com/api/templates",
+        json={"templates": [{"createdAt": "2026-01-04", "id": 3}]},
+        match=[responses.matchers.query_param_matcher({"page": "2", "pageSize": "2"}, strict_match=False)],
+    )
+
+    slice_ = next(iter(stream.stream_slices(sync_mode=SyncMode.full_refresh)))
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
+
+    assert [record["id"] for record in records] == [1, 2, 3]
+    assert len(responses.calls) == 2
+    first_params = responses.calls[0].request.params
+    assert first_params["templateType"] == "Base"
+    assert first_params["messageMedium"] == "Email"
+    assert "startDateTime" in first_params and "endDateTime" in first_params
+
+
 @pytest.mark.parametrize(
     "stream,date,slice,expected_path",
     [
