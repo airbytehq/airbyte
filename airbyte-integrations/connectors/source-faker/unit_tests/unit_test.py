@@ -2,11 +2,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+
 import jsonschema
 import pytest
 from source_faker import SourceFaker
+from source_faker.source import DEFAULT_COUNT
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
@@ -284,3 +294,26 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+
+
+@pytest.mark.parametrize("config", [{"count": 5000, "seed": 42}, {}])
+def test_check_and_read_with_omitted_settings(config):
+    source = SourceFaker()
+    real_logger = logging.getLogger(__name__)
+    assert source.check(real_logger, config).status == Status.SUCCEEDED
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    records = [row for row in source.read(real_logger, config, catalog, {}) if row.type is Type.RECORD]
+    assert len(records) == config.get("count", DEFAULT_COUNT)
+
+
+@pytest.mark.parametrize("key", ["count", "records_per_slice", "parallelism"])
+@pytest.mark.parametrize("value", [0, -1, None, False, "1"])
+def test_check_rejects_explicit_invalid_settings(key, value):
+    result = SourceFaker().check(logging.getLogger(__name__), {key: value})
+    assert result.status == Status.FAILED
+    assert f"`{key}` must be a number greater than or equal to 1" in result.message
