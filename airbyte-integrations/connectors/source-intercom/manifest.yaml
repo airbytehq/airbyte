@@ -656,6 +656,7 @@ definitions:
       type: DeclarativeStream
       name: company_segments
       primary_key:
+        - company_id
         - id
       retriever:
         type: SimpleRetriever
@@ -706,6 +707,12 @@ definitions:
           - "%s"
         is_client_side_incremental: true
         global_substream_cursor: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - company_id
+              value: "{{ stream_slice.id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3234,6 +3241,11 @@ schemas:
     type: object
     additionalProperties: true
     properties:
+      company_id:
+        type:
+          - "null"
+          - string
+        description: The id of the company the segment is attached to.
       type:
         type:
           - "null"
