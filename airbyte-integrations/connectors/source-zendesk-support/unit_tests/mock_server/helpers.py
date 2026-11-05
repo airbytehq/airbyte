@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Sequence, Tuple
+from urllib.parse import quote
 
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -141,36 +142,77 @@ def given_ticket_list(http_mocker: HttpMocker, authenticator: Authenticator, tic
     http_mocker.get(ZendeskSupportRequestBuilder.tickets_endpoint(authenticator).build(), response.build())
 
 
-def closed_tickets_search_query(start_time: int) -> str:
-    """The `query` parameter the `closed_tickets_search` parent sends for a walk starting at `start_time`
-    (a unix timestamp): the slice start in ISO 8601 plus the `status:closed` term."""
-    return f"updated_at>={datetime.fromtimestamp(start_time, timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')} status:closed"
+def _iso(timestamp: int) -> str:
+    return datetime.fromtimestamp(timestamp, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def closed_tickets_search_query(start_time: int, end_time: int) -> str:
+    """The `query` parameter the `closed_tickets_search` parent sends for a walk over `[start_time, end_time]`
+    (unix timestamps; `end_time` is the slice end, the time the sync started): both bounds in ISO 8601 plus
+    the `status:closed` term."""
+    return f"updated_at>={_iso(start_time)} updated_at<={_iso(end_time)} status:closed"
+
+
+def _closed_ticket_search_record(ticket_id: int, updated_at: int) -> TicketsSearchRecordBuilder:
+    return (
+        TicketsSearchRecordBuilder.tickets_search_record()
+        .with_id(ticket_id)
+        .with_field(FieldPath("updated_at"), _iso(updated_at))
+        .with_field(FieldPath("generated_timestamp"), updated_at)
+        .with_field(FieldPath("status"), "closed")
+    )
+
+
+def _closed_ticket_search_next_page_url(after_cursor: str, query: str) -> str:
+    """`links.next` as Zendesk builds it for Export Search Results: the `.json` spelling of the path plus the
+    original query and the `page[after]` cursor."""
+    return (
+        f"https://{ZendeskSupportRequestBuilder.DEFAULT_SUBDOMAIN}.zendesk.com/api/v2/search/export.json?"
+        f"filter%5Btype%5D=ticket&page%5Bafter%5D={after_cursor}&page%5Bsize%5D=100&query={quote(query)}"
+    )
 
 
 def given_closed_ticket_search(
-    http_mocker: HttpMocker, authenticator: Authenticator, tickets: Sequence[Tuple[int, int]] = (), query: Optional[str] = None
+    http_mocker: HttpMocker,
+    authenticator: Authenticator,
+    tickets: Sequence[Tuple[int, int]] = (),
+    query: Optional[str] = None,
+    later_pages: Sequence[Sequence[Tuple[int, int]]] = (),
 ) -> None:
-    """Mock one page of the `closed_tickets_search` parent walk of the per-ticket substreams
-    (`GET /search/export?filter[type]=ticket&page[size]=1000&query=updated_at>=<slice start> status:closed`),
+    """Mock the `closed_tickets_search` parent walk of the per-ticket substreams
+    (`GET /search/export?filter[type]=ticket&page[size]=100&query=updated_at>=<start> updated_at<=<end> status:closed`),
     which is how those streams reach archived tickets. Each ticket is `(id, updated_at as a unix timestamp)`;
     the record's `generated_timestamp` is set to the same instant. With `query` the request must carry exactly
-    that `query` parameter (see `closed_tickets_search_query`); without it any query matches.
+    that `query` parameter (see `closed_tickets_search_query`); without it any query matches. `tickets` fill
+    the first page; each entry of `later_pages` is one more page, reached through `links.next` (the `.json`
+    spelling of the path, which the budget test pins to the same policy) and requires an exact `query`.
     """
     request = ZendeskSupportRequestBuilder.tickets_search_endpoint(authenticator)
     if query is None:
+        assert not later_pages, "later pages need the exact query: Zendesk repeats it in links.next"
         request = request.with_any_query_params()
     else:
-        request = request.with_page_size(1000).with_query_param("filter[type]", "ticket").with_query_param("query", query)
-    response = TicketsSearchResponseBuilder.tickets_search_response()
-    for ticket_id, updated_at in tickets:
-        response = response.with_record(
-            TicketsSearchRecordBuilder.tickets_search_record()
-            .with_id(ticket_id)
-            .with_field(FieldPath("updated_at"), datetime.fromtimestamp(updated_at, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
-            .with_field(FieldPath("generated_timestamp"), updated_at)
-            .with_field(FieldPath("status"), "closed")
+        request = request.with_page_size(100).with_query_param("filter[type]", "ticket").with_query_param("query", query)
+    pages = [list(tickets)] + [list(page) for page in later_pages]
+    requests = [request]
+    for page_number in range(1, len(pages)):
+        requests.append(
+            ZendeskSupportRequestBuilder(ZendeskSupportRequestBuilder.DEFAULT_SUBDOMAIN, "search/export.json")
+            .with_authenticator(authenticator)
+            .with_page_size(100)
+            .with_after_cursor(f"page-{page_number}")
+            .with_query_param("filter[type]", "ticket")
+            .with_query_param("query", query)
         )
-    http_mocker.get(request.build(), response.build())
+    for page_number, (page_request, page_tickets) in enumerate(zip(requests, pages)):
+        is_last = page_number == len(pages) - 1
+        next_page_url = None if is_last else _closed_ticket_search_next_page_url(f"page-{page_number + 1}", query)
+        response = TicketsSearchResponseBuilder.tickets_search_response(next_page_url=next_page_url)
+        for ticket_id, updated_at in page_tickets:
+            response = response.with_record(_closed_ticket_search_record(ticket_id, updated_at))
+        if not is_last:
+            response = response.with_pagination()
+        http_mocker.get(page_request.build(), response.build())
 
 
 def given_tickets_with_state(

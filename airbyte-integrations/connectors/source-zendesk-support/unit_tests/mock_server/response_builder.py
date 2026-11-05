@@ -626,11 +626,17 @@ class TicketsResponseBuilder(HttpResponseBuilder):
 
 class TicketsSearchResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def tickets_search_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketsSearchResponseBuilder":
+    def tickets_search_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None, next_page_url: Optional[str] = None
+    ) -> "TicketsSearchResponseBuilder":
+        """Response of Export Search Results (`GET /api/v2/search/export`): records under `results`, cursor
+        pagination through `meta.has_more` and `links.next`. `next_page_url` is the `links.next` of a page that
+        is not the last (call `with_pagination()` on it too); `request_without_cursor_for_pagination` is the
+        older way to derive that URL from a request."""
         return cls(
             find_template("tickets_search", __file__),
             FieldPath("results"),
-            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+            CursorBasedPaginationStrategy(next_page_url or http_request_to_str(request_without_cursor_for_pagination)),
         )
 
 

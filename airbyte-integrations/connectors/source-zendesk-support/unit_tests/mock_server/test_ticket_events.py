@@ -217,7 +217,7 @@ class TestTicketEventsStreamIncremental(TestCase):
         previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
         latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"timestamp": str(previous)}).build()
-        _given_tickets(http_mocker, [(101, latest)], closed_query=closed_tickets_search_query(previous - 3600))
+        _given_tickets(http_mocker, [(101, latest)], closed_query=closed_tickets_search_query(previous - 3600, int(_NOW.timestamp())))
         _given_audits(
             http_mocker,
             101,
@@ -262,7 +262,11 @@ class TestTicketEventsStreamIncremental(TestCase):
             .build()
         )
         # 102 is older than the parent cursor minus one hour, so the walk stops before visiting it.
-        _given_tickets(http_mocker, [(101, latest), (102, previous - 7200)], closed_query=closed_tickets_search_query(previous - 3600))
+        _given_tickets(
+            http_mocker,
+            [(101, latest), (102, previous - 7200)],
+            closed_query=closed_tickets_search_query(previous - 3600, int(_NOW.timestamp())),
+        )
         _given_audits(
             http_mocker,
             101,
@@ -289,7 +293,7 @@ class TestTicketEventsArchivedTickets(TestCase):
         self, http_mocker: HttpMocker
     ) -> None:
         """The ticket list never returns an archived ticket; the `closed_tickets_search` parent does, so the
-        audits a bulk update adds to an archived ticket still reach `ticket_events`."""
+        audits an archived ticket gains after being archived still reach `ticket_events`."""
         start_time = int(_START_DATE.timestamp())
         _given_tickets(http_mocker, [(101, start_time + 10)], closed_tickets=[(185, start_time + 5)])
         _given_audits(http_mocker, 101, [_audit(1001, 101, _at(_START_DATE, days=1))])

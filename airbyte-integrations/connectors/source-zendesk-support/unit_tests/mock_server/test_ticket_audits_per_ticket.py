@@ -18,6 +18,7 @@ import freezegun
 import requests
 import yaml
 
+from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HTTPAPIBudget as HTTPAPIBudgetModel
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
@@ -37,7 +38,7 @@ from .response_builder import (
     TicketsRecordBuilder,
     TicketsResponseBuilder,
 )
-from .utils import read_stream
+from .utils import get_log_messages_by_log_level, read_stream
 
 
 _STREAM_NAME = "ticket_audits_per_ticket"
@@ -62,6 +63,7 @@ def _given_tickets(
     tickets: List[Dict[str, int]],
     closed_tickets: Sequence[Tuple[int, int]] = (),
     closed_query: Optional[str] = None,
+    closed_later_pages: Sequence[Sequence[Tuple[int, int]]] = (),
 ) -> None:
     """Mock both parent walks. Each ticket of the list is {"id": ..., "updated_at": <unix timestamp>}; the
     builder sets `generated_timestamp` to the same instant, which is what `_ab_updated_at` is derived from.
@@ -69,14 +71,15 @@ def _given_tickets(
     The list request carries no start time: the parent filters client-side, so a ticket older than
     `start_time` would be dropped before any audits are requested for it. `closed_tickets` are the
     `(id, updated_at)` pairs the `closed_tickets_search` parent returns (archived tickets are only listed
-    there); `closed_query` pins the exact search query, otherwise any query matches.
+    there); `closed_query` pins the exact search query, otherwise any query matches; `closed_later_pages` are
+    the search pages after the first, reached through `links.next`.
     """
     response = TicketsResponseBuilder.tickets_response()
     for ticket in tickets:
         assert ticket["updated_at"] >= start_time
         response = response.with_record(TicketsRecordBuilder.tickets_record().with_id(ticket["id"]).with_cursor(ticket["updated_at"]))
     http_mocker.get(ZendeskSupportRequestBuilder.tickets_endpoint(_AUTHENTICATOR).build(), response.build())
-    given_closed_ticket_search(http_mocker, _AUTHENTICATOR, closed_tickets, closed_query)
+    given_closed_ticket_search(http_mocker, _AUTHENTICATOR, closed_tickets, closed_query, closed_later_pages)
 
 
 def _audit(audit_id: int, ticket_id: int) -> TicketAuditsRecordBuilder:
@@ -367,11 +370,11 @@ class TestTicketAuditsPerTicketApiBudget(TestCase):
         budget = self._budget(_config())
         first_page = budget.get_matching_policy(
             self._request(
-                "/api/v2/search/export?filter%5Btype%5D=ticket&page%5Bsize%5D=1000&query=updated_at%3E%3D2026-01-01T00%3A00%3A00Z+status%3Aclosed"
+                "/api/v2/search/export?filter%5Btype%5D=ticket&page%5Bsize%5D=100&query=updated_at%3E%3D2026-01-01T00%3A00%3A00Z+status%3Aclosed"
             )
         )
         next_page = budget.get_matching_policy(
-            self._request("/api/v2/search/export.json?filter%5Btype%5D=ticket&page%5Bafter%5D=abc&page%5Bsize%5D=1000")
+            self._request("/api/v2/search/export.json?filter%5Btype%5D=ticket&page%5Bafter%5D=abc&page%5Bsize%5D=100")
         )
         assert first_page is not None
         assert next_page is first_page
@@ -382,7 +385,7 @@ class TestTicketAuditsPerTicketApiBudget(TestCase):
 class TestTicketAuditsPerTicketArchivedTickets(TestCase):
     """The partition router has a second parent, `closed_tickets_search`: an Export Search of the closed
     tickets updated since its cursor. The ticket list never returns an archived ticket, so that walk is how
-    archived tickets (and their audits added by a bulk update) are reached."""
+    archived tickets (and the audits they gain after being archived) are reached."""
 
     @HttpMocker()
     def test_given_no_state_when_read_then_the_search_walk_starts_at_start_date_and_the_archived_ticket_is_read(
@@ -394,7 +397,7 @@ class TestTicketAuditsPerTicketArchivedTickets(TestCase):
             start_time,
             [{"id": 101, "updated_at": start_time + 10}],
             closed_tickets=[(185, start_time + 5)],
-            closed_query=closed_tickets_search_query(start_time),
+            closed_query=closed_tickets_search_query(start_time, int(_NOW.timestamp())),
         )
         _given_audits(http_mocker, 101, [1001])
         _given_audits(http_mocker, 185, [1851])
@@ -458,7 +461,7 @@ class TestTicketAuditsPerTicketArchivedTickets(TestCase):
             previous - 7200,
             [{"id": 101, "updated_at": previous - 1800}],
             closed_tickets=[(185, previous - 3000)],
-            closed_query=closed_tickets_search_query(previous - 7200),
+            closed_query=closed_tickets_search_query(previous - 7200, int(_NOW.timestamp())),
         )
         _given_audits(http_mocker, 101, [1001])
         _given_audits(http_mocker, 185, [1851])
@@ -497,7 +500,7 @@ class TestTicketAuditsPerTicketArchivedTickets(TestCase):
             http_mocker,
             previous - 3600,
             [{"id": 101, "updated_at": previous}],
-            closed_query=closed_tickets_search_query(search_previous - 3600),
+            closed_query=closed_tickets_search_query(search_previous - 3600, int(_NOW.timestamp())),
         )
         _given_audits(http_mocker, 101, [1001])
 
@@ -508,3 +511,50 @@ class TestTicketAuditsPerTicketArchivedTickets(TestCase):
         new_state = output.most_recent_state.stream_state.__dict__
         # No closed ticket changed, so the search cursor stays where it was.
         assert new_state["parent_state"]["closed_tickets_search"] == {"updated_at": str(search_previous)}
+
+    @HttpMocker()
+    def test_given_two_search_pages_when_read_then_both_pages_tickets_are_read(self, http_mocker: HttpMocker) -> None:
+        """The search walk paginates on `links.next`, whose URL spells the path `search/export.json` and repeats
+        the query, until a page says `has_more: false`."""
+        start_time = int(_START_DATE.timestamp())
+        _given_tickets(
+            http_mocker,
+            start_time,
+            [],
+            closed_tickets=[(185, start_time + 5)],
+            closed_query=closed_tickets_search_query(start_time, int(_NOW.timestamp())),
+            closed_later_pages=[[(186, start_time + 6)]],
+        )
+        _given_audits(http_mocker, 185, [1851])
+        _given_audits(http_mocker, 186, [1861])
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config())
+
+        assert len(output.errors) == 0
+        assert sorted(record.record.data["id"] for record in output.records) == [1851, 1861]
+        state = output.most_recent_state.stream_state.__dict__
+        assert state["parent_state"]["closed_tickets_search"] == {"updated_at": str(start_time + 6)}
+
+    @HttpMocker()
+    def test_given_search_forbidden_when_read_then_the_error_names_the_streams_that_need_it(self, http_mocker: HttpMocker) -> None:
+        """`closed_tickets_search` is not a stream the user can see, so its 403 names the four streams it serves
+        and the permission they need, and it fails the sync rather than silently skipping archived tickets."""
+        start_time = int(_START_DATE.timestamp())
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.tickets_endpoint(_AUTHENTICATOR).build(), TicketsResponseBuilder.tickets_response().build()
+        )
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.tickets_search_endpoint(_AUTHENTICATOR).with_any_query_params().build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message("Forbidden").build(),
+        )
+
+        output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), expecting_exception=True)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any(
+            "Unable to search for updated closed tickets, which the 'ticket_comments', 'ticket_events', 'ticket_metric_events' and "
+            "'ticket_audits_per_ticket' streams need to reach archived tickets" in message
+            for message in error_logs
+        ), error_logs
+        assert any("Error message: Forbidden" in message for message in error_logs), error_logs

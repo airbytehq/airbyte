@@ -1111,24 +1111,32 @@ definitions:
     $ref: "#/definitions/sorted_list_incremental_sync"
     global_substream_cursor: true
 
-  # Second parent of the per-ticket substreams: the closed tickets updated since the slice start,
-  # read from Export Search Results
-  # (`GET /search/export?filter[type]=ticket&query=updated_at>=<start> status:closed`). The ticket
-  # list never returns an archived ticket (Zendesk archives closed tickets about 120 days after they
-  # close), so on its own the `tickets` parent neither backfills the history of archived tickets on
-  # a first sync nor sees an archived ticket that a bulk update changed; the search index does list
-  # them. `status:closed` keeps the overlap with the list small: only closed tickets are archived
-  # and a closed ticket cannot change status, so every archived ticket matches, while a closed
-  # ticket that is not archived yet is listed by both parents and read twice (`id` deduplicates
-  # downstream). Archiving itself leaves `updated_at` unchanged, so the walk lists an archived
-  # ticket only when something changes it. One walk per sync: no `step` and no upper bound in the
-  # query, `page[size]` 1000 (the endpoint's maximum), cursor pagination on `links.next`, which
-  # carries the query (hence `ignore_stream_slicer_parameters_on_paginated_requests`). The record
-  # `updated_at` feeds the cursor and `generated_timestamp` is carried as an extra field, as on the
-  # `tickets` parent; both can lag the live ticket, which the index refreshes within minutes of a
-  # change (the one-hour lookback covers that). `ClosedTicketsSearchStateMigration` seeds the cursor
-  # when a saved `parent_state` predates this parent. Not a user-facing stream: it exists only under
-  # `parent_state`. See AGENTS.md §7.
+  # Second parent of the per-ticket substreams: the closed tickets updated within the slice, read
+  # from Export Search Results
+  # (`GET /search/export?filter[type]=ticket&query=updated_at>=<start> updated_at<=<end> status:closed`).
+  # The ticket list never returns an archived ticket (Zendesk archives closed tickets about 120 days
+  # after they close), so on its own the `tickets` parent neither backfills the history of archived
+  # tickets on a first sync nor sees an archived ticket that changed after it was archived; the
+  # search index does list them. `status:closed` narrows the walk to the population the list cannot
+  # serve without losing a ticket: only closed tickets are archived and a closed ticket cannot change
+  # status. The overlap with the list is every ticket that closed since the previous sync (on a first
+  # sync, every closed ticket not archived yet); such a ticket is listed by both parents and can be
+  # read twice (`id` deduplicates downstream). Archiving itself leaves `updated_at` unchanged, so the
+  # walk lists an archived ticket only when something changes it. One walk per sync: no `step`, the
+  # query bounded above by the slice end (the sync start) so that a ticket changed while the unsorted
+  # walk runs cannot leave the cursor past another ticket changed earlier in the same walk, cursor
+  # pagination on `links.next`, which carries the query (hence
+  # `ignore_stream_slicer_parameters_on_paginated_requests`). `page[size]` is 100, not the endpoint's
+  # maximum of 1000: a search cursor expires 60 minutes after the response that issued it, and the
+  # next page is only requested once the current page's tickets have been queued for the substream,
+  # which waits on the per-ticket reads when the queue is full. The record `updated_at` feeds the
+  # cursor and `generated_timestamp` is carried as an extra field, as on the `tickets` parent; both
+  # can lag the live ticket, which the index refreshes within minutes of a change (the one-hour
+  # lookback covers that). Its error handler names the four streams, since this parent is not a
+  # user-facing stream (it exists only under `parent_state`), and does not ignore a permission
+  # error: silently skipping the walk would silently lose archived tickets.
+  # `ClosedTicketsSearchStateMigration` seeds the cursor when a saved `parent_state` predates this
+  # parent. See AGENTS.md §7.
   closed_tickets_search_stream:
     type: DeclarativeStream
     name: "closed_tickets_search"
@@ -1140,15 +1148,26 @@ definitions:
         $ref: "#/definitions/retriever/requester"
         path: "search/export"
         request_parameters:
-          query: "updated_at>={{ format_datetime(stream_interval['start_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }} status:closed"
+          query: "updated_at>={{ format_datetime(stream_interval['start_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }} updated_at<={{ format_datetime(stream_interval['end_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }} status:closed"
           "filter[type]": "ticket"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - $ref: "#/definitions/oauth_token_refresh_response_filter"
+            - http_codes: [403, 404]
+              action: FAIL
+              failure_type: config_error
+              error_message: "Unable to search for updated closed tickets, which the 'ticket_comments', 'ticket_events', 'ticket_metric_events' and 'ticket_audits_per_ticket' streams need to reach archived tickets. The Export Search Results endpoint returned an error indicating a configuration issue. Please ensure that the account can search tickets (the OAuth 'read' scope or an agent's API token). Error message: {{ response.get('error') }}"
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
       paginator:
         type: DefaultPaginator
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ response.get('links', {}).get('next', '') }}"
           stop_condition: "{{ not response.get('meta', {}).get('has_more', False) }}"
-          page_size: 1000
+          page_size: 100
         page_token_option:
           type: RequestPath
         page_size_option:

@@ -224,7 +224,7 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         )
         # The parent walks resume from the saved parent cursors, not from start_date; the whole history of a
         # changed ticket comes back, including events older than the saved cursor.
-        _given_tickets(http_mocker, [(101, latest)], closed_query=closed_tickets_search_query(previous - 3600))
+        _given_tickets(http_mocker, [(101, latest)], closed_query=closed_tickets_search_query(previous - 3600, int(_NOW.timestamp())))
         _given_metric_events(
             http_mocker,
             101,
@@ -253,7 +253,11 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"time": str(previous)}).build()
         # One ticket updated 30 minutes before the saved cursor (inside the one-hour rewind) and one after.
-        _given_tickets(http_mocker, [(102, latest), (101, previous - 1800)], closed_query=closed_tickets_search_query(previous - 7200))
+        _given_tickets(
+            http_mocker,
+            [(102, latest), (101, previous - 1800)],
+            closed_query=closed_tickets_search_query(previous - 7200, int(_NOW.timestamp())),
+        )
         _given_metric_events(http_mocker, 101, [_event(1001, 101, datetime_to_string(_NOW.subtract(timedelta(days=3, minutes=30))))])
         _given_metric_events(http_mocker, 102, [_event(2001, 102, datetime_to_string(_NOW.subtract(timedelta(days=1))))])
 
@@ -278,7 +282,7 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         updated_at = int(_NOW.subtract(timedelta(minutes=30)).timestamp())
         now = int(_NOW.timestamp())
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"time": str(future)}).build()
-        _given_tickets(http_mocker, [(101, updated_at)], closed_query=closed_tickets_search_query(now - 7200))
+        _given_tickets(http_mocker, [(101, updated_at)], closed_query=closed_tickets_search_query(now - 7200, int(_NOW.timestamp())))
         _given_metric_events(http_mocker, 101, [_event(1001, 101, datetime_to_string(_NOW.subtract(timedelta(minutes=30))))])
 
         output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)
@@ -309,7 +313,9 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
             )
             .build()
         )
-        _given_tickets(http_mocker, [(101, previous - 1800)], closed_query=closed_tickets_search_query(previous - 7200))
+        _given_tickets(
+            http_mocker, [(101, previous - 1800)], closed_query=closed_tickets_search_query(previous - 7200, int(_NOW.timestamp()))
+        )
         _given_metric_events(http_mocker, 101, [_event(1001, 101, datetime_to_string(_NOW.subtract(timedelta(days=3, minutes=30))))])
 
         output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), state)

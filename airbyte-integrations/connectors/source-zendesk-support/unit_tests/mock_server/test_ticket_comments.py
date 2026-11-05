@@ -247,7 +247,7 @@ class TestTicketCommentsStreamIncremental(TestCase):
         previous = int(_NOW.subtract(timedelta(days=3)).timestamp())
         latest = int(_NOW.subtract(timedelta(days=1)).timestamp())
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"created_at": str(previous)}).build()
-        _given_tickets(http_mocker, [(101, latest)], closed_query=closed_tickets_search_query(previous - 3600))
+        _given_tickets(http_mocker, [(101, latest)], closed_query=closed_tickets_search_query(previous - 3600, int(_NOW.timestamp())))
         _given_audits(
             http_mocker,
             101,
@@ -292,7 +292,11 @@ class TestTicketCommentsStreamIncremental(TestCase):
             .build()
         )
         # 102 is older than the parent cursor minus one hour, so the walk stops before visiting it.
-        _given_tickets(http_mocker, [(101, latest), (102, previous - 7200)], closed_query=closed_tickets_search_query(previous - 3600))
+        _given_tickets(
+            http_mocker,
+            [(101, latest), (102, previous - 7200)],
+            closed_query=closed_tickets_search_query(previous - 3600, int(_NOW.timestamp())),
+        )
         _given_audits(
             http_mocker,
             101,
