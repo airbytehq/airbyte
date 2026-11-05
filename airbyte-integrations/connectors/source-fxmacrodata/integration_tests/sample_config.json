@@ -1,0 +1,5 @@
+{
+  "currencies": ["USD"],
+  "indicators": ["policy_rate", "inflation", "gov_bond_10y"],
+  "start_date": "2026-01-01"
+}
