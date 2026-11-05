@@ -370,7 +370,7 @@ class TestTicketAuditsPerTicketApiBudget(TestCase):
         budget = self._budget(_config())
         first_page = budget.get_matching_policy(
             self._request(
-                "/api/v2/search/export?filter%5Btype%5D=ticket&page%5Bsize%5D=100&query=updated_at%3E%3D2026-01-01T00%3A00%3A00Z+status%3Aclosed"
+                "/api/v2/search/export?filter%5Btype%5D=ticket&page%5Bsize%5D=100&query=updated_at%3E%3D2026-01-01T00%3A00%3A00Z+updated_at%3C%3D2026-02-01T00%3A00%3A00Z+status%3Aclosed"
             )
         )
         next_page = budget.get_matching_policy(
@@ -538,14 +538,17 @@ class TestTicketAuditsPerTicketArchivedTickets(TestCase):
     @HttpMocker()
     def test_given_search_forbidden_when_read_then_the_error_names_the_streams_that_need_it(self, http_mocker: HttpMocker) -> None:
         """`closed_tickets_search` is not a stream the user can see, so its 403 names the four streams it serves
-        and the permission they need, and it fails the sync rather than silently skipping archived tickets."""
+        and the permission they need, and it fails the sync rather than silently skipping archived tickets: the
+        body is the one Zendesk sends on a permission error, which the default handler would IGNORE."""
         start_time = int(_START_DATE.timestamp())
         http_mocker.get(
             ZendeskSupportRequestBuilder.tickets_endpoint(_AUTHENTICATOR).build(), TicketsResponseBuilder.tickets_response().build()
         )
         http_mocker.get(
             ZendeskSupportRequestBuilder.tickets_search_endpoint(_AUTHENTICATOR).with_any_query_params().build(),
-            ErrorResponseBuilder.response_with_status(403).with_error_message("Forbidden").build(),
+            ErrorResponseBuilder.response_with_status(403)
+            .with_error_message("You do not have access to this page. Please contact the account owner of this help desk for further help.")
+            .build(),
         )
 
         output = read_stream(_STREAM_NAME, SyncMode.incremental, _config(), expecting_exception=True)
@@ -557,4 +560,4 @@ class TestTicketAuditsPerTicketArchivedTickets(TestCase):
             "'ticket_audits_per_ticket' streams need to reach archived tickets" in message
             for message in error_logs
         ), error_logs
-        assert any("Error message: Forbidden" in message for message in error_logs), error_logs
+        assert any("Error message: You do not have access to this page." in message for message in error_logs), error_logs

@@ -1125,8 +1125,10 @@ definitions:
   # walk lists an archived ticket only when something changes it. One walk per sync: no `step`, the
   # query bounded above by the slice end (the sync start) so that a ticket changed while the unsorted
   # walk runs cannot leave the cursor past another ticket changed earlier in the same walk, cursor
-  # pagination on `links.next`, which carries the query (hence
-  # `ignore_stream_slicer_parameters_on_paginated_requests`). `page[size]` is 100, not the endpoint's
+  # pagination on `links.next`, which repeats the query and the page size (the requester re-sends its
+  # own `query` and `filter[type]` on every page and the HTTP client drops a parameter whose value
+  # already matches the URL's; `ignore_stream_slicer_parameters_on_paginated_requests` covers only the
+  # cursor's request options, which this cursor has none of). `page[size]` is 100, not the endpoint's
   # maximum of 1000: a search cursor expires 60 minutes after the response that issued it, and the
   # next page is only requested once the current page's tickets have been queued for the substream,
   # which waits on the per-ticket reads when the queue is full. The record `updated_at` feeds the
