@@ -166,7 +166,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 4.0.0 | 2026-02-25 | [74017](https://github.com/airbytehq/airbyte/pull/74017) | Migrate to Notion API version 2025-09-03: replace `databases` stream with `data_sources`, update page parent references, and add new schema fields |
 | 3.3.14 | 2026-02-24 | [73856](https://github.com/airbytehq/airbyte/pull/73856) | Update dependencies |
 | 3.3.13 | 2026-02-10 | [73032](https://github.com/airbytehq/airbyte/pull/73032) | Update dependencies |
-| 3.3.12 | 2026-02-06 | [72925](https://github.com/airbytehq/airbyte/pull/72925) | Add client-side incremental filtering to blocks stream RecordFilter |
 | 3.3.11 | 2026-01-20 | [71943](https://github.com/airbytehq/airbyte/pull/71943) | Update dependencies |
 | 3.3.10 | 2026-01-14 | [71602](https://github.com/airbytehq/airbyte/pull/71602) | Update dependencies |
 | 3.3.9 | 2025-12-18 | [70534](https://github.com/airbytehq/airbyte/pull/70534) | Update dependencies |
