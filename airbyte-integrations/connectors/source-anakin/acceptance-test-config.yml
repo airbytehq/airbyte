@@ -1,0 +1,19 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-anakin:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    tests:
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    bypass_reason: "No sandbox credentials in Airbyte's secret store yet. Anakin can provide a test key on request."
+  basic_read:
+    bypass_reason: "No sandbox credentials in Airbyte's secret store yet. Anakin can provide a test key on request."
+  incremental:
+    bypass_reason: "No sandbox credentials in Airbyte's secret store yet. Anakin can provide a test key on request."
+  full_refresh:
+    bypass_reason: "No sandbox credentials in Airbyte's secret store yet. Anakin can provide a test key on request."

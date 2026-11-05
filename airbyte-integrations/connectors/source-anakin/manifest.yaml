@@ -1,0 +1,599 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: >-
+  Syncs web data from Anakin (anakin.io): web search results for a list of
+  queries, scraped page content (Markdown and optional HTML) for a list of
+  URLs, and your Anakin monitors and their detected changes.
+
+check:
+  type: CheckStream
+  stream_names:
+    - monitors
+
+definitions:
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: '{{ config["api_key"] }}'
+    inject_into:
+      type: RequestOption
+      inject_into: header
+      field_name: X-API-Key
+
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 401
+          - 403
+        failure_type: config_error
+        error_message: >-
+          Anakin rejected the API key. Check that it is an active key from
+          https://anakin.io/dashboard (keys start with "ask_").
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+          - 500
+          - 502
+          - 503
+          - 504
+
+  requester:
+    type: HttpRequester
+    url_base: https://api.anakin.io/v1
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    request_headers:
+      Accept: application/json
+    error_handler:
+      $ref: "#/definitions/error_handler"
+
+  streams:
+    monitors:
+      type: DeclarativeStream
+      name: monitors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /monitors
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - monitors
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/monitors"
+
+    monitor_changes:
+      type: DeclarativeStream
+      name: monitor_changes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /monitors/{{ stream_partition.monitor_id }}/changes
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - changes
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/monitors"
+              parent_key: id
+              partition_field: monitor_id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: changedAt
+        is_client_side_incremental: true
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2020-01-01T00:00:00.000000+0000"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/monitor_changes"
+
+    search_results:
+      type: DeclarativeStream
+      name: search_results
+      primary_key:
+        - query
+        - url
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /search
+          http_method: POST
+          request_body_json:
+            prompt: "{{ stream_partition.query }}"
+            limit: "{{ config.get('search_limit', 5) }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: query
+          values: "{{ config.get('search_queries', []) }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - query
+              value: "{{ stream_partition.query }}"
+            - type: AddedFieldDefinition
+              path:
+                - synced_at
+              value: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/search_results"
+
+    scraped_pages:
+      type: DeclarativeStream
+      name: scraped_pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: /url-scraper/scrape
+          http_method: POST
+          request_body_json:
+            url: "{{ stream_partition.url }}"
+            country: "{{ config.get('country', 'us') }}"
+            useBrowser: "{{ config.get('use_browser', False) }}"
+            generateJson: "{{ config.get('generate_json', False) }}"
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 5
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 10
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Anakin rejected the API key. Check that it is an active key
+                  from https://anakin.io/dashboard (keys start with "ask_").
+              # 202 means the scrape did not finish inside the inline wait
+              # budget (~90s). Retrying picks up the finished result.
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 202
+                  - 429
+                  - 500
+                  - 502
+                  - 503
+                  - 504
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: url
+          values: "{{ config.get('urls', []) }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - requested_url
+              value: "{{ stream_partition.url }}"
+        # html and cleanedHtml are large; null them unless include_html is set.
+        - type: AddFields
+          condition: "{{ not config.get('include_html', False) }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - html
+              value: "{{ None }}"
+            - type: AddedFieldDefinition
+              path:
+                - cleanedHtml
+              value: "{{ None }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/scraped_pages"
+
+streams:
+  - $ref: "#/definitions/streams/monitors"
+  - $ref: "#/definitions/streams/monitor_changes"
+  - $ref: "#/definitions/streams/search_results"
+  - $ref: "#/definitions/streams/scraped_pages"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # Inline scraping is limited to 20 requests/min per user.
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 20
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: POST
+          url_path_pattern: "^/v1/url-scraper/scrape$"
+    # Search is limited to 60 requests/min per user.
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 60
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: POST
+          url_path_pattern: "^/v1/search$"
+  status_codes_for_ratelimit_hit:
+    - 429
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/anakin
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Your Anakin API key (starts with "ask_"). Create one at
+          https://anakin.io/dashboard. The free plan includes 300 credits.
+        airbyte_secret: true
+        order: 0
+      search_queries:
+        type: array
+        title: Search Queries
+        description: >-
+          Queries to run on every sync for the search_results stream. Each
+          query costs credits on every sync. Leave empty to skip the stream.
+        items:
+          type: string
+        default: []
+        order: 1
+      search_limit:
+        type: integer
+        title: Results per Query
+        description: Maximum number of search results per query (1-20).
+        minimum: 1
+        maximum: 20
+        default: 5
+        order: 2
+      urls:
+        type: array
+        title: URLs to Scrape
+        description: >-
+          Pages to scrape on every sync for the scraped_pages stream. Each URL
+          costs credits on every sync. Leave empty to skip the stream.
+        items:
+          type: string
+        default: []
+        order: 3
+      country:
+        type: string
+        title: Proxy Country
+        description: >-
+          Two-letter country code used to route scraping requests, for
+          example "us", "gb" or "de".
+        default: us
+        order: 4
+      use_browser:
+        type: boolean
+        title: Use Headless Browser
+        description: >-
+          Render pages in a headless browser before extracting content. Needed
+          for JavaScript-heavy sites; slower than a plain fetch.
+        default: false
+        order: 5
+      generate_json:
+        type: boolean
+        title: Extract Structured JSON
+        description: >-
+          Ask Anakin to extract structured JSON from each scraped page into
+          the generatedJson field.
+        default: false
+        order: 6
+      include_html:
+        type: boolean
+        title: Include HTML
+        description: >-
+          Keep the raw html and cleanedHtml fields on scraped_pages records.
+          Off by default because they are large; markdown is always included.
+        default: false
+        order: 7
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    monitors: false
+    monitor_changes: false
+    search_results: false
+    scraped_pages: false
+
+schemas:
+  monitors:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      url:
+        type:
+          - "null"
+          - string
+      scope:
+        type:
+          - "null"
+          - string
+      watchMode:
+        type:
+          - "null"
+          - string
+      watchFormat:
+        type:
+          - "null"
+          - string
+      intervalMinutes:
+        type:
+          - "null"
+          - integer
+      isActive:
+        type:
+          - "null"
+          - boolean
+      expired:
+        type:
+          - "null"
+          - boolean
+      sessionExpired:
+        type:
+          - "null"
+          - boolean
+      aiMode:
+        type:
+          - "null"
+          - boolean
+      aiGoal:
+        type:
+          - "null"
+          - string
+      useBrowser:
+        type:
+          - "null"
+          - boolean
+      country:
+        type:
+          - "null"
+          - string
+      creditCostPerRun:
+        type:
+          - "null"
+          - number
+      outputSchema:
+        type:
+          - "null"
+          - object
+      wireActionId:
+        type:
+          - "null"
+          - string
+      wireCatalogSlug:
+        type:
+          - "null"
+          - string
+      wireParams:
+        type:
+          - "null"
+          - object
+      expiresAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      nextRunAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastCheckedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  monitor_changes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      monitorId:
+        type:
+          - "null"
+          - string
+      snapshotId:
+        type:
+          - "null"
+          - string
+      changedAt:
+        type: string
+        format: date-time
+      summary:
+        type:
+          - "null"
+          - string
+      diffJson:
+        type:
+          - "null"
+          - object
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  search_results:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      query:
+        type: string
+      url:
+        type: string
+      title:
+        type:
+          - "null"
+          - string
+      snippet:
+        type:
+          - "null"
+          - string
+      date:
+        type:
+          - "null"
+          - string
+      last_updated:
+        type:
+          - "null"
+          - string
+      synced_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  scraped_pages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      requested_url:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      finalUrl:
+        type:
+          - "null"
+          - string
+      statusCode:
+        type:
+          - "null"
+          - integer
+      status:
+        type:
+          - "null"
+          - string
+      jobType:
+        type:
+          - "null"
+          - string
+      country:
+        type:
+          - "null"
+          - string
+      markdown:
+        type:
+          - "null"
+          - string
+      html:
+        type:
+          - "null"
+          - string
+      cleanedHtml:
+        type:
+          - "null"
+          - string
+      generatedJson:
+        type:
+          - "null"
+          - object
+      cached:
+        type:
+          - "null"
+          - boolean
+      error:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      completedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      durationMs:
+        type:
+          - "null"
+          - number
