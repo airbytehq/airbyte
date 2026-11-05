@@ -48,7 +48,7 @@ on:
   # {pr, head_sha, source_stage} in the client_payload.
   repository_dispatch:
     types: [handoff]
-  # Opt-in kickstart (HYD-378): one handoff pass when `hyd-chain-v2` is added,
+  # Opt-in kickstart: one handoff pass when `hyd-chain-v2` is added,
   # instead of waiting for the next stage or CI wake. The gate's `if:` drops
   # every other label. Labels added with GITHUB_TOKEN don't fire this, so
   # automation that adds the label must use an App token.
