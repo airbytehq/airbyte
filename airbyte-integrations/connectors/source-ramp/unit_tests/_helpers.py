@@ -30,6 +30,25 @@ ALL_SCOPES = (
 
 START_DATE = "2024-01-01T00:00:00Z"
 CONFIG = {
+    "credentials": {
+        "auth_type": "client_credentials",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+    },
+    "start_date": START_DATE,
+}
+OAUTH_CONFIG = {
+    "credentials": {
+        "auth_type": "oauth2.0",
+        "client_id": "airbyte_oauth_client_id",
+        "client_secret": "airbyte_oauth_client_secret",
+        "refresh_token": "test-refresh-token",
+        "access_token": "consent-access-token",
+    },
+    "start_date": START_DATE,
+}
+# The flat shape of configs created before OAuth support, which the config migration rewrites into `CONFIG`.
+LEGACY_CONFIG = {
     "client_id": "test_client_id",
     "client_secret": "test_client_secret",
     "start_date": START_DATE,
@@ -52,8 +71,11 @@ def _get_manifest_path() -> Path:
 _MANIFEST_PATH = _get_manifest_path() / "manifest.yaml"
 
 
-def get_source(config: dict, state=None) -> YamlDeclarativeSource:
-    """Instantiate a `YamlDeclarativeSource` for `source-ramp` using its manifest."""
+def get_source(config: dict, state=None, config_path=None) -> YamlDeclarativeSource:
+    """Instantiate a `YamlDeclarativeSource` for `source-ramp` using its manifest.
+
+    When `config_path` is given, the source writes a migrated config back to that file.
+    """
     catalog = CatalogBuilder().build()
     state = state if state is not None else StateBuilder().build()
     return YamlDeclarativeSource(
@@ -61,6 +83,7 @@ def get_source(config: dict, state=None) -> YamlDeclarativeSource:
         catalog=catalog,
         config=config,
         state=state,
+        config_path=config_path,
     )
 
 
