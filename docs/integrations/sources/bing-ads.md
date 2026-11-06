@@ -112,12 +112,15 @@ The Bing Ads source connector supports the following streams. For more informati
 
 - [Accounts](https://learn.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13) (Full Refresh)
 - [Ad Groups](https://learn.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13) (Full Refresh)
+- [Ad Groups Bulk](https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group?view=bingads-13) (`ad_groups_bulk`, Incremental)
 - [Ad Group Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13) (Incremental)
 - [Ads](https://learn.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13) (Full Refresh)
+- [Ads Bulk](https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13) (`ads_bulk`, Incremental)
 - [App Install Ads](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13) (Incremental)
 - [App Install Ad Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13) (Incremental)
 - [Budget](https://learn.microsoft.com/en-us/advertising/bulk-service/budget?view=bingads-13) (Incremental)
 - [Campaigns](https://learn.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13) (Full Refresh)
+- [Campaigns Bulk](https://learn.microsoft.com/en-us/advertising/bulk-service/campaign?view=bingads-13) (`campaigns_bulk`, Incremental)
 - [Campaign Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/campaign-label?view=bingads-13) (Incremental)
 - [Keywords](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13) (Incremental)
 - [Keyword Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13) (Incremental)
@@ -302,7 +305,19 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 #### Bulk stream incremental behavior
 
-Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budget) use the Microsoft Bulk API. In incremental mode, the Bulk API ignores `LastSyncTimeInUTC` for dates more than 30 days ago, which triggers a full download. This means the first sync after a gap of more than 30 days downloads all data regardless of state.
+Bulk streams (Ad Groups Bulk, Ads Bulk, Campaigns Bulk, Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budget) use the Microsoft Bulk API. In incremental mode, the connector omits `LastSyncTimeInUTC` when the saved cursor is more than 30 days old, triggering a full download instead of an API error. The first sync after a gap of more than 30 days therefore downloads all data. Because the cursor tracks the latest record's `Modified Time`, inactive accounts can also fall back to full downloads even when syncs run regularly.
+
+To sync campaigns, ad groups, or ads incrementally, select `campaigns_bulk`, `ad_groups_bulk`, or `ads_bulk`. Each account without saved per-account state receives a full download, including accounts added after earlier syncs, independently of **Reports Replication Start Date**. Accounts with saved state use deltas while their cursor is within the last 30 days, measured by timestamp rather than calendar date. If state contains only a global cursor without account-specific cursors, these streams conservatively download each account in full. These new streams use flat Bulk API fields such as `Id`, `Parent Id`, `Status`, and the `Modified Time` cursor; they are not schema-compatible replacements for the existing `campaigns`, `ad_groups`, and `ads` streams. The existing streams remain available in Full Refresh mode without changes. `ads_bulk` requests all ad types supported by the Bulk API's `Ads` download entity.
+
+Bulk deltas can include records with `Status: Deleted`, but Microsoft does not cascade these records to children: deleting a campaign does not produce deleted records for its ad groups and ads, and deleting an ad group does not produce deleted records for its ads. Do not rely on incremental child streams alone to identify all deletions. See [DownloadCampaignsByAccountIds](https://learn.microsoft.com/en-us/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13#lastsynctimeinutc) for the API's deletion behavior.
+
+A full-download fallback during an incremental sync does not replace destination contents. Deleted entities may be absent from that download, leaving older destination rows in place. A deleted row without `Modified Time` also cannot reliably supersede a timestamped row in cursor-based deduplication. These streams do not guarantee complete deletion tracking. If you need an authoritative current snapshot, use a separately configured Full Refresh–Overwrite stream or reconcile full snapshots; overwrite removes previous destination history. Parent-derived fields, such as campaign names on ad-group or ad rows, can also remain stale until those child rows are returned again.
+
+Microsoft recommends the account row's `Sync Time` as the next download marker. These streams instead track entity `Modified Time`, so an empty download does not advance their cursor and a regularly synced but idle account can reach the full-download fallback. If Microsoft returns `FailedFullSyncRequired`, refresh the affected stream before retrying incremental reads.
+
+Bulk downloads request `EntityData`, not `QualityScoreData`, so quality-score fields are not populated. Optional numeric CSV fields can contain empty strings instead of nulls; account for these unpopulated values downstream.
+
+The three Bulk entity streams exclude diagnostic rows whose `Type` ends in ` Error`, such as `Responsive Search Ad Error`. These rows are not entities and can share an entity's ID without a modification timestamp. Valid entity rows, including `Status: Deleted` records, are retained. Additional Bulk CSV columns are passed through without explicit schema types.
 
 ### Troubleshooting
 
@@ -321,6 +336,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.0 | 2026-11-05 | [91146](https://github.com/airbytehq/airbyte/pull/91146) | Added incremental Bulk API streams for campaigns, ad groups, and ads while preserving existing full-refresh streams. |
 | 3.0.21 | 2026-11-03 | [88968](https://github.com/airbytehq/airbyte/pull/88968) | Add actionable messages for Microsoft Entra refresh token errors |
 | 3.0.20 | 2026-11-03 | [89720](https://github.com/airbytehq/airbyte/pull/89720) | Sync App, Hotel and Objective-based campaigns (and their ad groups and ads), which were previously skipped |
 | 3.0.19 | 2026-11-03 | [90478](https://github.com/airbytehq/airbyte/pull/90478) | Update dependencies |
