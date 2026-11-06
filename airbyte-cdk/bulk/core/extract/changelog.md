@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.3.0 — 2026-11-06
+
+[#91210](https://github.com/airbytehq/airbyte/pull/91210) — Debezium `3.4.3.Final` → `3.7.1.Final` in `extract-cdc`. The published Kafka constraints move from `4.1.2` to `4.3.2`: the latest patch on the 4.3.x line Debezium 3.7 builds against, postdating the 4.1.2 CVE fixes (CVE-2026-33557, CVE-2026-35554); kafka-clients 4.3.2 depends on `at.yawk.lz4` 1.11.4, the CVE-2026-106451 fix version. Jetty constraints stay at `12.0.40` (connect-runtime 4.3.2 is still on 12.0.x). Connectors adopting 1.3.0 should bump their own `io.debezium:debezium-connector-*` artifacts to `3.7.1.Final` and can drop any Kafka-chain pins added to work around the `bootstrap.servers` crash fixed in 1.2.4.
+
 ### 1.2.4 — 2026-11-06
 
 [#91209](https://github.com/airbytehq/airbyte/pull/91209) — Make `extract-cdc` compatible with Kafka Connect >= 4.2: `DebeziumStateFilesAccessor` now supplies the required-but-unused `bootstrap.servers` property to `FileOffsetBackingStore`, whose default Kafka Connect 4.2 removed. Inert on the toolkit's current Kafka 4.1.x chain; without it, every CDC read on Kafka Connect 4.2+ (what Debezium 3.7.x pulls) fails at startup with `ConfigException: Missing required configuration "bootstrap.servers"`.
