@@ -23,6 +23,8 @@ This page guides you through setting up the [Snapchat Marketing](https://develop
 
 <!-- /env:oss -->
 
+The authenticated Snapchat user must have access to the organizations and ad accounts you want to sync. Snapchat's [`reports` ad account role](https://developers.snap.com/marketing-api/Ads-API/roles#ad-account-roles) provides read-only access for reporting. The OAuth app must request the `snapchat-marketing-api` scope.
+
 ## Setup guide
 
 ### Step 1: Set up Snapchat
@@ -33,34 +35,33 @@ This page guides you through setting up the [Snapchat Marketing](https://develop
 
 **For Airbyte Open Source:**
 
-2. [Activate access to the Snapchat Marketing API](https://businesshelp.snapchat.com/s/article/api-apply?language=en_US).
-3. Create an OAuth2 app in the [Snap Business Manager](https://business.snapchat.com/):
-   - Provide a `redirect_uri`. If you don't have an endpoint that handles the OAuth callback, use any valid URL. See [this discussion](https://github.com/Snap-Kit/bitmoji-sample/issues/3) for details.
+2. As an **Organization Admin**, create an OAuth2 app in the **Business Details** section of [Snap Business Manager](https://business.snapchat.com/).
+   - Register a `redirect_uri` where you can receive the authorization code. Use the same URI in both the authorization request and the token exchange.
    - Save the **Client ID** and **Client Secret**.
-4. Obtain a refresh token using the OAuth2 authorization code flow:
-   1. Open the authorize link in a browser:
+3. Obtain a refresh token using the OAuth2 authorization code flow:
+   1. Replace `CLIENT_ID` and `REDIRECT_URI` in the following URL with your app's values. URL-encode the redirect URI, replace `STATE` with a random value for this request, and open the URL in a browser:
 
       ```text
-      https://accounts.snapchat.com/login/oauth2/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI&scope=snapchat-marketing-api&state=wmKkg0TWgppW8PTBZ20sldUwerf-m
+      https://accounts.snapchat.com/login/oauth2/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI&scope=snapchat-marketing-api&state=STATE
       ```
 
    2. Log in and authorize the app.
-   3. Copy the `code` query parameter from the redirect URL.
+   3. Verify that the returned `state` matches the value you sent, then copy the `code` query parameter from the redirect URL.
    4. Exchange the code for tokens:
 
       ```bash
       curl -X POST \
-        -d "code={one_time_use_code}" \
-        -d "client_id={client_id}" \
-        -d "client_secret={client_secret}" \
-        -d "grant_type=authorization_code" \
-        -d "redirect_uri={redirect_uri}" \
+        --data-urlencode "code={one_time_use_code}" \
+        --data-urlencode "client_id={client_id}" \
+        --data-urlencode "client_secret={client_secret}" \
+        --data-urlencode "grant_type=authorization_code" \
+        --data-urlencode "redirect_uri={redirect_uri}" \
         https://accounts.snapchat.com/login/oauth2/access_token
       ```
 
    Use the `refresh_token` from the response when configuring the connector.
 
-   For more details, see the [Snapchat authentication documentation](https://developers.snap.com/api/marketing-api/Ads-API/authentication).
+   For more details, see the [Snapchat authentication documentation](https://developers.snap.com/marketing-api/Ads-API/authentication).
 
 <!-- /env:oss -->
 
@@ -75,13 +76,8 @@ This page guides you through setting up the [Snapchat Marketing](https://develop
 3. Select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
 4. Click **Authenticate your account**.
 5. Log in and authorize access to your Snapchat account.
-6. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. Only data created on or after this date will be synced. Defaults to `2022-01-01`.
-
-:::tip
-Start Date is required for all stats streams that use `start_time` as a key (see the supported streams table below).
-:::
-
-7. (Optional) Enter an **End Date** in `YYYY-MM-DD` format. Only data created on or before this date will be synced. If left blank, the connector syncs up through today.
+6. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. Defaults to `2022-01-01`. See [Date range and incremental sync](#date-range-and-incremental-sync) for how the date filters apply to each stream.
+7. (Optional) Enter an **End Date** in `YYYY-MM-DD` format. If left blank, the connector syncs up through today. For daily and hourly stats, this date is exclusive.
 8. (Optional) Choose the **Action Report Time**. This controls whether conversions are reported at the time of `conversion` (default) or `impression`.
 9. (Optional) Choose the **Swipe Up Attribution Window**. Options: `1_DAY`, `7_DAY`, `28_DAY` (default).
 10. (Optional) Choose the **View Attribution Window**. Options: `none`, `1_HOUR`, `3_HOUR`, `6_HOUR`, `1_DAY` (default), `7_DAY`.
@@ -99,13 +95,8 @@ Start Date is required for all stats streams that use `start_time` as a key (see
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. Select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
 4. Enter the **Client ID**, **Client Secret**, and **Refresh Token** from Step 1.
-5. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. Only data created on or after this date will be synced. Defaults to `2022-01-01`.
-
-:::tip
-Start Date is required for all stats streams that use `start_time` as a key (see the supported streams table below).
-:::
-
-6. (Optional) Enter an **End Date** in `YYYY-MM-DD` format. Only data created on or before this date will be synced.
+5. (Optional) Enter a **Start Date** in `YYYY-MM-DD` format. Defaults to `2022-01-01`. See [Date range and incremental sync](#date-range-and-incremental-sync) for how the date filters apply to each stream.
+6. (Optional) Enter an **End Date** in `YYYY-MM-DD` format. If left blank, the connector syncs up through today. For daily and hourly stats, this date is exclusive.
 7. (Optional) Choose the **Action Report Time**. This controls whether conversions are reported at the time of `conversion` (default) or `impression`.
 8. (Optional) Choose the **Swipe Up Attribution Window**. Options: `1_DAY`, `7_DAY`, `28_DAY` (default).
 9. (Optional) Choose the **View Attribution Window**. Options: `none`, `1_HOUR`, `3_HOUR`, `6_HOUR`, `1_DAY` (default), `7_DAY`.
@@ -115,7 +106,11 @@ Start Date is required for all stats streams that use `start_time` as a key (see
 
 <!-- /env:oss -->
 
+To find values for **Organization IDs** and **Ad Account IDs**, use Snapchat's [Get All Organizations with Ad Accounts endpoint](https://developers.snap.com/marketing-api/Ads-API/organizations#get-all-organizations-with-ad-accounts). Use each organization's `id` and the `id` values in its `ad_accounts` array. These filters don't grant access to organizations or ad accounts that the authenticated user can't access.
+
 ## Supported streams and sync modes
+
+All streams support Full Refresh. The following table lists which streams also support Incremental sync. The lifetime stats streams return lifetime totals, not totals limited to the configured date range.
 
 | Stream                    | Incremental | Key                                 |
 |:--------------------------|:------------|-------------------------------------|
@@ -140,7 +135,17 @@ Start Date is required for all stats streams that use `start_time` as a key (see
 | Campaigns_Stats_Daily     | Yes         | `id`, `granularity`, `start_time`   |
 | Campaigns_Stats_Lifetime  | No          | `id`, `granularity`                 |
 
-Start Date and End Date filter the records of the Organizations and Ad Accounts streams, but not which organizations and ad accounts the other streams read from. For example, an ad account last updated before the Start Date is left out of the Ad Accounts stream, but its campaigns and ad account stats are still synced. If a connection was missing data for some organizations or ad accounts before version 1.6.11, refresh the affected streams to backfill their history.
+### Date range and incremental sync
+
+**Start Date** and **End Date** filter entity streams (`organizations`, `adaccounts`, `ads`, `adsquads`, `campaigns`, `creatives`, `media`, and `segments`) by `updated_at`, not by creation date. For daily and hourly stats, the date range applies to the reporting period, using `start_time`. The stats end date is exclusive: to include all of January 31, set **End Date** to February 1.
+
+Incremental syncs resume from saved progress with a two-day lookback window. If you move **Start Date** earlier to load older data, [refresh the affected streams](/platform/operator-guides/refreshes) to backfill it.
+
+Starting with version 1.6.11, the date range doesn't filter which organizations and ad accounts the other streams read from. For example, an ad account last updated before **Start Date** is excluded from `adaccounts`, but the connector still reads its campaigns and ad account stats, subject to those streams' own filters. If a connection was missing data for some organizations or ad accounts before version 1.6.11, refresh the affected streams to backfill their history.
+
+:::warning
+The `ads`, `adsquads`, and `campaigns` streams still apply their `updated_at` date filters when read as parents of their stats streams. This affects all daily, hourly, and lifetime streams named `ads_stats_*`, `adsquads_stats_*`, and `campaigns_stats_*`: an entity last updated outside the configured date range is excluded, even if it has stats in that range. To include its stats, choose a date range that also includes the entity's last update and refresh the affected streams.
+:::
 
 ### Metrics in the stats streams
 
@@ -152,9 +157,7 @@ The coupon fields are only available in the Ads, AdSquads, and Campaigns stats s
 
 ## Performance considerations
 
-The Snapchat Marketing API enforces rate limits of 20 requests per second at the app level and 10 requests per second per access token. The connector handles HTTP 429 responses with automatic retries and backoff.
-
-Pagination is limited to 1,000 items per page.
+The Snapchat Marketing API enforces [average rate limits](https://developers.snap.com/marketing-api/Ads-API/rate-limits) of 20 requests per second at the app level and 10 requests per second per access token. The connector budgets 100 requests per 10 seconds and handles HTTP 429 responses with automatic retries and backoff. Other integrations using the same app or token share Snapchat's limits.
 
 Syncing stats streams at hourly granularity generates large data volumes and takes longer. Daily granularity is recommended unless you need hour-level breakdowns.
 
