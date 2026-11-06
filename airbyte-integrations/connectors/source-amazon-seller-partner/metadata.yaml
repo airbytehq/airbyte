@@ -86,6 +86,7 @@ data:
       8.0.0:
         message: "Market Basket, Repeat Purchase, and Search Terms Brand Analytics reports now honor configured replication dates instead of always returning the latest completed week. Historical end dates can exclude data previously returned, and an earlier start date can trigger a larger weekly backfill. Review Start Date and End Date before upgrading, refresh the source schema, and select incremental mode if desired. See https://docs.airbyte.com/integrations/sources/amazon-seller-partner-migrations#upgrading-to-800"
         upgradeDeadline: "2026-11-20"
+        deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
