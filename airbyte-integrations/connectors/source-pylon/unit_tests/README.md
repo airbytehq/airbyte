@@ -47,7 +47,7 @@ PYTHONPATH=. python -m pytest mock_server/test_all_streams.py --no-cov -s --juni
 | Schema conformance | `test_schema_conformance.py` | All 15 synthetic fixtures against connector schemas, nullable fields, required fields and timestamp formats |
 | Spec and acceptance config | `test_spec.py`, `test_acceptance_config.py` | Config validation, region/order/defaults, bypass reasons, spec and discover with HTTP and socket access blocked |
 | All-streams smoke | `mock_server/test_all_streams.py` | One read selecting all 15 streams; at least one record each; printed table and JUnit properties |
-| Components | `test_components.py` | Custom pagination logic |
+| Components | `test_components.py` | Migration from the legacy created_at state to updated_at |
 
 ### Acceptance tooling
 

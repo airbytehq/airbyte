@@ -9,7 +9,7 @@ This page contains the setup guide and reference information for the [Pylon](htt
 ## Prerequisites
 
 - A Pylon account with an Admin role.
-- A Pylon API token. Only Admin users can create API tokens. Generate one in your Pylon dashboard under **Settings > API**. For details, see [Pylon's authentication guide](https://docs.usepylon.com/pylon-docs/developer/api/authentication).
+- A Pylon API token. Only Admin users can create API tokens. Generate one in your Pylon dashboard under **Settings > Integrations & dev > API tokens**. For details, see [Pylon's authentication guide](https://docs.usepylon.com/pylon-docs/developer/api/authentication).
 
 ## Setup guide
 
@@ -31,6 +31,12 @@ Optionally, enter a **Start Date** in UTC format (`YYYY-MM-DDTHH:MM:SSZ`). This 
 
 </FieldAnchor>
 
+<FieldAnchor field="num_workers">
+
+Optionally, set **Number of Workers** from **2** to **10** (default: **3**). At least two workers are required so child streams can read records while generating parent partitions. Lower this value if other integrations share your organization's API allowance.
+
+</FieldAnchor>
+
 ## Supported sync modes
 
 The Pylon source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -38,6 +44,9 @@ The Pylon source connector supports the following [sync modes](https://docs.airb
 - Full Refresh | Overwrite
 - Full Refresh | Append
 - Incremental Sync | Append (Issues stream only)
+- Incremental Sync | Append + Deduped (Issues stream only; recommended)
+
+Issue time filters are inclusive. Each incremental sync can re-emit issues at the saved cursor, and adjacent query windows can replay records at their shared edges. **Incremental | Append** retains these replays as duplicate rows, including another copy each sync of an issue at the saved cursor. Use **Incremental | Append + Deduped**, with `id` as the primary key, to keep one row per issue.
 
 ## Supported streams
 
@@ -85,7 +94,7 @@ The [Pylon API rate limits](https://docs.usepylon.com/pylon-docs/developer/api/r
 - `POST /issues/search`, `GET /issues/{id}/messages`, `GET /issues/{id}/threads`, and `GET /knowledge-bases/{id}/articles`: 120 requests per minute each.
 - Other endpoints used by this connector: 300 requests per minute each.
 
-The connector budgets requests separately for each endpoint. For rate-limited responses (HTTP 429), it uses `Retry-After` when present and exponential backoff otherwise, with up to five retries. A `Retry-After` of 120 seconds or more stops the stream rather than waiting. By default, the connector uses three workers, with a maximum of ten. Lower **Number of Workers** if other integrations also use your organization's API allowance.
+The connector budgets requests separately for each endpoint. For rate-limited responses (HTTP 429), it uses `Retry-After`, then `X-Retry-After` if the first header is absent, then exponential backoff if neither is present, with up to five retries. A selected retry-header wait of 120 seconds or more stops the stream rather than waiting. By default, the connector uses three workers, with a minimum of two and a maximum of ten. Lower **Number of Workers** if other integrations also use your organization's API allowance.
 
 ## IP allow list
 
@@ -98,10 +107,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.0.31 | 2026-11-04 | [91022](https://github.com/airbytehq/airbyte/pull/91022) | Add EU region support, documented fields, deactivated users, inclusive issue windows, parent IDs, actionable errors, request budgets, and configurable concurrency. |
+| 0.0.31 | 2026-11-04 | [91022](https://github.com/airbytehq/airbyte/pull/91022) | Add EU region support, documented fields, deactivated users, inclusive issue windows, parent IDs on child streams, actionable errors, request budgets, and configurable concurrency. |
 | 0.0.30 | 2026-11-03 | [90398](https://github.com/airbytehq/airbyte/pull/90398) | Simplify error handling while preserving retry and rate-limit behavior. |
 | 0.0.29 | 2026-11-03 | [90704](https://github.com/airbytehq/airbyte/pull/90704) | Update dependencies |
-| 0.0.29 | 2026-10-27 | [87522](https://github.com/airbytehq/airbyte/pull/87522) | Add parent IDs to child stream records: `issue_id` on `issue_messages`, `knowledge_base_id` on `knowledge_base_articles` |
 | 0.0.28 | 2026-10-27 | [90041](https://github.com/airbytehq/airbyte/pull/90041) | Update dependencies |
 | 0.0.27 | 2026-10-20 | [89362](https://github.com/airbytehq/airbyte/pull/89362) | Update dependencies |
 | 0.0.26 | 2026-10-13 | [88765](https://github.com/airbytehq/airbyte/pull/88765) | Update dependencies |
