@@ -2,7 +2,6 @@ version: 6.60.5
 type: DeclarativeSource
 
 definitions:
-
   default_paginator:
     type: DefaultPaginator
     page_token_option:
@@ -324,11 +323,7 @@ definitions:
                   $ref: "#/definitions/channels_stream/retriever/record_selector"
                   record_filter:
                     type: RecordFilter
-                    # Limit message/thread partitions to channels the bot can actually read.
-                    # conversations.history returns ok:false/"not_in_channel" with HTTP 200 for
-                    # non-member channels, which poisons the per-partition cursor. The
-                    # top-level channels stream and channel_members still see every channel.
-                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or config.get('join_channels')) }}"
+                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or (config.get('join_channels') and not record.get('is_archived', false))) }}"
             parent_key: id
             partition_field: channel
             request_option:
@@ -547,47 +542,47 @@ spec:
         description: Choose how to authenticate into Slack
         type: object
         oneOf:
-        - type: object
-          title: Sign in via Slack (OAuth)
-          required:
-            - option_title
-            - client_id
-            - client_secret
-            - access_token
-          properties:
-            option_title:
-              type: string
-              const: Default OAuth2.0 authorization
-            client_id:
-              type: string
-              title: Client ID
-              description: Slack client_id. See our <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> if you need help finding this id.
-            client_secret:
-              type: string
-              title: Client Secret
-              description: Slack client_secret. See our <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> if you need help finding this secret.
-              airbyte_secret: true
-            access_token:
-              type: string
-              title: Access token
-              description: Slack access_token. See our <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> if you need help generating the token.
-              airbyte_secret: true
-          order: 0
-        - type: object
-          title: Bot Token
-          required:
-            - option_title
-            - api_token
-          properties:
-            option_title:
-              type: string
-              const: API Token Credentials
-            api_token:
-              type: string
-              title: Bot Token
-              description: A Slack bot token (xoxb-). See the <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> for instructions on how to generate it.
-              airbyte_secret: true
-          order: 1
+          - type: object
+            title: Sign in via Slack (OAuth)
+            required:
+              - option_title
+              - client_id
+              - client_secret
+              - access_token
+            properties:
+              option_title:
+                type: string
+                const: Default OAuth2.0 authorization
+              client_id:
+                type: string
+                title: Client ID
+                description: Slack client_id. See our <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> if you need help finding this id.
+              client_secret:
+                type: string
+                title: Client Secret
+                description: Slack client_secret. See our <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> if you need help finding this secret.
+                airbyte_secret: true
+              access_token:
+                type: string
+                title: Access token
+                description: Slack access_token. See our <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> if you need help generating the token.
+                airbyte_secret: true
+            order: 0
+          - type: object
+            title: Bot Token
+            required:
+              - option_title
+              - api_token
+            properties:
+              option_title:
+                type: string
+                const: API Token Credentials
+              api_token:
+                type: string
+                title: Bot Token
+                description: A Slack bot token (xoxb-). See the <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> for instructions on how to generate it.
+                airbyte_secret: true
+            order: 1
       num_workers:
         type: integer
         title: Number of concurrent threads
@@ -672,36 +667,36 @@ spec:
   config_normalization_rules:
     type: ConfigNormalizationRules
     config_migrations:
-        - type: ConfigMigration
-          description: |
-            Remaps the existing config authentication format to a new format
-            OLD: {"api_key": ...}
-            NEW: {"credentials": {"api_token": ..., "option_title": "API Token Credentials"}}
-          transformations:
-            - type: ConfigAddFields
-              fields:
-                - type: AddedFieldDefinition
-                  path: ["credentials", "api_token"]
-                  value: "{{ config['api_token'] }}"
-              condition: "{{ config.get('api_token', False) }}"
-            - type: ConfigAddFields
-              fields:
-                - type: AddedFieldDefinition
-                  path: ["credentials", "option_title"]
-                  value: "API Token Credentials"
-              condition: "{{ config.get('api_token', False) }}"
-        - type: ConfigMigration
-          description: |
-            Stamps include_archived_channels=true on configs that pre-date v3.2.0
-            so existing connections continue to sync archived channels.
-            New connections will get false from the spec default.
-          transformations:
-            - type: ConfigAddFields
-              fields:
-                - type: AddedFieldDefinition
-                  path: ["include_archived_channels"]
-                  value: "{{ true }}"
-              condition: "{{ config.get('include_archived_channels') is none }}"
+      - type: ConfigMigration
+        description: |
+          Remaps the existing config authentication format to a new format
+          OLD: {"api_key": ...}
+          NEW: {"credentials": {"api_token": ..., "option_title": "API Token Credentials"}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_token"]
+                value: "{{ config['api_token'] }}"
+            condition: "{{ config.get('api_token', False) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "option_title"]
+                value: "API Token Credentials"
+            condition: "{{ config.get('api_token', False) }}"
+      - type: ConfigMigration
+        description: |
+          Stamps include_archived_channels=true on configs that pre-date v3.2.0
+          so existing connections continue to sync archived channels.
+          New connections will get false from the spec default.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["include_archived_channels"]
+                value: "{{ true }}"
+            condition: "{{ config.get('include_archived_channels') is none }}"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -901,7 +896,8 @@ schemas:
         description: Indicates if the entity is a channel.
         type: boolean
       is_group:
-        description: Indicates if the channel is a group (private channel) rather than a
+        description:
+          Indicates if the channel is a group (private channel) rather than a
           regular channel.
         type: boolean
       is_im:
@@ -958,7 +954,8 @@ schemas:
         description: Indicates if the channel is a private channel.
         type: boolean
       is_mpim:
-        description: Indicates if the entity is a multiple person direct message (MPIM)
+        description:
+          Indicates if the entity is a multiple person direct message (MPIM)
           channel.
         type: boolean
       last_read:

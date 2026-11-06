@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import json
+from copy import deepcopy
 from unittest.mock import MagicMock
 
 import pytest
@@ -160,6 +161,44 @@ def test_join_channel_read_other_error_logs_warning(requests_mock, token_config,
 def test_threads_state_migration(token_config, threads_stream_state, expected_parent_state):
     stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
     assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
+
+
+@pytest.mark.parametrize(
+    "parent_cursor",
+    [
+        {"float_ts": 1755475200.123456},
+        {},
+        {
+            "use_global_cursor": True,
+            "state": {"float_ts": "1755561600.000002"},
+            "lookback_window": 0,
+            "states": [],
+        },
+        {
+            "use_global_cursor": False,
+            "states": [
+                {
+                    "partition": {"channel": "C001", "parent_slice": {}},
+                    "cursor": {"float_ts": "1755475200.000001"},
+                },
+                {
+                    "partition": {"channel": "C002", "parent_slice": {}},
+                    "cursor": {"float_ts": "1755561600.000002"},
+                },
+            ],
+            "parent_state": {},
+        },
+    ],
+    ids=["legacy_parent", "empty_parent", "global_parent", "per_channel_parent"],
+)
+def test_threads_state_migration_preserves_parent_cursor(token_config, components_module, parent_cursor):
+    state = {"states": [], "parent_state": {"channel_messages": parent_cursor}}
+    original = deepcopy(state)
+    migration = components_module.ThreadsStateMigration({**token_config, "lookback_window": 7})
+
+    assert migration.migrate(state) == original
+    assert state == original
+    assert not migration.should_migrate(state)
 
 
 def test_read_records_yields_all_channels_when_join_disabled(token_config, requests_mock, components_module):

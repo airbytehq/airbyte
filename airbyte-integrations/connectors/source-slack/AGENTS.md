@@ -8,6 +8,8 @@ When `join_channels` is enabled in the config, the `ChannelsRetriever` automatic
 
 **Why this matters:** The channels stream is not read-only when `join_channels` is enabled. It actively modifies the workspace by joining channels, which is a side effect that no other connector stream produces. The Slack API only returns messages from channels the bot has joined, so this behavior exists to ensure the messages and threads streams can actually retrieve data. If the bot lacks permission to join a channel, it logs a warning but does not fail the sync.
 
+Message and thread partitions include channels the bot already belongs to (including archived channels when requested), plus non-archived channels when `join_channels` is enabled. Archived non-member channels are excluded from these partitions because they cannot be joined or read; this does not filter them out of the top-level channels stream.
+
 ## 2. Dynamic Rate Limit Policy Switching on First 429
 
 The `MessagesAndThreadsApiBudget` starts with an `UnlimitedCallRatePolicy` (no rate limiting) and dynamically switches to a `MovingWindowCallRatePolicy` of 1 request per 60 seconds after the first 429 response. This switch is permanent for the duration of the sync and only applies to OAuth connections (API token connections do not use this budget).
@@ -15,6 +17,8 @@ The `MessagesAndThreadsApiBudget` starts with an `UnlimitedCallRatePolicy` (no r
 **Why this matters:** The connector starts fast with no rate limiting and then abruptly drops to 1 request per minute after hitting its first 429. This dramatic slowdown is intentional but can make syncs appear to stall. The rate limit policy is not reset between stream reads within the same sync, so hitting a 429 on the messages stream will also throttle the threads stream.
 
 ## Incremental Stream Considerations
+
+The threads stream persists its channel-messages parent cursor in `parent_state.channel_messages`, including per-channel or global cursor state. `ThreadsStateMigration` must preserve this state when present, even if an interrupted sync has no outer thread cursors. Only legacy states without this parent cursor are migrated from thread timestamps and the configured lookback window.
 
 The Slack API supports `oldest`/`latest` timestamp filtering on conversations.history and related endpoints. The connector uses Python custom components (`JoinChannelsStream`) referenced from the manifest.
 
