@@ -77,11 +77,13 @@ The following retry defaults apply to Airbyte Core and Self-Managed Enterprise. 
 
 The `SYNC_JOB_RETRIES_*` variables have no dedicated Helm values. Set them on the worker with `worker.extraEnv`, for example:
 
-```yaml
+```yaml title="values.yaml"
 worker:
   extraEnv:
     - name: SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_TOTAL
       value: "5"
+    - name: SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_TOTAL
+      value: "10"
 ```
 
 ## Jobs-specific
