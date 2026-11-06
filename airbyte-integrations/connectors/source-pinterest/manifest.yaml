@@ -4855,6 +4855,18 @@ spec:
             title: "Refresh Token"
             description: "Refresh Token to obtain new Access Token, when it's expired."
             airbyte_secret: true
+          access_token:
+            type: string
+            title: "Access Token"
+            description: "Written back by the connector after each token refresh."
+            airbyte_secret: true
+            airbyte_hidden: true
+          token_expiry_date:
+            type: string
+            title: "Token Expiry Date"
+            description: "Written back by the connector after each token refresh."
+            format: date-time
+            airbyte_hidden: true
       custom_reports:
         title: "Custom Reports"
         description: 'A list which contains ad statistics entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns. Click on "add" to fill this field.'
