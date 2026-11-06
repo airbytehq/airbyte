@@ -50,10 +50,6 @@ class YoutubeAnalyticsRequestBuilder:
         return cls(f"/jobs/{job_id}/reports")
 
     @classmethod
-    def report_types_endpoint(cls) -> "YoutubeAnalyticsRequestBuilder":
-        return cls("/reportTypes").with_query_param("includeSystemManaged", "true")
-
-    @classmethod
     def download_endpoint(cls, report_id: str) -> "YoutubeAnalyticsRequestBuilder":
         """The report file itself. `base_retriever` uses the listing's `downloadUrl` as its `url_base`."""
         return cls(f"/media/CHANNEL/{report_id}").with_query_param("alt", "media")
