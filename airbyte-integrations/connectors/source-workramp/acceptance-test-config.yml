@@ -18,7 +18,9 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: ["paths_users"]
+        empty_streams:
+          - name: paths_users
+            bypass_reason: "The sandbox account has no completed path enrollments"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

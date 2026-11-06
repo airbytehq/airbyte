@@ -1,0 +1,68 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2124-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "transactions"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "direction": "BUSINESS_TO_USER"
+            },
+            "cursor": {
+              "updated_at": "2124-01-01T00:00:00Z"
+            }
+          },
+          {
+            "partition": {
+              "direction": "USER_TO_BUSINESS"
+            },
+            "cursor": {
+              "updated_at": "2124-01-01T00:00:00Z"
+            }
+          }
+        ],
+        "state": {
+          "updated_at": "2124-01-01T00:00:00Z"
+        },
+        "lookback_window": 0
+      },
+      "stream_descriptor": {
+        "name": "reimbursements"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "vendors"
+      },
+      "stream_state": {
+        "updated_at": "2124-10-14T16:50:56Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "receipts"
+      },
+      "stream_state": {
+        "created_at": "2124-08-18T14:01:25Z"
+      }
+    }
+  }
+]

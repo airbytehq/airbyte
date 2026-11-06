@@ -11,5 +11,5 @@ enum class RequestMethod {
     OPTIONS,
     PATCH,
     POST,
-    PUT
+    PUT,
 }

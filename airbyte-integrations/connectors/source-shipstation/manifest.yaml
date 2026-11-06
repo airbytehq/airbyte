@@ -44,12 +44,10 @@ definitions:
           path: users
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             showInactive: "true"
         record_selector:
@@ -88,12 +86,10 @@ definitions:
           path: orders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             sortBy: ModifyDate
             sortDir: ASC
@@ -134,12 +130,10 @@ definitions:
           path: stores
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             showInactive: "true"
         record_selector:
@@ -163,12 +157,10 @@ definitions:
           path: carriers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -205,12 +197,10 @@ definitions:
           path: products
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
@@ -236,12 +226,10 @@ definitions:
           path: webhooks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -279,12 +267,10 @@ definitions:
           path: customers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
@@ -325,12 +311,10 @@ definitions:
           path: shipments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
@@ -372,12 +356,10 @@ definitions:
           path: warehouses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:
@@ -414,12 +396,10 @@ definitions:
           path: fulfillments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
           request_parameters:
             sortBy: CreateDate
             sortDir: ASC
@@ -460,12 +440,10 @@ definitions:
           path: stores/marketplaces
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: X-Rate-Limit-Reset
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: X-Rate-Limit-Reset
         record_selector:
           type: RecordSelector
           extractor:

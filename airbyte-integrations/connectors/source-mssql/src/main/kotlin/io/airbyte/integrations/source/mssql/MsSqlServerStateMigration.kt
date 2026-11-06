@@ -35,8 +35,12 @@ data class LegacyCursorBasedStatus(
 /** Helper class to migrate legacy MSSQL connector states to the new v2 format */
 object MsSqlServerStateMigration {
 
-    /** Parses state value and handles backward compatibility with legacy formats */
-    fun parseStateValue(opaqueStateValue: OpaqueStateValue): MsSqlServerJdbcStreamStateValue {
+    /**
+     * Parses state value and handles backward compatibility with legacy formats. Returns null when
+     * the state has no recognizable resume point; callers should treat this as a cold start
+     * (re-read the stream from scratch).
+     */
+    fun parseStateValue(opaqueStateValue: OpaqueStateValue): MsSqlServerJdbcStreamStateValue? {
         // Check version to detect legacy state using centralized version constants
         val version = opaqueStateValue.get("version")?.asInt()
         val isLegacy = MsSqlServerJdbcStreamStateValue.isLegacy(version)
@@ -53,7 +57,7 @@ object MsSqlServerStateMigration {
             } catch (e: Exception) {
                 throw IllegalStateException(
                     "Failed to parse state with version $version as MsSqlServerJdbcStreamStateValue.",
-                    e
+                    e,
                 )
             }
         }
@@ -61,8 +65,8 @@ object MsSqlServerStateMigration {
 
     /** Migrates legacy state formats to new MsSqlServerJdbcStreamStateValue format */
     private fun migrateLegacyState(
-        opaqueStateValue: OpaqueStateValue
-    ): MsSqlServerJdbcStreamStateValue {
+        opaqueStateValue: OpaqueStateValue,
+    ): MsSqlServerJdbcStreamStateValue? {
         val stateType = opaqueStateValue.get("state_type")?.asText()
 
         return when (stateType) {
@@ -77,9 +81,9 @@ object MsSqlServerStateMigration {
                         migrateCursorBasedStatus(opaqueStateValue)
                     else -> {
                         log.warn {
-                            "Unknown legacy state format, falling back to default: $opaqueStateValue"
+                            "Unknown legacy state format, the stream will be re-read from scratch: $opaqueStateValue"
                         }
-                        MsSqlServerJdbcStreamStateValue()
+                        null
                     }
                 }
             }
@@ -88,7 +92,7 @@ object MsSqlServerStateMigration {
 
     /** Migrates OrderedColumnLoadStatus (primary key based initial sync) to new format */
     private fun migrateOrderedColumnLoadStatus(
-        opaqueStateValue: OpaqueStateValue
+        opaqueStateValue: OpaqueStateValue,
     ): MsSqlServerJdbcStreamStateValue {
         val legacy = Jsons.treeToValue(opaqueStateValue, LegacyOrderedColumnLoadStatus::class.java)
 
@@ -118,13 +122,13 @@ object MsSqlServerStateMigration {
             pkName = legacy.orderedCol,
             pkValue = pkValueNode,
             // If there's incremental state, embed it for transition after initial sync completes
-            incrementalState = incrementalState?.let { Jsons.valueToTree(it) }
+            incrementalState = incrementalState?.let { Jsons.valueToTree(it) },
         )
     }
 
     /** Migrates CursorBasedStatus (cursor-based incremental) to new format */
     private fun migrateCursorBasedStatusFromJson(
-        stateValue: JsonNode
+        stateValue: JsonNode,
     ): MsSqlServerJdbcStreamStateValue {
         val legacy = Jsons.treeToValue(stateValue, LegacyCursorBasedStatus::class.java)
 
@@ -146,12 +150,12 @@ object MsSqlServerStateMigration {
             stateType = StateType.CURSOR_BASED.stateType,
             cursorField = legacy.cursorField ?: emptyList(),
             cursor = cursorNode,
-            cursorRecordCount = legacy.cursorRecordCount?.toInt() ?: 0
+            cursorRecordCount = legacy.cursorRecordCount?.toInt() ?: 0,
         )
     }
 
     private fun migrateCursorBasedStatus(
-        opaqueStateValue: OpaqueStateValue
+        opaqueStateValue: OpaqueStateValue,
     ): MsSqlServerJdbcStreamStateValue {
         return migrateCursorBasedStatusFromJson(opaqueStateValue)
     }

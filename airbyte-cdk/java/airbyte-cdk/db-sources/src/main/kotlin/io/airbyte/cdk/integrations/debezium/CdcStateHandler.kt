@@ -13,7 +13,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 interface CdcStateHandler {
     fun saveState(
         offset: Map<String, String>,
-        dbHistory: AirbyteSchemaHistoryStorage.SchemaHistory<String>?
+        dbHistory: AirbyteSchemaHistoryStorage.SchemaHistory<String>?,
     ): AirbyteMessage?
 
     fun saveStateAfterCompletionOfSnapshotOfNewStreams(): AirbyteMessage?
@@ -28,7 +28,7 @@ interface CdcStateHandler {
          * syncs.
          *
          * @return Returns `true` if checkpoint state messages are enabled for CDC syncs. Otherwise,
-         * it returns `false`
+         *   it returns `false`
          */
         get() = false
 }

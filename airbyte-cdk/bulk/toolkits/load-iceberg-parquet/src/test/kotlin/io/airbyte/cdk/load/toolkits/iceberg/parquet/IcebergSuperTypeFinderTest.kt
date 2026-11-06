@@ -77,7 +77,7 @@ class IcebergSuperTypeFinderTest {
         assertThatThrownBy { superTypeFinder.findSuperType(intType, doubleType, "column_name") }
             .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Schema evolution for column \"column_name\" between int and double is not allowed."
+                "Schema evolution for column \"column_name\" between int and double is not allowed.",
             )
     }
 
@@ -93,7 +93,7 @@ class IcebergSuperTypeFinderTest {
         assertThatThrownBy { superTypeFinder.findSuperType(intType, structType, "column_name") }
             .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Schema evolution for column \"column_name\" between int and struct<1: field: optional string> is not allowed."
+                "Schema evolution for column \"column_name\" between int and struct<1: field: optional string> is not allowed.",
             )
     }
 
@@ -108,7 +108,7 @@ class IcebergSuperTypeFinderTest {
         assertThatThrownBy { superTypeFinder.findSuperType(structType, intType, "column_name") }
             .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Schema evolution for column \"column_name\" between struct<1: field: optional string> and int is not allowed."
+                "Schema evolution for column \"column_name\" between struct<1: field: optional string> and int is not allowed.",
             )
     }
 
@@ -121,7 +121,7 @@ class IcebergSuperTypeFinderTest {
         assertThatThrownBy { superTypeFinder.findSuperType(binaryType, intType, "column_name") }
             .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Schema evolution for column \"column_name\" between binary and int is not allowed."
+                "Schema evolution for column \"column_name\" between binary and int is not allowed.",
             )
     }
 
@@ -134,7 +134,7 @@ class IcebergSuperTypeFinderTest {
         assertThatThrownBy { superTypeFinder.findSuperType(decimalType, intType, "column_name") }
             .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Schema evolution for column \"column_name\" between decimal(10, 2) and int is not allowed."
+                "Schema evolution for column \"column_name\" between decimal(10, 2) and int is not allowed.",
             )
     }
 
@@ -147,7 +147,7 @@ class IcebergSuperTypeFinderTest {
         assertThatThrownBy { superTypeFinder.findSuperType(fixedType, intType, "column_name") }
             .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Schema evolution for column \"column_name\" between fixed[16] and int is not allowed."
+                "Schema evolution for column \"column_name\" between fixed[16] and int is not allowed.",
             )
     }
 
@@ -160,7 +160,7 @@ class IcebergSuperTypeFinderTest {
         assertThatThrownBy { superTypeFinder.findSuperType(uuidType, intType, "column_name") }
             .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Schema evolution for column \"column_name\" between uuid and int is not allowed."
+                "Schema evolution for column \"column_name\" between uuid and int is not allowed.",
             )
     }
 
@@ -175,6 +175,7 @@ class IcebergSuperTypeFinderTest {
         val nanoTimestamp =
             object : Type.PrimitiveType() {
                 override fun typeId() = TIMESTAMP_NANO
+
                 override fun isPrimitiveType() = true
             }
         val normalTimestamp = TimestampType.withoutZone()
@@ -195,7 +196,7 @@ class IcebergSuperTypeFinderTest {
         assertThatThrownBy { superTypeFinder.findSuperType(intType, floatType, "column_name") }
             .isInstanceOf(ConfigErrorException::class.java)
             .hasMessageContaining(
-                "Schema evolution for column \"column_name\" between int and float is not allowed."
+                "Schema evolution for column \"column_name\" between int and float is not allowed.",
             )
     }
 }
