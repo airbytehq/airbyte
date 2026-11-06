@@ -1,5 +1,11 @@
 # Zendesk Talk
 
+:::caution The `calls` and `call_legs` streams are removed in version 3.0.0 (notice from November 3, 2026)
+Zendesk is [ending access to its Incremental APIs for third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498-Announcing-end-of-availability-of-Incremental-APIs-for-third-party-developers), including the Talk incremental call and call-leg exports behind the `calls` and `call_legs` streams, and names no replacement endpoint for them. Zendesk blocks third-party integrations from these endpoints starting December 2, 2026 and completes the rollout on January 19, 2027 (with a pause from December 17, 2026 to January 4, 2027). Connector version 3.0.0 removes both streams. On version 2.x, syncs that include the two streams fail once Zendesk blocks the integration's requests, while the connection test keeps passing because it reads a different endpoint. Data already synced stays in your destination. See the [migration guide](zendesk-talk-migrations.md#upgrading-to-300).
+
+A source with any connection that lists `calls` or `call_legs`, including paused connections, stays on version 2.x until you upgrade it; on Airbyte Cloud, sources whose connections never select the two streams are upgraded automatically and need no action. Before upgrading, remove `calls` and `call_legs` from the stream selection of every connection on that source, then upgrade, refresh the source schema and turn back on any connection Airbyte disabled. A sync on version 3.0.0 that still lists the two streams can replace their destination tables with empty ones in overwrite modes, and Zendesk can't provide that call history again. On Airbyte Cloud, every connection on a source kept on 2.x by this change is disabled after December 2, 2026 until the source is upgraded. Zendesk's announcement also offers a 60-day extension that a Zendesk admin can request in Admin Center under **Apps & integrations > APIs > API Configuration**; it doesn't help in Airbyte, because version 3.0.0 no longer has the streams and Cloud disables the 2.x connections after December 2, 2026, so don't rely on it. Separately, Zendesk deactivates all API tokens on April 30, 2027, so switch API token sources to OAuth before then.
+:::
+
 ## Prerequisites
 
 - A Zendesk account on a plan that includes the [Zendesk Talk](https://www.zendesk.com/service/voice/) add-on
@@ -37,7 +43,7 @@ Register an OAuth client in your Zendesk Admin Center under **Apps and integrati
 3. Select **Zendesk Talk** from the Source type dropdown.
 4. Enter your **Subdomain**.
 5. Choose your **Authentication** method and enter the required credentials. Use **OAuth 2.0** unless you already have an active API token.
-6. Set a **Start Date** for incremental streams. Data created or updated after this date is replicated.
+6. (Optional) Enter a **Start Date**. The field is kept for compatibility with existing configurations; none of the current streams filters by date.
 7. Click **Set up source**.
 
 <!-- /env:cloud -->
@@ -47,7 +53,8 @@ Register an OAuth client in your Zendesk Admin Center under **Apps and integrati
 The **Zendesk Talk** source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
-- Incremental Sync
+
+All streams return a current snapshot or configuration list, so the connector has no incremental streams.
 
 ## Supported streams
 
@@ -57,8 +64,6 @@ This connector syncs the following streams:
 - [Addresses](https://developer.zendesk.com/api-reference/voice/talk-api/phone_numbers/#list-phone-numbers)
 - [Agents Activity](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#list-agents-activity)
 - [Agents Overview](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#show-agents-overview)
-- [Calls](https://developer.zendesk.com/api-reference/voice/talk-api/incremental_exports/#incremental-calls-export) (Incremental)
-- [Call Legs](https://developer.zendesk.com/api-reference/voice/talk-api/incremental_exports/#incremental-call-legs-export) (Incremental)
 - [Current Queue Activity](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#show-current-queue-activity)
 - [Greeting Categories](https://developer.zendesk.com/api-reference/voice/talk-api/greetings/#list-greeting-categories)
 - [Greetings](https://developer.zendesk.com/api-reference/voice/talk-api/greetings/#list-greetings)
@@ -75,7 +80,6 @@ The connector respects the [Zendesk Talk API rate limits](https://developer.zend
 |:--|:--|
 | All Talk API endpoints | 15,000 requests per 5 minutes |
 | Current Queue Activity | 2,500 requests per 5 minutes |
-| Incremental Exports (Calls, Call Legs) | 10 requests per minute |
 
 The connector automatically handles rate limiting by respecting `429` responses and the `Retry-After` header. Under normal usage, you should not encounter rate limit issues. If you do, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
@@ -99,6 +103,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
+| 3.0.0 | 2026-11-03 | [90850](https://github.com/airbytehq/airbyte/pull/90850) | Remove the `calls` and `call_legs` streams: Zendesk ends third-party access to the Talk incremental call exports (rollout 2026-12-02 to 2027-01-19) and offers no replacement endpoint |
 | 2.0.35 | 2026-11-03 | [90906](https://github.com/airbytehq/airbyte/pull/90906) | Simplify rate-limit and retry error handling configuration with no change in behavior |
 | 2.0.34 | 2026-11-03 | [90809](https://github.com/airbytehq/airbyte/pull/90809) | Update dependencies |
 | 2.0.33 | 2026-10-27 | [90071](https://github.com/airbytehq/airbyte/pull/90071) | Update dependencies |
