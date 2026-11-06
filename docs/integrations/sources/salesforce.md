@@ -13,7 +13,7 @@ This page contains the setup guide and reference information for the [Salesforce
 You may also need the following. This article explains how to get them.
 
 - Optional, but recommended: A dedicated [Salesforce user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US)
-- For **Use your own External Client App**, a local External Client App configured for the client credentials flow and a My Domain URL
+- For **ClientCredentials** (Use your own External Client App), a local External Client App configured for the client credentials flow and a My Domain URL
 <!-- env:oss -->
 - For Airbyte Open Source: Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
 <!-- /env:oss -->
@@ -84,7 +84,7 @@ If you are using Airbyte Open Source, obtain the following OAuth credentials to 
 - Client Secret
 - Refresh Token
 
-Use credentials from an existing OAuth app with **Airbyte Connected App**. Salesforce no longer allows creating Connected Apps as of Spring '26. For a new app, follow [Use your own External Client App (client credentials)](#use-your-own-external-client-app-client-credentials) below and select **Use your own External Client App** instead; this method does not require a refresh token.
+Use credentials from an existing OAuth app with **Client** (Airbyte Connected App). Salesforce no longer allows creating Connected Apps as of Spring '26. For a new app, follow [Use your own External Client App (client credentials)](#use-your-own-external-client-app-client-credentials) below and set **Authentication Method** to **ClientCredentials** (Use your own External Client App) instead; this method does not require a refresh token.
 
 <!-- /env:oss -->
 
@@ -111,8 +111,8 @@ Create a local External Client App (ECA) in your Salesforce org to connect witho
 7. In Setup, search for **My Domain** and open it to copy your org's URL. A production URL looks like
    `https://acme.my.salesforce.com`; a sandbox URL looks like `https://acme--uat.sandbox.my.salesforce.com`.
    Salesforce explains where to find the URL in its [client credentials flow guide](https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_client_credentials_flow.htm&language=en_US&type=5).
-8. In Airbyte, choose **Use your own External Client App** (selected by default) and enter the My Domain URL, consumer key
-   (Client ID), and consumer secret (Client Secret).
+8. In Airbyte, set **Authentication Method** to **ClientCredentials** (Use your own External Client App; selected by
+   default), then enter the My Domain URL, consumer key (Client ID), and consumer secret (Client Secret).
 
 Salesforce classifies this flow as high-risk because the key and secret alone grant access. Use a least-privilege integration user. Stream discovery reflects only the objects and fields the Run As user can read. `is_sandbox` does not select the org for ClientCredentials; the My Domain URL does. A sandbox refresh does not copy locally created External Client Apps, so recreate the app in the refreshed sandbox.
 
@@ -128,10 +128,10 @@ This method does not use a refresh token, so Salesforce's 30-day idle refresh-to
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Salesforce from the Source type dropdown.
 4. Enter a name for the Salesforce connector.
-5. Choose an authentication method:
-   - **Use your own External Client App** (selected by default): Enter your My Domain URL, Client ID (consumer key), and Client Secret (consumer secret) from your External Client App.
-   - **Airbyte Connected App**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to; make sure it is the right account.
-6. For **Airbyte Connected App**, toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account. With **Use your own External Client App**, the My Domain URL selects the org.
+5. Set **Authentication Method** to:
+   - **ClientCredentials** (Use your own External Client App; selected by default): Enter your My Domain URL, Client ID (consumer key), and Client Secret (consumer secret) from your External Client App.
+   - **Client** (Airbyte Connected App): Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to; make sure it is the right account.
+6. The **Sandbox** toggle applies only to **Client** (Airbyte Connected App). For **ClientCredentials**, your My Domain URL selects the org.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) For **End Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. For streams synced incrementally, data updated before this date will be replicated; the bound is exclusive, so a date-only value means midnight UTC and the named day itself is not included. Streams synced in full refresh mode ignore this field and replicate all data. If this field is left blank, Airbyte will replicate data up to the current time. Please note that timestamps are in [UTC](https://www.utctime.net/).
 9. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
@@ -149,10 +149,10 @@ This method does not use a refresh token, so Salesforce's 30-day idle refresh-to
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Salesforce** from the list of available sources.
 4. Enter a **Source name** of your choosing to help you identify this source.
-5. Choose an authentication method:
-   - **Use your own External Client App** (selected by default): Enter your My Domain URL, Client ID (consumer key), and Client Secret (consumer secret) from your External Client App.
-   - **Airbyte Connected App**: Enter your Client ID, Client Secret, and Refresh Token.
-6. For **Airbyte Connected App**, toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account. With **Use your own External Client App**, the My Domain URL selects the org.
+5. Set **Authentication Method** to:
+   - **ClientCredentials** (Use your own External Client App; selected by default): Enter your My Domain URL, Client ID (consumer key), and Client Secret (consumer secret) from your External Client App.
+   - **Client** (Airbyte Connected App): Enter your Client ID, Client Secret, and Refresh Token.
+6. The **Sandbox** toggle applies only to **Client** (Airbyte Connected App). For **ClientCredentials**, your My Domain URL selects the org.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) For **End Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. For streams synced incrementally, data updated before this date will be replicated; the bound is exclusive, so a date-only value means midnight UTC and the named day itself is not included. Streams synced in full refresh mode ignore this field and replicate all data. If this field is left blank, Airbyte will replicate data up to the current time. Please note that timestamps are in [UTC](https://www.utctime.net/).
 9. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
@@ -337,7 +337,7 @@ Responsibility for the connected-app setting depends on how you authenticate:
 | The External Client App has no Run As user for the client credentials flow. Set Run As to your integration user in the app's policies. | Set **Run As** in the app's Policies. |
 | My Domain URL is required for the ClientCredentials method. Enter the URL shown in Salesforce Setup under My Domain. | Enter your Salesforce My Domain URL. |
 | Client ID and Client Secret are not set for the ClientCredentials method. Enter the consumer key and consumer secret of your External Client App. | Enter both External Client App credentials. |
-| Refresh Token is missing for the Client method. Authenticate your Salesforce account, or select ClientCredentials. | Re-authenticate with **Airbyte Connected App** or select **Use your own External Client App**. |
+| Refresh Token is missing for the Client method. Authenticate your Salesforce account, or select ClientCredentials. | Re-authenticate with **Client** (Airbyte Connected App) or set **Authentication Method** to **ClientCredentials** (Use your own External Client App). |
 | Salesforce rejected the client credentials. Check Client ID, Client Secret and My Domain URL against your External Client App. | Verify the app credentials and My Domain URL. |
 
 ### OAuth authorization when PKCE is required
@@ -386,7 +386,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 2.11.0 | 2026-10-23 | [89735](https://github.com/airbytehq/airbyte/pull/89735) | Add **Use your own External Client App** as the default auth option alongside **Airbyte Connected App** |
+| 2.11.0 | 2026-10-23 | [89735](https://github.com/airbytehq/airbyte/pull/89735) | Add the ClientCredentials authentication method (Use your own External Client App) as the default, alongside Client (Airbyte Connected App) |
 | 2.10.5 | 2026-11-03 | [90894](https://github.com/airbytehq/airbyte/pull/90894) | Require Python 3.11 or newer, retaining support for Python 3.11–3.13. |
 | 2.10.4 | 2026-10-30 | [90253](https://github.com/airbytehq/airbyte/pull/90253) | Explain Salesforce OAuth, API permission, and IP restriction failures with actionable guidance and sandbox login hints. |
 | 2.10.3 | 2026-10-23 | [87665](https://github.com/airbytehq/airbyte/pull/87665) | Let REST streams use the refreshed access token, so a session invalidated mid-pagination no longer fails the sync, and mask rotated refresh tokens in logs |
