@@ -2,7 +2,10 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "float_ts": 7270247822.0 },
+      "stream_state": {
+        "float_ts": 7270247822.0,
+        "state": { "float_ts": 7270247822.0 }
+      },
       "stream_descriptor": { "name": "threads" }
     }
   },
@@ -13,6 +16,7 @@
         "name": "channel_messages"
       },
       "stream_state": {
+        "state": { "float_ts": 2534945416.0 },
         "states": [
           {
             "partition": {
