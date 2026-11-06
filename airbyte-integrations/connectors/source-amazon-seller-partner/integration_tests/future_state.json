@@ -36,7 +36,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "dataEndTime": "2121-07-01T00:00:00Z"
+        "endDate": "2121-07-01"
       },
       "stream_descriptor": {
         "name": "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
@@ -47,7 +47,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "dataEndTime": "2121-07-01T00:00:00Z"
+        "endDate": "2121-07-01"
       },
       "stream_descriptor": {
         "name": "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
@@ -58,7 +58,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "queryEndDate": "2121-07-01T00:00:00Z"
+        "endDate": "2121-07-01"
       },
       "stream_descriptor": {
         "name": "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
@@ -546,6 +546,37 @@
       },
       "stream_state": {
         "queryEndDate": "2121-11-04T12:18:51Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "LastUpdatedBefore": "2121-07-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "FbaInboundShipments"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "use_global_cursor": true,
+        "state": {
+          "LastUpdatedBefore": "2121-07-01T00:00:00Z"
+        },
+        "lookback_window": 0,
+        "parent_state": {
+          "FbaInboundShipments": {
+            "LastUpdatedBefore": "2121-07-01T00:00:00Z"
+          }
+        }
+      },
+      "stream_descriptor": {
+        "name": "FbaInboundShipmentItems"
       }
     }
   }
