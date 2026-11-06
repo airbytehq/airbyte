@@ -48,6 +48,9 @@ class TwilioStateMigration(StateMigration):
     """
     Ensure legacy partitions include an empty `parent_slice` required by the SubstreamPartitionRouter.
 
+    In global-cursor mode, discard obsolete per-partition cursors so request windows
+    resume from the global cursor. Retain the global cursor, lookback and parent state.
+
     Initial:
       {
         "states": [
@@ -73,11 +76,15 @@ class TwilioStateMigration(StateMigration):
     """
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if stream_state.get("use_global_cursor") and stream_state.get("state"):
+            return {key: value for key, value in stream_state.items() if key != "states"}
         for state in stream_state.get("states", []):
             state["partition"]["parent_slice"] = {}
         return stream_state
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if stream_state.get("use_global_cursor") and stream_state.get("state") and stream_state.get("states"):
+            return True
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
