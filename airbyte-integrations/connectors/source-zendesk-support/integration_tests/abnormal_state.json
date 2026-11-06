@@ -66,7 +66,15 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "ticket_comments" },
-      "stream_state": { "created_at": "4070908800" }
+      "stream_state": {
+        "use_global_cursor": true,
+        "state": { "created_at": "4070908800" },
+        "lookback_window": 0,
+        "parent_state": {
+          "tickets": { "updated_at": "4070908800" },
+          "closed_tickets_search": { "updated_at": "4070908800" }
+        }
+      }
     }
   },
   {
@@ -94,14 +102,22 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "ticket_metric_events" },
-      "stream_state": { "time": "4070908800" }
+      "stream_state": {
+        "use_global_cursor": true,
+        "state": { "_ab_updated_at": "4070908800" },
+        "lookback_window": 0,
+        "parent_state": {
+          "tickets": { "updated_at": "4070908800" },
+          "closed_tickets_search": { "updated_at": "4070908800" }
+        }
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "tickets" },
-      "stream_state": { "generated_timestamp": "4070908800" }
+      "stream_state": { "updated_at": "4070908800" }
     }
   },
   {
@@ -525,7 +541,10 @@
         "use_global_cursor": true,
         "state": { "_ab_updated_at": "4070908800" },
         "lookback_window": 7,
-        "parent_state": { "tickets": { "generated_timestamp": "4070908800" } }
+        "parent_state": {
+          "tickets": { "updated_at": "4070908800" },
+          "closed_tickets_search": { "updated_at": "4070908800" }
+        }
       }
     }
   },
@@ -714,7 +733,7 @@
           }
         ],
         "lookback_window": 0,
-        "parent_state": { "tickets": { "generated_timestamp": "4070908800" } }
+        "parent_state": { "tickets": { "updated_at": "4070908800" } }
       }
     }
   },
@@ -722,7 +741,15 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": { "name": "ticket_events" },
-      "stream_state": { "timestamp": "4070908800" }
+      "stream_state": {
+        "use_global_cursor": true,
+        "state": { "timestamp": "4070908800" },
+        "lookback_window": 0,
+        "parent_state": {
+          "tickets": { "updated_at": "4070908800" },
+          "closed_tickets_search": { "updated_at": "4070908800" }
+        }
+      }
     }
   },
   {

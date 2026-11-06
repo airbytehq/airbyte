@@ -1,9 +1,4 @@
 {
-  "after_cursor": "MTU3NjYxMzUzOS4wfHw0Njd8",
-  "after_url": "https://d3v-airbyte.zendesk.com/api/v2/incremental/tickets/cursor.json?cursor=MTU3NjYxMzUzOS4wfHw0Njd8",
-  "before_cursor": null,
-  "before_url": null,
-  "end_of_stream": true,
   "tickets": [
     {
       "generated_timestamp": 1723660897,
@@ -51,5 +46,14 @@
         "channel": "web"
       }
     }
-  ]
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": "MTU3NjYxMzUzOS4wfHw0Njd8",
+    "before_cursor": null
+  },
+  "links": {
+    "next": null,
+    "prev": null
+  }
 }

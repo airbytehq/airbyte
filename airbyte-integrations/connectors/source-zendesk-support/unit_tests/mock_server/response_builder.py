@@ -15,7 +15,8 @@ Example usage:
 """
 
 import json
-from typing import Any, Dict, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Union
 
 from airbyte_cdk.connector_builder.models import HttpRequest
 from airbyte_cdk.test.mock_http import HttpResponse
@@ -28,6 +29,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     RecordBuilder,
     find_template,
 )
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 
 from .utils import http_request_to_str
 
@@ -216,6 +218,21 @@ class UsersRecordBuilder(ZendeskSupportRecordBuilder):
         return self
 
 
+class UserIdentitiesRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def user_identities_record(cls) -> "UserIdentitiesRecordBuilder":
+        record_template = cls.extract_record("users", __file__, NestedPath(["identities", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "UserIdentitiesRecordBuilder":
+        self._record["id"] = id
+        return self
+
+    def with_user_id(self, user_id: int) -> "UserIdentitiesRecordBuilder":
+        self._record["user_id"] = user_id
+        return self
+
+
 class TicketMetricsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def ticket_metrics_record(cls) -> "TicketMetricsRecordBuilder":
@@ -242,12 +259,30 @@ class TicketsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def tickets_record(cls) -> "TicketsRecordBuilder":
         record_template = cls.extract_record("tickets", __file__, NestedPath(["tickets", 0]))
-        # The tickets stream reads the Incremental Ticket Export endpoint and cursors on
-        # `generated_timestamp`, so `with_cursor` must write that field (not `updated_at`).
-        return cls(record_template, FieldPath("id"), FieldPath("generated_timestamp"))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
 
     def with_id(self, id: int) -> "TicketsRecordBuilder":
         self._record["id"] = id
+        return self
+
+    def with_cursor(self, cursor_value: Union[int, str, AirbyteDateTime]) -> "TicketsRecordBuilder":
+        """Set the ticket's `updated_at` (the stream cursor) and `generated_timestamp` to the same instant.
+
+        Zendesk bumps both on every ticket change. The cursor accepts a unix timestamp, an ISO string or
+        an AirbyteDateTime; tests that need the two fields to differ call `with_generated_timestamp` after.
+        """
+        if isinstance(cursor_value, AirbyteDateTime):
+            cursor_value = int(cursor_value.timestamp())
+        if isinstance(cursor_value, int):
+            self._record["generated_timestamp"] = cursor_value
+            cursor_value = datetime.fromtimestamp(cursor_value, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            self._record["generated_timestamp"] = int(ab_datetime_parse(cursor_value).timestamp())
+        self._record["updated_at"] = cursor_value
+        return self
+
+    def with_generated_timestamp(self, generated_timestamp: int) -> "TicketsRecordBuilder":
+        self._record["generated_timestamp"] = generated_timestamp
         return self
 
 
@@ -538,21 +573,19 @@ class GroupsResponseBuilder(HttpResponseBuilder):
 
 
 class UsersResponseBuilder(HttpResponseBuilder):
-    @classmethod
-    def users_response(cls, url: Optional[HttpRequest] = None, cursor: Optional[str] = None) -> "UsersResponseBuilder":
-        return cls(
-            find_template("users", __file__),
-            FieldPath("users"),
-            EndOfStreamPaginationStrategy(http_request_to_str(url), cursor),
-        )
+    """Response of the user list (`GET /api/v2/users`): records under `users`, cursor pagination through
+    `meta.has_more` and `links.next`. With `include=identities` the page also carries an `identities` array."""
 
     @classmethod
-    def identities_response(cls, url: Optional[HttpRequest] = None, cursor: Optional[str] = None) -> "UsersResponseBuilder":
-        return cls(
-            find_template("users", __file__),
-            FieldPath("identities"),
-            EndOfStreamPaginationStrategy(http_request_to_str(url), cursor),
-        )
+    def users_response(cls, next_page_url: Optional[str] = None) -> "UsersResponseBuilder":
+        builder = cls(find_template("users", __file__), FieldPath("users"), CursorBasedPaginationStrategy(next_page_url))
+        builder._response["identities"] = []
+        return builder
+
+    def with_identity(self, identity: UserIdentitiesRecordBuilder) -> "UsersResponseBuilder":
+        """Sideload an identity next to the users of this page (`include=identities`)."""
+        self._response["identities"].append(identity.build())
+        return self
 
 
 class TicketMetricsResponseBuilder(HttpResponseBuilder):
@@ -585,21 +618,25 @@ class TicketMetricsResponseBuilder(HttpResponseBuilder):
 
 class TicketsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def tickets_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketsResponseBuilder":
-        return cls(
-            find_template("tickets", __file__),
-            FieldPath("tickets"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
+    def tickets_response(cls, next_page_url: Optional[str] = None) -> "TicketsResponseBuilder":
+        """Response of the ticket list (`GET /api/v2/tickets`): records under `tickets`, cursor pagination
+        through `meta.has_more` and `links.next`. Call `with_pagination()` to mark the page as not last."""
+        return cls(find_template("tickets", __file__), FieldPath("tickets"), CursorBasedPaginationStrategy(next_page_url))
 
 
 class TicketsSearchResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def tickets_search_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketsSearchResponseBuilder":
+    def tickets_search_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None, next_page_url: Optional[str] = None
+    ) -> "TicketsSearchResponseBuilder":
+        """Response of Export Search Results (`GET /api/v2/search/export`): records under `results`, cursor
+        pagination through `meta.has_more` and `links.next`. `next_page_url` is the `links.next` of a page that
+        is not the last (call `with_pagination()` on it too); `request_without_cursor_for_pagination` is the
+        older way to derive that URL from a request."""
         return cls(
             find_template("tickets_search", __file__),
             FieldPath("results"),
-            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+            CursorBasedPaginationStrategy(next_page_url or http_request_to_str(request_without_cursor_for_pagination)),
         )
 
 
@@ -615,17 +652,10 @@ class TicketFormsResponseBuilder(HttpResponseBuilder):
 
 class ArticlesResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def articles_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "ArticlesResponseBuilder":
-        return cls(
-            find_template("articles", __file__),
-            FieldPath("articles"),
-            NextPagePaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
-        )
-
-    @classmethod
-    def response(cls, next_page_url: Optional[HttpRequest] = None) -> "ArticlesResponseBuilder":
-        """Alias for articles_response() for backward compatibility."""
-        return cls.articles_response(next_page_url)
+    def articles_response(cls, next_page_url: Optional[str] = None) -> "ArticlesResponseBuilder":
+        """Response of the Help Center article list: records under `articles`, cursor pagination through
+        `meta.has_more` and `links.next`."""
+        return cls(find_template("articles", __file__), FieldPath("articles"), CursorBasedPaginationStrategy(next_page_url))
 
 
 class PostsResponseBuilder(HttpResponseBuilder):
@@ -1049,6 +1079,9 @@ class SatisfactionRatingsRecordBuilder(ZendeskSupportRecordBuilder):
 
 
 class TicketAuditsRecordBuilder(ZendeskSupportRecordBuilder):
+    """One audit of `GET /tickets/{ticket_id}/audits.json`, the record of `ticket_audits_per_ticket` and the
+    source of `ticket_events` and `ticket_comments`."""
+
     @classmethod
     def ticket_audits_record(cls) -> "TicketAuditsRecordBuilder":
         record_template = cls.extract_record("ticket_audits", __file__, NestedPath(["audits", 0]))
@@ -1058,37 +1091,43 @@ class TicketAuditsRecordBuilder(ZendeskSupportRecordBuilder):
         self._record["id"] = id
         return self
 
+    def with_ticket_id(self, ticket_id: int) -> "TicketAuditsRecordBuilder":
+        self._record["ticket_id"] = ticket_id
+        return self
 
-class TicketCommentsRecordBuilder(ZendeskSupportRecordBuilder):
-    @classmethod
-    def ticket_comments_record(cls) -> "TicketCommentsRecordBuilder":
-        record_template = cls.extract_record("ticket_comments", __file__, NestedPath(["ticket_events", 0, "child_events", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+    def with_author_id(self, author_id: int) -> "TicketAuditsRecordBuilder":
+        self._record["author_id"] = author_id
+        return self
 
-    def with_id(self, id: int) -> "TicketCommentsRecordBuilder":
-        self._record["id"] = id
+    def with_via(self, via: Optional[Dict[str, Any]]) -> "TicketAuditsRecordBuilder":
+        self._record["via"] = via
+        return self
+
+    def with_metadata(self, metadata: Dict[str, Any]) -> "TicketAuditsRecordBuilder":
+        self._record["metadata"] = metadata
+        return self
+
+    def with_events(self, events: List[Dict[str, Any]]) -> "TicketAuditsRecordBuilder":
+        self._record["events"] = events
         return self
 
 
 class TicketMetricEventsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def ticket_metric_events_record(cls) -> "TicketMetricEventsRecordBuilder":
-        record_template = cls.extract_record("ticket_metric_events", __file__, NestedPath(["ticket_metric_events", 0]))
+        record_template = cls.extract_record("ticket_metric_events", __file__, NestedPath(["agent_work_time", 0]))
         return cls(record_template, FieldPath("id"), FieldPath("time"))
 
     def with_id(self, id: int) -> "TicketMetricEventsRecordBuilder":
         self._record["id"] = id
         return self
 
+    def with_ticket_id(self, ticket_id: int) -> "TicketMetricEventsRecordBuilder":
+        self._record["ticket_id"] = ticket_id
+        return self
 
-class TicketEventsRecordBuilder(ZendeskSupportRecordBuilder):
-    @classmethod
-    def ticket_events_record(cls) -> "TicketEventsRecordBuilder":
-        record_template = cls.extract_record("ticket_events", __file__, NestedPath(["ticket_events", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("timestamp"))
-
-    def with_id(self, id: int) -> "TicketEventsRecordBuilder":
-        self._record["id"] = id
+    def with_metric(self, metric: str) -> "TicketMetricEventsRecordBuilder":
+        self._record["metric"] = metric
         return self
 
 
@@ -1163,12 +1202,10 @@ class ArticleCommentVotesRecordBuilder(ZendeskSupportRecordBuilder):
 
 class OrganizationsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def organizations_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "OrganizationsResponseBuilder":
-        return cls(
-            find_template("organizations", __file__),
-            FieldPath("organizations"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
+    def organizations_response(cls, next_page_url: Optional[str] = None) -> "OrganizationsResponseBuilder":
+        """Response of the organization list (`GET /api/v2/organizations`): records under `organizations`,
+        cursor pagination through `meta.has_more` and `links.next`."""
+        return cls(find_template("organizations", __file__), FieldPath("organizations"), CursorBasedPaginationStrategy(next_page_url))
 
 
 class SatisfactionRatingsResponseBuilder(HttpResponseBuilder):
@@ -1238,46 +1275,23 @@ class TicketAuditsPerTicketResponseBuilder(HttpResponseBuilder):
         )
 
 
-class TicketCommentsResponseBuilder(HttpResponseBuilder):
-    """Custom response builder for ticket_comments stream.
-
-    This stream uses a custom extractor (ZendeskSupportExtractorEvents) that expects
-    a nested structure with ticket_events[].child_events[] where child_events have event_type="Comment".
-    The standard HttpResponseBuilder.build() would replace the ticket_events field with an empty list,
-    so we override build() to preserve the template structure.
-    """
+class TicketMetricEventsResponseBuilder(HttpResponseBuilder):
+    """Response of `GET /tickets/{ticket_id}/metric_events`: an object keyed by metric name whose values are
+    the lists of events, with no pagination envelope."""
 
     @classmethod
-    def ticket_comments_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketCommentsResponseBuilder":
-        return cls(
-            find_template("ticket_comments", __file__),
-            FieldPath("ticket_events"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
+    def ticket_metric_events_response(cls) -> "TicketMetricEventsResponseBuilder":
+        builder = cls(find_template("ticket_metric_events", __file__), FieldPath("agent_work_time"), None)
+        builder._response = {}
+        return builder
+
+    def with_event(self, record: TicketMetricEventsRecordBuilder) -> "TicketMetricEventsResponseBuilder":
+        event = record.build()
+        self._response.setdefault(event["metric"], []).append(event)
+        return self
 
     def build(self) -> HttpResponse:
-        # Override to preserve the nested structure - don't replace ticket_events with records list
         return HttpResponse(json.dumps(self._response), self._status_code)
-
-
-class TicketMetricEventsResponseBuilder(HttpResponseBuilder):
-    @classmethod
-    def ticket_metric_events_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketMetricEventsResponseBuilder":
-        return cls(
-            find_template("ticket_metric_events", __file__),
-            FieldPath("ticket_metric_events"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
-
-
-class TicketEventsResponseBuilder(HttpResponseBuilder):
-    @classmethod
-    def ticket_events_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketEventsResponseBuilder":
-        return cls(
-            find_template("ticket_events", __file__),
-            FieldPath("ticket_events"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
-        )
 
 
 class TicketSkipsResponseBuilder(HttpResponseBuilder):
@@ -1340,29 +1354,6 @@ class ArticleCommentVotesResponseBuilder(HttpResponseBuilder):
         return cls(
             find_template("article_comment_votes", __file__),
             FieldPath("votes"),
-            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
-        )
-
-
-class UserIdentitiesRecordBuilder(ZendeskSupportRecordBuilder):
-    @classmethod
-    def user_identities_record(cls) -> "UserIdentitiesRecordBuilder":
-        record_template = cls.extract_record("user_identities", __file__, NestedPath(["identities", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
-
-    def with_id(self, id: int) -> "UserIdentitiesRecordBuilder":
-        self._record["id"] = id
-        return self
-
-
-class UserIdentitiesResponseBuilder(HttpResponseBuilder):
-    @classmethod
-    def user_identities_response(
-        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
-    ) -> "UserIdentitiesResponseBuilder":
-        return cls(
-            find_template("user_identities", __file__),
-            FieldPath("identities"),
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
 

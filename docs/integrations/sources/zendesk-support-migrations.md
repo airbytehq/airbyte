@@ -2,6 +2,94 @@
 
 import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
+## Upgrading to 6.0.0
+
+:::danger Risk of permanent data loss
+Follow the steps below to preserve historical data. If you don't, you risk permanent and irreversible loss of data in your destination.
+:::
+
+Zendesk is ending third-party access to its [Incremental Export APIs](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/). Per Zendesk's [announcement](https://support.zendesk.com/hc/en-us/articles/11275429993498) and [developer guide](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/incremental-third-party/), integrations such as Airbyte stop receiving data from these endpoints between **2026-12-02** and **2027-01-19**, after which Zendesk answers their requests with `403 Forbidden`. Versions before 6.0.0 read `tickets`, `users`, `organizations`, `articles`, `ticket_comments`, `ticket_events` and `ticket_metric_events` from those endpoints, so they fail on these streams once Zendesk enforces the change on your account. Upgrade before 2026-12-02. If you need more time, a Zendesk administrator can request a one-time 60-day extension for Airbyte in Zendesk Admin Center under **Apps and integrations > APIs > API Configuration**, available from November 2026.
+
+No reset is required and the saved state is migrated automatically. Incremental sync modes keep the rows already in your destination. A sync mode that replaces the destination table, a cleared stream or a new connection rebuilds the table from what 6.0.0 can read, which leaves out the records listed under [Records that are no longer replicated](#records-that-are-no-longer-replicated); back up those tables before you upgrade if you need them. Read the rest of this section to learn which records and fields change.
+
+### What changed
+
+| Stream | Before 6.0.0 | 6.0.0 |
+| :--- | :--- | :--- |
+| `tickets` | Incremental Ticket Export, cursor `generated_timestamp` | [List Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#list-tickets) sorted by `updated_at`, cursor `updated_at` |
+| `users` | Incremental User Export | [List Users](https://developer.zendesk.com/api-reference/ticketing/users/users/#list-users) sorted by `updated_at` |
+| `user_identities` | Identities of each exported user | Identities of each listed user, read with the user |
+| `organizations` | Incremental Organization Export | [List Organizations](https://developer.zendesk.com/api-reference/ticketing/organizations/organizations/#list-organizations) sorted by `updated_at` |
+| `articles` | Incremental Article Export | [List Articles](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/#list-articles) sorted by `updated_at` |
+| `ticket_comments` | Comment events from the Incremental Ticket Event Export | Comment events from [List Audits for a Ticket](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-audits-for-a-ticket), one request per ticket the `tickets` stream or a search for updated closed tickets returns |
+| `ticket_events` | Incremental Ticket Event Export | Audits from List Audits for a Ticket, one request per ticket the `tickets` stream or a search for updated closed tickets returns |
+| `ticket_metric_events` | Incremental Ticket Metric Events Export, cursor `time` | [List Ticket Metric Events for a Ticket](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/), one request per ticket the `tickets` stream or a search for updated closed tickets returns, cursor `_ab_updated_at` |
+| `ticket_metrics`, `side_conversations` | One request per ticket from the Incremental Ticket Export | Unchanged requests, one per ticket the new `tickets` stream returns |
+| `ticket_audits_per_ticket` | One request per ticket from the Incremental Ticket Export | Unchanged requests, one per ticket the new `tickets` stream or a search for updated closed tickets returns |
+
+The ticket list is read with `support_type_scope=all`, so it includes tickets handled by Zendesk AI agents as well as tickets handled by your agents.
+
+The cursor fields of `users`, `user_identities`, `organizations`, `articles`, `ticket_comments` and `ticket_events` do not change. Two cursors change:
+
+- `tickets` moves from `generated_timestamp` to `updated_at`. The connector converts the saved `generated_timestamp` value into an `updated_at` value one hour earlier, and the per-ticket streams seed both of their parent cursors (the ticket list and the search for updated closed tickets) from their saved state, so the first sync after upgrading continues where the previous one stopped. `generated_timestamp` stays in the `tickets` records.
+- `ticket_metric_events` moves from the event `time` to `_ab_updated_at`, a field the connector adds to every record with the `generated_timestamp` of the ticket at the moment its metric events were read, as `ticket_metrics` and `ticket_audits_per_ticket` already do. The event `time` can't bound the stream: Zendesk dates an SLA `breach` event with the moment the target will be breached, which can lie days ahead, and a cursor that has moved past the clock reads nothing until the clock catches up. The connector converts the saved `time` into the ticket cursor, clamped to the upgrade time if it lies in the future and rewound by one hour, so the first sync re-reads the tickets changed since the last export. `time` stays in the records.
+
+### Records that are no longer replicated
+
+The list endpoints return less than the export endpoints did. The following records stop appearing in new syncs; rows already in your destination stay until the stream is cleared or synced in a mode that replaces the table.
+
+- **Archived tickets.** Zendesk [archives](https://support.zendesk.com/hc/en-us/articles/4408887617050-About-ticket-archiving) closed tickets after about 120 days and leaves them out of the ticket list. `tickets` no longer returns them, and `side_conversations` and incremental syncs of `ticket_metrics` no longer visit them, including after a later change to an archived ticket. `ticket_comments`, `ticket_events`, `ticket_metric_events` and `ticket_audits_per_ticket` still reach them: besides the ticket list, each of these streams lists the closed tickets updated since its cursor through Zendesk's search index, which includes archived tickets, and reads those tickets too. The opt-in `tickets_search` stream reads the same index and returns the archived ticket records themselves. See [Tickets stream: change tracking](zendesk-support.md#tickets-stream-change-tracking) for its limitations and [Archived tickets in the per-ticket streams](zendesk-support.md#archived-tickets-in-the-per-ticket-streams) for the cost of the extra pass.
+- **Deleted tickets.** Versions 5.5.0 to 5.7.0 included deleted tickets in `tickets` with `status` `deleted`. The ticket list does not return deleted tickets. Enable the `deleted_tickets` stream to keep replicating them.
+- **Deleted users and organizations.** The user and organization lists do not return deleted records, so `users` no longer returns deleted users (`active: false`), including permanently deleted ones, and `organizations` no longer returns deleted organizations. The export marked them with `users.active`, `users.permanently_deleted` and `organizations.deleted_at`; those fields keep their old rows only in incremental sync modes and are no longer populated.
+- **Ticket metric events of tickets that no longer exist.** The export returned metric events with a null `ticket_id`, which belong to tickets that have been permanently deleted. There is no ticket to read them through, so they are no longer replicated.
+- **Ticket metric events recorded without a ticket update.** `ticket_metric_events` reads a ticket's metric events when the ticket is created or updated and emits all of them each time, including events dated before `start_date` and the events Zendesk records on its own clock. An SLA `breach` event is recorded when the policy applies to the ticket, dated with the moment the target will be breached, and is emitted with that future `time`; if the target is met, the same event comes back with `deleted: true` the next time the ticket changes. A `pausable_update_time` or `periodic_update_time` event written without a ticket update is read on the next sync in which the ticket changes. Until the ticket changes again, such events are missing or stale in your destination, whereas the export returned each event once by its own time. The first 6.0.0 sync re-reads only the tickets changed in the hour before your last sync, so a `breach` event that Zendesk had already recorded for an older unchanged ticket, with a `time` your last 5.x sync had not reached yet, arrives at that ticket's next change rather than on the next sync.
+- **Updates that change only `generated_timestamp`.** The ticket list is sorted and filtered by `updated_at`, which Zendesk bumps only for changes that generate a ticket event. An automation-, macro- or system-driven update that changes only `generated_timestamp` is not picked up by incremental syncs of `tickets` and the per-ticket streams. Version 5.5.0 moved `tickets` to `generated_timestamp` to catch these updates; the endpoint that made that possible is the one Zendesk is retiring.
+
+### Field changes in `ticket_events`
+
+`ticket_events` records now come from ticket audits. Each record keeps the fields it had (`id`, `ticket_id`, `timestamp`, `created_at`, `updater_id`, `via`, `system`, `child_events`, `event_type`) and gains `metadata`, the audit's metadata object. Three of the existing fields change their values:
+
+- `via` holds the channel name from the Ticket Audits API instead of the label the export used. Update filters on this field with this mapping:
+
+  | Before 6.0.0 | 6.0.0 |
+  | :--- | :--- |
+  | `Web form` | `web` |
+  | `Closed Ticket` | `web` |
+  | `Web service` | `api` |
+  | `Mail` | `email` |
+  | `Chat` | `chat` |
+  | `Chat Transcript` | `chat_transcript` |
+  | `Voicemail` | `voice` |
+  | `Rule` | `rule` |
+  | `Sample Ticket` | `sample_ticket` |
+  | `SLA` | `sla` |
+
+  Labels not listed here map to the `via.channel` value the Ticket Audits API returns for the same audit.
+
+- `child_events` holds the audit's `events` array in the shape of the [Ticket Audits API](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#audit-events): each child event has a `type` (for example `Create`, `Change`, `Comment`) and a `field_name` with a `value`, where the export used `event_type` and one key per changed field. The child event types also follow the Ticket Audits API: `VoiceApiComment` becomes `VoiceComment`, and audits include `Notification`, `AgentMacroReference`, `ChatStartedEvent`, `ChatEndedEvent` and `AssociateAttValsEvent` child events that the export left out. Child events no longer carry the export's per-event `via`, `via_reference_id`, `added_tags` and `removed_tags` keys (tag changes are a `Change` event on `field_name: tags` with `value` and `previous_value`), and `Change` events gain `previous_value`.
+- `updater_id` holds the audit's `author_id`: the agent or API user who made the change, or `-1` for changes Zendesk made itself (for example an audit a voice or chat integration created). The export sometimes gave the ticket requester instead, notably on the creation, comment and notification events of tickets created through the API, which 6.0.0 attributes to the agent whose credentials made the call.
+
+`ticket_comments` records keep their shape, including `via_reference_id`, which stays null as before.
+
+### Sync cost of the per-ticket streams
+
+`ticket_comments`, `ticket_events` and `ticket_metric_events` now make one request for every ticket created or updated since the previous sync, as `ticket_metrics` and `side_conversations` already did, against your plan's account-wide rate limit. On accounts with heavy ticket traffic these syncs take longer than before and share the limit with your other Zendesk integrations. A ticket that changes re-emits all of its metric events, all of its audits in `ticket_audits_per_ticket` and `ticket_events`, all of its comments in `ticket_comments`, and all of its side conversations in `side_conversations`. The per-ticket streams never filter a ticket's history on the saved cursor, because a ticket updated while a sync is running is first seen by the next sync, and filtering would drop the records it gained in between. `user_identities` re-emits the identities of every user its walk reads, including the users on the last page it reads, whose identities can be older than the cursor. Sync these streams with a deduplicated sync mode to keep one row per `id`.
+
+`ticket_comments`, `ticket_events`, `ticket_metric_events` and `ticket_audits_per_ticket` also make one search request per 100 closed tickets updated since the previous sync and read each of those tickets, so a change to many archived tickets costs one request per changed ticket on the next sync. `ticket_audits_per_ticket` already paid that per-ticket cost in 5.7.0; the Incremental Export streams paid one request per 1,000 events instead. The first sync after upgrading starts that search one to two hours before the stream's saved cursor. A new connection lists and reads every closed ticket updated since `start_date`, archived ones included, and a ticket that closed since the previous sync (on the first sync, every closed ticket that is not archived yet) can be read twice in the same sync.
+
+The list-based streams save no state until their read completes: the lists are walked newest first, so a cursor can only be saved once the walk reaches the previous cursor. A sync that fails part-way through a stream restarts that stream from the previous state on the next attempt, whereas the export streams saved state after every page. On a large account, run the first sync when it can complete without interruption, and set a `start_date` that bounds it.
+
+The `tickets` stream itself reads 100 tickets per request at up to 100 requests per minute, and that budget is shared by every walk of the ticket list in the same sync: the `tickets` stream and each selected per-ticket stream walks the list separately. A new connection, or a cleared `tickets` stream, on a large account reads its whole history at that pace before incremental syncs become short again.
+
+### Migration steps
+
+1. If you sync any of the streams listed under [Records that are no longer replicated](#records-that-are-no-longer-replicated) in a sync mode that replaces the destination table, back up the table or switch the stream to an incremental sync mode before you upgrade. The first sync after the upgrade rebuilds a replaced table without those records, and the Incremental Export APIs cannot be used to recover them once Zendesk enforces the change.
+2. Upgrade the connector before 2026-12-02. Connections still on an older version after that date are upgraded automatically, so complete step 1 first. The first sync continues from the migrated state; no reset is required. Rolling back to 5.7.0 afterwards works but re-reads data: 5.7.0 moves the `tickets` cursor back to 2026-03-01 (or to the start date, if that is later), so `tickets`, `ticket_audits_per_ticket`, `ticket_metrics` and `side_conversations` re-read every ticket updated since then, and it doesn't read the 6.0.0 state of `ticket_comments`, `ticket_events` and `ticket_metric_events` at all, so those streams re-read from the start date. Upgrading again later migrates the state as before.
+3. If you rely on deleted tickets from the `tickets` stream, enable the `deleted_tickets` stream. If you rely on archived ticket records from the `tickets` stream, enable `tickets_search`.
+4. Update downstream queries, models and dashboards that read `ticket_events.via`, `ticket_events.child_events` or `ticket_events.updater_id` using the mappings above, and ones that read `users.active`, `users.permanently_deleted` or `organizations.deleted_at` to track deleted records.
+5. If `ticket_comments`, `ticket_events`, `ticket_metric_events`, `ticket_audits_per_ticket`, `side_conversations` or `user_identities` are synced without deduplication, switch them to a deduplicated sync mode or deduplicate on `id` downstream.
+6. Optional: refresh the source schema. The connection then shows the new cursor fields, `updated_at` on `tickets` and `_ab_updated_at` on `ticket_metric_events`. Until you do, the destination keeps ordering rows by the previous cursor fields, which stay in the records.
+
 ## Upgrading to 5.5.0
 
 This is not a breaking change. No stream reset is required, and existing state is migrated automatically. This guide is provided because the behavioral change to the `tickets` stream affects which records are synced.
@@ -77,17 +165,9 @@ Zendesk announced support for OAuth refresh token grant type on April 30, 2025. 
 3. Select "OAuth2.0 with Refresh Token" as the authentication method
 4. Complete the OAuth flow to authorize the connector
 
-### Connector upgrade guide
-
-<MigrationGuide />
-
 ## Upgrading to 4.0.0
 
 The pagination strategy has been changed from `Offset` to `Cursor-Based`. It is necessary to reset the stream.
-
-### Connector upgrade guide
-
-<MigrationGuide />
 
 ## Upgrading to 3.0.0
 
@@ -107,3 +187,7 @@ Stream `Deleted Tickets` is removed. You may need to refresh the connection sche
 
 `cursor_field` for `Tickets` stream is changed to `generated_timestamp`.
 For a smooth migration, you should refresh your stream. Alternatively, you can clear your data.
+
+## Connector upgrade guide
+
+<MigrationGuide />

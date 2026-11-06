@@ -1,16 +1,24 @@
 {
-  "ticket_metric_events": [
+  "agent_work_time": [
     {
       "id": 35436,
       "ticket_id": 35436,
       "metric": "agent_work_time",
-      "instance_id": 1,
+      "instance_id": 0,
       "type": "measure",
-      "time": "2009-07-20T22:55:29Z"
+      "time": "2009-07-20T22:55:29Z",
+      "deleted": false
     }
   ],
-  "count": 1,
-  "end_of_stream": true,
-  "end_time": 1248130529,
-  "next_page": null
+  "reply_time": [
+    {
+      "id": 35437,
+      "ticket_id": 35436,
+      "metric": "reply_time",
+      "instance_id": 0,
+      "type": "measure",
+      "time": "2009-07-20T22:55:29Z",
+      "deleted": false
+    }
+  ]
 }
