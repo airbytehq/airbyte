@@ -511,7 +511,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 8.0.0 | 2026-11-06 | - | Add incremental sync for inbound shipments/items and three supported Brand Analytics reports, with weekly backfills honoring configured dates. |
+| 8.0.0 | 2026-11-06 | [91216](https://github.com/airbytehq/airbyte/pull/91216) | Add incremental sync for inbound shipments/items and three supported Brand Analytics reports, with weekly backfills honoring configured dates. |
 | 7.0.1 | 2026-10-27 | [89783](https://github.com/airbytehq/airbyte/pull/89783) | Update dependencies |
 | 7.0.0 | 2026-10-22 | [74065](https://github.com/airbytehq/airbyte/pull/74065) | Replace `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon removes on November 11, 2026, with `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` |
 | 6.1.3 | 2026-10-20 | [89131](https://github.com/airbytehq/airbyte/pull/89131) | Update dependencies |
