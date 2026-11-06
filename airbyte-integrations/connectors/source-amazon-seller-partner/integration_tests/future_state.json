@@ -256,7 +256,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "dataEndTime": "2121-07-01T00:00:00Z"
+        "Date": "2121-07-01T00:00:00Z"
       },
       "stream_descriptor": {
         "name": "GET_LEDGER_SUMMARY_VIEW_DATA"
