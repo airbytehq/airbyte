@@ -10267,7 +10267,7 @@ streams:
         transition_to_live:
           type:
           - 'null'
-          - string
+          - boolean
   type: DeclarativeStream
   name: "webinars"
   incremental_sync:
@@ -12544,7 +12544,7 @@ streams:
         registrationr_count:
           type:
           - 'null'
-          - string
+          - integer
         source_name:
           type:
           - 'null'
