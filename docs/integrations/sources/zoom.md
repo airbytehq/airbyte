@@ -205,7 +205,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 2.2.0 | 2026-11-06 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Raise page size to 300, add missing schema fields, bump base image to 7.46.0, add OpenAPI spec link |
+| 2.2.0 | 2026-11-06 | [91200](https://github.com/airbytehq/airbyte/pull/91200) | Raise page size to 300, add missing schema fields, bump base image to 7.46.0, add OpenAPI spec link |
 | 2.1.0 | 2026-11-06 | [91195](https://github.com/airbytehq/airbyte/pull/91195) | Add configurable concurrency and Pro-tier API rate-limit budget |
 | 2.0.0 | 2026-11-03 | [89722](https://github.com/airbytehq/airbyte/pull/89722) | Add session-based meeting reports, composite keys and date-time typing; retain Full Refresh for webinar reports; honor Retry-After on 429 |
 | 1.5.1 | 2026-11-03 | [90076](https://github.com/airbytehq/airbyte/pull/90076) | Update dependencies |
