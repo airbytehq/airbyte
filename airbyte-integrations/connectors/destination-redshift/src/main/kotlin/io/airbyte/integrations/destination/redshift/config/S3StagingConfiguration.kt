@@ -56,17 +56,17 @@ data class S3StagingConfiguration(
     @JsonProperty("access_key_id")
     @get:JsonSchemaTitle("S3 Access Key Id")
     @get:JsonPropertyDescription(
-        "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
+        "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. Optional when the connector runs with an OIDC web identity token (AWS_WEB_IDENTITY_TOKEN_FILE and AWS_ROLE_ARN); used as a fallback otherwise. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
     )
     @get:JsonSchemaInject(json = """{"order": 3, "airbyte_secret": true}""")
-    val accessKeyId: String = "",
+    val accessKeyId: String? = null,
     @JsonProperty("secret_access_key")
     @get:JsonSchemaTitle("S3 Secret Access Key")
     @get:JsonPropertyDescription(
         "The corresponding secret to the above access key id. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
     )
     @get:JsonSchemaInject(json = """{"order": 4, "airbyte_secret": true}""")
-    val secretAccessKey: String = "",
+    val secretAccessKey: String? = null,
     @JsonProperty("file_name_pattern")
     @get:JsonSchemaTitle("S3 Filename pattern")
     @get:JsonPropertyDescription(

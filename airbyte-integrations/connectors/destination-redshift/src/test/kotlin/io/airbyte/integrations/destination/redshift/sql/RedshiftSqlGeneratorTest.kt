@@ -731,6 +731,7 @@ internal class RedshiftSqlGeneratorTest {
                 s3Path = "s3://bucket/path/file.csv.gz",
                 accessKeyId = "AKIATEST",
                 secretAccessKey = "secret123",
+                sessionToken = null,
                 region = "us-east-1",
             )
 
@@ -748,6 +749,25 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("IGNOREHEADER 1"))
         assertTrue(sql.contains("NULL AS '${RedshiftSqlGenerator.NULL_SENTINEL}'"))
         assertFalse(sql.contains("EMPTYASNULL"))
+    }
+
+    @Test
+    fun `copyFromS3 includes session token for temporary credentials`() {
+        val sql =
+            sqlGenerator.copyFromS3(
+                tableName = TableName(namespace = "ns", name = "tbl"),
+                s3Path = "s3://bucket/path/file.csv.gz",
+                accessKeyId = "ASIATEST",
+                secretAccessKey = "secret123",
+                sessionToken = "tok456",
+                region = "us-east-1",
+            )
+
+        assertTrue(
+            sql.contains(
+                "CREDENTIALS 'aws_access_key_id=ASIATEST;aws_secret_access_key=secret123;token=tok456'",
+            ),
+        )
     }
 
     @Test

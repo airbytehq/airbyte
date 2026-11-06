@@ -73,7 +73,7 @@ internal class RedshiftInsertBufferTest {
     @BeforeEach
     fun setUp() {
         coEvery { redshiftClient.uploadToS3(any(), any(), any()) } just Runs
-        coEvery { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) } just Runs
+        coEvery { redshiftClient.copyFromS3(any(), any(), any()) } just Runs
         coEvery { redshiftClient.deleteFromS3(any(), any()) } just Runs
 
         buffer = RedshiftInsertBuffer(tableName, columns, redshiftClient, configuration)
@@ -101,8 +101,6 @@ internal class RedshiftInsertBufferTest {
             redshiftClient.copyFromS3(
                 tableName = eq(tableName),
                 s3Path = match { it.startsWith("s3://my-bucket/staging/data/") },
-                accessKeyId = eq("AKID"),
-                secretAccessKey = eq("SECRET"),
                 region = eq("us-west-2"),
             )
             redshiftClient.deleteFromS3(eq("my-bucket"), any())
@@ -117,7 +115,7 @@ internal class RedshiftInsertBufferTest {
         buffer.flush()
 
         coVerify(exactly = 0) { redshiftClient.uploadToS3(any(), any(), any()) }
-        coVerify(exactly = 0) { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) }
+        coVerify(exactly = 0) { redshiftClient.copyFromS3(any(), any(), any()) }
     }
 
     @Test
@@ -207,7 +205,7 @@ internal class RedshiftInsertBufferTest {
         noPurgeBuffer.flush()
 
         coVerify(exactly = 1) { redshiftClient.uploadToS3(any(), any(), any()) }
-        coVerify(exactly = 1) { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) }
+        coVerify(exactly = 1) { redshiftClient.copyFromS3(any(), any(), any()) }
         coVerify(exactly = 0) { redshiftClient.deleteFromS3(any(), any()) }
     }
 
@@ -227,7 +225,7 @@ internal class RedshiftInsertBufferTest {
 
         // Single upload + COPY for all 5 records
         coVerify(exactly = 1) { redshiftClient.uploadToS3(any(), any(), any()) }
-        coVerify(exactly = 1) { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) }
+        coVerify(exactly = 1) { redshiftClient.copyFromS3(any(), any(), any()) }
 
         assertEquals(0, buffer.recordCount)
     }
@@ -241,12 +239,12 @@ internal class RedshiftInsertBufferTest {
         buffer.flush()
 
         coVerify(exactly = 2) { redshiftClient.uploadToS3(any(), any(), any()) }
-        coVerify(exactly = 2) { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) }
+        coVerify(exactly = 2) { redshiftClient.copyFromS3(any(), any(), any()) }
     }
 
     @Test
     fun `flush propagates exceptions from copyFromS3`() = runTest {
-        coEvery { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) } throws
+        coEvery { redshiftClient.copyFromS3(any(), any(), any()) } throws
             RuntimeException("COPY failed")
 
         buffer.accumulate(mapOf("_airbyte_raw_id" to StringValue("x")))
