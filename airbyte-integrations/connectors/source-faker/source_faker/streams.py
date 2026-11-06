@@ -14,6 +14,7 @@ from .user_generator import UserGenerator
 from .utils import format_airbyte_time, generate_estimate, read_json
 
 
+# Products draws from a fixed 100-item catalog; see record_data/products.json.
 class Products(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
