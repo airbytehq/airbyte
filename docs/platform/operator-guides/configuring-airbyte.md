@@ -49,7 +49,7 @@ Be careful using variables marked as `alpha`. They aren't meant for public consu
 
 ## Jobs
 
-The following retry defaults apply to Airbyte Self-Managed/Core. The failure limits count failed attempts, not additional retries. Airbyte retries only while every failure counter is below its limit. For example, a total complete-failure limit of 5 fails the job on the fifth attempt that fails without syncing data.
+The following retry defaults apply to Airbyte Core and Self-Managed Enterprise. The failure limits count failed attempts, not additional retries. Airbyte retries only while every failure counter is below its limit. For example, a total complete-failure limit of 5 fails the job on the fifth attempt that fails without syncing data.
 
 1. `SYNC_JOB_MAX_ATTEMPTS` - Defines the maximum number of attempts before failing the job. Defaults to 3. Used only if Airbyte can't load the job's retry state because the retry-state activity fails, not when a job has no saved retry state. Set with the Helm value `worker.syncJobMaxAttempts`.
 2. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_SUCCESSIVE` - Defines the maximum number of successive failed attempts that sync no data before failing the job. Defaults to 5.
