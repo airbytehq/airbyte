@@ -203,7 +203,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 2.1.0 | 2026-11-06 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add configurable concurrency and Pro-tier API rate-limit budget |
+| 2.1.0 | 2026-11-06 | [91195](https://github.com/airbytehq/airbyte/pull/91195) | Add configurable concurrency and Pro-tier API rate-limit budget |
 | 2.0.0 | 2026-11-03 | [89722](https://github.com/airbytehq/airbyte/pull/89722) | Add session-based meeting reports, composite keys and date-time typing; retain Full Refresh for webinar reports; honor Retry-After on 429 |
 | 1.5.1 | 2026-11-03 | [90076](https://github.com/airbytehq/airbyte/pull/90076) | Update dependencies |
 | 1.5.0 | 2026-10-22 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams; the new streams need additional Zoom app scopes |
