@@ -1244,6 +1244,10 @@ definitions:
           - client_refresh_token
         token_expiry_date_config_path:
           - token_expiry_date
+        refresh_token_policy:
+          writeback_required: always
+          description: "Mercado Libre refresh tokens can only be used once; each refresh returns a new refresh token and the used one becomes invalid. Access tokens last 6 hours."
+          policy_docs_url: https://global-selling.mercadolibre.com/devsite/category-predictor/authentication-and-authorization-global-selling
       refresh_token_error_status_codes:
         - 400
         - 401
