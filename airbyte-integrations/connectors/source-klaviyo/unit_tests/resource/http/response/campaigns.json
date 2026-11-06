@@ -21,10 +21,9 @@
       },
       "send_strategy": {
         "method": "immediate",
-        "datetime": null,
-        "date": null,
-        "throttle_percentage": null,
-        "options": null
+        "options_static": null,
+        "options_throttled": null,
+        "options_sto": null
       },
       "created_at": "2024-01-01T10:00:00+00:00",
       "scheduled_at": "2024-01-15T10:00:00+00:00",
