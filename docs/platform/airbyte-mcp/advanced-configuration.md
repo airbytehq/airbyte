@@ -101,7 +101,7 @@ Some insiders tools can be unsafe or have side effects. Only use insiders mode o
 | :--------------- | :------------ | :---------------------------- | :------------------------------------------------------------ |
 | `X-MCP-Insiders` | `insiders`    | `1` (enabled), `0` (disabled) | Disabled by default. When set to `1`, turns on insiders mode. |
 
-`1` can also be written as `true` or `yes`, and `0` as `false` or `no`, for both the header and the URL parameter. For how URL parameters work, see [URL parameters](#url-parameters). Insiders tools follow the same tool restrictions as other tools. For example, read-only mode still hides insiders tools that change data.
+The header also accepts `true` or `yes` for `1`, and `false` or `no` for `0`. The URL parameter accepts only `true` or `false`, like `?insiders=true`. For how URL parameters work, see [URL parameters](#url-parameters). Insiders tools follow the same tool restrictions as other tools. For example, read-only mode still hides insiders tools that change data.
 
 ## See also
 
