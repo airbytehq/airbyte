@@ -2,11 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
 from airbyte_cdk.sources.streams import Stream
+
+from . import constants
 
 
 class AzureTableStream(Stream):
@@ -22,6 +25,13 @@ class AzureTableStream(Stream):
     @property
     def name(self):
         return self.stream_name
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return copy.deepcopy(constants.table_json_schema)
+
+    @property
+    def is_resumable(self) -> bool:
+        return bool(self.cursor_field)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         return {self.cursor_field[0]: latest_record.data.get(self.cursor_field[0])}
