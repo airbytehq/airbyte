@@ -35,7 +35,7 @@ The Copper source connector supports the following [sync modes](https://docs.air
 - [People](https://developer.copper.com/people/list-people-search.html)
 - [Companies](https://developer.copper.com/companies/list-companies-search.html)
 - [Projects](https://developer.copper.com/projects/list-projects-search.html)
-- [Oppurtunities](https://developer.copper.com/opportunities/list-opportunities-search.html)
+- [Opportunities](https://developer.copper.com/opportunities/list-opportunities-search.html)
 
 ## IP allow list
 

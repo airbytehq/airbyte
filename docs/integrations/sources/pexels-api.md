@@ -17,7 +17,7 @@ Just pass the generated API key and optional parameters for establishing the con
   - query: Ocean, Tigers, Pears, etc. Default is people
   - orientation: landscape, portrait or square. Default is landscape
   - size: large, medium, small. Default is large
-  - color: red, orange, yellow, green, turquoise, blue, violet, pink, brown, black, gray, white or any hexidecimal color code.
+  - color: red, orange, yellow, green, turquoise, blue, violet, pink, brown, black, gray, white or any hexadecimal color code.
   - locale: en-US, pt-BR, es-ES, ca-ES, de-DE, it-IT, fr-FR, sv-SE, id-ID, pl-PL, ja-JP, zh-TW, zh-CN, ko-KR, th-TH, nl-NL, hu-HU, vi-VN, cs-CZ, da-DK, fi-FI, uk-UA, el-GR, ro-RO, nb-NO, sk-SK, tr-TR, ru-RU. Default is en-US
 
 ## Step 2: Set up the Pexels-APIs connector in Airbyte

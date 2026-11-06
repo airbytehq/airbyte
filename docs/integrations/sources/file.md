@@ -112,7 +112,7 @@ This is the globally unique name of the storage account that the desired blob si
 
 - `Host` (Required)
 
-Enter the _hostname_ or _IP address_ of the remote server where the file trasfer will take place.
+Enter the _hostname_ or _IP address_ of the remote server where the file transfer will take place.
 
 - `User` (Required)
 

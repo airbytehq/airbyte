@@ -161,7 +161,7 @@ The `upgradeDeadline` field specifies the date by which users should upgrade (fo
 
 - **Rationale:** The deadline should provide enough time for users to review the migration guide, test in staging environments, and execute the migration steps.
 
-- **Exception: Immediate upstream breakage:** In the case of immediate upstream breaking changes, such as an already-removed upstream API endpoint, the deadline can be present-day or even in the past - with the rationale that users' connections are _already_ broken without the fix and therefor need the upgrade applied immediately.
+- **Exception: Immediate upstream breakage:** In the case of immediate upstream breaking changes, such as an already-removed upstream API endpoint, the deadline can be present-day or even in the past - with the rationale that users' connections are _already_ broken without the fix and therefore need the upgrade applied immediately.
 
 - **Automated notifications:** The platform automatically emails users when a breaking change is released and sends reminders as the deadline approaches.
 

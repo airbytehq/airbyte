@@ -4,7 +4,7 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 
 ## Pre-requisites
 - A Dolibarr Installation in Cloud SaaS, On-premises, Web Hosting or cPanel Server.
-- Identify your public Dolibarr URL that will be required to configure the conector.
+- Identify your public Dolibarr URL that will be required to configure the connector.
 - Configure your company data in the Setup menu - Configure your company/organization: [Dolibarr documentation Wiki](https://wiki.dolibarr.org/index.php?title=First_setup#Company.2FOrganization)
 - In the module setup menu enable the Module Web Services API REST (developer) and configure it.
 - Enable the ERP/CRM modules of Dolibarr from you want to GET data with the REST API end points

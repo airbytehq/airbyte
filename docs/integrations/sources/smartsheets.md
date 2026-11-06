@@ -67,7 +67,7 @@ At the time of writing, the [Smartsheets API rate limit](https://developers.smar
 This source provides a single stream per spreadsheet with a dynamic schema, depending on your spreadsheet structure.
 For example, having a spreadsheet `Customers`, the connector would introduce a stream with the same name and properties typed according to Data type map (see [below](https://docs.airbyte.com/integrations/sources/smartsheets/#data-type-map)).
 
-Additionallly specific metadata fields related to the sheet or row can be include in the stream, these must be specified in the configuration in order to be included in the data stream
+Additionally specific metadata fields related to the sheet or row can be included in the stream, these must be specified in the configuration in order to be included in the data stream
 
 | Supported Metadata Fields |
 | ------------------------- |
