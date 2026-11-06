@@ -311,6 +311,8 @@ To sync campaigns, ad groups, or ads incrementally, select `campaigns_bulk`, `ad
 
 Bulk deltas can include records with `Status: Deleted`, but Microsoft does not cascade these records to children: deleting a campaign does not produce deleted records for its ad groups and ads, and deleting an ad group does not produce deleted records for its ads. Do not rely on incremental child streams alone to identify all deletions. See [DownloadCampaignsByAccountIds](https://learn.microsoft.com/en-us/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13#lastsynctimeinutc) for the API's deletion behavior.
 
+The three Bulk entity streams exclude diagnostic rows whose `Type` ends in ` Error`, such as `Responsive Search Ad Error`. These rows are not entities and can share an entity's ID without a modification timestamp. Valid entity rows, including `Status: Deleted` records, are retained. Additional Bulk CSV columns are passed through without explicit schema types.
+
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Bing Ads source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).

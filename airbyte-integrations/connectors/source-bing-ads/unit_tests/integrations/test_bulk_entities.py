@@ -33,7 +33,7 @@ def bulk_accounts(requests_mock: Mocker, mock_auth_token: None, mock_user_query:
     )
 
 
-def _mock_downloads(requests_mock: Mocker, record_type: str, times: list[str], first_id: int = 100) -> None:
+def _mock_downloads(requests_mock: Mocker, record_type: str, times: list[str], first_id: int = 100, include_errors: bool = False) -> None:
     requests_mock.post(BULK_URL, json={"DownloadRequestId": "download-id"})
     requests_mock.post(
         STATUS_URL,
@@ -46,11 +46,16 @@ def _mock_downloads(requests_mock: Mocker, record_type: str, times: list[str], f
         "Ad Group": {"Campaign": "Example campaign", "Ad Group": "Example group", "Cpc Bid": "1.25"},
         "Responsive Search Ad": {"Campaign": "Example campaign", "Ad Group": "Example group", "Final Url": "https://example.com"},
     }[record_type]
+    if include_errors:
+        extra_fields.update({"Error": "", "Error Number": ""})
     writer.writerow(["Type", "Status", "Id", "Parent Id", "Modified Time", *extra_fields])
     writer.writerow(["Format Version", "", "", "", "", *["" for _ in extra_fields]])
     writer.writerow(["Account", "Active", "1", "", "", *["" for _ in extra_fields]])
     for index, time in enumerate(times):
         writer.writerow([record_type, "Deleted" if index == 0 else "Active", index + first_id, 50, time, *extra_fields.values()])
+    if include_errors:
+        error = {"Error": "CampaignServiceEditorialValidationError", "Error Number": "1042"}
+        writer.writerow([f"{record_type} Error", "", first_id, 50, "", *[error.get(field, "") for field in extra_fields]])
     requests_mock.get("https://example.com/bulk.csv", content=gzip.compress(data.getvalue().encode("utf-8-sig")))
 
 
@@ -141,6 +146,24 @@ def test_bulk_entities_resume_and_fall_back_after_30_days(
         third = _read(stream_name, config, SyncMode.incremental, _states(second))
         _assert_requests(requests_mock, entity, None)
         _assert_records_and_state(third, "2024-03-31T12:00:00.000+0000")
+
+
+@freeze_time("2024-02-26")
+@pytest.mark.parametrize("stream_name, entity, record_type", STREAMS)
+@pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
+def test_bulk_entities_skip_error_rows(
+    requests_mock: Mocker, bulk_accounts: None, config: dict, stream_name: str, entity: str, record_type: str, sync_mode: SyncMode
+) -> None:
+    _mock_downloads(requests_mock, record_type, ["02/24/2024 12:00:00.000", "02/25/2024 12:00:00.000"], include_errors=True)
+    output = _read(stream_name, config, sync_mode)
+    _assert_requests(requests_mock, entity, None)
+    assert not output.errors
+    records = _records(output)
+    assert sorted((record.data["Account Id"], record.data["Id"]) for record in records) == [(1, 100), (1, 101), (2, 100), (2, 101)]
+    assert all(record.data["Type"] == record_type for record in records)
+    assert sorted(record.data["Status"] for record in records) == ["Active", "Active", "Deleted", "Deleted"]
+    if sync_mode == SyncMode.incremental:
+        _assert_records_and_state(output, "2024-02-25T12:00:00.000+0000")
 
 
 @freeze_time("2024-02-26")

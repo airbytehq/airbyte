@@ -37,3 +37,9 @@ The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads who
 The Bulk API can return `Status: Deleted` records for explicitly deleted entities, but deleting a campaign or ad group does not produce deleted records for its children. The new `campaigns_bulk`, `ad_groups_bulk`, and `ads_bulk` streams preserve the API's records without synthesizing child deletions. Their flat CSV schemas are separate from the unchanged REST streams.
 
 **Why this matters:** Incremental ad-group and ad reads cannot identify every deletion without considering parent status or reconciling with a full snapshot. Do not assume a campaign deletion produces an ad-group or ad tombstone.
+
+## 6. Bulk Entity Downloads Include Diagnostic Error Rows
+
+The Bulk API can include companion rows whose `Type` ends in ` Error`, such as `Responsive Search Ad Error`. These rows can share an entity's `Id` and have an empty `Modified Time`. The new `campaigns_bulk`, `ad_groups_bulk`, and `ads_bulk` streams filter them out while retaining entity rows, including `Status: Deleted`. Existing bulk streams keep their original record filters.
+
+**Why this matters:** Emitting diagnostic rows as entities creates duplicate primary keys and records without a cursor. Filter by the record type, not by status or ID, so valid entities and tombstones are preserved.

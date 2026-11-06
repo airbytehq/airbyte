@@ -2854,6 +2854,9 @@ definitions:
       type: MinMaxDatetime
       datetime: "1970-01-01"
       datetime_format: "%Y-%m-%d"
+  bulk_entity_record_filter:
+    type: RecordFilter
+    condition: "{{ record['Type'] not in ['Format Version', 'Account'] and not (record.get('Type') or '').endswith(' Error') }}"
 
   transformations:
     # Shared by multiple performance report streams (account + ad)
@@ -6396,6 +6399,8 @@ dynamic_streams:
                 $ref: "#/schemas/budget"
           - name: campaigns_bulk
             DownloadEntities: ["Campaigns"]
+            record_filter:
+              $ref: "#/definitions/bulk_entity_record_filter"
             incremental_sync:
               $ref: "#/definitions/incremental_bulk_entity_datetime_cursor"
             schema_loader:
@@ -6404,6 +6409,8 @@ dynamic_streams:
                 $ref: "#/schemas/campaigns_bulk"
           - name: ad_groups_bulk
             DownloadEntities: ["AdGroups"]
+            record_filter:
+              $ref: "#/definitions/bulk_entity_record_filter"
             incremental_sync:
               $ref: "#/definitions/incremental_bulk_entity_datetime_cursor"
             schema_loader:
@@ -6412,6 +6419,8 @@ dynamic_streams:
                 $ref: "#/schemas/ad_groups_bulk"
           - name: ads_bulk
             DownloadEntities: ["Ads"]
+            record_filter:
+              $ref: "#/definitions/bulk_entity_record_filter"
             incremental_sync:
               $ref: "#/definitions/incremental_bulk_entity_datetime_cursor"
             schema_loader:
@@ -6431,6 +6440,10 @@ dynamic_streams:
           create_or_update: true
           field_path: ["incremental_sync"]
           value: "{{components_values.get('incremental_sync', stream_template_config['incremental_sync'])}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["retriever", "record_selector", "record_filter"]
+          value: "{{components_values.get('record_filter', stream_template_config['retriever']['record_selector']['record_filter'])}}"
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: ["schema_loader"]
