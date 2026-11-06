@@ -25,7 +25,7 @@ A module appears as a stream only if the Zoho CRM API returns module and field m
 | `currency`            | `number`     |                           |
 | `integer`             | `integer`    |                           |
 | `profileimage`        | `string`     |                           |
-| `picklist`            | `string`     | enum                      |
+| `picklist`            | `string`     |                           |
 | `textarea`            | `string`     |                           |
 | `website`             | `string`     | format: uri               |
 | `date`                | `string`     | format: date              |
@@ -45,6 +45,8 @@ A module appears as a stream only if the Zoho CRM API returns module and field m
 | `ALARM`               | `object`     |                           |
 
 Any other data type not listed in the table above will be treated as `string`.
+
+Picklist and multi-select picklist fields aren't restricted to the values currently defined in Zoho CRM. When you remove a value from a picklist, Zoho CRM keeps it on existing records, so the connector syncs whatever value the record holds.
 
 Auto-number fields are the one exception to that table: when the field has a prefix or suffix configured in Zoho CRM, its values are plain strings such as `INV-1042`, so the connector drops the `big_integer` type and syncs them as strings.
 
@@ -71,6 +73,8 @@ Most modules use `Modified_Time`. Modules that don't expose it, such as `Actions
 To read only changed records, the connector sends the stored cursor value in the `If-Modified-Since` request header, advanced by one second so the last record of the previous sync isn't read again. Zoho CRM returns `304 Not Modified` when nothing changed, which the connector treats as an empty page. If a record has no value in the cursor field, the connector emits the record but doesn't advance the stream's state.
 
 Every stream schema includes `id` and `Modified_Time`, even for modules that don't have a `Modified_Time` field. For those modules the column is always null, and the module's real cursor field carries the timestamp.
+
+`id` and `Modified_Time` are the only fields that stream schemas mark as required. Fields that Zoho CRM marks as mandatory in its field metadata aren't required in the stream schemas, so records that leave them empty still match the schema.
 
 #### Start date
 
@@ -119,7 +123,9 @@ For more information about available environments, please visit [this page](http
 
 Zoho CRM API calls consume credits, and each Zoho CRM edition has a credit limit in a 24-hour rolling window. Discovery is more expensive than it looks: the connector makes one call to list your modules, then two metadata calls per module (module metadata and field metadata). Take this into account when you set sync frequency. For the credit cost of each call, see [API limits](https://www.zoho.com/crm/developer/docs/api/v2/api-limits.html) in the Zoho CRM documentation.
 
-The **Zoho CRM Edition** you select controls how many metadata requests the connector makes in parallel while it builds the list of streams:
+When a request for records returns HTTP `429 Too Many Requests` or a `5xx` server error, the connector retries it before failing the sync.
+
+The connector detects your **Zoho CRM Edition** automatically from the Zoho organization API (`/crm/v2/org`), which requires the `ZohoCRM.org.READ` scope. The detected edition controls how many metadata requests the connector makes in parallel while it builds the list of streams:
 
 | Edition      | Parallel requests |
 | :----------- | :---------------- |
@@ -129,7 +135,12 @@ The **Zoho CRM Edition** you select controls how many metadata requests the conn
 | Enterprise   | 20                |
 | Ultimate     | 25                |
 
-Select the edition your Zoho CRM account actually uses. Selecting a higher edition than you have can push the connector past your account's concurrency limit.
+If the connector can't detect your edition, it falls back to a concurrency limit of 5 (the Free tier) and logs a warning that explains why. Common causes:
+
+- Your refresh token doesn't include the `ZohoCRM.org.READ` scope. Sources authenticated through Airbyte Cloud with connector version 0.2.0 didn't request this scope, so they fall into this group until you re-authenticate.
+- Zoho reports an edition name that isn't one of the five in the table. The warning includes the name Zoho returned.
+
+To skip detection, set **Max Concurrent Requests** to the number of parallel requests you want. Use this to raise the limit without re-authenticating, to match the limit Zoho lists for your plan in its [API limits](https://www.zoho.com/crm/developer/docs/api/v2/api-limits.html) table, or to throttle the connector when other integrations share the same Zoho API credits. A value higher than your account's concurrency limit can push the connector past what Zoho allows during discovery.
 
 ### Note about using the Zoho Developer Environment
 
@@ -139,12 +150,12 @@ The Zoho Developer environment API is inconsistent with production environment A
 
 There are two ways to authenticate, depending on where you run Airbyte. In both cases you also fill in these fields:
 
-| Field                | Required | Notes                                                                                                   |
-| :------------------- | :------- | :------------------------------------------------------------------------------------------------------ |
-| Data Center Location | Yes      | The region that hosts your Zoho CRM account: `US`, `AU`, `EU`, `IN`, `CN`, or `JP`                      |
-| Environment          | Yes      | `Production`, `Developer`, or `Sandbox`                                                                 |
-| Zoho CRM Edition     | Yes      | Sets the connector's request concurrency. See [Performance considerations](#performance-considerations) |
-| Start Date           | No       | See [Start date](#start-date)                                                                           |
+| Field                   | Required | Notes                                                                                      |
+| :---------------------- | :------- | :----------------------------------------------------------------------------------------- |
+| Data Center Location    | Yes      | The region that hosts your Zoho CRM account: `US`, `AU`, `EU`, `IN`, `CN`, or `JP`         |
+| Environment             | Yes      | `Production`, `Developer`, or `Sandbox`                                                    |
+| Start Date              | No       | See [Start date](#start-date)                                                              |
+| Max Concurrent Requests | No       | Overrides edition detection. See [Performance considerations](#performance-considerations) |
 
 ### Airbyte Cloud: sign in with Zoho
 
@@ -152,6 +163,7 @@ There are two ways to authenticate, depending on where you run Airbyte. In both 
 2. Select **Authenticate your Zoho CRM account** and sign in. Airbyte requests these read-only scopes:
    - `ZohoCRM.settings.modules.READ` and `ZohoCRM.settings.fields.READ`, to list your modules and their fields
    - `ZohoCRM.modules.READ` and `ZohoCRM.modules.custom.READ`, to read records from standard and custom modules
+   - `ZohoCRM.org.READ`, to detect your Zoho CRM edition and set the request concurrency
 3. Fill in the remaining fields and select **Set up source**.
 
 The flow stores only the refresh token in your source. The client ID and secret belong to Airbyte's Zoho app.
@@ -164,7 +176,7 @@ Create a Zoho API client and generate a refresh token yourself, then enter the *
 
 1. Log into https://api-console.zoho.com/
 2. Choose client
-3. Enter the scopes the refresh and access tokens cover. The connector reads module and field metadata, then reads records from each module, so grant `ZohoCRM.settings.modules.READ`, `ZohoCRM.settings.fields.READ`, `ZohoCRM.modules.READ`, and `ZohoCRM.modules.custom.READ` (or `ZohoCRM.modules.ALL` if you prefer a single module scope). **Make sure the scope covers every module you want to sync.** If the token lacks metadata access for a module, that module doesn't appear as a stream; if it lacks record access, the stream appears but the sync fails when it tries to read data.
+3. Enter the scopes the refresh and access tokens cover. The connector reads module and field metadata, reads records from each module, and detects the edition from the organization API, so grant `ZohoCRM.settings.modules.READ`, `ZohoCRM.settings.fields.READ`, `ZohoCRM.modules.READ`, `ZohoCRM.modules.custom.READ`, and `ZohoCRM.org.READ` (or `ZohoCRM.modules.ALL` if you prefer a single module scope for records). **Make sure the scope covers every module you want to sync.** If the token lacks metadata access for a module, that module doesn't appear as a stream; if it lacks record access, the stream appears but the sync fails when it tries to read data.
 4. Enter grant token's lifetime and description, click "Create".
 5. Copy Grant token, close the popup and copy Client ID and Client Secret on the "Client Secret" tab.
 
@@ -184,6 +196,16 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.4.0 | 2026-11-03 | [90861](https://github.com/airbytehq/airbyte/pull/90861) | Upgrade to Python 3.13 base image and airbyte-cdk 7; stop marking Zoho mandatory fields as required in stream schemas |
+| 0.3.8 | 2026-11-03 | [90811](https://github.com/airbytehq/airbyte/pull/90811) | Update dependencies |
+| 0.3.7 | 2026-11-02 | [88944](https://github.com/airbytehq/airbyte/pull/88944) | Stop declaring picklist values as a closed `enum` in stream schemas, as records keep values removed from a picklist |
+| 0.3.6 | 2026-10-27 | [90099](https://github.com/airbytehq/airbyte/pull/90099) | Update dependencies |
+| 0.3.5 | 2026-10-20 | [89462](https://github.com/airbytehq/airbyte/pull/89462) | Update dependencies |
+| 0.3.4 | 2026-10-13 | [88877](https://github.com/airbytehq/airbyte/pull/88877) | Update dependencies |
+| 0.3.3 | 2026-10-06 | [88089](https://github.com/airbytehq/airbyte/pull/88089) | Update dependencies |
+| 0.3.2 | 2026-09-29 | [87414](https://github.com/airbytehq/airbyte/pull/87414) | Update dependencies |
+| 0.3.1 | 2026-09-22 | [86874](https://github.com/airbytehq/airbyte/pull/86874) | Update dependencies |
+| 0.3.0 | 2026-09-21 | [86491](https://github.com/airbytehq/airbyte/pull/86491) | Auto-detect Zoho CRM edition from the organization API instead of the `edition` config field (defaulting to a concurrency limit of 5 when detection fails); add optional `max_concurrent_requests` override |
 | 0.2.0 | 2026-09-16 | [85833](https://github.com/airbytehq/airbyte/pull/85833) | Add `advanced_auth` with declarative OAuth (data-center-aware consent and token URLs) requesting Zoho's documented read scopes; document the OAuth and manual setup paths |
 | 0.1.6 | 2026-09-15 | [86301](https://github.com/airbytehq/airbyte/pull/86301) | Update dependencies |
 | 0.1.5 | 2026-08-25 | [79062](https://github.com/airbytehq/airbyte/pull/79062) | Update dependencies |

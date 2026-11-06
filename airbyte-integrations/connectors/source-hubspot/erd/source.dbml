@@ -1687,6 +1687,16 @@ Table "engagements_tasks" {
     "properties_hs_was_imported" boolean
 }
 
+Table "engagements_task_pipelines" {
+    "label" string
+    "displayOrder" integer
+    "id" string [pk]
+    "archived" boolean
+    "stages" array
+    "createdAt" string
+    "updatedAt" string
+}
+
 Table "forms" {
     "id" string [pk]
     "name" string

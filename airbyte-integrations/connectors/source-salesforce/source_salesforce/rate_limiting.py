@@ -105,8 +105,9 @@ class SalesforceErrorHandler(ErrorHandler):
             if response.status_code == 401:
                 error_code, _ = self._extract_error_code_and_message(response)
                 if error_code == "INVALID_SESSION_ID":
+                    refreshed = False
                     if self._token_provider is not None:
-                        self._token_provider.force_refresh()
+                        refreshed = self._token_provider.force_refresh()
                         if self._token_provider.credentials_permanently_failed:
                             # The session is dead and the grant cannot mint a new one; retrying
                             # floods the token endpoint from every stream.
@@ -118,7 +119,8 @@ class SalesforceErrorHandler(ErrorHandler):
                     return ErrorResolution(
                         ResponseAction.RETRY,
                         FailureType.transient_error,
-                        "Salesforce session expired or invalid. Token has been refreshed.",
+                        "Salesforce session expired or invalid. "
+                        + ("Token has been refreshed." if refreshed else "The token could not be refreshed."),
                     )
 
             if not (400 <= response.status_code < 500) or response.status_code in _RETRYABLE_400_STATUS_CODES:
@@ -129,15 +131,17 @@ class SalesforceErrorHandler(ErrorHandler):
                 )
 
             error_code, error_message = self._extract_error_code_and_message(response)
+            if error_code == "API_DISABLED_FOR_ORG" or "api is not enabled for this organization" in error_message.lower():
+                return ErrorResolution(
+                    ResponseAction.FAIL,
+                    FailureType.config_error,
+                    AUTHENTICATION_ERROR_MESSAGE_MAPPING["API_DISABLED_FOR_ORG"],
+                )
             if self._is_login_request(response):
                 return ErrorResolution(
                     ResponseAction.FAIL,
                     FailureType.config_error,
-                    (
-                        AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
-                        if error_message in AUTHENTICATION_ERROR_MESSAGE_MAPPING
-                        else f"An error occurred: {response.content.decode()}"
-                    ),
+                    self._login_error_message(error_code, error_message),
                 )
 
             if error_code == "INVALID_FIELD" and error_message != _BULK_COMPOUND_DATA_ERROR_MESSAGE:
@@ -169,11 +173,31 @@ class SalesforceErrorHandler(ErrorHandler):
                     'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.',
                 )
 
+        if not isinstance(response, requests.Response):
+            return ErrorResolution(
+                ResponseAction.RETRY,
+                FailureType.system_error,
+                f"Request for stream '{self._stream_name}' failed with {type(response).__name__}: {response}",
+            )
+
         return ErrorResolution(
             ResponseAction.FAIL,
             FailureType.system_error,
             f"An error occurred: {response.content.decode()}",
         )
+
+    @staticmethod
+    def _login_error_message(error_code: Optional[str], error_message: str) -> str:
+        description = error_message.lower()
+        if error_code == "LOGIN_MUST_USE_SECURITY_TOKEN" or any(
+            marker in description for marker in ("ip restricted", "restricted ip", "login_must_use_security_token")
+        ):
+            return AUTHENTICATION_ERROR_MESSAGE_MAPPING["ip_restricted"]
+        if error_code in ("invalid_client_id", "invalid_client"):
+            return AUTHENTICATION_ERROR_MESSAGE_MAPPING["invalid_client"]
+        if error_code == "invalid_grant" or "authentication failure" in description or "expired access/refresh token" in description:
+            return AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"]
+        return "Salesforce login failed. Re-authenticate the source and check the Connected App credentials and is_sandbox setting."
 
     def _handle_invalid_field(self, error_message: str) -> ErrorResolution:
         """`INVALID_FIELD` means the org can no longer resolve a field the query asks for: the field was
@@ -270,8 +294,8 @@ class SalesforceErrorHandler(ErrorHandler):
                 f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`"
             )
 
-            if "error" in response.json() and "error_description" in response.json():
-                return response.json()["error"], response.json()["error_description"]
+            if "error" in response.json():
+                return response.json()["error"], response.json().get("error_description") or ""
 
         return None, f"Unknown error on response `{response.content}`"
 
@@ -291,12 +315,13 @@ def default_backoff_handler(max_tries: int, retry_on=None):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
 
     def should_give_up(exc):
-        give_up = (
-            SalesforceErrorHandler().interpret_response(exc if exc.response is None else exc.response).response_action
-            != ResponseAction.RETRY
-        )
+        response_or_exception = exc if exc.response is None else exc.response
+        give_up = SalesforceErrorHandler().interpret_response(response_or_exception).response_action != ResponseAction.RETRY
         if give_up:
-            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}, body: {exc.response.text}")
+            if isinstance(response_or_exception, requests.Response):
+                logger.info(f"Giving up for returned HTTP status: {response_or_exception.status_code}, body: {response_or_exception.text}")
+            else:
+                logger.info(f"Giving up after {type(response_or_exception).__name__}: {response_or_exception}")
         return give_up
 
     return backoff.on_exception(

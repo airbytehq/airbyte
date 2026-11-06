@@ -52,7 +52,7 @@ data class ClickhouseConfiguration(
 class ClickhouseConfigurationFactory :
     DestinationConfigurationFactory<ClickhouseSpecification, ClickhouseConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: ClickhouseSpecification
+        pojo: ClickhouseSpecification,
     ): ClickhouseConfiguration {
         val protocol =
             when (pojo) {
@@ -77,7 +77,7 @@ class ClickhouseConfigurationFactory :
 
     fun makeWithOverrides(
         spec: ClickhouseSpecification,
-        overrides: Map<String, String> = emptyMap()
+        overrides: Map<String, String> = emptyMap(),
     ): ClickhouseConfiguration {
         val protocol =
             when (spec) {
@@ -96,8 +96,8 @@ class ClickhouseConfigurationFactory :
                 overrides.getOrDefault("enable_json", spec.enableJson.toString()).toBoolean(),
             tunnelConfig = spec.getTunnelMethodValue() ?: SshNoTunnelMethod,
             recordWindowSize = spec.recordWindowSize,
-            useReplicatedEngines = overrides["use_replicated_engines"]?.toBoolean()
-                    ?: spec.useReplicatedEngines,
+            useReplicatedEngines =
+                overrides["use_replicated_engines"]?.toBoolean() ?: spec.useReplicatedEngines,
             clusterName = overrides["cluster_name"] ?: spec.clusterName,
         )
     }

@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.write
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta
@@ -26,7 +25,6 @@ import org.apache.iceberg.types.Types
 
 private val logger = KotlinLogging.logger {}
 
-@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class S3DataLakeStreamLoader(
     private val icebergConfiguration: S3DataLakeConfiguration,
     override val stream: DestinationStream,
@@ -93,15 +91,11 @@ class S3DataLakeStreamLoader(
                     "names match columns in the incoming schema: ${renames.joinToString(", ")}. " +
                     "This usually means the 'Normalize Column Names' option was changed after the " +
                     "table was created. Clear this stream's data and run a full refresh so the " +
-                    "table is recreated with the new column names."
+                    "table is recreated with the new column names.",
             )
         }
     }
 
-    @SuppressFBWarnings(
-        "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
-        "something about the `table` lateinit var is confusing spotbugs"
-    )
     override suspend fun start() {
         val properties = s3DataLakeUtil.toCatalogProperties(config = icebergConfiguration)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
@@ -110,7 +104,7 @@ class S3DataLakeStreamLoader(
             icebergUtil.createTable(
                 streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
-                schema = incomingSchema
+                schema = incomingSchema,
             )
         failOnNormalizationRenames(table.schema())
 
@@ -185,10 +179,6 @@ class S3DataLakeStreamLoader(
         removeStagingBranch()
     }
 
-    @SuppressFBWarnings(
-        "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
-        justification = "Kotlin lateinit table access confuses spotbugs"
-    )
     private fun removeStagingBranch() {
         if (!this::table.isInitialized || !stagingBranchCreated) {
             return

@@ -37,7 +37,7 @@ class DestinationCatalogTest {
                                 .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                 .withNamespace("namespace1")
                                 .withName("name1")
-                                .withIsFileBased(false)
+                                .withIsFileBased(false),
                         ),
                     ConfiguredAirbyteStream()
                         .withSyncId(12)
@@ -48,11 +48,12 @@ class DestinationCatalogTest {
                         .withStream(
                             AirbyteStream()
                                 .withJsonSchema(
-                                    """{"type": "object", "properties": {"id1": {"type": "integer"}, "id2": {"type": "integer"}, "cursor": {"type": "integer"}}, "additionalProperties": false}""".deserializeToNode()
+                                    """{"type": "object", "properties": {"id1": {"type": "integer"}, "id2": {"type": "integer"}, "cursor": {"type": "integer"}}, "additionalProperties": false}"""
+                                        .deserializeToNode(),
                                 )
                                 .withNamespace("namespace2")
                                 .withName("name2")
-                                .withIsFileBased(true)
+                                .withIsFileBased(true),
                         )
                         .withPrimaryKey(listOf(listOf("id1"), listOf("id2")))
                         .withCursorField(listOf("cursor")),
@@ -67,7 +68,7 @@ class DestinationCatalogTest {
                                 .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                 .withNamespace("namespace3")
                                 .withName("name3")
-                                .withIsFileBased(false)
+                                .withIsFileBased(false),
                         ),
                     ConfiguredAirbyteStream()
                         .withSyncId(12)
@@ -78,11 +79,12 @@ class DestinationCatalogTest {
                         .withStream(
                             AirbyteStream()
                                 .withJsonSchema(
-                                    """{"type": "object", "properties": {"id1": {"type": "integer"}, "id2": {"type": "integer"}, "cursor": {"type": "integer"}}, "additionalProperties": false}""".deserializeToNode()
+                                    """{"type": "object", "properties": {"id1": {"type": "integer"}, "id2": {"type": "integer"}, "cursor": {"type": "integer"}}, "additionalProperties": false}"""
+                                        .deserializeToNode(),
                                 )
                                 .withNamespace("namespace4")
                                 .withName("name4")
-                                .withIsFileBased(true)
+                                .withIsFileBased(true),
                         )
                         .withPrimaryKey(listOf(listOf("id1"), listOf("id2")))
                         .withCursorField(listOf("cursor")),
@@ -94,7 +96,7 @@ class DestinationCatalogTest {
         val streamFactory =
             DestinationStreamFactory(
                 JsonSchemaToAirbyteType(JsonSchemaToAirbyteType.UnionBehavior.DEFAULT),
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val catalogFactory = DefaultDestinationCatalogFactory()
         val destinationCatalog =
@@ -103,7 +105,7 @@ class DestinationCatalogTest {
                 streamFactory,
                 operation = "write",
                 checkNamespace = null,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         assertEquals(originalCatalog, destinationCatalog.asProtocolObject())
     }
@@ -126,9 +128,9 @@ class DestinationCatalogTest {
                                 "z" to FieldType(StringType, nullable = true),
                                 "y" to FieldType(BooleanType, nullable = true),
                                 "x" to FieldType(IntegerType, nullable = true),
-                            )
+                            ),
                     ),
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val expectedOrderedSchema =
             arrayOf(
@@ -138,7 +140,7 @@ class DestinationCatalogTest {
             )
         assertEquals(
             expectedOrderedSchema.toList(),
-            stream.airbyteValueProxyFieldAccessors.toList()
+            stream.airbyteValueProxyFieldAccessors.toList(),
         )
     }
 
@@ -170,7 +172,7 @@ class DestinationCatalogTest {
                             schema = ObjectType(linkedMapOf()),
                             namespaceMapper = NamespaceMapper(),
                         ),
-                    )
+                    ),
                 )
             }
         assertEquals("Some streams appeared multiple times: [foo]", e.message)
@@ -193,13 +195,13 @@ class DestinationCatalogTest {
                             includeFiles = false,
                             schema = ObjectType(linkedMapOf()),
                             namespaceMapper = NamespaceMapper(),
-                        )
-                    )
+                        ),
+                    ),
                 )
             }
         assertEquals(
             "For stream foo: A primary key column does not exist in the schema: id",
-            e.message
+            e.message,
         )
     }
 
@@ -223,16 +225,16 @@ class DestinationCatalogTest {
                             includeFiles = false,
                             schema =
                                 ObjectType(
-                                    linkedMapOf("id" to FieldType(IntegerType, nullable = true))
+                                    linkedMapOf("id" to FieldType(IntegerType, nullable = true)),
                                 ),
                             namespaceMapper = NamespaceMapper(),
-                        )
-                    )
+                        ),
+                    ),
                 )
             }
         assertEquals(
             "For stream foo: The cursor does not exist in the schema: updated_at",
-            e.message
+            e.message,
         )
     }
 }

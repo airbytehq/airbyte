@@ -1,0 +1,2 @@
+# Client-certificate keystores that the SSL tests write into the project directory.
+userkeystore_*.p12

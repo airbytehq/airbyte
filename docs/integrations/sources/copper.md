@@ -79,8 +79,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.3.3 | 2024-04-18 | [37145](https://github.com/airbytehq/airbyte/pull/37145) | Manage dependencies with Poetry. |
 | 0.3.2 | 2024-04-15 | [37145](https://github.com/airbytehq/airbyte/pull/37145) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.1 | 2024-04-12 | [37145](https://github.com/airbytehq/airbyte/pull/37145) | schema descriptions |
-| 0.3.0   | 2023-08-10 | [**\***](https://github.com/airbytehq/airbyte/pull/*****) | Migrate to low code                                                             |
-| 0.2.0   | 2023-04-17 | [24824](https://github.com/airbytehq/airbyte/pull/24824)  | Add `opportunities` stream                                                      |
-| 0.1.0   | 2022-11-17 | [18848](https://github.com/airbytehq/airbyte/pull/18848)  | 🎉 New Source: Copper [python cdk]                                              |
+| 0.3.0 | 2023-08-10 | [**\***](https://github.com/airbytehq/airbyte/pull/*****) | Migrate to low code |
+| 0.2.1 | 2023-08-24 | [29494](https://github.com/airbytehq/airbyte/pull/29494) | Fix schemas and tests |
+| 0.2.0 | 2023-04-17 | [24824](https://github.com/airbytehq/airbyte/pull/24824) | Add `opportunities` stream |
+| 0.1.0 | 2022-11-17 | [18848](https://github.com/airbytehq/airbyte/pull/18848) | 🎉 New Source: Copper [python cdk] |
 
 </details>

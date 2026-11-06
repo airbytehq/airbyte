@@ -9,7 +9,9 @@ import io.airbyte.cdk.ConnectorErrorException
 import io.airbyte.cdk.command.ConfigurationSpecification
 
 interface DestinationConfigurationFactory<
-    I : ConfigurationSpecification, O : DestinationConfiguration> {
+    I : ConfigurationSpecification,
+    O : DestinationConfiguration,
+> {
     fun makeWithoutExceptionHandling(pojo: I): O
 
     /** Wraps [makeWithoutExceptionHandling] exceptions in [ConfigErrorException]. */

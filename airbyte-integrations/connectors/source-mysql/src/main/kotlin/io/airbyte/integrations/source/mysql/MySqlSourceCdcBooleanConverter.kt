@@ -29,7 +29,7 @@ class MySqlSourceCdcBooleanConverter : RelationalColumnCustomConverter {
         override val partialConverters: List<PartialConverter> =
             listOf(
                 NullFallThrough,
-                PartialConverter { if (it is Number) Converted(it != 0) else NoConversion }
+                PartialConverter { if (it is Number) Converted(it != 0) else NoConversion },
             )
     }
 }

@@ -146,8 +146,7 @@ class RagieClient:
         log_data = f" data_keys: {list(data.keys())}" if data else ""
         log_files = f" files_keys: {list(files.keys())}" if files else ""
         log_params = f" params: {params}" if params else ""
-        # Log effective headers *before* the request
-        logger.debug(f"Making {method} request to {full_url}{log_params}{log_json}{log_data}{log_files} with headers: {request_headers}")
+        logger.debug(f"Making {method} request to {full_url}{log_params}{log_json}{log_data}{log_files}")
 
         try:
             response = self.session.request(
