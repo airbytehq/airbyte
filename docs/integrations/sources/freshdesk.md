@@ -90,7 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| 4.0.0 | 2026-11-06 | | Normalize SLA policy IDs to integers so they match ticket references; see the [migration guide](freshdesk-migrations.md#upgrading-to-400). |
+| 4.0.0 | 2026-11-06 | [91183](https://github.com/airbytehq/airbyte/pull/91183) | Normalize SLA policy IDs to integers so they match ticket references; see the [migration guide](freshdesk-migrations.md#upgrading-to-400). |
 | 3.3.13 | 2026-11-03 | [90355](https://github.com/airbytehq/airbyte/pull/90355) | Show the stream-specific error message when Freshdesk returns 401 Unauthorized. |
 | 3.3.12 | 2026-11-03 | [90556](https://github.com/airbytehq/airbyte/pull/90556) | Update dependencies |
 | 3.3.11 | 2026-10-27 | [89767](https://github.com/airbytehq/airbyte/pull/89767) | Show clear error messages when the satisfaction_ratings or surveys streams return 403 because the Freshdesk plan lacks the Surveys feature. |
