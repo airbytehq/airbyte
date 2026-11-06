@@ -37,7 +37,7 @@ class S3DataLakeAggregate(
         val wrappedRecord =
             RecordWrapper(
                 delegate = icebergUtil.toIcebergRecord(record.fields, schema),
-                operation = icebergUtil.getOperation(record.fields, stream.tableSchema.importType)
+                operation = icebergUtil.getOperation(record.fields, stream.tableSchema.importType),
             )
 
         writer.write(wrappedRecord)

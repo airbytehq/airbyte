@@ -36,7 +36,7 @@ internal class AsyncFlush(
     // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
     // freed earlier similar to a sliding window effect
     override val optimalBatchSizeBytes: Long,
-    private val destinationColumns: JavaBaseConstants.DestinationColumns
+    private val destinationColumns: JavaBaseConstants.DestinationColumns,
 ) : DestinationFlushFunction {
 
     @Throws(Exception::class)
@@ -47,7 +47,7 @@ internal class AsyncFlush(
                 CsvSerializedBuffer(
                     FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
                     StagingDatabaseCsvSheetGenerator(destinationColumns),
-                    true
+                    true,
                 )
 
             // reassign as lambdas require references to be final.
@@ -64,7 +64,7 @@ internal class AsyncFlush(
                         // Destinations that want to use generations should switch to the new
                         // structure (e.g. StagingStreamOperations)
                         0,
-                        record.record!!.emittedAt
+                        record.record!!.emittedAt,
                     )
                 } catch (e: Exception) {
                     throw RuntimeException(e)
@@ -81,7 +81,7 @@ internal class AsyncFlush(
         require(streamDescToWriteConfig.containsKey(streamDescriptor)) {
             String.format(
                 "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
-                Jsons.serialize(catalog)
+                Jsons.serialize(catalog),
             )
         }
 
@@ -94,7 +94,7 @@ internal class AsyncFlush(
                 schemaName,
                 writeConfig.streamName,
                 writeConfig.rawTableName,
-                writeConfig.writeDatetime
+                writeConfig.writeDatetime,
             )
         try {
             val stagedFile =
@@ -103,7 +103,7 @@ internal class AsyncFlush(
                     writer,
                     schemaName,
                     stageName,
-                    stagingPath
+                    stagingPath,
                 )
             GeneralStagingFunctions.copyIntoTableFromStage(
                 database,

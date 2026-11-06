@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from collections import Mapping
+from collections.abc import Mapping
 
 from destination_kvdb.client import KvDbClient
 

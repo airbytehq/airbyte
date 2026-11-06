@@ -22,13 +22,13 @@ interface ProcessFactory {
      * @param imageName Docker image name to start the process from.
      * @param usesIsolatedPool whether to use isolated pool to run the jobs.
      * @param files File name to contents map that will be written into the working dir of the
-     * process prior to execution.
+     *   process prior to execution.
      * @param entrypoint If not null, the default entrypoint program of the docker image can be
-     * changed by this argument.
+     *   changed by this argument.
      * @param resourceRequirements CPU and RAM to assign to the created process.
      * @param labels Labels to assign to the created Kube pod, if any. Ignore for docker.
      * @param jobMetadata Job metadata that will be passed to the created process as environment
-     * variables.
+     *   variables.
      * @param additionalEnvironmentVariables
      * @param args Arguments to pass to the docker image being run in the new process.
      * @return ProcessBuilder object to run the process.
@@ -51,7 +51,7 @@ interface ProcessFactory {
         jobMetadata: Map<String, String>,
         portMapping: Map<Int?, Int?>?,
         additionalEnvironmentVariables: Map<String, String>,
-        vararg args: String
+        vararg args: String,
     ): Process
 
     companion object {
@@ -69,7 +69,7 @@ interface ProcessFactory {
             jobType: String?,
             jobId: String,
             attempt: Int,
-            lenLimit: Int
+            lenLimit: Int,
         ): String {
             var imageName = extractShortImageName(fullImagePath)
             val randSuffix = RandomStringUtils.randomAlphabetic(5).lowercase(Locale.getDefault())
@@ -102,7 +102,7 @@ interface ProcessFactory {
          * or gcr.io/my-project/my-project:v2.
          *
          * @param fullImagePath the image name with repository and version ex
-         * gcr.io/my-project/image-name:v2
+         *   gcr.io/my-project/image-name:v2
          * @return the image name without the repo and version, ex. image-name
          */
         fun extractShortImageName(fullImagePath: String): String {
