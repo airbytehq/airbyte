@@ -68,7 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
-| 1.1.53 | 2026-11-05 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Persist rotated OAuth refresh tokens and refresh the access token on `expiredAccessToken` errors so long syncs no longer fail with 401 |
+| 1.1.53 | 2026-11-05 | [91179](https://github.com/airbytehq/airbyte/pull/91179) | Persist rotated OAuth refresh tokens and refresh the access token on `expiredAccessToken` errors so long syncs no longer fail with 401 |
 | 1.1.52 | 2026-11-03 | [90625](https://github.com/airbytehq/airbyte/pull/90625) | Update dependencies |
 | 1.1.51 | 2026-10-27 | [90022](https://github.com/airbytehq/airbyte/pull/90022) | Update dependencies |
 | 1.1.49 | 2026-10-20 | [89347](https://github.com/airbytehq/airbyte/pull/89347) | Update dependencies |
