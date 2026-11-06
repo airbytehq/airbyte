@@ -15,8 +15,7 @@ from unit_tests.conftest import get_source
 def test_read_booking(booking_ids):
     config = {"start_date": "2026-09-03", "auth_hash": "test-auth-hash", "restid": "123"}
     bookings = [
-        {"id": booking_id, "date": config["start_date"], "amount": 2, "guest": {"id": booking_id + 100}}
-        for booking_id in booking_ids
+        {"id": booking_id, "date": config["start_date"], "amount": 2, "guest": {"id": booking_id + 100}} for booking_id in booking_ids
     ]
     request = HttpRequest(
         url="https://app.waiteraid.com/wa-api/searchBooking",
