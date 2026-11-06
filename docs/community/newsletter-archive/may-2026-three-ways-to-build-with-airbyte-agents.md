@@ -3,7 +3,7 @@ sidebar_label: "May 2026: Airbyte's agentic platform: A New Era for Airbyte"
 ---
 # Airbyte's agentic platform: A New Era for Airbyte
 
-_Published May 5, 2026. [View on airbyte.com](https://airbyte.com/community/newsletter/may-2026-three-ways-to-build-with-airbyte-agents)._
+_Published May 5, 2026._
 
 [![Airbyte's agentic platform](https://airbyte.com/images/community/newsletter/bodies/external/may-2026-three-ways-to-build-with-airbyte-agents/01kqt946qh2ad8c9x6xcez46zj-a8f0d2e32d.jpg)](https://airbyte.com/blog/airbyte-agents)
 

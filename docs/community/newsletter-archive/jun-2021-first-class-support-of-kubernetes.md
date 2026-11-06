@@ -3,7 +3,7 @@ sidebar_label: "Jun 2021: First-Class Support of Kubernetes"
 ---
 # First-Class Support of Kubernetes
 
-_Published June 22, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/jun-2021-first-class-support-of-kubernetes)._
+_Published June 22, 2021._
 
 Here are the community news and product updates of the past week.
 

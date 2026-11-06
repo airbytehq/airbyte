@@ -3,7 +3,7 @@ sidebar_label: "Jan 2021: Connectors' health status + OKRs Q1 21"
 ---
 # Connectors' health status + OKRs Q1 21
 
-_Published January 20, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/jan-2021-connectors-health-status-okrs-q1-21)._
+_Published January 20, 2021._
 
 Here are the community news and product updates of the past week.
 

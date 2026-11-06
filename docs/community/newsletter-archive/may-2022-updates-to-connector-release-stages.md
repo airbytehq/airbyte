@@ -3,7 +3,7 @@ sidebar_label: "May 2022: Updates to Connector Release Stages"
 ---
 # Updates to Connector Release Stages
 
-_Published May 5, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/may-2022-updates-to-connector-release-stages)._
+_Published May 5, 2022._
 
 Monthly**Bytes**
 

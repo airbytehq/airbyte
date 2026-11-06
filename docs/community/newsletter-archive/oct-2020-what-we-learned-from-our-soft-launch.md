@@ -3,7 +3,7 @@ sidebar_label: "Oct 2020: What we learned from our soft launch"
 ---
 # What we learned from our soft launch
 
-_Published October 8, 2020. [View on airbyte.com](https://airbyte.com/community/newsletter/oct-2020-what-we-learned-from-our-soft-launch)._
+_Published October 8, 2020._
 
 Here are the community news and product updates of the past week.
 

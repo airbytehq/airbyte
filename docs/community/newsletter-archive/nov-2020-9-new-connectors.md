@@ -3,7 +3,7 @@ sidebar_label: "Nov 2020: 9 new connectors!"
 ---
 # 9 new connectors!
 
-_Published November 23, 2020. [View on airbyte.com](https://airbyte.com/community/newsletter/nov-2020-9-new-connectors)._
+_Published November 23, 2020._
 
 Here are the community news and product updates of the past week.
 

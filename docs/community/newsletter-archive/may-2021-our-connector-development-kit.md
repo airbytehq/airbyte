@@ -3,7 +3,7 @@ sidebar_label: "May 2021: Our Connector Development Kit"
 ---
 # Our Connector Development Kit
 
-_Published May 12, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/may-2021-our-connector-development-kit)._
+_Published May 12, 2021._
 
 Here are the community news and product updates of the past week.
 

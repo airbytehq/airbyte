@@ -3,7 +3,7 @@ sidebar_label: "Oct 2021: A New License to Future Proof the Commoditization of D
 ---
 # A New License to Future Proof the Commoditization of Data Integration!
 
-_Published October 7, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/oct-2021-a-new-license-to-future-proof-the-commoditization-of-data-integration)._
+_Published October 7, 2021._
 
 Here are the community news and product updates of the past week.
 

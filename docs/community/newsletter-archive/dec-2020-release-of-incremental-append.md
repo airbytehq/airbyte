@@ -3,7 +3,7 @@ sidebar_label: "Dec 2020: Release of Incremental - Append!"
 ---
 # Release of Incremental - Append!
 
-_Published December 17, 2020. [View on airbyte.com](https://airbyte.com/community/newsletter/dec-2020-release-of-incremental-append)._
+_Published December 17, 2020._
 
 Here are the community news and product updates of the past week.
 

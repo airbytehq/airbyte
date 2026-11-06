@@ -3,7 +3,7 @@ sidebar_label: "May 2021: Our Series-A round with Benchmark"
 ---
 # Our Series-A round with Benchmark
 
-_Published May 26, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/may-2021-our-series-a-round-with-benchmark)._
+_Published May 26, 2021._
 
 Here are the community news and product updates of the past week.
 

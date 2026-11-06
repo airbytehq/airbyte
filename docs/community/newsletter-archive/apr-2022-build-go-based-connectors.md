@@ -3,7 +3,7 @@ sidebar_label: "Apr 2022: Build Go based connectors"
 ---
 # Build Go based connectors
 
-_Published April 1, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/apr-2022-build-go-based-connectors)._
+_Published April 1, 2022._
 
 Monthly**Bytes**
 

@@ -3,7 +3,7 @@ sidebar_label: "Dec 2021: Connector reliability as the primary focus"
 ---
 # Connector reliability as the primary focus
 
-_Published December 6, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/dec-2021-connector-reliability-as-the-primary-focus)._
+_Published December 6, 2021._
 
 Monthly**Bytes**
 

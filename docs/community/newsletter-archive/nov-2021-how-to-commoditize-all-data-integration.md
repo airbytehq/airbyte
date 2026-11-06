@@ -3,7 +3,7 @@ sidebar_label: "Nov 2021: How to Commoditize All Data Integration"
 ---
 # How to Commoditize All Data Integration
 
-_Published November 3, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/nov-2021-how-to-commoditize-all-data-integration)._
+_Published November 3, 2021._
 
 Here are the community news and product updates of the past week.
 

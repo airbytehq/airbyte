@@ -3,7 +3,7 @@ sidebar_label: "Jun 2022: Our progress in 2022"
 ---
 # Our progress in 2022
 
-_Published June 2, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/jun-2022-our-progress-in-2022)._
+_Published June 2, 2022._
 
 Monthly**Bytes**
 

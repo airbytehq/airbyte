@@ -3,7 +3,7 @@ sidebar_label: "Apr 2022: Airbyte Public Roadmap"
 ---
 # Airbyte Public Roadmap
 
-_Published April 13, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/apr-2022-airbyte-public-roadmap)._
+_Published April 13, 2022._
 
 ## Launch week wrap-up
 

@@ -3,7 +3,7 @@ sidebar_label: "Jun 2026: Team workspaces for agentic data"
 ---
 # Team workspaces for agentic data
 
-_Published June 17, 2026. [View on airbyte.com](https://airbyte.com/community/newsletter/jun-2026-airbyte-agents-now-supports-teams)._
+_Published June 17, 2026._
 
 ![Airbyte](https://airbyte.com/images/community/newsletter/bodies/external/jun-2026-airbyte-agents-now-supports-teams/01kv6gnm669a5bdwcy9b4r01r6-aed9de910b.png)
 

@@ -3,7 +3,7 @@ sidebar_label: "Feb 2022: The Deck We Used to Raise Our Series-B"
 ---
 # The Deck We Used to Raise Our Series-B
 
-_Published February 3, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/feb-2022-the-deck-we-used-to-raise-our-series-b)._
+_Published February 3, 2022._
 
 Monthly**Bytes**
 

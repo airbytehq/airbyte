@@ -3,7 +3,7 @@ sidebar_label: "Mar 2022: Airbyte's First Launch Week"
 ---
 # Airbyte's First Launch Week
 
-_Published March 3, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/mar-2022-airbytes-first-launch-week)._
+_Published March 3, 2022._
 
 [](https://airbyte.com/)
 

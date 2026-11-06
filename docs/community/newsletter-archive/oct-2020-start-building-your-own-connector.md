@@ -3,7 +3,7 @@ sidebar_label: "Oct 2020: Start building your own connector"
 ---
 # Start building your own connector
 
-_Published October 20, 2020. [View on airbyte.com](https://airbyte.com/community/newsletter/oct-2020-start-building-your-own-connector)._
+_Published October 20, 2020._
 
 Here are the community news and product updates of the past week.
 

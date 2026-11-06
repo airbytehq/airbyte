@@ -3,7 +3,7 @@ sidebar_label: "Dec 2025: Launching Agent connectors!"
 ---
 # Launching Agent connectors!
 
-_Published December 16, 2025. [View on airbyte.com](https://airbyte.com/community/newsletter/dec-2025-airbyte-agent-connectors)._
+_Published December 16, 2025._
 
 ![Airbyte](https://airbyte.com/images/community/newsletter/bodies/external/dec-2025-airbyte-agent-connectors/octavia-hand-banner-8d48dd08c6.jpg)
 

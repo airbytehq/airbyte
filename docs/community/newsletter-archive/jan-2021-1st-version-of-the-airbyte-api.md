@@ -3,7 +3,7 @@ sidebar_label: "Jan 2021: 1st version of the Airbyte API"
 ---
 # 1st version of the Airbyte API
 
-_Published January 18, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/jan-2021-1st-version-of-the-airbyte-api)._
+_Published January 18, 2021._
 
 Here are the community news and product updates of the past week.
 

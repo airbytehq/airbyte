@@ -3,7 +3,7 @@ sidebar_label: "Jul 2021: Welcome to Airbyte Recipes"
 ---
 # Welcome to Airbyte Recipes
 
-_Published July 22, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/jul-2021-welcome-to-airbyte-recipes)._
+_Published July 22, 2021._
 
 Here are the community news and product updates of the past week.
 

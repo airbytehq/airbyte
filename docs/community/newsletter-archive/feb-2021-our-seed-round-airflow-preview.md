@@ -3,7 +3,7 @@ sidebar_label: "Feb 2021: Our Seed Round + Airflow preview"
 ---
 # Our Seed Round + Airflow preview
 
-_Published February 12, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/feb-2021-our-seed-round-airflow-preview)._
+_Published February 12, 2021._
 
 Here are the community news and product updates of the past week.
 

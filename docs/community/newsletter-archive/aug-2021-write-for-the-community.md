@@ -3,7 +3,7 @@ sidebar_label: "Aug 2021: Write for the community!"
 ---
 # Write for the community!
 
-_Published August 11, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/aug-2021-write-for-the-community)._
+_Published August 11, 2021._
 
 Here are the community news and product updates of the past week.
 

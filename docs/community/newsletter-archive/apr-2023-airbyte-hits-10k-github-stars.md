@@ -3,7 +3,7 @@ sidebar_label: "Apr 2023: Airbyte Hits 10k GitHub Stars ⭐️"
 ---
 # Airbyte Hits 10k GitHub Stars ⭐️
 
-_Published April 6, 2023. [View on airbyte.com](https://airbyte.com/community/newsletter/apr-2023-airbyte-hits-10k-github-stars)._
+_Published April 6, 2023._
 
 April 2023
 

@@ -3,7 +3,7 @@ sidebar_label: "Apr 2021: Official Airflow Provider"
 ---
 # Official Airflow Provider
 
-_Published April 13, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/apr-2021-official-airflow-provider)._
+_Published April 13, 2021._
 
 Here are the community news and product updates of the past week.
 

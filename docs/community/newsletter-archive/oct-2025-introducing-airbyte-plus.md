@@ -3,7 +3,7 @@ sidebar_label: "Oct 2025: Introducing Airbyte Plus"
 ---
 # Introducing Airbyte Plus
 
-_Published October 30, 2025. [View on airbyte.com](https://airbyte.com/community/newsletter/oct-2025-introducing-airbyte-plus)._
+_Published October 30, 2025._
 
 ![Airbyte](https://airbyte.com/images/community/newsletter/bodies/external/oct-2025-introducing-airbyte-plus/1761684918073-header-thumbnail-01k8p9n405j534rg6pe4r5swk1-41a73448bb.png)
 

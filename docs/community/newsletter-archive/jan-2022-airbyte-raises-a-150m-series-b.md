@@ -3,7 +3,7 @@ sidebar_label: "Jan 2022: Airbyte Raises a $150M Series-B"
 ---
 # Airbyte Raises a $150M Series-B
 
-_Published January 7, 2022. [View on airbyte.com](https://airbyte.com/community/newsletter/jan-2022-airbyte-raises-a-150m-series-b)._
+_Published January 7, 2022._
 
 Monthly**Bytes**
 

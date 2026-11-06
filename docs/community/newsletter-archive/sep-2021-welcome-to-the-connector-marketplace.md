@@ -3,7 +3,7 @@ sidebar_label: "Sep 2021: Welcome to the Connector Marketplace!"
 ---
 # Welcome to the Connector Marketplace!
 
-_Published September 14, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/sep-2021-welcome-to-the-connector-marketplace)._
+_Published September 14, 2021._
 
 Here are the community news and product updates of the past week.
 

@@ -3,7 +3,7 @@ sidebar_label: "Jun 2021: How We Raised our Series-A with Benchmark"
 ---
 # How We Raised our Series-A with Benchmark
 
-_Published June 10, 2021. [View on airbyte.com](https://airbyte.com/community/newsletter/jun-2021-how-we-raised-our-series-a-with-benchmark)._
+_Published June 10, 2021._
 
 Here are the community news and product updates of the past week.
 

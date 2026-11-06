@@ -3,7 +3,7 @@ sidebar_label: "Feb 2026: Airbyte agentic data platform is now in public beta"
 ---
 # Airbyte agentic data platform is now in public beta
 
-_Published February 26, 2026. [View on airbyte.com](https://airbyte.com/community/newsletter/feb-2026-context-store)._
+_Published February 26, 2026._
 
 ![Airbyte](https://airbyte.com/images/community/newsletter/bodies/external/feb-2026-context-store/header-thumbnail-3x-1-optimized-feb-19-2026-4-33-36-pm-01khw7erw7mctcskgsxhb0ns41-446b847619.png)
 

@@ -3,7 +3,7 @@ sidebar_label: "Jul 2026: Agents can now write to Salesforce and HubSpot"
 ---
 # Agents can now write to Salesforce and HubSpot
 
-_Published July 16, 2026. [View on airbyte.com](https://airbyte.com/community/newsletter/jul-2026-agents-can-now-write-to-salesforce-and-hubspot)._
+_Published July 16, 2026._
 
 ![Airbyte](https://airbyte.com/images/community/newsletter/bodies/external/jul-2026-agents-can-now-write-to-salesforce-and-hubspot/01kxkea50g45v08r924e781ga3-4f9acdf09d.png)
 
