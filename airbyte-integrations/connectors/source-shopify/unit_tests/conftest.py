@@ -4,7 +4,7 @@
 
 import logging
 import os
-from json import dumps
+from json import dumps, loads
 from typing import Any, List, Mapping
 
 import pytest
@@ -772,6 +772,36 @@ def product_variants_jsonl_content_example():
 
 
 @pytest.fixture
+def product_variants_with_bundle_jsonl_content_example(product_variants_jsonl_content_example: str) -> str:
+    records = [loads(line) for line in product_variants_jsonl_content_example.splitlines()]
+    records[0]["requiresComponents"] = True
+    records[2]["requiresComponents"] = False
+    components = [
+        {
+            "__typename": "ProductVariantComponent",
+            "id": "gid://shopify/ProductVariantComponent/101",
+            "quantity": 2,
+            "productVariant": {
+                "component_variant_id": "gid://shopify/ProductVariant/201",
+                "product": {"component_product_id": "gid://shopify/Product/301"},
+            },
+            "__parentId": "gid://shopify/ProductVariant/40091751448765",
+        },
+        {
+            "__typename": "ProductVariantComponent",
+            "id": "gid://shopify/ProductVariantComponent/102",
+            "quantity": 3,
+            "productVariant": {
+                "component_variant_id": "gid://shopify/ProductVariant/202",
+                "product": {"component_product_id": "gid://shopify/Product/302"},
+            },
+            "__parentId": "gid://shopify/ProductVariant/40091751448765",
+        },
+    ]
+    return "\n".join(dumps(record) for record in [*records[:2], *components, *records[2:]]) + "\n"
+
+
+@pytest.fixture
 def inventory_items_jsonl_content_example():
     return """{"__typename":"InventoryItem","id":"gid:\/\/shopify\/InventoryItem\/44871665713341","harmonizedSystemCode":null,"provinceCodeOfOrigin":null,"updatedAt":"2023-04-14T10:29:27Z","createdAt":"2023-04-14T10:29:27Z","sku":"","tracked":true,"requiresShipping":false,"duplicateSkuCount":0,"unitCost":{"cost":"60.0","currency_code":"USD"},"countryCodeOfOrigin":null}
 {"__typename":"InventoryItem","id":"gid:\/\/shopify\/InventoryItem\/45419395743933","harmonizedSystemCode":"330510","provinceCodeOfOrigin":null,"updatedAt":"2023-12-11T10:37:41Z","createdAt":"2023-12-11T10:37:41Z","sku":"123","tracked":true,"requiresShipping":true,"duplicateSkuCount":0,"unitCost":{"cost":"29.0","currency_code":"USD"},"countryCodeOfOrigin":"UA"}\n"""
@@ -1088,6 +1118,7 @@ def product_variants_response_expected_result():
             "old_inventory_quantity": 2,
             "admin_graphql_api_id": "gid://shopify/ProductVariant/41561955827901",
             "presentment_prices": [{"price": {"amount": 19.0, "currency_code": "USD"}, "compare_at_price": {"amount": None}}],
+            "product_variant_components": [],
             "product_id": 6796220989629,
             "inventory_item_id": 43653682495677,
             "image_id": None,
@@ -1119,6 +1150,7 @@ def product_variants_response_expected_result():
             "old_inventory_quantity": 6,
             "admin_graphql_api_id": "gid://shopify/ProductVariant/40091751448765",
             "presentment_prices": [{"price": {"amount": 64.0, "currency_code": "USD"}, "compare_at_price": {"amount": None}}],
+            "product_variant_components": [],
             "product_id": 6796825198781,
             "inventory_item_id": 42186366255293,
             "image_id": None,
