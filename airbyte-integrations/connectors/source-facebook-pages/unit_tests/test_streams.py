@@ -266,3 +266,34 @@ def test_invalid_insights_metric_error_is_not_retried():
     # An invalid metric is permanent, so the filter must be evaluated before the blanket 400 retry.
     blanket_400_index = next(i for i, f in enumerate(response_filters) if f.get("http_codes") == [400])
     assert response_filters.index(invalid_metric_filter) < blanket_400_index
+
+
+def test_page_access_token_is_exchanged_once_per_sync():
+    pages = [
+        {
+            "json": {
+                "data": [{"id": f"1_{i}", "message": f"post {i}", "created_time": "2024-01-01T00:00:00+0000"}],
+                "paging": {"cursors": {"after": f"cursor{i}"}, "next": f"{FEED_URL}?after=cursor{i}"},
+            },
+            "status_code": 200,
+        }
+        for i in range(4)
+    ]
+    pages.append(
+        {
+            "json": {"data": [{"id": "1_4", "message": "post 4", "created_time": "2024-01-01T00:00:00+0000"}], "paging": {}},
+            "status_code": 200,
+        }
+    )
+
+    with rm.Mocker() as m:
+        token_request = m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        feed_request = m.get(FEED_URL, pages)
+
+        output = read_from_stream(CONFIG, "post", SyncMode.full_refresh)
+
+        assert len(output.records) == 5
+        assert feed_request.call_count == 5
+        assert token_request.call_count == 1, "The page access token should be exchanged once per sync, not once per request"
+        for req in feed_request.request_history:
+            assert parse_qs(urlparse(req.url).query)["access_token"] == ["access"]

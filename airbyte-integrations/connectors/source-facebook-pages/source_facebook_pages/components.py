@@ -27,11 +27,15 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
     def __post_init__(self, parameters: Mapping[str, Any]):
         self._page_id = InterpolatedString.create(self.page_id, parameters=parameters).eval(self.config)
         self._access_token = InterpolatedString.create(self.access_token, parameters=parameters).eval(self.config)
+        self._page_access_token: Optional[str] = None
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         """Attach the page access token to params to authenticate on the HTTP request"""
-        page_access_token = self.generate_page_access_token()
-        request.prepare_url(url=request.url, params={"access_token": page_access_token})
+        # The exchanged Page token is valid for the whole sync, so exchange it once
+        # instead of before every Graph API request.
+        if self._page_access_token is None:
+            self._page_access_token = self.generate_page_access_token()
+        request.prepare_url(url=request.url, params={"access_token": self._page_access_token})
         return request
 
     def generate_page_access_token(self) -> str:
@@ -64,6 +68,9 @@ class CustomFieldTransformation(RecordTransformation):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.name = parameters.get("name")
+        # The schema never changes during a sync, so resolve the date-time paths once
+        # rather than re-reading the schema file for every record.
+        self._date_time_paths = self._get_date_time_dpath_from_schema()
 
     def _get_schema_root_properties(self):
         schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
@@ -83,8 +90,7 @@ class CustomFieldTransformation(RecordTransformation):
         """
         Transform 'date-time' items to RFC3339 format
         """
-        date_time_paths = self._get_date_time_dpath_from_schema()
-        for path in date_time_paths:
+        for path in self._date_time_paths:
             if "*" not in path:
                 if field_value := dpath.util.get(record, path, default=None):
                     dpath.util.set(record, path, pendulum.parse(field_value).to_rfc3339_string())
