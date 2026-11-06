@@ -167,6 +167,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.10 | 2026-11-05 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Use a single global cursor for the `messages` stream so stale per-account state no longer causes full history re-reads |
 | 1.1.9 | 2026-11-03 | [90752](https://github.com/airbytehq/airbyte/pull/90752) | Update dependencies |
 | 1.1.8 | 2026-10-27 | [90064](https://github.com/airbytehq/airbyte/pull/90064) | Update dependencies |
 | 1.1.7 | 2026-10-20 | [89453](https://github.com/airbytehq/airbyte/pull/89453) | Update dependencies |

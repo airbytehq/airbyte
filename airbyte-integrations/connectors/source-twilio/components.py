@@ -83,6 +83,36 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioMessagesStateMigration(StateMigration):
+    """
+    Migrate legacy per-account `messages` state to a single global cursor.
+
+    Prefer the existing global `state.date_sent`; otherwise use the earliest
+    partition cursor so no account's unread messages are skipped.
+    Preserve lookback and parent state, but discard per-partition cursors.
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and "states" in stream_state and stream_state.get("use_global_cursor") is not True
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor = stream_state.get("state", {}).get("date_sent")
+        if not cursor:
+            cursors = [
+                state["cursor"]["date_sent"]
+                for state in stream_state.get("states", [])
+                if state.get("cursor", {}).get("date_sent")
+            ]
+            cursor = min(cursors, key=datetime.fromisoformat) if cursors else None
+        if not cursor:
+            return {}
+        migrated = {"use_global_cursor": True, "state": {"date_sent": cursor}}
+        for key in ("lookback_window", "parent_state"):
+            if key in stream_state:
+                migrated[key] = stream_state[key]
+        return migrated
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
