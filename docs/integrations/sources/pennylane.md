@@ -69,7 +69,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 1.0.0 | 2026-11-06 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate to Pennylane API v2, add nested invoice streams and accounting streams, and replace `plan_items` and `customer_estimates`. |
+| 1.0.0 | 2026-11-06 | [91193](https://github.com/airbytehq/airbyte/pull/91193) | Migrate to Pennylane API v2, add nested invoice streams and accounting streams, and replace `plan_items` and `customer_estimates`. |
 | 0.3.52 | 2026-11-03 | [90689](https://github.com/airbytehq/airbyte/pull/90689) | Update dependencies |
 | 0.3.51 | 2026-10-27 | [90031](https://github.com/airbytehq/airbyte/pull/90031) | Update dependencies |
 | 0.3.50 | 2026-10-20 | [89272](https://github.com/airbytehq/airbyte/pull/89272) | Update dependencies |
