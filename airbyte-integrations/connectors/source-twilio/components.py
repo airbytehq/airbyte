@@ -98,11 +98,7 @@ class TwilioMessagesStateMigration(StateMigration):
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         cursor = stream_state.get("state", {}).get("date_sent")
         if not cursor:
-            cursors = [
-                state["cursor"]["date_sent"]
-                for state in stream_state.get("states", [])
-                if state.get("cursor", {}).get("date_sent")
-            ]
+            cursors = [state["cursor"]["date_sent"] for state in stream_state.get("states", []) if state.get("cursor", {}).get("date_sent")]
             cursor = min(cursors, key=datetime.fromisoformat) if cursors else None
         if not cursor:
             return {}
