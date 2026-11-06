@@ -57,9 +57,9 @@ class ChannelRecordFilter(RecordFilter):
         def selected(record: Mapping[str, Any]) -> bool:
             if not self.config.get("include_external_shared_channels", True) and record.get("is_ext_shared", False):
                 return False
-            if any(fnmatchcase(record["name"], pattern) for pattern in self.config.get("channel_exclude_filter", [])):
+            if any(fnmatchcase(record["name"], pattern) for pattern in self.config.get("channel_exclude_filter") or []):
                 return False
-            include = self.config.get("channel_filter", [])
+            include = self.config.get("channel_filter") or []
             return not include or any(fnmatchcase(record["name"], pattern) for pattern in include)
 
         yield from super().filter_records((record for record in records if selected(record)), stream_state, stream_slice, next_page_token)
