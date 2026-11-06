@@ -177,7 +177,7 @@ Webinar streams require the Zoom Webinars add-on, and `zoom_events` requires a W
 - If Zoom returns code `4711`, the access token lacks a required scope. Add the missing scope from [Required scopes](#required-scopes) to the Zoom app and re-authenticate if you use OAuth2.0. Streams that ignore HTTP `400` responses return no records instead of reporting missing scopes.
 - If Zoom rejects an expired access token with code `124`, the connector refreshes the token and retries the request.
 - Zoom returns active users for the account. Meetings and webinars for inactive or pending users are not synced.
-- `zoom_events` requests hosted events (`role_type=host`) with upcoming, past, draft, and cancelled statuses. It does not request attendee-ticketed events (`role_type=attendee`).
+- `zoom_events` requests hosted events using `role_type=host` and includes upcoming, past, draft, and cancelled events. It doesn't request attendee-ticketed events, which use `role_type=attendee`.
 - Zoom's meeting and webinar list endpoints return scheduled, unexpired meetings and webinars. Instant or expired meetings and webinars, and their registrants, polls, and webinar reports, are not returned. `report_meetings` and `report_meeting_participants` read past meeting sessions from `report_user_meetings`, so they include instant and ended meetings.
 - If a user cannot host or schedule meetings, Zoom can return code `3161`; the connector skips that user's meeting partition instead of failing the sync.
 - If a meeting or webinar was deleted or no longer has report data, Zoom can return code `3001`; the connector skips that resource.
