@@ -35,6 +35,7 @@ data:
           stream names and schemas change, and existing API tokens may need v2 scopes. Follow the
           migration guide, then reset your streams.
         upgradeDeadline: "2027-02-05"
+        deadlineAction: disable
   tags:
     - language:manifest-only
     - cdk:low-code
