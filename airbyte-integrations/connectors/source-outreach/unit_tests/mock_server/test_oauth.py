@@ -5,13 +5,14 @@ from copy import deepcopy
 from urllib.parse import urlencode
 
 import pytest
+from freezegun import freeze_time
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-from freezegun import freeze_time
-
 from unit_tests.conftest import get_source
+
 
 TOKEN_URL = "https://api.outreach.io/oauth/token"
 MAILINGS_URL = "https://api.outreach.io/api/v2/mailings"

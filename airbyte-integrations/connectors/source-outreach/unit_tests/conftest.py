@@ -6,6 +6,7 @@ from pathlib import Path
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 
+
 _CONNECTOR_DIR = Path(__file__).parent.parent
 _CI_DIR = Path("/airbyte/integration_code/source_declarative_manifest")
 if _CI_DIR.exists():
