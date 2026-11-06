@@ -124,6 +124,10 @@ The exact set of permissions varies depending on the Oracle database instance ve
 
 #### CDC against an Active Data Guard read-only standby
 
+:::warning Experimental
+This feature is **experimental**. It builds on Debezium's physical-standby capture support, which Debezium marks as incubating: "The ability to use the connector with a physical standby is in an incubating state and can change without notice." Semantics and configuration options may change in future connector releases.
+:::
+
 The connector can run CDC against an Active Data Guard (ADG) read-only physical standby instead of the primary, keeping both the initial load and the log mining workload off the primary database. Configure the connection's host to point at the standby and, in the CDC update method, set the **Instance Type** to _Active Data Guard read-only standby_.
 
 Prerequisites, in addition to the regular CDC setup on the primary (archive logging, database-level and table-level supplemental logging, user grants — all of which replicate to the standby through the redo stream):
@@ -324,7 +328,7 @@ The connector is still incubating, this section only exists to satisfy Airbyte's
 
 | Version | Date       | Pull Request                                                   | Subject                                               |
 |:--------|:-----------|:---------------------------------------------------------------|:------------------------------------------------------|
-| 0.1.7   | 2026-11-06 | [479](https://github.com/airbytehq/airbyte-enterprise/pull/479) | CDC from an Active Data Guard read-only physical standby (opt-in instance type) |
+| 0.1.7   | 2026-11-06 | [479](https://github.com/airbytehq/airbyte-enterprise/pull/479) | CDC from an Active Data Guard read-only physical standby (opt-in instance type, experimental) |
 | 0.1.6   | 2026-11-06 | [478](https://github.com/airbytehq/airbyte-enterprise/pull/478) | Debezium 3.7.1.Final and Bulk CDK 1.2.3 (critical CVE fixes); groundwork for Active Data Guard standby CDC |
 | 0.1.5   | 2026-10-28 | [473](https://github.com/airbytehq/airbyte-enterprise/pull/473) | Bulk CDK 1.1.22, explicit Debezium 3.4.1 dependency pins |
 | 0.1.4   | 2026-06-16 | [443](https://github.com/airbytehq/airbyte-enterprise/pull/443) | Make CDC heartbeat timeout configurable via `initial_waiting_seconds` |
