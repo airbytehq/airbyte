@@ -114,8 +114,17 @@ data:
     - title: Zoom API reference
       url: https://developers.zoom.us/docs/api/
       type: api_reference
-    - title: Zoom OpenAPI specification
-      url: https://raw.githubusercontent.com/zoom/api/master/openapi.v2.json
+    - title: Zoom Users API OpenAPI specification
+      url: https://developers.zoom.us/api/zoap/users/methods/
+      type: openapi_spec
+    - title: Zoom Meetings API OpenAPI specification
+      url: https://developers.zoom.us/api/zoap/meetings/methods/
+      type: openapi_spec
+    - title: Zoom Team Chat API OpenAPI specification
+      url: https://developers.zoom.us/api/zoap/chat/methods/
+      type: openapi_spec
+    - title: Zoom Events API OpenAPI specification
+      url: https://developers.zoom.us/api/zoap/events/methods/
       type: openapi_spec
     - title: Zoom API changelog
       url: https://developers.zoom.us/changelog/

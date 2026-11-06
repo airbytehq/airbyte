@@ -13144,7 +13144,7 @@ streams:
           type:
           - 'null'
           - string
-        groupid:
+        groupId:
           type:
           - 'null'
           - string
