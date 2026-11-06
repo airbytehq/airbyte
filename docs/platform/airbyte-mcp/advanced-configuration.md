@@ -4,7 +4,7 @@ products: cloud
 
 # Advanced Airbyte MCP configuration
 
-The hosted [Airbyte MCP](readme.md) works without any extra configuration. These optional request headers let you narrow which tools your agent can see and use, or set a default workspace. They apply to the hosted server at `https://mcp.airbyte.com/mcp`. If your client can't send custom headers, like Claude, you can turn on read-only mode or insiders tools with [URL parameters](#url-parameters) instead.
+The hosted [Airbyte MCP](readme.md) works without any extra configuration. These optional request headers let you narrow which tools your agent can see and use, or set a default workspace. They apply to the hosted server at `https://mcp.airbyte.com/mcp`. If your client can't send custom headers, like Claude, some settings are also available as [URL parameters](#url-parameters).
 
 Your MCP client still controls tool approval. Most clients can require your approval before tools that change data, using each tool's read-only, destructive, and open-world annotations.
 
@@ -30,19 +30,17 @@ Headers can only hide tools and customize tool behaviors. They can't give your a
 
 ## URL parameters
 
-Some clients, like Claude, can't send custom headers. To use read-only mode or insiders tools with these clients, add the `read-only` or `insiders` parameter to the server URL:
+Some clients, like Claude, can't send custom headers. Some settings also accept a URL parameter, which you add to the server URL instead of sending a header. For example:
 
 ```text
 https://mcp.airbyte.com/mcp?read-only=true
-https://mcp.airbyte.com/mcp?insiders=true
 ```
 
-To use both, join them with `&`, like `https://mcp.airbyte.com/mcp?read-only=true&insiders=true`.
-
-- `read-only` works like the `X-MCP-Readonly-Mode` header and accepts `true`, `false`, `1`, or `0`, in any case. If you set both, the header takes precedence.
-- The Airbyte MCP rejects the request with an error if the value isn't one of these, or if the name is a common misspelling, like `readonly` or `read_only`. An empty value, like `?read-only=`, is ignored and leaves read-only mode off.
-- `insiders` works like the `X-MCP-Insiders` header and accepts `true`, `false`, `1`, `0`, `yes`, or `no`, in any case. If you set both, the header takes precedence. The Airbyte MCP rejects the request with an error if the value isn't one of these.
-- The Airbyte MCP ignores other URL parameters. All other settings on this page are only available as headers.
+- Each setting's section on this page names its URL parameter, if it has one. All other settings are only available as headers.
+- Parameter names and values aren't case sensitive. To set more than one parameter, join them with `&`.
+- If you set both a header and its URL parameter, the header takes precedence.
+- The Airbyte MCP rejects the request with an error if a value isn't one the parameter accepts. An empty value, like `?read-only=`, is ignored.
+- The Airbyte MCP ignores URL parameters it doesn't recognize.
 
 ## Tool restrictions
 
@@ -50,23 +48,32 @@ To use both, join them with `&`, like `https://mcp.airbyte.com/mcp?read-only=tru
 | :------------------------------ | :---------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `X-MCP-Allow-Pipeline-Changes`  | `1` (enabled), `0` (disabled) | Enabled by default. When set to `0`, hides tools that create, update, rename, or delete sources, destinations, and connections. Running and cancelling syncs stay available. |
 | `X-MCP-Allow-External-Access`   | `1` (enabled), `0` (disabled) | Enabled by default. When set to `0`, hides tools that read data directly from sources and destinations, like SQL and API passthrough queries.                                |
-| `X-MCP-Readonly-Mode`           | `1` (enabled), `0` (disabled) | Disabled by default. When set to `1`, shows only read-only tools. In addition to restricting pipeline edits, this setting also hides tools for running and cancelling syncs. |
 | `X-MCP-Allow-Destructive-Tools` | `1` (enabled), `0` (disabled) | Enabled by default. When set to `0`, hides destructive tools, like deleting a source, destination, or connection.                                                            |
 | `X-MCP-Exclude-Tools`           | Comma-separated tool names    | When set, hides the named tools. For tool names, see [Airbyte MCP tools](tools.md).                                                                                          |
 | `X-MCP-Include-Modules`         | Comma-separated modules       | When set, shows only tools from these modules: `cloud`, `registry`, `guidance`, `interactive`. Can't be combined with `X-MCP-Exclude-Modules`.                               |
 | `X-MCP-Exclude-Modules`         | Comma-separated modules       | When set, hides tools from these modules. Can't be combined with `X-MCP-Include-Modules`.                                                                                    |
 
-`X-MCP-Allow-Pipeline-Changes`, `X-MCP-Allow-External-Access`, and `X-MCP-Allow-Destructive-Tools` also accept `true` or `yes` for `1`, and `false` or `no` for `0`. `X-MCP-Readonly-Mode` also accepts `true` for `1`.
+`X-MCP-Allow-Pipeline-Changes`, `X-MCP-Allow-External-Access`, and `X-MCP-Allow-Destructive-Tools` also accept `true` or `yes` for `1`, and `false` or `no` for `0`.
 
-## Insiders tools
+## Read-only mode
 
-Insiders tools are new tools that are still in development, like the Connector Builder project tools. They're hidden by default.
+Read-only mode shows only read-only tools. In addition to restricting pipeline edits, it hides tools for running and cancelling syncs.
 
-| Header           | Allowed values                | Effect                                                                                                                        |
-| :--------------- | :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
-| `X-MCP-Insiders` | `1` (enabled), `0` (disabled) | Disabled by default. When set to `1`, shows insiders tools. You can also use the `insiders` [URL parameter](#url-parameters). |
+| Header                | URL parameter | Allowed values                | Effect                                                         |
+| :-------------------- | :------------ | :---------------------------- | :------------------------------------------------------------- |
+| `X-MCP-Readonly-Mode` | `read-only`   | `1` (enabled), `0` (disabled) | Disabled by default. When set to `1`, turns on read-only mode. |
 
-`1` can also be written as `true` or `yes`, and `0` as `false` or `no`. Insiders tools follow the same tool restrictions as other tools. For example, read-only mode still hides insiders tools that change data.
+The header also accepts `true` for `1`. The URL parameter accepts `true`, `false`, `1`, or `0`. The Airbyte MCP rejects common misspellings of the URL parameter, like `readonly` or `read_only`, with an error.
+
+## Insiders mode
+
+Insiders mode shows insiders tools, which are new tools that are still in development, like the Connector Builder project tools. Insiders tools are hidden by default.
+
+| Header           | URL parameter | Allowed values                | Effect                                                        |
+| :--------------- | :------------ | :---------------------------- | :------------------------------------------------------------ |
+| `X-MCP-Insiders` | `insiders`    | `1` (enabled), `0` (disabled) | Disabled by default. When set to `1`, turns on insiders mode. |
+
+`1` can also be written as `true` or `yes`, and `0` as `false` or `no`, for both the header and the URL parameter. Insiders tools follow the same tool restrictions as other tools. For example, read-only mode still hides insiders tools that change data.
 
 ## Delete guard
 
