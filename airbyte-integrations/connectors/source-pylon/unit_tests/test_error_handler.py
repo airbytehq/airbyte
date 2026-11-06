@@ -25,13 +25,38 @@ def error_handler(manifest_path: Path) -> DefaultErrorHandler:
     )
 
 
+@pytest.fixture
+def thread_error_handler(manifest_path: Path):
+    manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(manifest_path.read_text()))
+    definition = manifest["definitions"]["issue_threads_error_handler"]
+    return ModelToComponentFactory().create_component(model_type=models.CompositeErrorHandler, component_definition=definition, config={})
+
+
 def test_streams_use_the_shared_default_error_handler(manifest_path: Path) -> None:
     manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(manifest_path.read_text()))
     for stream in manifest["streams"]:
         requester = stream["retriever"]["requester"]
-        assert requester["error_handler"] == manifest["definitions"]["error_handler"], stream["name"]
+        if stream["name"] == "issue_threads":
+            assert requester["error_handler"] == manifest["definitions"]["issue_threads_error_handler"]
+            assert requester["error_handler"]["error_handlers"][-1] == manifest["definitions"]["error_handler"]
+        else:
+            assert requester["error_handler"] == manifest["definitions"]["error_handler"], stream["name"]
         assert requester["connect_timeout_in_seconds"] == 30
         assert requester["read_timeout_in_seconds"] == 300
+
+
+@pytest.mark.parametrize("status", [200, 400, 401, 403, 404, 429, 500, 502, 503, 504])
+@pytest.mark.parametrize("code", [None, "wrong_region_token", "organization_deactivated", "organization_suspended", "synthetic_error"])
+def test_thread_handler_preserves_shared_classification(error_handler, thread_error_handler, status, code) -> None:
+    response = requests.Response()
+    response.status_code = status
+    response._content = json.dumps({"code": code} if code is not None else {}).encode()
+    if status == 400 and code is None:
+        assert thread_error_handler.interpret_response(response).response_action == ResponseAction.RETRY
+    else:
+        assert thread_error_handler.interpret_response(response) == error_handler.interpret_response(response)
+    assert thread_error_handler.max_retries == 5
+    assert thread_error_handler.backoff_strategies == error_handler.backoff_strategies
 
 
 @pytest.mark.parametrize(

@@ -70,9 +70,13 @@ does need registry network access, independently of offline spec and discover.
 - **Thread parent echo:** the OpenAPI marks `issue_threads.issue_id` required.
   Tests also remove it from synthetic responses to prove the connector projects
   the parent ID defensively. They do not establish that a live response omits it.
-- **Deleted parents and 404:** the documented unknown-path meaning does not
-  establish a deleted-parent contract. Child 404 tests prove failure rather than
-  silent skipping, not how Pylon behaves if a parent disappears during a sync.
+- **Missing parents and 400/404:** the documented unknown-path meaning of 404 does
+  not establish a deleted-parent contract. Reported thread failures also include
+  a 400 without an error code; its cause is not established by the public docs.
+  Only issue-thread requests retry uncoded 400 responses, up to five retries,
+  then fail. Coded 400s and all child 404s still fail without retrying or skipping.
+  Tests do not establish whether deletion, permissions or another service issue
+  caused a live failure.
 - **Retry timing:** the [rate-limit documentation](https://docs.usepylon.com/pylon-docs/developer/api/rate-limits.md)
   and OpenAPI 429 response headers document both retry headers. Retry-After is
   the wait before the next request can succeed; X-Retry-After is the longer wait
