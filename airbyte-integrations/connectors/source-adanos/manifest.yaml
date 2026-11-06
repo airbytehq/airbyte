@@ -1,0 +1,584 @@
+version: 6.61.6
+
+type: DeclarativeSource
+
+description: >-
+  Sync stock and crypto market sentiment from Adanos into a data warehouse.
+  The connector supports Reddit, X / FinTwit, financial news, and Polymarket
+  for stocks, and Reddit for crypto assets.
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 90
+          interval: PT1M
+      matchers: []
+
+check:
+  type: CheckStream
+  stream_names:
+    - trending_assets
+
+definitions:
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "{{ config['api_key'] }}"
+    inject_into:
+      type: RequestOption
+      field_name: X-API-Key
+      inject_into: header
+
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+          - 500
+          - 502
+          - 503
+          - 504
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 2
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.adanos.org/
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      $ref: "#/definitions/error_handler"
+
+  symbol_router:
+    type: ListPartitionRouter
+    values: "{{ config['symbols'] }}"
+    cursor_field: symbol
+
+  mentions_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      field_name: offset
+      inject_into: request_parameter
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 100
+    stop_condition: "{{ response.get('results', []) | length < 100 }}"
+
+  schemas:
+    asset_sentiment:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        asset_symbol:
+          type: string
+        asset_type:
+          type: string
+        source:
+          type: string
+        period_from:
+          type: string
+          format: date
+        period_to:
+          type: string
+          format: date
+        ticker:
+          type:
+            - string
+            - "null"
+        symbol:
+          type:
+            - string
+            - "null"
+        company_name:
+          type:
+            - string
+            - "null"
+        name:
+          type:
+            - string
+            - "null"
+        found:
+          type:
+            - boolean
+            - "null"
+        buzz_score:
+          type:
+            - number
+            - "null"
+        mentions:
+          type:
+            - integer
+            - "null"
+        sentiment_score:
+          type:
+            - number
+            - "null"
+        bullish_pct:
+          type:
+            - integer
+            - "null"
+        bearish_pct:
+          type:
+            - integer
+            - "null"
+        trend:
+          type:
+            - string
+            - "null"
+        period_days:
+          type:
+            - integer
+            - "null"
+        daily_trend:
+          type:
+            - array
+            - "null"
+          items:
+            type: object
+            additionalProperties: true
+        top_mentions:
+          type:
+            - array
+            - "null"
+          items:
+            type: object
+            additionalProperties: true
+
+    asset_mention:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        asset_symbol:
+          type: string
+        asset_type:
+          type: string
+        source:
+          type: string
+        period_from:
+          type: string
+          format: date
+        period_to:
+          type: string
+          format: date
+        text_snippet:
+          type:
+            - string
+            - "null"
+        created_utc:
+          type:
+            - string
+            - "null"
+          format: date-time
+        sentiment_score:
+          type:
+            - number
+            - "null"
+        sentiment_label:
+          type:
+            - string
+            - "null"
+        upvotes:
+          type:
+            - integer
+            - "null"
+        author:
+          type:
+            - string
+            - "null"
+        url:
+          type:
+            - string
+            - "null"
+
+    trending_asset:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        asset_type:
+          type: string
+        source:
+          type: string
+        period_from:
+          type: string
+          format: date
+        period_to:
+          type: string
+          format: date
+        ticker:
+          type:
+            - string
+            - "null"
+        symbol:
+          type:
+            - string
+            - "null"
+        company_name:
+          type:
+            - string
+            - "null"
+        name:
+          type:
+            - string
+            - "null"
+        buzz_score:
+          type:
+            - number
+            - "null"
+        mentions:
+          type:
+            - integer
+            - "null"
+        sentiment_score:
+          type:
+            - number
+            - "null"
+        bullish_pct:
+          type:
+            - integer
+            - "null"
+        bearish_pct:
+          type:
+            - integer
+            - "null"
+        trend:
+          type:
+            - string
+            - "null"
+        trend_history:
+          type:
+            - array
+            - "null"
+          items:
+            type: number
+
+    market_sentiment:
+      type: object
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      properties:
+        asset_type:
+          type: string
+        source:
+          type: string
+        period_from:
+          type: string
+          format: date
+        period_to:
+          type: string
+          format: date
+        buzz_score:
+          type:
+            - number
+            - "null"
+        sentiment_score:
+          type:
+            - number
+            - "null"
+        bullish_pct:
+          type:
+            - integer
+            - "null"
+        bearish_pct:
+          type:
+            - integer
+            - "null"
+        mentions:
+          type:
+            - integer
+            - "null"
+        active_tickers:
+          type:
+            - integer
+            - "null"
+        trend:
+          type:
+            - string
+            - "null"
+        trend_history:
+          type:
+            - array
+            - "null"
+          items:
+            type: number
+        drivers:
+          type:
+            - array
+            - "null"
+          items:
+            type: object
+            additionalProperties: true
+
+  streams:
+    asset_sentiment:
+      type: DeclarativeStream
+      name: asset_sentiment
+      primary_key:
+        - asset_symbol
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            {{ 'reddit/crypto/v1/token/' ~ stream_slice.symbol
+               if config['asset_type'] == 'crypto'
+               else config['stock_source'] ~ '/stocks/v1/stock/' ~ stream_slice.symbol }}
+          request_parameters:
+            from: "{{ config['start_date'] }}"
+            to: "{{ now_utc().strftime('%Y-%m-%d') }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: NoPagination
+        partition_router:
+          $ref: "#/definitions/symbol_router"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - asset_symbol
+              value: "{{ stream_slice.symbol | upper }}"
+            - path:
+                - asset_type
+              value: "{{ config['asset_type'] }}"
+            - path:
+                - source
+              value: "{{ 'reddit' if config['asset_type'] == 'crypto' else config['stock_source'] }}"
+            - path:
+                - period_from
+              value: "{{ config['start_date'] }}"
+            - path:
+                - period_to
+              value: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/definitions/schemas/asset_sentiment"
+
+    asset_mentions:
+      type: DeclarativeStream
+      name: asset_mentions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            {{ 'reddit/crypto/v1/token/' ~ stream_slice.symbol ~ '/mentions'
+               if config['asset_type'] == 'crypto'
+               else config['stock_source'] ~ '/stocks/v1/stock/' ~ stream_slice.symbol ~ '/mentions' }}
+          request_parameters:
+            from: "{{ config['start_date'] }}"
+            to: "{{ now_utc().strftime('%Y-%m-%d') }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          $ref: "#/definitions/mentions_paginator"
+        partition_router:
+          $ref: "#/definitions/symbol_router"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - asset_symbol
+              value: "{{ stream_slice.symbol | upper }}"
+            - path:
+                - asset_type
+              value: "{{ config['asset_type'] }}"
+            - path:
+                - source
+              value: "{{ 'reddit' if config['asset_type'] == 'crypto' else config['stock_source'] }}"
+            - path:
+                - period_from
+              value: "{{ config['start_date'] }}"
+            - path:
+                - period_to
+              value: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/definitions/schemas/asset_mention"
+
+    trending_assets:
+      type: DeclarativeStream
+      name: trending_assets
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            {{ 'reddit/crypto/v1/trending'
+               if config['asset_type'] == 'crypto'
+               else config['stock_source'] ~ '/stocks/v1/trending' }}
+          request_parameters:
+            from: "{{ config['start_date'] }}"
+            to: "{{ now_utc().strftime('%Y-%m-%d') }}"
+            limit: "100"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: NoPagination
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - asset_type
+              value: "{{ config['asset_type'] }}"
+            - path:
+                - source
+              value: "{{ 'reddit' if config['asset_type'] == 'crypto' else config['stock_source'] }}"
+            - path:
+                - period_from
+              value: "{{ config['start_date'] }}"
+            - path:
+                - period_to
+              value: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/definitions/schemas/trending_asset"
+
+    market_sentiment:
+      type: DeclarativeStream
+      name: market_sentiment
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            {{ 'reddit/crypto/v1/market-sentiment'
+               if config['asset_type'] == 'crypto'
+               else config['stock_source'] ~ '/stocks/v1/market-sentiment' }}
+          request_parameters:
+            from: "{{ config['start_date'] }}"
+            to: "{{ now_utc().strftime('%Y-%m-%d') }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: NoPagination
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - asset_type
+              value: "{{ config['asset_type'] }}"
+            - path:
+                - source
+              value: "{{ 'reddit' if config['asset_type'] == 'crypto' else config['stock_source'] }}"
+            - path:
+                - period_from
+              value: "{{ config['start_date'] }}"
+            - path:
+                - period_to
+              value: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/definitions/schemas/market_sentiment"
+
+streams:
+  - $ref: "#/definitions/streams/asset_sentiment"
+  - $ref: "#/definitions/streams/asset_mentions"
+  - $ref: "#/definitions/streams/trending_assets"
+  - $ref: "#/definitions/streams/market_sentiment"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - asset_type
+      - symbols
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: Your Adanos API key from https://adanos.org/register.
+        airbyte_secret: true
+        order: 0
+      asset_type:
+        type: string
+        title: Asset Type
+        description: Sync stocks or crypto assets in this connection.
+        enum:
+          - stock
+          - crypto
+        default: stock
+        order: 1
+      stock_source:
+        type: string
+        title: Stock Sentiment Source
+        description: Source used for stocks. Crypto always uses Reddit.
+        enum:
+          - reddit
+          - x
+          - news
+          - polymarket
+        default: reddit
+        order: 2
+      symbols:
+        type: array
+        title: Asset Symbols
+        description: Stock tickers or crypto symbols to sync.
+        minItems: 1
+        maxItems: 100
+        uniqueItems: true
+        items:
+          type: string
+          pattern: "^[A-Za-z0-9$.-]+$"
+        examples:
+          -
+            - AAPL
+            - NVDA
+        order: 3
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          Inclusive UTC start date. Choose a date within the historical
+          lookback available to your Adanos plan.
+        format: date
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        examples:
+          - "2026-07-01"
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    asset_sentiment: false
+    asset_mentions: false
+    trending_assets: false
+    market_sentiment: false
