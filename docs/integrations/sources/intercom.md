@@ -135,6 +135,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
 | 0.14.0 | 2026-11-05 | [91060](https://github.com/airbytehq/airbyte/pull/91060) | Add `company_id` to `company_segments` and make it part of the primary key, so each record says which company the segment belongs to |
+| 0.13.29 | 2026-11-03 | [90886](https://github.com/airbytehq/airbyte/pull/90886) | Simplify error handling configuration for the conversation_parts stream; no behavior change |
 | 0.13.28 | 2026-11-03 | [90605](https://github.com/airbytehq/airbyte/pull/90605) | Update dependencies |
 | 0.13.27 | 2026-10-27 | [89955](https://github.com/airbytehq/airbyte/pull/89955) | Update dependencies |
 | 0.13.26 | 2026-10-20 | [89568](https://github.com/airbytehq/airbyte/pull/89568) | Update base image to SDM 7.37.1 |
