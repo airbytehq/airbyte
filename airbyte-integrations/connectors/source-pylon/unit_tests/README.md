@@ -96,6 +96,15 @@ does need registry network access, independently of offline spec and discover.
   then fail. Coded 400s and all child 404s still fail without retrying or skipping.
   Tests do not establish whether deletion, permissions or another service issue
   caused a live failure.
+- **Thread error envelopes:** the OpenAPI 200 thread response declares top-level
+  `data` and no `code`; its error schemas declare `code` and no `data`. Additional
+  properties are not explicitly forbidden. After shared filters, the thread
+  handler treats a non-2xx body with a top-level `code` key and no `data` key as
+  coded, preserving the default failure resolution. A `data` envelope avoids
+  that guard, including a successful body with an unknown or null `code` value.
+  Known error codes still use the shared filters first. This assumes live error
+  envelopes follow the documented shape; a 400 containing both `code` and `data`
+  falls outside that contract. The handler inherits shared retries and backoff.
 - **Retry timing:** the [rate-limit documentation](https://docs.usepylon.com/pylon-docs/developer/api/rate-limits.md)
   and OpenAPI 429 response headers document both retry headers. Retry-After is
   the wait before the next request can succeed; X-Retry-After is the longer wait

@@ -120,3 +120,27 @@ def test_other_stream_uncoded_400_is_not_retried(stream) -> None:
         mocker.assert_number_of_calls(request, 1)
     assert output.errors
     assert output.records == []
+
+
+@pytest.mark.parametrize(
+    "body,headers,wait",
+    [
+        ({"code": "rate_limited"}, {}, 11),
+        ({}, {"Retry-After": "7"}, 8),
+        ({"code": "rate_limited"}, {"X-Retry-After": "13"}, 14),
+        ({"code": "rate_limited"}, {"Retry-After": "7", "X-Retry-After": "13"}, 8),
+    ],
+)
+@pytest.mark.parametrize("stream,suffix", [("issue_threads", "threads"), ("issue_messages", "messages")])
+@freeze_time(NOW)
+def test_child_429_uses_shared_backoff(body, headers, wait, stream, suffix) -> None:
+    parent = fixture_record("issues")
+    with patch("time.sleep") as sleep, patch("airbyte_cdk.sources.streams.call_rate.APIBudget.acquire_call"), HttpMocker() as mocker:
+        mocker.post(search_request(), page([parent]))
+        request = list_request(f"issues/{parent['id']}/{suffix}")
+        mocker.get(request, [HttpResponse(json.dumps(body), status_code=429, headers=headers), page([fixture_record(stream)])])
+        output = run(stream)
+        mocker.assert_number_of_calls(request, 2)
+        assert [call.args[0] for call in sleep.call_args_list if call.args[0] > 0] == [wait]
+    assert output.errors == []
+    assert len(output.records) == 1

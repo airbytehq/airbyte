@@ -704,25 +704,26 @@ definitions:
         error_message: The Pylon API is temporarily unavailable.
 
   issue_threads_error_handler:
-    type: CompositeErrorHandler
-    error_handlers:
-      - type: DefaultErrorHandler
-        max_retries: 5
-        response_filters:
-          - type: HttpResponseFilter
-            action: FAIL
-            predicate: "{{ response is mapping and 'code' in response }}"
-          - type: HttpResponseFilter
-            action: RETRY
-            http_codes: [400]
-            error_message: >-
-              Pylon could not fetch this issue's threads and returned no error code.
-              Retrying the request; if it keeps failing, check that the issue exists
-              and the token's role can access it.
-          - type: HttpResponseFilter
-            action: FAIL
-            http_codes: [500, 502, 503, 504]
-      - $ref: "#/definitions/error_handler"
+    $ref: "#/definitions/error_handler"
+    response_filters:
+      - $ref: "#/definitions/error_handler/response_filters/0"
+      - $ref: "#/definitions/error_handler/response_filters/1"
+      - $ref: "#/definitions/error_handler/response_filters/2"
+      - $ref: "#/definitions/error_handler/response_filters/3"
+      - $ref: "#/definitions/error_handler/response_filters/4"
+      - $ref: "#/definitions/error_handler/response_filters/5"
+      - $ref: "#/definitions/error_handler/response_filters/6"
+      - $ref: "#/definitions/error_handler/response_filters/7"
+      - type: HttpResponseFilter
+        action: FAIL
+        predicate: "{{ response is mapping and 'code' in response and 'data' not in response }}"
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes: [400]
+        error_message: >-
+          Pylon could not fetch this issue's threads and returned no error code.
+          Retrying the request; if it keeps failing, check that the issue exists
+          and the token's role can access it.
 
   cursor_paginator:
     type: DefaultPaginator

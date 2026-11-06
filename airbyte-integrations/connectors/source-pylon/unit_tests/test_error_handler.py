@@ -16,20 +16,20 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Resp
 from airbyte_cdk.utils import AirbyteTracedException
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def error_handler(manifest_path: Path) -> DefaultErrorHandler:
-    manifest = yaml.safe_load(manifest_path.read_text())
+    manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(manifest_path.read_text()))
     definition = manifest["definitions"]["error_handler"]
     return ModelToComponentFactory().create_component(
         model_type=getattr(models, definition["type"]), component_definition=definition, config={}
     )
 
 
-@pytest.fixture
-def thread_error_handler(manifest_path: Path):
+@pytest.fixture(scope="module")
+def thread_error_handler(manifest_path: Path) -> DefaultErrorHandler:
     manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(manifest_path.read_text()))
     definition = manifest["definitions"]["issue_threads_error_handler"]
-    return ModelToComponentFactory().create_component(model_type=models.CompositeErrorHandler, component_definition=definition, config={})
+    return ModelToComponentFactory().create_component(model_type=models.DefaultErrorHandler, component_definition=definition, config={})
 
 
 def test_streams_use_the_shared_default_error_handler(manifest_path: Path) -> None:
@@ -38,25 +38,82 @@ def test_streams_use_the_shared_default_error_handler(manifest_path: Path) -> No
         requester = stream["retriever"]["requester"]
         if stream["name"] == "issue_threads":
             assert requester["error_handler"] == manifest["definitions"]["issue_threads_error_handler"]
-            assert requester["error_handler"]["error_handlers"][-1] == manifest["definitions"]["error_handler"]
+            shared = manifest["definitions"]["error_handler"]
+            threads = requester["error_handler"]
+            assert threads["response_filters"][:-2] == shared["response_filters"]
+            assert {key: value for key, value in threads.items() if key != "response_filters"} == {
+                key: value for key, value in shared.items() if key != "response_filters"
+            }
         else:
             assert requester["error_handler"] == manifest["definitions"]["error_handler"], stream["name"]
         assert requester["connect_timeout_in_seconds"] == 30
         assert requester["read_timeout_in_seconds"] == 300
 
 
-@pytest.mark.parametrize("status", [200, 400, 401, 403, 404, 429, 500, 502, 503, 504])
-@pytest.mark.parametrize("code", [None, "wrong_region_token", "organization_deactivated", "organization_suspended", "synthetic_error"])
-def test_thread_handler_preserves_shared_classification(error_handler, thread_error_handler, status, code) -> None:
+def test_manifest_has_no_composite_error_handlers(manifest_path: Path) -> None:
+    manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(manifest_path.read_text()))
+
+    def check(node: object) -> None:
+        if isinstance(node, dict):
+            assert node.get("type") != "CompositeErrorHandler"
+            for value in node.values():
+                check(value)
+        elif isinstance(node, list):
+            for value in node:
+                check(value)
+
+    check(manifest)
+
+
+@pytest.mark.parametrize("status", [400, 401, 403, 404, 429, 500, 502, 503, 504])
+@pytest.mark.parametrize(
+    "body",
+    [
+        {},
+        {"code": None},
+        {"code": "wrong_region_token"},
+        {"code": "invalid_api_token"},
+        {"code": "invalid_authorization_header"},
+        {"code": "organization_deactivated"},
+        {"code": "organization_suspended"},
+        {"code": "rate_limited"},
+        {"code": "not_found"},
+        {"code": "synthetic_error"},
+    ],
+)
+@pytest.mark.parametrize("headers", [{}, {"Retry-After": "7"}, {"X-Retry-After": "13"}, {"Retry-After": "7", "X-Retry-After": "13"}])
+def test_thread_handler_preserves_shared_classification(error_handler, thread_error_handler, status, body, headers) -> None:
     response = requests.Response()
     response.status_code = status
-    response._content = json.dumps({"code": code} if code is not None else {}).encode()
-    if status == 400 and code is None:
+    response.url = "https://api.usepylon.com/issues/synthetic-parent/threads"
+    response._content = json.dumps(body).encode()
+    response.headers.update(headers)
+    if status == 400 and "code" not in body:
         assert thread_error_handler.interpret_response(response).response_action == ResponseAction.RETRY
+        assert error_handler.interpret_response(response).response_action == ResponseAction.FAIL
     else:
         assert thread_error_handler.interpret_response(response) == error_handler.interpret_response(response)
     assert thread_error_handler.max_retries == 5
     assert thread_error_handler.backoff_strategies == error_handler.backoff_strategies
+    for attempt in range(5):
+        assert thread_error_handler.backoff_time(response, attempt_count=attempt) == error_handler.backoff_time(
+            response, attempt_count=attempt
+        )
+
+
+@pytest.mark.parametrize("status", [200, 201, 204, 206])
+@pytest.mark.parametrize("body", [{"data": []}, {"data": [], "code": "synthetic_error"}, {"data": [], "code": None}])
+def test_thread_success_bodies_match_no_filters(error_handler, thread_error_handler, status, body) -> None:
+    response = requests.Response()
+    response.status_code = status
+    response._content = json.dumps(body).encode()
+    for handler in (error_handler, thread_error_handler):
+        assert all(response_filter.matches(response) is None for response_filter in handler.response_filters)
+        resolution = handler.interpret_response(response)
+        assert resolution.response_action == ResponseAction.SUCCESS
+        assert resolution.failure_type is None
+        assert resolution.error_message is None
+    assert thread_error_handler.interpret_response(response) == error_handler.interpret_response(response)
 
 
 @pytest.mark.parametrize(
