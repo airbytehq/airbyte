@@ -107,6 +107,14 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         default="use_records_transfer",
     )
 
+    exclude_trashed_files: bool = Field(
+        default=False,
+        title="Exclude Trashed Files",
+        description="When enabled, files in the Google Drive trash (including files inside trashed folders) are not synced. Files that were already synced before being trashed are not removed from the destination; run a refresh to remove them.",
+        order=2,
+        group="advanced",
+    )
+
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
         title="Authentication", description="Credentials for connecting to the Google Drive API", discriminator="auth_type", type="object"
     )

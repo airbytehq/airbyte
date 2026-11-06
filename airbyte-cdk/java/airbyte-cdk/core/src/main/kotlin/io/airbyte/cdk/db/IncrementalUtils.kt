@@ -36,7 +36,7 @@ object IncrementalUtils {
     @JvmStatic
     fun getCursorType(
         stream: ConfiguredAirbyteStream,
-        cursorField: String?
+        cursorField: String?,
     ): JsonSchemaPrimitiveUtil.JsonSchemaPrimitive? {
         checkNotNull(stream.stream.jsonSchema[PROPERTIES]) {
             String.format("No properties found in stream: %s.", stream.stream.name)
@@ -46,18 +46,18 @@ object IncrementalUtils {
             String.format(
                 "Could not find cursor field: %s in schema for stream: %s.",
                 cursorField,
-                stream.stream.name
+                stream.stream.name,
             )
         }
 
         check(
             !(stream.stream.jsonSchema[PROPERTIES][cursorField]["type"] == null &&
-                stream.stream.jsonSchema[PROPERTIES][cursorField]["\$ref"] == null)
+                stream.stream.jsonSchema[PROPERTIES][cursorField]["\$ref"] == null),
         ) {
             String.format(
                 "Could not find cursor type for field: %s in schema for stream: %s.",
                 cursorField,
-                stream.stream.name
+                stream.stream.name,
             )
         }
 
@@ -68,7 +68,7 @@ object IncrementalUtils {
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.valueOf(
                 stream.stream.jsonSchema[PROPERTIES][cursorField]["type"]
                     .asText()
-                    .uppercase(Locale.getDefault())
+                    .uppercase(Locale.getDefault()),
             )
         }
     }
@@ -86,7 +86,7 @@ object IncrementalUtils {
     fun compareCursors(
         original: String?,
         candidate: String?,
-        type: JsonSchemaPrimitiveUtil.JsonSchemaPrimitive?
+        type: JsonSchemaPrimitiveUtil.JsonSchemaPrimitive?,
     ): Int {
         if (original == null && candidate == null) {
             return 0
@@ -122,7 +122,7 @@ object IncrementalUtils {
             }
             else ->
                 throw IllegalStateException(
-                    String.format("Cannot use field of type %s as a comparable", type)
+                    String.format("Cannot use field of type %s as a comparable", type),
                 )
         }
     }

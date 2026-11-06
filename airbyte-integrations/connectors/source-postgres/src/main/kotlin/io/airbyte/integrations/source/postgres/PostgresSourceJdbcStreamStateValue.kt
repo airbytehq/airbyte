@@ -26,7 +26,7 @@ data class PostgresSourceJdbcStreamStateValue(
                 Jsons.valueToTree(
                     PostgresSourceJdbcStreamStateValue(
                         stateType = StateType.CTID_BASED.serialized,
-                    )
+                    ),
                 )
 
         fun snapshotCheckpoint(
@@ -38,7 +38,7 @@ data class PostgresSourceJdbcStreamStateValue(
                     ctid = ctidCheckpoint.asText(),
                     filenode = filenode,
                     stateType = StateType.CTID_BASED.serialized,
-                )
+                ),
             )
 
         fun cursorIncrementalCheckpoint(
@@ -51,7 +51,7 @@ data class PostgresSourceJdbcStreamStateValue(
                     Jsons.valueToTree(
                         PostgresSourceJdbcStreamStateValue(
                             cursors = mapOf(cursor.id to cursorCheckpoint),
-                        )
+                        ),
                     )
             }
 
@@ -81,7 +81,7 @@ data class PostgresSourceJdbcStreamStateValue(
                     cursors = mapOf(cursor.id to cursorCheckpoint),
                     filenode = filenode,
                     stateType = StateType.CTID_BASED.serialized,
-                )
+                ),
             )
 
         fun snapshotWithXminCheckpoint(
@@ -95,7 +95,7 @@ data class PostgresSourceJdbcStreamStateValue(
                     xmin = xminCheckpoint,
                     filenode = filenode,
                     stateType = StateType.CTID_BASED.serialized,
-                )
+                ),
             )
     }
 }
@@ -103,8 +103,7 @@ data class PostgresSourceJdbcStreamStateValue(
 enum class StateType {
     CTID_BASED,
     CURSOR_BASED,
-    XMIN_BASED,
-    ;
+    XMIN_BASED;
 
     val serialized: String = name.lowercase()
 }

@@ -23,6 +23,11 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: incident_logs
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+          - name: incidents
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   # TODO uncomment this block this block if your connector implements incremental sync:

@@ -13,6 +13,7 @@ import org.testcontainers.containers.MSSQLServerContainer
 import org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT
 
 val logger = KotlinLogging.logger {}
+
 /**
  * Helper class for launching/stopping MSSQL Server test containers, as well as updating destination
  * configuration to match test container configuration.
@@ -71,10 +72,10 @@ class MSSQLConfigUpdater : ConfigurationUpdater {
 
     override fun setDefaultNamespace(
         config: String,
-        defaultNamespace: String
+        defaultNamespace: String,
     ): DefaultNamespaceResult =
         DefaultNamespaceResult(
             config.replace("mssql_default_schema_placeholder", defaultNamespace),
-            defaultNamespace
+            defaultNamespace,
         )
 }
