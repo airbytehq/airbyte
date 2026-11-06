@@ -91,7 +91,7 @@ By default, the delete tools only delete a source, destination, or connection wh
 
 ## Insiders mode
 
-Insiders mode shows insiders tools, which are new tools that are still in development, like the Connector Builder project tools. Insiders tools are hidden by default.
+Insiders mode shows insiders tools, which are new tools that are still in development, like the Connector Builder project tools. Insiders tools are hidden by default. To report a problem or give feedback on an insiders tool, [open an Airbyte MCP issue](https://github.com/airbytehq/PyAirbyte/issues/new?template=airbyte-mcp-beta.yml) on GitHub. Don't include secrets or credentials in these issues, because they're publicly viewable.
 
 :::warning
 Some insiders tools can be unsafe or have side effects. Only use insiders mode on clients which support tool approval.
