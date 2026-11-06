@@ -48,6 +48,8 @@ The Pylon source connector supports the following [sync modes](https://docs.airb
 
 Issue time filters are inclusive. Each incremental sync can re-emit issues at the saved cursor, and adjacent query windows can replay records at their shared edges. **Incremental | Append** retains these replays as duplicate rows, including another copy each sync of an issue at the saved cursor. Use **Incremental | Append + Deduped**, with `id` as the primary key, to keep one row per issue.
 
+An issue updated exactly at a shared window edge also generates two child partitions. **Issue Messages** and **Issue Threads** can therefore emit the same child rows twice within one sync. **Full Refresh | Overwrite** does not deduplicate rows within that sync. With a fixed Start Date, this rare edge case can recur on every sync until the issue is updated. It does not lose data; deduplicate child rows downstream by `id` if needed.
+
 ## Supported streams
 
 The Pylon source connector supports the following streams:
@@ -70,7 +72,7 @@ The Pylon source connector supports the following streams:
 
 ### Stream notes
 
-- **Issues** is the only incremental stream. It uses `updated_at` as its cursor field and the `POST /issues/search` endpoint, so incremental syncs capture all issue modifications, not just newly created issues. Data is fetched in 30-day windows because Pylon caps the `updated_at` filter at a 30-day range per request.
+- **Issues** is the only incremental stream. It uses `updated_at` as its cursor field and the `POST /issues/search` endpoint, so incremental syncs capture all issue modifications, not just newly created issues. The connector chooses 30-day query windows; this is not a documented Pylon search API limit. Inclusive bounds overlap at window edges to avoid subsecond gaps. The final query can extend up to one second beyond the cursor interval's end, and its bounds remain fixed across pages.
 - **Issue Messages** and **Issue Threads** are child streams of Issues. They fetch data for each issue returned by the Issues stream, so the Start Date you configure indirectly limits these streams as well.
 - **Knowledge Base Articles** is a child stream of Knowledge Bases.
 - **Custom Fields** queries the Pylon API once for each of the three supported object types: account, issue, and contact.

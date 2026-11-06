@@ -100,7 +100,13 @@ does need registry network access, independently of offline spec and discover.
   `data` and no `code`; its error schemas declare `code` and no `data`. Additional
   properties are not explicitly forbidden. After shared filters, the thread
   handler treats a non-2xx body with a top-level `code` key and no `data` key as
-  coded, preserving the default failure resolution. A `data` envelope avoids
+  coded. Equality with the shared handler is asserted only for the tested matrix,
+  not for all responses. With an unknown code and no `data`, coded HTTP statuses
+  402, 406–428, 430–499, 501 and 505–599 change from shared RETRY to thread FAIL
+  on CDK 7.45.1 (including 406, 408, 409, 422, 501 and 520). A 2xx body with an
+  unknown `code` and no `data` changes from shared SUCCESS to thread FAIL.
+  The pinned OpenAPI documents only 200, 400, 401, 403, 404, 429 and 500 for
+  `GET /issues/{id}/threads`. A `data` envelope avoids
   that guard, including a successful body with an unknown or null `code` value.
   Known error codes still use the shared filters first. This assumes live error
   envelopes follow the documented shape; a 400 containing both `code` and `data`
@@ -124,13 +130,21 @@ does need registry network access, independently of offline spec and discover.
   not prove global child-ID uniqueness across parents; synthetic parent-key
   projection does not validate that API-wide uniqueness assumption.
 - **Time and replay:** requests extend the cursor interval's end by one second,
-  capped at the request start plus 30 days and the current UTC time. Adjacent
+  capped at the request start plus the connector's chosen 30-day window size.
+  Neither the pinned OpenAPI search operation and filter schema nor the
+  [public issues API reference](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/issues.md)
+  documents a 30-day search limit. `GET /issues`, which this connector does not
+  call, documents a 365-day limit on `created_at` ranges. Adjacent
   queries meet at an inclusive endpoint, covering fractional seconds before that
   endpoint without widening the cursor's partition intervals. The final request
-  never queries the future. A long-running sync can query slightly beyond a
-  previously generated final interval as the clock advances; state still uses
-  observed record cursors, not the extra second alone. Fake-server comparisons
-  use subsecond precision and assert replay only at shared edges. Resume is also
+  can query up to one second beyond the generated final interval. Request bounds
+  depend only on the interval and remain identical across pages even as the clock
+  advances; state is not advanced by the query bound alone. Fake-server comparisons
+  use subsecond precision and assert issue replay at shared edges. An edge issue
+  also creates two child partitions: issue messages and threads are fetched and
+  emitted twice, even with Full Refresh | Overwrite. With a fixed start date,
+  these rare duplicates can recur every sync until the issue is updated; no data
+  is lost. Child IDs can be deduplicated downstream. Resume is also
   inclusive: the record at the saved cursor is intentionally replayed. Checkpoint
   serialization uses whole seconds, so fractional cursors can replay that second
   on resume. These tests do not prove live API comparison precision, late-update

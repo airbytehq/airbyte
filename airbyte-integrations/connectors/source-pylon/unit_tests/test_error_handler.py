@@ -50,6 +50,28 @@ def test_streams_use_the_shared_default_error_handler(manifest_path: Path) -> No
         assert requester["read_timeout_in_seconds"] == 300
 
 
+def test_coded_statuses_outside_equality_matrix(error_handler, thread_error_handler) -> None:
+    differing_statuses = []
+    for status in range(400, 600):
+        response = requests.Response()
+        response.status_code = status
+        response._content = b'{"code": "synthetic_error"}'
+        shared = error_handler.interpret_response(response)
+        threads = thread_error_handler.interpret_response(response)
+        if shared.response_action == ResponseAction.RETRY and threads.response_action == ResponseAction.FAIL:
+            differing_statuses.append(status)
+    assert differing_statuses == [402, *range(406, 429), *range(430, 500), 501, *range(505, 600)]
+
+
+@pytest.mark.parametrize("status", [200, 201, 204, 206])
+def test_coded_success_without_data_differs_from_shared(error_handler, thread_error_handler, status: int) -> None:
+    response = requests.Response()
+    response.status_code = status
+    response._content = b'{"code": "synthetic_error"}'
+    assert error_handler.interpret_response(response).response_action == ResponseAction.SUCCESS
+    assert thread_error_handler.interpret_response(response).response_action == ResponseAction.FAIL
+
+
 def test_manifest_has_no_composite_error_handlers(manifest_path: Path) -> None:
     manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(manifest_path.read_text()))
 

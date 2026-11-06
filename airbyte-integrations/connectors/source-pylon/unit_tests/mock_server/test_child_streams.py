@@ -6,7 +6,7 @@ from freezegun import freeze_time
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.test.mock_http import HttpMocker
-from mock_server.helpers import CONFIG, NOW, fixture_record, list_request, page, run, search_request
+from mock_server.helpers import CONFIG, NOW, START, fixture_record, list_request, page, run, search_request
 
 
 CHILDREN = [
@@ -14,6 +14,29 @@ CHILDREN = [
     ("issue_threads", "issues", "issue_id", "issues/{}/threads"),
     ("knowledge_base_articles", "knowledge_bases", "knowledge_base_id", "knowledge-bases/{}/articles"),
 ]
+
+
+@pytest.mark.parametrize("stream,suffix", [("issue_messages", "messages"), ("issue_threads", "threads")])
+@freeze_time("2026-02-01T00:00:00Z")
+def test_shared_edge_issue_duplicates_child_partitions(stream: str, suffix: str) -> None:
+    edge = "2026-01-31T00:00:00Z"
+    parent = {**fixture_record("issues"), "updated_at": edge}
+    child = fixture_record(stream)
+    child.pop("issue_id", None)
+    with HttpMocker() as mocker:
+        first = search_request(start=START, end=edge)
+        second = search_request(start=edge, end="2026-02-01T00:00:01Z")
+        mocker.post(first, page([parent]))
+        mocker.post(second, page([parent]))
+        child_request = list_request(f"issues/{parent['id']}/{suffix}")
+        mocker.get(child_request, page([child]))
+        output = run(stream, cfg={**CONFIG, "num_workers": 2})
+        mocker.assert_number_of_calls(first, 1)
+        mocker.assert_number_of_calls(second, 1)
+        mocker.assert_number_of_calls(child_request, 2)
+    assert output.errors == []
+    assert [message.record.data["id"] for message in output.records] == [child["id"], child["id"]]
+    assert all(message.record.data["issue_id"] == parent["id"] for message in output.records)
 
 
 @pytest.mark.parametrize("stream,parent,key,path", CHILDREN)
