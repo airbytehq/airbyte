@@ -4,7 +4,7 @@
 
 import logging
 import os
-from json import dumps
+from json import dumps, loads
 from typing import Any, List, Mapping
 
 import pytest
@@ -769,6 +769,36 @@ def product_variants_jsonl_content_example():
 {"__typename":"ProductVariantPricePair","price":{"amount":"64.0","currencyCode":"USD"},"compareAtPrice":null,"__parentId":"gid:\/\/shopify\/ProductVariant\/40091751448765"}
 {"__typename":"ProductVariant","id":"gid:\/\/shopify\/ProductVariant\/41561955827901","title":"Test Variant 1","price":"19.00","sku":"","position":2,"inventoryPolicy":"DENY","compareAtPrice":null,"createdAt":"2022-03-06T22:09:20Z","updatedAt":"2023-10-27T16:56:00Z","taxable":true,"barcode":"","inventoryQuantity":2,"availableForSale":true,"displayName":"4 Ounce Soy Candle - Test Variant 1","taxCode":"","grams":112.0,"image":null,"old_inventory_quantity":2,"product":{"product_id":"gid:\/\/shopify\/Product\/6796220989629"},"inventoryItem":{"inventory_item_id":"gid:\/\/shopify\/InventoryItem\/43653682495677","requires_shipping":true,"tracked": true,"measurement":{"weight":{"unit":"GRAMS","value":112.0}}}}
 {"__typename":"ProductVariantPricePair","price":{"amount":"19.0","currencyCode":"USD"},"compareAtPrice":null,"__parentId":"gid:\/\/shopify\/ProductVariant\/41561955827901"}\n"""
+
+
+@pytest.fixture
+def product_variants_with_bundle_jsonl_content_example(product_variants_jsonl_content_example: str) -> str:
+    records = [loads(line) for line in product_variants_jsonl_content_example.splitlines()]
+    records[0]["requiresComponents"] = True
+    records[2]["requiresComponents"] = False
+    components = [
+        {
+            "__typename": "ProductVariantComponent",
+            "id": "gid://shopify/ProductVariantComponent/101",
+            "quantity": 2,
+            "productVariant": {
+                "component_variant_id": "gid://shopify/ProductVariant/201",
+                "product": {"component_product_id": "gid://shopify/Product/301"},
+            },
+            "__parentId": "gid://shopify/ProductVariant/40091751448765",
+        },
+        {
+            "__typename": "ProductVariantComponent",
+            "id": "gid://shopify/ProductVariantComponent/102",
+            "quantity": 3,
+            "productVariant": {
+                "component_variant_id": "gid://shopify/ProductVariant/202",
+                "product": {"component_product_id": "gid://shopify/Product/302"},
+            },
+            "__parentId": "gid://shopify/ProductVariant/40091751448765",
+        },
+    ]
+    return "\n".join(dumps(record) for record in [*records[:2], *components, *records[2:]]) + "\n"
 
 
 @pytest.fixture
