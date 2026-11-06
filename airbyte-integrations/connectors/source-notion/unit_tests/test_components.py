@@ -3,9 +3,10 @@
 #
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
@@ -279,3 +280,69 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+def _block(block_id, last_edited_time, has_children=False, block_type="paragraph"):
+    return {
+        "object": "block",
+        "id": block_id,
+        "parent": {"type": "page_id", "page_id": "page-1"},
+        "created_time": "2023-01-01T00:00:00.000Z",
+        "last_edited_time": last_edited_time,
+        "has_children": has_children,
+        "type": block_type,
+        block_type: {},
+    }
+
+
+def _read_blocks_incrementally(requests_mock, state):
+    config = {"credentials": {"auth_type": "token", "token": "test-token"}, "start_date": "2023-01-01T00:00:00.000Z"}
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json={"results": [{"object": "page", "id": "page-1", "last_edited_time": "2024-06-01T00:00:00.000Z"}], "has_more": False},
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children",
+        json={
+            "results": [
+                _block("unchanged-parent", "2024-01-01T00:00:00.000Z", has_children=True),
+                _block("edited", "2024-06-01T00:00:00.000Z"),
+                _block("child-page", "2024-06-01T00:00:00.000Z", block_type="child_page"),
+            ],
+            "has_more": False,
+        },
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/unchanged-parent/children",
+        json={
+            "results": [
+                _block("unchanged-child", "2024-01-01T00:00:00.000Z"),
+                _block("edited-child", "2024-05-01T00:00:00.000Z"),
+            ],
+            "has_more": False,
+        },
+    )
+    catalog = (
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name("blocks").with_sync_mode(SyncMode.incremental)).build()
+    )
+    return read(get_source(config, state), config, catalog, state)
+
+
+def test_blocks_incremental_read_emits_only_blocks_edited_since_state(requests_mock):
+    first = _read_blocks_incrementally(requests_mock, StateBuilder().build())
+    assert [record.record.data["id"] for record in first.records] == ["unchanged-child", "edited-child", "unchanged-parent", "edited"]
+    first_state = first.most_recent_state.stream_state.__dict__
+    assert first_state["state"] == {"last_edited_time": "2024-06-01T00:00:00.000000Z"}
+
+    requests_mock.reset_mock()
+    previous_state = {**first_state, "state": {"last_edited_time": "2024-03-01T00:00:00.000Z"}}
+    second = _read_blocks_incrementally(requests_mock, StateBuilder().with_stream_state("blocks", previous_state).build())
+
+    # The block tree is still walked in full: unchanged parents can hold edited children.
+    assert [request.path for request in requests_mock.request_history] == [
+        "/v1/search",
+        "/v1/blocks/page-1/children",
+        "/v1/blocks/unchanged-parent/children",
+    ]
+    assert [record.record.data["id"] for record in second.records] == ["edited-child", "edited"]
+    assert second.most_recent_state.stream_state.__dict__["state"] == {"last_edited_time": "2024-06-01T00:00:00.000000Z"}
