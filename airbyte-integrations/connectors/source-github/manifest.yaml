@@ -80,8 +80,11 @@ definitions:
     # Token precedence: legacy root-level `access_token` first, then
     # `credentials.access_token`, then `credentials.personal_access_token` — the
     # legacy `get_access_token` accepted all three, so the authenticator does too.
-    # `SelectiveAuthenticator` builds every branch, and an empty token list fails at construction, so a
-    # GitHub App config gets a placeholder here. This branch is never selected for it, so nothing is signed with it.
+    # Placeholder for GitHub App configs, which have no static token. `SelectiveAuthenticator` builds every
+    # branch, not only the selected one, and the CDK fails a token authenticator with an empty token list at
+    # construction (long-standing CDK behavior), so without it every GitHub App command would fail. This branch
+    # is never selected for a GitHub App config, so nothing is signed with the placeholder.
+    # Drop it once the CDK reports empty tokens on first use instead of at construction.
     tokens: "{{ 'unused-github-app-config' if config.get('credentials', {}).get('option_title') == 'GitHub App Credentials' else config.get('access_token', config.get('credentials', {}).get('access_token', config.get('credentials', {}).get('personal_access_token', ''))) }}"
     token_delimiter: ","
     auth_method: "token"
