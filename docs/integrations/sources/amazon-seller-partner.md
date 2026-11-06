@@ -84,7 +84,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 12. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams and the four vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, Vendor Net Pure Product Margin)—see [Report options](#report-options) before you configure them.
 13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
 14. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
-15. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting has no effect on `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`, `GET_VENDOR_SALES_REPORT`, `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, or `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2`. To re-fetch history for those streams, refresh them or move the replication start date back.
+15. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting has no effect on `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`, `GET_VENDOR_SALES_REPORT`, `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2`, or the weekly Brand Analytics reports (Market Basket, Repeat Purchase, Search Terms). To re-fetch history for those streams, refresh them or move the replication start date back.
 16. For **Stop Sync When Report Streams Are Rate Limited**, enable this option to stop the source from retrying immediately once the rate limit retry budget is exhausted during report creation, and fail with an actionable configuration error. This is useful when persistent rate limiting indicates the connector configuration needs adjustment. When disabled (default), the source applies its backoff and retry strategy; if all retry attempts are exhausted, a transient error is thrown and the sync may be rescheduled automatically.
 17. **Inbound API settings (Fulfillment Inbound streams only)**:
     - **Inbound Replication Mode**: Choose how the connector defines the time window for Fulfillment Inbound streams.
@@ -118,7 +118,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 10. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams and the four vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, Vendor Net Pure Product Margin)—see [Report options](#report-options) before you configure them.
 11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
 12. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
-13. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting has no effect on `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`, `GET_VENDOR_SALES_REPORT`, `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, or `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2`. To re-fetch history for those streams, refresh them or move the replication start date back.
+13. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting has no effect on `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`, `GET_VENDOR_SALES_REPORT`, `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2`, or the weekly Brand Analytics reports (Market Basket, Repeat Purchase, Search Terms). To re-fetch history for those streams, refresh them or move the replication start date back.
 14. For **Stop Sync When Report Streams Are Rate Limited**, enable this option to stop the source from retrying immediately once the rate limit retry budget is exhausted during report creation, and fail with an actionable configuration error. This is useful when persistent rate limiting indicates the connector configuration needs adjustment. When disabled (default), the source applies its backoff and retry strategy; if all retry attempts are exhausted, a transient error is thrown and the sync may be rescheduled automatically.
 15. **Inbound API settings (Fulfillment Inbound streams only)**:
     - **Inbound Replication Mode**: Choose how the connector defines the time window for Fulfillment Inbound streams.
@@ -185,11 +185,11 @@ The `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL
 - [Vendor Forecasting Report (Retail)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 - [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
-- [Fulfillment Inbound Shipments](https://developer-docs.amazon.com/sp-api/reference/getshipments) \(full-refresh\)
-- [Fulfillment Inbound Shipment Items](https://developer-docs.amazon.com/sp-api/reference/getshipmentitemsbyshipmentid) \(full-refresh\)
-- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
-- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
-- [Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
+- [Fulfillment Inbound Shipments](https://developer-docs.amazon.com/sp-api/reference/getshipments) \(incremental\)
+- [Fulfillment Inbound Shipment Items](https://developer-docs.amazon.com/sp-api/reference/getshipmentitemsbyshipmentid) \(incremental\)
+- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
 - [Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
 - [Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
 - [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
@@ -296,7 +296,8 @@ Some streams send report options that you don't configure. Anything you enter in
 
 | Stream | Report options sent |
 | :----- | :------------------ |
-| The five Brand Analytics streams | `reportPeriod: WEEK`, plus a fixed date range covering the most recent complete Sunday-to-Saturday week |
+| Market Basket, Repeat Purchase, Search Terms | `reportPeriod: WEEK`, with one complete Sunday–Saturday period per request in the configured date range |
+| Alternate Purchase, Item Comparison (removed by Amazon) | Unchanged legacy requests for the most recent complete week |
 | `GET_SALES_AND_TRAFFIC_REPORT` | `asinGranularity` from **Sales and Traffic Report ASIN Granularity** |
 | `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` | `dateGranularity: MONTH` and `asinGranularity` |
 | `GET_VENDOR_FORECASTING_FRESH_REPORT` | `sellingProgram: FRESH` |
@@ -304,7 +305,11 @@ Some streams send report options that you don't configure. Anything you enter in
 
 Both Vendor Forecasting streams read Amazon's single `GET_VENDOR_FORECASTING_REPORT` report type and differ only in the `sellingProgram` option they send.
 
-Because the Brand Analytics streams always request the same weekly window, they're full refresh only. Each sync replaces the previous week's data with the latest complete week.
+Market Basket, Repeat Purchase, and Search Terms support incremental sync with the `endDate` cursor. They backfill complete Sunday–Saturday weeks from **Start Date** (rounded back to Sunday), then resume after the last nonempty week. **End Date** limits the backfill to complete weeks, and a future or absent end date never includes the current unfinished week. A configured start date is used as-is before weekly alignment; if absent, it defaults to approximately two years ago. **Period In Days** and **Report Stream Lookback Window (Hours)** do not affect these weekly streams. Empty report windows retain the previous checkpoint and are retried on later syncs.
+
+Full refresh remains available, but now rereads the configured complete-week range rather than only the latest week. Review historical end dates before upgrading to 8.0.0: they can exclude the latest week that was previously returned. See the [8.0.0 migration guide](amazon-seller-partner-migrations.md#upgrading-to-800).
+
+Alternate Purchase and Item Comparison are unchanged legacy streams. Amazon [removed both report types on June 30, 2022](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations); incremental support is not available for them.
 
 ### Report window size
 
@@ -483,11 +488,17 @@ Lower the **Financial Events Max Results Per Page** setting in your connector co
 
 You may also combine this with a smaller **Financial Events Step Size** (e.g., 1H or 6H) to further reduce the amount of data fetched per request.
 
+### Fulfillment Inbound incremental sync
+
+`FbaInboundShipments` and `FbaInboundShipmentItems` support incremental and full-refresh sync. The first incremental sync uses the configured inbound rolling or fixed window. Later syncs resume at the saved `LastUpdatedBefore` watermark, which is the requested window's upper bound, not a timestamp supplied by Amazon. Adjacent windows reuse that boundary, so boundary records can repeat. Empty windows retain their starting checkpoint and are retried.
+
+Shipment items are selected through the parent shipment's date filters; they do not have an independent item-update filter. Item state includes the parent shipment checkpoint even when the parent stream is not selected. Rolling mode still limits reads to the configured **Inbound Rolling Days** range. Use fixed mode to recover history after an outage longer than that window. Full refresh continues to reread the entire configured inbound window.
+
 ### Fulfillment Inbound shipment items pagination
 
 The `FbaInboundShipmentItems` stream reads items per shipment via the [getShipmentItemsByShipmentId](https://developer-docs.amazon.com/sp-api/reference/getshipmentitemsbyshipmentid) operation. Amazon's API model defines no pagination request parameter for this operation, although its response can include a `NextToken` value. If Amazon truncates the item list of a single shipment, the connector cannot request the remaining items for that shipment. If you observe incomplete item lists for very large shipments, [contact Airbyte Support](https://support.airbyte.com).
 
-Also note that Amazon selects inbound shipments by the shipment's last-update time, and item-quantity updates do not always advance it (see [amzn/selling-partner-api-models#2594](https://github.com/amzn/selling-partner-api-models/issues/2594)). Prefer a generous **Inbound Rolling Days** window over a narrow one if you rely on item quantities staying current.
+Also note that Amazon selects inbound shipments by the shipment's last-update time, and item-quantity updates do not always advance it (see [amzn/selling-partner-api-models#2594](https://github.com/amzn/selling-partner-api-models/issues/2594)). Use full refresh with a generous **Inbound Rolling Days** window if you rely on item quantities staying current. Increasing the rolling window alone does not make incremental mode detect changes that leave the parent timestamp unchanged.
 
 ## IP allow list
 
@@ -500,6 +511,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 8.0.0 | 2026-11-06 | - | Add incremental sync for inbound shipments/items and three supported Brand Analytics reports, with weekly backfills honoring configured dates. |
 | 7.0.1 | 2026-10-27 | [89783](https://github.com/airbytehq/airbyte/pull/89783) | Update dependencies |
 | 7.0.0 | 2026-10-22 | [74065](https://github.com/airbytehq/airbyte/pull/74065) | Replace `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon removes on November 11, 2026, with `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` |
 | 6.1.3 | 2026-10-20 | [89131](https://github.com/airbytehq/airbyte/pull/89131) | Update dependencies |

@@ -248,6 +248,22 @@ Five constraints that are easy to break:
 with a successful sync, stops after one page of reports, fails on large backfills with expired URLs,
 emits the same settlement rows more than once, or silently skips reports.
 
+## 12. Brand Analytics Requests Must Cover Complete Weeks
+
+Market Basket, Repeat Purchase, and Search Terms use `reportPeriod: WEEK` and a shared Sunday-clamped cursor on `endDate`. The configured start date rounds back to Sunday. The end date includes only complete Sunday–Saturday periods, capped at the last completed week even when the configured end is in the future. Each creation requester must declare its own slice-based date bounds; `$ref` does not recursively merge request bodies. These streams ignore `period_in_days` and the timestamp-based report lookback option, which would split reporting weeks.
+
+Nonempty reports resume at the Sunday after the saved Saturday without repeating that week. Empty reports retain the last record checkpoint (or the initial Sunday), so empty periods are retried. This also avoids skipping a report that Amazon publishes late. Alternate Purchase and Item Comparison are unchanged: Amazon [removed them on June 30, 2022](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations).
+
+**Why this matters:** Arbitrary time slices cause invalid weekly requests. Changing the slice step or injecting the generic timestamp lookback can create gaps or duplicate reporting periods.
+
+## 13. Inbound Items Checkpoint Through Their Parent Shipments
+
+Inbound Shipments uses the existing `getShipments` endpoint's `LastUpdatedAfter`/`LastUpdatedBefore` filters. Amazon does not return the shipment update timestamp, so records receive a synthetic `LastUpdatedBefore` equal to the requested upper bound. Inbound Shipment Items keeps the per-shipment endpoint and inherits that field through `SubstreamPartitionRouter` with `incremental_dependency: true` and a global child cursor. The child's persisted `parent_state` must survive between reads even when the parent is not selected in the catalog.
+
+The first request uses `QueryType=DATE_RANGE`; subsequent pages use `QueryType=NEXT_TOKEN` with no date parameters. Saved state becomes the next request's lower bound, with boundary overlap rather than adding a second. Rolling mode still enforces its configured rolling lower bound; use fixed mode to recover history after a longer outage. Empty windows retain their starting checkpoint and are retried. Item quantities can change without updating the parent shipment timestamp; retain full refresh to detect those independent item changes.
+
+**Why this matters:** A child cursor without parent state would re-read all shipments, while advancing it independently could skip shipment items. The synthetic field is a sync-window watermark, not an Amazon modification timestamp.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 7 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
@@ -259,9 +275,11 @@ The Amazon Seller Partner API uses an asynchronous report generation model. Most
 | get_amazon_fulfilled_shipments_data_general | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
 | get_brand_analytics_alternate_purchase_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
 | get_brand_analytics_item_comparison_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
-| get_brand_analytics_market_basket_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
-| get_brand_analytics_repeat_purchase_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
-| get_brand_analytics_search_terms_report | medium | top-level parent | none | none | deferred_no_api_support | Brand analytics report; weekly/monthly aggregation |
+| get_brand_analytics_market_basket_report | medium | top-level parent | endDate | dataStartTime/dataEndTime | incremental | Complete Sunday–Saturday weeks |
+| get_brand_analytics_repeat_purchase_report | medium | top-level parent | endDate | dataStartTime/dataEndTime | incremental | Complete Sunday–Saturday weeks |
+| get_brand_analytics_search_terms_report | medium | top-level parent | endDate | dataStartTime/dataEndTime | incremental | Complete Sunday–Saturday weeks |
+| fba_inbound_shipments | medium | top-level parent | LastUpdatedBefore | LastUpdatedAfter/LastUpdatedBefore | incremental | Synthetic window watermark |
+| fba_inbound_shipment_items | medium | child of fba_inbound_shipments | LastUpdatedBefore | Parent shipment filters | incremental | Nested parent state |
 | get_fba_estimated_fba_fees_txt_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
 | get_fba_fulfillment_customer_returns_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
 | get_fba_fulfillment_customer_shipment_promotion_data | medium | top-level parent | dataEndTime | dataEndTime | incremental | |
@@ -310,4 +328,5 @@ The Amazon Seller Partner API uses an asynchronous report generation model. Most
 
 ### Future incremental stream candidates
 
-- **No API date filter (7 streams):** `get_brand_analytics_alternate_purchase_report`, `get_brand_analytics_item_comparison_report`, `get_brand_analytics_market_basket_report`, `get_brand_analytics_repeat_purchase_report`, `get_brand_analytics_search_terms_report`, `get_vendor_forecasting_fresh_report`, `get_vendor_forecasting_retail_report` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+- **Removed report types:** `get_brand_analytics_alternate_purchase_report` and `get_brand_analytics_item_comparison_report` remain unchanged; Amazon removed both on June 30, 2022.
+- **No API date filter:** `get_vendor_forecasting_fresh_report` and `get_vendor_forecasting_retail_report` remain full refresh only.

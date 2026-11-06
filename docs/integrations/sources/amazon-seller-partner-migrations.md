@@ -2,6 +2,27 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Amazon Seller Partner Migration Guide
 
+## Upgrading to 8.0.0
+
+### Who is affected
+
+Connections syncing `GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT`, `GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT`, or `GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT`.
+
+These streams previously ignored **Start Date** and **End Date** and always fetched the most recent complete week. They now support incremental sync and honor those dates in both incremental and full-refresh modes. A historical end date can exclude the latest week that was previously returned. An earlier start date can cause a much larger initial backfill or full refresh.
+
+Each request covers a complete Sunday–Saturday week. The start date rounds back to Sunday; the end date includes only complete weeks and never includes the current, unfinished week. The `endDate` cursor resumes after the last nonempty week. Empty report windows retain the prior checkpoint and are retried.
+
+### Migration steps
+
+1. Review the source's **Start Date** and **End Date** before upgrading. Choose the first week you need to backfill; clear a historical end date if you want ongoing data. If no start date is configured, the weekly streams start approximately two years back. A configured start date is used even if it is older, so choose a recent date to avoid an unexpectedly large backfill.
+2. Upgrade and refresh the source schema. The three reports now offer incremental sync with `endDate` as the cursor. `FbaInboundShipments` and `FbaInboundShipmentItems` also offer incremental sync, with a new `LastUpdatedBefore` window watermark.
+3. Select incremental mode for the streams you want to resume between syncs, or retain full refresh to reread the configured range. For Brand Analytics, preserving the old latest-week-only full-refresh behavior requires moving the configured start date each week; leaving it fixed now rereads all complete weeks from that date.
+4. Run a sync and review the requested date range and resulting records. No state migration or destination reset is required: these streams previously had no incremental state. Reset a stream only if you need to replace previously loaded history.
+
+Inbound full-refresh bounds remain unchanged. In incremental mode, shipment items are selected through updated parent shipments, not item-level modification timestamps. Item quantities can change without advancing the parent timestamp; retain full refresh if you need to detect those changes. Rolling mode also retains its configured lower bound, so use fixed mode to recover history beyond that window.
+
+Alternate Purchase and Item Comparison remain unchanged: Amazon [removed both report types on June 30, 2022](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations).
+
 ## Upgrading to 7.0.0
 
 Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) the Flat File Settlement Report (`GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`) on March 17, 2025 and [removes it on November 11, 2026](https://developer-docs.amazon.com/sp-api/changelog/update-removal-of-xml-settlement-report-and-flat-file-settlement-report-date-changed-to-november-11-2026). This version removes the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` stream and adds its replacement, `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` (Flat File V2 Settlement Report).
