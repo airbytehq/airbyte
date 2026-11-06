@@ -92,18 +92,19 @@ global:
     secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     awsSecretManager:
       region: <aws-region>
-      authenticationType: credentials ## Use "credentials" or "instanceProfile"
       tags: ## Optional - You may add tags to new secrets created by Airbyte.
         - key: ## e.g. team
           value: ## e.g. deployments
         - key: business-unit
           value: engineering
-      kms: ## Optional - ARN for KMS Decryption.
+      kmsArn: ## Optional - ARN for KMS Decryption.
 ```
 
-Set `authenticationType` to `instanceProfile` if the compute infrastructure running Airbyte has pre-existing permissions (e.g. IAM role) to read and write from AWS Secrets Manager.
+Airbyte uses static credentials only when both the access key ID and secret access key are non-empty. Otherwise, it uses the AWS SDK default credential chain, which supports environment variables, IAM roles for service accounts (IRSA), and instance profiles. There is no `authenticationType` Helm value for AWS Secrets Manager.
 
-To decrypt secrets in the secret manager with AWS KMS, configure the `kms` field, and ensure your Kubernetes cluster has pre-existing permissions to read and decrypt secrets.
+When using an IAM role, the Kubernetes secret must still contain the access key ID and secret access key keys, with empty string values. The chart references both keys even when you don't supply static credentials. By default, these keys are `AWS_SECRET_MANAGER_ACCESS_KEY_ID` and `AWS_SECRET_MANAGER_SECRET_ACCESS_KEY`; use `accessKeyIdSecretKey` and `secretAccessKeySecretKey` to match different key names in your secret.
+
+To decrypt secrets in the secret manager with AWS KMS, configure the `kmsArn` field, and ensure your Kubernetes cluster has pre-existing permissions to read and decrypt secrets.
 
 </TabItem>
 <TabItem label="GCP" value="GCP">
@@ -129,7 +130,7 @@ global:
 global:
   secretsManager:
     type: AZURE_KEY_VAULT
-    secretsManagerSecretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
+    secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     azureKeyVault:
       vaultUrl: ## https://my-vault.vault.azure.net/
       tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
@@ -151,7 +152,7 @@ global:
 global:
   secretsManager:
     type: VAULT
-    secretsManagerSecretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
+    secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     vault:
       address: ""
       prefix: ""
