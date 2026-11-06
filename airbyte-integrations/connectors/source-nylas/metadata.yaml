@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 136a1ee6-5b95-4e09-9f3f-5c8df35df690
-  dockerImageTag: 0.0.76
+  dockerImageTag: 0.0.77-rc.1
   dockerRepository: airbyte/source-nylas
   githubIssueLabel: source-nylas
   icon: icon.svg
@@ -25,6 +25,9 @@ data:
   name: Nylas
   releaseDate: 2024-09-03
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/nylas
   tags:
