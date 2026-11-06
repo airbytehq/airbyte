@@ -15,7 +15,7 @@ This page contains the setup guide and reference information for the [Pylon](htt
 
 <FieldAnchor field="api_token">
 
-Enter your **API Token** without a `Bearer ` prefix. The connector adds the authentication header to all requests to the Pylon API.
+Enter only your **API Token**, without the word `Bearer` or surrounding spaces. The connector adds the authentication header to all requests to the Pylon API.
 
 </FieldAnchor>
 
