@@ -66,7 +66,7 @@ Your agent can see and use every resource your Airbyte permissions allow. To pre
 
 ## Dashboards
 
-These tools display interactive views in clients that support [MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview). They are only available in clients that support MCP Apps.
+These tools display interactive views. They're only available in clients that support [MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview).
 
 | Tool                           | Description                                                    |
 | :----------------------------- | :------------------------------------------------------------- |
