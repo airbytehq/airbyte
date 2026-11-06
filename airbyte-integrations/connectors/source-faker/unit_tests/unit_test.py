@@ -293,3 +293,32 @@ def test_read_users_resumes_from_checkpoint():
 
     records = [row.record.data for row in iterator if row.type is Type.RECORD]
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
+
+
+def test_read_users_after_completed_sync_starts_new_pass():
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    def read_users(state):
+        messages = list(source.read(logger, config, catalog, state))
+        ids = [m.record.data["id"] for m in messages if m.type is Type.RECORD]
+        final_state = [m.state.stream.stream_state for m in messages if m.type is Type.STATE][-1]
+        return ids, final_state
+
+    first_ids, first_state = read_users([])
+    assert first_ids == list(range(1, 11))
+    assert first_state.loop_offset == 10
+
+    stream_state = AirbyteStreamState(stream_descriptor=StreamDescriptor(name="users", namespace=None), stream_state=first_state)
+    second_ids, second_state = read_users([AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)])
+    assert second_ids == list(range(1, 11))
+    assert second_state.loop_offset == 10
