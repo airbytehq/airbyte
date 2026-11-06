@@ -1,11 +1,15 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import json
+import logging
 import os
 from datetime import datetime
+from http import HTTPStatus
 from unittest.mock import ANY, MagicMock, Mock, PropertyMock, call, patch
 
 import pytest
+import requests
 from office365.entity_collection import EntityCollection
 from office365.graph_client import GraphClient
 from office365.onedrive.drives.drive import Drive
@@ -20,9 +24,10 @@ from source_microsoft_sharepoint.stream_reader import (
     SourceMicrosoftSharePointClient,
     SourceMicrosoftSharePointStreamReader,
 )
+from source_microsoft_sharepoint.utils import FolderNotFoundException
 from wcmatch.glob import GLOBSTAR, globmatch
 
-from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException, FailureType
 
 
 TEST_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
@@ -310,7 +315,9 @@ def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, 
     expected_staging_file_url = expected_paths["staging_file_url"]
 
     assert file_reference.source_file_relative_path == expected_source_file_relative_path
-    assert file_reference.staging_file_url == expected_staging_file_url
+    # The CDK stages every file under a unique subdirectory of the staging directory
+    assert file_reference.staging_file_url.startswith(f"{TEST_LOCAL_DIRECTORY}/")
+    assert file_reference.staging_file_url.endswith(expected_staging_file_url.replace(f"{TEST_LOCAL_DIRECTORY}/", ""))
     assert file_reference.file_size_bytes == expected_file_bytes
 
     assert os.path.basename(expected_staging_file_url) == file_record_data.file_name
@@ -829,6 +836,7 @@ def test_get_site_drive_error_handling():
         ("dummy_refresh_token", "Client", "ALL", ["_get_files_by_drive_name", "_get_shared_files_from_all_drives"]),
         (None, "User", "ACCESSIBLE_DRIVES", ["_get_files_by_drive_name"]),
         (None, "User", "ALL", ["_get_files_by_drive_name", "_get_shared_files_from_all_drives"]),
+        (None, "Service", "ALL", ["_get_files_by_drive_name"]),
         (None, "Client", "SHARED_ITEMS", []),
         ("dummy_refresh_token", "Client", "SHARED_ITEMS", ["_get_shared_files_from_all_drives"]),
     ],
@@ -967,3 +975,238 @@ def test_get_all_sites_with_no_results(test_case, search_job_value, primary_quer
             "contentclass:STS_Site NOT Path:https://test-tenant-my.sharepoint.com"
         )
         mock_execute_query.assert_called_once_with(mock_search_job)
+
+
+def _shared_items_reader(search_scope):
+    reader = SourceMicrosoftSharePointStreamReader()
+    reader._config = MagicMock(
+        credentials=MagicMock(auth_type="Client", refresh_token="dummy_refresh_token"),
+        search_scope=search_scope,
+        folder_path=".",
+        start_date=None,
+    )
+    return reader
+
+
+def _shared_with_me_http_error(status_code, graph_error_code=None):
+    response = requests.Response()
+    response.status_code = status_code
+    if graph_error_code:
+        response._content = json.dumps({"error": {"code": graph_error_code}}).encode()
+    return AirbyteTracedException.from_exception(requests.HTTPError(response=response), message="Caught unexpected exception")
+
+
+def _raise_on_shared_with_me(error):
+    def _execute(query):
+        if query is _execute.shared_with_me_query:
+            raise error
+        return query
+
+    return _execute
+
+
+def _return_on_shared_with_me(result):
+    def _execute(query):
+        if query is _execute.shared_with_me_query:
+            return result
+        return query
+
+    return _execute
+
+
+def _drive_file():
+    return MicrosoftSharePointRemoteFile(
+        uri="https://test.sharepoint.com/Shared%20Documents/file.csv",
+        download_url="https://example.com/file.csv",
+        last_modified=datetime(2024, 1, 1),
+        created_at=datetime(2024, 1, 1),
+    )
+
+
+RETIRED_API_ERRORS = [
+    pytest.param(_shared_with_me_http_error(HTTPStatus.GONE), "410", id="gone"),
+    pytest.param(_shared_with_me_http_error(HTTPStatus.BAD_REQUEST, "invalidRequest"), "400 (invalidRequest)", id="bad_request"),
+    pytest.param(FolderNotFoundException("Requested item/folder could not be found"), "404", id="not_found"),
+]
+
+
+@pytest.mark.parametrize("error, expected_status", RETIRED_API_ERRORS)
+def test_all_scope_keeps_drive_files_when_shared_with_me_is_unavailable(error, expected_status, caplog):
+    reader = _shared_items_reader("ALL")
+    drive_file = _drive_file()
+    execute = _raise_on_shared_with_me(error)
+
+    with (
+        patch.object(SourceMicrosoftSharePointStreamReader, "drives", new_callable=PropertyMock, return_value=[]),
+        patch.object(SourceMicrosoftSharePointStreamReader, "one_drive_client", new_callable=PropertyMock) as mock_client,
+        patch.object(SourceMicrosoftSharePointStreamReader, "_get_files_by_drive_name", return_value=iter([drive_file])),
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry", side_effect=execute),
+        caplog.at_level(logging.WARNING, logger="airbyte"),
+    ):
+        execute.shared_with_me_query = mock_client.return_value.me.drive.shared_with_me.return_value
+        files = list(reader.get_all_files())
+
+    assert files == [drive_file]
+    assert f"failed with status {expected_status}" in caplog.text
+    assert "November 2026" in caplog.text
+
+
+@pytest.mark.parametrize("error, expected_status", RETIRED_API_ERRORS)
+def test_shared_items_scope_raises_config_error_when_shared_with_me_is_unavailable(error, expected_status):
+    reader = _shared_items_reader("SHARED_ITEMS")
+    execute = _raise_on_shared_with_me(error)
+
+    with (
+        patch.object(SourceMicrosoftSharePointStreamReader, "one_drive_client", new_callable=PropertyMock) as mock_client,
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry", side_effect=execute),
+    ):
+        execute.shared_with_me_query = mock_client.return_value.me.drive.shared_with_me.return_value
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            list(reader.get_all_files())
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert f"failed with status {expected_status}" in exc_info.value.message
+    assert "sharedWithMe" in exc_info.value.message
+    assert "ACCESSIBLE_DRIVES" in exc_info.value.message
+    assert "OneDrive" in exc_info.value.message
+
+
+@pytest.mark.parametrize("search_scope", ["ALL", "SHARED_ITEMS"])
+@pytest.mark.parametrize("status_code", [HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN])
+def test_shared_with_me_auth_errors_are_reported_as_permission_errors(search_scope, status_code):
+    reader = _shared_items_reader(search_scope)
+    execute = _raise_on_shared_with_me(_shared_with_me_http_error(status_code, "accessDenied"))
+
+    with (
+        patch.object(SourceMicrosoftSharePointStreamReader, "drives", new_callable=PropertyMock, return_value=[]),
+        patch.object(SourceMicrosoftSharePointStreamReader, "one_drive_client", new_callable=PropertyMock) as mock_client,
+        patch.object(SourceMicrosoftSharePointStreamReader, "_get_files_by_drive_name", return_value=iter([])),
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry", side_effect=execute),
+    ):
+        execute.shared_with_me_query = mock_client.return_value.me.drive.shared_with_me.return_value
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            list(reader.get_all_files())
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert f"failed with status {status_code.value} (accessDenied)" in exc_info.value.message
+    assert "Files.Read.All" in exc_info.value.message
+    assert "November 2026" not in exc_info.value.message
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        pytest.param(_shared_with_me_http_error(HTTPStatus.INTERNAL_SERVER_ERROR), id="server_error"),
+        pytest.param(_shared_with_me_http_error(HTTPStatus.CONFLICT), id="other_client_error"),
+        pytest.param(
+            AirbyteTracedException("Maximum number of retries of 5 exceeded for execute_query.", failure_type=FailureType.system_error),
+            id="retries_exhausted",
+        ),
+    ],
+)
+def test_shared_with_me_unexpected_errors_are_not_suppressed(error):
+    reader = _shared_items_reader("ALL")
+    execute = _raise_on_shared_with_me(error)
+
+    with (
+        patch.object(SourceMicrosoftSharePointStreamReader, "drives", new_callable=PropertyMock, return_value=[]),
+        patch.object(SourceMicrosoftSharePointStreamReader, "one_drive_client", new_callable=PropertyMock) as mock_client,
+        patch.object(SourceMicrosoftSharePointStreamReader, "_get_files_by_drive_name", return_value=iter([])),
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry", side_effect=execute),
+    ):
+        execute.shared_with_me_query = mock_client.return_value.me.drive.shared_with_me.return_value
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            list(reader.get_all_files())
+
+    assert exc_info.value is error
+
+
+def test_all_scope_keeps_drive_files_when_shared_with_me_returns_no_items(caplog):
+    reader = _shared_items_reader("ALL")
+    drive_file = _drive_file()
+    execute = _return_on_shared_with_me([])
+
+    with (
+        patch.object(SourceMicrosoftSharePointStreamReader, "drives", new_callable=PropertyMock, return_value=[]),
+        patch.object(SourceMicrosoftSharePointStreamReader, "one_drive_client", new_callable=PropertyMock) as mock_client,
+        patch.object(SourceMicrosoftSharePointStreamReader, "_get_files_by_drive_name", return_value=iter([drive_file])),
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry", side_effect=execute),
+        caplog.at_level(logging.WARNING, logger="airbyte"),
+    ):
+        execute.shared_with_me_query = mock_client.return_value.me.drive.shared_with_me.return_value
+        files = list(reader.get_all_files())
+
+    assert files == [drive_file]
+    assert "sharedWithMe returned no shared items" in caplog.text
+
+
+def test_shared_items_scope_raises_config_error_when_shared_with_me_returns_no_items():
+    reader = _shared_items_reader("SHARED_ITEMS")
+    execute = _return_on_shared_with_me([])
+
+    with (
+        patch.object(SourceMicrosoftSharePointStreamReader, "one_drive_client", new_callable=PropertyMock) as mock_client,
+        patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry", side_effect=execute),
+    ):
+        execute.shared_with_me_query = mock_client.return_value.me.drive.shared_with_me.return_value
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            list(reader.get_matching_files(["**"], None, logging.getLogger("airbyte")))
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "sharedWithMe" in exc_info.value.message
+    assert "ACCESSIBLE_DRIVES" in exc_info.value.message
+    assert "glob patterns" in exc_info.value.message
+
+
+def test_service_auth_skips_shared_with_me_for_all_scope(caplog):
+    reader = _shared_items_reader("ALL")
+    reader._config.credentials = MagicMock(auth_type="Service")
+    drive_file = _drive_file()
+
+    with (
+        patch.object(SourceMicrosoftSharePointStreamReader, "drives", new_callable=PropertyMock, return_value=[]),
+        patch.object(SourceMicrosoftSharePointStreamReader, "one_drive_client", new_callable=PropertyMock) as mock_client,
+        patch.object(SourceMicrosoftSharePointStreamReader, "_get_files_by_drive_name", return_value=iter([drive_file])),
+        caplog.at_level(logging.WARNING, logger="airbyte"),
+    ):
+        files = list(reader.get_all_files())
+
+    assert files == [drive_file]
+    mock_client.return_value.me.drive.shared_with_me.assert_not_called()
+    assert "Service Key authentication" in caplog.text
+
+
+def test_service_auth_with_shared_items_scope_raises_config_error():
+    reader = _shared_items_reader("SHARED_ITEMS")
+    reader._config.credentials = MagicMock(auth_type="Service")
+
+    with patch.object(SourceMicrosoftSharePointStreamReader, "one_drive_client", new_callable=PropertyMock) as mock_client:
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            list(reader.get_all_files())
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "Service Key authentication" in exc_info.value.message
+    assert "ACCESSIBLE_DRIVES" in exc_info.value.message
+    mock_client.return_value.me.drive.shared_with_me.assert_not_called()
+
+
+def test_shared_items_scope_with_no_files_names_shared_with_me_deprecation():
+    reader = _shared_items_reader("SHARED_ITEMS")
+
+    with patch.object(SourceMicrosoftSharePointStreamReader, "get_all_files", return_value=iter([])):
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            list(reader.get_matching_files(["**"], None, logging.getLogger("airbyte")))
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "sharedWithMe" in exc_info.value.message
+    assert "ACCESSIBLE_DRIVES" in exc_info.value.message
+
+
+def test_all_scope_with_no_files_keeps_generic_error():
+    reader = _shared_items_reader("ALL")
+
+    with patch.object(SourceMicrosoftSharePointStreamReader, "get_all_files", return_value=iter([])):
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            list(reader.get_matching_files(["**"], None, logging.getLogger("airbyte")))
+
+    assert exc_info.value.message == "Drive is empty or does not exist."

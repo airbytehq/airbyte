@@ -152,7 +152,7 @@ internal class RedshiftValueCoercerTest {
     fun `validate nullifies number exceeding maximum`() {
         val result =
             coercer.validate(
-                enriched(NumberValue(NUMERIC_MAX.multiply(BigDecimal.TEN)), NumberType)
+                enriched(NumberValue(NUMERIC_MAX.multiply(BigDecimal.TEN)), NumberType),
             )
         assertShouldNullify(result)
     }
@@ -161,7 +161,7 @@ internal class RedshiftValueCoercerTest {
     fun `validate nullifies number below minimum`() {
         val result =
             coercer.validate(
-                enriched(NumberValue(NUMERIC_MIN.multiply(BigDecimal.TEN)), NumberType)
+                enriched(NumberValue(NUMERIC_MIN.multiply(BigDecimal.TEN)), NumberType),
             )
         assertShouldNullify(result)
     }
@@ -236,7 +236,7 @@ internal class RedshiftValueCoercerTest {
                 linkedMapOf(
                     "foo" to IntegerValue(1),
                     "bar" to IntegerValue(2),
-                )
+                ),
             )
         val result =
             coercer.validate(
@@ -247,7 +247,7 @@ internal class RedshiftValueCoercerTest {
                         additionalProperties = true,
                         required = emptyList(),
                     ),
-                )
+                ),
             )
         assertEquals(ValidationResult.Valid, result)
     }
@@ -271,11 +271,11 @@ internal class RedshiftValueCoercerTest {
                                     ObjectValue(
                                         linkedMapOf<String, AirbyteValue>(
                                             "l3" to StringValue("deep"),
-                                        )
+                                        ),
                                     ),
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         val result =
             coercer.validate(
@@ -286,7 +286,7 @@ internal class RedshiftValueCoercerTest {
                         additionalProperties = true,
                         required = emptyList(),
                     ),
-                )
+                ),
             )
         assertEquals(ValidationResult.Valid, result)
     }
@@ -310,7 +310,7 @@ internal class RedshiftValueCoercerTest {
                 linkedMapOf(
                     "id" to StringValue("abc-123"),
                     "signature" to StringValue("a".repeat(VARCHAR_MAX_BYTES + 1)),
-                )
+                ),
             )
         val result =
             coercer.validate(
@@ -321,7 +321,7 @@ internal class RedshiftValueCoercerTest {
                         additionalProperties = true,
                         required = emptyList(),
                     ),
-                )
+                ),
             )
         assertShouldNullify(result)
     }
@@ -333,7 +333,7 @@ internal class RedshiftValueCoercerTest {
                 linkedMapOf(
                     "id" to StringValue("abc-123"),
                     "data" to StringValue("a".repeat(VARCHAR_MAX_BYTES)),
-                )
+                ),
             )
         val result =
             coercer.validate(
@@ -344,7 +344,7 @@ internal class RedshiftValueCoercerTest {
                         additionalProperties = true,
                         required = emptyList(),
                     ),
-                )
+                ),
             )
         assertEquals(ValidationResult.Valid, result)
     }
@@ -356,7 +356,7 @@ internal class RedshiftValueCoercerTest {
                 listOf(
                     StringValue("small"),
                     StringValue("a".repeat(70000)),
-                )
+                ),
             )
         val result = coercer.validate(enriched(arr, ArrayType(FieldType(StringType, false))))
         assertShouldNullify(result)
@@ -375,11 +375,11 @@ internal class RedshiftValueCoercerTest {
                                         linkedMapOf<String, AirbyteValue>(
                                             "huge" to
                                                 StringValue("x".repeat(VARCHAR_MAX_BYTES + 1)),
-                                        )
+                                        ),
                                     ),
-                            )
+                            ),
                         ),
-                )
+                ),
             )
         val result =
             coercer.validate(
@@ -390,7 +390,7 @@ internal class RedshiftValueCoercerTest {
                         additionalProperties = true,
                         required = emptyList(),
                     ),
-                )
+                ),
             )
         assertShouldNullify(result)
     }
@@ -404,7 +404,7 @@ internal class RedshiftValueCoercerTest {
                     "count" to IntegerValue(42),
                     "active" to BooleanValue(true),
                     "tags" to ArrayValue(listOf(StringValue("a"), StringValue("b"))),
-                )
+                ),
             )
         val result =
             coercer.validate(
@@ -415,7 +415,7 @@ internal class RedshiftValueCoercerTest {
                         additionalProperties = true,
                         required = emptyList(),
                     ),
-                )
+                ),
             )
         assertEquals(ValidationResult.Valid, result)
     }
@@ -427,7 +427,7 @@ internal class RedshiftValueCoercerTest {
             ObjectValue(
                 linkedMapOf(
                     "data" to StringValue("\uD83D\uDE00".repeat(16384)),
-                )
+                ),
             )
         val result =
             coercer.validate(
@@ -438,7 +438,7 @@ internal class RedshiftValueCoercerTest {
                         additionalProperties = true,
                         required = emptyList(),
                     ),
-                )
+                ),
             )
         assertShouldNullify(result)
     }
@@ -450,7 +450,7 @@ internal class RedshiftValueCoercerTest {
             ObjectValue(
                 linkedMapOf(
                     "data" to StringValue("é".repeat(32000)),
-                )
+                ),
             )
         val result =
             coercer.validate(
@@ -461,7 +461,7 @@ internal class RedshiftValueCoercerTest {
                         additionalProperties = true,
                         required = emptyList(),
                     ),
-                )
+                ),
             )
         assertEquals(ValidationResult.Valid, result)
     }

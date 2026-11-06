@@ -15,7 +15,7 @@ interface NamingConventionTransformer {
      *
      * @param name of the identifier to check proper naming conventions
      * @return modified name with invalid characters replaced by '_' and adapted for the chosen
-     * destination.
+     *   destination.
      */
     fun getIdentifier(name: String): String
 
@@ -30,7 +30,7 @@ interface NamingConventionTransformer {
      *
      * @param name of the identifier to check proper naming conventions
      * @return modified name with invalid characters replaced by '_' and adapted for the chosen
-     * destination.
+     *   destination.
      */
     @Deprecated("as this is very SQL specific, prefer using getIdentifier instead")
     fun getRawTableName(name: String): String
@@ -40,7 +40,7 @@ interface NamingConventionTransformer {
      *
      * @param name of the identifier to check proper naming conventions
      * @return modified name with invalid characters replaced by '_' and adapted for the chosen
-     * destination.
+     *   destination.
      */
     @Deprecated("as this is very SQL specific, prefer using getIdentifier instead")
     fun getTmpTableName(name: String): String

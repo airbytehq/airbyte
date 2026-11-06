@@ -1,5 +1,15 @@
 # Delighted
 
+:::warning
+
+## Deprecation Notice
+
+The Delighted source connector is archived and is no longer available in the Airbyte Cloud or Open Source connector catalogs. Delighted permanently shut down on July 1, 2026, following its June 30, 2026 sunset. Its API is no longer available, so existing connections cannot sync data.
+
+See the [Delighted Sunset FAQ](https://help.delighted.com/article/840-delighted-sunset-faq) for details. Disable existing Delighted connections. If you previously migrated your data to another platform, configure a separate connector for that platform; changing this connector's credentials will not restore access to Delighted.
+
+:::
+
 This page contains the setup guide and reference information for the [Delighted](https://delighted.com/) source connector.
 
 ## Prerequisites
@@ -58,6 +68,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 0.4.46 | 2026-10-07 | [88199](https://github.com/airbytehq/airbyte/pull/88199) | Archive connector following the Delighted platform shutdown |
+| 0.4.45 | 2026-06-30 | [81033](https://github.com/airbytehq/airbyte/pull/81033) | Update dependencies |
+| 0.4.44 | 2026-06-23 | [80405](https://github.com/airbytehq/airbyte/pull/80405) | Update dependencies |
 | 0.4.43 | 2026-06-16 | [79798](https://github.com/airbytehq/airbyte/pull/79798) | Update dependencies |
 | 0.4.42 | 2026-06-09 | [79239](https://github.com/airbytehq/airbyte/pull/79239) | Update dependencies |
 | 0.4.41 | 2026-06-02 | [78666](https://github.com/airbytehq/airbyte/pull/78666) | Update dependencies |

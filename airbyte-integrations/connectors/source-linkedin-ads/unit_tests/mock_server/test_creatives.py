@@ -63,7 +63,7 @@ class TestCreativesStream(TestCase):
     This is a substream of accounts that uses:
     - CursorPagination with pageToken
     - Client-side incremental sync with lastModifiedAt cursor
-    - CompositeErrorHandler for 429, 500, 503 errors with RETRY action
+    - LinkedInAdsErrorHandler with RATE_LIMITED for 429 and RETRY for server errors
     - SubstreamPartitionRouter to iterate over parent accounts
     """
 
@@ -275,10 +275,9 @@ class TestCreativesStream(TestCase):
     @HttpMocker()
     def test_rate_limit_error_handling(self, http_mocker: HttpMocker):
         """
-        Test that connector handles 429 rate limit errors with RETRY action.
+        Test that connector handles 429 rate limit errors with RATE_LIMITED action.
 
-        NOTE: This test validates the CompositeErrorHandler for creatives.
-        The error handler is configured to RETRY on 429, 500, and 503 errors.
+        The LinkedInAdsErrorHandler uses exponential backoff for rate limits and server errors.
 
         Given: An API that returns 429 rate limit error followed by success
         When: Running a full refresh sync

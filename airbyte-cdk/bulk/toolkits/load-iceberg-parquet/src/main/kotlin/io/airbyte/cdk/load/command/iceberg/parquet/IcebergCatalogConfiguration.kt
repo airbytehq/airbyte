@@ -18,7 +18,7 @@ import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
  */
 @JsonSchemaTitle("Iceberg Catalog Configuration")
 @JsonSchemaDescription(
-    "A unified configuration object for an Iceberg catalog, including warehouse location, main branch name, and backend-specific settings."
+    "A unified configuration object for an Iceberg catalog, including warehouse location, main branch name, and backend-specific settings.",
 )
 data class IcebergCatalogConfiguration(
     @JsonSchemaTitle("Warehouse Location")
@@ -29,9 +29,9 @@ data class IcebergCatalogConfiguration(
     val mainBranchName: String,
     @JsonSchemaTitle("Catalog Configuration")
     @JsonPropertyDescription(
-        "The specific configuration details of the chosen Iceberg catalog type."
+        "The specific configuration details of the chosen Iceberg catalog type.",
     )
-    val catalogConfiguration: CatalogConfiguration
+    val catalogConfiguration: CatalogConfiguration,
 )
 
 /**
@@ -56,9 +56,9 @@ data class GlueCatalogConfiguration(
     override val awsArnRoleConfiguration: AWSArnRoleConfiguration,
     @get:JsonSchemaTitle("Database Name")
     @get:JsonPropertyDescription(
-        """The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`"""
+        """The Glue database name. This will ONLY be used if the `Destination Namespace` setting for the connection is set to `Destination-defined` or `Source-defined`""",
     )
-    val databaseName: String
+    val databaseName: String,
 ) : CatalogConfiguration, AWSArnRoleConfigurationProvider
 
 /**
@@ -79,9 +79,9 @@ data class NessieCatalogConfiguration(
     @get:JsonPropertyDescription(
         """The Nessie namespace to be used in the Table identifier. 
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
-           `Destination-defined` or `Source-defined`"""
+           `Destination-defined` or `Source-defined`""",
     )
-    val namespace: String
+    val namespace: String,
 ) : CatalogConfiguration
 
 /**
@@ -99,9 +99,9 @@ data class RestCatalogConfiguration(
     @get:JsonPropertyDescription(
         """The namespace to be used in the Table identifier. 
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
-           `Destination-defined` or `Source-defined`"""
+           `Destination-defined` or `Source-defined`""",
     )
-    val namespace: String
+    val namespace: String,
 ) : CatalogConfiguration
 
 /**
@@ -111,7 +111,7 @@ data class RestCatalogConfiguration(
  */
 @JsonSchemaTitle("Polaris Catalog Configuration")
 @JsonSchemaDescription(
-    "Apache Polaris-specific configuration details for connecting an Iceberg catalog."
+    "Apache Polaris-specific configuration details for connecting an Iceberg catalog.",
 )
 data class PolarisCatalogConfiguration(
     @JsonSchemaTitle("Polaris Server URI")
@@ -128,19 +128,19 @@ data class PolarisCatalogConfiguration(
     val clientSecret: String,
     @JsonSchemaTitle("OAuth Scope")
     @JsonPropertyDescription(
-        "The OAuth scope for authentication. Must be in the format PRINCIPAL_ROLE:<role_name>."
+        "The OAuth scope for authentication. Must be in the format PRINCIPAL_ROLE:<role_name>.",
     )
     val scope: String,
     @JsonSchemaTitle("OAuth2 Server URI")
     @JsonPropertyDescription(
-        "The OAuth2 token endpoint URI. If not provided, a deprecation warning may be issued as this will become required in future versions."
+        "The OAuth2 token endpoint URI. If not provided, a deprecation warning may be issued as this will become required in future versions.",
     )
     val oauth2ServerUri: String? = null,
     @get:JsonSchemaTitle("Namespace")
     @get:JsonPropertyDescription(
         """The namespace to be used in the Table identifier.
            This will ONLY be used if the `Destination Namespace` setting for the connection is set to
-           `Destination-defined` or `Source-defined`"""
+           `Destination-defined` or `Source-defined`""",
     )
     val namespace: String,
 ) : CatalogConfiguration

@@ -37,7 +37,7 @@ class ProtoToCsvWriter(
     fun toCsvRow(
         record: DestinationRecordRaw,
         src: DestinationRecordProtobufSource,
-        changes: List<Meta.Change>
+        changes: List<Meta.Change>,
     ): Array<Any?> {
         rowBuf[idxRawId] = record.airbyteRawId.toString()
 
@@ -59,7 +59,7 @@ class ProtoToCsvWriter(
                 val index =
                     rowIndex[column.name]
                         ?: throw IllegalArgumentException(
-                            "Column '${column.name}' not found in row index"
+                            "Column '${column.name}' not found in row index",
                         )
                 rowBuf[index] = fetchValue(proxy, column)
                 i++
@@ -131,10 +131,10 @@ class ProtoToCsvWriter(
             is StringType -> proxy.getString(field)?.let { "\"${escape(it)}\"" } ?: "null"
             is DateType -> proxy.getDate(field)?.let { "\"$it\"" } ?: "null"
             is TimeTypeWithTimezone -> proxy.getTimeWithTimezone(field)?.let { "\"$it\"" } ?: "null"
-            is TimeTypeWithoutTimezone -> proxy.getTimeWithoutTimezone(field)?.let { "\"$it\"" }
-                    ?: "null"
-            is TimestampTypeWithTimezone -> proxy.getTimestampWithTimezone(field)?.let { "\"$it\"" }
-                    ?: "null"
+            is TimeTypeWithoutTimezone ->
+                proxy.getTimeWithoutTimezone(field)?.let { "\"$it\"" } ?: "null"
+            is TimestampTypeWithTimezone ->
+                proxy.getTimestampWithTimezone(field)?.let { "\"$it\"" } ?: "null"
             is TimestampTypeWithoutTimezone ->
                 proxy.getTimestampWithoutTimezone(field)?.let { "\"$it\"" } ?: "null"
             is UnknownType -> "null"

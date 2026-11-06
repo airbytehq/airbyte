@@ -3,21 +3,37 @@ on:
   issues:
     types: [opened, labeled, unlabeled]
 
+permissions:
+  contents: read
+
 jobs:
   shared-issues:
     name: "Add Labels to Issues.  Safe to Merge on fail"
     runs-on: ubuntu-24.04
     steps:
-      # TODO: Replace PAT with a GitHub App token.
-      # The "private-action-loader" action does not seem to be compatible with it,
-      # so we should consider moving off of this specialized action and onto a normal
-      # action step.
-      - name: Run Issue Command from workflow-actions
-        uses: nick-fields/private-action-loader@6fa713597d3de3707f8b7a3029a5c262f32c5bca # v3.0.12
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         with:
-          pal-repo-token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
-          pal-repo-name: airbytehq/workflow-actions@822588f078efcbc84601fff7f56a9ce8658f7c99
-          # the following input gets passed to the private
-          token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
+          owner: airbytehq
+          repositories: |
+            airbyte
+            workflow-actions
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Check out workflow-actions
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: airbytehq/workflow-actions
+          ref: 822588f078efcbc84601fff7f56a9ce8658f7c99
+          token: ${{ steps.app-token.outputs.token }}
+          path: .workflow-actions
+          persist-credentials: false
+
+      - name: Label issue
+        uses: ./.workflow-actions
+        with:
+          token: ${{ steps.app-token.outputs.token }}
           # ref: https://github.com/airbytehq/workflow-actions/blob/main/src/bin_issue.ts
           command: "issue"
