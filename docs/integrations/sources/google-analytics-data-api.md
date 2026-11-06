@@ -332,6 +332,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.11 | 2026-11-05 | [91057](https://github.com/airbytehq/airbyte/pull/91057) | Parse each cursor dimension with its own date format, so `yearWeek` states no longer run months ahead of the data |
 | 2.11.10 | 2026-11-03 | [90580](https://github.com/airbytehq/airbyte/pull/90580) | Update dependencies |
 | 2.11.9 | 2026-10-29 | [76413](https://github.com/airbytehq/airbyte/pull/76413) | Surface expired/revoked OAuth refresh tokens as a `config_error` with a re-authentication message instead of a generic "Something went wrong" error |
 | 2.11.8 | 2026-10-27 | [89937](https://github.com/airbytehq/airbyte/pull/89937) | Update dependencies |
