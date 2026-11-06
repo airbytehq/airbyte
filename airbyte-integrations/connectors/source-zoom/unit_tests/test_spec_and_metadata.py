@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 import yaml
+from requests import Request
 
 from airbyte_cdk.test.entrypoint_wrapper import discover
 from unit_tests.conftest import get_source
@@ -110,6 +111,64 @@ def test_connection_spec_has_titled_fields_and_optional_hidden_authorization_end
     authorization_endpoint = server_to_server["properties"]["authorization_endpoint"]
     assert authorization_endpoint["airbyte_hidden"] is True
     assert authorization_endpoint["default"] == _TOKEN_URL
+
+
+def test_num_workers_is_optional_with_concurrency_bounds():
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    specification = manifest["spec"]["connection_specification"]
+    num_workers = specification["properties"]["num_workers"]
+
+    assert num_workers["type"] == "integer"
+    assert num_workers["title"] == "Number of Concurrent Threads"
+    assert num_workers["default"] == 3
+    assert num_workers["minimum"] == 2
+    assert num_workers["maximum"] == 10
+    assert "num_workers" not in specification.get("required", [])
+
+    concurrency_level = manifest["concurrency_level"]
+    assert concurrency_level["default_concurrency"] == "{{ config.get('num_workers', 3) }}"
+    assert concurrency_level["max_concurrency"] == 10
+
+
+@pytest.fixture(scope="module")
+def source_api_budget():
+    source = get_source(config=CONFIG)
+    first_stream = source.streams(CONFIG)[0]
+    retriever = first_stream._stream_partition_generator._partition_factory._retriever
+    return retriever.requester.api_budget
+
+
+@pytest.mark.parametrize(
+    "path, expected_limit",
+    [
+        ("/v2/report/meetings/abc%252Fdef%253D%253D/participants", 10),
+        ("/v2/report/meetings/123", 10),
+        ("/v2/report/daily", 10),
+        ("/v2/report/users/u1/meetings", 10),
+        ("/v2/past_webinars/x/absentees", 10),
+        ("/v2/users", 20),
+        ("/v2/users/u1/meetings", 20),
+        ("/v2/users/u1/webinars", 20),
+        ("/v2/meetings/1/registrants", 20),
+        ("/v2/webinars/1/panelists", 20),
+        ("/v2/webinars/1/tracking_sources", 20),
+        ("/v2/past_meetings/x/polls", 20),
+        ("/v2/past_webinars/x/qa", 20),
+        ("/v2/chat/users/u1/channels", 20),
+        ("/v2/meetings/1", 30),
+        ("/v2/meetings/1/polls", 30),
+        ("/v2/meetings/1/registrants/questions", 30),
+        ("/v2/webinars/1", 30),
+        ("/v2/zoom_events/events", 30),
+    ],
+)
+def test_api_budget_routes_requests_by_zoom_category(source_api_budget, path, expected_limit):
+    request = Request("GET", f"https://api.zoom.us{path}").prepare()
+    matching_policies = [policy for policy in source_api_budget._policies if policy.matches(request)]
+
+    assert matching_policies
+    assert source_api_budget.get_matching_policy(request) is matching_policies[0]
+    assert matching_policies[0]._bucket.rates[0].limit == expected_limit
 
 
 def test_metadata_has_registry_hosts_heartbeat_and_suggested_streams():
