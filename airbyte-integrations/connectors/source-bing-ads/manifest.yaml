@@ -2857,6 +2857,19 @@ definitions:
   bulk_entity_record_filter:
     type: RecordFilter
     condition: "{{ record['Type'] not in ['Format Version', 'Account'] and not (record.get('Type') or '').endswith(' Error') }}"
+  bulk_entity_state_migrations:
+    - type: CustomStateMigration
+      class_name: source_declarative_manifest.components.BulkStreamsStateMigration
+    - type: LegacyToPerPartitionStateMigration
+    - type: CustomStateMigration
+      class_name: source_declarative_manifest.components.BulkEntityAccountStateMigration
+  bulk_entity_creation_requester:
+    $ref: "#/definitions/base_bulk_stream/retriever/creation_requester"
+    request_body_json:
+      $ref: "#/definitions/base_bulk_stream/retriever/creation_requester/request_body_json"
+      LastSyncTimeInUTC: >-
+        {%- set start_date = stream_interval.get('start_time') -%}
+        {{ str_to_datetime(start_date).isoformat('T', 'milliseconds') if start_date and str_to_datetime(start_date) >= now_utc() - duration('P30D') else "" }}
 
   transformations:
     # Shared by multiple performance report streams (account + ad)
@@ -6399,6 +6412,10 @@ dynamic_streams:
                 $ref: "#/schemas/budget"
           - name: campaigns_bulk
             DownloadEntities: ["Campaigns"]
+            creation_requester:
+              $ref: "#/definitions/bulk_entity_creation_requester"
+            state_migrations:
+              $ref: "#/definitions/bulk_entity_state_migrations"
             record_filter:
               $ref: "#/definitions/bulk_entity_record_filter"
             incremental_sync:
@@ -6409,6 +6426,10 @@ dynamic_streams:
                 $ref: "#/schemas/campaigns_bulk"
           - name: ad_groups_bulk
             DownloadEntities: ["AdGroups"]
+            creation_requester:
+              $ref: "#/definitions/bulk_entity_creation_requester"
+            state_migrations:
+              $ref: "#/definitions/bulk_entity_state_migrations"
             record_filter:
               $ref: "#/definitions/bulk_entity_record_filter"
             incremental_sync:
@@ -6419,6 +6440,10 @@ dynamic_streams:
                 $ref: "#/schemas/ad_groups_bulk"
           - name: ads_bulk
             DownloadEntities: ["Ads"]
+            creation_requester:
+              $ref: "#/definitions/bulk_entity_creation_requester"
+            state_migrations:
+              $ref: "#/definitions/bulk_entity_state_migrations"
             record_filter:
               $ref: "#/definitions/bulk_entity_record_filter"
             incremental_sync:
@@ -6444,6 +6469,14 @@ dynamic_streams:
           create_or_update: true
           field_path: ["retriever", "record_selector", "record_filter"]
           value: "{{components_values.get('record_filter', stream_template_config['retriever']['record_selector']['record_filter'])}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["retriever", "creation_requester"]
+          value: "{{components_values.get('creation_requester', stream_template_config['retriever']['creation_requester'])}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["state_migrations"]
+          value: "{{components_values.get('state_migrations', stream_template_config['state_migrations'])}}"
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: ["schema_loader"]

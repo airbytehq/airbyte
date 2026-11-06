@@ -13,6 +13,7 @@ from requests_mock import Mocker
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStateMessage, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 BULK_URL = "https://bulk.api.bingads.microsoft.com/Bulk/v13/Campaigns/DownloadByAccountIds"
@@ -27,17 +28,35 @@ ACCOUNTS = [1, 2]
 
 @pytest.fixture
 def bulk_accounts(requests_mock: Mocker, mock_auth_token: None, mock_user_query: None) -> None:
+    _mock_accounts(requests_mock, ACCOUNTS)
+
+
+def _mock_accounts(requests_mock: Mocker, accounts: list[int]) -> None:
     requests_mock.post(
         "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search",
-        json={"Accounts": [{"Id": account, "ParentCustomerId": 10, "LastModifiedTime": "2024-01-01T00:00:00"} for account in ACCOUNTS]},
+        json={"Accounts": [{"Id": account, "ParentCustomerId": 10, "LastModifiedTime": "2024-01-01T00:00:00"} for account in accounts]},
     )
 
 
-def _mock_downloads(requests_mock: Mocker, record_type: str, times: list[str], first_id: int = 100, include_errors: bool = False) -> None:
-    requests_mock.post(BULK_URL, json={"DownloadRequestId": "download-id"})
+def _mock_downloads(
+    requests_mock: Mocker,
+    record_type: str,
+    times: list[str],
+    first_id: int = 100,
+    include_errors: bool = False,
+    account: int | None = None,
+) -> None:
+    download_id = f"download-id-{account}" if account is not None else "download-id"
+    download_url = f"https://example.com/bulk-{account}.csv" if account is not None else "https://example.com/bulk.csv"
+    requests_mock.post(
+        BULK_URL,
+        json={"DownloadRequestId": download_id},
+        additional_matcher=lambda request: account is None or request.json()["AccountIds"] == [str(account)],
+    )
     requests_mock.post(
         STATUS_URL,
-        json={"RequestStatus": "Completed", "ResultFileUrl": "https://example.com/bulk.csv", "PercentComplete": 100},
+        json={"RequestStatus": "Completed", "ResultFileUrl": download_url, "PercentComplete": 100},
+        additional_matcher=lambda request: request.json()["RequestId"] == download_id,
     )
     data = StringIO()
     writer = csv.writer(data)
@@ -56,7 +75,7 @@ def _mock_downloads(requests_mock: Mocker, record_type: str, times: list[str], f
     if include_errors:
         error = {"Error": "CampaignServiceEditorialValidationError", "Error Number": "1042"}
         writer.writerow([f"{record_type} Error", "", first_id, 50, "", *[error.get(field, "") for field in extra_fields]])
-    requests_mock.get("https://example.com/bulk.csv", content=gzip.compress(data.getvalue().encode("utf-8-sig")))
+    requests_mock.get(download_url, content=gzip.compress(data.getvalue().encode("utf-8-sig")))
 
 
 def _read(
@@ -69,10 +88,13 @@ def _read(
     return read(get_source(config, state), config, catalog, state)
 
 
-def _assert_requests(requests_mock: Mocker, entity: str, last_sync: str | None) -> None:
+def _assert_requests(
+    requests_mock: Mocker, entity: str, last_sync: str | dict[int, str | None] | None, accounts: list[int] | None = None
+) -> None:
     bodies = [request.json() for request in requests_mock.request_history if request.url == BULK_URL]
     expected = []
-    for account in ACCOUNTS:
+    accounts = ACCOUNTS if accounts is None else accounts
+    for account in accounts:
         body = {
             "AccountIds": [str(account)],
             "DataScope": "EntityData",
@@ -81,12 +103,15 @@ def _assert_requests(requests_mock: Mocker, entity: str, last_sync: str | None) 
             "FormatVersion": "6.0",
             "CompressionType": "GZip",
         }
-        if last_sync:
-            body["LastSyncTimeInUTC"] = last_sync
+        account_sync = last_sync[account] if isinstance(last_sync, dict) else last_sync
+        if account_sync:
+            body["LastSyncTimeInUTC"] = account_sync
         expected.append(body)
     assert sorted(bodies, key=lambda body: body["AccountIds"]) == expected
-    assert len([request for request in requests_mock.request_history if request.url == STATUS_URL]) == 2
-    assert len([request for request in requests_mock.request_history if request.url == "https://example.com/bulk.csv"]) == 2
+    assert len([request for request in requests_mock.request_history if request.url == STATUS_URL]) == len(accounts)
+    assert len([request for request in requests_mock.request_history if request.url.startswith("https://example.com/bulk")]) == len(
+        accounts
+    )
 
 
 def _records(output: EntrypointOutput) -> list[AirbyteRecordMessage]:
@@ -146,6 +171,108 @@ def test_bulk_entities_resume_and_fall_back_after_30_days(
         third = _read(stream_name, config, SyncMode.incremental, _states(second))
         _assert_requests(requests_mock, entity, None)
         _assert_records_and_state(third, "2024-03-31T12:00:00.000+0000")
+
+
+@pytest.mark.parametrize("stream_name, entity, record_type", STREAMS)
+@pytest.mark.parametrize(
+    "resume_at,last_sync",
+    [("2024-04-01T11:00:00Z", "2024-03-02T12:00:00.000+00:00"), ("2024-04-01T18:00:00Z", None)],
+)
+def test_bulk_entities_use_exact_30_day_cutoff(
+    requests_mock: Mocker,
+    bulk_accounts: None,
+    config: dict,
+    stream_name: str,
+    entity: str,
+    record_type: str,
+    resume_at: str,
+    last_sync: str | None,
+) -> None:
+    with freeze_time("2024-03-03"):
+        _mock_downloads(requests_mock, record_type, ["03/01/2024 12:00:00.000", "03/02/2024 12:00:00.000"])
+        first = _read(stream_name, config, SyncMode.incremental)
+        _assert_requests(requests_mock, entity, None)
+        _assert_records_and_state(first, "2024-03-02T12:00:00.000+0000")
+
+    requests_mock.reset_mock()
+    with freeze_time(resume_at):
+        _mock_downloads(requests_mock, record_type, ["03/31/2024 12:00:00.000", "04/01/2024 10:00:00.000"])
+        second = _read(stream_name, config, SyncMode.incremental, _states(first))
+        _assert_requests(requests_mock, entity, last_sync)
+        _assert_records_and_state(second, "2024-04-01T10:00:00.000+0000")
+
+
+@pytest.mark.parametrize("stream_name, entity, record_type", STREAMS)
+@pytest.mark.parametrize("use_global_cursor", [False, True])
+@freeze_time("2024-02-26")
+def test_bulk_entities_restart_accounts_without_partition_state(
+    requests_mock: Mocker,
+    bulk_accounts: None,
+    config: dict,
+    stream_name: str,
+    entity: str,
+    record_type: str,
+    use_global_cursor: bool,
+) -> None:
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            stream_name,
+            {"state": {"Modified Time": "2024-02-25T12:00:00.000+0000"}, "use_global_cursor": use_global_cursor, "states": []},
+        )
+        .build()
+    )
+    _mock_downloads(requests_mock, record_type, ["02/24/2024 12:00:00.000", "02/25/2024 12:00:00.000"])
+
+    output = _read(stream_name, config, SyncMode.incremental, state)
+
+    _assert_requests(requests_mock, entity, None)
+    _assert_records_and_state(output, "2024-02-25T12:00:00.000+0000")
+
+
+@pytest.mark.parametrize("stream_name, entity, record_type", STREAMS)
+def test_bulk_entities_backfill_new_accounts(
+    requests_mock: Mocker, bulk_accounts: None, config: dict, stream_name: str, entity: str, record_type: str
+) -> None:
+    _mock_accounts(requests_mock, [1])
+    with freeze_time("2024-02-26"):
+        _mock_downloads(requests_mock, record_type, ["02/24/2024 12:00:00.000", "02/25/2024 12:00:00.000"], account=1)
+        first = _read(stream_name, config, SyncMode.incremental)
+        assert not first.errors
+        _assert_requests(requests_mock, entity, None, accounts=[1])
+
+    requests_mock.reset_mock()
+    _mock_accounts(requests_mock, ACCOUNTS)
+    with freeze_time("2024-02-27"):
+        _mock_downloads(requests_mock, record_type, ["02/25/2024 12:00:00.000", "02/26/2024 12:00:00.000"], first_id=101, account=1)
+        _mock_downloads(requests_mock, record_type, ["02/20/2024 12:00:00.000", "02/21/2024 12:00:00.000"], first_id=200, account=2)
+        second = _read(stream_name, config, SyncMode.incremental, _states(first))
+        assert not second.errors
+        _assert_requests(requests_mock, entity, {1: "2024-02-25T12:00:00.000+00:00", 2: None})
+        assert sorted((record.data["Account Id"], record.data["Id"]) for record in _records(second)) == [
+            (1, 101),
+            (1, 102),
+            (2, 200),
+            (2, 201),
+        ]
+        assert second.most_recent_state is not None
+        assert sorted(vars(second.most_recent_state.stream_state)["states"], key=lambda item: item["partition"]["account_id"]) == [
+            {"partition": {"account_id": "1"}, "cursor": {"Modified Time": "2024-02-26T12:00:00.000+0000"}},
+            {"partition": {"account_id": "2"}, "cursor": {"Modified Time": "2024-02-21T12:00:00.000+0000"}},
+        ]
+
+    requests_mock.reset_mock()
+    with freeze_time("2024-02-28"):
+        for account in ACCOUNTS:
+            _mock_downloads(requests_mock, record_type, [], account=account)
+        third = _read(stream_name, config, SyncMode.incremental, _states(second))
+        assert not third.errors
+        _assert_requests(requests_mock, entity, {1: "2024-02-26T12:00:00.000+00:00", 2: "2024-02-21T12:00:00.000+00:00"})
+        assert _records(third) == []
+        assert third.most_recent_state is not None
+        assert sorted(vars(third.most_recent_state.stream_state)["states"], key=lambda item: item["partition"]["account_id"]) == sorted(
+            vars(second.most_recent_state.stream_state)["states"], key=lambda item: item["partition"]["account_id"]
+        )
 
 
 @freeze_time("2024-02-26")

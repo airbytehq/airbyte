@@ -20,7 +20,7 @@ The bulk entity streams, including `campaigns_bulk`, `ad_groups_bulk`, and `ads_
 
 The connector currently saves the maximum record `Modified Time`, so inactive accounts can still fall back to full downloads. Microsoft recommends using the account record's `Sync Time` from the previous download; adopting that would require a separate cursor/state change.
 
-The three new entity streams override the initial cursor with `1970-01-01`, so their first download omits `LastSyncTimeInUTC` even when `reports_start_date` is recent. Saved per-account cursors still select deltas on subsequent reads. Existing bulk streams retain their original start-date behavior.
+The three new entity streams override the initial cursor with `1970-01-01`, so each account without saved per-account state receives a full download, even when `reports_start_date` is recent or the account first appears after other accounts have synced. They discard the CDK's cross-account fallback while retaining known-account cursors; global-only state causes a conservative full download. Their cutoff uses the exact timestamp, not just its calendar date. Existing bulk streams retain their original behavior.
 
 **Why this matters:** Applying a report conversion window to bulk entities can turn every sync into a full download. Report streams, including budget summary and custom reports, retain lookback to re-read dated metrics that may change later.
 
@@ -35,6 +35,8 @@ The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads who
 ## 5. Bulk Entity Streams Do Not Cascade Deletions
 
 The Bulk API can return `Status: Deleted` records for explicitly deleted entities, but deleting a campaign or ad group does not produce deleted records for its children. The new `campaigns_bulk`, `ad_groups_bulk`, and `ads_bulk` streams preserve the API's records without synthesizing child deletions. Their flat CSV schemas are separate from the unchanged REST streams.
+
+A full download after an idle account's cursor expires may omit previously deleted entities, and an incremental destination does not remove rows absent from that download. A tombstone without `Modified Time` cannot reliably supersede a timestamped row during cursor-based deduplication. Live deletion timestamps and parent-derived field refresh behavior have not been verified; do not infer either from mock fixtures. Parent-derived fields on child rows can remain stale until those rows are returned again. Authoritative current-state use cases require snapshot reconciliation or a separately configured Full Refresh–Overwrite stream, which removes previous destination history.
 
 **Why this matters:** Incremental ad-group and ad reads cannot identify every deletion without considering parent status or reconciling with a full snapshot. Do not assume a campaign deletion produces an ad-group or ad tombstone.
 
