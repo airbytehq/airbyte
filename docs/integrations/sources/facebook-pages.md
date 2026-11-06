@@ -181,6 +181,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.2 | 2026-11-06 | [0](https://github.com/airbytehq/airbyte/pull/0) | Classify missing pages_read_engagement permission as a config error and lower the default page size to 50 |
 | 3.0.1 | 2026-11-03 | [90914](https://github.com/airbytehq/airbyte/pull/90914) | Require Python 3.11 for future CDK compatibility. |
 | 3.0.0 | 2026-10-13 | [85780](https://github.com/airbytehq/airbyte/pull/85780) | Remove the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking`, and `start_info`, and the `live_videos` edge, from the `page` stream. Remove `current_location`, `genre`, and `network` from nested page objects in the `page` and `post` streams. |
 | 2.1.4 | 2026-09-22 | [86489](https://github.com/airbytehq/airbyte/pull/86489) | Retry Facebook's "Please reduce the amount of data you're asking for" error again instead of failing the sync as a configuration error. |
