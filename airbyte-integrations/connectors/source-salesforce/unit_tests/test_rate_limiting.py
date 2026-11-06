@@ -1,15 +1,15 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import re
 import threading
 from typing import Any
 from unittest import TestCase
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
-import re
-
 import requests
 import requests_mock
+from conftest import generate_stream
 from requests.exceptions import ChunkedEncodingError, InvalidURL
 from source_salesforce.api import (
     _LOGIN_DEDUP_SECONDS,
@@ -23,7 +23,6 @@ from source_salesforce.api import (
 from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
 
 from airbyte_cdk.models import FailureType, SyncMode
-from conftest import generate_stream
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
