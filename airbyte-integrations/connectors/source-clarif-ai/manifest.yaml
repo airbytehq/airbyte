@@ -62,6 +62,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -71,6 +72,13 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          condition: "{{ (record.get('modified_at') or '') | length > 27 }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record.modified_at, '%Y-%m-%dT%H:%M:%S.%fZ') if (record.get('modified_at') or '') | length > 27 else record.get('modified_at') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -133,6 +141,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -142,6 +151,13 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          condition: "{{ (record.get('modified_at') or '') | length > 27 }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record.modified_at, '%Y-%m-%dT%H:%M:%S.%fZ') if (record.get('modified_at') or '') | length > 27 else record.get('modified_at') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -203,6 +219,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -212,6 +229,13 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          condition: "{{ (record.get('modified_at') or '') | length > 27 }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record.modified_at, '%Y-%m-%dT%H:%M:%S.%fZ') if (record.get('modified_at') or '') | length > 27 else record.get('modified_at') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
