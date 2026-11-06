@@ -54,16 +54,17 @@ https://mcp.airbyte.com/mcp?read-only=true
 
 ## Tool restrictions
 
-| Header                          | Allowed values                | Effect                                                                                                                                                                       |
-| :------------------------------ | :---------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `X-MCP-Allow-Pipeline-Changes`  | `1` (enabled), `0` (disabled) | Enabled by default. When set to `0`, hides tools that create, update, rename, or delete sources, destinations, and connections. Running and cancelling syncs stay available. |
-| `X-MCP-Allow-External-Access`   | `1` (enabled), `0` (disabled) | Enabled by default. When set to `0`, hides tools that read data directly from sources and destinations, like SQL and API passthrough queries.                                |
-| `X-MCP-Allow-Destructive-Tools` | `1` (enabled), `0` (disabled) | Enabled by default. When set to `0`, hides destructive tools, like deleting a source, destination, or connection.                                                            |
-| `X-MCP-Exclude-Tools`           | Comma-separated tool names    | When set, hides the named tools. For tool names, see [Airbyte MCP tools](tools.md).                                                                                          |
-| `X-MCP-Include-Modules`         | Comma-separated modules       | When set, shows only tools from these modules: `cloud`, `registry`, `guidance`, `interactive`. Can't be combined with `X-MCP-Exclude-Modules`.                               |
-| `X-MCP-Exclude-Modules`         | Comma-separated modules       | When set, hides tools from these modules. Can't be combined with `X-MCP-Include-Modules`.                                                                                    |
+| Header                          | Allowed values                | Effect                                                                                                                                                                                                              |
+| :------------------------------ | :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `X-MCP-Allow-Pipeline-Changes`  | `1` (enabled), `0` (disabled) | Enabled by default. When set to `0`, hides tools that create, update, rename, or delete sources, destinations, and connections. Running and cancelling syncs stay available.                                        |
+| `X-MCP-Allow-External-Access`   | `1` (enabled), `0` (disabled) | Enabled by default. When set to `0`, hides tools that read data directly from sources and destinations, like SQL and API passthrough queries.                                                                       |
+| `X-MCP-Readonly-Mode`           | `1` (enabled), `0` (disabled) | Disabled by default. When set to `1`, shows only read-only tools. In addition to restricting pipeline edits, this setting also hides tools for running and cancelling syncs. See [Read-only mode](#read-only-mode). |
+| `X-MCP-Allow-Destructive-Tools` | `1` (enabled), `0` (disabled) | Enabled by default. When set to `0`, hides destructive tools, like deleting a source, destination, or connection.                                                                                                   |
+| `X-MCP-Exclude-Tools`           | Comma-separated tool names    | When set, hides the named tools. For tool names, see [Airbyte MCP tools](tools.md).                                                                                                                                 |
+| `X-MCP-Include-Modules`         | Comma-separated modules       | When set, shows only tools from these modules: `cloud`, `registry`, `guidance`, `interactive`. Can't be combined with `X-MCP-Exclude-Modules`.                                                                      |
+| `X-MCP-Exclude-Modules`         | Comma-separated modules       | When set, hides tools from these modules. Can't be combined with `X-MCP-Include-Modules`.                                                                                                                           |
 
-`X-MCP-Allow-Pipeline-Changes`, `X-MCP-Allow-External-Access`, and `X-MCP-Allow-Destructive-Tools` also accept `true` or `yes` for `1`, and `false` or `no` for `0`.
+`X-MCP-Allow-Pipeline-Changes`, `X-MCP-Allow-External-Access`, and `X-MCP-Allow-Destructive-Tools` also accept `true` or `yes` for `1`, and `false` or `no` for `0`. `X-MCP-Readonly-Mode` also accepts `true` for `1`.
 
 ## Delete guard
 
