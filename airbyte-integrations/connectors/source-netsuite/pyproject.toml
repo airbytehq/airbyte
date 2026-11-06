@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.29"
+version = "0.1.30"
 name = "source-netsuite"
 description = "Source implementation for Netsuite."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_netsuite"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^1"
+python = ">=3.10,<3.14"
+airbyte-cdk = "^7"
 requests-oauthlib = "^2.0.0"
 
 [tool.poetry.scripts]
@@ -35,4 +35,3 @@ include = [
     # Run `poe` or `poe --help` to see the list of available tasks.
     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
 ]
-
