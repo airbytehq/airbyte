@@ -26,34 +26,17 @@ Set up your custom image registry. The examples in this article use GitHub, but 
 
 ## Get a list of all Airbyte images
 
-To get a list of Airbyte images for the latest version, use abctl.
+Use abctl to generate the image list for the Helm chart version you plan to install. Replace `<version>` with your chart version, not the Airbyte platform version.
 
 ```bash
-abctl images manifest
+abctl images manifest --chart-version <version>
 ```
 
-You should see something like this:
+If you customize image settings, also pass `--values <your values file>` when generating the list. Generate the list before replacing the registry so you can pull images from their original locations.
 
-```bash
-airbyte/bootloader:1.8.0
-airbyte/connector-builder-server:1.8.0
-airbyte/connector-sidecar:1.8.0
-airbyte/container-orchestrator:1.8.0
-airbyte/cron:1.8.0
-airbyte/db:1.8.0
-airbyte/mc:latest
-airbyte/server:1.8.0
-airbyte/worker:1.8.0
-airbyte/workload-api-server:1.8.0
-airbyte/workload-init-container:1.8.0
-airbyte/workload-launcher:1.8.0
-bitnami/kubectl:1.28.9
-busybox:1.35
-busybox:latest
-curlimages/curl:8.1.1
-airbyte/minio:RELEASE.2023-11-20T22-40-07Z
-temporalio/auto-setup:1.23.0
-```
+The list includes images from containers, init containers, and keys ending in `_IMAGE` in the `airbyte-env` ConfigMap. Searching only for `image:` in Helm output misses images such as `CONNECTOR_SIDECAR_IMAGE`, `CONTAINER_ORCHESTRATOR_IMAGE`, and `WORKLOAD_INIT_IMAGE`.
+
+For charts that use `temporalio/server` and `temporalio/admin-tools`, mirror both images with the same tag. The admin-tools image runs Temporal schema migrations, so its version must match the server version. By default, `temporal.adminTools.image.tag` uses `temporal.image.tag`.
 
 ## Step 1: Customize Airbyte to use your image registry
 
@@ -89,12 +72,17 @@ If your registry requires authentication, you can create a Kubernetes secret and
 
 ## Step 2: Tag and push Airbyte images
 
-Tag and push Airbyte's images to your custom image registry. 
+Pull, tag, and push Airbyte's images to your custom image registry.
 
-In this example, you tag all platform images and push them all to GitHub.
+In this example, you pull all platform images, tag them, and push them to GitHub. Use the same chart version and any image overrides from the list-generation step.
 
 ```bash
-abctl images manifest | xargs -L1 -I{} docker tag {} ghcr.io/NAMESPACE/{} && docker push ghcr.io/NAMESPACE/{}
+abctl images manifest --chart-version <version> > images.txt
+while IFS= read -r image; do
+  docker pull "$image" &&
+    docker tag "$image" "ghcr.io/NAMESPACE/$image" &&
+    docker push "ghcr.io/NAMESPACE/$image" || exit 1
+done < images.txt
 ```
 
 You can also pull Airbyte's connector images from Docker, tag them, and push them to your custom image registry. You must do this prior to adding a source or destination.
@@ -103,8 +91,8 @@ In this example, you pull a connector from Docker, tag it, and push it to GitHub
 
 ```bash
 docker pull airbyte/destination-google-sheets:latest
-docker tag airbyte/desination-google-sheets:latest ghcr.io/NAMESPACE/desination-google-sheets:latest
-docker push ghcr.io/NAMESPACE/destination-google-sheets:latest    
+docker tag airbyte/destination-google-sheets:latest ghcr.io/NAMESPACE/airbyte/destination-google-sheets:latest
+docker push ghcr.io/NAMESPACE/airbyte/destination-google-sheets:latest
 ```
 
 Now, when you install Airbyte, images will come from the custom image registry you configured.
