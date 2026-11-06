@@ -8,7 +8,7 @@ products: all
 
 Airbyte strives to create resilient syncs that can handle many types of issues (for example, networking issues, flaky source APIs or under provisioned
 destination servers). Whenever possible, Airbyte syncs are resumable. “Resumable” in this context means that if something goes wrong in the first attempt
-of your sync, Airbyte can try again with a subsequent attempt, subject to the [retry rules](jobs.md#retry-rules). Progress doesn't allow unlimited retries: by default in Airbyte Core and Self-Managed Enterprise, a job fails after 10 failed attempts that sync some data. Attempts that sync no data use a backoff before retrying.
+of your sync, Airbyte can try again with a subsequent attempt, subject to the [retry rules](jobs.md#retry-rules). Progress doesn't allow unlimited retries: by default in Airbyte Core, a job fails after 10 failed attempts that sync some data. Attempts that sync no data use a backoff before retrying.
 In order to achieve this resumability, Airbyte may deliver a record more than once - **Airbyte is a deliver at-least-once system**.
 
 Consider a Postgres source. We could build a query that does `select * from users`, which would guarantee that each row is emitted only once, but that would lead to some problems:
