@@ -48,7 +48,7 @@ For programmatic configuration, use this parameter name:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 0.2.62 | 2026-11-06 | [0](https://github.com/airbytehq/airbyte/pull/0) | Consolidate the stream error handler into a single handler; no change to retry or 404 handling |
+| 0.2.62 | 2026-11-06 | [91217](https://github.com/airbytehq/airbyte/pull/91217) | Consolidate the stream error handler into a single handler; no change to retry or 404 handling |
 | 0.2.62 | 2026-11-05 | [90324](https://github.com/airbytehq/airbyte/pull/90324) | Consolidate the stream error handler into a single handler; no change to retry or 404 handling |
 | 0.2.61 | 2026-11-03 | [90805](https://github.com/airbytehq/airbyte/pull/90805) | Update dependencies |
 | 0.2.60 | 2026-10-27 | [90066](https://github.com/airbytehq/airbyte/pull/90066) | Update dependencies |
