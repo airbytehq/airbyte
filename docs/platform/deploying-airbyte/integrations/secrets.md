@@ -102,7 +102,7 @@ global:
 
 Airbyte uses static credentials only when both the access key ID and secret access key are non-empty. Otherwise, it uses the AWS SDK default credential chain, which supports environment variables, IAM roles for service accounts (IRSA), and instance profiles. There is no `authenticationType` Helm value for AWS Secrets Manager.
 
-When using an IAM role, the Kubernetes secret must still contain the access key ID and secret access key keys, with empty string values. The chart references both keys even when you don't supply static credentials. By default, these keys are `AWS_SECRET_MANAGER_ACCESS_KEY_ID` and `AWS_SECRET_MANAGER_SECRET_ACCESS_KEY`; use `accessKeyIdSecretKey` and `secretAccessKeySecretKey` to match different key names in your secret.
+When using an IAM role, the Kubernetes secret must still contain both credential keys, with empty values. The chart references both keys even when you don't supply static credentials. By default, these keys are `AWS_SECRET_MANAGER_ACCESS_KEY_ID` and `AWS_SECRET_MANAGER_SECRET_ACCESS_KEY`; use `accessKeyIdSecretKey` and `secretAccessKeySecretKey` to match different key names in your secret.
 
 To decrypt secrets in the secret manager with AWS KMS, configure the `kmsArn` field, and ensure your Kubernetes cluster has pre-existing permissions to read and decrypt secrets.
 
