@@ -69,6 +69,25 @@ def _pending_leaves(jobs: List["AsyncJob"]) -> Iterator["AsyncJob"]:
             yield job
 
 
+def _safe_execute_batch(batch: FacebookAdsApiBatch, jobs: List["AsyncJob"]) -> None:
+    """Execute *batch* until all calls succeed or Facebook retries are exhausted.
+
+    The FB SDK's `FacebookAdsApiBatch.execute()` iterates each item in the
+    JSON batch response and calls `item.get('body')`.  When Facebook returns
+    a non-JSON body (HTML error page, truncated/empty response), the SDK falls
+    back to a raw string, and `.get()` raises `AttributeError`. Re-poll on
+    the next cycle, but enforce job timeouts even when no success callback runs.
+    """
+    try:
+        while batch:
+            batch = batch.execute()
+    except AttributeError:
+        logger.warning("Transient malformed batch response from Facebook (AttributeError during batch.execute); skipping this poll cycle.")
+        for job in _pending_leaves(jobs):
+            if isinstance(job, InsightAsyncJob) and job.elapsed_time and job.elapsed_time > job._job_timeout:
+                job._check_status()
+
+
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     """Update status of each job in the list in a batch, making it most efficient way to update status.
 
@@ -79,16 +98,10 @@ def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     for leaf in _pending_leaves(jobs):
         leaf.update_job(batch=batch)
         if len(batch) >= _FB_MAX_BATCH_SIZE:
-            while batch:
-                # If some of the calls from batch have failed, it returns  a new
-                # FacebookAdsApiBatch object with those calls
-                batch = batch.execute()
+            _safe_execute_batch(batch, jobs)
             batch = api.new_batch()
 
-    while batch:
-        # If some of the calls from batch have failed, it returns  a new
-        # FacebookAdsApiBatch object with those calls
-        batch = batch.execute()
+    _safe_execute_batch(batch, jobs)
 
     # Polling is done — let each parent consolidate any child-produced
     # replacement work (mirrors what ParentAsyncJob.update_job used to do
