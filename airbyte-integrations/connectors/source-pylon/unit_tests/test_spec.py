@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import M
 
 
 @pytest.mark.parametrize(
-    "workers,valid", [(None, True), (1, True), (3, True), (10, True), (0, False), (11, False), (1.5, False), ("3", False)]
+    "workers,valid", [(None, True), (1, False), (2, True), (3, True), (10, True), (0, False), (11, False), (1.5, False), ("3", False)]
 )
 def test_optional_worker_bounds(manifest_path: Path, workers: int | float | str | None, valid: bool) -> None:
     schema = yaml.safe_load(manifest_path.read_text())["spec"]["connection_specification"]

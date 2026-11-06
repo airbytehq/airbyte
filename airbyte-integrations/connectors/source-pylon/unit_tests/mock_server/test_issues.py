@@ -2,11 +2,14 @@
 
 from collections import Counter
 from datetime import datetime, timedelta, timezone
+from threading import Event
+from unittest.mock import patch
 
 import pytest
 from freezegun import freeze_time
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 from mock_server.helpers import BASE, CONFIG, NOW, START, TOKEN, fixture_record, page, run, search_request
@@ -120,8 +123,20 @@ def test_interrupted_read_resumes_from_last_emitted_state(requests_mock):
         return {"data": [record for record in records if start <= record["updated_at"] <= stop]}
 
     requests_mock.post(f"{BASE}/issues/search", json=respond)
-    config = {**CONFIG, "num_workers": 1}
-    first = run("issues", cfg=config, mode=SyncMode.incremental, expecting_exception=True)
+    config = {**CONFIG, "num_workers": 2}
+    first_window_complete = Event()
+    process_partition = PartitionReader.process_partition
+
+    def process_in_order(reader, partition, cursor):
+        start = partition.to_slice()["start_time"]
+        if start != START:
+            assert first_window_complete.wait(timeout=5)
+        process_partition(reader, partition, cursor)
+        if start == START:
+            first_window_complete.set()
+
+    with patch.object(PartitionReader, "process_partition", process_in_order):
+        first = run("issues", cfg=config, mode=SyncMode.incremental, expecting_exception=True)
     assert first.errors
     assert first.state_messages
     messages = list(first.get_message_iterator())
