@@ -67,6 +67,9 @@ data:
     - title: Outreach rate limits
       url: https://api.outreach.io/api/v2/docs#rate-limiting
       type: rate_limits
+    - title: Outreach API schema release notes
+      url: https://developers.outreach.io/api/release-notes/
+      type: api_release_history
     - title: Outreach deprecated features
       url: https://developers.outreach.io/api/deprecated-features/
       type: api_deprecations
