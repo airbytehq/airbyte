@@ -7,6 +7,9 @@ import pytest
 import yaml
 from requests import Request
 
+from airbyte_cdk.sources.declarative.models import ConcurrencyLevel as ConcurrencyLevelModel
+from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+from airbyte_cdk.sources.streams.call_rate import CallRateLimitHit
 from airbyte_cdk.test.entrypoint_wrapper import discover
 from unit_tests.conftest import get_source
 from unit_tests.integration.zoom_mocks import CONFIG, assert_records_match_schema
@@ -130,12 +133,36 @@ def test_num_workers_is_optional_with_concurrency_bounds():
     assert concurrency_level["max_concurrency"] == 10
 
 
-@pytest.fixture(scope="module")
-def source_api_budget():
-    source = get_source(config=CONFIG)
-    first_stream = source.streams(CONFIG)[0]
+@pytest.mark.parametrize(
+    "config, expected_concurrency",
+    [
+        pytest.param({}, 3, id="default"),
+        pytest.param({"num_workers": 2}, 2, id="minimum"),
+        pytest.param({"num_workers": 10}, 10, id="maximum"),
+        pytest.param({"num_workers": 50}, 10, id="capped"),
+    ],
+)
+def test_concurrency_level_resolves_and_respects_maximum(config, expected_concurrency):
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    concurrency_level = ModelToComponentFactory().create_component(
+        model_type=ConcurrencyLevelModel,
+        component_definition=manifest["concurrency_level"],
+        config=config,
+    )
+
+    assert concurrency_level.get_concurrency_level() == expected_concurrency
+
+
+def _get_source_api_budget(config):
+    source = get_source(config=config)
+    first_stream = source.streams(config)[0]
     retriever = first_stream._stream_partition_generator._partition_factory._retriever
     return retriever.requester.api_budget
+
+
+@pytest.fixture(scope="module")
+def source_api_budget():
+    return _get_source_api_budget(CONFIG)
 
 
 @pytest.mark.parametrize(
@@ -169,6 +196,28 @@ def test_api_budget_routes_requests_by_zoom_category(source_api_budget, path, ex
     assert matching_policies
     assert source_api_budget.get_matching_policy(request) is matching_policies[0]
     assert matching_policies[0]._bucket.rates[0].limit == expected_limit
+
+
+@pytest.mark.parametrize(
+    "path, limit",
+    [
+        pytest.param("/v2/report/meetings/abc/participants", 10, id="heavy"),
+        pytest.param("/v2/users", 20, id="medium"),
+        pytest.param("/v2/meetings/123", 30, id="light"),
+    ],
+)
+def test_api_budget_enforces_category_rate_limit(path, limit):
+    api_budget = _get_source_api_budget(CONFIG)
+    request = Request("GET", f"https://api.zoom.us{path}").prepare()
+    policy = api_budget.get_matching_policy(request)
+
+    assert policy is not None
+    assert policy._bucket.rates[0].limit == limit
+    for _ in range(limit):
+        policy.try_acquire(request, weight=1)
+
+    with pytest.raises(CallRateLimitHit):
+        policy.try_acquire(request, weight=1)
 
 
 def test_metadata_has_registry_hosts_heartbeat_and_suggested_streams():
