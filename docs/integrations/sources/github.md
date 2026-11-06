@@ -59,7 +59,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
    - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
    <!-- /env:oss -->
 
-   - **GitHub App:** Authenticate as one or more [GitHub App installations](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/about-authentication-with-a-github-app). For each installation, enter the app's **App ID** (or Client ID), the **Installation ID** and the app's **Private Key** (the full contents of the downloaded `.pem` file). The connector requests a one-hour installation access token for each installation and renews it before it expires. Each installation has its own rate limit, so the connector rotates between installations the same way it rotates between multiple personal access tokens. Every installation must have access to all the repositories you configure.
+   - **GitHub App:** Authenticate as one or more [GitHub App installations](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/about-authentication-with-a-github-app). For each installation, enter the app's **App ID** (or Client ID), the **Installation ID** and the app's **Private Key** (the full contents of the downloaded `.pem` file). The connector requests a one-hour installation access token for each installation and renews it before it expires. Each installation has its own rate limit, so the connector rotates between installations the same way it rotates between multiple personal access tokens. Every installation must have access to all the repositories you configure, so each one must be a different GitHub App installed on the same organization or account. A GitHub App can be installed only once per organization or account: to sync several organizations with one app, create one connection per organization.
 
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
 
@@ -247,7 +247,7 @@ In the event that limits are reached before all streams have been read, it is re
 2. Set a higher sync interval.
 3. Divide the sync into separate connections with a smaller number of streams.
 4. Provide multiple personal access tokens in the **Personal Access Tokens** field, separated by commas. The connector rotates through all tokens and only waits once every token's rate limit is exhausted.
-5. Authenticate with a GitHub App and add more installations. Each installation has its own rate limit, and the connector rotates between them like multiple personal access tokens.
+5. Authenticate with a GitHub App and add installations of other GitHub Apps on the same organization or account. Each installation has its own rate limit, and the connector rotates between them like multiple personal access tokens.
 
 :::
 

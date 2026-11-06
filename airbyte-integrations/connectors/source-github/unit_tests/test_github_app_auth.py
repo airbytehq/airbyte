@@ -16,7 +16,7 @@ from datetime import timedelta
 import jwt
 import pytest
 import requests
-from components import ConfigNormalization
+from components import ConfigNormalization, GitHubAppInstallationsValidationStrategy
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from freezegun import freeze_time
@@ -27,6 +27,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     FailureType,
+    Status,
     SyncMode,
     Type,
 )
@@ -39,13 +40,18 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 from .utils import get_authenticator, make_source
 
 
-_PRIVATE_KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-_PRIVATE_KEY_PEM = _PRIVATE_KEY.private_bytes(
-    serialization.Encoding.PEM, serialization.PrivateFormat.TraditionalOpenSSL, serialization.NoEncryption()
-).decode()
-_PUBLIC_KEY = _PRIVATE_KEY.public_key()
+def _private_key_pem(private_key):
+    return private_key.private_bytes(
+        serialization.Encoding.PEM, serialization.PrivateFormat.TraditionalOpenSSL, serialization.NoEncryption()
+    ).decode()
 
-_INSTALLATIONS = [("1001", "111"), ("1001", "222")]
+
+# One key per app. A GitHub App has one installation per account, so installations that can all read
+# the same repositories belong to different apps installed on the same owner.
+_PRIVATE_KEYS = {app_id: rsa.generate_private_key(public_exponent=65537, key_size=2048) for app_id in ("1001", "2002")}
+_PRIVATE_KEY_PEMS = {app_id: _private_key_pem(key) for app_id, key in _PRIVATE_KEYS.items()}
+
+_INSTALLATIONS = [("1001", "111"), ("2002", "222")]
 
 
 def _app_config(installations=_INSTALLATIONS, **overrides):
@@ -53,7 +59,7 @@ def _app_config(installations=_INSTALLATIONS, **overrides):
         "credentials": {
             "option_title": "GitHub App Credentials",
             "installations": [
-                {"app_id": app_id, "installation_id": installation_id, "private_key": _PRIVATE_KEY_PEM}
+                {"app_id": app_id, "installation_id": installation_id, "private_key": _PRIVATE_KEY_PEMS[app_id]}
                 for app_id, installation_id in installations
             ],
         },
@@ -153,12 +159,14 @@ def test_login_is_signed_with_app_jwt(rate_limit_mock_response, requests_mock):
 
     authenticator(requests.Request("GET", "https://api.github.com/repos/org/repo").prepare())
 
-    for login in logins.values():
+    for app_id, installation_id in _INSTALLATIONS:
+        login = logins[installation_id]
         scheme, token = login.last_request.headers["Authorization"].split(" ")
-        claims = jwt.decode(token, _PUBLIC_KEY, algorithms=["RS256"])
+        # Verifying with the app's own public key proves each login is signed with its own app's key.
+        claims = jwt.decode(token, _PRIVATE_KEYS[app_id].public_key(), algorithms=["RS256"])
         assert scheme == "Bearer"
         assert jwt.get_unverified_header(token)["alg"] == "RS256"
-        assert claims["iss"] == "1001"
+        assert claims["iss"] == app_id
         # GitHub rejects an app JWT whose lifetime exceeds 10 minutes; `iat` is backdated for clock drift.
         assert claims["exp"] - claims["iat"] <= 600
         assert claims["iat"] <= claims["exp"] - 540 - 60
@@ -231,3 +239,47 @@ def test_option_title_is_not_overwritten():
     ConfigNormalization().transform(config)
 
     assert config["credentials"] == {"option_title": "OAuth Credentials", "access_token": "oauth-token"}
+
+
+def test_same_app_for_two_installations_is_config_error(requests_mock):
+    """Two installations of one app are on different owners, so neither can read the other's private
+    repositories; those would be skipped on 404. `check` rejects the config before any login."""
+    config = _app_config(installations=[("1001", "111"), ("1001", "222")])
+    logins = _mock_logins(requests_mock)
+
+    status = make_source(config=dict(config)).check(logging.getLogger("airbyte"), dict(config))
+
+    assert status.status == Status.FAILED
+    assert "GitHub App 1001 is entered for more than one installation" in status.message
+    assert "one connection per organization" in status.message
+    assert all(login.call_count == 0 for login in logins.values())
+
+
+def test_repeated_app_id_ignores_surrounding_whitespace():
+    with pytest.raises(AirbyteTracedException) as error:
+        GitHubAppInstallationsValidationStrategy().validate([{"app_id": "1001"}, {"app_id": " 1001 "}])
+
+    assert error.value.failure_type == FailureType.config_error
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param([{"app_id": "1001"}, {"app_id": "2002"}], id="different_apps"),
+        pytest.param([{"app_id": "1001"}], id="single_installation"),
+        pytest.param(None, id="not_a_list"),
+    ],
+)
+def test_distinct_apps_pass_validation(value):
+    GitHubAppInstallationsValidationStrategy().validate(value)
+
+
+def test_static_token_config_skips_installation_validation(rate_limit_mock_response, requests_mock):
+    """The validator's path is absent for a PAT config, so it must not fail it."""
+    config = {"credentials": {"option_title": "PAT Credentials", "personal_access_token": "pat"}, "repositories": ["org/repo"]}
+    requests_mock.get("https://api.github.com/repos/org/repo", json={"full_name": "org/repo", "organization": {"login": "org"}})
+    requests_mock.get("https://api.github.com/repos/org/repo/branches", json=[{"name": "main"}])
+
+    status = make_source(config=dict(config)).check(logging.getLogger("airbyte"), dict(config))
+
+    assert status.status == Status.SUCCEEDED, status.message

@@ -259,7 +259,12 @@ no token, so `token_authenticator.tokens` renders a placeholder for a GitHub App
 branch is never selected for such a config; nothing is signed with the placeholder.
 
 Every installation must be able to read every configured repository: any installation can sign
-any request, there is no routing by owner.
+any request, there is no routing by owner. A GitHub App has one installation per account, so two
+installations of the same app are on different owners and cannot read each other's private
+repositories; the other owner's repositories would be skipped on 404 with only a warning.
+`GitHubAppInstallationsValidationStrategy` therefore rejects a repeated `app_id` as a config error.
+Rotation needs different apps installed on the same owner. It cannot catch the same app entered
+once by App ID and once by Client ID.
 
 ## Organizations must be payload-confirmed, never taken from config text
 

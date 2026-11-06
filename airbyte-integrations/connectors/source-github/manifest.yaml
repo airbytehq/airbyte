@@ -20197,7 +20197,7 @@ spec:
               installations:
                 type: array
                 title: GitHub App Installations
-                description: One or more GitHub App installations to authenticate as. Each installation has its own rate limit, so adding installations spreads the API quota consumption across them, like multiple personal access tokens. Every installation must have access to all the configured repositories.
+                description: One or more GitHub App installations to authenticate as. Each installation must belong to a different GitHub App installed on the same organization or account, and must have access to all the configured repositories. Each installation has its own rate limit, so the connector rotates between them like multiple personal access tokens. A GitHub App can be installed only once per organization or account, so to sync several organizations with one app, create one connection per organization.
                 minItems: 1
                 order: 1
                 items:
@@ -20383,3 +20383,10 @@ spec:
         validation_strategy:
           type: CustomValidationStrategy
           class_name: source_declarative_manifest.components.ApiUrlValidationStrategy
+      # A GitHub App has one installation per account, so a repeated App ID means installations on
+      # different owners, whose private repositories the other installation cannot read.
+      - type: DpathValidator
+        field_path: ["credentials", "installations"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.GitHubAppInstallationsValidationStrategy

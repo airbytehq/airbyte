@@ -773,3 +773,30 @@ class ApiUrlValidationStrategy(ValidationStrategy):
         else:
             return
         raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+
+
+class GitHubAppInstallationsValidationStrategy(ValidationStrategy):
+    """Reject two installations of the same GitHub App.
+
+    An app has at most one installation per account, so a repeated App ID means installations on
+    different owners. Each sees only its own owner's private repositories, and the other owner's
+    repositories would be skipped as inaccessible (404) with only a warning.
+    """
+
+    def __init__(self, **kwargs: Any) -> None:
+        pass
+
+    def validate(self, value: Any) -> None:
+        if not isinstance(value, list):
+            return
+        app_ids = [str(item.get("app_id", "")).strip() for item in value if isinstance(item, Mapping)]
+        repeated = sorted({app_id for app_id in app_ids if app_id and app_ids.count(app_id) > 1})
+        if repeated:
+            raise AirbyteTracedException(
+                message=(
+                    f"GitHub App {', '.join(repeated)} is entered for more than one installation. Each installation "
+                    "must belong to a different GitHub App installed on the same organization or account. To sync "
+                    "several organizations with one app, create one connection per organization."
+                ),
+                failure_type=FailureType.config_error,
+            )
