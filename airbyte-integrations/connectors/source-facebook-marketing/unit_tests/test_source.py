@@ -157,6 +157,41 @@ class TestSourceFacebookMarketing:
 
         assert isinstance(spec, ConnectorSpecification)
 
+    @pytest.mark.parametrize(
+        "include_incrementality,insight_options,expected_windows",
+        [
+            pytest.param(
+                True,
+                {},
+                ["1d_click", "7d_click", "28d_click", "1d_view", "incrementality"],
+                id="top_level_enabled_insight_unset",
+            ),
+            pytest.param(
+                False,
+                {"include_incrementality": True},
+                ["1d_click", "7d_click", "28d_click", "1d_view", "incrementality"],
+                id="insight_enabled",
+            ),
+            pytest.param(
+                False,
+                {"include_incrementality": False},
+                ["1d_click", "7d_click", "28d_click", "1d_view"],
+                id="both_disabled",
+            ),
+        ],
+    )
+    def test_custom_insights_include_incrementality(
+        self, api, config, fb_marketing, include_incrementality, insight_options, expected_windows
+    ):
+        config["include_incrementality"] = include_incrementality
+        config["custom_insights"] = [{"name": "Incrementality", "fields": ["account_id"], **insight_options}]
+
+        streams = fb_marketing.streams(config)
+        stream = next(stream for stream in streams if stream.name == "custom_incrementality")
+
+        assert stream.request_params()["action_attribution_windows"] == expected_windows
+        assert stream.action_attribution_windows == expected_windows
+
     def test_get_custom_insights_streams(self, api, config, fb_marketing):
         config["custom_insights"] = [
             {
