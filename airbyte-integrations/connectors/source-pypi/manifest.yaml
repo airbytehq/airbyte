@@ -7,6 +7,8 @@ check:
     - release
     - stats
 definitions:
+  project_error_handler:
+    type: DefaultErrorHandler
   streams:
     project:
       type: DeclarativeStream
@@ -21,6 +23,8 @@ definitions:
           request_headers:
             User-Agent: Airbyte
             Accept: application/json
+          error_handler:
+            $ref: "#/definitions/project_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -763,6 +767,8 @@ streams:
         request_headers:
           User-Agent: Airbyte
           Accept: application/json
+        error_handler:
+          $ref: "#/definitions/project_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
