@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ed2c12aa-375c-4d18-9d3b-7e1f8a23245d
-  dockerImageTag: 0.0.70
+  dockerImageTag: 0.0.71
   dockerRepository: airbyte/source-elasticemail
   githubIssueLabel: source-elasticemail
   icon: icon.svg
@@ -43,3 +43,11 @@ data:
     - title: Elastic Email rate limits
       url: https://elasticemail.com/developers/api-documentation/rate-limiting
       type: rate_limits
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
