@@ -12,4 +12,3 @@ class ShopifyBulkJobStatus(Enum):
     FAILED = "FAILED"
     TIMEOUT = "TIMEOUT"
     ACCESS_DENIED = "ACCESS_DENIED"
-    EXPIRED = "EXPIRED"
