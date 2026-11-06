@@ -1,4 +1,4 @@
-# Freshdesk migration guide
+# Freshdesk Migration Guide
 
 ## Upgrading to 4.0.0
 
