@@ -74,6 +74,27 @@ def test_stream_checkpoint_interval(incremental_config):
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
 
 
+def test_state_setter_accepts_empty_state(incremental_config):
+    stream = IncrementalMicrosoftDataverseStream(**incremental_config)
+    stream.state = {}
+    assert stream.state == {}
+
+
+def test_state_round_trip(incremental_config):
+    stream = IncrementalMicrosoftDataverseStream(**incremental_config)
+    stream.state = {"$deltatoken": "x"}
+    assert stream.state == {"$deltatoken": "x"}
+
+
+def test_request_params(incremental_config):
+    stream = IncrementalMicrosoftDataverseStream(**incremental_config)
+    assert stream.request_params(stream_state={"$deltatoken": "delta"}) == {"$deltatoken": "delta"}
+    assert stream.request_params(
+        stream_state={"$deltatoken": "delta"},
+        next_page_token={"$skiptoken": "skiptoken"},
+    ) == {"$skiptoken": "skiptoken"}
+
+
 def test_parse_request(incremental_config, incremental_response, mocker):
     response_mock, datetime_mock = MagicMock(), MagicMock()
     response_mock.json.return_value = incremental_response
