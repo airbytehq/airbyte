@@ -70,9 +70,9 @@ from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .api import (
+    _REQUEST_TIMEOUT_SECONDS,
     PARENT_SALESFORCE_OBJECTS,
     UNSUPPORTED_FILTERING_STREAMS,
-    _REQUEST_TIMEOUT_SECONDS,
     Salesforce,
     SalesforceTokenProvider,
 )
