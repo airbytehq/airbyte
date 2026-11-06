@@ -260,7 +260,7 @@ In the event of a failure, the Airbyte platform will retry the pipeline. Each of
 Airbyte retries a failed attempt until the job reaches either limit:
 
 - 5 failed attempts that synced no data
-- 5 failed attempts that synced some data
+- 10 failed attempts that synced some data
 
 Each limit counts attempts across the whole job, not only attempts in a row. Airbyte doesn't retry an attempt that fails with a configuration error, such as invalid credentials, because a retry can't fix it.
 
