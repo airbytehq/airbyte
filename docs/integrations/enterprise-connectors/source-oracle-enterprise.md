@@ -27,7 +27,7 @@ The required minimum platform version is v0.58.0 for this connector.
 | SSH Tunnel Connection         | Yes       |                    |
 | Namespaces                    | Yes       | Enabled by default |
 
-From the point of view of the Oracle database instance, the Enterprise Oracle source operates strictly in a read-only fashion.
+From the point of view of the Oracle database instance, the Enterprise Oracle source operates in a read-only fashion, with one exception: CDC syncs against a primary (read-write) instance maintain a small flush table (`LOG_MINING_FLUSH`, one row) that Debezium uses to flush the redo log writer's buffer. CDC syncs against an [Active Data Guard read-only standby](#cdc-against-an-active-data-guard-read-only-standby) perform no writes at all.
 
 ## Getting Started
 
@@ -121,6 +121,27 @@ GRANT SET CONTAINER TO airbyte CONTAINER=ALL;
 ```
 
 The exact set of permissions varies depending on the Oracle database instance version.
+
+#### CDC against an Active Data Guard read-only standby
+
+The connector can run CDC against an Active Data Guard (ADG) read-only physical standby instead of the primary, keeping both the initial load and the log mining workload off the primary database. Configure the connection's host to point at the standby and, in the CDC update method, set the **Instance Type** to _Active Data Guard read-only standby_.
+
+Prerequisites, in addition to the regular CDC setup on the primary (archive logging, database-level and table-level supplemental logging, user grants — all of which replicate to the standby through the redo stream):
+
+1. **Active Data Guard**: the standby must be a physical standby open in read-only mode while managed recovery is applying redo (`OPEN_MODE` of `READ ONLY WITH APPLY`). This is the licensed ADG feature.
+2. **A LogMiner flat-file dictionary**, extracted on the **primary** and readable from the **standby** server's filesystem. On the primary (the directory must be set as `UTL_FILE_DIR` or use a database directory object, per your Oracle version's documentation):
+
+   ```sql
+   EXECUTE DBMS_LOGMNR_D.BUILD('dictionary.ora', '/opt/oracle/dictionary', DBMS_LOGMNR_D.STORE_IN_FLAT_FILE);
+   ```
+
+   Transfer the file to the standby host (or use shared storage) and enter its standby-side path as the **LogMiner Dictionary File Path**. The dictionary is a point-in-time snapshot of the schema: re-extract and replace it after DDL changes to captured tables, or subsequent changes to those tables may fail to resolve.
+3. **Archive logs retained on the standby** long enough to cover the gap between syncs, plus the initial load duration. Mining on a standby works exclusively from archived logs — the standby's active redo cannot be mined while managed recovery holds it — so new changes become visible to the connector only after a redo log switch on the primary. For low-traffic databases, consider forcing periodic log switches (e.g. `ARCHIVE_LAG_TARGET`) to bound the latency.
+4. If the standby has multiple archive destinations and the first valid local one is not the right one to mine, set the **Archive Log Destination** advanced option (e.g. `LOG_ARCHIVE_DEST_2`; a comma-separated preference list is accepted).
+
+The write-related grants from the previous section (`CREATE TABLE`, `CREATE SEQUENCE`, `LOCK ANY TABLE`) are not exercised in standby mode: the connector performs no writes against a standby.
+
+The connection test verifies that the database role and open mode match the configured instance type, and fails with instructions when the connector is pointed at a primary with the standby option set (or at a read-only standby without it).
 
 #### 5. Include the schemas Airbyte should look at when configuring the Airbyte Oracle Source
 
@@ -303,6 +324,9 @@ The connector is still incubating, this section only exists to satisfy Airbyte's
 
 | Version | Date       | Pull Request                                                   | Subject                                               |
 |:--------|:-----------|:---------------------------------------------------------------|:------------------------------------------------------|
+| 0.1.7   | 2026-11-06 | [479](https://github.com/airbytehq/airbyte-enterprise/pull/479) | CDC from an Active Data Guard read-only physical standby (opt-in instance type) |
+| 0.1.6   | 2026-11-06 | [478](https://github.com/airbytehq/airbyte-enterprise/pull/478) | Debezium 3.7.1.Final and Bulk CDK 1.2.3 (critical CVE fixes); groundwork for Active Data Guard standby CDC |
+| 0.1.5   | 2026-10-28 | [473](https://github.com/airbytehq/airbyte-enterprise/pull/473) | Bulk CDK 1.1.22, explicit Debezium 3.4.1 dependency pins |
 | 0.1.4   | 2026-06-16 | [443](https://github.com/airbytehq/airbyte-enterprise/pull/443) | Make CDC heartbeat timeout configurable via `initial_waiting_seconds` |
 | 0.1.3   | -          | -                                                              | Previous changes                                      |
 
