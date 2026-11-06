@@ -94,7 +94,7 @@ By default, the delete tools only delete a source, destination, or connection wh
 Insiders mode shows insiders tools, which are new tools that are still in development, like the Connector Builder project tools. Insiders tools are hidden by default.
 
 :::warning
-Some insiders tools can be unsafe or have side effects. Only turn on insiders mode if your MCP client asks for your approval before it runs tools.
+Some insiders tools can be unsafe or have side effects. Only use insiders mode on clients which support tool approval.
 :::
 
 | Header           | URL parameter | Allowed values                | Effect                                                        |
