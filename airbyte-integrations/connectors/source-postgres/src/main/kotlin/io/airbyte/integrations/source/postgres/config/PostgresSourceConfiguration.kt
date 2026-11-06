@@ -10,7 +10,6 @@ import com.azure.identity.ClientSecretCredentialBuilder
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CdcSourceConfiguration
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
-import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
@@ -20,7 +19,6 @@ import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
-import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -82,7 +80,7 @@ data class PostgresSourceConfiguration(
                     PostgresSourceConfigurationSpecification,
                     PostgresSourceConfiguration,
                 >,
-            supplier: ConfigurationSpecificationSupplier<PostgresSourceConfigurationSpecification>
+            supplier: ConfigurationSpecificationSupplier<PostgresSourceConfigurationSpecification>,
         ) = factory.make(supplier.get())
     }
 }
@@ -95,28 +93,21 @@ data object XminIncrementalConfiguration : IncrementalConfiguration
 
 data class CdcIncrementalConfiguration(
     val initialLoadTimeout: Duration,
-    val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
     val shutdownTimeout: Duration,
     val replicationSlot: String,
     val publication: String,
     val debeziumCommitsLsn: Boolean,
     val heartbeatActionQuery: String?,
     val airbyteHeartbeatTimeout: Duration,
-// TODO: Support this configuration:
-//  initial waiting time in seconds
-//  size of the queue
+    // TODO: Support this configuration:
+    //  initial waiting time in seconds
+    //  size of the queue
 ) : IncrementalConfiguration
-
-enum class InvalidCdcCursorPositionBehavior {
-    FAIL_SYNC,
-    RESET_SYNC,
-}
 
 @Singleton
 class PostgresSourceConfigurationFactory
 @Inject
 constructor(
-    val featureFlags: Set<FeatureFlag>,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
     val socketPaths: List<String> = emptyList(),
@@ -126,7 +117,7 @@ constructor(
         PostgresSourceConfiguration,
     > {
 
-    constructor() : this(emptySet(), STDIO.name, emptyList())
+    constructor() : this(STDIO.name, emptyList())
 
     override fun makeWithoutExceptionHandling(
         pojo: PostgresSourceConfigurationSpecification,
@@ -156,19 +147,9 @@ constructor(
         // Configure SSH tunneling.
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         val sshOpts: SshConnectionOptions =
-            SshConnectionOptions.fromAdditionalProperties(pojo.additionalPropertiesMap)
-
-        // Configure SSL encryption.
-        if (
-            pojo.getEncryptionValue() in
-                listOf(EncryptionDisable, EncryptionAllow, EncryptionPrefer) &&
-                sshTunnel is SshNoTunnelMethod &&
-                featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
-        ) {
-            throw ConfigErrorException(
-                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel."
+            SshConnectionOptions.fromAdditionalProperties(
+                pojo.additionalPropertiesMap ?: emptyMap(),
             )
-        }
 
         val sslJdbcProperties: Map<String, String> = pojo.getEncryptionValue()!!.jdbcProperties()
         jdbcProperties.putAll(sslJdbcProperties)
@@ -208,7 +189,7 @@ constructor(
 
         val namespaces: Set<String> =
             pojo.schemas?.filter { it.isNotBlank() }?.toSet()?.takeUnless { it.isEmpty() }
-                ?: setOf("public")
+                ?: setOf()
 
         return PostgresSourceConfiguration(
             realHost = realHost,
@@ -229,14 +210,14 @@ constructor(
     private fun applyDefaultJdbcProperties(jdbcProperties: MutableMap<String, String>) {
         jdbcProperties.putIfAbsent(
             CONNECT_TIMEOUT.getName(),
-            CONNECT_TIMEOUT.defaultValue.toString()
+            CONNECT_TIMEOUT.defaultValue.toString(),
         )
         jdbcProperties.putIfAbsent(PREPARE_THRESHOLD.getName(), "0")
         jdbcProperties.putIfAbsent(TCP_KEEP_ALIVE.getName(), "true")
     }
 
     private fun fromIncrementalSpec(
-        incrementalSpec: IncrementalConfigurationSpecification
+        incrementalSpec: IncrementalConfigurationSpecification,
     ): IncrementalConfiguration =
         when (incrementalSpec) {
             StandardReplicationMethodConfigurationSpecification ->
@@ -244,23 +225,18 @@ constructor(
             XminReplicationMethodConfigurationSpecification -> XminIncrementalConfiguration
             is CdcReplicationMethodConfigurationSpecification -> {
                 val initialLoadTimeout: Duration =
-                // TODO: Default value is duplicated here and in ConfigurationSpecification
-                Duration.ofHours(incrementalSpec.initialLoadTimeoutHours?.toLong() ?: 8)
-                val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior =
-                    if (incrementalSpec.invalidCdcCursorPositionBehavior == "Fail sync") {
-                        InvalidCdcCursorPositionBehavior.FAIL_SYNC
-                    } else {
-                        InvalidCdcCursorPositionBehavior.RESET_SYNC
-                    }
+                    // TODO: Default value is duplicated here and in ConfigurationSpecification
+                    Duration.ofHours(incrementalSpec.initialLoadTimeoutHours?.toLong() ?: 8)
                 val initialWaitingDuration =
-                // TODO: Default value is duplicated here and in ConfigurationSpecification
-                Duration.ofSeconds(incrementalSpec.initialWaitingSeconds?.toLong() ?: 1200)
+                    // TODO: Default value is duplicated here and in ConfigurationSpecification
+                    Duration.ofSeconds(incrementalSpec.initialWaitingSeconds?.toLong() ?: 1200)
                 val shutdownTimeout: Duration =
-                // TODO: Default value is duplicated here and in ConfigurationSpecification
-                Duration.ofSeconds(incrementalSpec.debeziumShutdownTimeoutSeconds?.toLong() ?: 60)
+                    // TODO: Default value is duplicated here and in ConfigurationSpecification
+                    Duration.ofSeconds(
+                        incrementalSpec.debeziumShutdownTimeoutSeconds?.toLong() ?: 60,
+                    )
                 CdcIncrementalConfiguration(
                     initialLoadTimeout = initialLoadTimeout,
-                    invalidCdcCursorPositionBehavior = invalidCdcCursorPositionBehavior,
                     shutdownTimeout = shutdownTimeout,
                     replicationSlot = incrementalSpec.replicationSlot,
                     publication = incrementalSpec.publication,
@@ -327,7 +303,7 @@ constructor(
                     sslData.clientCertificate,
                     sslData.clientKey,
                     password,
-                    directory = Files.createTempDirectory("ssl-keystore").toString()
+                    directory = Files.createTempDirectory("ssl-keystore").toString(),
                 )
             }
         extraJdbcProperties[CLIENT_KEY_STORE_URL] =

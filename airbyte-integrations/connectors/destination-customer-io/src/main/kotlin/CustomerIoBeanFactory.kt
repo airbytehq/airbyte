@@ -36,7 +36,7 @@ class CustomerIoBeanFactory {
     fun checkOperation(
         factory: DeclarativeDestinationFactory,
         checker: DlqChecker,
-        outputConsumer: OutputConsumer
+        outputConsumer: OutputConsumer,
     ): Operation = CheckOperationV2(factory.createDestinationChecker(checker), outputConsumer)
 
     @Singleton
@@ -44,7 +44,7 @@ class CustomerIoBeanFactory {
         @Value("\${airbyte.connector.config.json}") configAsJsonString: String? = null,
     ): DeclarativeDestinationFactory =
         DeclarativeDestinationFactory(
-            configAsJsonString?.let { Jsons.readTree(configAsJsonString) }
+            configAsJsonString?.let { Jsons.readTree(configAsJsonString) },
         )
 
     @Primary
@@ -78,7 +78,7 @@ class CustomerIoBeanFactory {
     fun httpClient(factory: DeclarativeDestinationFactory): HttpClient {
         if (factory.config == null) {
             throw IllegalArgumentException(
-                "Configuration was not provided and therefore HttpClient can't be instantiated"
+                "Configuration was not provided and therefore HttpClient can't be instantiated",
             )
         }
 

@@ -1,4 +1,4 @@
-version: 6.44.0
+version: 6.45.1
 
 type: DeclarativeSource
 
@@ -23,11 +23,13 @@ spec:
         items:
           type: string
         title: Website URL Property
-        description: The URLs of the website property attached to your GSC account.
+        description: Enter each Search Console property exactly. Domain properties use
+          sc-domain:example.com; URL-prefix properties use the full URL, including protocol
+          and trailing slash, e.g. https://www.example.com/.
           Learn more about properties <a href="https://support.google.com/webmasters/answer/34592?hl=en">here</a>.
         examples:
-        - https://example1.com/
         - sc-domain:example2.com
+        - https://example1.com/
         order: 0
       start_date:
         type: string
@@ -182,7 +184,7 @@ spec:
         order: 6
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 2
         maximum: 100
         default: 40
@@ -232,6 +234,7 @@ spec:
         access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
         extract_output:
           - refresh_token
+          - access_token
       complete_oauth_output_specification:
         type: object
         properties:
@@ -320,15 +323,37 @@ spec:
                 - query
 
 definitions:
+  sites_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 404
+        error_message: "Configured site URL is not a verified Search Console property in this account."
+        failure_type: config_error
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 403
+        error_message: "Configured site URL is not accessible with the account's Search Console permissions."
+        failure_type: config_error
+
   search_analytics_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
+      - type: CustomBackoffStrategy
+        class_name: source_declarative_manifest.components.LoadQuotaBackoffStrategy
       - type: ConstantBackoffStrategy
         backoff_time_in_seconds: 60
+        jitter_range_in_seconds: 15
     response_filters:
       - type: HttpResponseFilter
         action: RATE_LIMITED
         error_message_contains: "Search Analytics QPS quota exceeded"
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        error_message_contains: "Search Analytics load quota exceeded"
       - type: HttpResponseFilter
         action: IGNORE
         error_message_contains: "User does not have sufficient permission"
@@ -389,7 +414,9 @@ definitions:
           endDate: "{{ stream_interval.get('end_time') }}"
           dimensions: "{{ parameters['dimensions'] }}"
           type: "{{ stream_partition.get('search_type') }}"
-          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
+          # Google does not support byProperty for discover or googleNews search types:
+          # https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') or (parameters.get('aggregationType') == 'byProperty' and stream_partition.get('search_type') in ['discover', 'googleNews']) else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
         error_handler:
           $ref: "#/definitions/search_analytics_error_handler"
@@ -405,7 +432,7 @@ definitions:
           inject_into: body_json
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 25000
+          page_size: 5000
           inject_on_first_request: true
       record_selector:
         type: RecordSelector
@@ -460,39 +487,8 @@ definitions:
           - path:
               - search_type
             value: "{{ stream_partition['search_type'] }}"
-      - type: AddFields
-        fields:
-          - path:
-              - date
-            value: "{{ record['keys'][0] }}"
-          - path:
-              - country
-            value: "{{ record['keys'][1] }}"
-          - path:
-              - device
-            value: "{{ record['keys'][2] }}"
-          - path:
-              - page
-            value: "{{ record['keys'][3] }}"
-          - path:
-              - query
-            value: "{{ record['keys'][4] }}"
-      - type: RemoveFields
-        field_pointers:
-          - - keys
-      # The purpose of the following transformation is to
-      # cast the query value as a string. The GSC API allows
-      # users to make queries with a wide array of datatypes resulting
-      # in occasional non-string values. This transformation ensures
-      # the Airbyte Entrypoint can serialize these non-string values.
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - query
-            value: "{{ record['query'] }}"
-            value_type: string
-        condition: "{{ record.get('query', False) }}"
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
@@ -539,9 +535,11 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -585,6 +583,7 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -632,9 +631,11 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][1] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -678,9 +679,11 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - page
             value: "{{ record['keys'][1] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -720,30 +723,8 @@ definitions:
           - path:
               - search_type
             value: "{{ stream_partition['search_type'] }}"
-      - type: AddFields
-        fields:
-          - path:
-              - date
-            value: "{{ record['keys'][0] }}"
-          - path:
-              - query
-            value: "{{ record['keys'][1] }}"
-      - type: RemoveFields
-        field_pointers:
-          - - keys
-      # The purpose of the following transformation is to
-      # cast the query value as a string. The GSC API allows
-      # users to make queries with a wide array of datatypes resulting
-      # in occasional non-string values. This transformation ensures
-      # the Airbyte Entrypoint can serialize these non-string values.
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - query
-            value: "{{ record['query'] }}"
-            value_type: string
-        condition: "{{ record.get('query', False) }}"
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
@@ -785,15 +766,19 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
+            value_type: string
           - path:
               - page
             value: "{{ record['keys'][3] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -839,12 +824,15 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -890,12 +878,15 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -929,6 +920,8 @@ definitions:
         path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}"
         http_method: GET
         authenticator: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/sites_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -954,6 +947,8 @@ definitions:
         path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}/sitemaps"
         http_method: GET
         authenticator: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/sites_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1002,7 +997,7 @@ definitions:
           inject_into: body_json
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 25000
+          page_size: 5000
           inject_on_first_request: true
       record_selector:
         type: RecordSelector
@@ -1010,6 +1005,16 @@ definitions:
           type: DpathExtractor
           field_path:
             - rows
+        # Drop rows where Google returned an empty/null searchAppearance value.
+        # These umbrella rows represent traffic without a specific rich-result classification
+        # (e.g., plain organic blue links). If they are kept, SubstreamPartitionRouter emits
+        # a partition with an empty/null `search_appearance` value, which in turn renders a
+        # malformed `dimensionFilterGroups` expression that the Google Search Console API
+        # silently ignores. The API then returns aggregated metrics across ALL appearance
+        # types, producing duplicate "umbrella" rows in the keyword streams.
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('keys', [None])[0] not in (None, '') }}"
       partition_router:
         - type: ListPartitionRouter
           values: "{{ config['site_urls'] }}"
@@ -1027,6 +1032,7 @@ definitions:
           - path:
               - searchAppearance
             value: "{{ record['keys'][0] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -1038,7 +1044,15 @@ definitions:
       requester:
         type: HttpRequester
         url_base: https://www.googleapis.com/webmasters/v3
-        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
+        # `site_url` is sourced from the parent slice (the parent
+        # `search_appearances_stream` is already partitioned by `site_url`).
+        # Sourcing it from `parent_slice` — rather than from an additional outer
+        # `ListPartitionRouter` on the child — avoids a cartesian-product
+        # explosion across `site_urls` for multi-site configs, which previously
+        # caused each (site_url, searchAppearance) pair to be fetched N times
+        # where N is the number of configured sites. See `type:` below for the
+        # same pattern already applied to `search_type`.
+        path: "/sites/{{  sanitize_url(stream_partition.get('parent_slice', {}).get('site_url')) }}/searchAnalytics/query"
         http_method: POST
         authenticator: "#/definitions/selective_authenticator"
         request_headers:
@@ -1048,9 +1062,15 @@ definitions:
           endDate: "{{ stream_interval.get('end_time') }}"
           dimensions: "{{ parameters.get('dimensions') }}"
           type: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
-          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
+          # Google does not support byProperty for discover or googleNews search types:
+          # https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') or (parameters.get('aggregationType') == 'byProperty' and stream_partition.get('parent_slice', {}).get('search_type') in ['discover', 'googleNews']) else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
-          dimensionFilterGroups: "{{ [{'groupType': 'and', 'filters': {'dimension': 'searchAppearance', 'operator': 'equals', 'expression': stream_partition.get('search_appearance')}}] }}"
+          # The Google Search Console API spec requires `filters` to be an array of filter
+          # objects. The single-dict form was silently tolerated by the API, but the array
+          # form is the documented / spec-compliant shape. See:
+          # https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+          dimensionFilterGroups: "{{ [{'groupType': 'and', 'filters': [{'dimension': 'searchAppearance', 'operator': 'equals', 'expression': stream_partition.get('search_appearance')}]}] }}"
         error_handler:
           $ref: "#/definitions/search_analytics_error_handler"
       paginator:
@@ -1065,7 +1085,7 @@ definitions:
           inject_into: body_json
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 25000
+          page_size: 5000
           inject_on_first_request: true
       record_selector:
         type: RecordSelector
@@ -1074,9 +1094,13 @@ definitions:
           field_path:
             - rows
       partition_router:
-        - type: ListPartitionRouter
-          values: "{{ config['site_urls'] }}"
-          cursor_field: site_url
+        # `site_url` comes from the parent slice — do NOT add an outer
+        # `ListPartitionRouter` for `site_urls` here. The parent
+        # `search_appearances_stream` is already partitioned by `site_url`, so
+        # its slices carry the per-site context. Combining an outer per-site
+        # `ListPartitionRouter` with the parent substream router produces a
+        # cartesian product across all configured sites, which emits duplicate
+        # requests and records for multi-site configs.
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
@@ -1112,35 +1136,21 @@ definitions:
       - query
       - page
       - search_type
+      - search_appearance
     transformations:
       - type: AddFields
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('site_url') }}"
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
-      - type: AddFields
-        fields:
           - path:
-              - date
-            value: "{{ record['keys'][0] }}"
-          - path:
-              - country
-            value: "{{ record['keys'][1] }}"
-          - path:
-              - device
-            value: "{{ record['keys'][2] }}"
-          - path:
-              - query
-            value: "{{ record['keys'][3] }}"
-          - path:
-              - page
-            value: "{{ record['keys'][4] }}"
-      - type: RemoveFields
-        field_pointers:
-          - - keys
+              - search_appearance
+            value: "{{ stream_partition.get('search_appearance') }}"
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
@@ -1166,32 +1176,21 @@ definitions:
       - device
       - query
       - search_type
+      - search_appearance
     transformations:
       - type: AddFields
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('site_url') }}"
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
-      - type: AddFields
-        fields:
           - path:
-              - date
-            value: "{{ record['keys'][0] }}"
-          - path:
-              - country
-            value: "{{ record['keys'][1] }}"
-          - path:
-              - device
-            value: "{{ record['keys'][2] }}"
-          - path:
-              - query
-            value: "{{ record['keys'][3] }}"
-      - type: RemoveFields
-        field_pointers:
-          - - keys
+              - search_appearance
+            value: "{{ stream_partition.get('search_appearance') }}"
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
@@ -1216,29 +1215,38 @@ definitions:
       - device
       - query
       - search_type
+      - search_appearance
     transformations:
       - type: AddFields
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('site_url') }}"
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+          - path:
+              - search_appearance
+            value: "{{ stream_partition.get('search_appearance') }}"
       - type: AddFields
         fields:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
+            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
+            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
+            value_type: string
           - path:
               - query
+            type: AddedFieldDefinition
             value: "{{ record['keys'][3] }}"
+            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -1313,7 +1321,7 @@ dynamic_streams:
             inject_into: body_json
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 25000
+            page_size: 5000
             inject_on_first_request: true
         record_selector:
           type: RecordSelector
@@ -1430,7 +1438,7 @@ api_budget:
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 3) }}"
-  max_concurrency: 50
+  max_concurrency: 100
 
 schemas:
   search_analytics_all_fields:
@@ -1908,6 +1916,11 @@ schemas:
         type:
           - "null"
           - string
+      search_appearance:
+        description: "The type of search appearance (e.g., AMP_BLUE_LINK, RICH_RESULT)."
+        type:
+          - "null"
+          - string
       date:
         description: The date of the search data collected.
         type:
@@ -1974,6 +1987,11 @@ schemas:
         type:
           - "null"
           - string
+      search_appearance:
+        description: "The type of search appearance (e.g., AMP_BLUE_LINK, RICH_RESULT)."
+        type:
+          - "null"
+          - string
       date:
         description: The date when the search data was recorded.
         type:
@@ -2032,6 +2050,11 @@ schemas:
         description: >-
           The type of search (e.g., web search, image search) that generated the
           analytics data.
+        type:
+          - "null"
+          - string
+      search_appearance:
+        description: "The type of search appearance (e.g., AMP_BLUE_LINK, RICH_RESULT)."
         type:
           - "null"
           - string

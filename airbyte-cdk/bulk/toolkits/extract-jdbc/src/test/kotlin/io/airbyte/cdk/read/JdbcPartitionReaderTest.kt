@@ -59,7 +59,7 @@ class JdbcPartitionReaderTest {
                                     And(
                                         GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
                                         LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
-                                    )
+                                    ),
                                 ),
                             ),
                             SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
@@ -68,7 +68,7 @@ class JdbcPartitionReaderTest {
                             idDateString(3, "2024-08-03", "are"),
                             idDateString(4, "2024-08-04", "you"),
                             idDateString(5, "2024-08-05", "today"),
-                        )
+                        ),
                     ),
                 maxSnapshotReadTime = Duration.ofMinutes(1),
             )
@@ -89,7 +89,7 @@ class JdbcPartitionReaderTest {
         )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
-            reader.tryAcquireResources()
+            reader.tryAcquireResources(),
         )
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
@@ -107,7 +107,7 @@ class JdbcPartitionReaderTest {
             "hello how are you today",
             (partition.streamState.streamFeedBootstrap.outputConsumer as BufferingOutputConsumer)
                 .records()
-                .joinToString(separator = " ") { it.data["msg"].asText() }
+                .joinToString(separator = " ") { it.data["msg"].asText() },
         )
         // Release resources
         Assertions.assertEquals(
@@ -137,7 +137,7 @@ class JdbcPartitionReaderTest {
                                     And(
                                         GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
                                         LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
-                                    )
+                                    ),
                                 ),
                                 OrderBy(ts),
                                 Limit(4),
@@ -147,7 +147,7 @@ class JdbcPartitionReaderTest {
                             idDateString(2, "2024-08-02", "how"),
                             idDateString(3, "2024-08-03", "are"),
                             idDateString(4, "2024-08-04", "you"),
-                        )
+                        ),
                     ),
                 maxSnapshotReadTime = Duration.ofMinutes(1),
             )
@@ -174,7 +174,7 @@ class JdbcPartitionReaderTest {
         )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
-            reader.tryAcquireResources()
+            reader.tryAcquireResources(),
         )
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
@@ -201,7 +201,7 @@ class JdbcPartitionReaderTest {
             "hello how",
             (partition.streamState.streamFeedBootstrap.outputConsumer as BufferingOutputConsumer)
                 .records()
-                .joinToString(separator = " ") { it.data["msg"].asText() }
+                .joinToString(separator = " ") { it.data["msg"].asText() },
         )
         // Release resources
         Assertions.assertEquals(
@@ -231,7 +231,7 @@ class JdbcPartitionReaderTest {
                                     And(
                                         GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
                                         LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
-                                    )
+                                    ),
                                 ),
                                 OrderBy(ts),
                                 Limit(4),
@@ -241,7 +241,7 @@ class JdbcPartitionReaderTest {
                             idDateString(2, "2024-08-02", "how"),
                             idDateString(3, "2024-08-03", "are"),
                             idDateString(4, "2024-08-04", "you"),
-                        )
+                        ),
                     ),
                 maxSnapshotReadTime = Duration.ofSeconds(1),
             )
@@ -268,7 +268,7 @@ class JdbcPartitionReaderTest {
         )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
-            readerResumable.tryAcquireResources()
+            readerResumable.tryAcquireResources(),
         )
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
@@ -299,7 +299,7 @@ class JdbcPartitionReaderTest {
                                     And(
                                         GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
                                         LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
-                                    )
+                                    ),
                                 ),
                             ),
                             SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
@@ -308,7 +308,7 @@ class JdbcPartitionReaderTest {
                             idDateString(3, "2024-08-03", "are"),
                             idDateString(4, "2024-08-04", "you"),
                             idDateString(5, "2024-08-05", "today"),
-                        )
+                        ),
                     ),
                 maxSnapshotReadTime = Duration.ofSeconds(1),
             )
@@ -325,7 +325,7 @@ class JdbcPartitionReaderTest {
         val readerNonResumable = JdbcNonResumablePartitionReader(partition2)
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
-            readerNonResumable.tryAcquireResources()
+            readerNonResumable.tryAcquireResources(),
         )
 
         Assertions.assertThrows(TransientErrorException::class.java) {

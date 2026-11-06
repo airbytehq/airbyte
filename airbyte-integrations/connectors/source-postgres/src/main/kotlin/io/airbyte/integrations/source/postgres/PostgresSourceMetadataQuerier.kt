@@ -5,12 +5,15 @@
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.check.CloudHostCheck
 import io.airbyte.cdk.check.JdbcCheckQueries
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
+import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.config.XminIncrementalConfiguration
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -22,16 +25,38 @@ import java.sql.Connection
 class PostgresSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
     val postgresSourceConfig: PostgresSourceConfiguration,
+    private val featureFlags: Set<FeatureFlag>,
 ) : MetadataQuerier by base {
 
     override fun extraChecks() {
         base.extraChecks()
+        validateSslConfiguration()
         if (postgresSourceConfig.incrementalConfiguration is XminIncrementalConfiguration) {
             base.conn.use { conn ->
                 if (dbNumWraparound(conn) > 0) {
                     throw ConfigErrorException(xminWraparoundError)
                 }
             }
+        }
+    }
+
+    /**
+     * Validates that the SSL/SSH configuration is sufficient for Airbyte Cloud. On Cloud, we
+     * require SSL encryption or an SSH tunnel; connections with ssl_mode in
+     * [disable, allow, prefer] and no tunnel are rejected.
+     */
+    private fun validateSslConfiguration() {
+        if (!featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)) {
+            return
+        }
+        val sslMode: String? = postgresSourceConfig.jdbcProperties["sslmode"]
+        val acceptableSslModes = listOf("require", "verify-ca", "verify-full")
+        val hasNoTunnel = postgresSourceConfig.sshTunnel is SshNoTunnelMethod
+        if (sslMode !in acceptableSslModes && hasNoTunnel) {
+            throw ConfigErrorException(
+                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel. " +
+                    "Current SSL mode: $sslMode",
+            )
         }
     }
 
@@ -47,8 +72,9 @@ class PostgresSourceMetadataQuerier(
             log.info { "Querying server xmin wraparound status" }
             val query =
                 """
-            select (txid_snapshot_xmin(txid_current_snapshot()) >> 32) AS num_wraparound
-        """.trimIndent()
+                select (txid_snapshot_xmin(txid_current_snapshot()) >> 32) AS num_wraparound
+                """
+                    .trimIndent()
             conn.createStatement().use { stmt ->
                 stmt.executeQuery(query).use { rs ->
                     if (rs.next()) {
@@ -69,9 +95,12 @@ class Factory(
     val selectQueryGenerator: SelectQueryGenerator,
     val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
     val checkQueries: JdbcCheckQueries,
+    val featureFlags: Set<FeatureFlag>,
     val configuredCatalog: ConfiguredAirbyteCatalog? = null,
 ) : MetadataQuerier.Factory<PostgresSourceConfiguration> {
     override fun session(config: PostgresSourceConfiguration): MetadataQuerier {
+        // Before the connection opens: with an unreachable host the network error would win.
+        CloudHostCheck.validate(config.realHost, config.sshTunnel, featureFlags)
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val base =
             JdbcMetadataQuerier(
@@ -82,6 +111,6 @@ class Factory(
                 checkQueries,
                 jdbcConnectionFactory,
             )
-        return PostgresSourceMetadataQuerier(base, config)
+        return PostgresSourceMetadataQuerier(base, config, featureFlags)
     }
 }

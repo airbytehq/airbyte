@@ -37,8 +37,8 @@ class GcsCsvFormatConfigTest {
                     """{
   "format_type": "CSV",
   "flattening": "Root level flattening"
-}"""
-                )
+}""",
+                ),
             )
 
         val gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config)
@@ -52,7 +52,7 @@ class GcsCsvFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 
@@ -65,8 +65,8 @@ class GcsCsvFormatConfigTest {
                     """{
   "format_type": "CSV",
   "flattening": "Root level flattening"
-}"""
-                )
+}""",
+                ),
             )
 
         val gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config)
@@ -77,7 +77,7 @@ class GcsCsvFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 }

@@ -49,10 +49,15 @@ You can replicate the following tables using the Zenefits connector:
 |      array       |    array     |
 |      object      |    object    |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.21 | 2026-10-27 | [79080](https://github.com/airbytehq/airbyte/pull/79080) | Update dependencies |
 | 0.3.20 | 2025-05-24 | [60785](https://github.com/airbytehq/airbyte/pull/60785) | Update dependencies |
 | 0.3.19 | 2025-05-10 | [60019](https://github.com/airbytehq/airbyte/pull/60019) | Update dependencies |
 | 0.3.18 | 2025-05-04 | [59568](https://github.com/airbytehq/airbyte/pull/59568) | Update dependencies |

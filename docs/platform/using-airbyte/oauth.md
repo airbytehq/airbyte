@@ -37,7 +37,11 @@ In Airbyte Cloud, the process depends on a [connector's support level](/integrat
 
 ### Airbyte connectors
 
-For Airbyte connectors, client credentials are securely managed by Airbyte. You only need to click the authentication button and use the third-party platform's UI to authorize Airbyte. 
+For Airbyte connectors, client credentials are securely managed by Airbyte. You only need to click the authentication button and use the third-party platform's UI to authorize Airbyte.
+
+If your organization needs to use its own OAuth app with an Airbyte connector in Airbyte Cloud, create OAuth override credentials with the Airbyte API before you authorize the connector. You can create overrides for a [workspace](https://reference.airbyte.com/reference/workspaceoauthcredentials) or an [organization](https://reference.airbyte.com/reference/createorupdateorganizationoauthcredentials). Use this when the third-party account must authorize your OAuth app instead of Airbyte's managed OAuth app.
+
+After you create or update an OAuth override, authorize the connector again. The authorization server issues refresh tokens for a specific OAuth app, so you must create the token with the same client credentials Airbyte uses to refresh it.
 
 ### Marketplace and custom connectors
 
@@ -78,6 +82,10 @@ When OAuth connections fail, it's usually one of these problems.
 ### Your token is expired
 
 - Airbyte handles access tokens and refresh tokens for you. If something goes wrong, reauthorize the connector.
+
+### Your OAuth app credentials don't match your refresh token
+
+- In Airbyte Cloud, Airbyte connectors use Airbyte-managed OAuth client credentials by default. If you use a refresh token created with your own OAuth app, create OAuth override credentials for the workspace or organization, and then reauthorize the connector.
 
 ### Redirect URI Mismatch
 

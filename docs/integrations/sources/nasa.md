@@ -36,6 +36,10 @@ The NASA connector should not run into NASA API limitations under normal usage. 
 1. Generate an API Key as described [here](https://api.nasa.gov/).
 2. Use the generated `API Key` in the Airbyte connection.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

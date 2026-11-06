@@ -24,7 +24,7 @@ class KlaviyoRequestBuilder:
     """
 
     BASE_URL = "https://a.klaviyo.com/api"
-    REVISION = "2024-10-15"
+    REVISION = "2026-01-15"
 
     @classmethod
     def profiles_endpoint(cls, api_key: str) -> "KlaviyoRequestBuilder":
@@ -60,6 +60,11 @@ class KlaviyoRequestBuilder:
     def lists_endpoint(cls, api_key: str) -> "KlaviyoRequestBuilder":
         """Create a request builder for the /lists endpoint."""
         return cls("lists", api_key)
+
+    @classmethod
+    def segments_endpoint(cls, api_key: str) -> "KlaviyoRequestBuilder":
+        """Create a request builder for the /segments endpoint."""
+        return cls("segments", api_key)
 
     @classmethod
     def lists_detailed_endpoint(cls, api_key: str, list_id: str) -> "KlaviyoRequestBuilder":

@@ -32,3 +32,34 @@ EXEC sys.sp_cdc_get_captured_columns
     @capture_instance = N'<capture instance (typically schema_table)>';
 ```
 
+### SSH tunnel limitation (Azure SQL Managed Instance)
+
+:::info
+This limitation applies only to Azure SQL **Managed Instance**. Azure SQL Database can connect through an SSH tunnel normally.
+:::
+
+#### Error
+
+Connections to an Azure SQL Managed Instance through an SSH tunnel may fail the source's connection check with one of the
+following errors:
+
+- `Error code: 40532; Cannot open server "localhost" requested by the login. The login failed.`
+- `Login failed for user '<user>@<instance-name>'.` (when the username includes an `@instance-name` suffix)
+
+#### Cause
+
+Azure SQL Managed Instance requires the instance hostname to route connections correctly. When Airbyte connects through
+an SSH tunnel, the connection uses `localhost` instead of the Managed Instance hostname, causing the login to fail.
+
+The `<user>@<instance-name>` workaround supported by Azure SQL Database **does not apply to Azure SQL Managed Instance**.
+
+#### Workaround
+
+Connect without a tunnel, using the Managed Instance [public endpoint](https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/public-endpoint-configure?view=azuresql&tabs=azure-portal):
+
+1. In the Azure portal, enable the public endpoint on your Managed Instance (Security > Networking). The hostname should look like this: `<instance-name>.public.<dns-zone>.database.windows.net`.
+2. In the network security group attached to the Managed Instance subnet, add an inbound rule allowing TCP port 3342 from [Airbyte's IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) only.
+3. In the Airbyte source configuration, use the following settings:
+   - **Port:** 3342 (the public endpoint does not use 1433)
+   - **SSH Tunnel Method:** No Tunnel
+   - **Username:** A plain SQL username without an @instance suffix

@@ -126,6 +126,7 @@ fun interface ColumnNameGenerator {
      * the "canonical" name to check whether two columns will collide.
      */
     data class ColumnName(val displayName: String, val canonicalName: String)
+
     fun getColumnName(column: String): ColumnName
 }
 

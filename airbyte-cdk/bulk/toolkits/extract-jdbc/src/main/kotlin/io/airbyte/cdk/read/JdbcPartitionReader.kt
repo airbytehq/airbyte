@@ -17,7 +17,7 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
@@ -66,7 +66,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
                     .get()
                     .filter { it.value.resource != null }
                     .map { it.key to it.value.resource!! }
-                    .toMap()
+                    .toMap(),
             )
         outputRoute = outputMessageRouter.recordAcceptors[stream.id]!!
 
@@ -99,7 +99,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
             return
         }
         while (PartitionReader.pendingStates.isNotEmpty()) {
-            var pendingMessage = PartitionReader.pendingStates.poll() ?: break
+            val pendingMessage = PartitionReader.pendingStates.poll() ?: break
             when (pendingMessage) {
                 is AirbyteStateMessage -> {
                     outputMessageRouter.acceptNonRecord(pendingMessage)
@@ -133,7 +133,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                 parameters =
                     SelectQuerier.Parameters(
                         reuseResultObject = true,
-                        fetchSize = streamState.fetchSize
+                        fetchSize = streamState.fetchSize,
                     ),
             )
             .use { result: SelectQuerier.Result ->
@@ -157,7 +157,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
             when (streamState.streamFeedBootstrap.dataChannelMedium) {
                 SOCKET -> partitionId
                 STDIO -> null
-            }
+            },
         )
     }
 }
@@ -199,7 +199,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                     lastRecord.set(row)
                     // Check activity periodically to handle timeout.
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
-                        coroutineContext.ensureActive()
+                        currentCoroutineContext().ensureActive()
                     }
                 }
             }
@@ -216,7 +216,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                 when (streamState.streamFeedBootstrap.dataChannelMedium) {
                     SOCKET -> partitionId
                     STDIO -> null
-                }
+                },
             )
         }
         // The run method ended because of either the LIMIT or the timeout.
@@ -240,7 +240,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
             when (streamState.streamFeedBootstrap.dataChannelMedium) {
                 SOCKET -> partitionId
                 STDIO -> null
-            }
+            },
         )
     }
 }
