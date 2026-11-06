@@ -56,6 +56,94 @@ def async_job_mock_fixture(mocker):
 
 
 class TestBaseInsightsStream:
+    @freeze_time("2026-11-05")
+    @pytest.mark.parametrize("record_count", [0, 1])
+    def test_interrupted_lookback_preserves_cursor(self, mocker, api, async_manager_mock, record_count):
+        account_id = "unknown_account"
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 8, 1),
+            end_date=datetime(2026, 9, 25),
+            insights_lookback_window=30,
+        )
+        saved_state = {
+            account_id: {"date_start": "2026-09-20", "slices": ["2026-08-20", "2026-09-20", "2026-09-22"]},
+            "time_increment": 1,
+        }
+        record = mocker.Mock()
+        record.export_all_data.return_value = {}
+
+        def completed_jobs():
+            jobs = list(async_manager_mock.call_args.kwargs["jobs"])
+            for job in jobs[:3]:
+                job.get_result = mocker.Mock(return_value=[record] * record_count)
+                yield job
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=saved_state):
+            assert len(list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))) == record_count
+            assert stream.state[account_id]["date_start"] == "2026-09-20"
+            assert stream.state[account_id]["slices"] == ["2026-09-22"]
+
+    @freeze_time("2026-11-05")
+    @pytest.mark.parametrize(
+        "period,expected_cursor",
+        [(TimeIncrementPeriod.monthly, "2026-10-01"), (TimeIncrementPeriod.weekly, "2026-10-19")],
+    )
+    def test_period_aligned_slices_advance_cursor(self, mocker, api, async_manager_mock, period, expected_cursor):
+        account_id = "unknown_account"
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 8, 1),
+            end_date=datetime(2026, 10, 20),
+            insights_lookback_window=30,
+            time_increment_period=period,
+        )
+        saved_state = {
+            account_id: {"date_start": "2026-09-20"},
+            "time_increment": stream.time_increment,
+            "time_increment_period": period.value,
+        }
+
+        def completed_jobs():
+            jobs = list(async_manager_mock.call_args.kwargs["jobs"])
+            for job in reversed(jobs):
+                job.get_result = mocker.Mock(return_value=[])
+                yield job
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=saved_state):
+            assert list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)) == []
+
+        assert stream.state[account_id]["date_start"] == expected_cursor
+        assert stream.state[account_id]["slices"] == []
+
+    @freeze_time("2026-11-05")
+    def test_failed_slice_does_not_advance_cursor(self, mocker, api, async_manager_mock):
+        account_id = "unknown_account"
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 9, 20),
+            end_date=datetime(2026, 9, 25),
+            insights_lookback_window=0,
+        )
+        saved_state = {account_id: {"date_start": "2026-09-20"}, "time_increment": 1}
+
+        def completed_jobs():
+            jobs = list(async_manager_mock.call_args.kwargs["jobs"])
+            jobs[0].get_result = mocker.Mock(side_effect=RuntimeError("interrupted job"))
+            yield jobs[0]
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=saved_state):
+            with pytest.raises(RuntimeError, match="interrupted job"):
+                list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+
+        assert stream.state == {account_id: {"date_start": "2026-09-20", "slices": []}, "time_increment": 1}
+
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,
@@ -397,6 +485,9 @@ class TestBaseInsightsStream:
 
         result_state = state if not result_state else result_state
         result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
+        account_state = result_state[some_config["account_ids"][0]]
+        if account_state.get("date_start"):
+            account_state["slices"] = [value for value in account_state["slices"] if value > account_state["date_start"]]
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
