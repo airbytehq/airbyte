@@ -19,12 +19,31 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2c25d04-9bb1-4171-8a7a-bb7cead8add0
-  dockerImageTag: 0.2.25
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-goldcast
   githubIssueLabel: source-goldcast
   icon: goldcast.svg
   license: ELv2
   name: Goldcast
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          The `event_members` stream no longer enumerates a fixed list of properties inside
+          `props`. Registration fields are defined per Goldcast workspace, so `props` is now a
+          schemaless object. On S3 and GCS in Avro or Parquet format this changes the `props`
+          column from a record of the eleven listed fields to a JSON string that preserves every
+          field every workspace defines; readers of `props.<field>` need to refresh the source
+          schema and parse the JSON string instead. Database and data-lake destinations (BigQuery,
+          Snowflake, Redshift, Postgres, S3 Data Lake, GCS Data Lake) already store `props` as a
+          complete JSON value and are not affected. Please refer to the
+          [migration guide](https://docs.airbyte.com/integrations/sources/goldcast-migrations) for
+          more information.
+        upgradeDeadline: "2026-10-31"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["event_members"]
   releaseDate: 2024-07-04
   releaseStage: alpha
   supportLevel: community
@@ -34,6 +53,6 @@ data:
     - language:manifest-only
   externalDocumentationUrls:
     - title: Goldcast API documentation
-      url: https://www.goldcast.io/api-docs
+      url: https://apidocs.goldcast.io/
       type: api_reference
 metadataSpecVersion: "1.0"

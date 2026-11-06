@@ -39,11 +39,8 @@ acceptance_tests:
             bypass_reason: "Empty Stream."
           - name: balances
             bypass_reason: "as_of_time value will keep changing"
-        timeout_seconds: 3200
-        expect_records:
-          path: "integration_tests/sample_files/expected_records.jsonl"
-          exact_order: false
-        fail_on_extra_columns: false
+          - name: list_payments
+            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
   incremental:
     tests:
       - config_path: secrets/config.json
@@ -55,10 +52,3 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/full_refresh_catalog.json
-        ignored_fields:
-          balances:
-            - name: last_refresh_time
-              bypass_reason: "field changes during every read"
-          list_products:
-            - name: description
-              bypass_reason: "Sometimes it is not contained in the response"

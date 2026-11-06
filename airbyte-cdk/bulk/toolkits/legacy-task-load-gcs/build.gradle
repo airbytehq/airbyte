@@ -8,6 +8,5 @@ dependencies {
 
     api 'com.google.cloud:google-cloud-storage'
 
-    testImplementation 'io.mockk:mockk:1.13.17'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
 }

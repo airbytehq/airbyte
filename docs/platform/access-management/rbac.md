@@ -6,6 +6,10 @@ products: cloud-teams
 
 Role Based Access Control allows a user with Administrative access to apply roles to users, granting different levels of permission within an organization or workspace.
 
+:::note
+RBAC is available on Pro and Enterprise Flex. On Standard and Plus, every user is a workspace admin or an organization admin, and you can't change their roles. See [Manage users and permissions](manage-users).
+:::
+
 ## Organization roles
 
 When you assign an organization role, Airbyte scopes permissions to the entire organization, which includes all workspaces in that organization.
@@ -13,7 +17,7 @@ When you assign an organization role, Airbyte scopes permissions to the entire o
 | Permissions                                                                                                                                                | Member | Reader | Runner | Editor | Admin |
 | :--------------------------------------------------------------------------------------------------------------------------------------------------------- | :----: | :----: | :----: | :----: | :---: |
 | **Read Organization**<br /><ul><li>Read individual organizations</li></ul>                                                                                 |   X    |   X    |   X    |   X    |   X   |
-| **Create Workspace**<br /><ul><li>Create new workspace within a specified organization</li><li>Delete a workspace</li></ul>                                 |        |        |        |   X    |   X   |
+| **Create Workspace**<br /><ul><li>Create new workspace within a specified organization</li><li>Delete a workspace</li></ul>                                 |        |        |        |        |   X   |
 | **Update Organization**<br /><ul><li>Modify organization settings, including billing, PbA, SSO</li><li>Modify user roles within the organization</li></ul> |        |        |        |        |   X   |
 
 ## Workspace roles
@@ -40,6 +44,10 @@ Both roles can create and modify connections, and both can run syncs. Neither ro
 - At the organization level, assign the lowest level of permission necessary.
 - At the workspace level, assign higher roles for individual workspaces as needed to override organization role within that workspace.
 - Don't assign admin roles frivolously. Once someone is an admin, you can't demote them.
+
+## Permissions from user groups
+
+Group permissions combine with a person's individual permissions. Airbyte uses the highest permission from the person's own permissions and the permissions from all their groups. The person must still be an organization member for group permissions to apply. For more information, see [User groups](user-groups).
 
 ## Setting roles
 

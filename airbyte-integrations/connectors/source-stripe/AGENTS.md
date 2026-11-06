@@ -8,11 +8,17 @@ Most entity streams (customers, subscriptions, invoices, charges, refunds, trans
 
 Stripe's Events API only retains events for 30 days. If the connector's state falls behind by more than 30 days (e.g., after a long pause in syncing), it automatically reverts to a full refresh from the entity endpoint rather than trying to read events that no longer exist.
 
+`customer_balance_transactions` does not use a StateDelegatingStream parent: it reads a created-date walk of `customers` (P7D slices) plus a `cbt_customer_events` events parent for `customer.updated` and `customer.deleted`. On cold state, a custom migration seeds the events cursor at sync time, so the customer walk starts from `start_date` without replaying historical events. For 7.0.3/7.0.4 state, the migration seeds from `parent_state.customers.updated`, capped to Stripe's 30-day event retention; when that value is the walk placeholder at `start_date`, the events cursor starts at sync time while the walk backfills. Rolling back to ≤ 7.0.3 while that walk mark is more than 30 days old makes 7.0.3 take the events path and silently end the backfill; reset the stream after such a rollback.
+
 **Why this matters:** What looks like a simple entity read is actually two completely different data paths depending on whether state exists and how old it is. Adding a new entity stream requires defining both the direct-read retriever AND the events-based retriever with the correct event type filter strings. If the event type strings are wrong, incremental syncs will silently miss updates.
+
+Creation events use a cursor one second earlier than their event timestamp so update events win same-second ties and the newer payload is retained.
 
 ## 2. Silent 403/400/404 Error Ignoring
 
-The base error handler is configured to IGNORE (not fail) responses with HTTP status 403 (permission denied), 400 (bad request), and 404 (not found). When the Stripe API returns any of these errors for a specific resource or subresource, the connector silently skips that record and continues syncing.
+The base error handler is configured to IGNORE (not fail) responses with HTTP status 403 (permission denied), 400 (bad request), and 404 (not found). When the Stripe API returns any of these errors for a specific resource or subresource, the connector silently skips that record and continues syncing. The `bank_accounts` full-refresh `customers` requester is the exception: it ignores only 403 and 404, and fails the sync on 400 so a malformed request can't silently drop a created-date slice. Both handlers share the `ignore_403_filter` and `ignore_404_filter` definitions.
+
+`customer_balance_transactions` is the exception: its two parents and its child IGNORE only 404, so a 400 or 403 fails the sync instead of letting the parent state skip customers.
 
 **Why this matters:** If an API key loses access to a specific Stripe resource (e.g., Issuing endpoints require special permissions), those records will silently disappear from incremental syncs without any error or warning in the sync logs. A user may not notice they are missing data until they check record counts against the Stripe dashboard.
 

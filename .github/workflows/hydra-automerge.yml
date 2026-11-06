@@ -3,8 +3,9 @@ name: "Hydra: Auto-merge (AI-gated)"
 # Kicks off a Devin AI session using the `pr_scope_analysis` playbook
 # (airbytehq/ai-skills) to evaluate whether the PR is safe to auto-merge. The
 # playbook carries the analysis prompt and the structured output schema; this
-# workflow first rejects PRs without the Support Bot assignment or with
-# destination changes. Eligible PRs are analyzed and evaluated deterministically:
+# workflow first rejects PRs without the Support Bot assignment, with
+# destination changes, or with database source changes (`connectorSubtype:
+# database` in the source's metadata.yaml at the base or head SHA). Eligible PRs are analyzed and evaluated deterministically:
 #   pass = ALL(preconditions) AND ANY(allowed_scopes)
 #
 # Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
@@ -42,6 +43,9 @@ on:
 run-name: "Auto-merge eval for PR #${{ inputs.pr }}"
 
 # All repo operations use GitHub App tokens, not GITHUB_TOKEN.
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 permissions: {}
 
 jobs:
@@ -67,10 +71,32 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: |
-          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title)
+          pr_json=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state,isDraft,title,baseRefName,headRefName,labels)
           state=$(echo "$pr_json" | jq -r '.state')
           is_draft=$(echo "$pr_json" | jq -r '.isDraft')
           title=$(echo "$pr_json" | jq -r '.title')
+
+          # Hydra only merges into master, so never act on a PR with any other
+          # base. This also blocks PRs opened by an airbytehq/ai-skills eval's
+          # own Devin session, which carry no eval marker and are only
+          # identifiable by their non-master base.
+          base=$(echo "$pr_json" | jq -r '.baseRefName')
+          if [[ "$base" != "master" ]]; then
+            echo "::warning::PR #$PR_NUMBER targets base '$base', not master. Auto-merge is skipped."
+            echo "state=INELIGIBLE" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Never auto-merge PRs created by the airbytehq/ai-skills eval harness,
+          # which are marked by their head branch, title, or label.
+          head=$(echo "$pr_json" | jq -r '.headRefName')
+          labels=$(echo "$pr_json" | jq -r '[.labels[].name] | join(",")')
+          if [[ "$head" == eval/* || "$title" == "[EVAL - DO NOT MERGE]"* || ",$labels," == *",eval-test,"* ]]; then
+            echo "::warning::PR #$PR_NUMBER is a playbook-eval PR (base=$base, head=$head). Auto-merge is skipped."
+            echo "state=INELIGIBLE" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           echo "state=$state" | tee -a "$GITHUB_OUTPUT"
           echo "is_draft=$is_draft" | tee -a "$GITHUB_OUTPUT"
           echo "title=$title" | tee -a "$GITHUB_OUTPUT"
@@ -100,10 +126,8 @@ jobs:
               /^airbyte-integrations\/connectors\//,
               /^docs\/integrations\/sources\//,
               /^docs\/integrations\/destinations\//,
-              /^docs\/ai-agents\/connectors\//,
               /^docs\/developers\/pyairbyte\//,
               /^docs\/release_notes\//,
-              /^docusaurus\/src\/data\//,
             ];
             const pullNumber = Number(process.env.PR_NUMBER);
             const { data: pull } = await github.rest.pulls.get({
@@ -136,13 +160,90 @@ jobs:
                 ) ||
                 /^docs\/integrations\/destinations\//.test(path),
             );
+            const sourceConnectors = [
+              ...new Set(
+                changedPaths
+                  .map((path) => {
+                    const connectorMatch = path.match(
+                      /^airbyte-integrations\/connectors\/(source-[^/]+)\//,
+                    );
+                    if (connectorMatch) {
+                      return connectorMatch[1];
+                    }
+                    const docsMatch = path.match(
+                      /^docs\/integrations\/sources\/([^/.]+)/,
+                    );
+                    if (docsMatch) {
+                      return `source-${docsMatch[1].replace(/-migrations$/, '')}`;
+                    }
+                    return null;
+                  })
+                  .filter(Boolean),
+              ),
+            ].sort();
+            const readConnectorSubtype = async (connector, owner, repo, ref) => {
+              let data;
+              try {
+                ({ data } = await github.rest.repos.getContent({
+                  owner,
+                  repo,
+                  path: `airbyte-integrations/connectors/${connector}/metadata.yaml`,
+                  ref,
+                }));
+              } catch (error) {
+                if (error.status === 404) {
+                  return null;
+                }
+                throw error;
+              }
+              if (data.type !== 'file' || data.encoding !== 'base64') {
+                throw new Error(
+                  `unexpected content response (type=${data.type}, encoding=${data.encoding})`,
+                );
+              }
+              const metadata = Buffer.from(data.content, 'base64').toString('utf8');
+              const match = metadata.match(
+                /^\s*connectorSubtype:\s*["']?([\w-]+)/m,
+              );
+              return match ? match[1] : null;
+            };
+            const headRepo = pull.head.repo ?? pull.base.repo;
+            const metadataRefs = [
+              { owner: 'airbytehq', repo: 'airbyte', ref: pull.base.sha },
+              {
+                owner: headRepo.owner.login,
+                repo: headRepo.name,
+                ref: pull.head.sha,
+              },
+            ];
+            const databaseSources = [];
+            for (const connector of sourceConnectors) {
+              for (const { owner, repo, ref } of metadataRefs) {
+                let subtype;
+                try {
+                  subtype = await readConnectorSubtype(connector, owner, repo, ref);
+                } catch (error) {
+                  core.warning(
+                    `Could not read ${connector} metadata.yaml at ${owner}/${repo}@${ref} (${error.message}); treating it as a database source.`,
+                  );
+                  subtype = 'database';
+                }
+                if (subtype === 'database') {
+                  databaseSources.push(connector);
+                  break;
+                }
+              }
+            }
             const supportBotAssigned = pull.assignees.some(
               (assignee) => assignee.login === 'airbyte-support-bot',
             );
             const noDestinationChanges = !destinationChanges;
+            const noDatabaseSourceChanges = databaseSources.length === 0;
             const valid = !invalidPath;
             const autoMergeEligible =
-              supportBotAssigned && noDestinationChanges;
+              supportBotAssigned &&
+              noDestinationChanges &&
+              noDatabaseSourceChanges;
 
             if (invalidPath) {
               core.warning(`Non-connector file: ${invalidPath}`);
@@ -171,6 +272,16 @@ jobs:
               destinationChanges
                 ? 'Destination-related changes require human approval and merge.'
                 : 'No destination-related changes detected.',
+            );
+            core.setOutput(
+              'no_database_source_changes',
+              String(noDatabaseSourceChanges),
+            );
+            core.setOutput(
+              'database_source_reasoning',
+              noDatabaseSourceChanges
+                ? 'No database source changes detected.'
+                : `Database source changes (${databaseSources.join(', ')}) require human approval and merge.`,
             );
 
       - name: Early exit -- path validation failed
@@ -207,6 +318,7 @@ jobs:
             |------|-------|-----------|
             | ${{ steps.validate-paths.outputs.support_bot_assigned == 'true' && ':white_check_mark:' || ':x:' }} | Airbyte Support Bot Assigned | ${{ steps.validate-paths.outputs.support_bot_reasoning }} |
             | ${{ steps.validate-paths.outputs.no_destination_changes == 'true' && ':white_check_mark:' || ':x:' }} | No Destination Changes | ${{ steps.validate-paths.outputs.destination_reasoning }} |
+            | ${{ steps.validate-paths.outputs.no_database_source_changes == 'true' && ':white_check_mark:' || ':x:' }} | No Database Source Changes | ${{ steps.validate-paths.outputs.database_source_reasoning }} |
 
             > Scope analysis was skipped because deterministic auto-merge eligibility did not pass.
             >
@@ -326,7 +438,7 @@ jobs:
           && steps.validate-paths.outputs.auto_merge_eligible == 'true'
           && steps.verify-checks.outputs.ready == 'true'
         id: devin
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-hoard-token.outputs.token }}
@@ -341,6 +453,7 @@ jobs:
           tags: |
             auto-merge-eval
             hyd-ready
+            airbyte-pr-${{ inputs.pr }}
           prompt-text: |
             Analyze this pull request and classify it by filling out the structured output schema:
             https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
@@ -387,8 +500,9 @@ jobs:
           dep_bump=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.dependency_version_bump.pass')
           metadata_only=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.metadata_only_change.pass')
           new_streams=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.net_new_stream_addition.pass')
+          error_classification=$(echo "$STRUCTURED_OUTPUT" | jq -r '.change_scope.error_classification_change.pass')
 
-          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" || "$new_streams" == "true" ]]; then
+          if [[ "$docs_only" == "true" || "$comment_only" == "true" || "$dep_bump" == "true" || "$metadata_only" == "true" || "$new_streams" == "true" || "$error_classification" == "true" ]]; then
             scope_pass="true"
           else
             scope_pass="false"
@@ -418,6 +532,8 @@ jobs:
           SUPPORT_BOT_REASONING: ${{ steps.validate-paths.outputs.support_bot_reasoning }}
           NO_DESTINATION_CHANGES: ${{ steps.validate-paths.outputs.no_destination_changes }}
           DESTINATION_REASONING: ${{ steps.validate-paths.outputs.destination_reasoning }}
+          NO_DATABASE_SOURCE_CHANGES: ${{ steps.validate-paths.outputs.no_database_source_changes }}
+          DATABASE_SOURCE_REASONING: ${{ steps.validate-paths.outputs.database_source_reasoning }}
           SESSION_URL: ${{ steps.devin.outputs.session-url }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
@@ -449,12 +565,13 @@ jobs:
             done
             echo "| $(icon "$SUPPORT_BOT_ASSIGNED") | Airbyte Support Bot Assigned | ${SUPPORT_BOT_REASONING} |"
             echo "| $(icon "$NO_DESTINATION_CHANGES") | No Destination Changes | ${DESTINATION_REASONING} |"
+            echo "| $(icon "$NO_DATABASE_SOURCE_CHANGES") | No Database Source Changes | ${DATABASE_SOURCE_REASONING} |"
             echo ""
             echo "### Change scope (at least one must pass)"
             echo ""
             scope_matched=false
             has_scope_row=false
-            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition; do
+            for key in docs_only_change comment_only_change dependency_version_bump metadata_only_change net_new_stream_addition error_classification_change; do
               pass=$(echo "$STRUCTURED_OUTPUT" | jq -r ".change_scope.${key}.pass")
               if [[ "$pass" == "true" ]]; then
                 if [[ "$has_scope_row" == "false" ]]; then
@@ -468,7 +585,7 @@ jobs:
               fi
             done
             if [[ "$scope_matched" == "false" ]]; then
-              echo ":x: No matching change scope detected."
+              echo ":x: This PR falls outside the low-risk change types that qualify for auto-merge (docs-only, comment-only, dependency version bump, metadata-only, net-new stream addition, error classification). A human reviewer needs to approve and merge it."
             fi
             if [[ -n "$footer_note" ]]; then
               echo ""
@@ -508,16 +625,6 @@ jobs:
             > [Devin session](${{ steps.devin.outputs.session-url }}) | [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       # ── Merge (if evaluation passed and not dry-run) ────────────────
-      - name: Authenticate as 'octavia-bot-admin' GitHub App
-        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
-        id: get-admin-token
-        with:
-          owner: "airbytehq"
-          repositories: "airbyte"
-          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
-
       - name: Mark draft PR as ready for review
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && steps.pre-check.outputs.is_draft == 'true'
         env:
@@ -525,11 +632,12 @@ jobs:
         run: gh pr ready "$PR_NUMBER" --repo airbytehq/airbyte
 
       # ── Autopilot rollouts (enable if missing, then wait for CI) ────
-      # Every auto-merged connector PR should ship with autopilot progressive
-      # rollouts enabled. If any modified connector is missing it, enable it via
-      # the same `airbyte-ops` command as the /enable-autopilot-rollouts slash
-      # command, commit to the PR branch (which re-triggers required CI), and
-      # wait for those checks to pass on the new commit before merging.
+      # Autopilot is only enabled alongside a version bump; rolloutConfiguration
+      # without one fails Connector Version Increment Check.
+      # If any modified connector is missing it, enable it via the same
+      # `airbyte-ops` command as the /enable-autopilot-rollouts slash command,
+      # commit to the PR branch (which re-triggers required CI), and wait for
+      # those checks to pass on the new commit before merging.
       - name: Resolve PR head for autopilot
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         id: autopilot-head
@@ -582,6 +690,7 @@ jobs:
         id: autopilot-detect
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          EVALUATED_SHA: ${{ steps.verify-checks.outputs.sha }}
         run: |
           set -euo pipefail
           CONNECTORS="$(
@@ -593,16 +702,73 @@ jobs:
               --autopilot-enabled=false \
               --output-format lines
           )"
-          if [ -z "$CONNECTORS" ]; then
+          [[ -n "$CONNECTORS" ]] || {
             echo "All modified connectors already have autopilot rollouts enabled."
-          else
-            echo "Connectors missing autopilot rollouts:"
-            echo "$CONNECTORS"
-            EOF="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
-            echo "connectors<<$EOF" >> "$GITHUB_OUTPUT"
-            echo "$CONNECTORS" >> "$GITHUB_OUTPUT"
-            echo "$EOF" >> "$GITHUB_OUTPUT"
-          fi
+            exit 0
+          }
+
+          base_sha="$(gh api "repos/airbytehq/airbyte/pulls/$PR_NUMBER" --jq '.base.sha')"
+          merge_base_sha="$(gh api "repos/airbytehq/airbyte/compare/${base_sha}...${EVALUATED_SHA}" --jq '.merge_base_commit.sha')"
+          [[ -n "$merge_base_sha" && "$merge_base_sha" != "null" ]] || {
+            echo "::error::Could not resolve the merge base for evaluated SHA $EVALUATED_SHA."
+            exit 1
+          }
+
+          read_metadata_version() {
+            local connector="$1" ref="$2" err_file status=0 version
+            err_file="$(mktemp)"
+            version="$(airbyte-ops gh connector get-version "$connector" --ref "$ref" --gh-token "$GH_TOKEN" 2>"$err_file")" || status=$?
+            if [[ "$status" -ne 0 ]]; then
+              if grep -q "Metadata file not found" "$err_file"; then return 44; fi
+              cat "$err_file" >&2
+              return "$status"
+            fi
+            printf '%s\n' "$version"
+          }
+
+          filtered_connectors=()
+          while IFS= read -r connector; do
+            [[ -n "$connector" ]] || continue
+
+            evaluated_status=0
+            evaluated_version="$(read_metadata_version "$connector" "$EVALUATED_SHA")" || evaluated_status=$?
+            [[ "$evaluated_status" -eq 0 ]] || {
+              echo "::error::Could not read evaluated metadata for $connector at $EVALUATED_SHA."
+              exit 1
+            }
+
+            base_status=0
+            base_version="$(read_metadata_version "$connector" "$merge_base_sha")" || base_status=$?
+            [[ "$base_status" -ne 44 ]] || {
+              echo "No metadata at the merge base for $connector; treating it as a version bump."
+              filtered_connectors+=("$connector")
+              continue
+            }
+            [[ "$base_status" -eq 0 ]] || {
+              echo "::error::Could not read merge-base metadata for $connector at $merge_base_sha."
+              exit 1
+            }
+
+            if [[ "$base_version" == "$evaluated_version" ]]; then
+              echo "$connector has no version bump; skipping autopilot enable."
+            else
+              echo "$connector version bump found ($base_version -> $evaluated_version)."
+              filtered_connectors+=("$connector")
+            fi
+          done <<< "$CONNECTORS"
+
+          [[ "${#filtered_connectors[@]}" -gt 0 ]] || {
+            echo "No connectors need autopilot enablement after version-bump filtering."
+            exit 0
+          }
+          echo "Connectors eligible for autopilot enablement:"
+          printf '  %s\n' "${filtered_connectors[@]}"
+          EOF="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
+          {
+            printf 'connectors<<%s\n' "$EOF"
+            printf '%s\n' "${filtered_connectors[@]}"
+            printf '%s\n' "$EOF"
+          } | tee -a "$GITHUB_OUTPUT"
 
       - name: Enable autopilot rollouts and push
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true' && steps.autopilot-detect.outputs.connectors != ''
@@ -655,77 +821,98 @@ jobs:
 
       - name: Wait for required checks after autopilot commit
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true' && steps.autopilot-enable.outputs.pushed == 'true'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        id: wait-autopilot-checks
         env:
           REQUIRED_CHECKS_JSON: ${{ steps.required-checks.outputs.checks }}
           EXPECTED_SHA: ${{ steps.autopilot-enable.outputs.sha }}
+          EVALUATED_SHA: ${{ steps.verify-checks.outputs.sha }}
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          expected_sha="$EXPECTED_SHA"
+          evaluated_sha="$EVALUATED_SHA"
+          start_time="$(date +%s)"
+          grace_deadline=$((start_time + 180))
+          deadline=$((start_time + 45 * 60))
+          interval_seconds=60
+
+          while true; do
+            sha="$(gh api "repos/airbytehq/airbyte/pulls/$PR_NUMBER" --jq '.head.sha')"
+            now="$(date +%s)"
+            if [[ "$sha" == "$evaluated_sha" ]]; then
+              if [[ "$now" -lt "$grace_deadline" ]]; then
+                echo "PR still reports evaluated SHA $evaluated_sha; waiting 10s for the autopilot push to become the PR head."
+                sleep 10
+                continue
+              fi
+              echo "::error::The autopilot push never became the PR head; PR still points to evaluated SHA $evaluated_sha instead of $expected_sha."
+              exit 1
+            fi
+            if [[ "$sha" != "$expected_sha" ]]; then
+              echo "::error::PR head moved to $sha (expected $expected_sha); aborting auto-merge."
+              exit 1
+            fi
+
+            statuses_json="$(gh api --paginate --slurp "repos/airbytehq/airbyte/commits/$sha/statuses?per_page=100")"
+            success_statuses="$(jq -r 'flatten | group_by(.context) | map(max_by(.updated_at)) | map(select(.state == "success") | .context) | .[]' <<< "$statuses_json")"
+            failed_statuses="$(jq -r 'flatten | group_by(.context) | map(max_by(.updated_at)) | map(select(.state == "failure" or .state == "error") | .context) | .[]' <<< "$statuses_json")"
+
+            check_runs_json="$(gh api --paginate --slurp "repos/airbytehq/airbyte/commits/$sha/check-runs?per_page=100")"
+            success_check_runs="$(jq -r '[.[].check_runs[]] | group_by(.name) | map(max_by(.id)) | map(select(.status == "completed" and (.conclusion == "success" or .conclusion == "skipped")) | .name) | .[]' <<< "$check_runs_json")"
+            failed_check_runs="$(jq -r '[.[].check_runs[]] | group_by(.name) | map(max_by(.id)) | map(select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out" or .conclusion == "action_required" or .conclusion == "startup_failure")) | .name) | .[]' <<< "$check_runs_json")"
+
+            failed_checks=()
+            missing_checks=()
+            while IFS= read -r required_check; do
+              [[ -n "$required_check" ]] || continue
+              if grep -Fqx -- "$required_check" <<< "$failed_statuses"$'\n'"$failed_check_runs"; then
+                failed_checks+=("$required_check")
+              elif ! grep -Fqx -- "$required_check" <<< "$success_statuses"$'\n'"$success_check_runs"; then
+                missing_checks+=("$required_check")
+              fi
+            done < <(jq -r '.[]' <<< "$REQUIRED_CHECKS_JSON")
+
+            if [[ "${#failed_checks[@]}" -gt 0 ]]; then
+              failed_list="$(IFS=', '; printf '%s' "${failed_checks[*]}")"
+              printf 'failed-checks=%s\n' "$failed_list" | tee -a "$GITHUB_OUTPUT"
+              echo "::error::Required checks failed on autopilot commit $sha: $failed_list"
+              exit 1
+            fi
+            if [[ "${#missing_checks[@]}" -eq 0 ]]; then
+              echo "All required checks passing on autopilot commit."
+              exit 0
+            fi
+
+            now="$(date +%s)"
+            missing_list="$(IFS=', '; printf '%s' "${missing_checks[*]}")"
+            if [[ "$now" -ge "$deadline" ]]; then
+              printf 'failed-checks=%s\n' "$missing_list" | tee -a "$GITHUB_OUTPUT"
+              echo "::error::Timed out after 45m waiting for required checks: $missing_list"
+              exit 1
+            fi
+            echo "Waiting on required checks: $missing_list"
+            sleep "$interval_seconds"
+          done
+
+      - name: Refresh 'octavia-bot-hoard' token for merge phase
+        if: always() && steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
+        id: get-hoard-token-merge
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         with:
-          github-token: ${{ steps.get-hoard-token.outputs.token }}
-          script: |
-            const prNum = Number(process.env.PR_NUMBER);
-            const requiredChecks = new Set(JSON.parse(process.env.REQUIRED_CHECKS_JSON || '[]'));
-            const expectedSha = process.env.EXPECTED_SHA;
-            const maxMinutes = 60;
-            const intervalMs = 60000;
-            const deadline = Date.now() + maxMinutes * 60000;
-            const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
 
-            while (true) {
-              const { data: pr } = await github.rest.pulls.get({
-                owner: 'airbytehq', repo: 'airbyte', pull_number: prNum,
-              });
-              const sha = pr.head.sha;
-              if (expectedSha && sha !== expectedSha) {
-                throw new Error(
-                  `PR head moved to ${sha} (expected ${expectedSha}); aborting auto-merge.`
-                );
-              }
-
-              const statuses = await github.paginate(
-                github.rest.repos.listCommitStatusesForRef,
-                { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 }
-              );
-              // listCommitStatusesForRef returns historical entries; only the
-              // latest status per context reflects the current state.
-              const latestStatusByContext = new Map();
-              for (const s of statuses) {
-                const prev = latestStatusByContext.get(s.context);
-                if (!prev || new Date(s.updated_at) > new Date(prev.updated_at)) {
-                  latestStatusByContext.set(s.context, s);
-                }
-              }
-              const successStatuses = new Set(
-                [...latestStatusByContext.values()]
-                  .filter(s => s.state === 'success')
-                  .map(s => s.context)
-              );
-
-              const checkRuns = await github.paginate(
-                github.rest.checks.listForRef,
-                { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 },
-                (response) => response.data
-              );
-              const successChecks = new Set(
-                checkRuns
-                  .filter(cr => cr.conclusion === 'success' || cr.conclusion === 'skipped')
-                  .map(cr => cr.name)
-              );
-
-              const allPassing = new Set([...successStatuses, ...successChecks]);
-              const missing = [...requiredChecks].filter(c => !allPassing.has(c));
-
-              if (missing.length === 0) {
-                core.info('All required checks passing on autopilot commit.');
-                return;
-              }
-              if (Date.now() > deadline) {
-                throw new Error(
-                  `Timed out after ${maxMinutes}m waiting for required checks: ${missing.join(', ')}`
-                );
-              }
-              core.info(`Waiting on required checks: ${missing.join(', ')}`);
-              await sleep(intervalMs);
-            }
+      - name: Authenticate as 'octavia-bot-admin' GitHub App
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-admin-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
 
       - name: Approve PR with admin bot
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
@@ -740,7 +927,7 @@ jobs:
       - name: Squash merge PR
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         env:
-          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          GH_TOKEN: ${{ steps.get-hoard-token-merge.outputs.token }}
         run: |
           for attempt in 1 2 3; do
             if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
@@ -756,18 +943,18 @@ jobs:
       - name: Label auto-merged PR
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         env:
-          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          GH_TOKEN: ${{ steps.get-hoard-token-merge.outputs.token }}
         run: gh issue edit "$PR_NUMBER" --repo airbytehq/airbyte --add-label hyd-automerged
 
       # Tag the team that owns the merged connector code so they can review the
-      # merge after the fact: API sources -> @oc-apis, DB/DW sources and any
+      # merge after the fact: API sources -> @oc-apis-support, DB/DW sources and any
       # destination -> @oc-db-dw. Source ownership is decided by connector
       # language (java/kotlin => DB/DW, everything else => API).
       - name: Resolve owning team mentions for Slack
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         id: owning-teams
         env:
-          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          GH_TOKEN: ${{ steps.get-hoard-token-merge.outputs.token }}
         run: |
           set -euo pipefail
 
@@ -793,12 +980,13 @@ jobs:
 
           mentions=""
           if [[ "$tag_apis" == "true" ]]; then
-            mentions="<!subteam^S08SNSK5RHQ|@oc-apis>"
+            mentions="<!subteam^S08SQDL2RS9|@oc-apis-support>"
           fi
           if [[ "$tag_db_dw" == "true" ]]; then
             mentions="${mentions:+$mentions }<!subteam^S0BKLTJNKC6|@oc-db-dw>"
           fi
           echo "mentions=$mentions" | tee -a "$GITHUB_OUTPUT"
+          echo "tag_db_dw=$tag_db_dw" | tee -a "$GITHUB_OUTPUT"
 
       - name: Post automerge notification to Slack
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
@@ -808,6 +996,29 @@ jobs:
           method: chat.postMessage
           payload: |
             channel: C0A30PKB8HK
+            text: "Hydra auto-merged PR #${{ inputs.pr }}: ${{ steps.pre-check.outputs.title }}"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\n${{ steps.owning-teams.outputs.mentions }} please review and flag if this merge was wrong."
+              - type: context
+                elements:
+                  - type: mrkdwn
+                    text: "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow run> | <${{ steps.devin.outputs.session-url }}|Devin session>"
+
+      - name: Post automerge notification to team-hydra-connectors Slack channel
+        if: >
+          steps.evaluate.outputs.result == 'PASS' &&
+          inputs.dry-run != 'true' &&
+          vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true' &&
+          steps.owning-teams.outputs.tag_db_dw == 'true'
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload: |
+            channel: C043JHEEYKG
             text: "Hydra auto-merged PR #${{ inputs.pr }}: ${{ steps.pre-check.outputs.title }}"
             blocks:
               - type: section
@@ -835,9 +1046,30 @@ jobs:
         if: failure() && steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
-          token: ${{ steps.get-hoard-token.outputs.token }}
+          token: ${{ steps.get-hoard-token-merge.outputs.token }}
           issue-number: ${{ inputs.pr }}
           body: |
             > :red_circle: **Auto-merge aborted.** The Devin evaluation passed, but a step in the autopilot-enable / merge phase failed, so this PR was **not** merged. Please check the run and re-trigger auto-merge once resolved.
             >
+            ${{ steps.wait-autopilot-checks.outputs.failed-checks != '' && format('> Required checks failed on the autopilot commit: {0}. If this is a version-increment/metadata failure the PR is behind master; update the branch and bump the version before re-running /ai-ready.', steps.wait-autopilot-checks.outputs.failed-checks) || '' }}
             > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Post auto-merge abort notification to Slack
+        if: failure() && steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        continue-on-error: true
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload: |
+            channel: C0A30PKB8HK
+            text: "Hydra auto-merge aborted for PR #${{ inputs.pr }}: ${{ steps.pre-check.outputs.title }}"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":red_circle: *Hydra Auto-Merge aborted*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\nThe Devin eval passed but the autopilot/merge phase failed, so the PR was not merged."
+              - type: context
+                elements:
+                  - type: mrkdwn
+                    text: "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow run> | <${{ steps.devin.outputs.session-url }}|Devin session>"

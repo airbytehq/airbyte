@@ -26,6 +26,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /api/v1/events/message
           http_method: GET
+          request_parameters:
+            per_page: "1000"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -42,15 +44,42 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            field_name: cursor
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             cursor_value: >-
-              {{ response.get('links', []) | selectattr('rel', 'equalto',
-              'next') | map(attribute='href') | first }}
-            stop_condition: >-
-              {{ not response.get('links', []) | selectattr('rel', 'equalto',
-              'next') | list }}
+              {{ response.get('links', {}).get('next', '') |
+              regex_search('[?&]cursor=([^&]+)') }}
+            stop_condition: "{{ not response.get('links', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: timestamp
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ max(config['start_date'], (now_utc() -
+            duration('P10D')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ (now_utc() - duration('PT1M')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:

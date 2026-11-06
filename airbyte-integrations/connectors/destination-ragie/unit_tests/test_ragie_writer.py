@@ -6,6 +6,8 @@ import json
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+from destination_ragie.config import RagieConfig
 from destination_ragie.writer import RagieWriter
 
 from airbyte_cdk.models import (
@@ -75,6 +77,21 @@ class TestRagieWriter(unittest.TestCase):
         result = self.writer._stream_tuple_to_id("namespace", "name")
         self.assertEqual(result, "namespace_name")
 
+    def test_prepare_metadata_preserves_finite_numbers(self):
+        self.mock_config.metadata_fields = ["score"]
+        for value in [1.25, 0.0, -2.5, 7]:
+            with self.subTest(value=value):
+                metadata = self.writer._prepare_metadata({"score": value}, "my_stream")
+                self.assertEqual(metadata["score"], value)
+
+    def test_prepare_metadata_skips_non_finite_numbers(self):
+        self.mock_config.metadata_fields = ["score"]
+        for value in [float("nan"), float("inf"), float("-inf")]:
+            with self.subTest(value=value):
+                metadata = self.writer._prepare_metadata({"score": value}, "my_stream")
+                self.assertNotIn("score", metadata)
+                self.assertEqual(metadata["source"], "airbyte")
+
     def test_queue_write_operation_skips_duplicates(self):
         record = self._make_record()
         hash_val = self.writer._calculate_content_hash(
@@ -112,6 +129,32 @@ class TestRagieWriter(unittest.TestCase):
         self.mock_client.find_ids_by_metadata.return_value = ["id1", "id2"]
         self.writer.delete_streams_to_overwrite()
         self.assertCountEqual(self.mock_client.delete_documents_by_id.call_args[0][0], ["id1", "id2"])
+
+
+@pytest.mark.parametrize("partition_config", [{}, {"partition": ""}, {"partition": None}, {"partition": "test-partition"}])
+def test_write_optional_partition(partition_config):
+    config = RagieConfig(api_key="test-key", **partition_config)
+    client = Mock()
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="test", json_schema={"type": "object"}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
+    writer = RagieWriter(client=client, config=config, catalog=catalog)
+
+    writer.queue_write_operation(AirbyteRecordMessage(stream="test", data={"message": "hello"}, emitted_at=0))
+
+    client.index_documents.assert_called_once()
+    payload = client.index_documents.call_args[0][0][0]
+    assert payload["data"] == {"message": "hello"}
+    if config.partition:
+        assert payload["partition"] == config.partition
+    else:
+        assert "partition" not in payload
 
 
 if __name__ == "__main__":

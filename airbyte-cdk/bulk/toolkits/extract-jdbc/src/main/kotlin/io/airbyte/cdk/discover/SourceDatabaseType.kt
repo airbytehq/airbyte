@@ -23,6 +23,7 @@ data class SystemType(
 ) : SourceDatabaseType {
     override val catalog: String?
         get() = null
+
     override val schema: String?
         get() = null
 }

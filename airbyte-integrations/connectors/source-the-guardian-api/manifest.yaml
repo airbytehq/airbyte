@@ -43,15 +43,15 @@ definitions:
           type: DefaultPaginator
           page_size_option:
             type: RequestOption
-            field_name: page_size
-            inject_into: body_data
+            field_name: page-size
+            inject_into: request_parameter
           page_token_option:
             type: RequestOption
             field_name: page
             inject_into: request_parameter
           pagination_strategy:
             type: CustomPaginationStrategy
-            page_size: 10
+            page_size: 50
             class_name: source_declarative_manifest.components.CustomPageIncrement
         decoder:
           type: JsonDecoder
