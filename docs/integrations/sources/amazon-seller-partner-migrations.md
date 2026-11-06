@@ -10,7 +10,7 @@ Connections syncing `GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT`, `GET_BRAND_ANALY
 
 These streams previously ignored **Start Date** and **End Date** and always fetched the most recent complete week. They now support incremental sync and honor those dates in both incremental and full-refresh modes. A historical end date can exclude the latest week that was previously returned. An earlier start date can cause a much larger initial backfill or full refresh.
 
-Each request covers a complete Sunday–Saturday week. The start date rounds back to Sunday; the end date includes only complete weeks and never includes the current, unfinished week. The `endDate` cursor resumes after the last nonempty week. Empty report windows retain the prior checkpoint and are retried.
+Each request covers a complete Sunday–Saturday week. The start date rounds back to Sunday; the end date includes only complete weeks and never includes the current, unfinished week. The `endDate` cursor resumes after the last nonempty week. An entirely empty read retains its starting checkpoint and retries those periods later.
 
 ### Migration steps
 
