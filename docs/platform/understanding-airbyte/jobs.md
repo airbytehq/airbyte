@@ -257,12 +257,12 @@ In the event of a failure, the Airbyte platform will retry the pipeline. Each of
 
 ### Retry Rules
 
-Airbyte retries a failed attempt until the job reaches either limit:
+By default in Airbyte Self-Managed/Core, Airbyte retries a failed attempt until the job reaches either limit:
 
 - 5 failed attempts that synced no data
 - 10 failed attempts that synced some data
 
-Each limit counts attempts across the whole job, not only attempts in a row. Airbyte doesn't retry an attempt that fails with a configuration error, such as invalid credentials, because a retry can't fix it.
+"Synced some data" means at least one record was committed or rejected by the destination. Each limit counts attempts across the whole job, not only attempts in a row. Airbyte doesn't retry an attempt that fails with a configuration error, such as invalid credentials, because a retry can't fix it.
 
 In Airbyte Core, you can change these limits. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs).
 
@@ -281,9 +281,9 @@ The error message says "the sync should work fine on the next retry," but this r
 
 ### Retry Backoff
 
-After an attempt where no data was synchronized, we implement a short backoff period before starting a new attempt. This will increase with each successive complete failure—a partially successful attempt will reset this value.
+Backoff applies only after failed attempts that synced no data. It increases with each successive complete failure. Partial failures retry without backoff and reset the successive complete-failure count.
 
-By default, Airbyte is configured to backoff with the following values:
+By default, Airbyte Self-Managed/Core uses the following backoff intervals:
 
 - 10 seconds after the first complete failure
 - 30 seconds after the second
