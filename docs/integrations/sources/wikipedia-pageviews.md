@@ -64,6 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject        |
 | :------ | :--------- | :-------------------------------------------------------- | :------------- |
+| 0.2.24 | 2026-10-13 | [79077](https://github.com/airbytehq/airbyte/pull/79077) | Update dependencies |
 | 0.2.23 | 2026-10-07 | [88231](https://github.com/airbytehq/airbyte/pull/88231) | Fix syncs failing with HTTP 404 when `end` is today or in the future (cap the date range to the latest published day, make `end` optional, accept `YYYYMMDDHH` inputs, clear error when Wikimedia has no data); request `per-article` data in monthly windows instead of one request per day and honor `Retry-After` on HTTP 429 |
 | 0.2.22 | 2025-05-24 | [60778](https://github.com/airbytehq/airbyte/pull/60778) | Update dependencies |
 | 0.2.21 | 2025-05-10 | [59940](https://github.com/airbytehq/airbyte/pull/59940) | Update dependencies |

@@ -50,7 +50,8 @@ class MSSQLCdcIndexIntegrationTest {
                         BEGIN
                             EXEC ('CREATE SCHEMA [$TEST_SCHEMA]');
                         END
-                        """.trimIndent()
+                        """
+                            .trimIndent(),
                     )
                 }
             }
@@ -70,7 +71,8 @@ class MSSQLCdcIndexIntegrationTest {
                         JOIN sys.tables t ON s.schema_id = t.schema_id
                         WHERE s.name = '$TEST_SCHEMA';
                         EXEC sp_executesql @sql;
-                        """.trimIndent()
+                        """
+                            .trimIndent(),
                     )
                     stmt.execute("DROP SCHEMA IF EXISTS [$TEST_SCHEMA]")
                 }
@@ -122,7 +124,8 @@ class MSSQLCdcIndexIntegrationTest {
                     FROM INFORMATION_SCHEMA.COLUMNS
                     WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
                     ORDER BY ORDINAL_POSITION
-                    """.trimIndent()
+                    """
+                        .trimIndent(),
                 )
                 .use { stmt ->
                     stmt.setString(1, TEST_SCHEMA)
@@ -162,7 +165,8 @@ class MSSQLCdcIndexIntegrationTest {
                     WHERE i.object_id = OBJECT_ID(? + '.' + ?)
                       AND i.type_desc = 'NONCLUSTERED'
                     ORDER BY i.name, ic.key_ordinal
-                    """.trimIndent()
+                    """
+                        .trimIndent(),
                 )
                 .use { stmt ->
                     stmt.setString(1, TEST_SCHEMA)
@@ -251,7 +255,7 @@ class MSSQLCdcIndexIntegrationTest {
 
         assertFalse(
             builder.hasCdc,
-            "Stream without _ab_cdc_deleted_at should not be detected as CDC"
+            "Stream without _ab_cdc_deleted_at should not be detected as CDC",
         )
 
         getConnection().use { conn ->

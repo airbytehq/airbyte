@@ -1,65 +1,66 @@
 ---
-products: cloud
+products: cloud-no-flex
 ---
 
 # Manage context layer access
 
-:::info Private beta
-The context layer is in private beta. Features may change. It's available to Airbyte Cloud organizations enrolled in the beta. Self-managed deployments of Airbyte aren't supported.
-:::
+Manage [agent access](agent-access.md) and [search](search.md) independently. Organization admins turn each part on or off. Workspace members with edit permission choose the resources available to agents.
 
-Control which sources and destinations AI agents can read directly through the [Airbyte MCP](../airbyte-mcp/readme.md). First, an organization admin turns on the context layer for the organization. Then, choose which sources and destinations agents can access.
+## Permissions
 
-## Turn on the context layer for your organization
+Only [organization admins](/platform/access-management/rbac) can change organization-wide settings and accept search terms. You need workspace edit permission to change agent access for a source or destination or search for a connection.
 
-You need to do this once for your organization. You must be an [organization admin](/platform/access-management/rbac).
+Agents act with the Airbyte permissions of the person or application using the [Airbyte MCP](../airbyte-mcp/readme.md). For direct reads, the credentials saved in the connector determine which records agents can see. Those credentials might allow access to data the person couldn't otherwise read in the third-party system. Review their scope before enabling access.
 
-1. In Airbyte, click **Context layer** in the navigation bar.
+## Manage agent access
 
+### Turn on agent access
+
+1. In Airbyte, open **Context layer** > **Settings**.
 2. Turn on **Agent access**.
 
-When you turn on agent access, Airbyte turns on agent access for all supported sources in your organization. Destinations aren't turned on automatically. You must turn on each destination individually.
+Airbyte turns on agent access for all supported sources in your organization. Destinations aren't turned on automatically.
 
-If you aren't an organization admin, the **Context layer** page tells you that an admin needs to turn it on. Ask an organization admin in your Airbyte organization.
+### Choose sources and destinations
 
-## Choose which sources and destinations agents can access
+1. Open **Context layer** > **Agent access**.
+2. Find the workspace.
+3. Turn **Agent access** on or off for each source or destination.
 
-After the context layer is on, you can turn agent access on or off for each source and destination. You need edit permission for sources or destinations in that workspace.
+You can also change **Agent access** in a source or destination's **Settings**. When you create a supported source or destination, its setup form includes this option if organization agent access is on. For sources, it's on by default.
 
-Turning off agent access doesn't affect data replication. Connections that use that source or destination keep syncing.
+### Turn off agent access
 
-### From the Context layer page
+To stop direct reads from one resource, turn off its **Agent access** setting. To stop direct reads across the organization, open **Context layer** > **Settings**, turn off **Agent access**, and click **Disable** to confirm.
 
-1. In Airbyte, click **Context layer** in the navigation bar.
+Airbyte keeps your resource selections and restores them if you turn organization agent access back on. Turning off agent access doesn't stop replication or independently enabled search.
 
-2. Click **Sources** or **Destinations**.
+## Manage search
 
-3. Find the workspace, then turn **Agent access** on or off for each source or destination. Connectors that don't support direct reads are marked as not supported.
+### Turn on search
 
-### When you create a source or destination
+1. In Airbyte, open **Context layer** > **Settings**.
+2. Turn on **Semantic search**.
+3. Review and accept the new terms of service for storing indexed data on Airbyte infrastructure.
 
-When the context layer is on, the setup form for a supported source or destination includes an **Agent access** option. For sources, it's on by default. Turn it off if you don't want agents to read from this source.
+### Choose connections
 
-### From a source or destination's settings
+Open **Context layer** > **Semantic search** and turn **Semantic search** on or off for each connection. Both its source and destination must be agent connectors.
 
-1. Open the source or destination.
+After your organization enables search, new eligible connections have **Semantic search** on by default. You can change this when creating a connection or in its settings.
 
-2. Click **Settings**.
+Search indexes data synced after you enable it. To make previously synced data searchable, [start a backfill](search.md#backfill-existing-data).
 
-3. Turn **Agent access** on or off.
+### Turn off search
 
-## Turn off the context layer for your organization
+Turn off **Semantic search** for a connection on **Context layer** > **Semantic search** to stop indexing it, or turn off **Semantic search** on **Context layer** > **Settings** to stop search for the organization. Airbyte deletes the affected index. Re-enabling search requires a new backfill to search previously synced data, using destination compute again.
 
-You must be an organization admin.
+Turning off search doesn't turn off agent access or data replication.
 
-1. In Airbyte, click **Context layer** in the navigation bar.
+## Availability
 
-2. Turn off **Agent access**.
-
-3. Click **Disable** to confirm.
-
-Agents lose access to every source and destination in the organization. Airbyte keeps your source and destination selections and restores them if you turn the context layer back on.
+Agent access and search are available only in Airbyte Cloud, not self-managed Airbyte Core or Enterprise. You can't enable agent access for resources in workspaces on customer-owned Enterprise Flex data planes. Keep search off for connections on those data planes: if search is on, their syncs fail before they start.
 
 ## Connect your agent
 
-After you give agents access, [connect the Airbyte MCP to your agent](../airbyte-mcp/install.md). Your agent can then read from the sources and destinations you chose.
+After you configure access, [connect your agent to the Airbyte MCP](../airbyte-mcp/install.md). Ask questions in plain language, and your agent uses the available resources.

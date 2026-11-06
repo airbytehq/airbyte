@@ -243,6 +243,7 @@ definitions:
     use_cache: true
     error_handler:
       type: DefaultErrorHandler
+      max_retries: 10
       response_filters:
         - type: HttpResponseFilter
           action: IGNORE
@@ -258,6 +259,16 @@ definitions:
           action: FAIL
           http_codes: [404]
           error_message: Groups and/or projects that you provide are invalid or you don't have permission to view it.
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes: [429]
+          error_message: "GitLab API rate limit exceeded. If syncs keep failing, lower the Number of Concurrent Threads setting or sync less frequently."
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+          max_waiting_time_in_seconds: 3660
+        - type: ExponentialBackoffStrategy
+          factor: 5
     request_parameters: "{{ parameters.get('request_parameters', {}) }}"
 
   # Selector
@@ -538,6 +549,20 @@ definitions:
           - type: AddedFieldDefinition
             path: ["author_id"]
             value: "{{ (record.get('author') or {}).get('id') }}"
+      - type: AddFields
+        condition: "{{ record.get('due_date_from_milestones') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["due_date_from_milestones"]
+            value: "{{ (record.get('due_date_from_milestones') or '')[:10] }}"
+            value_type: string
+      - type: AddFields
+        condition: "{{ record.get('start_date_from_milestones') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["start_date_from_milestones"]
+            value: "{{ (record.get('start_date_from_milestones') or '')[:10] }}"
+            value_type: string
     primary_key: "iid"
     $parameters:
       path: "groups/{{ stream_slice.id }}/epics"
@@ -803,6 +828,9 @@ definitions:
             value: "{{ (record.get('commit') or {}).get('id') }}"
     $parameters:
       path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/jobs"
+      # GitLab omits earlier attempts of retried jobs unless include_retried=true.
+      request_parameters:
+        include_retried: "true"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1948,6 +1976,11 @@ schemas:
         type:
         - 'null'
         - integer
+      work_item_id:
+        description: ID of the corresponding work item (for the Work Items GraphQL API)
+        type:
+        - 'null'
+        - integer
       iid:
         description: Internal ID of the epic
         type:
@@ -1983,6 +2016,16 @@ schemas:
         type:
         - 'null'
         - boolean
+      imported:
+        description: Flag indicating if the epic was imported
+        type:
+        - 'null'
+        - boolean
+      imported_from:
+        description: Source the epic was imported from
+        type:
+        - 'null'
+        - string
       web_url:
         description: URL for viewing the epic in a web browser
         type:
@@ -2032,7 +2075,7 @@ schemas:
         - string
         - boolean
       end_date:
-        description: End date of the epic
+        description: End date of the epic. Deprecated by GitLab in favor of due_date.
         type:
         - 'null'
         - string
@@ -2111,7 +2154,7 @@ schemas:
         - 'null'
         - string
       due_date_from_milestones:
-        description: Due date linked to milestone
+        description: Due date linked to milestone. Deprecated by GitLab in favor of due_date_from_inherited_source.
         type:
         - 'null'
         - string
@@ -2143,7 +2186,7 @@ schemas:
             - 'null'
             - string
       start_date_from_milestones:
-        description: Start date linked to milestone
+        description: Start date linked to milestone. Deprecated by GitLab in favor of start_date_from_inherited_source.
         type:
         - 'null'
         - string

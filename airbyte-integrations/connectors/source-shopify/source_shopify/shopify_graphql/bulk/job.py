@@ -600,6 +600,20 @@ class ShopifyBulkManager:
         step = self._job_size if self._job_size else self._job_size_min
         return slice_start.add(days=step)
 
+    def _checkpoint_cursor_within_slice(
+        self,
+        slice_start: datetime,
+        checkpointed_cursor: Optional[str | int],
+        filter_checkpointed_cursor: Optional[str],
+    ) -> bool:
+        if not checkpointed_cursor:
+            return False
+        if isinstance(checkpointed_cursor, str):
+            return pdm.parse(checkpointed_cursor) > slice_start
+        if isinstance(checkpointed_cursor, int):
+            return bool(filter_checkpointed_cursor) and pdm.parse(filter_checkpointed_cursor) > slice_start
+        return False
+
     def _adjust_slice_end(
         self, slice_end: datetime, checkpointed_cursor: Optional[str] = None, filter_checkpointed_cursor: Optional[str] = None
     ) -> datetime:
@@ -645,12 +659,18 @@ class ShopifyBulkManager:
             checkpoint_from_self_cancel = self._job_checkpoint_from_self_cancel
             # set the checkpointing to default, before the next slice is emitted, to avoid inf.loop
             self._reset_checkpointing()
-            if checkpoint_from_failed_job and not checkpointed_cursor:
-                # the partial result has no records to resume from, the rest of the slice must not be skipped
-                self._raise_job_without_result("exited with FAILED and its partial result has no records to checkpoint from")
-            if checkpoint_from_self_cancel and not checkpointed_cursor:
-                # the result has no records to resume from, the slice is re-run with the checkpointing disabled
-                self._disable_checkpointing("but its result has no records to checkpoint from")
+            if checkpoint_from_failed_job and not self._checkpoint_cursor_within_slice(
+                slice_start, checkpointed_cursor, filter_checkpointed_cursor
+            ):
+                # the partial result has no records within the current slice to resume from, the rest of the slice must not be skipped
+                self._raise_job_without_result(
+                    "exited with FAILED and its partial result has no records within the slice to checkpoint from"
+                )
+            if checkpoint_from_self_cancel and not self._checkpoint_cursor_within_slice(
+                slice_start, checkpointed_cursor, filter_checkpointed_cursor
+            ):
+                # the result has no records within the current slice to resume from, the slice is re-run with the checkpointing disabled
+                self._disable_checkpointing("but its result has no records within the slice to checkpoint from")
                 return slice_start
             return self._adjust_slice_end(slice_end, checkpointed_cursor, filter_checkpointed_cursor)
 

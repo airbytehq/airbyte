@@ -89,22 +89,22 @@ class RegressionTestFixtures(
                         FieldType(
                             UnionType.of(
                                 listOf(IntegerType, ObjectTypeWithoutSchema),
-                                isLegacyUnion = false
+                                isLegacyUnion = false,
                             ),
-                            nullable = true
+                            nullable = true,
                         ),
                     "legacy_union" to
                         FieldType(
                             UnionType.of(
                                 listOf(IntegerType, ObjectTypeWithoutSchema),
-                                isLegacyUnion = false
+                                isLegacyUnion = false,
                             ),
-                            nullable = true
+                            nullable = true,
                         ),
                     "unknown" to
                         FieldType(
                             UnknownType(Jsons.readTree("""{"type":"potato"}""")),
-                            nullable = true
+                            nullable = true,
                         ),
                     // and their nonnull equivalents
                     "string_nonnull" to FieldType(StringType, nullable = false),
@@ -133,22 +133,22 @@ class RegressionTestFixtures(
                         FieldType(
                             UnionType.of(
                                 listOf(IntegerType, ObjectTypeWithoutSchema),
-                                isLegacyUnion = false
+                                isLegacyUnion = false,
                             ),
-                            nullable = false
+                            nullable = false,
                         ),
                     "legacy_union_nonnull" to
                         FieldType(
                             UnionType.of(
                                 listOf(IntegerType, ObjectTypeWithoutSchema),
-                                isLegacyUnion = false
+                                isLegacyUnion = false,
                             ),
-                            nullable = false
+                            nullable = false,
                         ),
                     "unknown_nonnull" to
                         FieldType(
                             UnknownType(Jsons.readTree("""{"type":"potato"}""")),
-                            nullable = false
+                            nullable = false,
                         ),
                     // and some interesting identifiers:
                     // common SQL reserved words
@@ -167,7 +167,7 @@ class RegressionTestFixtures(
                     // upper/lowercasing
                     "UPPER_CASE" to FieldType(StringType, nullable = true),
                     "Mixed_Case" to FieldType(StringType, nullable = true),
-                )
+                ),
             )
         val stream =
             DestinationStream(
@@ -193,8 +193,8 @@ class RegressionTestFixtures(
                 .writeValueAsString(
                     schemaDumper.discoverSchema(
                         stream.mappedDescriptor.namespace,
-                        stream.mappedDescriptor.name
-                    )
+                        stream.mappedDescriptor.name,
+                    ),
                 )
         CharacterizationTest.doAssert(
             "$goldenFileBasePath/schema-regression/column_names/$filename.json",
@@ -229,7 +229,7 @@ class RegressionTestFixtures(
                         tableSchema =
                             BasicFunctionalityIntegrationTest.makeTableSchema(schema, importType),
                     )
-                }
+                },
             )
         assertDoesNotThrow {
             destinationProcessFactory.runSync(
@@ -249,7 +249,7 @@ class RegressionTestFixtures(
                         runBlocking {
                             assertTrue(
                                 opsClient.tableExists(it),
-                                "Expected table ${it.toPrettyString()} to exist"
+                                "Expected table ${it.toPrettyString()} to exist",
                             )
                         }
                     }
@@ -265,7 +265,7 @@ class RegressionTestFixtures(
                 // basic identifier
                 DestinationStream.Descriptor(
                     "table_id_regression_test",
-                    "table_id_regression_test"
+                    "table_id_regression_test",
                 ),
                 // some reserved words
                 DestinationStream.Descriptor("table", "table"),

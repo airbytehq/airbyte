@@ -120,7 +120,7 @@ class BigqueryDirectLoadNativeTableOperations(
     private fun shouldRecreateTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
-        existingTable: TableDefinition
+        existingTable: TableDefinition,
     ): Boolean {
         var tableClusteringMatches = false
         var tablePartitioningMatches = false
@@ -159,32 +159,30 @@ class BigqueryDirectLoadNativeTableOperations(
             }
 
         // Columns that are typed differently than the DestinationStream
-        val columnsToChangeType =
-            expectedSchema.mapNotNull { (expectedName, expectedType) ->
-                actualSchema.findIgnoreCase(expectedName)?.let { actualType ->
-                    if (actualType != expectedType) {
-                        ColumnChange(
-                            name = expectedName,
-                            originalType = actualType,
-                            newType = expectedType,
-                        )
-                    } else {
-                        null
-                    }
-                }
-            }
-
-        val columnsToRetain =
-            actualSchema.mapNotNull { (actualName, _) ->
-                if (
-                    !columnsToRemove.contains(actualName) &&
-                        !columnsToChangeType.any { it.name.equals(actualName, ignoreCase = true) }
-                ) {
-                    actualName
+        val columnsToChangeType = expectedSchema.mapNotNull { (expectedName, expectedType) ->
+            actualSchema.findIgnoreCase(expectedName)?.let { actualType ->
+                if (actualType != expectedType) {
+                    ColumnChange(
+                        name = expectedName,
+                        originalType = actualType,
+                        newType = expectedType,
+                    )
                 } else {
                     null
                 }
             }
+        }
+
+        val columnsToRetain = actualSchema.mapNotNull { (actualName, _) ->
+            if (
+                !columnsToRemove.contains(actualName) &&
+                    !columnsToChangeType.any { it.name.equals(actualName, ignoreCase = true) }
+            ) {
+                actualName
+            } else {
+                null
+            }
+        }
 
         return AlterTableReport(
             columnsToAdd = columnsToAdd,
@@ -224,7 +222,8 @@ class BigqueryDirectLoadNativeTableOperations(
                   END
                   AS $newType
                 )
-                """.trimIndent()
+                """
+                .trimIndent()
         } else if (newType == StandardSQLTypeName.JSON) {
             return "TO_JSON($qualifiedColumn)"
         } else {
@@ -281,7 +280,8 @@ class BigqueryDirectLoadNativeTableOperations(
                 SELECT
                 $valueList
                 FROM $originalTableId AS $SOURCE_TABLE_ALIAS
-                """.trimIndent(),
+                """
+                    .trimIndent(),
             )
 
         logger.info {
@@ -347,21 +347,20 @@ class BigqueryDirectLoadNativeTableOperations(
         val initialAlterations =
             columnsToRemove.map { name -> """DROP COLUMN `$name`""" } +
                 columnsToAdd.map { (name, type) -> """ADD COLUMN `$name` $type""" }
-        val addTempColumns =
-            typeChangePlans.map { plan ->
-                """ADD COLUMN `${plan.tempColumnName}` ${plan.newType}"""
-            }
+        val addTempColumns = typeChangePlans.map { plan ->
+            """ADD COLUMN `${plan.tempColumnName}` ${plan.newType}"""
+        }
         // Need to add explicit checks on both branches.
         // If we have no added/dropped columns, we will skip the first alter table.
         // If we have no changed columns, we will skip the second alter.
         if (initialAlterations.isNotEmpty()) {
             databaseHandler.executeWithRetries(
-                """ALTER TABLE $tableId ${initialAlterations.joinToString(",")}"""
+                """ALTER TABLE $tableId ${initialAlterations.joinToString(",")}""",
             )
         }
         if (addTempColumns.isNotEmpty()) {
             databaseHandler.executeWithRetries(
-                """ALTER TABLE $tableId ${addTempColumns.joinToString(",")}"""
+                """ALTER TABLE $tableId ${addTempColumns.joinToString(",")}""",
             )
         }
 
@@ -379,7 +378,7 @@ class BigqueryDirectLoadNativeTableOperations(
             val castStatement = getColumnCastStatement(realColumnName, originalType, newType)
             try {
                 databaseHandler.executeWithRetries(
-                    """UPDATE $tableId AS $SOURCE_TABLE_ALIAS SET `$tempColumnName` = $castStatement WHERE 1=1"""
+                    """UPDATE $tableId AS $SOURCE_TABLE_ALIAS SET `$tempColumnName` = $castStatement WHERE 1=1""",
                 )
             } catch (e: Exception) {
                 val message =
@@ -408,7 +407,8 @@ class BigqueryDirectLoadNativeTableOperations(
                 ALTER TABLE $tableId
                   RENAME COLUMN `$realColumnName` TO `$backupColumnName`,
                   RENAME COLUMN `$tempColumnName` TO `$realColumnName`
-                """.trimIndent(),
+                """
+                    .trimIndent(),
             )
             databaseHandler.executeWithRetries(
                 """ALTER TABLE $tableId DROP COLUMN `$backupColumnName`""",

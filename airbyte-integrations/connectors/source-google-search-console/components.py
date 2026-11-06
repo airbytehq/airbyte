@@ -152,6 +152,7 @@ class CustomReportExtractDimensionsFromKeys(RecordTransformation):
     """
 
     dimensions: List[str] = field(default_factory=lambda: [])
+    parameters: Mapping[str, Any] = field(default_factory=dict)
 
     def transform(
         self,
@@ -160,7 +161,7 @@ class CustomReportExtractDimensionsFromKeys(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
-        for dimension in self.dimensions:
+        for dimension in self.dimensions or self.parameters.get("dimensions", []):
             record[dimension] = record["keys"].pop(0)
 
         record.pop("keys")

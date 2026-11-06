@@ -44,7 +44,7 @@ class CdcPartitionsCreator<T : PartiallyOrdered<T>>(
     override suspend fun run(): List<PartitionReader> {
         resetReason.get()?.let { reason: String ->
             throw TransientErrorException(
-                "Triggering reset. Incumbent CDC state is invalid, reason: ${reason}."
+                "Triggering reset. Incumbent CDC state is invalid, reason: ${reason}.",
             )
         }
         var allStreams: List<Stream> = feedBootstrap.feed.streams
@@ -53,8 +53,9 @@ class CdcPartitionsCreator<T : PartiallyOrdered<T>>(
         }
         val syntheticOffset: DebeziumOffset by lazy { creatorOps.generateColdStartOffset() }
         // Ensure that the WAL position upper bound has been computed for this sync.
-        val upperBound: T =
-            upperBoundReference.updateAndGet { it ?: creatorOps.position(syntheticOffset) }
+        val upperBound: T = upperBoundReference.updateAndGet {
+            it ?: creatorOps.position(syntheticOffset)
+        }
         // Deserialize the incumbent state value, if it exists.
         val warmStartState: DebeziumWarmStartState? =
             feedBootstrap.currentState?.let {
@@ -83,7 +84,7 @@ class CdcPartitionsCreator<T : PartiallyOrdered<T>>(
             is AbortDebeziumWarmStartState -> {
                 val e =
                     ConfigErrorException(
-                        "Incumbent CDC state is invalid, reason: ${warmStartState.reason}"
+                        "Incumbent CDC state is invalid, reason: ${warmStartState.reason}",
                     )
                 log.error(e) { "Aborting. ${e.message}." }
                 throw e
@@ -117,7 +118,7 @@ class CdcPartitionsCreator<T : PartiallyOrdered<T>>(
                 startingOffset,
                 startingSchemaHistory,
                 warmStartState !is ValidDebeziumWarmStartState,
-                feedBootstrap
+                feedBootstrap,
             )
         val lowerBound: T = creatorOps.position(startingOffset)
         val lowerBoundInPreviousRound: T? = lowerBoundReference.getAndSet(lowerBound)

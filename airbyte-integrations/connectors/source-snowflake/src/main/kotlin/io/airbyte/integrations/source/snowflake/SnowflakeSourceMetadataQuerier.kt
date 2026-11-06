@@ -5,7 +5,9 @@
 package io.airbyte.integrations.source.snowflake
 
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.check.CloudHostCheck
 import io.airbyte.cdk.check.JdbcCheckQueries
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.JdbcMetadataQuerier.ColumnMetadata
@@ -38,6 +40,12 @@ import java.sql.Statement
 import kotlin.use
 
 /**
+ * Invalid identifier; a view that references a column dropped from its base table fails with it on
+ * every probe.
+ */
+private const val ERRORCODE_INVALID_IDENTIFIER = 904
+
+/**
  * Object error codes:
  * 1. 2003 / 2043: "object does not exist or not authorized" (the same codes in application.yml)
  * 2. 2037: failure during expansion of view
@@ -48,7 +56,7 @@ private val TOLERABLE_OBJECT_ERROR_CODES = setOf(2003, 2043, 2037, 2057)
 /**
  * SQLSTATE classes:
  * 1. 42601: view compilation/expansion failure, such as a view referencing an unset session
- * variable.
+ *    variable.
  * 2. 42501: insufficient privileges to access the object or column.
  * 3. 02000: object does not exist or is not visible to the current user.
  */
@@ -78,8 +86,9 @@ class SnowflakeSourceMetadataQuerier(
         }
 
     val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
-        val joinMap: Map<TableName, TableName> =
-            memoizedTableNames.associateBy { it.copy(type = "") }
+        val joinMap: Map<TableName, TableName> = memoizedTableNames.associateBy {
+            it.copy(type = "")
+        }
         val results = mutableListOf<Pair<TableName, ColumnMetadata>>()
         log.info { "Querying column names for catalog discovery." }
         try {
@@ -167,7 +176,7 @@ class SnowflakeSourceMetadataQuerier(
             queryColumnMetadata(
                 base.conn,
                 selectLimit0(table, columnMetadata.map { it.name }),
-                onToleratedFailure = { wholeObjectFailure = isWholeObjectFailure(it) },
+                onToleratedFailure = { wholeObjectFailure = isWholeObjectFailure(it, table) },
             )
         if (allColumnsProbe != null) {
             return allColumnsProbe
@@ -254,10 +263,14 @@ class SnowflakeSourceMetadataQuerier(
      * table/view. Everything else is treated as fatal.
      */
     private fun isTolerableObjectError(e: SQLException): Boolean =
-        e.errorCode in TOLERABLE_OBJECT_ERROR_CODES || e.sqlState in TOLERABLE_OBJECT_SQLSTATES
+        e.errorCode in TOLERABLE_OBJECT_ERROR_CODES ||
+            e.errorCode == ERRORCODE_INVALID_IDENTIFIER ||
+            e.sqlState in TOLERABLE_OBJECT_SQLSTATES
 
-    private fun isWholeObjectFailure(e: SQLException): Boolean =
-        e.sqlState == "42601" || e.errorCode in TOLERABLE_OBJECT_ERROR_CODES
+    private fun isWholeObjectFailure(e: SQLException, table: TableName): Boolean =
+        e.sqlState == "42601" ||
+            e.errorCode in TOLERABLE_OBJECT_ERROR_CODES ||
+            (e.errorCode == ERRORCODE_INVALID_IDENTIFIER && table.type == "VIEW")
 
     fun <T> swallow(supplier: () -> T): T? {
         try {
@@ -280,8 +293,9 @@ class SnowflakeSourceMetadataQuerier(
 
     fun findTableName(
         streamID: StreamIdentifier,
-    ): TableName? =
-        memoizedTableNames.find { it.name == streamID.name && it.schema == streamID.namespace }
+    ): TableName? = memoizedTableNames.find {
+        it.name == streamID.name && it.schema == streamID.namespace
+    }
 
     val memoizedTableNames: List<TableName> by lazy {
         try {
@@ -317,8 +331,9 @@ class SnowflakeSourceMetadataQuerier(
     }
 
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
-        val joinMap: Map<TableName, TableName> =
-            memoizedTableNames.associateBy { it.copy(type = "") }
+        val joinMap: Map<TableName, TableName> = memoizedTableNames.associateBy {
+            it.copy(type = "")
+        }
         val results = mutableMapOf<TableName, MutableList<PrimaryKeyRow>>()
         log.info { "Querying primary keys for catalog discovery." }
         try {
@@ -374,6 +389,7 @@ class SnowflakeSourceMetadataQuerier(
             val selectQueryGenerator: SelectQueryGenerator,
             val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
             val checkQueries: JdbcCheckQueries,
+            val featureFlags: Set<FeatureFlag>,
             // The CDK selects the running operation via this property (Operation.PROPERTY);
             // object-level tolerance must apply to discover only.
             @Value("\${airbyte.connector.operation:}") val operationName: String,
@@ -382,6 +398,16 @@ class SnowflakeSourceMetadataQuerier(
 
             override fun session(config: SnowflakeSourceConfiguration): MetadataQuerier {
                 log.info { "Snowflake source metadata session." }
+                // Before the connection opens: with a URL in Host the driver error would win.
+                // realHost is already normalized (scheme, trailing slash and :443 removed), so
+                // only what the driver cannot handle is left to reject. Syntax only: Snowflake
+                // has no SSH tunnel option and no Port field, so the loopback message of
+                // CloudHostCheck.validate() would not apply.
+                CloudHostCheck.validateHostSyntax(
+                    config.realHost,
+                    featureFlags,
+                    HOST_SYNTAX_MESSAGE,
+                )
                 val jdbcConnectionFactory = JdbcConnectionFactory(config)
                 val base =
                     JdbcMetadataQuerier(
@@ -401,5 +427,13 @@ class SnowflakeSourceMetadataQuerier(
         }
 
         val EXCLUDED_NAMESPACES = setOf("INFORMATION_SCHEMA", "SNOWFLAKE_SAMPLE_DATA", "UTIL_DB")
+
+        /**
+         * Shown by CHECK on Airbyte Cloud when, after normalization, Host still carries a path,
+         * credentials, a scheme other than http(s) or a port other than 443.
+         */
+        const val HOST_SYNTAX_MESSAGE: String =
+            "Enter only the host domain in Host (for example account.snowflakecomputing.com), " +
+                "without a path or credentials."
     }
 }

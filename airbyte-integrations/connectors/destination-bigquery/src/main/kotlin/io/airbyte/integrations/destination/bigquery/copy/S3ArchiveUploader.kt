@@ -121,7 +121,7 @@ internal constructor(
     )
 
     constructor(
-        configuration: FusionConfiguration
+        configuration: FusionConfiguration,
     ) : this(configuration, createClients(configuration))
 
     private val lock = Any()
@@ -257,24 +257,24 @@ internal constructor(
         active.forEach { it.future.get()?.cancel(true) }
         // A daemon and a deadline also bound SDK/provider shutdown, including a stuck HTTP close.
         val closer = Executors.newSingleThreadExecutor { daemon(it, "fusion-s3-close") }
-        val result =
-            closer.submit {
-                var failure: Throwable? = null
-                fun attempt(block: () -> Unit) {
-                    try {
-                        block()
-                    } catch (t: Throwable) {
-                        if (failure == null) failure = t else failure!!.addSuppressed(t)
-                    }
+        val result = closer.submit {
+            var failure: Throwable? = null
+            fun attempt(block: () -> Unit) {
+                try {
+                    block()
+                } catch (t: Throwable) {
+                    val previous = failure
+                    if (previous == null) failure = t else previous.addSuppressed(t)
                 }
-                activeStreaming.forEach { session -> attempt { session.close() } }
-                active.forEach { transfer ->
-                    attempt { transfer.body.stop(cleanupWorkers, cleanupTimeout) }
-                }
-                ownedResources.forEach { resource -> attempt { resource.close() } }
-                cleanupWorkers.shutdown()
-                failure?.let { throw it }
             }
+            activeStreaming.forEach { session -> attempt { session.close() } }
+            active.forEach { transfer ->
+                attempt { transfer.body.stop(cleanupWorkers, cleanupTimeout) }
+            }
+            ownedResources.forEach { resource -> attempt { resource.close() } }
+            cleanupWorkers.shutdown()
+            failure?.let { throw it }
+        }
         closer.shutdown()
         try {
             result.get(cleanupTimeout.toMillis(), TimeUnit.MILLISECONDS)
@@ -318,7 +318,7 @@ internal constructor(
                         .connectionTimeout(Duration.ofSeconds(10))
                         .connectionAcquisitionTimeout(Duration.ofSeconds(10))
                         .readTimeout(Duration.ofMinutes(2))
-                        .writeTimeout(Duration.ofMinutes(2))
+                        .writeTimeout(Duration.ofMinutes(2)),
                 )
                 .multipartEnabled(true)
                 .multipartConfiguration {
@@ -345,7 +345,7 @@ internal constructor(
                 val base =
                     if (config.accessKeyId != null && config.secretAccessKey != null) {
                         StaticCredentialsProvider.create(
-                            AwsBasicCredentials.create(config.accessKeyId, config.secretAccessKey)
+                            AwsBasicCredentials.create(config.accessKeyId, config.secretAccessKey),
                         )
                     } else {
                         DefaultCredentialsProvider.builder().build().also { resources.add(it) }
@@ -359,7 +359,7 @@ internal constructor(
                         .httpClientBuilder(
                             UrlConnectionHttpClient.builder()
                                 .connectionTimeout(Duration.ofSeconds(10))
-                                .socketTimeout(Duration.ofMinutes(2))
+                                .socketTimeout(Duration.ofMinutes(2)),
                         )
                         .build()
                         .also { resources.add(it) }
@@ -443,7 +443,7 @@ internal class ArchiveFileBody(
     override fun subscribe(subscriber: Subscriber<in ByteBuffer>) = wholeFile.subscribe(subscriber)
 
     override fun splitCloseable(
-        configuration: AsyncRequestBodySplitConfiguration
+        configuration: AsyncRequestBodySplitConfiguration,
     ): SdkPublisher<CloseableAsyncRequestBody> {
         val partSize = configuration.chunkSizeInBytes()
         require(partSize > 0) { "Multipart part size must be positive" }
@@ -510,7 +510,7 @@ internal class ArchiveFileBody(
                                     }
 
                                     override fun cancel() = subscription.cancel()
-                                }
+                                },
                             )
                         }
 
@@ -525,7 +525,7 @@ internal class ArchiveFileBody(
                             requestClose(subscription)
                             subscriber.onComplete()
                         }
-                    }
+                    },
                 )
         } catch (t: Exception) {
             subscriber.onSubscribe(
@@ -533,7 +533,7 @@ internal class ArchiveFileBody(
                     override fun request(n: Long) = Unit
 
                     override fun cancel() = Unit
-                }
+                },
             )
             subscriber.onError(t)
         }
@@ -543,7 +543,7 @@ internal class ArchiveFileBody(
         if (subscription.closing.compareAndSet(false, true)) scheduleClose()
     }
 
-    private fun scheduleClose() =
+    private fun scheduleClose() {
         synchronized(closeSchedulingLock) {
             if (streamCloser.isShutdown) return
             closeRequests++
@@ -586,6 +586,7 @@ internal class ArchiveFileBody(
                 }
             }
         }
+    }
 
     fun stop(cleanupWorkers: ExecutorService, timeout: Duration) {
         val task =
@@ -605,14 +606,18 @@ internal class ArchiveFileBody(
                                 streamCloser.awaitTermination(
                                     maxOf(0, deadline - System.nanoTime()),
                                     TimeUnit.NANOSECONDS,
-                                )
-                            ) { "Archive stream close executor did not terminate" }
+                                ),
+                            ) {
+                                "Archive stream close executor did not terminate"
+                            }
                             check(
                                 reader.awaitTermination(
                                     maxOf(0, deadline - System.nanoTime()),
                                     TimeUnit.NANOSECONDS,
-                                )
-                            ) { "Archive file reader executor did not terminate" }
+                                ),
+                            ) {
+                                "Archive file reader executor did not terminate"
+                            }
                             synchronized(lock) { closeFailure }?.let { throw it }
                         }
                         .also { cleanup = it }
@@ -664,7 +669,7 @@ private suspend fun <T> CompletableFuture<T>.awaitUpload(): T =
             if (error == null) continuation.resume(value)
             else
                 continuation.resumeWithException(
-                    if (error is CompletionException) error.cause ?: error else error
+                    if (error is CompletionException) error.cause ?: error else error,
                 )
         }
     }
