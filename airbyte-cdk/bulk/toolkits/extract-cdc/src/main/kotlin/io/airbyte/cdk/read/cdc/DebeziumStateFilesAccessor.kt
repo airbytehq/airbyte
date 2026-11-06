@@ -49,6 +49,10 @@ class DebeziumStateFilesAccessor : AutoCloseable {
                 WorkerConfig.KEY_CONVERTER_CLASS_CONFIG to JsonConverter::class.java.name,
                 WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG to JsonConverter::class.java.name,
                 StandaloneConfig.OFFSET_STORAGE_FILE_FILENAME_CONFIG to offsetFilePath.toString(),
+                // Required-but-unused: Kafka Connect 4.2 removed the default value for
+                // bootstrap.servers, so WorkerConfig rejects any config map without it at parse
+                // time. FileOffsetBackingStore never connects to a broker, so any value works.
+                WorkerConfig.BOOTSTRAP_SERVERS_CONFIG to "localhost:9092",
             )
         fileOffsetBackingStore.configure(StandaloneConfig(fileOffsetConfig))
     }

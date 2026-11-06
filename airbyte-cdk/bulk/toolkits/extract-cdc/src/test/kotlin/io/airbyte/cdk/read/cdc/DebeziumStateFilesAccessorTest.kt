@@ -17,6 +17,16 @@ import org.junit.jupiter.api.Test
 class DebeziumStateFilesAccessorTest {
 
     @Test
+    fun testConstructionWithKafkaConnect42OrLater() {
+        // Kafka Connect 4.2 removed the default value for bootstrap.servers, so WorkerConfig
+        // throws ConfigException("Missing required configuration \"bootstrap.servers\"...") at
+        // parse time unless the accessor supplies a placeholder itself; the property is never
+        // used by FileOffsetBackingStore. With connect-runtime < 4.2 on the classpath this test
+        // passes trivially (the default fills the gap); with 4.2+ it exercises the fix.
+        Assertions.assertDoesNotThrow { DebeziumStateFilesAccessor().use {} }
+    }
+
+    @Test
     fun testWorkingDirLifecycle() {
         val dir: File
         DebeziumStateFilesAccessor().use {
