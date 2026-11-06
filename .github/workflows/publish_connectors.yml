@@ -443,6 +443,78 @@ jobs:
         run: |
           echo "DRY-RUN: Skipping JVM connector tar file upload for ${{ matrix.connector }}"
 
+      # ---------- JVM connector fat jar ----------
+      # Bulk CDK connectors also publish a self-contained jar to CloudRepo as
+      # io.airbyte.connectors:<image name>:<image tag>, which the platform runs connector checks from.
+      # Published releases there can't be overwritten, so a version that is already published is skipped.
+      - name: Resolve Variables (JVM connector fat jar)
+        id: resolve-fat-jar
+        if: >
+          steps.check-release-block.outputs.blocked != 'true' &&
+          steps.connector-metadata.outputs.connector-language == 'java' &&
+          needs.publish_options.outputs.registry-refresh-only != 'true'
+        shell: bash
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+          JAR_VERSION: ${{ steps.resolve-version.outputs.connector-version-tag }}
+          JAR_REPOSITORY_URL: https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars
+        run: |
+          set -euo pipefail
+          connector_dir="airbyte-integrations/connectors/${CONNECTOR}"
+          artifact_id=$(yq -r '.data.dockerRepository' "${connector_dir}/metadata.yaml" | awk -F/ '{print $NF}')
+          jar_url="${JAR_REPOSITORY_URL}/io/airbyte/connectors/${artifact_id}/${JAR_VERSION}/${artifact_id}-${JAR_VERSION}.jar"
+
+          uses_bulk_cdk=false
+          grep -q "id 'airbyte-bulk-connector'" "${connector_dir}/build.gradle" && uses_bulk_cdk=true
+
+          # curl prints 000 when CloudRepo can't be reached; report that below instead of failing on curl's exit code.
+          status=$(curl -s -o /dev/null -w '%{http_code}' --head "$jar_url" || true)
+          [[ "$status" != "200" && "$status" != "404" ]] \
+            && echo "::error::CloudRepo answered ${status} for ${jar_url}" \
+            && exit 1
+          already_published=false
+          [[ "$status" == "200" ]] && already_published=true
+
+          publish=false
+          [[ "$uses_bulk_cdk" == "true" && "$already_published" == "false" ]] && publish=true
+          {
+            echo "jar-url=${jar_url}"
+            echo "uses-bulk-cdk=${uses_bulk_cdk}"
+            echo "already-published=${already_published}"
+            echo "publish=${publish}"
+          } | tee -a "$GITHUB_OUTPUT"
+        # Remove once the fat jar step has proven itself, like the tar file step above.
+        continue-on-error: true
+
+      - name: Publish JVM connector fat jar
+        id: publish-JVM-connector-fat-jar
+        if: >
+          steps.resolve-fat-jar.outputs.publish == 'true' &&
+          needs.publish_options.outputs.dry-run != 'true'
+        shell: bash
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+          JAR_VERSION: ${{ steps.resolve-version.outputs.connector-version-tag }}
+          CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
+          CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+        run: >
+          ./gradlew -DciMode=true -PconnectorJarVersion="${JAR_VERSION}"
+          ":airbyte-integrations:connectors:${CONNECTOR}:publishConnectorJar"
+        # Remove once the fat jar step has proven itself, like the tar file step above.
+        continue-on-error: true
+
+      - name: "[DRY-RUN] Build JVM connector fat jar (no publish)"
+        if: >
+          steps.resolve-fat-jar.outputs.publish == 'true' &&
+          needs.publish_options.outputs.dry-run == 'true'
+        shell: bash
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+          JAR_VERSION: ${{ steps.resolve-version.outputs.connector-version-tag }}
+        run: >
+          ./gradlew -DciMode=true -PconnectorJarVersion="${JAR_VERSION}"
+          ":airbyte-integrations:connectors:${CONNECTOR}:connectorFatJar"
+
       - name: Build and publish Python and Manifest-Only connectors images
         id: build-and-publish-python-manifest-only-connectors-images
         if: >
