@@ -81,7 +81,7 @@ abctl images manifest --chart-version <version> > images.txt
 while IFS= read -r image; do
   docker pull "$image" &&
     docker tag "$image" "ghcr.io/NAMESPACE/$image" &&
-    docker push "ghcr.io/NAMESPACE/$image" || exit 1
+    docker push "ghcr.io/NAMESPACE/$image" || break
 done < images.txt
 ```
 
