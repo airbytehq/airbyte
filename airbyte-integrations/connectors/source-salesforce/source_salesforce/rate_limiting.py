@@ -2,18 +2,30 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from __future__ import annotations
+
 import logging
 import re
 import sys
-from typing import Any, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Mapping, Optional, Union
 
 import backoff
 import requests
 from requests import codes, exceptions  # type: ignore[import]
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers import (
+    ErrorHandler,
+    ErrorResolution,
+    ResponseAction,
+)
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+
+from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
+
+
+if TYPE_CHECKING:
+    from source_salesforce.api import SalesforceTokenProvider
 
 
 RESPONSE_CONSUMPTION_EXCEPTIONS = (
@@ -46,10 +58,8 @@ _RETRYABLE_400_STATUS_CODES = {
     420,
     codes.too_many_requests,
 }
-_AUTHENTICATION_ERROR_MESSAGE_MAPPING = {
-    "expired access/refresh token": "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
-}
-
+_NO_SUCH_COLUMN_PATTERN = re.compile(r"No such column '(?P<field>[^']+)' on entity")
+_BULK_COMPOUND_DATA_ERROR_MESSAGE = "Selecting compound data not supported in Bulk Query"
 
 logger = logging.getLogger("airbyte")
 
@@ -59,9 +69,15 @@ class BulkNotSupportedException(Exception):
 
 
 class SalesforceErrorHandler(ErrorHandler):
-    def __init__(self, stream_name: str = "<unknown stream>", sobject_options: Optional[Mapping[str, Any]] = None) -> None:
+    def __init__(
+        self,
+        stream_name: str = "<unknown stream>",
+        sobject_options: Optional[Mapping[str, Any]] = None,
+        token_provider: Optional[SalesforceTokenProvider] = None,
+    ) -> None:
         self._stream_name = stream_name
         self._sobject_options: Mapping[str, Any] = sobject_options or {}
+        self._token_provider = token_provider
 
     @property
     def max_retries(self) -> Optional[int]:
@@ -86,6 +102,27 @@ class SalesforceErrorHandler(ErrorHandler):
                     raise BulkNotSupportedException(f"Query job with id: `{response.json().get('id')}` failed")
                 return ErrorResolution(ResponseAction.IGNORE, None, None)
 
+            if response.status_code == 401:
+                error_code, _ = self._extract_error_code_and_message(response)
+                if error_code == "INVALID_SESSION_ID":
+                    refreshed = False
+                    if self._token_provider is not None:
+                        refreshed = self._token_provider.force_refresh()
+                        if self._token_provider.credentials_permanently_failed:
+                            # The session is dead and the grant cannot mint a new one; retrying
+                            # floods the token endpoint from every stream.
+                            return ErrorResolution(
+                                ResponseAction.FAIL,
+                                FailureType.config_error,
+                                AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                            )
+                    return ErrorResolution(
+                        ResponseAction.RETRY,
+                        FailureType.transient_error,
+                        "Salesforce session expired or invalid. "
+                        + ("Token has been refreshed." if refreshed else "The token could not be refreshed."),
+                    )
+
             if not (400 <= response.status_code < 500) or response.status_code in _RETRYABLE_400_STATUS_CODES:
                 return ErrorResolution(
                     ResponseAction.RETRY,
@@ -94,16 +131,26 @@ class SalesforceErrorHandler(ErrorHandler):
                 )
 
             error_code, error_message = self._extract_error_code_and_message(response)
+            if error_code == "API_DISABLED_FOR_ORG" or "api is not enabled for this organization" in error_message.lower():
+                return ErrorResolution(
+                    ResponseAction.FAIL,
+                    FailureType.config_error,
+                    AUTHENTICATION_ERROR_MESSAGE_MAPPING["API_DISABLED_FOR_ORG"],
+                )
             if self._is_login_request(response):
                 return ErrorResolution(
                     ResponseAction.FAIL,
                     FailureType.config_error,
-                    _AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
-                    if error_message in _AUTHENTICATION_ERROR_MESSAGE_MAPPING
-                    else f"An error occurred: {response.content.decode()}",
+                    self._login_error_message(error_code, error_message),
                 )
 
-            if self._is_bulk_job_creation(response) and response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+            if error_code == "INVALID_FIELD" and error_message != _BULK_COMPOUND_DATA_ERROR_MESSAGE:
+                return self._handle_invalid_field(error_message)
+
+            if self._is_bulk_job_creation(response) and response.status_code in [
+                codes.FORBIDDEN,
+                codes.BAD_REQUEST,
+            ]:
                 return self._handle_bulk_job_creation_endpoint_specific_errors(response, error_code, error_message)
 
             if response.status_code == codes.too_many_requests or (
@@ -126,6 +173,13 @@ class SalesforceErrorHandler(ErrorHandler):
                     'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.',
                 )
 
+        if not isinstance(response, requests.Response):
+            return ErrorResolution(
+                ResponseAction.RETRY,
+                FailureType.system_error,
+                f"Request for stream '{self._stream_name}' failed with {type(response).__name__}: {response}",
+            )
+
         return ErrorResolution(
             ResponseAction.FAIL,
             FailureType.system_error,
@@ -133,9 +187,39 @@ class SalesforceErrorHandler(ErrorHandler):
         )
 
     @staticmethod
+    def _login_error_message(error_code: Optional[str], error_message: str) -> str:
+        description = error_message.lower()
+        if error_code == "LOGIN_MUST_USE_SECURITY_TOKEN" or any(
+            marker in description for marker in ("ip restricted", "restricted ip", "login_must_use_security_token")
+        ):
+            return AUTHENTICATION_ERROR_MESSAGE_MAPPING["ip_restricted"]
+        if error_code in ("invalid_client_id", "invalid_client"):
+            return AUTHENTICATION_ERROR_MESSAGE_MAPPING["invalid_client"]
+        if error_code == "invalid_grant" or "authentication failure" in description or "expired access/refresh token" in description:
+            return AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"]
+        return "Salesforce login failed. Re-authenticate the source and check the Connected App credentials and is_sandbox setting."
+
+    def _handle_invalid_field(self, error_message: str) -> ErrorResolution:
+        """`INVALID_FIELD` means the org can no longer resolve a field the query asks for: the field was
+        deleted or renamed, or field-level read access was revoked for the authenticated user. The
+        selected fields come from the sObject describe, so this is a customer-side change rather than an
+        Airbyte failure and must not be reported as a system error.
+        """
+        logger.error(f"Salesforce returned INVALID_FIELD for stream '{self._stream_name}': {error_message}")
+        field_match = _NO_SUCH_COLUMN_PATTERN.search(error_message)
+        field_reference = f"Field '{field_match.group('field')}'" if field_match else "A field"
+        return ErrorResolution(
+            ResponseAction.FAIL,
+            FailureType.config_error,
+            f"{field_reference} requested by stream '{self._stream_name}' does not exist in Salesforce or is not visible to the "
+            "authenticated user. Restore the field or grant it field-level read access, then refresh the connection schema.",
+        )
+
+    @staticmethod
     def _is_bulk_job_status_check(response: requests.Response) -> bool:
         """Regular string ensures format used only for job status: /services/data/vXX.X/jobs/query/<queryJobId>,
-        see https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/query_get_one_job.htm"""
+        see https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/query_get_one_job.htm
+        """
         return response.request.method == "GET" and bool(re.compile(r"/services/data/v\d{2}\.\d/jobs/query/[^/]+$").search(response.url))
 
     @staticmethod
@@ -158,7 +242,7 @@ class SalesforceErrorHandler(ErrorHandler):
         #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
         #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
         #    And the main problem is these subqueries doesn't support CSV response format.
-        if error_message == "Selecting compound data not supported in Bulk Query" or (
+        if error_message == _BULK_COMPOUND_DATA_ERROR_MESSAGE or (
             error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
         ):
             logger.error(
@@ -197,7 +281,9 @@ class SalesforceErrorHandler(ErrorHandler):
         return ErrorResolution(ResponseAction.FAIL, FailureType.system_error, error_message)
 
     @staticmethod
-    def _extract_error_code_and_message(response: requests.Response) -> tuple[Optional[str], str]:
+    def _extract_error_code_and_message(
+        response: requests.Response,
+    ) -> tuple[Optional[str], str]:
         try:
             error_data = response.json()[0]
             return error_data.get("errorCode"), error_data.get("message", "")
@@ -208,8 +294,8 @@ class SalesforceErrorHandler(ErrorHandler):
                 f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`"
             )
 
-            if "error" in response.json() and "error_description" in response.json():
-                return response.json()["error"], response.json()["error_description"]
+            if "error" in response.json():
+                return response.json()["error"], response.json().get("error_description") or ""
 
         return None, f"Unknown error on response `{response.content}`"
 
@@ -229,12 +315,13 @@ def default_backoff_handler(max_tries: int, retry_on=None):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
 
     def should_give_up(exc):
-        give_up = (
-            SalesforceErrorHandler().interpret_response(exc if exc.response is None else exc.response).response_action
-            != ResponseAction.RETRY
-        )
+        response_or_exception = exc if exc.response is None else exc.response
+        give_up = SalesforceErrorHandler().interpret_response(response_or_exception).response_action != ResponseAction.RETRY
         if give_up:
-            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}, body: {exc.response.text}")
+            if isinstance(response_or_exception, requests.Response):
+                logger.info(f"Giving up for returned HTTP status: {response_or_exception.status_code}, body: {response_or_exception.text}")
+            else:
+                logger.info(f"Giving up after {type(response_or_exception).__name__}: {response_or_exception}")
         return give_up
 
     return backoff.on_exception(

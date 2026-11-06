@@ -1687,6 +1687,16 @@ Table "engagements_tasks" {
     "properties_hs_was_imported" boolean
 }
 
+Table "engagements_task_pipelines" {
+    "label" string
+    "displayOrder" integer
+    "id" string [pk]
+    "archived" boolean
+    "stages" array
+    "createdAt" string
+    "updatedAt" string
+}
+
 Table "forms" {
     "id" string [pk]
     "name" string
@@ -3134,6 +3144,18 @@ Table "properties" {
     "updatedUserId" string
     "displayMode" string
     "objectType" string
+}
+
+Table "details" {
+    "portalId" number
+    "accountType" string
+    "additionalCurrencies" array
+    "companyCurrency" string
+    "dataHostingLocation" string
+    "timeZone" string
+    "uiDomain" string
+    "utcOffset" string
+    "utcOffsetMilliseconds" number
 }
 
 Ref {

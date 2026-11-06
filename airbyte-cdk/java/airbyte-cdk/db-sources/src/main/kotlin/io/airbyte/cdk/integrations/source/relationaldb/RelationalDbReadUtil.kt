@@ -13,7 +13,7 @@ import io.airbyte.protocol.models.v0.SyncMode
 object RelationalDbReadUtil {
     fun identifyStreamsToSnapshot(
         catalog: ConfiguredAirbyteCatalog,
-        alreadySyncedStreams: Set<AirbyteStreamNameNamespacePair>
+        alreadySyncedStreams: Set<AirbyteStreamNameNamespacePair>,
     ): List<ConfiguredAirbyteStream> {
         val allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog)
         val newlyAddedStreams: Set<AirbyteStreamNameNamespacePair> =
@@ -22,7 +22,7 @@ object RelationalDbReadUtil {
             .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
             .filter { stream: ConfiguredAirbyteStream ->
                 newlyAddedStreams.contains(
-                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream)
+                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream),
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
@@ -31,7 +31,7 @@ object RelationalDbReadUtil {
     @JvmStatic
     fun identifyStreamsForCursorBased(
         catalog: ConfiguredAirbyteCatalog,
-        streamsForInitialLoad: List<ConfiguredAirbyteStream>
+        streamsForInitialLoad: List<ConfiguredAirbyteStream>,
     ): List<ConfiguredAirbyteStream> {
         val initialLoadStreamsNamespacePairs =
             streamsForInitialLoad
@@ -43,7 +43,7 @@ object RelationalDbReadUtil {
             .filter { c: ConfiguredAirbyteStream -> c.syncMode == SyncMode.INCREMENTAL }
             .filter { stream: ConfiguredAirbyteStream ->
                 !initialLoadStreamsNamespacePairs.contains(
-                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream)
+                    AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.stream),
                 )
             }
             .map { `object`: ConfiguredAirbyteStream -> Jsons.clone(`object`) }
@@ -51,11 +51,11 @@ object RelationalDbReadUtil {
 
     @JvmStatic
     fun convertNameNamespacePairFromV0(
-        v1NameNamespacePair: io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
+        v1NameNamespacePair: io.airbyte.protocol.models.AirbyteStreamNameNamespacePair,
     ): AirbyteStreamNameNamespacePair {
         return AirbyteStreamNameNamespacePair(
             v1NameNamespacePair.name,
-            v1NameNamespacePair.namespace
+            v1NameNamespacePair.namespace,
         )
     }
 }

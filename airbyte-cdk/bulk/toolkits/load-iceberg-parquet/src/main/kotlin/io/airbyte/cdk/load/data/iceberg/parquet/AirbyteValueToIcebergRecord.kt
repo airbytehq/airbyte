@@ -63,7 +63,12 @@ class AirbyteValueToIcebergRecord {
             is DateValue -> return airbyteValue.value
             is IntegerValue -> return airbyteValue.value.toLong()
             is NullValue -> return null
-            is NumberValue -> return airbyteValue.value.toDouble()
+            is NumberValue ->
+                return when (type.typeId()) {
+                    // PK NumberType fields are mapped to StringType in Iceberg.
+                    Type.TypeID.STRING -> airbyteValue.value.toPlainString()
+                    else -> airbyteValue.value.toDouble()
+                }
             is StringValue -> return airbyteValue.value
             is TimeWithTimezoneValue ->
                 return when (type.typeId()) {
@@ -73,7 +78,7 @@ class AirbyteValueToIcebergRecord {
                         airbyteValue.value.withOffsetSameInstant(ZoneOffset.UTC).toLocalTime()
                     else ->
                         throw IllegalArgumentException(
-                            "${type.typeId()} type is not allowed for TimeValue"
+                            "${type.typeId()} type is not allowed for TimeValue",
                         )
                 }
             is TimeWithoutTimezoneValue ->
@@ -81,7 +86,7 @@ class AirbyteValueToIcebergRecord {
                     Type.TypeID.TIME -> airbyteValue.value
                     else ->
                         throw IllegalArgumentException(
-                            "${type.typeId()} type is not allowed for TimeValue"
+                            "${type.typeId()} type is not allowed for TimeValue",
                         )
                 }
             is TimestampWithTimezoneValue ->
@@ -98,7 +103,7 @@ class AirbyteValueToIcebergRecord {
                     }
                     else ->
                         throw IllegalArgumentException(
-                            "${type.typeId()} type is not allowed for TimestampValue"
+                            "${type.typeId()} type is not allowed for TimestampValue",
                         )
                 }
             is TimestampWithoutTimezoneValue ->
@@ -115,7 +120,7 @@ class AirbyteValueToIcebergRecord {
                     }
                     else ->
                         throw IllegalArgumentException(
-                            "${type.typeId()} type is not allowed for TimestampValue"
+                            "${type.typeId()} type is not allowed for TimestampValue",
                         )
                 }
         }

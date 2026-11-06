@@ -70,6 +70,52 @@
           "type": ["null", "string"]
         }
       }
+    },
+    "tags": {
+      "description": "User-defined tags associated with the program.",
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "tagType": {
+            "description": "The type of tag.",
+            "type": ["string", "null"]
+          },
+          "tagValue": {
+            "description": "The value of the tag.",
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "sfdcId": {
+      "description": "The ID of the corresponding object in Salesforce.",
+      "type": ["null", "string"]
+    },
+    "sfdcName": {
+      "description": "The name of the corresponding object in Salesforce.",
+      "type": ["null", "string"]
+    },
+    "costs": {
+      "description": "Period costs associated with the program.",
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "description": "The start date of the cost period.",
+            "type": ["string", "null"]
+          },
+          "cost": {
+            "description": "The cost amount for the period.",
+            "type": ["number", "null"]
+          },
+          "note": {
+            "description": "A note about the cost.",
+            "type": ["string", "null"]
+          }
+        }
+      }
     }
   }
 }

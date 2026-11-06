@@ -7,13 +7,21 @@ This destination writes data to Azure Blob Storage.
 The Airbyte Azure Blob Storage destination allows you to sync data to Azure Blob Storage. Each stream is written to its own blob under the container,
 as `<stream_namespace>/<stream_name>/yyyy_mm_dd_<unix_epoch>_<part_number>.<file_extension>`.
 
-## Sync Mode
+## Network access
 
-| Feature                        | Support |
-| :----------------------------- | :-----: |
-| Full Refresh Sync              |   ✅    |
-| Incremental - Append Sync      |   ✅    |
-| Incremental - Append + Deduped |   ❌    |
+If you're using Airbyte Cloud and this destination uses IP-based access controls,
+add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your
+allowlist.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Configuration
 
@@ -131,6 +139,10 @@ With root level flattening, the output JSONL is:
   - This depends on your networking setup.
   - The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is used as part of the output path structure.
+
 ## Changelog
 
 <details>
@@ -138,6 +150,11 @@ With root level flattening, the output JSONL is:
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:---------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.11 | 2026-10-22 | [89649](https://github.com/airbytehq/airbyte/pull/89649) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139, Hadoop 3.4.3, Parquet 1.18.1, azure-identity 1.18.7 |
+| 1.1.10 | 2026-10-09 | [87614](https://github.com/airbytehq/airbyte/pull/87614) | Upgrade to Bulk CDK 1.1.1. |
+| 1.1.9 | 2026-09-01 | [84984](https://github.com/airbytehq/airbyte/pull/84984) | Upgrade to Bulk CDK 1.0.25. |
+| 1.1.8 | 2026-08-10 | [83810](https://github.com/airbytehq/airbyte/pull/83810) | Upgrade CDK to 1.0.24 |
+| 1.1.7 | 2026-05-19 | [78243](https://github.com/airbytehq/airbyte/pull/78243) | Upgrade CDK to 1.0.13 |
 | 1.1.6 | 2026-01-26 | [72355](https://github.com/airbytehq/airbyte/pull/72355) | Fix sync failures for sources with empty schemas by upgrading CDK to 0.2.1 |
 | 1.1.5 | 2026-01-20 | [72301](https://github.com/airbytehq/airbyte/pull/72301) | Upgrade CDK to 0.2.0 |
 | 1.1.4 | 2025-11-05 | [69127](https://github.com/airbytehq/airbyte/pull/69127) | Upgrade to Bulk CDK 0.1.61. |

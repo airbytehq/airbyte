@@ -1,121 +1,109 @@
 # Amazon SQS
 
+:::warning
+
+This connector is archived. It's no longer available in the Airbyte Cloud or Airbyte Open Source connector catalogs, and it doesn't receive updates or support from the Airbyte team. For more information, see [Archived connectors](../connector-support-levels.md#archived-connectors).
+
+:::
+
 ## Overview
 
-The Airbyte SQS destination allows you to sync data to Amazon SQS. It currently supports sending all
-streams to a single Queue.
+The Amazon SQS destination sends each record from your source to a single Amazon SQS queue. It supports both standard and FIFO queues.
 
-### Sync overview
+## Prerequisites
 
-#### Output schema
+- An Amazon SQS queue. See [Create a queue](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/creating-sqs-standard-queues.html) in the AWS documentation.
+- An AWS IAM access key ID and secret access key for an IAM user with the following permissions on the queue:
+  - `sqs:SendMessage`
+  - `sqs:GetQueueAttributes`
 
-All streams will be output into a single SQS Queue.
+The connector always authenticates with an access key. Although the access key fields appear as optional in the configuration form, the connection check and syncs fail if you don't provide them.
 
-Amazon SQS messages can only contain JSON, XML or text, and this connector supports writing messages
-in all three formats. See the **Writing Text or XML messages** section for more info.
+## Setup guide
 
-#### Features
+### Step 1: Create an IAM user and access key
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | No                   |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | No                   |       |
+1. In the AWS IAM console, create an IAM user for Airbyte.
+2. Attach a policy that grants the required permissions on your queue. For example:
 
-## Getting started
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": ["sqs:SendMessage", "sqs:GetQueueAttributes"],
+         "Resource": "arn:aws:sqs:<region>:<account-id>:<queue-name>"
+       }
+     ]
+   }
+   ```
 
-### Requirements
+3. [Create an access key](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey) for the user and save the access key ID and secret access key.
 
-- AWS IAM Access Key
-- AWS IAM Secret Key
-- AWS SQS Queue
+### Step 2: Set up the destination in Airbyte
 
-#### Permissions
+Provide the following configuration:
 
-If the target SQS Queue is not public, you will need the following permissions on the Queue:
+- **Queue URL**: The full URL of the queue, for example `https://sqs.eu-west-1.amazonaws.com/1234567890/example-queue`. The connector treats the queue as a FIFO queue if the URL ends in `.fifo`.
+- **AWS Region**: The region of the queue, for example `eu-west-1`.
+- **AWS IAM Access Key ID** and **AWS IAM Secret Key**: The credentials from Step 1.
+- **Message Delay** (optional): The number of seconds to delay each message before consumers can receive it. Amazon SQS accepts values from 0 to 900. Don't set this for FIFO queues. See [Amazon SQS message timers](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-timers.html).
+- **Message Body Key** (optional): The name of a top-level field in the record to use as the message body. See [Use the Message Body Key](#use-the-message-body-key).
+- **Message Group Id**: Required for FIFO queues and ignored for standard queues. See [FIFO queues](#fifo-queues).
 
-- `sqs:SendMessage`
+## Message format
 
-### Properties
+All streams are written to the same queue. The connector sends one message per record and doesn't batch messages.
 
-Required properties are 'Queue URL' and 'AWS Region' as noted in **bold** below.
+By default, the message body is the record's data serialized as a JSON string. The stream name and other Airbyte metadata aren't included in the body. Each message has one [message attribute](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html), `airbyte_emitted_at`, a `String` attribute that contains the time the source emitted the record, in milliseconds since the Unix epoch.
 
-- **Queue URL** (STRING)
-  - The full AWS endpoint URL of the queue
-    e.g.`https://sqs.eu-west-1.amazonaws.com/1234567890/example-queue-url`
-- **AWS Region** (STRING)
-  - The region code for the SQS Queue e.g. eu-west-1
-- Message Delay (INT)
-  - Time in seconds that this message should be hidden from consumers.
-  - See the
-    [AWS SQS documentation](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-timers.html)
-    for more detail.
-- AWS IAM Access Key ID (STRING)
-  - The Access Key for the IAM User with permissions on this Queue
-  - Permission `sqs:SendMessage` is required
-- AWS IAM Secret Key (STRING)
-  - The Secret Key for the IAM User with permissions on this Queue
-- Message Body Key (STRING)
-  - Rather than sending the entire Record as the Message Body, use this property to reference a Key
-    in the Record to use as the message body. The value of this property should be the Key name in
-    the input Record. The key must be at the top level of the Record, nested Keys are not supported.
-- Message Group Id (STRING)
-  - When using a FIFO queue, this property is **required**.
-  - See the
-    [AWS SQS documentation](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html)
-    for more detail.
+Amazon SQS limits the size of each message. Records larger than the limit fail to send. See [Amazon SQS message quotas](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html).
 
-### Setup guide
+### Use the Message Body Key
 
-- [Create IAM Keys](https://aws.amazon.com/premiumsupport/knowledge-center/create-access-key/)
-- [Create SQS Queue](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-getting-started.html#step-create-queue)
+Set **Message Body Key** to send the value of one top-level field as the message body instead of the whole record. Nested fields aren't supported. Use this to send text or XML messages.
 
-#### Using the Message Body Key
+The field's value must be a string. If the value is an object, array, or number, the message fails to send. If a record doesn't contain the field, or the field is `null`, the sync fails.
 
-This property allows you to reference a Key within the input Record as using that properties Value
-as the SQS Message Body.
+For example, with this input record:
 
-For example, with the input Record:
-
-```
-{
-  "parent_with_child": {
-    "child": "child_value"
-  },
-  "parent": "parent_value"
-}
-```
-
-To send _only_ the `parent_with_child` object, we can set `Message Body Key` to `parent_with_child`.
-Giving an output SQS Message of:
-
-```
-{
-  "child": "child_value"
-}
-```
-
-#### Writing Text or XML messages
-
-To output Text or XML, the data must be contained within a String field in the input data, and then
-referenced by setting the `Message Body Key` property.
-
-For example, with an input Record as:
-
-```
+```json
 {
   "my_xml_field": "<something>value</something>"
 }
 ```
 
-To send a pure XML message, you would set the `Message Body Key` to `my_xml_field`.
+Setting **Message Body Key** to `my_xml_field` produces this message body:
 
-The output SQS message would contain:
-
-```
+```xml
 <something>value</something>
 ```
+
+### FIFO queues
+
+When the queue URL ends in `.fifo`, the connector checks that the queue is a FIFO queue and requires **Message Group Id**. Every message is sent with the same message group ID, so Amazon SQS delivers all records in order as a single group.
+
+How the connector handles deduplication depends on the queue's [content-based deduplication](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html) setting:
+
+- **Disabled**: The connector generates a random deduplication ID for each message, so Amazon SQS doesn't deduplicate any records.
+- **Enabled**: Amazon SQS deduplicates messages based on their body. Records with identical message bodies sent within the five-minute deduplication interval are delivered only once.
+
+Amazon SQS doesn't support per-message delays on FIFO queues. Leave **Message Delay** empty and configure a delay on the queue instead.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | No |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 
@@ -124,6 +112,7 @@ The output SQS message would contain:
 
 | Version | Date       | Pull Request                                              | Subject                           |
 |:--------|:-----------| :-------------------------------------------------------- | :-------------------------------- |
+| 0.1.18 | 2026-11-03 | [90866](https://github.com/airbytehq/airbyte/pull/90866) | Archive connector |
 | 0.1.17  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                  |
 | 0.1.16  | 2024-08-03 | [43278](https://github.com/airbytehq/airbyte/pull/43278) | Update dependencies |
 | 0.1.15  | 2024-07-27 | [42795](https://github.com/airbytehq/airbyte/pull/42795) | Update dependencies |

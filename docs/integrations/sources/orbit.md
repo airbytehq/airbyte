@@ -41,6 +41,10 @@ The Orbit API Key should be available to you immediately as an Orbit user.
 3. Navigate to **API Tokens**.
 4. Click **New API Token** in the top right if one doesn't already exist.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

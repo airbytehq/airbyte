@@ -5,16 +5,6 @@
 The Starburst Galaxy destination syncs data to Starburst Galaxy [great lake catalogs](https://docs.starburst.io/starburst-galaxy/sql/great-lakes.html)
 in [Apache Iceberg](https://iceberg.apache.org/) table format. Each stream is written to its own Iceberg table.
 
-## Features
-
-| Feature          | Supported | Notes                                                                               |
-| :--------------- | :-------: | :---------------------------------------------------------------------------------- |
-| Overwrite Sync   |    ✅     | **Warning**: this mode deletes all previously synced data in the destination table. |
-| Append Sync      |    ✅     |                                                                                     |
-| Append + Deduped |    ❌     |                                                                                     |
-| Namespaces       |    ✅     |                                                                                     |
-| SSL              |    ✅     | SSL is enabled.                                                                     |
-
 ## Data storage
 
 Starburst Galaxy supports various [object storages](https://docs.starburst.io/starburst-galaxy/catalogs/index.html#object-storage);
@@ -85,6 +75,16 @@ Learn more about [how source data is converted to Avro](https://docs.airbyte.io/
 
 Learn more about [Starburst Galaxy Iceberg type mapping](https://docs.starburst.io/latest/connector/iceberg.html#iceberg-to-trino-type-mapping).
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+
 ## Getting started
 
 ### Requirements
@@ -93,6 +93,10 @@ Learn more about [Starburst Galaxy Iceberg type mapping](https://docs.starburst.
 - A [Starburst Galaxy S3 catalog](https://docs.starburst.io/starburst-galaxy/catalogs/s3.html) created within the Galaxy domain, and [attached to a running cluster](https://docs.starburst.io/starburst-galaxy/catalogs/index.html#add-a-catalog-to-a-cluster).
 - [Credentials for S3 bucket](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
 - Grant S3 bucket [location privileges](https://docs.starburst.io/starburst-galaxy/security/privileges.html#location-privileges-) to the role user is assigned to.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Starburst Galaxy schema.
 
 ## Changelog
 

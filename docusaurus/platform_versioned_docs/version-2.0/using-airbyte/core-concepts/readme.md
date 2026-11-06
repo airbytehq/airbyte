@@ -110,7 +110,3 @@ A workspace is a grouping of sources, destinations, connections, and other confi
 ## Organization
 
 Organizations let you collaborate with team members and share workspaces across your team.
-
-## Glossary of Terms
-
-You can find a extended list of [Airbyte specific terms](https://glossary.airbyte.com/term/airbyte-glossary-of-terms/), [data engineering concepts](https://glossary.airbyte.com/term/data-engineering-concepts) or many [other data related terms](https://glossary.airbyte.com/).

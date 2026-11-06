@@ -8,7 +8,6 @@ This page guides you through the process of setting up the Firebolt destination 
 2. Firebolt Database and Engine created: Follow the [guide](https://docs.firebolt.io/guides/operate-engines/working-with-engines-using-ddl) to create an engine if you don't have one in your Firebolt workspace.
 3. Service Account credentials: all programmatic access to Firebolt requires a service account to interact with the database. Create a service account as described in this [guide](https://docs.firebolt.io/guides/managing-your-organization/service-accounts) and note its ID and secret.
 
-
 ## Replication strategies
 
 This Firebolt destination connector has two replication strategies:
@@ -72,11 +71,13 @@ Additionally, for S3 strategy:
 
 ## Supported sync modes
 
-The Firebolt destination connector supports the following
-[sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
-
-- Full Refresh
-- Incremental - Append Sync
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Connector-specific features & highlights
 
@@ -93,6 +94,10 @@ Firebolt. Each table will contain 3 columns:
 - `_airbyte_data`: a json blob representing the event data. The column type in Firebolt is `VARCHAR`
   but can be parsed with JSON functions.
 
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -100,6 +105,7 @@ Firebolt. Each table will contain 3 columns:
 
 | Version | Date       | Pull Request                                             | Subject                                |
 |:--------| :--------- | :------------------------------------------------------- | :------------------------------------- |
+| 0.2.41 | 2026-10-07 | [88246](https://github.com/airbytehq/airbyte/pull/88246) | Add missing `destination_firebolt.run` entrypoint module so the connector image starts with the shared python-connector Dockerfile |
 | 0.2.40 | 2025-05-24 | [59866](https://github.com/airbytehq/airbyte/pull/59866) | Update dependencies |
 | 0.2.39 | 2025-05-03 | [59316](https://github.com/airbytehq/airbyte/pull/59316) | Update dependencies |
 | 0.2.38 | 2025-04-26 | [58725](https://github.com/airbytehq/airbyte/pull/58725) | Update dependencies |

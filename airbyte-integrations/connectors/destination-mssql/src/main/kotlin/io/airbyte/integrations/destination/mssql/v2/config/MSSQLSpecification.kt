@@ -47,7 +47,7 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
 
     @get:JsonSchemaTitle("Default Schema")
     @get:JsonPropertyDescription(
-        "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\"."
+        "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
     )
     @get:JsonProperty("schema")
     @get:JsonSchemaInject(json = """{"examples":["public"],"default":"public","order":3}""")
@@ -67,7 +67,7 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
 
     @get:JsonSchemaTitle("JDBC URL Params")
     @get:JsonPropertyDescription(
-        "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+        "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
     )
     @get:JsonProperty("jdbc_url_params")
     @get:JsonSchemaInject(json = """{"order":6}""")
@@ -75,7 +75,7 @@ class MSSQLSpecification : ConfigurationSpecification(), LoadTypeSpecification {
 
     @get:JsonSchemaTitle("SSL Method")
     @get:JsonPropertyDescription(
-        "The encryption method which is used to communicate with the database."
+        "The encryption method which is used to communicate with the database.",
     )
     @get:JsonProperty("ssl_method")
     @get:JsonSchemaInject(json = """{"order":7}""")
@@ -123,17 +123,19 @@ class Unencrypted : EncryptionMethod {
     companion object {
         const val NAME = "unencrypted"
     }
+
     override val name: String = NAME
 }
 
 @JsonSchemaTitle("Encrypted (trust server certificate)")
 @JsonSchemaDescription(
-    "Use the certificate provided by the server without verification. (For testing purposes only!)"
+    "Use the certificate provided by the server without verification. (For testing purposes only!)",
 )
 class EncryptedTrust : EncryptionMethod {
     companion object {
         const val NAME = "encrypted_trust_server_certificate"
     }
+
     override val name: String = NAME
 }
 
@@ -152,7 +154,7 @@ class EncryptedVerify(
     val trustStorePassword: String? = null,
     @get:JsonSchemaTitle("Host Name In Certificate")
     @get:JsonPropertyDescription(
-        "Specifies the host name of the server. The value of this property must match the subject property of the certificate."
+        "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
     )
     @get:JsonProperty("hostNameInCertificate")
     @get:JsonSchemaInject(json = """{"order":3}""")
@@ -161,6 +163,7 @@ class EncryptedVerify(
     companion object {
         const val NAME = "encrypted_verify_certificate"
     }
+
     override val name: String = NAME
 }
 
@@ -171,7 +174,7 @@ class MSSQLSpecificationExtension : DestinationSpecificationExtension {
         listOf(
             DestinationSyncMode.OVERWRITE,
             DestinationSyncMode.APPEND,
-            DestinationSyncMode.APPEND_DEDUP
+            DestinationSyncMode.APPEND_DEDUP,
         )
     override val supportsIncremental = true
 }

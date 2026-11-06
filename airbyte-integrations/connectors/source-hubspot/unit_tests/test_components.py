@@ -2,14 +2,20 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
 import requests
 from requests import Response
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 @pytest.mark.parametrize(
@@ -116,6 +122,39 @@ def test_migrate_empty_string_state(config, state, expected_should_migrate, expe
         assert state_migration.migrate(stream_state=state) == expected_state
 
 
+@pytest.mark.parametrize(
+    "raw_fields, treat_as_string, expected_number_schema, expected_boolean_schema",
+    [
+        pytest.param(
+            [{"name": "num_field", "type": "number"}, {"name": "bool_field", "type": "boolean"}],
+            True,
+            {"type": ["null", "string"]},
+            {"type": ["null", "string"]},
+            id="custom_objects_toggle_on",
+        ),
+        pytest.param(
+            [{"name": "num_field", "type": "number"}, {"name": "bool_field", "type": "boolean"}],
+            False,
+            {"type": ["null", "number"]},
+            {"type": ["null", "boolean"]},
+            id="custom_objects_toggle_off",
+        ),
+    ],
+)
+def test_hubspot_custom_objects_schema_loader_respects_toggle(
+    components_module, raw_fields, treat_as_string, expected_number_schema, expected_boolean_schema
+):
+    config = {"treat_numbers_and_booleans_as_strings": treat_as_string}
+    loader = components_module.HubspotCustomObjectsSchemaLoader(
+        config=config,
+        parameters={"schema_properties": raw_fields},
+    )
+    schema = loader.get_json_schema()
+    properties = schema["properties"]["properties"]["properties"]
+    assert properties["num_field"] == expected_number_schema
+    assert properties["bool_field"] == expected_boolean_schema
+
+
 def test_hubspot_rename_properties_transformation(components_module):
     expected_properties = {
         "properties_amount": {"type": ["null", "number"]},
@@ -157,6 +196,184 @@ def test_hubspot_rename_properties_transformation(components_module):
         == expected_properties["properties_hs_v2_latest_time_in_contractsent"]
     )
     assert dynamic_properties_record["properties"] == expected_properties["properties"]
+
+
+def test_deal_pipelines_v1_shape_transformation(components_module):
+    pipeline = {
+        "label": "New Business Pipeline",
+        "displayOrder": 3,
+        "id": "b9152945-a594-4835-9676-a6f405fecd71",
+        "stages": [
+            {
+                "label": "Initial Qualification",
+                "displayOrder": 0,
+                "metadata": {"isClosed": "false", "probability": "0.1"},
+                "id": "9567448",
+                "createdAt": "2021-01-14T14:52:53.956Z",
+                "updatedAt": "2023-04-04T14:59:14.263Z",
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "archived": False,
+            },
+            {
+                "label": "Negotiation",
+                "displayOrder": 1,
+                "metadata": {"isClosed": "false", "probability": "0.5"},
+                "id": "9567449",
+                "createdAt": "2021-01-14T14:52:53.956Z",
+                "updatedAt": "2023-04-04T14:59:14.263Z",
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "archived": False,
+            },
+        ],
+        "createdAt": "2021-01-14T14:52:53.956Z",
+        "updatedAt": "2023-04-04T14:59:14.263Z",
+        "archived": False,
+    }
+    expected = {
+        "label": "New Business Pipeline",
+        "displayOrder": 3,
+        "pipelineId": "b9152945-a594-4835-9676-a6f405fecd71",
+        "stages": [
+            {
+                "label": "Initial Qualification",
+                "displayOrder": 0,
+                "metadata": {"isClosed": "false", "probability": "0.1"},
+                "stageId": "9567448",
+                "createdAt": 1610635973956,
+                "updatedAt": 1680620354263,
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "active": True,
+            },
+            {
+                "label": "Negotiation",
+                "displayOrder": 1,
+                "metadata": {"isClosed": "false", "probability": "0.5"},
+                "stageId": "9567449",
+                "createdAt": 1610635973956,
+                "updatedAt": 1680620354263,
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "active": True,
+            },
+        ],
+        "createdAt": 1610635973956,
+        "updatedAt": 1680620354263,
+        "active": True,
+        "objectType": "DEAL",
+        "objectTypeId": "0-3",
+        "default": False,
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline == expected
+
+
+@pytest.mark.parametrize(
+    "pipeline_id, is_default",
+    [
+        ("default", True),
+        ("b9152945-a594-4835-9676-a6f405fecd71", False),
+    ],
+)
+def test_deal_pipelines_default_pipeline_and_epoch_dates(components_module, pipeline_id, is_default):
+    pipeline = {
+        "id": pipeline_id,
+        "createdAt": "1970-01-01T00:00:00Z",
+        "updatedAt": "1970-01-01T00:00:00Z",
+        "archived": False,
+        "stages": [],
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline["default"] is is_default
+    assert pipeline["createdAt"] == 0
+    assert pipeline["updatedAt"] == 0
+
+
+def test_deal_pipelines_archived_flags_and_null_dates(components_module):
+    pipeline = {
+        "id": "b9152945-a594-4835-9676-a6f405fecd71",
+        "createdAt": None,
+        "updatedAt": 123,
+        "archived": True,
+        "stages": [
+            {
+                "id": "stage",
+                "createdAt": 0,
+                "updatedAt": None,
+                "archived": True,
+            }
+        ],
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline["active"] is False
+    assert pipeline["createdAt"] is None
+    assert pipeline["updatedAt"] == 123
+    assert pipeline["stages"][0]["active"] is False
+    assert pipeline["stages"][0]["createdAt"] == 0
+    assert pipeline["stages"][0]["updatedAt"] is None
+
+
+@pytest.mark.parametrize(
+    "timestamp, expected",
+    [
+        ("2021-01-14T14:52:53Z", 1610635973000),
+        ("2021-01-14T14:52:53", 1610635973000),
+        ("2021-01-14T14:52:53+00:00", 1610635973000),
+        ("2021-01-14T09:52:53-05:00", 1610635973000),
+    ],
+)
+def test_deal_pipelines_iso_dates_with_timezone_offsets(components_module, timestamp, expected):
+    pipeline = {
+        "id": "pipeline",
+        "createdAt": timestamp,
+        "updatedAt": timestamp,
+        "archived": False,
+        "stages": [],
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline["createdAt"] == expected
+    assert pipeline["updatedAt"] == expected
+
+
+@pytest.mark.parametrize(
+    "invalid_value",
+    ["not-a-date", 1.5, True],
+    ids=["unparseable_string", "float", "bool"],
+)
+def test_deal_pipelines_invalid_timestamp_raises_traced_exception(components_module, invalid_value):
+    pipeline = {
+        "id": "pipeline",
+        "createdAt": invalid_value,
+        "updatedAt": None,
+        "archived": False,
+        "stages": [],
+    }
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert exc_info.value.failure_type == FailureType.system_error
+    assert "createdAt" in exc_info.value.internal_message
+    assert repr(invalid_value) in exc_info.value.internal_message
+
+
+def test_deal_pipelines_naive_parser_datetime_is_treated_as_utc(components_module, monkeypatch):
+    parsed_datetime = datetime(2021, 1, 14, 14, 52, 53)
+    monkeypatch.setattr(components_module, "ab_datetime_parse", lambda _: parsed_datetime)
+
+    assert (
+        components_module.DealPipelinesV1ShapeTransformation._to_epoch_milliseconds(
+            "2021-01-14T14:52:53",
+            "createdAt",
+        )
+        == 1610635973000
+    )
 
 
 def test_property_history_extractor(components_module):
@@ -457,7 +674,8 @@ def test_associations_extractor(config, components_module):
         assert records[1]["contacts"] == expected_records[1]["contacts"]
 
 
-def test_associations_extractor_with_permissions_error(requests_mock, config, components_module):
+def test_associations_extractor_with_permissions_error(requests_mock, oauth_config, components_module):
+    """With OAuth credentials, a 401 on associations should be retried and succeed on the second attempt."""
     response = requests.Response()
     response._content = (
         b'{"results": [{"id": "123", "updatedAt": "2022-02-25T16:43:11Z"}, {"id": "456", "updatedAt": "2022-02-25T16:43:11Z"}]}'
@@ -485,6 +703,12 @@ def test_associations_extractor_with_permissions_error(requests_mock, config, co
 
     contacts_associations_responses = [{"json": {"results": []}, "status_code": 200}]
 
+    # Mock the OAuth token refresh endpoint so REFRESH_TOKEN_THEN_RETRY can refresh the token
+    requests_mock.register_uri(
+        "POST",
+        "https://api.hubapi.com/oauth/v1/token",
+        [{"json": {"access_token": "refreshed_token", "expires_in": 3600}, "status_code": 200}],
+    )
     requests_mock.register_uri(
         "POST", "https://api.hubapi.com/crm/v4/associations/deals/companies/batch/read", companies_associations_responses
     )
@@ -497,7 +721,7 @@ def test_associations_extractor_with_permissions_error(requests_mock, config, co
         entity="deals",
         associations_list=["companies", "contacts"],
         decoder=JsonDecoder(parameters={}),
-        config=config,
+        config=oauth_config,
         parameters={},
     )
 
@@ -508,6 +732,38 @@ def test_associations_extractor_with_permissions_error(requests_mock, config, co
     assert records[0]["companies"] == ["408"]
     assert records[1]["id"] == "456"
     assert records[1]["companies"] == ["888"]
+
+
+def test_associations_extractor_with_permissions_error_pat(requests_mock, config, components_module):
+    """With PAT credentials, a 401 on associations should fail immediately (no retry)."""
+    response = requests.Response()
+    response._content = (
+        b'{"results": [{"id": "123", "updatedAt": "2022-02-25T16:43:11Z"}, {"id": "456", "updatedAt": "2022-02-25T16:43:11Z"}]}'
+    )
+    response.status_code = 200
+
+    companies_associations_responses = [
+        {"json": {"error": "The OAuth token used to make this call expired 0 second(s) ago."}, "status_code": 401},
+    ]
+
+    requests_mock.register_uri(
+        "POST", "https://api.hubapi.com/crm/v4/associations/deals/companies/batch/read", companies_associations_responses
+    )
+    requests_mock.register_uri(
+        "POST", "https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/read", [{"json": {"results": []}, "status_code": 200}]
+    )
+
+    extractor = components_module.HubspotAssociationsExtractor(
+        field_path=["results"],
+        entity="deals",
+        associations_list=["companies", "contacts"],
+        decoder=JsonDecoder(parameters={}),
+        config=config,
+        parameters={},
+    )
+
+    with pytest.raises(AirbyteTracedException, match="Please, update you Private App access token"):
+        list(extractor.extract_records(response=response))
 
 
 def test_extractor_supports_entity_interpolation(config, components_module):
@@ -650,3 +906,118 @@ def test_crm_search_pagination_strategy(
     )
 
     assert actual_next_page_token == expected_next_page_token
+
+
+def test_build_associations_retriever_uses_rate_limited_for_429():
+    """Verify that the associations retriever maps HTTP 429 to RATE_LIMITED, not RETRY."""
+    components_module = __import__("components")
+
+    config = {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"},
+    }
+
+    parent_entity = InterpolatedString.create("deals", parameters={})
+
+    retriever = components_module.build_associations_retriever(
+        associations_list=["companies", "contacts"],
+        parent_entity=parent_entity,
+        config=config,
+    )
+
+    error_handler = retriever.requester.error_handler
+    # Find the response filter for 429 and verify it uses RATE_LIMITED
+    found_429_filter = False
+    for response_filter in error_handler.response_filters:
+        if 429 in response_filter.http_codes:
+            found_429_filter = True
+            assert (
+                response_filter.action == ResponseAction.RATE_LIMITED
+            ), f"Expected RATE_LIMITED for HTTP 429 in associations retriever, got {response_filter.action}"
+    assert found_429_filter, "No response filter found for HTTP 429 in associations retriever"
+
+
+@pytest.mark.parametrize(
+    "credentials_title, status_code, expected_action, expected_failure_type, expected_error_message",
+    [
+        pytest.param(
+            "Private App Credentials",
+            401,
+            ResponseAction.FAIL,
+            FailureType.config_error,
+            "Please, update you Private App access token. Current token is invalid or expired.",
+            id="pat_401_fails_immediately",
+        ),
+        pytest.param(
+            "OAuth Credentials",
+            401,
+            ResponseAction.REFRESH_TOKEN_THEN_RETRY,
+            None,
+            None,
+            id="oauth_401_refreshes_token_then_retries",
+        ),
+        pytest.param(
+            "Private App Credentials",
+            429,
+            ResponseAction.RATE_LIMITED,
+            None,
+            None,
+            id="pat_429_rate_limited",
+        ),
+        pytest.param(
+            "Private App Credentials",
+            200,
+            ResponseAction.SUCCESS,
+            None,
+            None,
+            id="pat_200_succeeds",
+        ),
+    ],
+)
+def test_hubspot_error_handler_401_by_auth_type(
+    credentials_title, status_code, expected_action, expected_failure_type, expected_error_message
+):
+    """Verify that 401 with PAT credentials fails immediately while 401 with OAuth retries."""
+    components_module = __import__("components")
+
+    config = {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {"credentials_title": credentials_title, "access_token": "test_access_token"},
+    }
+    parameters = {}
+
+    error_handler = components_module.HubspotErrorHandler(
+        backoff_strategies=[],
+        response_filters=[
+            HttpResponseFilter(
+                action="RATE_LIMITED",
+                http_codes={429},
+                error_message="Rate limited.",
+                config=config,
+                parameters=parameters,
+            ),
+            HttpResponseFilter(
+                action="REFRESH_TOKEN_THEN_RETRY",
+                http_codes={401},
+                error_message="Authentication to HubSpot has expired.",
+                config=config,
+                parameters=parameters,
+            ),
+        ],
+        config=config,
+        parameters=parameters,
+    )
+
+    response = Mock(spec=requests.Response)
+    response.status_code = status_code
+    response.ok = status_code == 200
+    response.headers = {}
+    response.json.return_value = {}
+
+    resolution = error_handler.interpret_response(response)
+
+    assert resolution.response_action == expected_action
+    if expected_failure_type is not None:
+        assert resolution.failure_type == expected_failure_type
+    if expected_error_message is not None:
+        assert resolution.error_message == expected_error_message

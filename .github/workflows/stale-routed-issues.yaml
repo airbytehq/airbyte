@@ -1,7 +1,9 @@
 name: Stale issue action
 on:
+  workflow_dispatch:
   schedule:
-    - cron: "* 8 * * *"
+    - cron: "0 2 * * *"
+      timezone: "America/Los_Angeles"
 
 jobs:
   close-issues:
@@ -11,14 +13,15 @@ jobs:
       pull-requests: write
     steps:
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
           repositories: "airbyte"
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
-      - uses: actions/stale@f7176fd3007623b69d27091f9b9d4ab7995f0a06 # v5.2.1
+      - uses: actions/stale@b5d41d4d0e39afb4e3d58060a07f6fb1ce2caa77 # v10.2.0
+        id: stale
         with:
           any-of-labels: "frozen"
           days-before-issue-stale: 365
@@ -31,3 +34,13 @@ jobs:
             To keep it open, please comment to let us know why it is important to you and if it is still reproducible on recent versions of Airbyte.
           close-issue-message: "This issue was closed because it has been inactive for 20 days since being marked as stale."
           repo-token: ${{ steps.get-app-token.outputs.token }}
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## Stale Routed Issues Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Staled Issues" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.stale.outputs.staled-issues-prs }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Closed Issues" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.stale.outputs.closed-issues-prs }}" >> $GITHUB_STEP_SUMMARY

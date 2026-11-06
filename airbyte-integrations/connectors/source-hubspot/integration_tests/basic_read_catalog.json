@@ -173,6 +173,15 @@
     },
     {
       "stream": {
+        "name": "engagements_task_pipelines",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "forms",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -204,6 +213,18 @@
     {
       "stream": {
         "name": "leads",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "listings",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -363,6 +384,15 @@
     {
       "stream": {
         "name": "properties",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "account_details",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

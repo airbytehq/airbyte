@@ -40,6 +40,7 @@ class StandardCheckConnectionInput : Serializable {
     @JsonProperty("actorType")
     @JsonPropertyDescription("enum that describes different types of actors")
     var actorType: ActorType? = null
+
     /** The ID of the actor being checked, so we can persist config updates */
     /** The ID of the actor being checked, so we can persist config updates */
     /** The ID of the actor being checked, so we can persist config updates */
@@ -48,6 +49,7 @@ class StandardCheckConnectionInput : Serializable {
     @JsonProperty("actorId")
     @JsonPropertyDescription("The ID of the actor being checked, so we can persist config updates")
     var actorId: UUID? = null
+
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
@@ -68,7 +70,7 @@ class StandardCheckConnectionInput : Serializable {
     }
 
     fun withConnectionConfiguration(
-        connectionConfiguration: JsonNode?
+        connectionConfiguration: JsonNode?,
     ): StandardCheckConnectionInput {
         this.connectionConfiguration = connectionConfiguration
         return this
@@ -91,7 +93,8 @@ class StandardCheckConnectionInput : Serializable {
         sb.append("connectionConfiguration")
         sb.append('=')
         sb.append(
-            (if ((this.connectionConfiguration == null)) "<null>" else this.connectionConfiguration)
+            (if ((this.connectionConfiguration == null)) "<null>"
+            else this.connectionConfiguration),
         )
         sb.append(',')
         if (sb[sb.length - 1] == ',') {

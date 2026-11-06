@@ -1,7 +1,0 @@
-*
-!Dockerfile
-!connector_acceptance_test
-!pyproject.toml
-!poetry.lock
-!pytest.ini
-!requirements.txt

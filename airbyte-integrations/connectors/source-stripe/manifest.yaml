@@ -1,4 +1,4 @@
-version: 6.42.2
+version: 6.42.3
 
 type: DeclarativeSource
 
@@ -35,38 +35,39 @@ definitions:
     authenticator:
       $ref: "#/definitions/bearer_authenticator"
     http_method: GET
+    use_tcp_keepalive: true
+    connect_timeout_in_seconds: 30
+    read_timeout_in_seconds: 80
     request_headers:
       Stripe-Version: "2022-11-15"
       Stripe-Account: '{{ config.get("account_id") }}'
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: IGNORE
-              http_codes:
-                - 403
-              error_message: >-
-                {{ response['error']['message'] }}
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: IGNORE
-              http_codes:
-                - 400
-              error_message: >-
-                {{ response['error']['message'] }}
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: IGNORE
-              http_codes:
-                - 404
-              error_message: >-
-                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
-                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
-                you may safely ignore this warning.
+      type: DefaultErrorHandler
+      response_filters:
+        - $ref: "#/definitions/ignore_403_filter"
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 400
+          error_message: >-
+            {{ response['error']['message'] }}
+        - $ref: "#/definitions/ignore_404_filter"
+  ignore_403_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    http_codes:
+      - 403
+    error_message: >-
+      {{ response['error']['message'] }}
+  ignore_404_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    http_codes:
+      - 404
+    error_message: >-
+      Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
+      child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
+      you may safely ignore this warning.
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['client_secret'] }}"
@@ -92,7 +93,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 30) }}D
+    step: P{{ config.get('slice_range', 365) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -159,7 +160,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 30) }}D
+    step: P{{ config.get('slice_range', 365) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -219,7 +220,7 @@ definitions:
               - data
               - object
               - updated
-            value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+            value: "{{ (record.get('updated', record.get('created', now_utc().timestamp())) | int) - (1 if record.get('type', '').endswith('.created') else 0) }}"
             value_type: integer
         condition: "{{ record.get('data', {}).get('object', False) }}"
       - type: DpathFlattenFields
@@ -249,7 +250,7 @@ definitions:
     cursor_datetime_formats:
       - "%s"
     datetime_format: "%s"
-    step: P{{ config.get('slice_range', 30) }}D
+    step: P{{ config.get('slice_range', 365) }}D
     cursor_granularity: PT1S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     start_datetime:
@@ -319,7 +320,7 @@ definitions:
 
     customers:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'customers' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: customers
       full_refresh_stream:
@@ -346,7 +347,7 @@ definitions:
 
     subscriptions:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'subscriptions' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: subscriptions
       full_refresh_stream:
@@ -377,7 +378,7 @@ definitions:
 
     invoices:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'invoices' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: invoices
       full_refresh_stream:
@@ -408,7 +409,7 @@ definitions:
 
     transfers:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'transfers' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: transfers
       full_refresh_stream:
@@ -435,7 +436,7 @@ definitions:
 
     refunds:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'refunds' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: refunds
       full_refresh_stream:
@@ -462,7 +463,7 @@ definitions:
 
     authorizations:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'authorizations' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: authorizations
       full_refresh_stream:
@@ -489,7 +490,7 @@ definitions:
 
     cardholders:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'cardholders' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: cardholders
       full_refresh_stream:
@@ -516,7 +517,7 @@ definitions:
 
     charges:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'charges' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: charges
       full_refresh_stream:
@@ -547,7 +548,7 @@ definitions:
 
     coupons:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'coupons' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: coupons
       full_refresh_stream:
@@ -574,7 +575,7 @@ definitions:
 
     disputes:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'disputes' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: disputes
       full_refresh_stream:
@@ -601,7 +602,7 @@ definitions:
 
     application_fees:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'application_fees' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: application_fees
       full_refresh_stream:
@@ -628,7 +629,7 @@ definitions:
 
     invoice_items:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'invoice_items' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: invoice_items
       full_refresh_stream:
@@ -655,7 +656,7 @@ definitions:
 
     payouts:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'payouts' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: payouts
       full_refresh_stream:
@@ -682,7 +683,7 @@ definitions:
 
     plans:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'plans' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: plans
       full_refresh_stream:
@@ -713,7 +714,7 @@ definitions:
 
     prices:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'prices' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: prices
       full_refresh_stream:
@@ -740,7 +741,7 @@ definitions:
 
     products:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'products' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: products
       full_refresh_stream:
@@ -767,7 +768,7 @@ definitions:
 
     reviews:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'reviews' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: reviews
       full_refresh_stream:
@@ -794,7 +795,7 @@ definitions:
 
     subscription_schedule:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'subscription_schedule' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: subscription_schedule
       full_refresh_stream:
@@ -821,7 +822,7 @@ definitions:
 
     payment_intents:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'payment_intents' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: payment_intents
       full_refresh_stream:
@@ -848,7 +849,7 @@ definitions:
 
     promotion_codes:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'promotion_codes' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: promotion_codes
       full_refresh_stream:
@@ -875,7 +876,7 @@ definitions:
 
     setup_intents:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'setup_intents' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: setup_intents
       full_refresh_stream:
@@ -902,7 +903,7 @@ definitions:
 
     cards:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'cards' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: cards
       full_refresh_stream:
@@ -929,7 +930,7 @@ definitions:
 
     transactions:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'transactions' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: transactions
       full_refresh_stream:
@@ -956,7 +957,7 @@ definitions:
 
     top_ups:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'top_ups' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: top_ups
       full_refresh_stream:
@@ -983,7 +984,7 @@ definitions:
 
     accounts:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'accounts' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: accounts
       full_refresh_stream:
@@ -1010,7 +1011,7 @@ definitions:
 
     checkout_sessions:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'checkout_sessions' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: checkout_sessions
       full_refresh_stream:
@@ -1037,7 +1038,7 @@ definitions:
 
     external_account_cards:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'external_account_cards' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: external_account_cards
       full_refresh_stream:
@@ -1070,7 +1071,7 @@ definitions:
 
     external_account_bank_accounts:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'external_account_bank_accounts' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: external_account_bank_accounts
       full_refresh_stream:
@@ -1103,7 +1104,7 @@ definitions:
 
     credit_notes:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'credit_notes' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: credit_notes
       full_refresh_stream:
@@ -1130,7 +1131,7 @@ definitions:
 
     early_fraud_warnings:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'early_fraud_warnings' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: early_fraud_warnings
       full_refresh_stream:
@@ -1167,6 +1168,12 @@ definitions:
         $ref: "#/definitions/base_retriever"
         $parameters:
           path: customers/{{ stream_partition.customer_id }}/balance_transactions
+        requester:
+          $ref: "#/definitions/base_requester"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - $ref: "#/definitions/ignore_404_filter"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1174,7 +1181,55 @@ definitions:
               parent_key: id
               partition_field: customer_id
               stream:
-                $ref: "#/definitions/streams/customers"
+                $ref: "#/definitions/events_based_stream"
+                $parameters:
+                  name: cbt_customer_events
+                retriever:
+                  $ref: "#/definitions/events_objects_retriever"
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: events
+                    # must not IGNORE 400/403: an ignored events response would miss a customer update or delete
+                    error_handler:
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - $ref: "#/definitions/ignore_404_filter"
+                  $parameters:
+                    request_parameters:
+                      types[]: '{{["customer.updated", "customer.deleted"]}}'
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $ref: "#/schemas/customers"
+                incremental_sync:
+                  $ref: "#/definitions/events_read_slice_cursor"
+                  lookback_window: P0D
+              incremental_dependency: true
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/entity_stream"
+                $parameters:
+                  name: customers
+                retriever:
+                  $ref: "#/definitions/base_retriever"
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    # must not IGNORE 400/403: an ignored window or page would let the low-water mark move past unread customers
+                    error_handler:
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - $ref: "#/definitions/ignore_404_filter"
+                  $parameters:
+                    path: customers
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $ref: "#/schemas/customers"
+                incremental_sync:
+                  $ref: "#/definitions/entity_with_slice_cursor"
+                  step: P7D
               incremental_dependency: true
       # This stream is not truly incremental on the child level.
       # We're configuring it this way to support incremental syncs on the parent only,
@@ -1183,6 +1238,9 @@ definitions:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
         global_substream_cursor: true
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.CustomerBalanceTransactionsEventsParentStateMigration
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -1319,7 +1377,7 @@ definitions:
 
     payment_methods:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'payment_methods' in config.get('api_retention_streams', []) else '' }}"
       name: payment_methods
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
@@ -1358,7 +1416,7 @@ definitions:
 
     persons:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'persons' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: persons
       full_refresh_stream:
@@ -1396,7 +1454,7 @@ definitions:
 
     invoice_line_items:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'invoice_line_items' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: invoice_line_items
       full_refresh_stream:
@@ -1464,41 +1522,93 @@ definitions:
           $ref: "#/definitions/events_read_slice_cursor"
           cursor_field: invoice_updated
         retriever:
-          $ref: "#/definitions/events_objects_retriever"
-          $parameters:
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: events
             request_parameters:
               types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field:
+                  - data
+                  - object
+                  - lines
+                  - data
+                remain_original_record: true
+                truncation_indicator_path:
+                  - data
+                  - object
+                  - lines
+                  - has_more
+                truncated_list_retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: invoices/{{ stream_slice['parent_record']['data']['object']['id'] }}/lines
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    $ref: "#/definitions/base_paginator"
+            transform_before_filtering: true
+          paginator:
+            $ref: "#/definitions/base_paginator"
         schema_loader:
           type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/invoice_line_items"
         transformations:
+          # Events render lines at the account's default Stripe API version. Before 2019-12-03, line ids are legacy
+          # (ii_/sub_/su_/sli_; sub_ and su_ are the subscription id) and the il_ id is in `unique_id`.
+          # Keep `unique_id` and `unique_line_item_id` on the record (undeclared, so the platform drops them).
+          # Pinned-version /lines records have no `unique_id` (no-op).
           - type: AddFields
             fields:
               - path:
-                  - data
-                  - object
+                  - subscription
+                value: "{{ record.get('id') }}"
+                value_type: string
+            condition: "{{ record.get('unique_id') and record.get('type') == 'subscription' and not record.get('subscription') and (record.get('id') or '').startswith(('sub_', 'su_')) }}"
+          - type: AddFields
+            fields:
+              - path:
+                  - id
+                value: "{{ record.get('unique_id') }}"
+                value_type: string
+            condition: "{{ record.get('unique_id') }}"
+          - type: AddFields
+            fields:
+              - path:
                   - is_deleted
                 value: "{{ True }}"
-            condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
+            condition: "{{ (record.get('original_record') or {}).get('type', '').endswith('.deleted') }}"
           - type: AddFields
             fields:
               - path:
-                  - data
-                  - object
                   - invoice_updated
-                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value: "{{ (((record.get('original_record') or {}).get('updated') or (record.get('original_record') or {}).get('created') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('updated') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if (record.get('original_record') or {}).get('type', '').endswith('.created') else 0) }}"
                 value_type: integer
-            condition: "{{ record.get('data', {}).get('object', False) }}"
-          - type: DpathFlattenFields
-            field_path:
-              - data
-              - object
-            replace_record: true
+              - path:
+                  - invoice_id
+                value: "{{ (record.get('original_record') or {}).get('data', {}).get('object', {}).get('id') }}"
+            condition: "{{ (record.get('original_record') or {}) != {} }}"
+          - type: RemoveFields
+            field_pointers:
+              - - original_record
 
     application_fees_refunds:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'application_fees_refunds' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: application_fees_refunds
       full_refresh_stream:
@@ -1559,7 +1669,7 @@ definitions:
 
     subscription_items:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'subscription_items' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: subscription_items
       full_refresh_stream:
@@ -1615,7 +1725,27 @@ definitions:
           $ref: "#/definitions/events_read_slice_cursor"
           cursor_field: subscription_updated
         retriever:
-          $ref: "#/definitions/events_objects_retriever"
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: events
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field:
+                  - data
+                  - object
+                  - items
+                  - data
+                remain_original_record: true
+            transform_before_filtering: true
+          paginator:
+            $ref: "#/definitions/base_paginator"
           $parameters:
             request_parameters:
               types[]: '{{["customer.subscription.created", "customer.subscription.updated"]}}'
@@ -1627,29 +1757,23 @@ definitions:
           - type: AddFields
             fields:
               - path:
-                  - data
-                  - object
                   - is_deleted
                 value: "{{ True }}"
-            condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
+            condition: "{{ (record.get('original_record') or {}).get('type', '').endswith('.deleted') }}"
           - type: AddFields
             fields:
               - path:
-                  - data
-                  - object
                   - subscription_updated
-                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value: "{{ (((record.get('original_record') or {}).get('updated') or (record.get('original_record') or {}).get('created') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('updated') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if (record.get('original_record') or {}).get('type', '').endswith('.created') else 0) }}"
                 value_type: integer
-            condition: "{{ record.get('data', {}).get('object', False) }}"
-          - type: DpathFlattenFields
-            field_path:
-              - data
-              - object
-            replace_record: true
+            condition: "{{ (record.get('original_record') or {}) != {} }}"
+          - type: RemoveFields
+            field_pointers:
+              - - original_record
 
     bank_accounts:
       type: StateDelegatingStream
-      api_retention_period: P30D
+      api_retention_period: "{{ 'P30D' if 'bank_accounts' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: bank_accounts
       full_refresh_stream:
@@ -1660,13 +1784,42 @@ definitions:
           type: SimpleRetriever
           requester:
             $ref: "#/definitions/base_requester"
-            path: customers/{{ stream_partition.customer_id }}/bank_accounts
+            path: customers
+            request_parameters:
+              expand[]: '{{["data.sources"]}}'
+            # this stream must not IGNORE HTTP 400, because an ignored 400 on a customers request would silently drop a whole created-date slice (400s here only come from malformed requests)
+            error_handler:
+              type: DefaultErrorHandler
+              response_filters:
+                - $ref: "#/definitions/ignore_403_filter"
+                - $ref: "#/definitions/ignore_404_filter"
           record_selector:
             type: RecordSelector
             extractor:
               type: DpathExtractor
               field_path:
                 - data
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field:
+                  - sources
+                  - data
+                truncation_indicator_path:
+                  - sources
+                  - has_more
+                truncated_list_retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: customers/{{ stream_slice['parent_record']['id'] }}/bank_accounts
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    $ref: "#/definitions/base_paginator"
             record_filter:
               condition: "{{ record['object'] == 'bank_account' }}"
             transform_before_filtering: true
@@ -1674,43 +1827,20 @@ definitions:
           paginator:
             $ref: "#/definitions/base_paginator"
           partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: customer_id
-                extra_fields:
-                  - ["id"]
-                lazy_read_pointer: ["sources"]
-                stream:
-                  type: StateDelegatingStream
-                  api_retention_period: P30D
-                  $parameters:
-                    name: customers
-                  full_refresh_stream:
-                    $ref: "#/definitions/entity_stream"
-                    retriever:
-                      $ref: "#/definitions/base_retriever"
-                      requester:
-                        $ref: "#/definitions/base_requester"
-                        request_parameters:
-                          expand[]: '{{["data.sources"]}}'
-                      $parameters:
-                        path: customers
-                  incremental_stream:
-                    $ref: "#/definitions/events_based_stream"
-                    retriever:
-                      $ref: "#/definitions/events_objects_retriever"
-                      $parameters:
-                        request_parameters:
-                          types[]: '{{["customer.created", "customer.updated", "customer.deleted"]}}'
+            # A single static partition makes the cursor a ConcurrentPerPartitionCursor in global mode:
+            # date slices still run in parallel, but no STATE is emitted until the walk completes,
+            # so a killed attempt restarts instead of switching to the events path.
+            type: ListPartitionRouter
+            cursor_field: bank_accounts_walk
+            values:
+              - all
         schema_loader:
           type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/bank_accounts"
         incremental_sync:
-          $ref: "#/definitions/entity_single_slice_cursor"
-          cursor_field: updated
+          $ref: "#/definitions/entity_with_slice_cursor"
+          step: P30D
           global_substream_cursor: true
         transformations:
           - type: AddFields
@@ -1908,7 +2038,7 @@ spec:
       slice_range:
         type: integer
         title: Data request time increment in days
-        default: 30
+        default: 365
         minimum: 1
         examples: [1, 3, 10, 30, 180, 360]
         description: >-
@@ -1918,10 +2048,10 @@ spec:
         order: 4
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 2
         maximum: 100
-        default: 25
+        default: 10
         examples: [ 2, 3, 4]
         description: >-
           The number of worker thread to use for the sync.
@@ -1935,6 +2065,54 @@ spec:
           The number of API calls per second that you allow connector to make. This value can not be bigger than real
           API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25
           calls per second for test/sandbox tokens and 100 for production tokens.
+      api_retention_streams:
+        type: array
+        title: Streams with API Data Retention Validation
+        description: >-
+          Select streams where cursor age is validated against the Stripe API 30-day event retention period.
+          When a selected stream's cursor is older than 30 days, the connector performs a full refresh
+          to avoid missing data. Streams not selected here will always use incremental sync regardless of cursor age.
+        items:
+          type: string
+          enum:
+            - accounts
+            - application_fees
+            - application_fees_refunds
+            - authorizations
+            - bank_accounts
+            - cardholders
+            - charges
+            - checkout_sessions
+            - coupons
+            - credit_notes
+            - customers
+            - disputes
+            - early_fraud_warnings
+            - external_account_bank_accounts
+            - external_account_cards
+            - invoice_items
+            - invoice_line_items
+            - invoices
+            - payment_intents
+            - payment_methods
+            - payouts
+            - persons
+            - plans
+            - prices
+            - products
+            - promotion_codes
+            - refunds
+            - reviews
+            - setup_intents
+            - subscription_items
+            - subscription_schedule
+            - subscriptions
+            - top_ups
+            - transactions
+            - transfers
+        uniqueItems: true
+        default: []
+        order: 7
   config_normalization_rules:
     type: ConfigNormalizationRules
     config_migrations:
@@ -1951,7 +2129,7 @@ spec:
 # Each worker handles a different time slice, preventing overlap.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config['client_secret'] else 25) }}"
+  default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config['client_secret'] else 10) }}"
   max_concurrency: 100
 
 api_budget:

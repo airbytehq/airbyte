@@ -4,7 +4,7 @@
 
 import pytest
 
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .conftest import find_stream
 
@@ -42,7 +42,7 @@ def test_handle_request_with_retry_token_expired(config, requests_mock):
     partitions = list(stream_instance._stream_partition_generator.generate())
 
     assert len(partitions) == 1
-    with pytest.raises(MessageRepresentationAirbyteTracedErrors):
+    with pytest.raises(AirbyteTracedException):
         list(partitions[0].read())
     #  5 default retries + first call
     assert rate_limited_mock.call_count == 6

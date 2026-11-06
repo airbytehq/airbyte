@@ -1,0 +1,38 @@
+{
+  "author": {
+    "avatar_url": "https://example.test/synthetic",
+    "contact": {
+      "email": "synthetic@example.test",
+      "id": "synthetic-id"
+    },
+    "name": "synthetic-name",
+    "user": {
+      "email": "synthetic@example.test",
+      "id": "synthetic-id"
+    }
+  },
+  "author_unverified": false,
+  "email_info": {
+    "bcc_emails": [],
+    "cc_emails": [],
+    "from_email": "synthetic@example.test",
+    "message_id": "synthetic-message_id",
+    "opens": [],
+    "sender_authentication_status": "synthetic-sender_authentication_status",
+    "to_emails": []
+  },
+  "file_urls": [],
+  "id": "synthetic-id",
+  "is_private": false,
+  "message_html": "synthetic-message_html",
+  "reactions": [],
+  "slack_info": {
+    "channel_id": "synthetic-channel_id",
+    "message_ts": "synthetic-message_ts",
+    "permalink": "synthetic-permalink",
+    "thread_ts": "synthetic-thread_ts"
+  },
+  "source": "synthetic-source",
+  "thread_id": "synthetic-thread_id",
+  "timestamp": "2026-01-10T12:00:00Z"
+}

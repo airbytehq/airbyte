@@ -41,6 +41,7 @@ data class DestinationRecordRaw(
      * [TimestampWithTimezoneValue]).
      */
     fun asEnrichedDestinationRecordAirbyteValue(
+        coercer: AirbyteValueCoercer,
         extractedAtAsTimestampWithTimezone: Boolean = false,
         respectLegacyUnions: Boolean = false,
     ): EnrichedDestinationRecordAirbyteValue {
@@ -64,20 +65,21 @@ data class DestinationRecordRaw(
                     name = fieldName,
                     airbyteMetaField = null,
                 )
-            AirbyteValueCoercer.coerce(
+            coercer
+                .coerce(
                     fieldValue.toAirbyteValue(),
                     fieldType.type,
                     respectLegacyUnions = respectLegacyUnions,
                 )
                 ?.let { enrichedValue.abValue = it }
                 ?: enrichedValue.nullify(
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
                 )
 
             declaredFields[fieldName] = enrichedValue
         }
         // Then, get the undeclared fields
-        rawJson.fields().forEach { (fieldName, fieldValue) ->
+        rawJson.properties().forEach { (fieldName, fieldValue) ->
             if (!schemaFields.contains(fieldName)) {
                 undeclaredFields[fieldName] = fieldValue
             }

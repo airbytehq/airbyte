@@ -10,6 +10,7 @@ from urllib.parse import urlencode
 import freezegun
 import mock
 import pytest
+import requests_cache
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import Status as ConnectionStatus
@@ -17,7 +18,13 @@ from airbyte_cdk.test.entrypoint_wrapper import discover
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
-from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
+from .conftest import (
+    find_stream,
+    get_source,
+    mock_dynamic_schema_requests_with_skip,
+    mock_v3_properties,
+    read_from_stream,
+)
 from .utils import run_read
 
 
@@ -45,8 +52,11 @@ def test_check_connection_ok(requests_mock, config):
         },
     ]
 
+    properties = [{"name": "hs__migration_soft_delete", "type": "enumeration"}]
+
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
+    requests_mock.register_uri("GET", "/crm/v3/properties/contact", [{"json": {"results": properties}, "status_code": 200}])
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", {})
     connection_status = get_source(config).check(logger, config=config)
 
@@ -82,18 +92,18 @@ def test_streams(requests_mock, config):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     streams = get_source(config).streams(config)
 
-    assert len(streams) == 33
+    assert len(streams) == 38
 
 
 def test_streams_forbidden_returns_default_streams(requests_mock, config):
-    # 403 forbidden → no custom streams, should fall back to the 32 built-in ones
+    # 403 forbidden → no custom streams, should fall back to the built-in ones
     requests_mock.get(
         "https://api.hubapi.com/crm/v3/schemas",
         json={"status": "error", "message": "This access_token does not have proper permissions!"},
         status_code=403,
     )
     streams = get_source(config).streams(config)
-    assert len(streams) == 33
+    assert len(streams) == 38
 
 
 def test_check_credential_title_exception(config):
@@ -104,7 +114,7 @@ def test_check_credential_title_exception(config):
 
 
 def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_schema_requests):
-    # 200 OK → one custom “cars” stream added to the 32 built-ins, total = 33
+    # 200 OK → one custom "cars" stream added to the built-ins
     adapter = requests_mock.get(
         "https://api.hubapi.com/crm/v3/schemas",
         json={"results": [{"name": "cars", "fullyQualifiedName": "cars", "properties": {}}]},
@@ -112,7 +122,101 @@ def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_s
     )
     streams = discover(get_source(config), config).catalog.catalog.streams
     assert adapter.called
-    assert len(streams) == 34
+    assert len(streams) == 39
+
+
+def test_custom_object_colliding_with_builtin_stream_name_is_unchanged_by_default(requests_mock, config, mock_dynamic_schema_requests):
+    # Without the opt-in flag, stream names must match previous versions so existing connections are unaffected.
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={
+            "results": [
+                {"name": "form_submissions", "fullyQualifiedName": "p123_form_submissions", "properties": []},
+                {"name": "cars", "fullyQualifiedName": "p123_cars", "properties": []},
+            ]
+        },
+        status_code=200,
+    )
+
+    names = [stream.name for stream in discover(get_source(config), config).catalog.catalog.streams]
+
+    assert names.count("form_submissions") == 2
+    assert "custom_object_form_submissions" not in names
+    assert "cars" in names
+    assert len(names) == 40
+
+
+def test_custom_object_colliding_with_builtin_stream_name_is_prefixed(requests_mock, config, mock_dynamic_schema_requests):
+    config["prefix_colliding_custom_objects"] = True
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={
+            "results": [
+                {"name": "form_submissions", "fullyQualifiedName": "p123_form_submissions", "properties": []},
+                {"name": "cars", "fullyQualifiedName": "p123_cars", "properties": []},
+            ]
+        },
+        status_code=200,
+    )
+
+    names = [stream.name for stream in discover(get_source(config), config).catalog.catalog.streams]
+
+    assert len(names) == len(set(names))
+    assert names.count("form_submissions") == 1
+    assert "custom_object_form_submissions" in names
+    assert "cars" in names
+    assert len(names) == 40
+
+
+def test_custom_object_prefixed_stream_reads_from_fully_qualified_entity(requests_mock, config, mock_dynamic_schema_requests):
+    config["prefix_colliding_custom_objects"] = True
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/schemas",
+        json={
+            "results": [
+                {"name": "form_submissions", "fullyQualifiedName": "p123_form_submissions", "properties": []},
+            ]
+        },
+        status_code=200,
+    )
+    requests_mock.get(
+        "https://api.hubapi.com/crm/v3/objects/p123_form_submissions",
+        json={
+            "results": [
+                {
+                    "id": "1",
+                    "createdAt": "2024-01-01T00:00:00Z",
+                    "updatedAt": "2024-01-02T00:00:00Z",
+                    "properties": {},
+                }
+            ]
+        },
+        status_code=200,
+    )
+
+    output = read_from_stream(config, "custom_object_form_submissions", SyncMode.full_refresh)
+
+    assert len(output.records) == 1
+    assert output.records[0].record.stream == "custom_object_form_submissions"
+
+
+def test_custom_objects_never_collide_with_any_builtin_stream(requests_mock, config):
+    config["enable_experimental_streams"] = True
+    config["prefix_colliding_custom_objects"] = True
+    schemas_url = "https://api.hubapi.com/crm/v3/schemas"
+    requests_mock.get(schemas_url, json={}, status_code=200)
+    builtin_names = [stream.name for stream in get_source(config).streams(config)]
+
+    requests_cache.SQLiteCache("file::memory:?cache=shared").clear()
+    requests_mock.get(
+        schemas_url,
+        json={"results": [{"name": name, "fullyQualifiedName": f"p123_{name}", "properties": []} for name in builtin_names]},
+        status_code=200,
+    )
+    names = [stream.name for stream in get_source(config).streams(config)]
+
+    assert len(names) == len(set(names))
+    assert all(names.count(name) == 1 for name in builtin_names)
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
@@ -134,6 +238,7 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     ]
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
+    mock_v3_properties(requests_mock, "contact", [{"name": "hs__migration_soft_delete", "type": "enumeration"}])
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", responses)
     source = get_source(config)
     connection_status = source.check(logger=logger, config=config)
@@ -161,6 +266,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
         {"json": [], "status_code": 200},
     ]
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
+    mock_v3_properties(requests_mock, "contact", [{"name": "hs__migration_soft_delete", "type": "enumeration"}])
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", responses)
     source = get_source(config)
     connection_status = source.check(logger=logger, config=config)
@@ -368,6 +474,14 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     test_stream_url = "https://api.hubapi.com/crm/v3/objects/company/search"
     requests_mock.register_uri("POST", test_stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
+    mock_v3_properties(
+        requests_mock,
+        "company",
+        [
+            {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+            for property_name in fake_properties_list
+        ],
+    )
     requests_mock.register_uri(
         "POST",
         "/crm/v4/associations/company/contacts/batch/read",
