@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2f111b00-0b92-4329-8481-6d7aa27a3991
-  dockerImageTag: 0.0.72
+  dockerImageTag: 0.0.73
   dockerRepository: airbyte/source-rootly
   githubIssueLabel: source-rootly
   icon: icon.svg
@@ -37,3 +37,11 @@ data:
     - title: Rootly API documentation
       url: https://rootly.com/api
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true

@@ -114,6 +114,10 @@ Zoom refresh tokens expire after 90 days. Re-authenticate if the source does not
 
 Incremental `meetings` and `webinars` syncs use `created_at` with a 30-day lookback. Edits to meetings or webinars created before that window—including reschedules, settings, and occurrences—are not re-read by incremental syncs. Run a Full Refresh or reset to pick them up. With Incremental | Append + Deduped, those rows remain as last synced.
 
+#### Number of Concurrent Threads
+
+**Number of Concurrent Threads** (optional, `num_workers`): number of threads used during a sync. The default is 3; configure a value from 2 to 10. Higher values can speed up syncs but use more of the Zoom account's rate limit, which is shared with other apps on that account.
+
 #### Configure the source with the Airbyte API or Terraform
 
 Before version 1.4.0, Server-to-Server OAuth settings were top-level fields. Airbyte migrates existing configurations automatically. If you manage the source through the Airbyte API or Terraform, put the settings inside the `credentials` object:
@@ -182,9 +186,13 @@ Webinar streams require the Zoom Webinars add-on, and `zoom_events` requires a W
 
 ### Rate limits
 
-Zoom applies [rate limits](https://developers.zoom.us/docs/api/rate-limits/) per account, shared across apps installed on that account, and limits depend on your plan. The report endpoints used by `report_meetings`, `report_meeting_participants`, `report_user_meetings`, and related streams, along with `GET /past_webinars/{webinarId}/absentees`, are in the Heavy category and share a daily cap across all apps on your account. In Full Refresh, `report_meetings` and `report_meeting_participants` make one Heavy-rate-limited request per past meeting session in the roughly six-month retention window, so Incremental is recommended.
+Zoom applies [rate limits](https://developers.zoom.us/docs/api/rate-limits/) per account, shared across all apps on that account; limits depend on your Zoom plan. Syncs run concurrently with 3 threads by default; configure `num_workers` from 2 to 10. The connector throttles its requests to Zoom's Pro per-second limits by category: Light 30 requests/second, Medium 20 requests/second, and Heavy 10 requests/second.
 
-When Zoom returns HTTP `429`, the connector honors Zoom's `Retry-After` header. If the wait is 10 minutes or longer, the stream stops instead of waiting; if the header is missing, the connector uses exponential backoff.
+Each Airbyte Zoom source applies its own rate-limit budget, but multiple Zoom sources and other apps on the same Zoom account share its limits, so their requests add up; lower `num_workers` on those sources if they hit 429s.
+
+Heavy and Resource-intensive requests share a daily cap of 30,000 on Pro and 60,000 on Business+, across apps on the account. This daily cap still applies. In Full Refresh, `report_meetings` and `report_meeting_participants` make one Heavy-rate-limited request per past meeting session in the roughly six-month retention window, so use Incremental for these streams.
+
+When Zoom returns HTTP `429`, the connector honors Zoom's `Retry-After` header. A wait of 600 seconds or longer fails the stream instead of waiting; if the header is missing, the connector uses exponential backoff.
 
 ## IP allow list
 
@@ -197,7 +205,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 2.0.1 | 2026-11-03 | [90955](https://github.com/airbytehq/airbyte/pull/90955) | Use one error handler per request; a Zoom error code returned with an unexpected HTTP 2xx or 5xx status now gets that code's handling instead of being accepted or retried |
+| 2.1.1 | 2026-11-06 | [90955](https://github.com/airbytehq/airbyte/pull/90955) | Use one error handler per request; a Zoom error code returned with an unexpected HTTP 2xx or 5xx status now gets that code's handling instead of being accepted or retried |
+| 2.1.0 | 2026-11-06 | [91195](https://github.com/airbytehq/airbyte/pull/91195) | Add configurable concurrency and Pro-tier API rate-limit budget |
 | 2.0.0 | 2026-11-03 | [89722](https://github.com/airbytehq/airbyte/pull/89722) | Add session-based meeting reports, composite keys and date-time typing; retain Full Refresh for webinar reports; honor Retry-After on 429 |
 | 1.5.1 | 2026-11-03 | [90076](https://github.com/airbytehq/airbyte/pull/90076) | Update dependencies |
 | 1.5.0 | 2026-10-22 | [89564](https://github.com/airbytehq/airbyte/pull/89564) | Add report_user_meetings, report_daily, chat_channels and zoom_events streams; the new streams need additional Zoom app scopes |
