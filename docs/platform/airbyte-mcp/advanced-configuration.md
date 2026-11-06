@@ -65,16 +65,6 @@ Read-only mode shows only read-only tools. In addition to restricting pipeline e
 
 The header also accepts `true` for `1`. The URL parameter accepts `true`, `false`, `1`, or `0`. The Airbyte MCP rejects common misspellings of the URL parameter, like `readonly` or `read_only`, with an error.
 
-## Insiders mode
-
-Insiders mode shows insiders tools, which are new tools that are still in development, like the Connector Builder project tools. Insiders tools are hidden by default.
-
-| Header           | URL parameter | Allowed values                | Effect                                                        |
-| :--------------- | :------------ | :---------------------------- | :------------------------------------------------------------ |
-| `X-MCP-Insiders` | `insiders`    | `1` (enabled), `0` (disabled) | Disabled by default. When set to `1`, turns on insiders mode. |
-
-`1` can also be written as `true` or `yes`, and `0` as `false` or `no`, for both the header and the URL parameter. Insiders tools follow the same tool restrictions as other tools. For example, read-only mode still hides insiders tools that change data.
-
 ## Delete guard
 
 By default, the delete tools only delete a source, destination, or connection whose name contains `delete-me` or `deleteme` (case insensitive). Your agent can rename a resource to add the marker, but only after you explicitly agree to the rename.
@@ -97,6 +87,16 @@ By default, the delete tools only delete a source, destination, or connection wh
 | Header                       | Value                                 | Effect                                                     |
 | :--------------------------- | :------------------------------------ | :--------------------------------------------------------- |
 | `X-Airbyte-Application-Name` | Your app's name, like `support-agent` | Identifies your agent or app in Airbyte's usage telemetry. |
+
+## Insiders mode
+
+Insiders mode shows insiders tools, which are new tools that are still in development, like the Connector Builder project tools. Insiders tools are hidden by default.
+
+| Header           | URL parameter | Allowed values                | Effect                                                        |
+| :--------------- | :------------ | :---------------------------- | :------------------------------------------------------------ |
+| `X-MCP-Insiders` | `insiders`    | `1` (enabled), `0` (disabled) | Disabled by default. When set to `1`, turns on insiders mode. |
+
+`1` can also be written as `true` or `yes`, and `0` as `false` or `no`, for both the header and the URL parameter. Insiders tools follow the same tool restrictions as other tools. For example, read-only mode still hides insiders tools that change data.
 
 ## See also
 
