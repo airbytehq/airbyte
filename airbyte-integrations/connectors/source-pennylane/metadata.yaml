@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b9e4a306-4e3b-4387-a01d-c00d03d8c28c
-  dockerImageTag: 0.3.52
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-pennylane
   githubIssueLabel: source-pennylane
   icon: icon.svg
@@ -27,6 +27,14 @@ data:
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/pennylane
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          This version moves the connector from the deprecated Pennylane API v1 to API v2. Record IDs,
+          stream names and schemas change, and existing API tokens may need v2 scopes. Follow the
+          migration guide, then reset your streams.
+        upgradeDeadline: "2027-02-05"
   tags:
     - language:manifest-only
     - cdk:low-code
