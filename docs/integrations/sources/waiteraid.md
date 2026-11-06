@@ -65,7 +65,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                           | Subject               |
 | :------ | :--------- | :----------------------------------------------------- | :-------------------- |
-| 0.2.25 | 2026-11-05 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix `booking` stream to emit one record per booking instead of the raw response envelope |
+| 0.2.25 | 2026-11-05 | [91170](https://github.com/airbytehq/airbyte/pull/91170) | Fix `booking` stream to emit one record per booking instead of the raw response envelope |
 | 0.2.23 | 2026-06-02 | [79032](https://github.com/airbytehq/airbyte/pull/79032) | Update dependencies |
 | 0.2.22 | 2025-05-24 | [60757](https://github.com/airbytehq/airbyte/pull/60757) | Update dependencies |
 | 0.2.21 | 2025-05-10 | [59925](https://github.com/airbytehq/airbyte/pull/59925) | Update dependencies |
