@@ -137,7 +137,7 @@ A configuration with only the old top-level `account_id`, `client_id`, `client_s
 
 `meetings` and `webinars` use `created_at` as the Incremental cursor with a 30-day lookback. Incremental syncs don't re-read edits to meetings or webinars created before that window, including reschedules, settings, and occurrences. Run a Full Refresh to pick them up; until then, Incremental | Append + Deduped keeps those rows as last synced. `report_meetings` uses `end_time`, `report_meeting_participants` uses `meeting_end_time`, and `report_user_meetings` uses `end_time` as their Incremental cursors. These three streams re-read the last day on each sync. `report_webinars`, `report_webinar_participants`, and `report_daily` support Full Refresh only; `report_daily` re-reads approximately the last six months.
 
-Use Incremental for `report_meetings` and `report_meeting_participants`. A Full Refresh makes one Heavy-rate-limited request per past meeting session in the roughly six-month report window.
+Use Incremental for `report_meetings` and `report_meeting_participants`. A Full Refresh requests a report for every past meeting session in the roughly six-month report window. These requests use Zoom's Heavy rate limit, and participant reports can require additional requests for pagination.
 
 ## Supported streams
 
@@ -177,6 +177,7 @@ Webinar streams require the Zoom Webinars add-on, and `zoom_events` requires a W
 - If Zoom returns code `4711`, the access token lacks a required scope. Add the missing scope from [Required scopes](#required-scopes) to the Zoom app and re-authenticate if you use OAuth2.0. Streams that ignore HTTP `400` responses return no records instead of reporting missing scopes.
 - If Zoom rejects an expired access token with code `124`, the connector refreshes the token and retries the request.
 - Zoom returns active users for the account. Meetings and webinars for inactive or pending users are not synced.
+- `zoom_events` requests hosted events (`role_type=host`) with upcoming, past, draft, and cancelled statuses. It does not request attendee-ticketed events (`role_type=attendee`).
 - Zoom's meeting and webinar list endpoints return scheduled, unexpired meetings and webinars. Instant or expired meetings and webinars, and their registrants, polls, and webinar reports, are not returned. `report_meetings` and `report_meeting_participants` read past meeting sessions from `report_user_meetings`, so they include instant and ended meetings.
 - If a user cannot host or schedule meetings, Zoom can return code `3161`; the connector skips that user's meeting partition instead of failing the sync.
 - If a meeting or webinar was deleted or no longer has report data, Zoom can return code `3001`; the connector skips that resource.
@@ -188,7 +189,7 @@ Zoom applies [rate limits](https://developers.zoom.us/docs/api/rate-limits/) per
 
 Each Airbyte Zoom source throttles only its own requests. Other Zoom sources and other apps on the same Zoom account use the same limits, so if syncs hit HTTP `429` responses, lower **Number of Concurrent Threads** on those sources.
 
-Heavy and Resource-intensive requests also share a daily cap across all apps on the account: 30,000 requests on Pro and 60,000 on Business and higher plans. The cap resets at 00:00 UTC. The connector doesn't track the daily cap. In Full Refresh, `report_meetings` and `report_meeting_participants` make one Heavy request per past meeting session in the roughly six-month retention window, so use Incremental for these streams.
+Heavy and Resource-intensive requests also share a daily cap across all apps on the account: 30,000 requests on Pro and 60,000 on Business and higher plans. The cap resets at 00:00 UTC. The connector doesn't track the daily cap. In Full Refresh, `report_meetings` and `report_meeting_participants` each make at least one Heavy request per past meeting session in the roughly six-month retention window. Participant report pagination adds requests, so use Incremental for these streams.
 
 When Zoom returns HTTP `429`, the connector honors Zoom's `Retry-After` header. A wait of 600 seconds or longer fails the stream instead of waiting; if the header is missing, the connector uses exponential backoff.
 
