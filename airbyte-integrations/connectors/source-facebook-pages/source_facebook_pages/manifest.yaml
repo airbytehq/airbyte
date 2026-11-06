@@ -55,6 +55,12 @@ definitions:
           error_message: >-
             Facebook API request hit a rate limit or temporary error.
             Facebook returned: {{ response.get('error', {}).get('message', '') }}
+        - action: FAIL
+          error_message_contains: Requires pages_read_engagement permission
+          failure_type: config_error
+          error_message: >-
+            The Facebook access token is missing the pages_read_engagement permission for this Page.
+            Re-authenticate the source with a token that grants it, then retry the sync.
         - http_codes: [400]
           action: FAIL
           failure_type: config_error
@@ -73,7 +79,7 @@ definitions:
       type: "CursorPagination"
       cursor_value: "{{ response.paging.get('cursors', {}).get('after') }}"
       stop_condition: "{{ response.paging == '' or not response.paging.get('next') }}"
-      page_size: "{{ config.get('page_size', 100) }}"
+      page_size: "{{ config.get('page_size', 50) }}"
     page_size_option:
       field_name: "limit"
       inject_into: "request_parameter"
