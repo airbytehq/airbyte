@@ -69,7 +69,13 @@ from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStre
 from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce, SalesforceTokenProvider
+from .api import (
+    PARENT_SALESFORCE_OBJECTS,
+    UNSUPPORTED_FILTERING_STREAMS,
+    _REQUEST_TIMEOUT_SECONDS,
+    Salesforce,
+    SalesforceTokenProvider,
+)
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .rate_limiting import (
     BulkNotSupportedException,
@@ -415,7 +421,7 @@ class RestSalesforceStream(SalesforceStream):
                 stream_slice=stream_slice,
                 next_page_token=next_page_token,
             ),
-            request_kwargs={},
+            request_kwargs={"timeout": _REQUEST_TIMEOUT_SECONDS},
         )
 
 

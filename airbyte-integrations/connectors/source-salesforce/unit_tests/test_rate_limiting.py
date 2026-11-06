@@ -6,6 +6,8 @@ from unittest import TestCase
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
+import re
+
 import requests
 import requests_mock
 from requests.exceptions import ChunkedEncodingError, InvalidURL
@@ -20,7 +22,8 @@ from source_salesforce.api import (
 )
 from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, SyncMode
+from conftest import generate_stream
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.utils import AirbyteTracedException
@@ -257,6 +260,19 @@ def test_token_request_is_sent_with_timeout(requests_mock) -> None:
     sf = Salesforce(refresh_token="a_refresh_token", client_id="a_client_id", client_secret="a_client_secret")
 
     sf.login()
+
+    assert requests_mock.last_request.timeout == _REQUEST_TIMEOUT_SECONDS
+
+
+def test_rest_stream_request_is_sent_with_timeout(requests_mock, stream_config, stream_api) -> None:
+    """A stalled stream read must time out, not block the sync forever (issue #91214)."""
+    stream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    requests_mock.get(
+        re.compile(r"^https://fase-account\.salesforce\.com/services/data/.*"),
+        json={"records": [], "done": True},
+    )
+
+    list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
     assert requests_mock.last_request.timeout == _REQUEST_TIMEOUT_SECONDS
 
