@@ -33,7 +33,7 @@ class BigQueryExceptionClassifierTest {
         strings =
             [
                 // A column dropped from the base table, referenced as table.column in the view.
-                "Name allocation_mode not found inside assignments_daily; failed to parse view " +
+                "Name status not found inside orders_daily; failed to parse view " +
                     "'my-project.my_dataset.my_view' at [1:30]",
                 // The same, referenced by its bare name.
                 "Unrecognized name: c; failed to parse view 'my-project.my_dataset.my_view' at [1:12]",
