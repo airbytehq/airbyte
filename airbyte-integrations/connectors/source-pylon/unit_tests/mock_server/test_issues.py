@@ -43,7 +43,7 @@ def test_two_pass_incremental():
     cursor = first.most_recent_state.stream_state.__dict__["updated_at"]
     edited = {**issue, "updated_at": "2026-01-15T12:00:00Z"}
     with freeze_time("2026-01-16T00:00:00Z"), HttpMocker() as mocker:
-        request = search_request(start=cursor, end="2026-01-16T00:00:00Z")
+        request = search_request(start=cursor, end="2026-01-16T00:00:01Z")
         mocker.post(request, page([edited]))
         second = run("issues", mode=SyncMode.incremental, state=[message.state for message in first.state_messages])
         mocker.assert_number_of_calls(request, 1)
@@ -94,7 +94,7 @@ def test_thirty_day_windows_overlap_without_subsecond_gaps(requests_mock):
     assert emitted == set(timestamps), f"Lost whole seconds at the 30-day seam: {sorted(set(timestamps) - emitted)}"
     assert sorted(windows) == [
         (START, "2026-01-31T00:00:00Z"),
-        ("2026-01-31T00:00:00Z", "2026-02-01T00:00:00Z"),
+        ("2026-01-31T00:00:00Z", "2026-02-01T00:00:01Z"),
     ]
     first, second = sorted(windows)
     assert first[1] == second[0]
@@ -165,7 +165,7 @@ def test_interrupted_read_resumes_from_last_emitted_state(requests_mock):
         index for index, message in enumerate(messages) if message.trace and message.trace.error
     )
     assert first.most_recent_state.stream_state.__dict__["updated_at"] == checkpoint
-    assert windows == [(START, checkpoint), ("2026-01-31T00:00:00Z", end)]
+    assert windows == [(START, checkpoint), ("2026-01-31T00:00:00Z", "2026-02-01T00:00:01Z")]
     assert [message.record.data["id"] for message in first.records] == ["resume-before", "resume-subsecond", "resume-checkpoint"]
     assert datetime.fromisoformat(checkpoint) == max(datetime.fromisoformat(message.record.data["updated_at"]) for message in first.records)
 
@@ -173,7 +173,7 @@ def test_interrupted_read_resumes_from_last_emitted_state(requests_mock):
     interrupted = False
     resumed = run("issues", cfg=config, mode=SyncMode.incremental, state=[first.state_messages[-1].state])
     assert resumed.errors == []
-    assert windows == [(checkpoint, end)]
+    assert windows == [(checkpoint, "2026-02-01T00:00:01Z")]
     assert [message.record.data["id"] for message in resumed.records] == ["resume-checkpoint", "resume-after", "resume-final"]
     combined = Counter(message.record.data["id"] for output in (first, resumed) for message in output.records)
     assert combined == Counter({"resume-before": 1, "resume-subsecond": 1, "resume-checkpoint": 2, "resume-after": 1, "resume-final": 1})
@@ -184,7 +184,7 @@ def test_interrupted_read_resumes_from_last_emitted_state(requests_mock):
 
 @pytest.mark.parametrize("start", ["2026-01-14T23:59:59Z", NOW, "2025-12-16T00:00:00Z"])
 @freeze_time(NOW)
-def test_final_issue_window_is_capped_at_now(requests_mock, start):
+def test_final_issue_window_extends_one_second_with_thirty_day_clamp(requests_mock, start):
     records = [
         {**fixture_record("issues"), "id": "at-now", "updated_at": NOW},
         {**fixture_record("issues"), "id": "after-now", "updated_at": "2026-01-15T00:00:00.500000Z"},
@@ -205,7 +205,33 @@ def test_final_issue_window_is_capped_at_now(requests_mock, start):
     requests_mock.post(f"{BASE}/issues/search", json=respond)
     output = run("issues", cfg={**CONFIG, "start_date": start}, mode=SyncMode.incremental)
     assert output.errors == []
-    assert windows == [(start, NOW)]
-    assert [message.record.data["id"] for message in output.records] == ["at-now"]
+    clamped = start == "2025-12-16T00:00:00Z"
+    upper = NOW if clamped else "2026-01-15T00:00:01Z"
+    assert windows == [(start, upper)]
+    assert [message.record.data["id"] for message in output.records] == (["at-now"] if clamped else ["at-now", "after-now"])
     assert output.most_recent_state.stream_state.__dict__["updated_at"] == NOW
-    print(f"Final window: {windows[0]}; at-now emitted, after-now excluded; cursor: {NOW}")
+    print(f"Final window: {windows[0]}; cursor: {NOW}")
+
+
+def test_final_issue_window_filter_is_stable_across_pages(requests_mock) -> None:
+    filters = []
+    records = [{**fixture_record("issues"), "id": f"final-page-{index}"} for index in range(3)]
+    with freeze_time(NOW) as clock:
+
+        def respond(request, context):
+            body = request.json()
+            index = len(filters)
+            assert body.get("cursor") == (None if index == 0 else f"page-{index}")
+            filters.append(body["filter"])
+            clock.tick(delta=timedelta(seconds=5))
+            return {
+                "data": [records[index]],
+                "pagination": {"has_next_page": index < 2, "cursor": f"page-{index + 1}"},
+            }
+
+        requests_mock.post(f"{BASE}/issues/search", json=respond)
+        output = run("issues", mode=SyncMode.incremental)
+    assert output.errors == []
+    assert requests_mock.call_count == 3
+    assert filters == [{"field": "updated_at", "operator": "time_range", "values": [START, "2026-01-15T00:00:01Z"]}] * 3
+    assert [message.record.data["id"] for message in output.records] == [record["id"] for record in records]

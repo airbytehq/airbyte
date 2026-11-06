@@ -229,7 +229,7 @@ definitions:
               operator: time_range
               values:
                 - "{{ stream_interval.start_time }}"
-                - "{{ format_datetime(min(str_to_datetime(stream_interval.end_time) + duration('PT1S'), str_to_datetime(stream_interval.start_time) + duration('P30D'), now_utc()), '%Y-%m-%dT%H:%M:%SZ') }}"
+                - "{{ format_datetime(min(str_to_datetime(stream_interval.end_time) + duration('PT1S'), str_to_datetime(stream_interval.start_time) + duration('P30D')), '%Y-%m-%dT%H:%M:%SZ') }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:

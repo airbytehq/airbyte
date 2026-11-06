@@ -45,7 +45,7 @@ def list_request(path, cursor=None, base=BASE, **params):
     return HttpRequest(f"{base}/{path.lstrip('/')}", query_params=query, headers={"Authorization": f"Bearer {TOKEN}"})
 
 
-def search_request(start=START, end=NOW, cursor=None, base=BASE):
+def search_request(start=START, end="2026-01-15T00:00:01Z", cursor=None, base=BASE):
     time_filter = {"field": "updated_at", "operator": "time_range", "values": [start, end]}
     body = {"filter": time_filter, "limit": 999}
     if cursor:
