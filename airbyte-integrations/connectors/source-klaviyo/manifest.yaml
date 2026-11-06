@@ -1084,6 +1084,7 @@ definitions:
             Accept: application/json
             Revision: "2024-10-15"
             Content-Type: application/json
+            Connection: close
           request_body_json:
             data:
               type: "flow-series-report"
@@ -1125,6 +1126,7 @@ definitions:
             type: CustomErrorHandler
             class_name: >-
               source_declarative_manifest.components.KlaviyoErrorHandler
+            max_time: 1800
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -1240,6 +1242,7 @@ definitions:
             Accept: application/json
             Revision: "2024-10-15"
             Content-Type: application/json
+            Connection: close
           request_body_json:
             data:
               type: "campaign-values-report"
@@ -1284,6 +1287,7 @@ definitions:
             type: CustomErrorHandler
             class_name: >-
               source_declarative_manifest.components.KlaviyoErrorHandler
+            max_time: 1800
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -4600,6 +4604,8 @@ api_budget:
           interval: PT1S
         - limit: 2 # steady: 2 calls per minute
           interval: PT1M
+        - limit: 1
+          interval: PT6M
       matchers:
         - method: POST
           url_path_pattern: "^/api/flow-series-reports($|\\?)"
@@ -4610,6 +4616,8 @@ api_budget:
           interval: PT1S
         - limit: 2 # steady: 2 calls per minute
           interval: PT1M
+        - limit: 1
+          interval: PT6M
       matchers:
         - method: POST
           url_path_pattern: "^/api/campaign-values-reports($|\\?)"
