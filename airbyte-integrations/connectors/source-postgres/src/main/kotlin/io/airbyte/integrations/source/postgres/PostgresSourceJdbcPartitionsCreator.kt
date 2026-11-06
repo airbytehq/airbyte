@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.postgres
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.sockets.toJson
@@ -31,7 +30,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 import kotlin.use
 
@@ -45,22 +43,17 @@ class PostgresSourceConcurrentJdbcPartitionsCreatorFactory<
 >(
     partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
-    private val acquiredResources = AtomicReference<AcquiredResources>()
 
     /**
      * Querying for a table's filenode makes it necessary to acquire a DB connection allowance
-     * resource.
+     * resource. The acquired handle is returned to the caller rather than stored on this singleton,
+     * so concurrent feeds do not overwrite one another's handles.
      */
-    override fun tryAcquireResources(): PartitionsCreatorFactory.TryAcquireResourcesStatus {
-        val acquiredResources: AcquiredResources =
+    override fun tryAcquireResources(): PartitionsCreatorFactory.TryAcquireResourcesResult {
+        val acquired: AcquiredResources =
             partitionFactory.sharedState.tryAcquireResourcesForCreatorFactory()
-                ?: return PartitionsCreatorFactory.TryAcquireResourcesStatus.RETRY_LATER
-        this.acquiredResources.set(acquiredResources)
-        return PartitionsCreatorFactory.TryAcquireResourcesStatus.READY_TO_RUN
-    }
-
-    override fun releaseResources() {
-        acquiredResources.getAndSet(null)?.close()
+                ?: return PartitionsCreatorFactory.TryAcquireResourcesResult.RetryLater
+        return PartitionsCreatorFactory.TryAcquireResourcesResult.ReadyToRun(acquired)
     }
 
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
@@ -68,7 +61,10 @@ class PostgresSourceConcurrentJdbcPartitionsCreatorFactory<
 }
 
 class PostgresSourceJdbcConcurrentPartitionsCreator<
-    A : JdbcSharedState, S : JdbcStreamState<A>, P : JdbcPartition<S>>(
+    A : JdbcSharedState,
+    S : JdbcStreamState<A>,
+    P : JdbcPartition<S>,
+>(
     partition: P,
     partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcConcurrentPartitionsCreator<A, S, P>(partition, partitionFactory) {
@@ -166,10 +162,6 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
     }
 
     /** Get total relation size in bytes for a given table - this includes toast data. */
-    @SuppressFBWarnings(
-        value = ["SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"],
-        justification = "testing"
-    )
     private fun totalRelationSize(stream: Stream): Long {
         val sql = "SELECT pg_total_relation_size(?)"
         return querySingleValue(
@@ -178,7 +170,7 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
             { stmt -> stmt.setString(1, toQualifiedTableName(stream.namespace, stream.name)) },
             { rs ->
                 return@querySingleValue rs.getLong(1)
-            }
+            },
         )
     }
 }

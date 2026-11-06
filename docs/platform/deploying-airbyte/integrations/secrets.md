@@ -1,5 +1,5 @@
 ---
-products: oss-community, oss-enterprise
+products: oss-community, enterprise-flex
 ---
 
 import Tabs from '@theme/Tabs';

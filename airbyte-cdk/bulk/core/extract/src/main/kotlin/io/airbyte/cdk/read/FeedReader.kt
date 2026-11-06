@@ -60,7 +60,7 @@ class FeedReader(
             dataChannelFormat,
             dataChannelMedium,
             bufferByteSizeThresholdForFlush,
-            clock
+            clock,
         )
 
     /** Reads records from this [feed]. */
@@ -105,19 +105,21 @@ class FeedReader(
     private suspend fun createPartitions(partitionsCreatorID: Long): List<PartitionReader> {
         val partitionsCreator: PartitionsCreator = run {
             for (factory in root.partitionsCreatorFactories) {
-                withContext(
-                    ctx(
-                        "round-$partitionsCreatorID-partition-creator-factory-acquire-resources-$factory"
-                    )
-                ) { acquirePartitionsCreatorFactoryResources(partitionsCreatorID, factory) }
+                val acquired: AutoCloseable =
+                    withContext(
+                        ctx(
+                            "round-$partitionsCreatorID-partition-creator-factory-acquire-resources-$factory",
+                        ),
+                    ) {
+                        acquirePartitionsCreatorFactoryResources(partitionsCreatorID, factory)
+                    }
                 log.info { "Attempting bootstrap using ${factory::class}." }
                 return@run withContext(ctx("round-$partitionsCreatorID-make-partitions-creator")) {
-                    makePartitionsCreatorWithResources(factory)
-                }
-                    ?: continue
+                    makePartitionsCreatorWithResources(factory, acquired)
+                } ?: continue
             }
             throw SystemErrorException(
-                "Unable to bootstrap for feed $feed with ${root.partitionsCreatorFactories}"
+                "Unable to bootstrap for feed $feed with ${root.partitionsCreatorFactories}",
             )
         }
         withContext(ctx("round-$partitionsCreatorID-acquire-resources")) {
@@ -134,18 +136,20 @@ class FeedReader(
     private suspend fun acquirePartitionsCreatorFactoryResources(
         partitionsCreatorID: Long,
         partitionsCreatorFactory: PartitionsCreatorFactory,
-    ) {
+    ): AutoCloseable {
         while (true) {
-            val status: PartitionsCreatorFactory.TryAcquireResourcesStatus =
+            val result: PartitionsCreatorFactory.TryAcquireResourcesResult =
                 root.resourceAcquisitionMutex.withLock {
                     partitionsCreatorFactory.tryAcquireResources()
                 }
-            if (status == PartitionsCreatorFactory.TryAcquireResourcesStatus.READY_TO_RUN) break
+            if (result is PartitionsCreatorFactory.TryAcquireResourcesResult.ReadyToRun) {
+                log.info {
+                    "acquired resources to make partitions creator factory '${partitionsCreatorFactory::class.simpleName}' " +
+                        "for '${feed.label}' in round $partitionsCreatorID"
+                }
+                return result.acquired
+            }
             root.waitForResourceAvailability()
-        }
-        log.info {
-            "acquired resources to make partitions creator factory '${partitionsCreatorFactory::class.simpleName}' " +
-                "for '${feed.label}' in round $partitionsCreatorID"
         }
     }
 
@@ -155,8 +159,8 @@ class FeedReader(
     ) {
         while (true) {
             val status: PartitionsCreator.TryAcquireResourcesStatus =
-            // Resource acquisition always executes serially.
-            root.resourceAcquisitionMutex.withLock { partitionsCreator.tryAcquireResources() }
+                // Resource acquisition always executes serially.
+                root.resourceAcquisitionMutex.withLock { partitionsCreator.tryAcquireResources() }
             if (status == PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN) break
             root.waitForResourceAvailability()
         }
@@ -168,11 +172,16 @@ class FeedReader(
 
     private fun makePartitionsCreatorWithResources(
         factory: PartitionsCreatorFactory,
+        acquired: AutoCloseable,
     ): PartitionsCreator? {
         return try {
             factory.make(feedBootstrap)
         } finally {
-            factory.releaseResources()
+            log.info {
+                "releasing resources acquired to make partitions creator factory " +
+                    "for '${feed.label}'"
+            }
+            acquired.close()
             root.notifyResourceAvailability()
         }
     }
@@ -245,8 +254,8 @@ class FeedReader(
     ) {
         while (true) {
             val status: PartitionReader.TryAcquireResourcesStatus =
-            // Resource acquisition always executes serially.
-            root.resourceAcquisitionMutex.withLock { partitionReader.tryAcquireResources() }
+                // Resource acquisition always executes serially.
+                root.resourceAcquisitionMutex.withLock { partitionReader.tryAcquireResources() }
             if (status == PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN) break
             root.waitForResourceAvailability()
         }
@@ -356,8 +365,9 @@ class FeedReader(
                             label(pendingPartitionReaderID)
                     }
                     val (
-                        opaqueStateValue: OpaqueStateValue, numRecords: Long, partitionId: String?
-                    ) =
+                        opaqueStateValue: OpaqueStateValue,
+                        numRecords: Long,
+                        partitionId: String?) =
                         pendingResult.getOrThrow()
                     root.stateManager
                         .scoped(feed)
@@ -369,7 +379,7 @@ class FeedReader(
                                 // State messages in SOCKET mode have an incrementing integer ID.
                                 SOCKET -> stateId.getAndIncrement()
                                 STDIO -> null
-                            }
+                            },
                         )
                     log.info {
                         "updated state of '${feed.label}', moved it $numRecords record(s) forward"

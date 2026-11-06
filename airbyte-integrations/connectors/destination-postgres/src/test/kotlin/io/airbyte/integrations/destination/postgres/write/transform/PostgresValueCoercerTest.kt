@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
@@ -78,6 +79,78 @@ internal class PostgresValueCoercerTest {
     }
 
     @Test
+    fun testMapRemovesNestedNullCharacters() {
+        val objectValue =
+            ObjectValue(
+                linkedMapOf(
+                    "objectValue" to StringValue("before\u0000after"),
+                    "arrayValue" to
+                        ArrayValue(
+                            listOf(ObjectValue(linkedMapOf("nested" to StringValue("a\u0000b")))),
+                        ),
+                ),
+            )
+        val enrichedAirbyteValue =
+            EnrichedAirbyteValue(
+                abValue = objectValue,
+                type = ObjectTypeWithoutSchema,
+                name = "test",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        coercer.map(enrichedAirbyteValue)
+
+        assertEquals(
+            ObjectValue(
+                linkedMapOf(
+                    "objectValue" to StringValue("beforeafter"),
+                    "arrayValue" to
+                        ArrayValue(listOf(ObjectValue(linkedMapOf("nested" to StringValue("ab"))))),
+                ),
+            ),
+            enrichedAirbyteValue.abValue,
+        )
+    }
+
+    @Test
+    fun testMapRemovesNullCharactersFromObjectKeys() {
+        // No NUL in any value, so this also covers the containsNullCharacter() pre-check
+        // noticing a key-only NUL.
+        val objectValue =
+            ObjectValue(
+                linkedMapOf(
+                    "key\u0000name" to
+                        ArrayValue(
+                            listOf(ObjectValue(linkedMapOf("nested\u0000key" to StringValue("v")))),
+                        ),
+                ),
+            )
+        val enrichedAirbyteValue =
+            EnrichedAirbyteValue(
+                abValue = objectValue,
+                type = ObjectTypeWithoutSchema,
+                name = "test",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        coercer.map(enrichedAirbyteValue)
+
+        assertEquals(
+            ObjectValue(
+                linkedMapOf(
+                    "keyname" to
+                        ArrayValue(
+                            listOf(ObjectValue(linkedMapOf("nestedkey" to StringValue("v")))),
+                        ),
+                ),
+            ),
+            enrichedAirbyteValue.abValue,
+        )
+    }
+
+    @Test
     fun testValidateValidArray() {
         val arrayValue = ArrayValue(listOf(IntegerValue(1), IntegerValue(2), IntegerValue(3)))
         val airbyteValue =
@@ -112,7 +185,7 @@ internal class PostgresValueCoercerTest {
                     ObjectType(
                         properties = properties,
                         additionalProperties = false,
-                        required = emptyList()
+                        required = emptyList(),
                     ),
                 name = "name",
                 changes = mutableListOf(),
@@ -155,7 +228,7 @@ internal class PostgresValueCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -175,7 +248,7 @@ internal class PostgresValueCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -211,7 +284,7 @@ internal class PostgresValueCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -231,7 +304,7 @@ internal class PostgresValueCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -271,7 +344,7 @@ internal class PostgresValueCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -446,7 +519,7 @@ internal class PostgresValueCoercerTest {
         val invalidTimestamp =
             OffsetDateTime.ofInstant(
                 java.time.Instant.ofEpochSecond(TIMESTAMP_MAX_EPOCH_SECONDS + 1),
-                ZoneOffset.UTC
+                ZoneOffset.UTC,
             )
         val timestampValue = TimestampWithTimezoneValue(invalidTimestamp)
         val airbyteValue =
@@ -462,7 +535,7 @@ internal class PostgresValueCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -473,7 +546,7 @@ internal class PostgresValueCoercerTest {
         val invalidTimestamp =
             OffsetDateTime.ofInstant(
                 java.time.Instant.ofEpochSecond(TIMESTAMP_MIN_EPOCH_SECONDS - 1),
-                ZoneOffset.UTC
+                ZoneOffset.UTC,
             )
         val timestampValue = TimestampWithTimezoneValue(invalidTimestamp)
         val airbyteValue =
@@ -489,7 +562,7 @@ internal class PostgresValueCoercerTest {
         assertEquals(ValidationResult.ShouldNullify::class, result::class)
         assertEquals(
             AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldNullify).reason
+            (result as ValidationResult.ShouldNullify).reason,
         )
     }
 
@@ -517,7 +590,7 @@ internal class PostgresValueCoercerTest {
         val maxTimestamp =
             OffsetDateTime.ofInstant(
                 java.time.Instant.ofEpochSecond(TIMESTAMP_MAX_EPOCH_SECONDS),
-                ZoneOffset.UTC
+                ZoneOffset.UTC,
             )
         val timestampValue = TimestampWithTimezoneValue(maxTimestamp)
         val airbyteValue =
@@ -539,7 +612,7 @@ internal class PostgresValueCoercerTest {
         val minTimestamp =
             OffsetDateTime.ofInstant(
                 java.time.Instant.ofEpochSecond(TIMESTAMP_MIN_EPOCH_SECONDS),
-                ZoneOffset.UTC
+                ZoneOffset.UTC,
             )
         val timestampValue = TimestampWithTimezoneValue(minTimestamp)
         val airbyteValue =
@@ -592,16 +665,16 @@ internal class PostgresValueCoercerTest {
                                                 ObjectValue(
                                                     LinkedHashMap<String, AirbyteValue>().apply {
                                                         put("level4", StringValue("deep value"))
-                                                    }
-                                                )
+                                                    },
+                                                ),
                                             )
-                                        }
-                                    )
+                                        },
+                                    ),
                                 )
-                            }
-                        )
+                            },
+                        ),
                     )
-                }
+                },
             )
 
         val airbyteValue =
@@ -611,7 +684,7 @@ internal class PostgresValueCoercerTest {
                     ObjectType(
                         properties = LinkedHashMap(),
                         additionalProperties = true,
-                        required = emptyList()
+                        required = emptyList(),
                     ),
                 name = "deep_object",
                 changes = mutableListOf(),

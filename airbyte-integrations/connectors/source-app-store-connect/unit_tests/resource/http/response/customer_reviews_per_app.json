@@ -1,0 +1,19 @@
+{
+  "data": [
+    {
+      "type": "customerReviews",
+      "id": "review-1",
+      "attributes": {
+        "rating": 5,
+        "title": "Excellent",
+        "body": "Works well",
+        "reviewerNickname": "Reviewer",
+        "createdDate": "2024-01-03T00:00:00Z",
+        "territory": "USA"
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/apps/app-1/customerReviews"
+  }
+}

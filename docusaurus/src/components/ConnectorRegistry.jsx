@@ -33,7 +33,7 @@ function buildCompositeEntry(entry, connectorType) {
     dockerRepository,
     dockerImageTag: entry.dockerImageTag || "",
     supportLevel: entry.supportLevel || "community",
-    iconUrl: entry.iconUrl || "",
+    iconUrl: entry.iconUrl || (dockerRepository ? `https://connectors.airbyte.com/files/metadata/${dockerRepository}/latest/icon.svg` : ""),
     documentationUrl: entry.documentationUrl || "",
   };
 }
@@ -76,7 +76,20 @@ function connectorSort(a, b) {
   if (a.name > b.name) return 1;
 }
 
+function isAgentConnector(connector, agentConnectors) {
+  const slug = connector.dockerRepository?.replace(
+    `airbyte/${connector.connector_type}-`,
+    "",
+  );
+  const slugs =
+    connector.connector_type === "destination"
+      ? agentConnectors.destinations
+      : agentConnectors.sources;
+  return slugs.includes(slug);
+}
+
 function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnectors = [] }) {
+  const agentConnectors = usePluginData("agent-connectors-plugin");
   return (
     <table>
       <thead>
@@ -85,6 +98,7 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
           <th>Links</th>
           <th>Self-managed</th>
           <th>Cloud</th>
+          <th>Agent</th>
           {connectorSupportLevel !== "enterprise" && <th>Docker Image</th>}
         </tr>
       </thead>
@@ -144,6 +158,7 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
                 </td>
                 <td>{connector.is_oss ? "✅" : "❌"}</td>
                 <td>{connector.is_cloud ? "✅" : "❌"}</td>
+                <td>{isAgentConnector(connector, agentConnectors) ? "✅" : "❌"}</td>
                 {connectorSupportLevel !== "enterprise" && (
                   <td>
                     <small>

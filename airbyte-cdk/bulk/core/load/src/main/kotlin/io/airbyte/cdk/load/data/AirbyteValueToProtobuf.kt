@@ -18,6 +18,7 @@ import java.time.OffsetTime
 /** Convenience class for testing. */
 class AirbyteValueToProtobuf {
     private val encoder = AirbyteValueProtobufEncoder()
+
     fun toProtobuf(value: AirbyteValue, type: AirbyteType): AirbyteValueProtobuf {
         // Handle null values
         if (value is NullValue) {

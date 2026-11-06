@@ -6,7 +6,9 @@ package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.data.BigDecimalCodec
+import io.airbyte.cdk.data.BigDecimalIntegerCodec
 import io.airbyte.cdk.data.BinaryCodec
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.FloatCodec
@@ -38,6 +40,8 @@ import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.SyncMode
 import io.debezium.connector.sqlserver.Lsn
 import io.debezium.connector.sqlserver.SqlServerConnector
 import io.debezium.document.DocumentReader
@@ -57,6 +61,7 @@ import java.util.zip.GZIPOutputStream
 import kotlin.collections.plus
 import org.apache.kafka.connect.source.SourceRecord
 import org.apache.mina.util.Base64
+import org.jetbrains.annotations.VisibleForTesting
 
 data class MsSqlServerCdcPosition(val lsn: String) : PartiallyOrdered<MsSqlServerCdcPosition> {
     override fun compareTo(other: MsSqlServerCdcPosition): Int {
@@ -64,10 +69,17 @@ data class MsSqlServerCdcPosition(val lsn: String) : PartiallyOrdered<MsSqlServe
     }
 }
 
+internal data class CaptureInstance(
+    val sourceSchema: String,
+    val sourceTable: String,
+    val captureInstanceName: String,
+)
+
 @Singleton
 class MsSqlServerDebeziumOperations(
     private val jdbcConnectionFactory: JdbcConnectionFactory,
-    private val configuration: MsSqlServerSourceConfiguration
+    private val configuration: MsSqlServerSourceConfiguration,
+    private val configuredCatalog: ConfiguredAirbyteCatalog? = null,
 ) :
     CdcPartitionsCreatorDebeziumOperations<MsSqlServerCdcPosition>,
     CdcPartitionReaderDebeziumOperations<MsSqlServerCdcPosition> {
@@ -116,6 +128,13 @@ class MsSqlServerDebeziumOperations(
                             fieldValue.isNumber && codec is BigDecimalCodec ->
                                 fieldValue.decimalValue()
 
+                            // BigDecimal-integer (NUMERIC/DECIMAL with scale 0):
+                            // Debezium emits these as JSON strings or numbers
+                            fieldValue.isTextual && codec is BigDecimalIntegerCodec ->
+                                java.math.BigDecimal(fieldValue.asText())
+                            fieldValue.isNumber && codec is BigDecimalIntegerCodec ->
+                                fieldValue.decimalValue()
+
                             // Int: handle both string and number
                             fieldValue.isTextual && codec is IntCodec -> fieldValue.asText().toInt()
                             fieldValue.isNumber && codec is IntCodec -> fieldValue.intValue()
@@ -138,7 +157,7 @@ class MsSqlServerDebeziumOperations(
                             // Binary: handle base64 string
                             fieldValue.isTextual && codec is BinaryCodec ->
                                 java.nio.ByteBuffer.wrap(
-                                    java.util.Base64.getDecoder().decode(fieldValue.asText())
+                                    java.util.Base64.getDecoder().decode(fieldValue.asText()),
                                 )
                             else -> codec.decode(fieldValue)
                         }
@@ -156,14 +175,14 @@ class MsSqlServerDebeziumOperations(
         resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
             FieldValueEncoder(
                 transactionOffsetDateTime,
-                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>,
             )
 
         resultRow[CommonMetaField.CDC_DELETED_AT.id] =
             FieldValueEncoder(
                 if (isDelete) transactionOffsetDateTime else null,
                 (if (isDelete) CommonMetaField.CDC_DELETED_AT.type.jsonEncoder else NullCodec)
-                    as JsonEncoder<Any>
+                    as JsonEncoder<Any>,
             )
 
         // Set MSSQL-specific CDC meta-fields
@@ -172,13 +191,13 @@ class MsSqlServerDebeziumOperations(
             FieldValueEncoder(
                 commitLsn,
                 MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_LSN.type.jsonEncoder
-                    as JsonEncoder<Any>
+                    as JsonEncoder<Any>,
             )
         resultRow[MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_CURSOR.id] =
             FieldValueEncoder(
                 cdcCursorGenerator.getAndIncrement(),
                 MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_CURSOR.type.jsonEncoder
-                    as JsonEncoder<Any>
+                    as JsonEncoder<Any>,
             )
 
         val eventSerialNo = source["event_serial_no"]?.asInt()?.let { "$it" } ?: "0"
@@ -186,7 +205,7 @@ class MsSqlServerDebeziumOperations(
             FieldValueEncoder(
                 eventSerialNo,
                 MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_EVENT_SERIAL_NO.type.jsonEncoder
-                    as JsonEncoder<Any>
+                    as JsonEncoder<Any>,
             )
 
         // Return a DeserializedRecord instance.
@@ -215,7 +234,7 @@ class MsSqlServerDebeziumOperations(
 
     override fun serializeState(
         offset: DebeziumOffset,
-        schemaHistory: DebeziumSchemaHistory?
+        schemaHistory: DebeziumSchemaHistory?,
     ): JsonNode {
         // Sanitize offset before saving to state to fix heartbeat corruption
         val sanitizedOffset = sanitizeOffset(offset)
@@ -290,7 +309,7 @@ class MsSqlServerDebeziumOperations(
 
                     if (selectedEntry == null) {
                         throw RuntimeException(
-                            "Unable to select valid offset from multiple keys in $opaqueStateValue"
+                            "Unable to select valid offset from multiple keys in $opaqueStateValue",
                         )
                     }
 
@@ -303,7 +322,7 @@ class MsSqlServerDebeziumOperations(
                 }
                 else ->
                     throw RuntimeException(
-                        "Offset object must have at least 1 key in $opaqueStateValue"
+                        "Offset object must have at least 1 key in $opaqueStateValue",
                     )
             }
 
@@ -323,7 +342,17 @@ class MsSqlServerDebeziumOperations(
         // Validate the saved LSN is still available in SQL Server
         val isLsnValid =
             try {
-                validateLsnStillAvailable(savedLsn)
+                jdbcConnectionFactory.get().use { connection: Connection ->
+                    val captureInstances = getAccessibleCaptureInstances(connection)
+                    val configuredCaptureInstances =
+                        validateConfiguredStreamsAreAccessible(captureInstances)
+                    validateLsnStillAvailable(savedLsn, configuredCaptureInstances)
+                }
+            } catch (e: ConfigErrorException) {
+                // Permission/configuration mismatch. Re-throw the config error so
+                // CdcPartitionCreator identify this as
+                // abort as resetting the sync won't help here.
+                throw e
             } catch (e: Exception) {
                 log.error(e) { "Failed to validate LSN availability: ${savedLsn}" }
                 false
@@ -331,40 +360,37 @@ class MsSqlServerDebeziumOperations(
 
         if (!isLsnValid) {
             return abortCdcSync(
-                "Saved LSN '${savedLsn}' is no longer available in SQL Server transaction logs"
+                "Saved LSN '${savedLsn}' is no longer available in SQL Server transaction logs",
             )
         }
 
         val historyNode = stateNode[MSSQL_DB_HISTORY]
-        val schemaHistory: DebeziumSchemaHistory? =
-            historyNode?.let {
-                val isCompressed: Boolean = stateNode[MSSQL_IS_COMPRESSED]?.asBoolean() ?: false
-                val uncompressedString: String =
-                    if (isCompressed) {
-                        val textValue: String = it.textValue()
-                        val compressedBytes: ByteArray =
-                            textValue.substring(1, textValue.length - 1).toByteArray(Charsets.UTF_8)
-                        val decoded = Base64.decodeBase64(compressedBytes)
+        val schemaHistory: DebeziumSchemaHistory? = historyNode?.let {
+            val isCompressed: Boolean = stateNode[MSSQL_IS_COMPRESSED]?.asBoolean() ?: false
+            val uncompressedString: String =
+                if (isCompressed) {
+                    val textValue: String = it.textValue()
+                    val compressedBytes: ByteArray =
+                        textValue.substring(1, textValue.length - 1).toByteArray(Charsets.UTF_8)
+                    val decoded = Base64.decodeBase64(compressedBytes)
 
-                        GZIPInputStream(ByteArrayInputStream(decoded))
-                            .reader(Charsets.UTF_8)
-                            .readText()
-                    } else {
-                        it.textValue()
-                    }
-                val schemaHistoryList: List<HistoryRecord> =
-                    uncompressedString
-                        .lines()
-                        .filter { it.isNotBlank() }
-                        .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
-                DebeziumSchemaHistory(schemaHistoryList)
-            }
+                    GZIPInputStream(ByteArrayInputStream(decoded)).reader(Charsets.UTF_8).readText()
+                } else {
+                    it.textValue()
+                }
+            val schemaHistoryList: List<HistoryRecord> =
+                uncompressedString
+                    .lines()
+                    .filter { it.isNotBlank() }
+                    .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
+            DebeziumSchemaHistory(schemaHistoryList)
+        }
         // If the schema history is empty or null, we want to abort the sync
         // and run a recovery snapshot.
         if (schemaHistory == null || schemaHistory.wrapped.isEmpty()) {
             return AbortDebeziumWarmStartState(
                 "Schema history missing with existing offset. " +
-                    "Previous snapshot was incomplete, please refresh the connection."
+                    "Previous snapshot was incomplete, please refresh the connection.",
             )
         }
 
@@ -437,7 +463,8 @@ class MsSqlServerDebeziumOperations(
         }
 
         val sanitizedValue = currentValue.deepCopy()
-        if (eventSerialNoRegressed && startEventSerialNo != null) {
+        if (eventSerialNoRegressed) {
+            // eventSerialNoRegressed implies startEventSerialNo != null.
             sanitizedValue.put("event_serial_no", startEventSerialNo)
         }
         if (changeLsnRegressed && !startChangeLsn.isNull) {
@@ -448,25 +475,114 @@ class MsSqlServerDebeziumOperations(
     }
 
     /**
+     * Running sys.fn_cdc_get_min_lsn(capture_instance) will query for the entire capture instance
+     * (also tables that are not configured). If the current user doesn't have access to one of the
+     * tables, this function will return zero LSN which is invalid.
+     *
+     * We are calling sys.sp_cdc_help_change_data_capture which returns all capture instances
+     * accessible to the user and map it to the Airbyte configured catalog to ensure the user have
+     * access to all tables.
+     */
+    @VisibleForTesting
+    internal fun getAccessibleCaptureInstances(connection: Connection): List<CaptureInstance> {
+        val results = mutableListOf<CaptureInstance>()
+        connection.createStatement().use { stmt ->
+            stmt.executeQuery("EXEC sys.sp_cdc_help_change_data_capture").use { rs ->
+                while (rs.next()) {
+                    results.add(
+                        CaptureInstance(
+                            sourceSchema = rs.getString("source_schema"),
+                            sourceTable = rs.getString("source_table"),
+                            captureInstanceName = rs.getString("capture_instance"),
+                        ),
+                    )
+                }
+            }
+        }
+        return results
+    }
+
+    /**
+     * Verifies that the user have access to the configured schemas (tables). This maps the output
+     * of the sys.sp_cdc_help_change_data_capture with ConfiguredAirbyteCatalog. If the list doesn't
+     * match, throw ConfiErrorException with the missing tables to indicate that this is a config
+     * error and not a lost LSN.
+     */
+    private fun validateConfiguredStreamsAreAccessible(
+        captureInstances: List<CaptureInstance>,
+    ): List<CaptureInstance> {
+        if (configuredCatalog == null) {
+            log.warn { "Catalog not available, skipping capture instance validation" }
+            return captureInstances
+        }
+
+        // Build a captureInstanceSet and configuredStreamsSet to compare and identify any selected
+        // tables without CDC access
+        val captureInstanceSet: Set<Pair<String, String>> =
+            captureInstances.map { it.sourceSchema to it.sourceTable }.toSet()
+
+        val configuredStreamsSet: Set<Pair<String, String>> =
+            configuredCatalog.streams
+                .filter { it.syncMode == SyncMode.INCREMENTAL }
+                .mapNotNullTo(mutableSetOf()) {
+                    val namespace = it.stream.namespace ?: return@mapNotNullTo null
+                    val tableName = it.stream.name ?: return@mapNotNullTo null
+                    namespace to tableName
+                }
+
+        val missing = configuredStreamsSet - captureInstanceSet
+
+        if (missing.isNotEmpty()) {
+            val missingFormatted = missing.joinToString(", ") { (s, t) -> "$s.$t" }
+            throw ConfigErrorException(
+                "CDC is not available for the following table(s): $missingFormatted. " +
+                    "This usually means CDC is not enabled on the table, or the user lacks access. " +
+                    "See https://docs.airbyte.com/integrations/sources/mssql#setting-up-cdc-for-mssql for setup instructions." +
+                    "After fixing access, refresh the connection to resume the sync.",
+            )
+        }
+
+        // Return only the capture instances that are configured streams
+        return captureInstances.filter {
+            (it.sourceSchema to it.sourceTable) in configuredStreamsSet
+        }
+    }
+
+    /**
      * Validates if the given LSN is still available in SQL Server transaction logs. Returns true if
      * the LSN is available, false otherwise.
      */
-    private fun validateLsnStillAvailable(lsn: Lsn): Boolean {
-        // Use jdbcConnectionFactory which handles SSH tunneling
-        jdbcConnectionFactory.get().use { connection: Connection ->
-            connection.createStatement().use { statement ->
-                // Check if the LSN is within the available range
-                // sys.fn_cdc_get_min_lsn returns the minimum available LSN for a capture instance
-                // sys.fn_cdc_get_max_lsn returns the current maximum LSN
-                val query =
-                    """
-                    SELECT
-                        MIN(sys.fn_cdc_get_min_lsn(capture_instance)) as min_lsn,
-                        sys.fn_cdc_get_max_lsn() as max_lsn
-                    FROM cdc.change_tables
-                """.trimIndent()
+    private fun validateLsnStillAvailable(
+        lsn: Lsn,
+        configuredCaptureInstances: List<CaptureInstance>,
+    ): Boolean {
+        if (configuredCaptureInstances.isEmpty()) {
+            log.warn { " No capture instances found, cannot validate LSN." }
+            return false
+        }
 
-                statement.executeQuery(query).use { resultSet ->
+        jdbcConnectionFactory.get().use { connection: Connection ->
+            val instanceNames = configuredCaptureInstances.map { it.captureInstanceName }
+            val placeholders = instanceNames.joinToString(",") { "?" }
+            // Check if the LSN is within the available range
+            // sys.fn_cdc_get_min_lsn returns the minimum available LSN for a capture instance
+            // sys.fn_cdc_get_max_lsn returns the current maximum LSN
+            // We are running this for each capture instance to avoid zero LSN when the user doesn't
+            // have access to
+            // one of the not configured schemas.
+            val query =
+                """
+                SELECT
+                    MIN(sys.fn_cdc_get_min_lsn(capture_instance)) as min_lsn,
+                    sys.fn_cdc_get_max_lsn() as max_lsn
+                FROM cdc.change_tables
+                WHERE capture_instance IN ($placeholders)
+                """
+                    .trimIndent()
+
+            connection.prepareStatement(query).use { statement ->
+                instanceNames.forEachIndexed { index, name -> statement.setString(index + 1, name) }
+                statement.executeQuery().use { resultSet ->
                     if (resultSet.next()) {
                         val minLsnBytes = resultSet.getBytes("min_lsn")
                         val maxLsnBytes = resultSet.getBytes("max_lsn")
@@ -481,8 +597,11 @@ class MsSqlServerDebeziumOperations(
 
                         log.info { "LSN range parsed - min: $minLsn, max: $maxLsn, saved: $lsn" }
 
-                        // Lsn.ZERO indicates no valid CDC data is available (e.g., no capture
-                        // instances exist or insufficient permissions).
+                        // The access check in validateConfiguredStreamsAreAccessible should make
+                        // this impossible
+                        // (the only documented causes of zero are "instance does not exist" or "no
+                        // permission").
+                        // Keeping it here so we never query with zero LSN.
                         if (minLsn == Lsn.ZERO) {
                             log.warn {
                                 "Min LSN is zero, no CDC capture instances found or insufficient permissions. " +
@@ -521,14 +640,14 @@ class MsSqlServerDebeziumOperations(
                 AbortDebeziumWarmStartState(
                     "Saved offset no longer present on the server, please reset the connection. " +
                         "To prevent this, increase transaction log retention and/or increase sync frequency. " +
-                        "$reason."
+                        "$reason.",
                 )
             InvalidCdcCursorPositionBehavior.RESET_SYNC ->
                 ResetDebeziumWarmStartState(
                     "Saved offset no longer present on the server. " +
                         "Automatically resetting to current position. " +
                         "WARNING: Any changes between the saved position and current position will be lost. " +
-                        "$reason."
+                        "$reason.",
                 )
         }
     }
@@ -557,13 +676,13 @@ class MsSqlServerDebeziumOperations(
                             throw IllegalStateException(
                                 "CDC is not enabled or no max LSN available for database '${configuration.databaseName}'. " +
                                     "Please ensure: 1) CDC is enabled on the database, 2) At least one table has CDC enabled, " +
-                                    "3) The user has necessary permissions to query CDC functions."
+                                    "3) The user has necessary permissions to query CDC functions.",
                             )
                         }
                     } else {
                         throw IllegalStateException(
                             "Failed to query max LSN from database '${configuration.databaseName}'. " +
-                                "The query returned no results."
+                                "The query returned no results.",
                         )
                     }
                 }
@@ -583,7 +702,7 @@ class MsSqlServerDebeziumOperations(
                     Jsons.objectNode().apply {
                         put("server", databaseName)
                         put("database", databaseName)
-                    }
+                    },
                 )
             }
         val value =
@@ -651,12 +770,16 @@ class MsSqlServerDebeziumOperations(
             putAll(
                 configuration.jdbcProperties.filterKeys {
                     it !in DEBEZIUM_RESERVED_DB_KEYS && it !in DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS
-                }
+                },
             )
             // `authentication` mode comes from the trusted resolved authentication, overriding
             // any stray value from jdbc_url_params.
             putAll(configuration.authentication.toDebeziumDriverProperties())
         }
+
+        // Debezium is only ever engaged in CDC mode, so this cast always holds.
+        val cdcConfiguration =
+            configuration.incrementalReplicationConfiguration as CdcIncrementalConfiguration
 
         return DebeziumPropertiesBuilder()
             .withDefault()
@@ -669,6 +792,7 @@ class MsSqlServerDebeziumOperations(
             .with("include.schema.changes", "false")
             .with("provide.transaction.metadata", "false")
             .with("snapshot.isolation.mode", "read_committed")
+            .with("data.query.mode", "function")
             .with("schema.include.list", schemaList)
             .let { builder ->
                 if (messageKeyColumns.isNotEmpty()) {
@@ -684,20 +808,21 @@ class MsSqlServerDebeziumOperations(
             .with("mssql_converter.type", MsSqlServerDebeziumConverter::class.java.name)
             .with("binary.handling.mode", "base64")
             .with("snapshot.locking.mode", "none")
-            // Set poll.interval.ms to control how often Debezium queries for new data
+            // `poll.interval.ms` controls how often Debezium queries for new data
             // This value is now configurable and validated to be smaller than heartbeat.interval.ms
+            .with("poll.interval.ms", cdcConfiguration.pollIntervalMs.toString())
+            // `max.iteration.transactions` limit how many transactions Debezium reads per streaming
+            // iteration, counted across every CDC-enabled table in the database. Lower values
+            // bound memory, higher values catch up faster. 0 means unbounded: Debezium reads up to
+            // the current max LSN in one pass.
             .with(
-                "poll.interval.ms",
-                (configuration.incrementalReplicationConfiguration as CdcIncrementalConfiguration)
-                    .pollIntervalMs
-                    .toString()
+                "max.iteration.transactions",
+                cdcConfiguration.maxIterationTransactions.toString(),
             )
             // Enable heartbeat timeout for MSSQL to detect idle database states
             .with(
                 AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS,
-                configuration.incrementalReplicationConfiguration.initialWaitingSeconds
-                    .toSeconds()
-                    .toString()
+                cdcConfiguration.initialWaitingSeconds.toSeconds().toString(),
             )
             .buildMap()
     }

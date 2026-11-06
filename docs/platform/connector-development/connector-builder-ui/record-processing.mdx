@@ -774,6 +774,14 @@ This information is used by the Airbyte system for different purposes:
 When doing test reads, the connector builder analyzes the test records and shows the derived schema in the "Detected schema" tab. By default, new streams are configured to automatically import the detected schema into the declared schema on every test read.
 This behavior can be toggled off by disabling the `Automatically import declared schema` switch, in which case the declared schema can be manually edited in the UI and it will no longer be automatically updated when triggering test reads.
 
+:::caution
+If you disable `Automatically import declared schema`, you **must** manually define a valid schema for each stream. Without a declared schema, the connector has no field definitions for the stream, so syncs produce **zero records** and the connection fails with a generic platform error such as _"Warning from airbyte_platform: Something went wrong within the airbyte platform"_. This is a common cause of unexpected zero-record sync failures for custom connectors built with the Connector Builder.
+
+If you prefer to manage schemas manually, run at least one test read with auto-import enabled to generate a baseline schema, then disable auto-import and make your edits from there.
+
+If you are already experiencing this issue, re-import the schema in the Connector Builder with `Automatically import declared schema` enabled, then save and publish the connector. Once published, refresh the source schema in the connection's Schema tab, verify that the fields are detected and selected for each stream, and re-run the sync.
+:::
+
 For example the following test records:
 
 ```

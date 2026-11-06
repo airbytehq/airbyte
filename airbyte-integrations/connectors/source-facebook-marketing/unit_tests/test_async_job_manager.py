@@ -4,6 +4,7 @@
 
 import pytest
 from facebook_business.api import FacebookAdsApiBatch
+from facebook_business.exceptions import FacebookBadObjectError
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob
 from source_facebook_marketing.streams.async_job_manager import APILimit, InsightAsyncJobManager
@@ -398,3 +399,44 @@ class TestAPILimit:
 
         # No throttle refresh should have been attempted
         api.get_account.assert_not_called()
+
+    def test_refresh_throttle_swallows_facebook_bad_object_error(self, mocker, api, caplog):
+        """
+        When Facebook returns a malformed response on the throttle-refresh ping,
+        the SDK raises ``FacebookBadObjectError``. The ping is best-effort, so
+        ``refresh_throttle`` must log the failure and keep the previous estimate
+        instead of bubbling the exception up and killing the sync.
+        """
+        acct = mocker.Mock()
+        acct.get_insights.side_effect = FacebookBadObjectError("Bad data to set object data")
+        api.get_account.return_value = acct
+        # Ensure the throttle attribute is never consulted on the failing path.
+        api.api.ads_insights_throttle = MyFacebookAdsApi.Throttle(99.0, 99.0)
+
+        limit = APILimit(api=api, account_id="act_bad", throttle_limit=90.0, max_jobs=10)
+        # Pretend a previous successful refresh cached 30.0.
+        limit._current_throttle = 30.0
+
+        with caplog.at_level("WARNING"):
+            limit.refresh_throttle()
+
+        # Previous cached estimate is retained, not overwritten with the stale 99.0.
+        assert limit.current_throttle == 30.0
+        assert any("malformed response" in record.message for record in caplog.records)
+        # Subsequent try_consume() should succeed because the cached estimate is below the limit.
+        assert limit.try_consume() is True
+
+    def test_refresh_throttle_reraises_unexpected_errors(self, mocker, api):
+        """
+        Only ``FacebookBadObjectError`` is treated as recoverable in the throttle
+        refresh path. Any other exception must propagate so credential/network
+        problems are surfaced normally.
+        """
+        acct = mocker.Mock()
+        acct.get_insights.side_effect = RuntimeError("boom")
+        api.get_account.return_value = acct
+
+        limit = APILimit(api=api, account_id="act_other", throttle_limit=90.0, max_jobs=10)
+
+        with pytest.raises(RuntimeError, match="boom"):
+            limit.refresh_throttle()

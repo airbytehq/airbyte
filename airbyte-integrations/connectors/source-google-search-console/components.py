@@ -4,15 +4,45 @@
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Union
+
+import requests
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 logger = logging.getLogger("airbyte")
+
+_LOAD_QUOTA_BACKOFF_SECONDS = 900.0
+
+
+@dataclass
+class LoadQuotaBackoffStrategy(BackoffStrategy):
+    """Returns a 15-minute backoff when the response indicates a load-based quota error.
+
+    Google Search Console distinguishes between per-second QPS quota and longer-term load
+    quota. Load quota recovery typically requires 10–15 minutes, so a longer backoff is
+    appropriate. For any other error, returns `None` to defer to the next backoff strategy
+    in the chain (e.g. the 60-second constant backoff used for QPS errors).
+    """
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        if isinstance(response_or_exception, requests.Response):
+            try:
+                message = response_or_exception.json().get("error", {}).get("message", "")
+            except (ValueError, AttributeError):
+                return None
+            if "load quota exceeded" in message.lower():
+                return _LOAD_QUOTA_BACKOFF_SECONDS
+        return None
 
 
 @dataclass
@@ -122,6 +152,7 @@ class CustomReportExtractDimensionsFromKeys(RecordTransformation):
     """
 
     dimensions: List[str] = field(default_factory=lambda: [])
+    parameters: Mapping[str, Any] = field(default_factory=dict)
 
     def transform(
         self,
@@ -130,7 +161,7 @@ class CustomReportExtractDimensionsFromKeys(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
-        for dimension in self.dimensions:
+        for dimension in self.dimensions or self.parameters.get("dimensions", []):
             record[dimension] = record["keys"].pop(0)
 
         record.pop("keys")
