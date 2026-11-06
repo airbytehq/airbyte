@@ -243,7 +243,11 @@ def test_facebook_reduce_data_error_exhausts_retries_as_transient_error():
 
 def test_facebook_app_approval_error_is_config_error():
     manifest = yaml.safe_load(MANIFEST_PATH.read_text())
-    response_filter = manifest["definitions"]["requester"]["error_handler"]["response_filters"][0]
+    response_filter = next(
+        f
+        for f in manifest["definitions"]["requester"]["error_handler"]["response_filters"]
+        if f.get("error_message_contains") == "This application has not been approved to use this API"
+    )
 
     assert response_filter["error_message_contains"] == "This application has not been approved to use this API"
     assert response_filter["failure_type"] == FailureType.config_error.value
@@ -261,7 +265,7 @@ def test_invalid_insights_metric_error_is_not_retried():
 
     invalid_metric_filter = invalid_metric_filters[0]
     assert invalid_metric_filter["action"] == "FAIL"
-    assert invalid_metric_filter["failure_type"] == FailureType.system_error.value
+    assert invalid_metric_filter["failure_type"] == FailureType.config_error.value
 
     # An invalid metric is permanent, so the filter must be evaluated before the blanket 400 retry.
     blanket_400_index = next(i for i, f in enumerate(response_filters) if f.get("http_codes") == [400])
