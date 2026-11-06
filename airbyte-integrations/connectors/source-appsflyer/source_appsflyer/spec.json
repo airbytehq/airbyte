@@ -5,7 +5,7 @@
     "title": "Appsflyer Spec",
     "type": "object",
     "required": ["app_id", "api_token", "start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "app_id": {
         "type": "string",

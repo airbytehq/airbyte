@@ -62,6 +62,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------| :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.2.21 | 2026-10-14 | [88930](https://github.com/airbytehq/airbyte/pull/88930) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed |
 | 0.2.20 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `access_key` as `airbyte_secret` (boolean instead of the string "true") |
 | 0.2.19 | 2026-10-07 | [88204](https://github.com/airbytehq/airbyte/pull/88204) | Preserve checkpoint IDs and fix namespaced overwrite and dedup setup |
 | 0.2.18 | 2025-05-10 | [59863](https://github.com/airbytehq/airbyte/pull/59863) | Update dependencies |

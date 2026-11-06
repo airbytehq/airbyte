@@ -112,6 +112,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                              | Subject                           |
 |:--------|:-----------| :-------------------------------------------------------- | :-------------------------------- |
+| 0.1.19 | 2026-11-04 | [88930](https://github.com/airbytehq/airbyte/pull/88930) | Set `additionalProperties` to `true` in the spec so saved configs stay valid when a property is removed, and add the `run` module the image entrypoint calls |
 | 0.1.18 | 2026-11-03 | [90866](https://github.com/airbytehq/airbyte/pull/90866) | Archive connector |
 | 0.1.17  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                  |
 | 0.1.16  | 2024-08-03 | [43278](https://github.com/airbytehq/airbyte/pull/43278) | Update dependencies |
