@@ -3,6 +3,8 @@
 #
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
@@ -77,7 +79,8 @@ def test_blocks_retriever_depth_restored_after_children(components_module):
     assert retriever.current_block_depth == 0, f"Final depth should be 0, got {retriever.current_block_depth}"
 
 
-def test_blocks_retriever(requests_mock):
+@pytest.mark.parametrize("sync_mode", ["full_refresh", "incremental"])
+def test_blocks_retriever(requests_mock, sync_mode):
     page_response_data = {
         "object": "list",
         "results": [
@@ -269,7 +272,7 @@ def test_blocks_retriever(requests_mock):
             "streams": [
                 {
                     "stream": {"name": blocks_stream_name, "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
-                    "sync_mode": "incremental",
+                    "sync_mode": sync_mode,
                     "destination_sync_mode": "append",
                 }
             ]
@@ -279,3 +282,60 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+@pytest.mark.parametrize(
+    "cursor, expected_ids, final_cursor",
+    [
+        (
+            "2022-01-02T00:00:00.000Z",
+            {"old-parent-new-child", "new-parent-new-child", "new-parent", "boundary"},
+            "2022-01-03T00:00:00.000000Z",
+        ),
+        ("2022-01-04T00:00:00.000Z", set(), "2022-01-04T00:00:00.000000Z"),
+    ],
+)
+def test_blocks_incremental_filters_nested_blocks(requests_mock, cursor, expected_ids, final_cursor):
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    old = "2022-01-01T00:00:00.000Z"
+    new = "2022-01-03T00:00:00.000Z"
+
+    def block(id, edited, has_children=False):
+        return {"object": "block", "id": id, "type": "paragraph", "last_edited_time": edited, "has_children": has_children}
+
+    requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"id": "page-1", "last_edited_time": new}], "has_more": False})
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children",
+        json={
+            "results": [block("old-parent", old, True), block("new-parent", new, True), block("boundary", "2022-01-02T00:00:00.000Z")],
+            "has_more": False,
+        },
+    )
+    for parent in ["old-parent", "new-parent"]:
+        requests_mock.get(
+            f"https://api.notion.com/v1/blocks/{parent}/children",
+            json={"results": [block(f"{parent}-old-child", old), block(f"{parent}-new-child", new)], "has_more": False},
+        )
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    initial_state = StateBuilder().with_stream_state("blocks", {}).build()
+    first = read(get_source(config, initial_state), config=config, catalog=catalog, state=initial_state)
+    first.raise_if_errors()
+    assert len(first.records) == 7
+    emitted_state = vars(first.most_recent_state.stream_state)
+    assert emitted_state["state"] == {"last_edited_time": "2022-01-03T00:00:00.000000Z"}
+    incoming_state = {**emitted_state, "state": {"last_edited_time": cursor}}
+    state = StateBuilder().with_stream_state("blocks", incoming_state).build()
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+    output.raise_if_errors()
+    assert {record.record.data["id"] for record in output.records} == expected_ids
+    assert vars(output.most_recent_state.stream_state)["state"] == {"last_edited_time": final_cursor}
