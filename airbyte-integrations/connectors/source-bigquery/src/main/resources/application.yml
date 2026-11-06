@@ -88,6 +88,20 @@ airbyte:
               com.google.cloud.bigquery.BigQueryException: PERMISSION_DENIED: Caller does not have required permission
               to use project my-project.
             error: config
+          - pattern: "(?i).*failed to parse view '[^']+'.*"
+            # BigQuery cannot compile the definition of a view the query reads, e.g. after a column
+            # it references was dropped from its base table. The error is in the user's view, not in
+            # the connector's query: a mistake in the connector's own SQL carries no such suffix.
+            # Captured from the real service on 2026-11-06 (read of a view whose base table lost a
+            # referenced column).
+            input-example: >-
+              com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery
+              Name allocation_mode not found inside assignments_daily; failed to parse view
+              'my-project.my_dataset.my_view' at [1:30]
+            output: >-
+              A selected BigQuery view has an invalid definition and cannot be queried. Fix or recreate the view in
+              BigQuery so it only references existing tables and columns, or deselect its stream.
+            error: config
           - pattern: "(?i).*Not found: (Dataset|Table|Project).*"
             # Captured from the real service on 2026-09-14 (check with an unknown dataset_id).
             input-example: >-
