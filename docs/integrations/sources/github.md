@@ -59,6 +59,8 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
    - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
    <!-- /env:oss -->
 
+   - **GitHub App:** Authenticate as one or more [GitHub App installations](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/about-authentication-with-a-github-app). For each installation, enter the app's **App ID** (or Client ID), the **Installation ID** and the app's **Private Key** (the full contents of the downloaded `.pem` file). The connector requests a one-hour installation access token for each installation and renews it before it expires. Each installation has its own rate limit, so the connector rotates between installations the same way it rotates between multiple personal access tokens. Every installation must have access to all the repositories you configure.
+
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
 
    :::caution
@@ -245,6 +247,7 @@ In the event that limits are reached before all streams have been read, it is re
 2. Set a higher sync interval.
 3. Divide the sync into separate connections with a smaller number of streams.
 4. Provide multiple personal access tokens in the **Personal Access Tokens** field, separated by commas. The connector rotates through all tokens and only waits once every token's rate limit is exhausted.
+5. Authenticate with a GitHub App and add more installations. Each installation has its own rate limit, and the connector rotates between them like multiple personal access tokens.
 
 :::
 
@@ -332,6 +335,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.9.0 | 2026-11-06 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add GitHub App authentication: rotate between one or more app installations, each logging in for its own installation token |
 | 2.8.5 | 2026-11-04 | [90970](https://github.com/airbytehq/airbyte/pull/90970) | Shorten manifest comments and move the design rationale to the connector docs; no behavior change |
 | 2.8.4 | 2026-11-03 | [90166](https://github.com/airbytehq/airbyte/pull/90166) | Retry GitHub 5xx errors and timeouts with exponential backoff instead of waiting for the rate-limit reset |
 | 2.8.3 | 2026-11-03 | [90557](https://github.com/airbytehq/airbyte/pull/90557) | Update dependencies |

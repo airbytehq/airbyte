@@ -719,6 +719,11 @@ class ConfigNormalization(ConfigTransformation):
             config["api_url"] = "https://api.github.com"
         if not config["api_url"].endswith("/"):
             config["api_url"] = config["api_url"] + "/"
+        # The authenticator is chosen by `credentials.option_title`. Configs with only a root
+        # `access_token`, or `credentials` without a title, have always meant a static token.
+        credentials = config.get("credentials")
+        if not isinstance(credentials, Mapping) or not credentials.get("option_title"):
+            config["credentials"] = {**(credentials if isinstance(credentials, Mapping) else {}), "option_title": "PAT Credentials"}
         if not config.get("repositories") and config.get("repository"):
             config["repositories"] = set(filter(None, config["repository"].split(" ")))
         if not config.get("branches") and config.get("branch"):

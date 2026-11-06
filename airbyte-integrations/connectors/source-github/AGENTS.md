@@ -235,6 +235,32 @@ Not rotated, deliberately: a secondary rate limit, where the token's counters st
 GitHub scopes secondary limits per account, so another token of the same account gets rejected
 the same way; the reset wait is the correct response there.
 
+### GitHub App installations
+
+`requester_base.authenticator` is a `SelectiveAuthenticator` on `credentials.option_title`:
+OAuth and PAT go to `token_authenticator` (static tokens), `GitHub App Credentials` to
+`github_app_authenticator`. Both `$ref` `rate_limited_authenticator_base`, so they track the same
+REST/GraphQL pools. `ConfigNormalization` sets `option_title: PAT Credentials` when it is missing
+(root `access_token`, or `credentials` without a title), which is what those configs always meant;
+the selector fails on a missing path, so do not remove that default.
+
+`github_app_authenticator` uses the CDK `CredentialSet`: one `SessionTokenAuthenticator` per
+entry of `credentials.installations`, keyed on `installation_id`. Each logs in on first use with
+`POST /app/installations/{id}/access_tokens`, signed by a `JwtAuthenticator` (RS256, `iss` = App
+ID, 540s lifetime, `iat` backdated 60s for clock drift; GitHub rejects a JWT living over 10
+minutes), and its installation token is sent as `Authorization: Bearer`. Tokens last an hour;
+`expiration_duration: PT55M` renews them first. Quota is per installation id, so a renewed token
+keeps its counters. Logins go to `api_url`, so GHES works. A 401/403/404 login is a config error.
+Needs a CDK with airbytehq/airbyte-python-cdk#1269 (`CredentialSet`) and #1268 (string JWT
+claims: an all-digit App ID otherwise becomes an int and PyJWT refuses to sign).
+
+The selector builds every branch, and the static-token branch raises at construction when it has
+no token, so `token_authenticator.tokens` renders a placeholder for a GitHub App config. That
+branch is never selected for such a config; nothing is signed with the placeholder.
+
+Every installation must be able to read every configured repository: any installation can sign
+any request, there is no routing by owner.
+
 ## Organizations must be payload-confirmed, never taken from config text
 
 `repositories` accepts wildcard entries (`owner/*`). The owner in such an entry is only a
