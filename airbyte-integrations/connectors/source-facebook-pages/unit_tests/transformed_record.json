@@ -254,6 +254,22 @@
       }
     }
   },
+  "live_videos": {
+    "data": [
+      {
+        "title": "Michel Tricot",
+        "status": "VOD",
+        "embed_html": "<iframe allow=\"autoplay;></iframe>",
+        "id": "123"
+      }
+    ],
+    "paging": {
+      "cursors": {
+        "before": "cursor",
+        "after": "cursor"
+      }
+    }
+  },
   "photos": {
     "data": [
       {
