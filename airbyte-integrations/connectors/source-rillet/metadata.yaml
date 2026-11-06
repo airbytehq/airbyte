@@ -1,0 +1,54 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - api.rillet.com
+      - sandbox.api.rillet.com
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-rillet
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.45.0@sha256:a4947a37ef760ff501856dbeec22830826c1d214f0e530abfa9831e57f019809
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 15580eb4-965d-43aa-b975-7d3608be7f1a
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-rillet
+  githubIssueLabel: source-rillet
+  icon: icon.svg
+  license: ELv2
+  name: Rillet
+  releaseDate: 2026-11-04
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rillet
+  suggestedStreams:
+    streams:
+      - accounts
+      - journal_entries
+      - invoices
+      - customers
+      - bills
+      - vendors
+      - subsidiaries
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  ab_internal:
+    ql: 100
+    sl: 100
+  externalDocumentationUrls:
+    - title: Rillet API getting started
+      url: https://docs.api.rillet.com/docs/getting-started
+      type: api_reference
+    - title: Rillet API changelog
+      url: https://docs.api.rillet.com/changelog
+      type: api_release_history
