@@ -1,8 +1,20 @@
 metadataSpecVersion: "1.0"
 data:
+  maxSecondsBetweenMessages: 3600
+  suggestedStreams:
+    streams:
+      - accounts
+      - contacts
+      - issues
+      - issue_statuses
+      - tags
+      - teams
+      - users
+      - custom_fields
   allowedHosts:
     hosts:
       - "api.usepylon.com"
+      - "api.eu.usepylon.com"
   registryOverrides:
     oss:
       enabled: true
@@ -13,11 +25,11 @@ data:
       enabled: false
       packageName: airbyte-source-pylon
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.45.0@sha256:a4947a37ef760ff501856dbeec22830826c1d214f0e530abfa9831e57f019809
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.45.1@sha256:f98cd95b4263c30c76b23c67b9c43e817e4f6b000663081e91778748b50d32e1
   connectorSubtype: api
   connectorType: source
   definitionId: f2e53e88-3c6b-4e5a-b7c2-a1d9c5e8f4b6
-  dockerImageTag: 0.0.30
+  dockerImageTag: 0.0.31
   dockerRepository: airbyte/source-pylon
   githubIssueLabel: source-pylon
   icon: icon.svg
@@ -34,6 +46,9 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
+    - title: Pylon rate limits
+      url: https://docs.usepylon.com/pylon-docs/developer/api/rate-limits
+      type: rate_limits
     - title: Pylon API reference
       url: https://docs.usepylon.com/pylon-docs/developer/api/api-reference
       type: api_reference
