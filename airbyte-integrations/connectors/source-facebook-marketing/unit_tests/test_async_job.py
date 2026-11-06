@@ -603,7 +603,7 @@ class TestInsightAsyncJob:
         interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))
         params = {
             "time_increment": 1,
-            "breakdowns": ["dma"],
+            "breakdowns": ["comscore_market"],
             "fields": ["ad_id", "conversions"],  # 1 non-PK field
             "action_attribution_windows": ["1d_click", "incrementality"],
             "level": "ad",
@@ -617,7 +617,7 @@ class TestInsightAsyncJob:
             params=params,
             job_timeout=timedelta(minutes=60),
             primary_key=pk,
-            stream_name="ads_insights_dma",
+            stream_name="ads_insights_comscore_market",
         )
 
         with pytest.raises(AirbyteTracedException, match="incrementality") as exc_info:
@@ -625,10 +625,10 @@ class TestInsightAsyncJob:
 
         assert exc_info.value.failure_type == FailureType.config_error
         assert "Include Incrementality" in exc_info.value.message
-        assert "dma" in exc_info.value.message
+        assert "comscore_market" in exc_info.value.message
         assert "conversions" in exc_info.value.message
         # The stream name is surfaced so the user knows exactly which stream to fix.
-        assert "ads_insights_dma" in exc_info.value.message
+        assert "ads_insights_comscore_market" in exc_info.value.message
 
     def test_split_job_by_fields_parent_does_not_add_missing_breakdown_pk_fields(self, api):
         interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))

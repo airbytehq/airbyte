@@ -24,17 +24,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v1/airports
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: Subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -53,7 +42,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
+            page_size: 100
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
@@ -72,17 +61,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v1/airlines
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: Subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -101,7 +79,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
+            page_size: 100
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
@@ -120,17 +98,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v1/airplanes
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: Subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -149,7 +116,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
+            page_size: 100
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
@@ -184,17 +151,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v1/aircraft_types
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: Subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -213,7 +169,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
+            page_size: 100
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
@@ -232,17 +188,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v1/cities
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: Subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -261,7 +206,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
+            page_size: 100
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
@@ -280,17 +225,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v1/countries
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: Subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -309,7 +243,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
+            page_size: 100
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
@@ -328,17 +262,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v1/taxes
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: Subscription needed
         record_selector:
           type: RecordSelector
           extractor:
@@ -357,7 +280,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
+            page_size: 100
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
@@ -375,6 +298,36 @@ definitions:
         type: RequestOption
         field_name: access_key
         inject_into: request_parameter
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          max_retries: 3
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 403
+              error_message: Subscription needed
+            - type: HttpResponseFilter
+              action: RATE_LIMITED
+              predicate: >-
+                {{ 'rate_limit_reached' in ((response.get('error') or {}).get('type', '') ~ (response.get('error') or {}).get('code', '')) }}
+              error_message: >-
+                Aviationstack per-second rate limit reached; retrying.
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 429
+              error_message: >-
+                Aviationstack rejected the request with HTTP 429 (request quota
+                exceeded): {{ ((response.get('error') or {}).get('info') or (response.get('error') or {}).get('message') or 'usage limit reached').rstrip('.') }}.
+                Every stream page costs one API request against your monthly plan
+                quota (the Free plan allows only 100 requests per month and the
+                full catalog is thousands of records), so wait for the quota to
+                reset, select fewer streams, or upgrade your Aviationstack plan at
+                https://aviationstack.com/product.
 
 streams:
   - $ref: "#/definitions/streams/airports"

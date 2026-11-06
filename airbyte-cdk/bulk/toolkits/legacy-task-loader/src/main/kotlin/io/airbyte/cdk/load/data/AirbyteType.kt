@@ -52,7 +52,7 @@ data object ArrayTypeWithoutSchema : AirbyteType() {
 data class ObjectType(
     val properties: LinkedHashMap<String, FieldType>,
     val additionalProperties: Boolean = true,
-    val required: List<String> = emptyList<String>()
+    val required: List<String> = emptyList<String>(),
 ) : AirbyteType() {
     override fun asColumns(): LinkedHashMap<String, FieldType> {
         return properties

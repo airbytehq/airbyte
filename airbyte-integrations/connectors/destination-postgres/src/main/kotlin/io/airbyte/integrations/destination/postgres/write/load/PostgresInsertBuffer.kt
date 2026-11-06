@@ -62,7 +62,7 @@ class PostgresInsertBuffer(
                     "Finished insert of $recordCount row(s) into ${tableName.namespace}.${tableName.name}"
                 }
             } catch (e: Exception) {
-                logger.error(e) { "Unable to flush accumulated data." }
+                throw e
             } finally {
                 filePath.deleteIfExists()
                 csvPrinter?.close()
@@ -70,8 +70,7 @@ class PostgresInsertBuffer(
                 csvFilePath = null
                 recordCount = 0
             }
-        }
-            ?: logger.warn { "CSV file path is not set: nothing to upload." }
+        } ?: logger.warn { "CSV file path is not set: nothing to upload." }
     }
 
     private fun createCsvFile(): File {

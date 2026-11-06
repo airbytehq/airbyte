@@ -28,8 +28,9 @@ import org.junit.jupiter.api.Test
 
 /**
  * Integration test that verifies the full round-trip through [MSSQLQueryBuilder.populateStatement]
- * when a pre-1753 timestamp is sent. The [LIMITS.validateTimestamp] function should nullify the
- * value and `setAsNullValue` should set the parameter to SQL NULL, allowing the INSERT to succeed.
+ * when a pre-1753 timestamp is sent. The [MSSQLValueCoercer.validateTimestamp] function should
+ * nullify the value and `setAsNullValue` should set the parameter to SQL NULL, allowing the INSERT
+ * to succeed.
  */
 class MSSQLTimestampValidationIntegrationTest {
 
@@ -55,7 +56,8 @@ class MSSQLTimestampValidationIntegrationTest {
                         BEGIN
                             EXEC ('CREATE SCHEMA [$TEST_SCHEMA]');
                         END
-                        """.trimIndent(),
+                        """
+                            .trimIndent(),
                     )
                 }
             }
@@ -74,7 +76,8 @@ class MSSQLTimestampValidationIntegrationTest {
                         JOIN sys.tables t ON s.schema_id = t.schema_id
                         WHERE s.name = '$TEST_SCHEMA';
                         EXEC sp_executesql @sql;
-                        """.trimIndent(),
+                        """
+                            .trimIndent(),
                     )
                     stmt.execute("DROP SCHEMA IF EXISTS [$TEST_SCHEMA]")
                 }

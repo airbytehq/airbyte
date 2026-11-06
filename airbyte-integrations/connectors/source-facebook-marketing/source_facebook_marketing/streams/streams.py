@@ -4,7 +4,8 @@
 
 import base64
 import logging
-from typing import Any, Iterable, List, Mapping, Optional, Set
+from datetime import datetime, timedelta
+from typing import Any, Generator, Iterable, List, Mapping, Optional, Set, Tuple
 
 import requests
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
@@ -22,9 +23,49 @@ from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, 
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
+from .patches import CursorPatch
 
 
 logger = logging.getLogger("airbyte")
+
+# (code, error_subcode) pairs Facebook returns when reading a creative whose stored object_story_spec fails its own
+# validation, eg 2446211 "First Dof Value Should Match Object Story Spec Field". Only seen when object_story_spec is requested.
+OBJECT_STORY_SPEC_READ_ERRORS = {(100, 2446211), (100, 1443048)}
+OBJECT_STORY_SPEC_FIELD = "object_story_spec"
+
+
+def _unwrap_facebook_error(exc: Exception) -> Optional[FacebookRequestError]:
+    if isinstance(exc, FacebookRequestError):
+        return exc
+    if isinstance(exc, AirbyteTracedException) and isinstance(exc._exception, FacebookRequestError):
+        return exc._exception
+    return None
+
+
+def is_object_story_spec_read_error(exc: Exception) -> bool:
+    fb_error = _unwrap_facebook_error(exc)
+    if fb_error is None:
+        return False
+    return (fb_error.api_error_code(), fb_error.api_error_subcode()) in OBJECT_STORY_SPEC_READ_ERRORS
+
+
+def fetch_creative_with_object_story_spec_fallback(creative_id: str, fields: List[str], stream_name: str) -> Mapping[str, Any]:
+    """Fetch a single creative, re-fetching without object_story_spec when its stored value fails validation."""
+    try:
+        return FBAdCreative(creative_id).api_get(fields=fields).export_all_data()
+    except (FacebookRequestError, AirbyteTracedException) as exc:
+        fb_error = _unwrap_facebook_error(exc)
+        if fb_error is None or OBJECT_STORY_SPEC_FIELD not in fields or not is_object_story_spec_read_error(exc):
+            raise
+        error_body = fb_error.body().get("error", {}) if fb_error.body() else {}
+        reduced_fields = [f for f in fields if f != OBJECT_STORY_SPEC_FIELD]
+        creative = FBAdCreative(creative_id).api_get(fields=reduced_fields).export_all_data()
+        logger.warning(
+            f"Stream {stream_name}: creative {creative_id} failed with Facebook error "
+            f"{fb_error.api_error_code()}/{fb_error.api_error_subcode()} ({error_body.get('error_user_msg')}); "
+            f"the creative is emitted with {OBJECT_STORY_SPEC_FIELD} null."
+        )
+        return creative
 
 
 def fetch_thumbnail_data_url(url: str) -> Optional[str]:
@@ -77,10 +118,47 @@ class AdCreatives(FBMarketingStream):
             yield record
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
-        return self._api.get_account(account_id=account_id).get_ad_creatives(params=params, fields=self.fields())
+        account = self._api.get_account(account_id=account_id)
+        cursor = CursorPatch(source_object=account, target_objects_class=FBAdCreative, fields=self.fields(), params=params)
+        first_page = True
+        while True:
+            try:
+                # Like get_ad_creatives(), an empty first page does not end the read: the next page is still loaded.
+                if not cursor.load_next_page() and not first_page:
+                    return
+            except (FacebookRequestError, AirbyteTracedException) as exc:
+                if OBJECT_STORY_SPEC_FIELD not in self.fields() or not is_object_story_spec_read_error(exc):
+                    raise
+                has_more_pages = yield from self._read_failed_page_creative_by_creative(account, cursor)
+                if not has_more_pages:
+                    return
+                continue
+            first_page = False
+            for index in range(len(cursor)):
+                yield cursor[index]
+
+    def _read_failed_page_creative_by_creative(self, account: FBAdAccount, cursor: CursorPatch) -> Generator[Mapping[str, Any], None, bool]:
+        """Re-read the page that failed on object_story_spec one creative at a time, preserving pagination."""
+        # CursorPatch only replaces cursor.params (with the `next` link's query) after a successful page,
+        # so cursor.params still describes the failed page.
+        failed_page_after = cursor.params.get("after")
+        id_params = {k: v for k, v in cursor.params.items() if k != "fields"}
+        id_page = CursorPatch(source_object=account, target_objects_class=FBAdCreative, fields=["id"], params=id_params)
+        id_page.load_next_page()
+        logger.warning(
+            f"Stream {self.name}: a page of {len(id_page)} creatives for account {account.get_id_assured()} failed on "
+            f"{OBJECT_STORY_SPEC_FIELD}; re-reading it one creative at a time."
+        )
+        for index in range(len(id_page)):
+            yield fetch_creative_with_object_story_spec_fallback(id_page[index]["id"], self.fields(), self.name)
+        next_after = id_page.params.get("after")
+        if len(id_page) == 0 or next_after is None or next_after == failed_page_after:
+            return False
+        cursor.params["after"] = next_after
+        return True
 
 
-class AdCreativesFromAds(FBMarketingStream):
+class AdCreativesFromAds(FBMarketingIncrementalStream):
     """Alternative stream to fetch ad creatives through the ads endpoint.
 
     This stream fetches creatives by first getting ads (which includes creative IDs),
@@ -100,21 +178,34 @@ class AdCreativesFromAds(FBMarketingStream):
     status_field = "effective_status"
     valid_statuses = [status.value for status in ValidAdStatuses]
 
-    def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        fetch_thumbnail_images: bool = False,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        **kwargs,
+    ):
+        super().__init__(start_date=start_date, end_date=end_date, **kwargs)
         self._fetch_thumbnail_images = fetch_thumbnail_images
         self._seen_creative_ids: Set[str] = set()
         self._creative_fields: Optional[List[str]] = None
-        self._fields = ["id", "creative"]
+        self._fields = ["id", "creative", "updated_time"]
 
     @property
     def name(self) -> str:
         return "ad_creatives_from_ads"
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """Use the same schema as ad_creatives stream"""
+        """Use the ad_creatives schema with the parent ad timestamp."""
         loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
-        return loader.get_schema("ad_creatives")
+        schema = loader.get_schema("ad_creatives").copy()
+        schema["properties"] = schema["properties"].copy()
+        schema["properties"]["updated_time"] = {
+            "description": "The date and time when the parent ad was last updated.",
+            "type": ["null", "string"],
+            "format": "date-time",
+        }
+        return schema
 
     def _get_creative_fields(self) -> List[str]:
         """Get the list of creative fields to request, excluding computed fields"""
@@ -123,12 +214,18 @@ class AdCreativesFromAds(FBMarketingStream):
 
         json_schema = self.get_json_schema()
         creative_fields = list(json_schema.get("properties", {}).keys())
-        self._creative_fields = [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id")]
+        self._creative_fields = [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id", "updated_time")]
         return self._creative_fields
 
     def fields(self, **kwargs) -> List[str]:
         """Return fields to request from the ads endpoint - just id and creative reference"""
         return self._fields
+
+    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Only apply cursor filtering when an incremental state cursor exists."""
+        if not stream_state.get(self.cursor_field):
+            return {}
+        return super()._state_filter(stream_state)
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
@@ -136,9 +233,7 @@ class AdCreativesFromAds(FBMarketingStream):
     def _fetch_creative_details(self, creative_id: str) -> Optional[Mapping[str, Any]]:
         """Fetch full creative details by ID using the AdCreative API"""
         try:
-            creative = FBAdCreative(creative_id)
-            creative_data = creative.api_get(fields=self._get_creative_fields())
-            return creative_data.export_all_data()
+            return fetch_creative_with_object_story_spec_fallback(creative_id, self._get_creative_fields(), self.name)
         except (FacebookRequestError, TypeError) as e:
             logger.warning(f"Failed to fetch creative {creative_id}: {e}")
             return None
@@ -157,19 +252,61 @@ class AdCreativesFromAds(FBMarketingStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Read ads, extract unique creative IDs, and fetch full creative details"""
         self._seen_creative_ids = set()
+        failed_creative_ids: Set[str] = set()
+        max_successful_cursor: Optional[Tuple[AirbyteDateTime, str]] = None
+        earliest_failed_cursor: Optional[AirbyteDateTime] = None
+        failed_ad_without_cursor = False
 
-        for ad_record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+        # The CDK passes persisted state to read_records whatever the configured sync mode, so a cursor left behind by
+        # an earlier incremental sync would otherwise filter a full refresh and make it silently partial.
+        if sync_mode != SyncMode.incremental:
+            stream_slice = {**stream_slice, "stream_state": {}}
+
+        # Bypass incremental read_records to checkpoint state after the full slice and creative fetches.
+        for ad_record in FBMarketingStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state):
+            updated_time = ad_record.get(self.cursor_field)
+            try:
+                parsed_updated_time = ab_datetime_parse(updated_time) if updated_time is not None else None
+            except (ValueError, TypeError):
+                # A malformed timestamp must not abort the whole account slice; treat it as a missing cursor.
+                logger.warning(
+                    f"Stream {self.name}: ad {ad_record.get('id')} has an unparsable {self.cursor_field} "
+                    f"{updated_time!r}; treating it as missing so the cursor cannot advance past this ad."
+                )
+                parsed_updated_time = None
+
             creative_id = ad_record.get("creative", {}).get("id")
-            if not creative_id or creative_id in self._seen_creative_ids:
+            if not creative_id:
+                continue
+
+            if creative_id in failed_creative_ids:
+                if parsed_updated_time is None:
+                    failed_ad_without_cursor = True
+                elif earliest_failed_cursor is None or parsed_updated_time < earliest_failed_cursor:
+                    earliest_failed_cursor = parsed_updated_time
+                continue
+
+            if creative_id in self._seen_creative_ids:
+                if parsed_updated_time is not None and (max_successful_cursor is None or parsed_updated_time > max_successful_cursor[0]):
+                    max_successful_cursor = (parsed_updated_time, updated_time)
                 continue
 
             self._seen_creative_ids.add(creative_id)
 
             creative_data = self._fetch_creative_details(creative_id)
             if not creative_data:
+                failed_creative_ids.add(creative_id)
+                if parsed_updated_time is None:
+                    failed_ad_without_cursor = True
+                elif earliest_failed_cursor is None or parsed_updated_time < earliest_failed_cursor:
+                    earliest_failed_cursor = parsed_updated_time
                 continue
 
+            if parsed_updated_time is not None and (max_successful_cursor is None or parsed_updated_time > max_successful_cursor[0]):
+                max_successful_cursor = (parsed_updated_time, updated_time)
+
             self.fix_date_time(creative_data)
+            creative_data[self.cursor_field] = updated_time
 
             if self._fetch_thumbnail_images:
                 thumbnail_url = creative_data.get("thumbnail_url")
@@ -178,6 +315,35 @@ class AdCreativesFromAds(FBMarketingStream):
 
             self.add_account_id(creative_data, stream_slice["account_id"])
             yield creative_data
+
+        if failed_creative_ids:
+            logger.warning(
+                f"Stream {self.name}: {len(failed_creative_ids)} creative fetch(es) failed for account "
+                f"{stream_slice['account_id']}; the incremental cursor will not advance past the earliest failed ad, "
+                f"so the failed creatives are retried on the next sync. If the same creative fails on every sync, "
+                f"the cursor stays pinned and the stream keeps re-reading from that point."
+            )
+
+        # The CDK assigns persisted state and picks a checkpoint reader from the catalog's cursor_field alone, so a
+        # full refresh would otherwise emit a real cursor and let a retried attempt resume filtered and partial.
+        if sync_mode != SyncMode.incremental:
+            return
+
+        if max_successful_cursor is None or failed_ad_without_cursor:
+            return
+
+        max_parsed, max_raw = max_successful_cursor
+        if earliest_failed_cursor is not None and max_parsed >= earliest_failed_cursor:
+            # Facebook cursors are second-precision and the filter is a strict GREATER_THAN, so rewinding one second
+            # before the earliest failure re-reads every ad at that timestamp without ever skipping a success.
+            checkpoint_value = str(earliest_failed_cursor - timedelta(seconds=1))
+        else:
+            checkpoint_value = max_raw
+
+        self.state = self._get_updated_state(
+            self.state,
+            {"account_id": stream_slice["account_id"], self.cursor_field: checkpoint_value},
+        )
 
 
 class CustomConversions(FBMarketingStream):
@@ -382,8 +548,8 @@ class AdsInsightsRegion(AdsInsights):
     breakdowns = ["region"]
 
 
-class AdsInsightsDma(AdsInsights):
-    breakdowns = ["dma"]
+class AdsInsightsComscoreMarket(AdsInsights):
+    breakdowns = ["comscore_market"]
 
 
 class AdsInsightsPlatformAndDevice(AdsInsights):
@@ -449,8 +615,8 @@ class AdsInsightsDemographicsCountry(AdsInsights):
     action_breakdowns = ["action_type"]
 
 
-class AdsInsightsDemographicsDMARegion(AdsInsights):
-    breakdowns = ["dma"]
+class AdsInsightsDemographicsComscoreMarketRegion(AdsInsights):
+    breakdowns = ["comscore_market"]
     action_breakdowns = ["action_type"]
 
 
