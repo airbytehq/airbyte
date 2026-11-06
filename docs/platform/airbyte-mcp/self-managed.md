@@ -73,7 +73,7 @@ Keep your client secret out of the chat and out of version control. Your agent c
 ## Known issues in Core deployments
 
 - **Links don't open.** Links to Airbyte that the Airbyte MCP returns include `/api/public/v1` in the path, so they return an error in your browser. Remove `/api/public/v1` from the link to open the page. For details, see [PyAirbyte issue #563](https://github.com/airbytehq/PyAirbyte/issues/563).
-- **Workspace isn't found by default.** If you don't set `AIRBYTE_CLOUD_WORKSPACE_ID`, tools that need a workspace can fail. Error messages may suggest tools that don't exist, like `list_workspaces`. Set `AIRBYTE_CLOUD_WORKSPACE_ID`, or ask your agent to use `list_cloud_workspaces` and `set_default_cloud_workspace`.
+- **Workspace isn't found by default.** If you don't set `AIRBYTE_CLOUD_WORKSPACE_ID`, tools that need a workspace can fail. Set `AIRBYTE_CLOUD_WORKSPACE_ID`, or ask your agent to use `list_workspaces` and `set_default_workspace`.
 - **Last job status is empty.** When your agent lists connections, the status of the last job may be empty even after a successful sync. Your agent can still check individual jobs and read their logs.
 - **Billing and usage tools don't work.** These features only exist in Airbyte Cloud.
 - **No context layer.** Direct reads, search, and connector skills aren't available.
