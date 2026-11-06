@@ -1,0 +1,1294 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+description: >-
+  Sync real-time tennis data from the Live Tennis API
+  (https://livetennisapi.com) into your data warehouse.
+
+
+  This source syncs live, upcoming and completed matches (each with its latest
+  score), the ranked player list, and upcoming scheduled fixtures.
+
+
+  Four of the five streams — `live_matches`, `upcoming_matches`, `players` and
+  `fixtures` — run on the API's self-serve FREE tier
+  (https://livetennisapi.com/subscribe/free — no card, 1,000 requests/day).
+  `completed_matches` reads `GET /matches?status=completed`, which the vendor
+  sells as part of its paid History product: it needs a BASIC or higher key and
+  answers `403 upgrade_required` on a FREE key. Deselect that stream, or upgrade
+  the key, to sync on the free plan.
+
+
+  Configuration requires only your Live Tennis API key, which is sent as the
+  `X-API-Key` request header.
+
+check:
+  type: CheckStream
+  stream_names:
+    - players
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.livetennisapi.com/api/public/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-API-Key
+        inject_into: header
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Live Tennis API rejected the credentials (401 unauthorized). Check
+            that `api_key` holds a valid, enabled key — get a free one at
+            https://livetennisapi.com/subscribe/free
+        - type: HttpResponseFilter
+          http_codes:
+            - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Live Tennis API returned 403 upgrade_required: this key's plan tier
+            does not cover the requested endpoint. The `completed_matches`
+            stream is the usual cause — it reads `GET /matches?status=completed`,
+            part of the vendor's paid History product, which needs a BASIC or
+            higher key. Deselect `completed_matches` or upgrade the key. The
+            other four streams are on the FREE tier, so a 403 on those means the
+            key has been downgraded or disabled.
+        - type: HttpResponseFilter
+          http_codes:
+            - 429
+          action: RATE_LIMITED
+          error_message: >-
+            Live Tennis API rate limit exceeded (429). The FREE tier allows 30
+            requests/minute and 1,000/day; paid tiers allow more. The connector
+            waits for the `Retry-After` header before retrying.
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+          max_waiting_time_in_seconds: 600
+
+  # Every list endpoint in the vendor OpenAPI spec takes `limit`
+  # (default 50, min 1, max 200) and `offset` (default 0) and answers with
+  # {data: [...], meta: {limit, offset, count}}. OffsetIncrement stops once a
+  # page returns fewer than `page_size` records.
+  base_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    page_token_option:
+      type: RequestOption
+      field_name: offset
+      inject_into: request_parameter
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 200
+      inject_on_first_request: true
+
+  base_record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - data
+
+  streams:
+    live_matches:
+      type: DeclarativeStream
+      name: live_matches
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: matches
+          http_method: GET
+          request_parameters:
+            status: live
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/live_matches"
+
+    upcoming_matches:
+      type: DeclarativeStream
+      name: upcoming_matches
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: matches
+          http_method: GET
+          request_parameters:
+            status: upcoming
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/upcoming_matches"
+
+    completed_matches:
+      type: DeclarativeStream
+      name: completed_matches
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: matches
+          http_method: GET
+          request_parameters:
+            status: completed
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/completed_matches"
+
+    players:
+      type: DeclarativeStream
+      name: players
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: players
+          http_method: GET
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/players"
+
+    fixtures:
+      type: DeclarativeStream
+      name: fixtures
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fixtures
+          http_method: GET
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fixtures"
+
+streams:
+  - $ref: "#/definitions/streams/live_matches"
+  - $ref: "#/definitions/streams/upcoming_matches"
+  - $ref: "#/definitions/streams/completed_matches"
+  - $ref: "#/definitions/streams/players"
+  - $ref: "#/definitions/streams/fixtures"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Live Tennis API Source Spec
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        description: >-
+          Your Live Tennis API key, sent as the `X-API-Key` request header. A
+          free self-serve key (no card, 1,000 requests/day) is available at
+          https://livetennisapi.com/subscribe/free and covers `live_matches`,
+          `upcoming_matches`, `players` and `fixtures`. The `completed_matches`
+          stream is part of the vendor's paid History product and needs a BASIC
+          or higher key; on a free key it fails with `403 upgrade_required`.
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    live_matches: false
+    upcoming_matches: false
+    completed_matches: false
+    players: false
+    fixtures: false
+
+schemas:
+  live_matches:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: integer
+      tournament:
+        type:
+          - string
+          - 'null'
+      surface:
+        type:
+          - string
+          - 'null'
+      indoor:
+        type:
+          - boolean
+          - 'null'
+      format:
+        type:
+          - string
+          - 'null'
+      round:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
+      event_status:
+        type:
+          - string
+          - 'null'
+      is_doubles:
+        type:
+          - boolean
+          - 'null'
+      scheduled_time:
+        type:
+          - string
+          - 'null'
+        format: date-time
+      players:
+        type:
+          - object
+          - 'null'
+        properties:
+          p1:
+            type:
+              - object
+              - 'null'
+            properties:
+              id:
+                type:
+                  - integer
+                  - 'null'
+              name:
+                type:
+                  - string
+                  - 'null'
+              tour:
+                type:
+                  - string
+                  - 'null'
+                description: The record's OWN tour, which is NOT the `tour` filter vocabulary. It is granular
+                  (`juniors_boys`, `juniors_girls`, `challenger_men`) where the filter is grouped (`juniors`,
+                  `challenger`), and a doubles team reports it UPPERCASE (`ATP`) where an individual reports
+                  lowercase (`atp`). Treat it as an opaque string; do not parse it into the filter enum.
+              country:
+                type:
+                  - string
+                  - 'null'
+              ranking:
+                type:
+                  - integer
+                  - 'null'
+              ranking_points:
+                type:
+                  - integer
+                  - 'null'
+              ranking_movement:
+                type:
+                  - string
+                  - 'null'
+              hand:
+                type:
+                  - string
+                  - 'null'
+              backhand:
+                type:
+                  - integer
+                  - 'null'
+              birthday:
+                type:
+                  - string
+                  - 'null'
+                format: date
+              is_doubles_team:
+                type:
+                  - boolean
+                  - 'null'
+              data_completeness:
+                type:
+                  - object
+                  - 'null'
+                description: How much biographical detail is known for this player, so a consumer can
+                  distinguish "not in the feed" from "not yet fetched" without probing. Present on every
+                  player in a match payload. Lower tours carry far less of it than main tour.
+                properties:
+                  known:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields populated, of `of`. NULL on a doubles team, where per-player biography
+                      does not apply — distinct from `0`, which means the fields apply and none are known.
+                      Do not decode this into a non-nullable integer.
+                  of:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields considered. NULL on a doubles team, as for `known`.
+                  missing:
+                    type:
+                      - array
+                      - 'null'
+                    description: Names of the unpopulated fields, e.g. ["backhand", "hand"].
+                    items:
+                      type:
+                        - string
+                        - 'null'
+                  note:
+                    type:
+                      - string
+                      - 'null'
+                    description: Present only when the object is not applicable, explaining why (e.g.
+                      a doubles team).
+                additionalProperties: true
+            additionalProperties: true
+          p2:
+            type:
+              - object
+              - 'null'
+            properties:
+              id:
+                type:
+                  - integer
+                  - 'null'
+              name:
+                type:
+                  - string
+                  - 'null'
+              tour:
+                type:
+                  - string
+                  - 'null'
+                description: The record's OWN tour, which is NOT the `tour` filter vocabulary. It is granular
+                  (`juniors_boys`, `juniors_girls`, `challenger_men`) where the filter is grouped (`juniors`,
+                  `challenger`), and a doubles team reports it UPPERCASE (`ATP`) where an individual reports
+                  lowercase (`atp`). Treat it as an opaque string; do not parse it into the filter enum.
+              country:
+                type:
+                  - string
+                  - 'null'
+              ranking:
+                type:
+                  - integer
+                  - 'null'
+              ranking_points:
+                type:
+                  - integer
+                  - 'null'
+              ranking_movement:
+                type:
+                  - string
+                  - 'null'
+              hand:
+                type:
+                  - string
+                  - 'null'
+              backhand:
+                type:
+                  - integer
+                  - 'null'
+              birthday:
+                type:
+                  - string
+                  - 'null'
+                format: date
+              is_doubles_team:
+                type:
+                  - boolean
+                  - 'null'
+              data_completeness:
+                type:
+                  - object
+                  - 'null'
+                description: How much biographical detail is known for this player, so a consumer can
+                  distinguish "not in the feed" from "not yet fetched" without probing. Present on every
+                  player in a match payload. Lower tours carry far less of it than main tour.
+                properties:
+                  known:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields populated, of `of`. NULL on a doubles team, where per-player biography
+                      does not apply — distinct from `0`, which means the fields apply and none are known.
+                      Do not decode this into a non-nullable integer.
+                  of:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields considered. NULL on a doubles team, as for `known`.
+                  missing:
+                    type:
+                      - array
+                      - 'null'
+                    description: Names of the unpopulated fields, e.g. ["backhand", "hand"].
+                    items:
+                      type:
+                        - string
+                        - 'null'
+                  note:
+                    type:
+                      - string
+                      - 'null'
+                    description: Present only when the object is not applicable, explaining why (e.g.
+                      a doubles team).
+                additionalProperties: true
+            additionalProperties: true
+        additionalProperties: true
+      score:
+        type:
+          - object
+          - 'null'
+        description: ULTRA adds win_probability_p1 + danger.
+        properties:
+          sets:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - integer
+                - 'null'
+          games:
+            type:
+              - array
+              - 'null'
+            description: '[games_p1, games_p2]; each a per-set list'
+            items:
+              type:
+                - array
+                - 'null'
+              items:
+                type:
+                  - integer
+                  - 'null'
+          points:
+            type:
+              - array
+              - 'null'
+            description: In-game points as tennis strings ("0", "15", "40", "AD"). Entries can be NULL
+              — observed live on completed matches, which also carry empty games arrays. Do not decode
+              into non-nullable strings.
+            items:
+              type:
+                - string
+                - 'null'
+          server:
+            type:
+              - integer
+              - 'null'
+          is_tiebreak:
+            type:
+              - boolean
+              - 'null'
+          win_probability_p1:
+            type:
+              - number
+              - 'null'
+          danger:
+            type:
+              - number
+              - 'null'
+          timestamp:
+            type:
+              - string
+              - 'null'
+            format: date-time
+        additionalProperties: true
+      winner:
+        type:
+          - integer
+          - 'null'
+        description: Completed matches only — derived from final sets
+  upcoming_matches:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: integer
+      tournament:
+        type:
+          - string
+          - 'null'
+      surface:
+        type:
+          - string
+          - 'null'
+      indoor:
+        type:
+          - boolean
+          - 'null'
+      format:
+        type:
+          - string
+          - 'null'
+      round:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
+      event_status:
+        type:
+          - string
+          - 'null'
+      is_doubles:
+        type:
+          - boolean
+          - 'null'
+      scheduled_time:
+        type:
+          - string
+          - 'null'
+        format: date-time
+      players:
+        type:
+          - object
+          - 'null'
+        properties:
+          p1:
+            type:
+              - object
+              - 'null'
+            properties:
+              id:
+                type:
+                  - integer
+                  - 'null'
+              name:
+                type:
+                  - string
+                  - 'null'
+              tour:
+                type:
+                  - string
+                  - 'null'
+                description: The record's OWN tour, which is NOT the `tour` filter vocabulary. It is granular
+                  (`juniors_boys`, `juniors_girls`, `challenger_men`) where the filter is grouped (`juniors`,
+                  `challenger`), and a doubles team reports it UPPERCASE (`ATP`) where an individual reports
+                  lowercase (`atp`). Treat it as an opaque string; do not parse it into the filter enum.
+              country:
+                type:
+                  - string
+                  - 'null'
+              ranking:
+                type:
+                  - integer
+                  - 'null'
+              ranking_points:
+                type:
+                  - integer
+                  - 'null'
+              ranking_movement:
+                type:
+                  - string
+                  - 'null'
+              hand:
+                type:
+                  - string
+                  - 'null'
+              backhand:
+                type:
+                  - integer
+                  - 'null'
+              birthday:
+                type:
+                  - string
+                  - 'null'
+                format: date
+              is_doubles_team:
+                type:
+                  - boolean
+                  - 'null'
+              data_completeness:
+                type:
+                  - object
+                  - 'null'
+                description: How much biographical detail is known for this player, so a consumer can
+                  distinguish "not in the feed" from "not yet fetched" without probing. Present on every
+                  player in a match payload. Lower tours carry far less of it than main tour.
+                properties:
+                  known:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields populated, of `of`. NULL on a doubles team, where per-player biography
+                      does not apply — distinct from `0`, which means the fields apply and none are known.
+                      Do not decode this into a non-nullable integer.
+                  of:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields considered. NULL on a doubles team, as for `known`.
+                  missing:
+                    type:
+                      - array
+                      - 'null'
+                    description: Names of the unpopulated fields, e.g. ["backhand", "hand"].
+                    items:
+                      type:
+                        - string
+                        - 'null'
+                  note:
+                    type:
+                      - string
+                      - 'null'
+                    description: Present only when the object is not applicable, explaining why (e.g.
+                      a doubles team).
+                additionalProperties: true
+            additionalProperties: true
+          p2:
+            type:
+              - object
+              - 'null'
+            properties:
+              id:
+                type:
+                  - integer
+                  - 'null'
+              name:
+                type:
+                  - string
+                  - 'null'
+              tour:
+                type:
+                  - string
+                  - 'null'
+                description: The record's OWN tour, which is NOT the `tour` filter vocabulary. It is granular
+                  (`juniors_boys`, `juniors_girls`, `challenger_men`) where the filter is grouped (`juniors`,
+                  `challenger`), and a doubles team reports it UPPERCASE (`ATP`) where an individual reports
+                  lowercase (`atp`). Treat it as an opaque string; do not parse it into the filter enum.
+              country:
+                type:
+                  - string
+                  - 'null'
+              ranking:
+                type:
+                  - integer
+                  - 'null'
+              ranking_points:
+                type:
+                  - integer
+                  - 'null'
+              ranking_movement:
+                type:
+                  - string
+                  - 'null'
+              hand:
+                type:
+                  - string
+                  - 'null'
+              backhand:
+                type:
+                  - integer
+                  - 'null'
+              birthday:
+                type:
+                  - string
+                  - 'null'
+                format: date
+              is_doubles_team:
+                type:
+                  - boolean
+                  - 'null'
+              data_completeness:
+                type:
+                  - object
+                  - 'null'
+                description: How much biographical detail is known for this player, so a consumer can
+                  distinguish "not in the feed" from "not yet fetched" without probing. Present on every
+                  player in a match payload. Lower tours carry far less of it than main tour.
+                properties:
+                  known:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields populated, of `of`. NULL on a doubles team, where per-player biography
+                      does not apply — distinct from `0`, which means the fields apply and none are known.
+                      Do not decode this into a non-nullable integer.
+                  of:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields considered. NULL on a doubles team, as for `known`.
+                  missing:
+                    type:
+                      - array
+                      - 'null'
+                    description: Names of the unpopulated fields, e.g. ["backhand", "hand"].
+                    items:
+                      type:
+                        - string
+                        - 'null'
+                  note:
+                    type:
+                      - string
+                      - 'null'
+                    description: Present only when the object is not applicable, explaining why (e.g.
+                      a doubles team).
+                additionalProperties: true
+            additionalProperties: true
+        additionalProperties: true
+      score:
+        type:
+          - object
+          - 'null'
+        description: ULTRA adds win_probability_p1 + danger.
+        properties:
+          sets:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - integer
+                - 'null'
+          games:
+            type:
+              - array
+              - 'null'
+            description: '[games_p1, games_p2]; each a per-set list'
+            items:
+              type:
+                - array
+                - 'null'
+              items:
+                type:
+                  - integer
+                  - 'null'
+          points:
+            type:
+              - array
+              - 'null'
+            description: In-game points as tennis strings ("0", "15", "40", "AD"). Entries can be NULL
+              — observed live on completed matches, which also carry empty games arrays. Do not decode
+              into non-nullable strings.
+            items:
+              type:
+                - string
+                - 'null'
+          server:
+            type:
+              - integer
+              - 'null'
+          is_tiebreak:
+            type:
+              - boolean
+              - 'null'
+          win_probability_p1:
+            type:
+              - number
+              - 'null'
+          danger:
+            type:
+              - number
+              - 'null'
+          timestamp:
+            type:
+              - string
+              - 'null'
+            format: date-time
+        additionalProperties: true
+      winner:
+        type:
+          - integer
+          - 'null'
+        description: Completed matches only — derived from final sets
+  completed_matches:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: integer
+      tournament:
+        type:
+          - string
+          - 'null'
+      surface:
+        type:
+          - string
+          - 'null'
+      indoor:
+        type:
+          - boolean
+          - 'null'
+      format:
+        type:
+          - string
+          - 'null'
+      round:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
+      event_status:
+        type:
+          - string
+          - 'null'
+      is_doubles:
+        type:
+          - boolean
+          - 'null'
+      scheduled_time:
+        type:
+          - string
+          - 'null'
+        format: date-time
+      players:
+        type:
+          - object
+          - 'null'
+        properties:
+          p1:
+            type:
+              - object
+              - 'null'
+            properties:
+              id:
+                type:
+                  - integer
+                  - 'null'
+              name:
+                type:
+                  - string
+                  - 'null'
+              tour:
+                type:
+                  - string
+                  - 'null'
+                description: The record's OWN tour, which is NOT the `tour` filter vocabulary. It is granular
+                  (`juniors_boys`, `juniors_girls`, `challenger_men`) where the filter is grouped (`juniors`,
+                  `challenger`), and a doubles team reports it UPPERCASE (`ATP`) where an individual reports
+                  lowercase (`atp`). Treat it as an opaque string; do not parse it into the filter enum.
+              country:
+                type:
+                  - string
+                  - 'null'
+              ranking:
+                type:
+                  - integer
+                  - 'null'
+              ranking_points:
+                type:
+                  - integer
+                  - 'null'
+              ranking_movement:
+                type:
+                  - string
+                  - 'null'
+              hand:
+                type:
+                  - string
+                  - 'null'
+              backhand:
+                type:
+                  - integer
+                  - 'null'
+              birthday:
+                type:
+                  - string
+                  - 'null'
+                format: date
+              is_doubles_team:
+                type:
+                  - boolean
+                  - 'null'
+              data_completeness:
+                type:
+                  - object
+                  - 'null'
+                description: How much biographical detail is known for this player, so a consumer can
+                  distinguish "not in the feed" from "not yet fetched" without probing. Present on every
+                  player in a match payload. Lower tours carry far less of it than main tour.
+                properties:
+                  known:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields populated, of `of`. NULL on a doubles team, where per-player biography
+                      does not apply — distinct from `0`, which means the fields apply and none are known.
+                      Do not decode this into a non-nullable integer.
+                  of:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields considered. NULL on a doubles team, as for `known`.
+                  missing:
+                    type:
+                      - array
+                      - 'null'
+                    description: Names of the unpopulated fields, e.g. ["backhand", "hand"].
+                    items:
+                      type:
+                        - string
+                        - 'null'
+                  note:
+                    type:
+                      - string
+                      - 'null'
+                    description: Present only when the object is not applicable, explaining why (e.g.
+                      a doubles team).
+                additionalProperties: true
+            additionalProperties: true
+          p2:
+            type:
+              - object
+              - 'null'
+            properties:
+              id:
+                type:
+                  - integer
+                  - 'null'
+              name:
+                type:
+                  - string
+                  - 'null'
+              tour:
+                type:
+                  - string
+                  - 'null'
+                description: The record's OWN tour, which is NOT the `tour` filter vocabulary. It is granular
+                  (`juniors_boys`, `juniors_girls`, `challenger_men`) where the filter is grouped (`juniors`,
+                  `challenger`), and a doubles team reports it UPPERCASE (`ATP`) where an individual reports
+                  lowercase (`atp`). Treat it as an opaque string; do not parse it into the filter enum.
+              country:
+                type:
+                  - string
+                  - 'null'
+              ranking:
+                type:
+                  - integer
+                  - 'null'
+              ranking_points:
+                type:
+                  - integer
+                  - 'null'
+              ranking_movement:
+                type:
+                  - string
+                  - 'null'
+              hand:
+                type:
+                  - string
+                  - 'null'
+              backhand:
+                type:
+                  - integer
+                  - 'null'
+              birthday:
+                type:
+                  - string
+                  - 'null'
+                format: date
+              is_doubles_team:
+                type:
+                  - boolean
+                  - 'null'
+              data_completeness:
+                type:
+                  - object
+                  - 'null'
+                description: How much biographical detail is known for this player, so a consumer can
+                  distinguish "not in the feed" from "not yet fetched" without probing. Present on every
+                  player in a match payload. Lower tours carry far less of it than main tour.
+                properties:
+                  known:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields populated, of `of`. NULL on a doubles team, where per-player biography
+                      does not apply — distinct from `0`, which means the fields apply and none are known.
+                      Do not decode this into a non-nullable integer.
+                  of:
+                    type:
+                      - integer
+                      - 'null'
+                    description: Fields considered. NULL on a doubles team, as for `known`.
+                  missing:
+                    type:
+                      - array
+                      - 'null'
+                    description: Names of the unpopulated fields, e.g. ["backhand", "hand"].
+                    items:
+                      type:
+                        - string
+                        - 'null'
+                  note:
+                    type:
+                      - string
+                      - 'null'
+                    description: Present only when the object is not applicable, explaining why (e.g.
+                      a doubles team).
+                additionalProperties: true
+            additionalProperties: true
+        additionalProperties: true
+      score:
+        type:
+          - object
+          - 'null'
+        description: ULTRA adds win_probability_p1 + danger.
+        properties:
+          sets:
+            type:
+              - array
+              - 'null'
+            items:
+              type:
+                - integer
+                - 'null'
+          games:
+            type:
+              - array
+              - 'null'
+            description: '[games_p1, games_p2]; each a per-set list'
+            items:
+              type:
+                - array
+                - 'null'
+              items:
+                type:
+                  - integer
+                  - 'null'
+          points:
+            type:
+              - array
+              - 'null'
+            description: In-game points as tennis strings ("0", "15", "40", "AD"). Entries can be NULL
+              — observed live on completed matches, which also carry empty games arrays. Do not decode
+              into non-nullable strings.
+            items:
+              type:
+                - string
+                - 'null'
+          server:
+            type:
+              - integer
+              - 'null'
+          is_tiebreak:
+            type:
+              - boolean
+              - 'null'
+          win_probability_p1:
+            type:
+              - number
+              - 'null'
+          danger:
+            type:
+              - number
+              - 'null'
+          timestamp:
+            type:
+              - string
+              - 'null'
+            format: date-time
+        additionalProperties: true
+      winner:
+        type:
+          - integer
+          - 'null'
+        description: Completed matches only — derived from final sets
+  players:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: integer
+      name:
+        type:
+          - string
+          - 'null'
+      tour:
+        type:
+          - string
+          - 'null'
+        description: The record's OWN tour, which is NOT the `tour` filter vocabulary. It is granular
+          (`juniors_boys`, `juniors_girls`, `challenger_men`) where the filter is grouped (`juniors`,
+          `challenger`), and a doubles team reports it UPPERCASE (`ATP`) where an individual reports lowercase
+          (`atp`). Treat it as an opaque string; do not parse it into the filter enum.
+      country:
+        type:
+          - string
+          - 'null'
+      ranking:
+        type:
+          - integer
+          - 'null'
+      ranking_points:
+        type:
+          - integer
+          - 'null'
+      ranking_movement:
+        type:
+          - string
+          - 'null'
+      hand:
+        type:
+          - string
+          - 'null'
+      backhand:
+        type:
+          - integer
+          - 'null'
+      birthday:
+        type:
+          - string
+          - 'null'
+        format: date
+      is_doubles_team:
+        type:
+          - boolean
+          - 'null'
+      data_completeness:
+        type:
+          - object
+          - 'null'
+        description: How much biographical detail is known for this player, so a consumer can distinguish
+          "not in the feed" from "not yet fetched" without probing. Present on every player in a match
+          payload. Lower tours carry far less of it than main tour.
+        properties:
+          known:
+            type:
+              - integer
+              - 'null'
+            description: Fields populated, of `of`. NULL on a doubles team, where per-player biography
+              does not apply — distinct from `0`, which means the fields apply and none are known. Do
+              not decode this into a non-nullable integer.
+          of:
+            type:
+              - integer
+              - 'null'
+            description: Fields considered. NULL on a doubles team, as for `known`.
+          missing:
+            type:
+              - array
+              - 'null'
+            description: Names of the unpopulated fields, e.g. ["backhand", "hand"].
+            items:
+              type:
+                - string
+                - 'null'
+          note:
+            type:
+              - string
+              - 'null'
+            description: Present only when the object is not applicable, explaining why (e.g. a doubles
+              team).
+        additionalProperties: true
+  fixtures:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        type: integer
+      event_date:
+        type:
+          - string
+          - 'null'
+        format: date
+      tour:
+        type:
+          - string
+          - 'null'
+        description: The record's OWN tour, which is NOT the `tour` filter vocabulary. It is granular
+          (`juniors_boys`, `juniors_girls`, `challenger_men`) where the filter is grouped (`juniors`,
+          `challenger`), and a doubles team reports it UPPERCASE (`ATP`) where an individual reports lowercase
+          (`atp`). Treat it as an opaque string; do not parse it into the filter enum.
+      tournament:
+        type:
+          - string
+          - 'null'
+      round:
+        type:
+          - string
+          - 'null'
+      surface:
+        type:
+          - string
+          - 'null'
+      player1_name:
+        type:
+          - string
+          - 'null'
+      player2_name:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
