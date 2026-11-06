@@ -40,7 +40,19 @@ The manifest explicitly ignores HTTP `400` responses on `meeting_polls`, `meetin
 
 ## Rate limits
 
-`manifest.yaml` configures `WaitTimeFromHeader` for Zoom's `Retry-After` header, with a maximum wait of 600 seconds. A wait of 10 minutes or longer stops the stream; if the header is missing, the CDK uses exponential backoff. `test_error_handling.py` verifies retries for short and missing headers and that a long wait does not sleep. The manifest does not configure `api_budget` or `concurrency_level`. Zoom applies limits per account and plan. Report endpoints and past-webinar absentees are Heavy APIs; see Zoom's [rate-limits documentation](https://developers.zoom.us/docs/api/rate-limits/). Concurrency is not configured yet; see [PR #83260](https://github.com/airbytehq/airbyte/pull/83260).
+Zoom applies rate limits per account and plan, shared across every app on the account; see Zoom's [rate-limit documentation](https://developers.zoom.us/docs/api/rate-limits/). The live header sample from 2026-11-06 classified these source-zoom endpoints:
+
+- **Heavy (Pro: 10 requests/second):** `/report/users/{uid}/meetings`, `/report/meetings/{uuid}`, `/report/meetings/{uuid}/participants`, `/report/daily`, `/report/webinars/{wuuid}`, `/report/webinars/{wuuid}/participants`, and `/past_webinars/{wuuid}/absentees`.
+- **Medium (Pro: 20 requests/second):** `/users`, `/users/{uid}/meetings`, `/users/{uid}/webinars`, `/meetings/{mid}/registrants`, `/past_meetings/{uuid}/polls`, `/webinars/{wid}/panelists`, `/webinars/{wid}/registrants`, `/webinars/{wid}/tracking_sources`, `/past_webinars/{wuuid}/polls`, `/past_webinars/{wuuid}/qa`, and `/chat/users/{uid}/channels`.
+- **Light (Pro: 30 requests/second):** `/meetings/{mid}`, `/meetings/{mid}/polls`, `/meetings/{mid}/registrants/questions`, `/webinars/{wid}`, `/webinars/{wid}/registrants/questions`, `/zoom_events/events`, and any request not matched by a higher category. `/webinars/{wid}/polls`, which was not in the live sample, uses this Light catch-all.
+
+The `webinar_tracking_sources` response had no rate-limit category header and `chat_channels` returned the unrecognized `Dp_xms` category; both are budgeted conservatively as Medium. The sampled `webinars/{wid}` detail response had no category header and falls through to Light, consistent with the sampled meeting-detail endpoint.
+
+The connector budgets at Pro rates because Pro is the minimum supported plan. Zoom documents higher per-second limits for Business+ (Light 80, Medium 60, Heavy 40 requests/second), but using Pro limits keeps connector-issued requests within the limits of every supported plan. Heavy and Resource-intensive requests share a daily cap of 30,000 on Pro and 60,000 on Business+.
+
+Each Airbyte Zoom source applies its own rate-limit budget, but multiple Zoom sources and other apps on the same Zoom account share its limits, so their requests add up; lower `num_workers` on those sources if they hit 429s.
+
+The manifest does not set `ratelimit_remaining_header` or `ratelimit_reset_header`: Zoom's `x-ratelimit-remaining` reports the daily Heavy count, not the one-second moving-window balance, so it must not be applied to that budget. The daily cap is not modeled as a `P1D` moving window because exhausting that budget would stall a sync for hours; the connector relies on Zoom's `Retry-After` response instead. `WaitTimeFromHeader` honors short `Retry-After` values and fails the stream for a wait of 600 seconds or longer; if the header is missing, the CDK uses exponential backoff. `unit_tests/test_error_handling.py` covers these cases.
 
 ## Licence-gated streams
 
