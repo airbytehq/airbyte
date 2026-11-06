@@ -321,6 +321,35 @@ class TestUpdateInBatch:
         with pytest.raises(RuntimeError, match="unexpected SDK error"):
             update_in_batch(api=api, jobs=jobs)
 
+    @pytest.mark.parametrize("job_count", [1, 50])
+    @pytest.mark.parametrize("wrap_in_parent", [False, True])
+    def test_persistent_malformed_batch_response_times_out(self, api, started_job, api_limit, job_count, wrap_in_parent):
+        api.new_batch.side_effect = lambda: FacebookAdsApiBatch(api=api)
+        api.call.return_value.json.return_value = "<html>Bad Gateway</html>"
+        jobs = [started_job] * job_count
+        if wrap_in_parent:
+            jobs = [ParentAsyncJob(api=api, jobs=jobs, interval=started_job.interval)]
+
+        with freezegun.freeze_time(ab_datetime_now()) as clock:
+            for _ in range(2):
+                clock.tick(timedelta(minutes=10))
+                update_in_batch(api=api, jobs=jobs)
+                assert started_job.started
+                assert api_limit.inflight == 1
+
+            clock.tick(timedelta(minutes=61))
+            update_in_batch(api=api, jobs=jobs)
+
+        assert not started_job.started
+        assert not started_job.completed
+        assert not started_job.failed
+        assert started_job.attempt_number == 1
+        assert api_limit.inflight == 0
+
+        started_job.start(api_limit)
+        assert started_job.started
+        assert started_job.attempt_number == 2
+
 
 class TestInsightAsyncJob:
     """Test InsightAsyncJob class"""
