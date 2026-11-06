@@ -882,6 +882,22 @@ spec:
           - "2020-11-16T00:00:00.000Z"
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         order: 4
+      access_token:
+        airbyte_hidden: true
+        airbyte_secret: true
+        description: >-
+          The access token that Outreach returns when the connector refreshes your OAuth credentials. Leave this field out; the connector fills it in.
+        order: 5
+        title: Access Token
+        type: string
+      token_expiry_date:
+        airbyte_hidden: true
+        description: >-
+          The date and time when the current access token expires. Leave this field out; the connector fills it in.
+        format: date-time
+        order: 6
+        title: Token Expiry Date
+        type: string
     additionalProperties: true
 
 metadata:
