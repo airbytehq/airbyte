@@ -6,7 +6,14 @@ import jsonschema
 import pytest
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
@@ -284,3 +291,42 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+
+
+@pytest.mark.parametrize(
+    "config, expected_count",
+    [
+        pytest.param({"count": 5000, "seed": 42}, 5000, id="reported-api-config"),
+        pytest.param({}, 1000, id="all-defaults"),
+        pytest.param({"records_per_slice": 3, "parallelism": 1}, 1000, id="omitted-count"),
+        pytest.param({"count": 10, "parallelism": 1}, 10, id="omitted-records-per-slice"),
+        pytest.param({"count": 10, "records_per_slice": 3}, 10, id="omitted-parallelism"),
+    ],
+)
+def test_check_and_read_with_omitted_optional_settings(config: dict, expected_count: int) -> None:
+    source = SourceFaker()
+    original_config = config.copy()
+
+    result = source.check(logger, config)
+    assert result.status is Status.SUCCEEDED, result.message
+    assert result.message is None
+
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    records = [message.record for message in source.read(logger, config, catalog, {}) if message.type is Type.RECORD]
+
+    assert [record.data["id"] for record in records] == list(range(1, expected_count + 1))
+    assert config == original_config
+
+
+@pytest.mark.parametrize("key", ["count", "records_per_slice", "parallelism"])
+@pytest.mark.parametrize("value", [0, -1, None, True, False, "10"])
+def test_check_rejects_invalid_explicit_setting_with_other_settings_omitted(key: str, value: object) -> None:
+    result = SourceFaker().check(logger, {key: value})
+
+    assert result.status is Status.FAILED
+    assert result.message == repr(f"`{key}` must be a number greater than or equal to 1, got {value!r}")
