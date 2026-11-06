@@ -188,6 +188,8 @@ Webinar streams require the Zoom Webinars add-on, and `zoom_events` requires a W
 
 Zoom applies [rate limits](https://developers.zoom.us/docs/api/rate-limits/) per account, shared across all apps on that account; limits depend on your Zoom plan. Syncs run concurrently with 3 threads by default; configure `num_workers` from 2 to 10. The connector throttles its requests to Zoom's Pro per-second limits by category: Light 30 requests/second, Medium 20 requests/second, and Heavy 10 requests/second.
 
+Each Airbyte Zoom source applies its own rate-limit budget, but multiple Zoom sources and other apps on the same Zoom account share its limits, so their requests add up; lower `num_workers` on those sources if they hit 429s.
+
 Heavy and Resource-intensive requests share a daily cap of 30,000 on Pro and 60,000 on Business+, across apps on the account. This daily cap still applies. In Full Refresh, `report_meetings` and `report_meeting_participants` make one Heavy-rate-limited request per past meeting session in the roughly six-month retention window, so use Incremental for these streams.
 
 When Zoom returns HTTP `429`, the connector honors Zoom's `Retry-After` header. A wait of 600 seconds or longer fails the stream instead of waiting; if the header is missing, the connector uses exponential backoff.

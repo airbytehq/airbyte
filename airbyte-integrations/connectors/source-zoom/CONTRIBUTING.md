@@ -50,6 +50,8 @@ The `webinar_tracking_sources` response had no rate-limit category header and `c
 
 The connector budgets at Pro rates because Pro is the minimum supported plan. Zoom documents higher per-second limits for Business+ (Light 80, Medium 60, Heavy 40 requests/second), but using Pro limits keeps connector-issued requests within the limits of every supported plan. Heavy and Resource-intensive requests share a daily cap of 30,000 on Pro and 60,000 on Business+.
 
+Each Airbyte Zoom source applies its own rate-limit budget, but multiple Zoom sources and other apps on the same Zoom account share its limits, so their requests add up; lower `num_workers` on those sources if they hit 429s.
+
 The manifest does not set `ratelimit_remaining_header` or `ratelimit_reset_header`: Zoom's `x-ratelimit-remaining` reports the daily Heavy count, not the one-second moving-window balance, so it must not be applied to that budget. The daily cap is not modeled as a `P1D` moving window because exhausting that budget would stall a sync for hours; the connector relies on Zoom's `Retry-After` response instead. `WaitTimeFromHeader` honors short `Retry-After` values and fails the stream for a wait of 600 seconds or longer; if the header is missing, the CDK uses exponential backoff. `unit_tests/test_error_handling.py` covers these cases.
 
 ## Licence-gated streams
