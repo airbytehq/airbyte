@@ -250,6 +250,8 @@ emits the same settlement rows more than once, or silently skips reports.
 
 ## 12. Brand Analytics Requests Must Cover Complete Weeks
 
+Search Terms puts reporting dates in `reportSpecification`, outside the extracted rows. Its `AddFields` transformation must inject the slice's Saturday `endDate` for checkpointing, and that field must be declared in its schema. Test with the actual response shape; adding dates to mocked Search Terms rows hides this failure.
+
 Market Basket, Repeat Purchase, and Search Terms use `reportPeriod: WEEK` and a shared Sunday-clamped cursor on `endDate`. The configured start date rounds back to Sunday. The end date includes only complete Sunday–Saturday periods, capped at the last completed week even when the configured end is in the future. Each creation requester must declare its own slice-based date bounds; `$ref` does not recursively merge request bodies. These streams ignore `period_in_days` and the timestamp-based report lookback option, which would split reporting weeks.
 
 Nonempty reports resume at the Sunday after the saved Saturday without repeating that week. An entirely empty read retains its starting checkpoint and retries those periods later; there is no independent persisted retry checkpoint for each empty report. Alternate Purchase and Item Comparison are unchanged: Amazon [removed them on June 30, 2022](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations).

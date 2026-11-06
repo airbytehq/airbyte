@@ -687,7 +687,7 @@ definitions:
     end_datetime:
       type: MinMaxDatetime
       datetime: >-
-        {{ min(str_to_datetime(config['replication_end_date']) + duration('P1D'), now_utc()).strftime('%Y-%m-%d') if config.get('replication_end_date') else now_utc().strftime('%Y-%m-%d') }}
+        {{ min(str_to_datetime(config['replication_end_date']) + duration('PT1S'), now_utc()).strftime('%Y-%m-%d') if config.get('replication_end_date') else now_utc().strftime('%Y-%m-%d') }}
       datetime_format: "%Y-%m-%d"
 
   authenticator:
@@ -3077,6 +3077,11 @@ definitions:
         download_extractor:
           type: DpathExtractor
           field_path: ["dataByDepartmentAndSearchTerm"]
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["endDate"]
+              value: "{{ stream_slice['end_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -9195,6 +9200,11 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     properties:
+      endDate:
+        type:
+        - 'null'
+        - string
+        format: date
       departmentName:
         type:
         - 'null'

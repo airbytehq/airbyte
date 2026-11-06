@@ -15,7 +15,7 @@ Each request covers a complete Sunday–Saturday week. The start date rounds bac
 ### Migration steps
 
 1. Review the source's **Start Date** and **End Date** before upgrading. Choose the first week you need to backfill; clear a historical end date if you want ongoing data. If no start date is configured, the weekly streams start approximately two years back. A configured start date is used even if it is older, so choose a recent date to avoid an unexpectedly large backfill.
-2. Upgrade and refresh the source schema. The three reports now offer incremental sync with `endDate` as the cursor. `FbaInboundShipments` and `FbaInboundShipmentItems` also offer incremental sync, with a new `LastUpdatedBefore` window watermark.
+2. Upgrade and refresh the source schema. The three reports now offer incremental sync with `endDate` as the cursor. Search Terms records gain an `endDate` field equal to the requested week's Saturday because Amazon only supplies those dates outside its rows. `FbaInboundShipments` and `FbaInboundShipmentItems` also offer incremental sync, with a new `LastUpdatedBefore` window watermark.
 3. Select incremental mode for the streams you want to resume between syncs, or retain full refresh to reread the configured range. For Brand Analytics, preserving the old latest-week-only full-refresh behavior requires moving the configured start date each week; leaving it fixed now rereads all complete weeks from that date.
 4. Run a sync and review the requested date range and resulting records. No state migration or destination reset is required: these streams previously had no incremental state. Reset a stream only if you need to replace previously loaded history.
 

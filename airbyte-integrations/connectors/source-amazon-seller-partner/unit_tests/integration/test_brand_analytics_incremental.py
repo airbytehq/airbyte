@@ -1,14 +1,19 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
 import re
+from pathlib import Path
 
 import freezegun
 import pendulum
 import pytest
 import requests_mock
+from jsonschema import Draft7Validator, FormatChecker
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.entrypoint_wrapper import discover
 
+from ..conftest import get_source
 from .config import MARKETPLACE_ID, ConfigBuilder
 from .utils import read_output
 
@@ -40,17 +45,16 @@ def mock_reports(mocker: requests_mock.Mocker, stream_name: str, records_path: s
 
     def download(request, context):
         job = jobs[int(request.path.strip("/"))]
-        return {
-            records_path: []
-            if empty
-            else [
-                {
-                    "startDate": job["dataStartTime"][:10],
-                    "endDate": job["dataEndTime"][:10],
-                    "asin": "TEST-ASIN",
-                }
-            ]
-        }
+        report = json.loads((Path(__file__).parents[1] / "resource" / "http" / "response" / f"{stream_name}.json").read_text())
+        report["reportSpecification"].update(dataStartTime=job["dataStartTime"][:10], dataEndTime=job["dataEndTime"][:10])
+        if empty:
+            report[records_path] = []
+        for record in report[records_path]:
+            if "startDate" in record:
+                record["startDate"] = job["dataStartTime"][:10]
+            if "endDate" in record:
+                record["endDate"] = job["dataEndTime"][:10]
+        return report
 
     mocker.post(f"{BASE_URL}/reports", json=create)
     mocker.get(re.compile(f"{BASE_URL}/reports/[0-9]+$"), json=poll)
@@ -80,9 +84,17 @@ def test_weekly_backfill_and_resume(stream_name: str, records_path: str, sync_mo
         jobs = mock_reports(mocker, stream_name, records_path)
         with freezegun.freeze_time("2024-06-02T12:00:00Z"):
             first = read_output(config, stream_name, sync_mode)
+            catalog = discover(get_source(config.build()), config.build()).catalog.catalog
         weeks = [("2024-05-12", "2024-05-18"), ("2024-05-19", "2024-05-25"), ("2024-05-26", "2024-06-01")]
         assert sorted(jobs, key=lambda job: job["dataStartTime"]) == expected_jobs(stream_name, weeks)
-        assert sorted(record.record.data["endDate"] for record in first.records) == [end for _, end in weeks]
+        assert sorted(record.record.data["endDate"] for record in first.records) == [end for _, end in weeks for _ in range(2)]
+        schema = next(stream.json_schema for stream in catalog.streams if stream.name == stream_name)
+        assert "endDate" in schema["properties"]
+        for record in first.records:
+            Draft7Validator(schema, format_checker=FormatChecker()).validate(record.record.data)
+        if stream_name == "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT":
+            assert {record.record.data["clickedAsin"] for record in first.records} == {"B123456789", "B987654321"}
+            assert {record.record.data["searchTerm"] for record in first.records} == {"search term rank one"}
         if sync_mode == SyncMode.full_refresh:
             return
         assert first.most_recent_state.stream_state.__dict__ == {"endDate": "2024-06-01"}
@@ -91,7 +103,7 @@ def test_weekly_backfill_and_resume(stream_name: str, records_path: str, sync_mo
             second = read_output(config, stream_name, sync_mode, state=[first.state_messages[-1].state])
         resumed_weeks = [("2024-06-02", "2024-06-08"), ("2024-06-09", "2024-06-15")]
         assert sorted(jobs, key=lambda job: job["dataStartTime"]) == expected_jobs(stream_name, resumed_weeks)
-        assert sorted(record.record.data["endDate"] for record in second.records) == [end for _, end in resumed_weeks]
+        assert sorted(record.record.data["endDate"] for record in second.records) == [end for _, end in resumed_weeks for _ in range(2)]
         assert second.most_recent_state.stream_state.__dict__ == {"endDate": "2024-06-15"}
 
 
@@ -100,6 +112,9 @@ def test_weekly_backfill_and_resume(stream_name: str, records_path: str, sync_mo
     "end_date,expected_week_ends",
     [
         ("2024-05-22T12:00:00Z", ["2024-05-18"]),
+        ("2024-05-25T00:00:00Z", ["2024-05-18"]),
+        ("2024-05-25T12:00:00Z", ["2024-05-18"]),
+        ("2024-05-25T23:59:58Z", ["2024-05-18"]),
         ("2024-05-25T23:59:59Z", ["2024-05-18", "2024-05-25"]),
         ("2024-06-20T12:00:00Z", ["2024-05-18", "2024-05-25", "2024-06-01"]),
     ],
