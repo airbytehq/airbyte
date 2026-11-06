@@ -641,6 +641,7 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/base_nested_incremental_from_accounts_stream/incremental_sync"
       datetime_format: "%Y-%m-%d %H:%M:%SZ"
+      global_substream_cursor: true
       cursor_granularity: PT0.000001S
       start_datetime:
         type: MinMaxDatetime
@@ -650,6 +651,9 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%d %H:%M:%SZ"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioMessagesGlobalStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:

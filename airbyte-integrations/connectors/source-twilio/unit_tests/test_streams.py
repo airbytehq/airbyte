@@ -254,6 +254,101 @@ class TestIncrementalTwilioStream:
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
+    @freeze_time("2026-05-22 12:00:00+00:00")
+    @pytest.mark.parametrize(
+        "legacy_state,expected_lower_bound",
+        [
+            pytest.param(
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2025-05-01T00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2025-06-01T00:00:00Z"},
+                        },
+                    ],
+                    "state": {"date_sent": "2026-05-21 00:00:00Z"},
+                    "lookback_window": 0,
+                    "parent_state": {},
+                },
+                "2026-05-21 00:00:00Z",
+                id="stale_partitions_with_recent_global_cursor",
+            ),
+            pytest.param(
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": "2026-05-20T00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json"},
+                            "cursor": {"date_sent": "2026-05-10T00:00:00Z"},
+                        },
+                    ]
+                },
+                "2026-05-10 00:00:00Z",
+                id="per_partition_only_resumes_from_oldest_partition",
+            ),
+        ],
+    )
+    def test_messages_resume_from_global_cursor(self, legacy_state, expected_lower_bound, requests_mock):
+        accounts = {
+            "accounts": [
+                {"sid": sid, "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"}} for sid in ("AC123", "AC456")
+            ]
+        }
+        messages_by_account = {
+            "AC123": [{"sid": "SM1", "date_sent": "2026-05-21T10:00:00Z"}],
+            "AC456": [{"sid": "SM2", "date_sent": "2026-05-21T11:00:00Z"}],
+        }
+        windows = []
+
+        def _messages_callback(request, context):
+            account_sid = urlparse(request.url).path.split("/")[3]
+            query = parse_qs(urlparse(request.url).query)
+            lower, upper = query["DateSent>"][0], query["DateSent<"][0]
+            windows.append((account_sid, lower, upper))
+            in_window = [m for m in messages_by_account[account_sid] if lower <= m["date_sent"].replace("T", " ") <= upper]
+            return {"messages": in_window}
+
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts)
+        for sid in ("AC123", "AC456"):
+            requests_mock.get(f"{BASE}/Accounts/{sid}/Messages.json", json=_messages_callback)
+
+        def _read(state):
+            windows.clear()
+            output = read_from_stream(
+                {**TEST_CONFIG, "start_date": "2020-01-01T00:00:00Z"},
+                "messages",
+                SyncMode.incremental,
+                StateBuilder().with_stream_state("messages", state).build(),
+            )
+            return output, sorted(windows)
+
+        first, first_windows = _read(legacy_state)
+        assert first_windows == [
+            ("AC123", expected_lower_bound, "2026-05-22 12:00:00Z"),
+            ("AC456", expected_lower_bound, "2026-05-22 12:00:00Z"),
+        ]
+        assert sorted(r.record.data["sid"] for r in first.records) == ["SM1", "SM2"]
+        first_state = first.most_recent_state.stream_state.__dict__
+        assert first_state["use_global_cursor"] is True
+        assert first_state["state"] == {"date_sent": "2026-05-21 11:00:00Z"}
+        assert "states" not in first_state
+
+        second, second_windows = _read(first_state)
+        assert second_windows == [
+            ("AC123", "2026-05-21 11:00:00Z", "2026-05-22 12:00:00Z"),
+            ("AC456", "2026-05-21 11:00:00Z", "2026-05-22 12:00:00Z"),
+        ]
+        # The cursor is inclusive, so only the record sitting exactly on it is re-emitted.
+        assert [r.record.data["sid"] for r in second.records] == ["SM2"]
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}

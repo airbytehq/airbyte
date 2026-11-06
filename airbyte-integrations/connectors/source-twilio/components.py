@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +81,48 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioMessagesGlobalStateMigration(StateMigration):
+    """
+    Collapse per-account `messages` state into the single global cursor used by `global_substream_cursor`.
+
+    The stream-level `state` cursor is kept when present. Otherwise the oldest per-account cursor is used so no
+    account skips data. Per-account `states` are dropped so stale entries cannot rewind the read.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2025-05-01T00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2026-05-21 10:00:00Z" }
+      }
+
+    Final:
+      { "date_sent": "2026-05-21 10:00:00Z" }
+    """
+
+    _CURSOR_FIELD = "date_sent"
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        global_value = stream_state.get("state", {}).get(self._CURSOR_FIELD)
+        if global_value:
+            return {self._CURSOR_FIELD: global_value}
+        partition_values = [
+            state["cursor"][self._CURSOR_FIELD]
+            for state in stream_state.get("states", [])
+            if state.get("cursor", {}).get(self._CURSOR_FIELD)
+        ]
+        if partition_values:
+            return {self._CURSOR_FIELD: min(partition_values, key=ab_datetime_parse)}
+        return {}
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and "states" in stream_state
 
 
 class TwilioAlertsStateMigration(StateMigration):
