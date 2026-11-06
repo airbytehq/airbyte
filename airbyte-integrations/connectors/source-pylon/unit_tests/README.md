@@ -26,6 +26,25 @@ PYTHONPATH=. python -m pytest -ra --tb=short
 ```
 
 The coverage gate is 90% for `components.py`, not for the CDK or the manifest.
+CI's **Run Unit Tests** in `.github/workflows/connector-ci-checks.yml` invokes
+`poe test-unit-tests`. Because this is a manifest-only connector,
+`airbyte-integrations/connectors/poe_tasks.toml` selects the shared
+`poe-tasks/manifest-only-connector-tasks.toml`, which enters `unit_tests`, installs
+this Poetry project and runs:
+
+```sh
+poetry run pytest --junitxml=../build/test-results/pytest-unit-tests-junit.xml
+```
+
+Coverage flags remain in this project's pytest `addopts`, and `fail_under = 90`
+remains enforced. Moving flags to CI would require a shared-task change or a
+connector-specific task override; shared tooling is unchanged here. For focused
+tests that do not execute the migration component, disable coverage explicitly:
+
+```sh
+PYTHONPATH=. python -m pytest mock_server/test_regions.py --no-cov
+```
+
 To print the all-streams table and write its per-stream properties to JUnit:
 
 ```sh

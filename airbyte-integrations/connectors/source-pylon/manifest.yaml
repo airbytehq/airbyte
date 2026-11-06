@@ -921,7 +921,6 @@ schemas:
         type:
           - "null"
           - string
-        format: date-time
       logo_url:
         type:
           - "null"

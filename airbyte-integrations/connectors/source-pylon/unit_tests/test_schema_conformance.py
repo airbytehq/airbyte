@@ -35,3 +35,18 @@ def test_timestamp_formats_are_enforced(manifest_path: Path) -> None:
     record = json.loads((FIXTURES / "knowledge_base_articles.json").read_text())
     with pytest.raises(ValidationError):
         validator.validate({**record, "created_at": "not-a-timestamp"})
+
+
+@pytest.mark.parametrize(
+    "value,valid", [(None, True), ("", True), ("synthetic-unformatted-time", True), ("2026-01-01T00:00:00Z", True), (123, False)]
+)
+def test_vendor_activity_time_has_no_undocumented_format(manifest_path: Path, value: str | int | None, valid: bool) -> None:
+    schema = yaml.safe_load(manifest_path.read_text())["schemas"]["accounts"]
+    assert "format" not in schema["properties"]["latest_vendor_activity_time"]
+    validator = Draft7Validator(schema, format_checker=FormatChecker())
+    record = {**json.loads((FIXTURES / "accounts.json").read_text()), "latest_vendor_activity_time": value}
+    if valid:
+        validator.validate(record)
+    else:
+        with pytest.raises(ValidationError):
+            validator.validate(record)
