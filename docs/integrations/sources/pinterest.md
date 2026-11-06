@@ -391,7 +391,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.4.0 | 2023-05-16 | [26112](https://github.com/airbytehq/airbyte/pull/26112) | Add `is_standard` field to the `BoardPins` stream |
 | 0.3.0 | 2023-05-09 | [25915](https://github.com/airbytehq/airbyte/pull/25915) | Add `creative_type` field to the `BoardPins` stream |
 | 0.2.6 | 2023-04-26 | [25548](https://github.com/airbytehq/airbyte/pull/25548) | Fix `format` issue for `boards` stream schema for fields with `date-time` |
-| 0.2.5 | 2023-04-19 | [0](https://github.com/airbytehq/airbyte/pull/0) | Update `AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP` to 89 days |
+| 0.2.5 | 2023-04-19 | [91160](https://github.com/airbytehq/airbyte/pull/91160) | Update `AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP` to 89 days |
 | 0.2.4 | 2023-02-25 | [23457](https://github.com/airbytehq/airbyte/pull/23457) | Add missing columns for analytics streams for pinterest source |
 | 0.2.3 | 2023-03-01 | [23649](https://github.com/airbytehq/airbyte/pull/23649) | Fix for `HTTP - 400 Bad Request` when requesting data >= 90 days |
 | 0.2.2 | 2023-01-27 | [22020](https://github.com/airbytehq/airbyte/pull/22020) | Set `AvailabilityStrategy` for streams explicitly to `None` |
