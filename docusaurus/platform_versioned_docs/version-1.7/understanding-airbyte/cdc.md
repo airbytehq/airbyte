@@ -59,7 +59,7 @@ For an example of how to enable CDC on a new schema in MSSQL, visit our [MSSQL T
 - [Postgres](/integrations/sources/postgres) \(For a quick video overview of CDC on Postgres, click [here](https://www.youtube.com/watch?v=NMODvLgZvuE&ab_channel=Airbyte)\)
 - [MySQL](/integrations/sources/mysql)
 - [Microsoft SQL Server / MSSQL](/integrations/sources/mssql)
-- [MongoDB](/integrations/sources/mongodb-v2)
+- [MongoDB](/integrations/sources/mongodb)
 - [Oracle DB](/integrations/enterprise-connectors/source-oracle-enterprise)
 - [SAP HANA](/integrations/enterprise-connectors/source-sap-hana)
 - [IBM Db2](/integrations/enterprise-connectors/source-db2-enterprise)

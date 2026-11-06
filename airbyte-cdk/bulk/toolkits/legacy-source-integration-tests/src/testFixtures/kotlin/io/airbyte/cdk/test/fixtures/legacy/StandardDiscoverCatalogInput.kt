@@ -27,6 +27,7 @@ class StandardDiscoverCatalogInput : Serializable {
     @JsonProperty("connectionConfiguration")
     @JsonPropertyDescription("Integration specific blob. Must be a valid JSON string.")
     var connectionConfiguration: JsonNode? = null
+
     /** The ID of the source being discovered, so we can persist the result (Required) */
     /** The ID of the source being discovered, so we can persist the result (Required) */
     /** The ID of the source being discovered, so we can persist the result (Required) */
@@ -35,6 +36,7 @@ class StandardDiscoverCatalogInput : Serializable {
     @JsonProperty("sourceId")
     @JsonPropertyDescription("The ID of the source being discovered, so we can persist the result")
     var sourceId: String? = null
+
     /** Connector version, so we can persist the result (Required) */
     /** Connector version, so we can persist the result (Required) */
     /** Connector version, so we can persist the result (Required) */
@@ -43,6 +45,7 @@ class StandardDiscoverCatalogInput : Serializable {
     @JsonProperty("connectorVersion")
     @JsonPropertyDescription("Connector version, so we can persist the result")
     var connectorVersion: String? = null
+
     /** Config hash, so we can persist the result (Required) */
     /** Config hash, so we can persist the result (Required) */
     /** Config hash, so we can persist the result (Required) */
@@ -53,7 +56,7 @@ class StandardDiscoverCatalogInput : Serializable {
     var configHash: String? = null
 
     fun withConnectionConfiguration(
-        connectionConfiguration: JsonNode?
+        connectionConfiguration: JsonNode?,
     ): StandardDiscoverCatalogInput {
         this.connectionConfiguration = connectionConfiguration
         return this
@@ -83,7 +86,8 @@ class StandardDiscoverCatalogInput : Serializable {
         sb.append("connectionConfiguration")
         sb.append('=')
         sb.append(
-            (if ((this.connectionConfiguration == null)) "<null>" else this.connectionConfiguration)
+            (if ((this.connectionConfiguration == null)) "<null>"
+            else this.connectionConfiguration),
         )
         sb.append(',')
         sb.append("sourceId")

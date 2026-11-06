@@ -23,7 +23,7 @@ class IntegrationRunnerBackwardsCompatabilityTest {
                 "This is line 1 with an escaped newline \\n character\nThis is line 2 with another escaped newline \\n character",
                 "This is line 1\n\n",
                 "\nThis is line 2",
-                "\n"
+                "\n",
             )
 
         for (testInput in testInputs) {

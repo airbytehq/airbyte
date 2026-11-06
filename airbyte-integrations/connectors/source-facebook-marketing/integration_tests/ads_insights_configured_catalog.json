@@ -119,7 +119,7 @@
     },
     {
       "stream": {
-        "name": "ads_insights_demographics_dma_region",
+        "name": "ads_insights_demographics_comscore_market_region",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
@@ -137,7 +137,7 @@
     },
     {
       "stream": {
-        "name": "ads_insights_dma",
+        "name": "ads_insights_comscore_market",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
       },

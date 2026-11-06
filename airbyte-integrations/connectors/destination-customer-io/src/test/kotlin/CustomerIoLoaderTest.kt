@@ -58,14 +58,14 @@ class CustomerIoStateTest {
             aRecord(
                 Jsons.objectNode()
                     .put("person_email", "rejected_person_email")
-                    .put("event_name", "rejected_event_name")
+                    .put("event_name", "rejected_event_name"),
             )
         every { httpClient.send(any()) } returns
             aResponse(
                 207,
                 """{"errors": [{"batch_index": 1, "reason": "a_reason", "field": "a_field", "message": "a_message"}]}"""
                     .toByteArray()
-                    .inputStream()
+                    .inputStream(),
             )
         state.accumulate(aRecord())
         state.accumulate(rejectedRecord)
@@ -76,10 +76,10 @@ class CustomerIoStateTest {
         assertEquals(
             listOf(
                 rejectedRecord.toDlqRecord(
-                    mapOf("reason" to "a_reason", "field" to "a_field", "message" to "a_message")
-                )
+                    mapOf("reason" to "a_reason", "field" to "a_field", "message" to "a_message"),
+                ),
             ),
-            rejectedRecords
+            rejectedRecords,
         )
     }
 
@@ -108,14 +108,14 @@ class CustomerIoStateTest {
                         AirbyteRecordMessage()
                             .withStream("any_stream")
                             .withEmittedAt(0L)
-                            .withData(data)
-                    )
+                            .withData(data),
+                    ),
             )
         return DestinationRecordRaw(
             stream = mockk(relaxed = true),
             rawData = rawData,
             serializedSizeBytes = "serialized".length.toLong(),
-            airbyteRawId = UUID.randomUUID()
+            airbyteRawId = UUID.randomUUID(),
         )
     }
 }

@@ -1,5 +1,6 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import io
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -7,6 +8,7 @@ import requests
 import requests_mock as rm
 
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import SUCCESS_RESOLUTION
 
 
 @pytest.mark.parametrize(
@@ -1204,3 +1206,13 @@ def test_manifest_instantiates_custom_download_requester(config):
     # Assert report_poll_authenticator is resolved and usable
     assert download_requester.report_poll_authenticator is not None
     assert hasattr(download_requester.report_poll_authenticator, "get_auth_header")
+
+
+def test_download_error_handler_does_not_consume_success_response_body(components_module):
+    response = requests.Response()
+    response.status_code = 200
+    response.raw = io.BytesIO(b"data")
+    error_handler = components_module.BingAdsDownloadErrorHandler(config={}, parameters={})
+
+    assert error_handler.interpret_response(response) == SUCCESS_RESOLUTION
+    assert response.raw.read() == b"data"

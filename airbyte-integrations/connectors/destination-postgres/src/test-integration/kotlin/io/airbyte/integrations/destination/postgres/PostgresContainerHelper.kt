@@ -97,7 +97,7 @@ class PostgresConfigUpdater : ConfigurationUpdater {
 
     override fun setDefaultNamespace(
         config: String,
-        defaultNamespace: String
+        defaultNamespace: String,
     ): DefaultNamespaceResult =
         DefaultNamespaceResult(config.replace("public", defaultNamespace), defaultNamespace)
 }
