@@ -458,7 +458,7 @@ PREDEFINED_SCENARIOS: list[dict[str, Any]] = [
     {
         "name": "duplicate_primary_keys",
         "description": (
-            "Tests dedup behavior when multiple records share the same primary key. " "Destinations should keep the latest record per key."
+            "Tests dedup behavior when multiple records share the same primary key. Destinations should keep the latest record per key."
         ),
         "json_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -481,7 +481,7 @@ PREDEFINED_SCENARIOS: list[dict[str, Any]] = [
     },
     {
         "name": "time_types",
-        "description": ("Tests time-with-timezone and time-without-timezone formats. " "These are commonly mishandled by destinations."),
+        "description": ("Tests time-with-timezone and time-without-timezone formats. These are commonly mishandled by destinations."),
         "json_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -617,7 +617,7 @@ PREDEFINED_SCENARIOS: list[dict[str, Any]] = [
     },
     {
         "name": "large_string_values",
-        "description": ("Tests handling of very long string values that may exceed " "column size limits or buffer sizes in destinations."),
+        "description": ("Tests handling of very long string values that may exceed column size limits or buffer sizes in destinations."),
         "json_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",

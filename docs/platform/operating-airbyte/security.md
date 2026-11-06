@@ -95,7 +95,7 @@ Airbyte Cloud leverages the security features of leading Cloud providers and set
 
 ### Physical infrastructure
 
-Airbyte Cloud uses control planes on GCP in the United States. Airbyte uses isolated pods to keep your data separate from other customers’ data. Data planes [are available](../cloud/managing-airbyte-cloud/manage-data-residency) in the United States (GCP) and European Union (AWS). If you [deploy your own data plane](../enterprise-flex/), that data plane runs in your own infrastructure.
+Airbyte Cloud uses control planes on GCP in the United States. Airbyte uses isolated pods to keep your data separate from other customers’ data. Data planes [are available](../cloud/managing-airbyte-cloud/manage-data-residency) in the United States (GCP) and European Union (AWS). If you [deploy your own data plane](/platform/hybrid-deployment), that data plane runs in your own infrastructure.
 
 Only certain Airbyte staff can access Airbyte infrastructure and technical logs for deployments, upgrades, configuration changes, and troubleshooting.
 
@@ -143,6 +143,6 @@ Do not file GitHub issues or post on our community Slack or forum for security v
 
 Airbyte takes security issues very seriously. To report a vulnerability, go to [Report a security vulnerability](https://airbyte.com/security/vdp). Airbyte Cloud and Airbyte open source each have their own vulnerability disclosure policy. Read the policy for the affected product before you test or submit a report. Each policy explains what's in scope, how to test safely, and how to submit your report.
 
-Use the vulnerability disclosure process only for undisclosed vulnerabilities. For fixed issues or general questions on how to use the security features, use the [Community Slack](https://slack.airbyte.com/) or [GitHub discussions](https://github.com/airbytehq/airbyte/discussions).
+Use the vulnerability disclosure process only for undisclosed vulnerabilities. For fixed issues or general questions on how to use the security features, use the [Community Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg) or [GitHub discussions](https://github.com/airbytehq/airbyte/discussions).
 
 Please report any security problems to us before disclosing it publicly.

@@ -96,9 +96,7 @@ class SourceSmokeTest(Source):
                         "type": "array",
                         "title": "Custom Test Scenarios",
                         "description": (
-                            "Additional test scenarios to inject "
-                            "at runtime. Each scenario defines a "
-                            "stream name, JSON schema, and records."
+                            "Additional test scenarios to inject at runtime. Each scenario defines a stream name, JSON schema, and records."
                         ),
                         "items": {
                             "type": "object",
@@ -276,10 +274,10 @@ class SourceSmokeTest(Source):
                 return f"Custom scenario '{scenario['name']}' must provide 'json_schema' as an object."
             if "records" in scenario:
                 if not isinstance(scenario["records"], list):
-                    return f"Custom scenario '{scenario['name']}' has invalid 'records': " "expected an array of objects."
+                    return f"Custom scenario '{scenario['name']}' has invalid 'records': expected an array of objects."
                 for j, record in enumerate(scenario["records"]):
                     if not isinstance(record, dict):
-                        return f"Custom scenario '{scenario['name']}' record at index {j} " "must be an object."
+                        return f"Custom scenario '{scenario['name']}' record at index {j} must be an object."
         return None
 
     def check(

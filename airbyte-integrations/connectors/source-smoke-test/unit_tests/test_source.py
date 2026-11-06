@@ -3,7 +3,10 @@
 import logging
 import subprocess
 import sys
+from pathlib import Path
 
+import tomllib
+from packaging.specifiers import SpecifierSet
 from source_smoke_test._scenarios import PREDEFINED_SCENARIOS
 from source_smoke_test.source import SourceSmokeTest
 
@@ -15,6 +18,17 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+
+def test_python_requirement_supports_3_11_through_3_13() -> None:
+    pyproject = tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text())
+    python_requirement = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
+
+    assert "3.10" not in python_requirement
+    assert "3.11" in python_requirement
+    assert "3.12" in python_requirement
+    assert "3.13" in python_requirement
+    assert "3.14" not in python_requirement
 
 
 def test_does_not_import_pyairbyte() -> None:
