@@ -22,6 +22,8 @@ Keep comments in `manifest.yaml` to one to three lines that say what a definitio
 
 The GitHub REST and GraphQL APIs support `since` parameter on many list endpoints and `updated` sorting.
 
+`pull_request_commits` supports incremental sync using `pull_request_updated_at`, copied from the parent PR's `updated_at`. It resumes the parent per repository and emits every commit of each selected PR, regardless of commit author date. Commits removed by force-push or rebase are not deleted from the destination in incremental mode (primary key `sha`); Full Refresh | Overwrite removes them.
+
 **Connector type:** manifest-only — every stream in `manifest.yaml`, plus `components.py` for the custom components
 
 **Analysis status:** Every stream is in the manifest; the stream-by-stream table is in `AGENTS.md`.

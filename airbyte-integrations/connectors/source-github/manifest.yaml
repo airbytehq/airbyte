@@ -7440,8 +7440,10 @@ definitions:
               $ref: "#/definitions/pull_requests_stream"
             parent_key: "number"
             partition_field: "pull_number"
+            incremental_dependency: true
             extra_fields:
               - ["repository"]
+              - ["updated_at"]
     transformations:
       - type: AddFields
         fields:
@@ -7449,12 +7451,28 @@ definitions:
             value: "{{ stream_slice.extra_fields['repository'] }}"
           - path: ["pull_number"]
             value: "{{ stream_partition.pull_number }}"
+          - path: ["pull_request_updated_at"]
+            value: "{{ stream_slice.extra_fields['updated_at'] }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "pull_request_updated_at"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      global_substream_cursor: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $schema: https://json-schema.org/draft-07/schema#
         type: object
         properties:
+          pull_request_updated_at:
+            type: ["null", string]
+            format: date-time
           sha:
             description: SHA of the commit.
             type:
