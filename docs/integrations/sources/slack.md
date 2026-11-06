@@ -80,7 +80,7 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
 </FieldAnchor>
 <FieldAnchor field="channel_filter">
-8. (Optional) **Channel filter**: A list of channel names (without the leading `#`) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte replicates data from all channels.
+8. (Optional) **Channel filter**: Channel names or shell-style wildcard patterns (without the leading `#`) to sync. Use `*` for any sequence of characters (for example, `team-*`) or `?` for one character. Exact names still work; an empty list includes all channels. **Channel name exclude filter** accepts the same patterns and takes precedence over the include filter. **Include externally shared channels** defaults to on; turn it off to skip Slack Connect channels with `is_ext_shared: true`. This is a record-level filter because Slack's `types` parameter has no shared-channel type. Filtering happens before the connector joins channels.
 </FieldAnchor>
 <FieldAnchor field="include_private_channels">
 9. (Optional) **Include private channels**: Toggle on to sync data from private channels. You must manually add the bot to private channels even if **Join all channels** is toggled on.
@@ -105,7 +105,7 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages. This feature requires the `channels:join` OAuth scope.
 6. **Start Date**: Any data before this date will not be extracted.
 7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
-8. (Optional) **Channel filter**: A list of channel names (without the leading `#`) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte replicates data from all channels.
+8. (Optional) **Channel filter**: Channel names or shell-style wildcard patterns (without the leading `#`) to sync. Use `*` for any sequence of characters (for example, `team-*`) or `?` for one character. Exact names still work; an empty list includes all channels. **Channel name exclude filter** accepts the same patterns and takes precedence over the include filter. **Include externally shared channels** defaults to on; turn it off to skip Slack Connect channels with `is_ext_shared: true`. This is a record-level filter because Slack's `types` parameter has no shared-channel type. Filtering happens before the connector joins channels.
 9. (Optional) **Include private channels**: Toggle on to sync data from private channels. You must manually add the bot to private channels even if **Join all channels** is toggled on.
 10. (Optional) **Include archived channels**: Toggle on to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams. Enable this if you need to sync data from archived channels.
 11. (Optional) **Ignore messages with no replies in threads stream**: Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default so the Threads stream contains records for all messages.
@@ -202,6 +202,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.0 | 2026-11-06 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add wildcard matching to the channel name filter, a channel exclude filter, and an option to skip externally shared channels |
 | 3.2.27 | 2026-10-06 | [88029](https://github.com/airbytehq/airbyte/pull/88029) | Update dependencies |
 | 3.2.26 | 2026-09-29 | [87330](https://github.com/airbytehq/airbyte/pull/87330) | Update dependencies |
 | 3.2.25 | 2026-09-28 | [86496](https://github.com/airbytehq/airbyte/pull/86496) | Preserve thread parent checkpoints on restart and skip archived channels the bot cannot join |

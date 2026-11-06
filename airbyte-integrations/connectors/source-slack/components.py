@@ -4,6 +4,7 @@ import logging
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import timedelta
+from fnmatch import fnmatchcase
 from functools import partial
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
@@ -15,6 +16,7 @@ from airbyte_cdk.sources.declarative.auth.declarative_authenticator import (
     NoAuth,
 )
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
+from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import (
     InterpolatedString,
 )
@@ -42,6 +44,25 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
 LOGGER = logging.getLogger("airbyte_logger")
+
+
+class ChannelRecordFilter(RecordFilter):
+    def filter_records(
+        self,
+        records: Iterable[Mapping[str, Any]],
+        stream_state: StreamState,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        def selected(record: Mapping[str, Any]) -> bool:
+            if not self.config.get("include_external_shared_channels", True) and record.get("is_ext_shared", False):
+                return False
+            if any(fnmatchcase(record["name"], pattern) for pattern in self.config.get("channel_exclude_filter", [])):
+                return False
+            include = self.config.get("channel_filter", [])
+            return not include or any(fnmatchcase(record["name"], pattern) for pattern in include)
+
+        yield from super().filter_records((record for record in records if selected(record)), stream_state, stream_slice, next_page_token)
 
 
 class JoinChannelsStream(HttpStream):
