@@ -13,7 +13,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
-  dockerImageTag: 3.3.13
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-freshdesk
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
   externalDocumentationUrls:
@@ -35,6 +35,23 @@ data:
     oss:
       enabled: true
   releases:
+    breakingChanges:
+      4.0.0:
+        message: >-
+          SLA policy IDs returned as numeric strings are now emitted as integers,
+          matching the existing schema and ticket references. Only connections syncing
+          sla_policies are affected; existing integer IDs are unchanged. Before
+          upgrading, back up the affected destination data. If string IDs were
+          previously stored, rebuild the affected table or refresh the stream with
+          records removed after preserving any history you need. See
+          https://docs.airbyte.com/integrations/sources/freshdesk-migrations#upgrading-to-400
+          for destination-specific guidance. Other streams are unchanged.
+        upgradeDeadline: "2026-11-20"
+        deadlineAction: disable
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - sla_policies
     rolloutConfiguration:
       enableProgressiveRollout: true
       defaultRolloutMode: autopilot
