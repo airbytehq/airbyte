@@ -97,6 +97,11 @@ definitions:
     - "#/definitions/zoom_skip_missing_resource_filter"
     - "#/definitions/zoom_token_refresh_filter"
     - "#/definitions/zoom_missing_scope_filter"
+  zoom_skip_report_outside_six_months_filter:
+    type: HttpResponseFilter
+    predicate: "{{ response.code == 300 and ('six months' in response.get('message', '') or '6 months' in response.get('message', '')) }}"
+    action: IGNORE
+    error_message: "Zoom returned code 300 ('{{ response.message }}'): Zoom keeps reports for six months only; skipping this date range."
   zoom_meeting_registrants_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -6613,10 +6618,7 @@ definitions:
             action: IGNORE
             error_message: "Zoom returned code 1001 ('{{ response.message }}'): this user was removed from the account after user discovery; skipping this user."
             type: HttpResponseFilter
-          - predicate: "{{ response.code == 300 and ('six months' in response.get('message', '') or '6 months' in response.get('message', '')) }}"
-            action: IGNORE
-            error_message: "Zoom returned code 300 ('{{ response.message }}'): Zoom keeps reports for six months only; skipping this date window."
-            type: HttpResponseFilter
+          - "#/definitions/zoom_skip_report_outside_six_months_filter"
           - predicate: "{{ response.code == 200 }}"
             action: FAIL
             failure_type: config_error
@@ -13186,10 +13188,7 @@ streams:
           failure_type: config_error
           error_message: "Zoom returned code 4711 ('{{ response.message }}'): the OAuth app is missing the report:read:admin scope (or granular report:read:daily_usage:admin); add this scope to the app and reconnect."
           type: HttpResponseFilter
-        - predicate: "{{ response.code == 300 and ('six months' in response.get('message', '') or '6 months' in response.get('message', '')) }}"
-          action: IGNORE
-          error_message: "Zoom returned code 300 ('{{ response.message }}'): Zoom keeps reports for six months only; skipping this report month."
-          type: HttpResponseFilter
+        - "#/definitions/zoom_skip_report_outside_six_months_filter"
         - predicate: "{{ response.code == 200 }}"
           action: FAIL
           failure_type: config_error

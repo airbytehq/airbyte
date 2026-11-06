@@ -24,7 +24,7 @@ from unittest.mock import patch
 import freezegun
 import pytest
 
-from airbyte_cdk.models import AirbyteStreamStatus, FailureType, SyncMode
+from airbyte_cdk.models import AirbyteStreamStatus, FailureType, Level, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -81,6 +81,50 @@ def _mock_token(http_mocker: HttpMocker) -> None:
 
 def _mock_users(http_mocker: HttpMocker) -> None:
     http_mocker.get(_USERS_REQUEST, _USERS_RESPONSE)
+
+
+class TestCode300(TestCase):
+    @HttpMocker()
+    def test_meeting_registrants_skips_registration_not_enabled_300(self, http_mocker: HttpMocker):
+        _mock_token(http_mocker)
+        http_mocker.get(_USERS_REQUEST, _ONE_USER_RESPONSE)
+        http_mocker.get(
+            _user_meetings_request("u1"),
+            HttpResponse(json.dumps({"meetings": [{"id": 1, "uuid": "aaa=="}], "next_page_token": ""})),
+        )
+        registrants_request = HttpRequest(url=f"{_BASE_URL}/meetings/1/registrants", query_params={"page_size": "30"})
+        http_mocker.get(
+            registrants_request,
+            _zoom_error(300, "Registration has not been enabled for this meeting.", status_code=404),
+        )
+
+        output = _read("meeting_registrants")
+
+        assert output.errors == []
+        assert output.get_stream_statuses("meeting_registrants")[-1] == AirbyteStreamStatus.COMPLETE
+        assert output.records == []
+        assert not any(message.log.level == Level.ERROR for message in output.logs)
+        http_mocker.assert_number_of_calls(registrants_request, 1)
+
+    @freezegun.freeze_time("2026-10-20T12:00:00Z")
+    @HttpMocker()
+    def test_report_daily_skips_expired_window_300(self, http_mocker: HttpMocker):
+        _mock_token(http_mocker)
+        expired_request = HttpRequest(url=f"{_BASE_URL}/report/daily", query_params={"year": "2026", "month": "9"})
+        current_request = HttpRequest(url=f"{_BASE_URL}/report/daily", query_params={"year": "2026", "month": "10"})
+        http_mocker.get(expired_request, _zoom_error(300, "Report is outside the last six months.", status_code=400))
+        record = {"date": "2026-10-20", "meeting_minutes": 20, "meetings": 1, "new_users": 0, "participants": 2}
+        http_mocker.get(current_request, HttpResponse(json.dumps({"dates": [record]})))
+
+        output = _read("report_daily", config={**_CONFIG, "start_date": "2026-09-01T00:00:00Z"})
+
+        assert output.errors == []
+        assert output.get_stream_statuses("report_daily")[-1] == AirbyteStreamStatus.COMPLETE
+        assert [message.record.data for message in output.records] == [record]
+        assert not any(message.log.level == Level.ERROR for message in output.logs)
+        assert output.is_in_logs("Zoom keeps reports for six months only; skipping this date range.")
+        http_mocker.assert_number_of_calls(expired_request, 1)
+        http_mocker.assert_number_of_calls(current_request, 1)
 
 
 class TestMeetings(TestCase):
