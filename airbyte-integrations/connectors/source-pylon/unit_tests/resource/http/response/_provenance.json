@@ -1,0 +1,23 @@
+{
+  "url": "https://api.usepylon.com/openapi.json",
+  "sha256": "d2cc304c18073042c147d29cd893426d80a13f912e6626635fefd7b1377376bc",
+  "fetch_date": "2026-11-04",
+  "generation": "Synthetic values recursively generated from each endpoint 200 response data.items schema; no API examples or customer data used.",
+  "response_paths": {
+    "accounts": "/accounts",
+    "contacts": "/contacts",
+    "tags": "/tags",
+    "teams": "/teams",
+    "users": "/users",
+    "custom_fields": "/custom-fields",
+    "knowledge_bases": "/knowledge-bases",
+    "ticket_forms": "/ticket-forms",
+    "user_roles": "/user-roles",
+    "activity_types": "/activity-types",
+    "issue_statuses": "/issue-statuses",
+    "issues": "/issues/search",
+    "issue_messages": "/issues/{id}/messages",
+    "issue_threads": "/issues/{id}/threads",
+    "knowledge_base_articles": "/knowledge-bases/{id}/articles"
+  }
+}
