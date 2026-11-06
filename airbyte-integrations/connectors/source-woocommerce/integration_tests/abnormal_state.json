@@ -42,16 +42,5 @@
         "name": "product_reviews"
       }
     }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_descriptor": {
-        "name": "customers"
-      },
-      "stream_state": {
-        "date_modified_gmt": "2100-10-06T03:56:40"
-      }
-    }
   }
 ]
