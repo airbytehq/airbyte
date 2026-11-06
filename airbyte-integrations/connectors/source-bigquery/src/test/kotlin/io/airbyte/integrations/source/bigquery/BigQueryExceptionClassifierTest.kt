@@ -40,7 +40,7 @@ class BigQueryExceptionClassifierTest {
                 // A base table column whose type changed under the view's expression.
                 "No matching signature for operator + Argument types: STRING, INT64; " +
                     "failed to parse view 'my-project.my_dataset.my_view' at [1:8]",
-            ]
+            ],
     )
     fun invalidViewDefinitionIsAConfigError(message: String) {
         val trace = handler.handle(runQueryFailure(message))
