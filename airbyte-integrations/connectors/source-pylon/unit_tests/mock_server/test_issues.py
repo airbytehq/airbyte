@@ -65,9 +65,9 @@ def test_legacy_state_rewinds_to_start_date():
 
 
 @freeze_time("2026-02-01T00:00:00Z")
-def test_thirty_day_window_seam_loses_no_seconds(requests_mock):
+def test_thirty_day_windows_overlap_without_subsecond_gaps(requests_mock):
     edge = datetime(2026, 1, 31, tzinfo=timezone.utc)
-    timestamps = [(edge + timedelta(seconds=offset)).strftime("%Y-%m-%dT%H:%M:%SZ") for offset in (-2, -1, 0, 1)]
+    timestamps = [(edge + timedelta(seconds=offset)).strftime("%Y-%m-%dT%H:%M:%S.%fZ") for offset in (-2, -1, -0.5, 0, 0.5, 1)]
     records = [{**fixture_record("issues"), "id": f"seam-{index}", "updated_at": stamp} for index, stamp in enumerate(timestamps)]
     windows = []
 
@@ -78,7 +78,11 @@ def test_thirty_day_window_seam_loses_no_seconds(requests_mock):
         time_filter = body["filter"]
         assert time_filter["operator"] == "time_range"
         start, end = time_filter["values"]
-        selected = [record for record in records if start <= record["updated_at"] <= end]
+        selected = [
+            record
+            for record in records
+            if datetime.fromisoformat(start) <= datetime.fromisoformat(record["updated_at"]) <= datetime.fromisoformat(end)
+        ]
         windows.append((start, end))
         return {"data": selected, "pagination": {"has_next_page": False}}
 
@@ -89,38 +93,55 @@ def test_thirty_day_window_seam_loses_no_seconds(requests_mock):
     emitted = {message.record.data["updated_at"] for message in output.records}
     assert emitted == set(timestamps), f"Lost whole seconds at the 30-day seam: {sorted(set(timestamps) - emitted)}"
     assert sorted(windows) == [
-        (START, "2026-01-30T23:59:59Z"),
+        (START, "2026-01-31T00:00:00Z"),
         ("2026-01-31T00:00:00Z", "2026-02-01T00:00:00Z"),
     ]
     first, second = sorted(windows)
-    assert datetime.fromisoformat(second[0]) - datetime.fromisoformat(first[1]) == timedelta(seconds=1)
-    assert Counter(message.record.data["id"] for message in output.records) == Counter(record["id"] for record in records)
+    assert first[1] == second[0]
+    assert all(datetime.fromisoformat(end) - datetime.fromisoformat(start) <= timedelta(days=30) for start, end in windows)
+    counts = Counter(message.record.data["id"] for message in output.records)
+    expected = Counter(record["id"] for record in records)
+    expected["seam-3"] += 1
+    assert counts == expected
+    cursor = output.most_recent_state.stream_state.__dict__["updated_at"]
+    assert datetime.fromisoformat(cursor) == max(datetime.fromisoformat(stamp) for stamp in timestamps)
+    print(f"Seam windows: {sorted(windows)}")
+    print(f"Subsecond seam record 2026-01-30T23:59:59.500000Z: {counts['seam-2']} emission; shared edge: {counts['seam-3']} emissions")
+    print(f"Seam final cursor: {cursor}; unique IDs: {len(counts)}; emitted records: {sum(counts.values())}")
 
 
 @freeze_time("2026-02-01T00:00:00Z")
 def test_interrupted_read_resumes_from_last_emitted_state(requests_mock):
-    checkpoint = "2026-01-30T23:59:59Z"
+    checkpoint = "2026-01-31T00:00:00Z"
     end = "2026-02-01T00:00:00Z"
     records = [
         {**fixture_record("issues"), "id": identifier, "updated_at": stamp}
         for identifier, stamp in (
             ("resume-before", "2026-01-30T23:59:58Z"),
+            ("resume-subsecond", "2026-01-30T23:59:59.500000Z"),
             ("resume-checkpoint", checkpoint),
-            ("resume-after", "2026-01-31T00:00:00Z"),
+            ("resume-after", "2026-01-31T00:00:00.500000Z"),
             ("resume-final", end),
         )
     ]
     windows = []
+    interrupted = True
 
     def respond(request, context):
         time_filter = request.json()["filter"]
         assert time_filter["operator"] == "time_range"
         start, stop = time_filter["values"]
         windows.append((start, stop))
-        if start == "2026-01-31T00:00:00Z":
+        if interrupted and start == checkpoint:
             context.status_code = 400
             return {"code": "invalid_request_body", "errors": ["Synthetic interrupted window"]}
-        return {"data": [record for record in records if start <= record["updated_at"] <= stop]}
+        return {
+            "data": [
+                record
+                for record in records
+                if datetime.fromisoformat(start) <= datetime.fromisoformat(record["updated_at"]) <= datetime.fromisoformat(stop)
+            ]
+        }
 
     requests_mock.post(f"{BASE}/issues/search", json=respond)
     config = {**CONFIG, "num_workers": 2}
@@ -145,14 +166,46 @@ def test_interrupted_read_resumes_from_last_emitted_state(requests_mock):
     )
     assert first.most_recent_state.stream_state.__dict__["updated_at"] == checkpoint
     assert windows == [(START, checkpoint), ("2026-01-31T00:00:00Z", end)]
-    assert [message.record.data["id"] for message in first.records] == ["resume-before", "resume-checkpoint"]
+    assert [message.record.data["id"] for message in first.records] == ["resume-before", "resume-subsecond", "resume-checkpoint"]
+    assert datetime.fromisoformat(checkpoint) == max(datetime.fromisoformat(message.record.data["updated_at"]) for message in first.records)
 
     windows.clear()
+    interrupted = False
     resumed = run("issues", cfg=config, mode=SyncMode.incremental, state=[first.state_messages[-1].state])
     assert resumed.errors == []
     assert windows == [(checkpoint, end)]
     assert [message.record.data["id"] for message in resumed.records] == ["resume-checkpoint", "resume-after", "resume-final"]
     combined = Counter(message.record.data["id"] for output in (first, resumed) for message in output.records)
-    assert combined == Counter({"resume-before": 1, "resume-checkpoint": 2, "resume-after": 1, "resume-final": 1})
+    assert combined == Counter({"resume-before": 1, "resume-subsecond": 1, "resume-checkpoint": 2, "resume-after": 1, "resume-final": 1})
     assert set(combined) == {record["id"] for record in records}
     assert resumed.most_recent_state.stream_state.__dict__["updated_at"] == end
+    print(f"Resume checkpoint: {checkpoint}; final cursor: {end}; ID multiplicities: {dict(combined)}")
+
+
+@pytest.mark.parametrize("start", ["2026-01-14T23:59:59Z", NOW, "2025-12-16T00:00:00Z"])
+@freeze_time(NOW)
+def test_final_issue_window_is_capped_at_now(requests_mock, start):
+    records = [
+        {**fixture_record("issues"), "id": "at-now", "updated_at": NOW},
+        {**fixture_record("issues"), "id": "after-now", "updated_at": "2026-01-15T00:00:00.500000Z"},
+    ]
+    windows = []
+
+    def respond(request, context):
+        lower, upper = request.json()["filter"]["values"]
+        windows.append((lower, upper))
+        return {
+            "data": [
+                record
+                for record in records
+                if datetime.fromisoformat(lower) <= datetime.fromisoformat(record["updated_at"]) <= datetime.fromisoformat(upper)
+            ]
+        }
+
+    requests_mock.post(f"{BASE}/issues/search", json=respond)
+    output = run("issues", cfg={**CONFIG, "start_date": start}, mode=SyncMode.incremental)
+    assert output.errors == []
+    assert windows == [(start, NOW)]
+    assert [message.record.data["id"] for message in output.records] == ["at-now"]
+    assert output.most_recent_state.stream_state.__dict__["updated_at"] == NOW
+    print(f"Final window: {windows[0]}; at-now emitted, after-now excluded; cursor: {NOW}")

@@ -37,7 +37,7 @@ PYTHONPATH=. python -m pytest mock_server/test_all_streams.py --no-cov -s --juni
 | Area | Tests | Cases |
 | --- | --- | --- |
 | List endpoints | `mock_server/test_list_streams.py` | All 11 list streams, empty responses, pagination, deactivated users, check, discover |
-| Issues | `mock_server/test_issues.py` | Inclusive filters, incremental state, two-pass reads, empty reads, 30-day seam bounds and unique record IDs |
+| Issues | `mock_server/test_issues.py` | Inclusive filters, incremental state, two-pass reads, empty reads, overlapping 30-day seams, subsecond records, replay multiplicities and capped final windows |
 | Interruption/resume | `mock_server/test_issues.py` | Non-retryable failure in the second window after a checkpoint; resume from emitted state and verify record multiplicities and final state |
 | Child streams | `mock_server/test_child_streams.py` | Parent-key projection for all three children, missing parent keys in responses, empty parent sets |
 | Errors | `test_error_handler.py`, `mock_server/test_error_handling.py` | Actionable authentication, region, permission and organization errors; generic and non-JSON failures; no silent 404 skips |
@@ -95,12 +95,18 @@ does need registry network access, independently of offline spec and discover.
 - **Child ID uniqueness:** existing primary keys use child `id` alone. Tests do
   not prove global child-ID uniqueness across parents; synthetic parent-key
   projection does not validate that API-wide uniqueness assumption.
-- **Time and replay:** seam tests cover whole-second timestamps and disjoint
-  windows within one read. Resume is inclusive of the checkpoint second, so the
-  record exactly at that checkpoint is intentionally emitted again; the test
-  permits only that replay, with no other duplicate or lost IDs. This is not an
-  exactly-once guarantee. Fractional-second boundary behavior, late updates, and
-  consistency while paginating are not established by these fixtures.
+- **Time and replay:** requests extend the cursor interval's end by one second,
+  capped at the request start plus 30 days and the current UTC time. Adjacent
+  queries meet at an inclusive endpoint, covering fractional seconds before that
+  endpoint without widening the cursor's partition intervals. The final request
+  never queries the future. A long-running sync can query slightly beyond a
+  previously generated final interval as the clock advances; state still uses
+  observed record cursors, not the extra second alone. Fake-server comparisons
+  use subsecond precision and assert replay only at shared edges. Resume is also
+  inclusive: the record at the saved cursor is intentionally replayed. Checkpoint
+  serialization uses whole seconds, so fractional cursors can replay that second
+  on resume. These tests do not prove live API comparison precision, late-update
+  behavior or consistency while paginating, and do not imply exactly-once delivery.
 - **Budget scope:** fake-clock tests prove per-endpoint limits in one connector
   instance, not coordination with other API clients sharing an organization's
   allowance. Live service traffic and timing have not been tested.
