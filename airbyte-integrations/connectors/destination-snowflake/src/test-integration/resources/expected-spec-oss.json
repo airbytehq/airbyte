@@ -80,7 +80,7 @@
               "type" : "string",
               "description" : "Passphrase for private key",
               "title" : "Passphrase",
-              "order" : 0,
+              "order" : 1,
               "airbyte_secret" : true
             }
           },

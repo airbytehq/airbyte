@@ -132,6 +132,7 @@ def test_config_schema_orders_auth_bucket_streams_and_stream_fields():
     assert properties["streams"]["order"] == 2
     assert stream_properties["name"]["order"] == 0
     assert stream_properties["format"]["order"] == 1
+    assert stream_properties["globs"]["order"] == 2
     assert not {"aws_access_key_id", "aws_secret_access_key", "role_arn"} & properties.keys()
     credential_options = properties["credentials"]["oneOf"]
     assert {option["properties"]["auth_type"]["const"] for option in credential_options} == {
