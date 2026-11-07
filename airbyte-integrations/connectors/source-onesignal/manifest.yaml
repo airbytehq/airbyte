@@ -31,19 +31,7 @@ definitions:
           request_headers:
             Authorization: Basic {{ config["user_auth_key"] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -69,19 +57,7 @@ definitions:
           request_headers:
             Authorization: Basic {{ config['applications'][0]['app_api_key'] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -136,19 +112,7 @@ definitions:
           request_headers:
             Authorization: Basic {{ config['applications'][0]['app_api_key'] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
+            $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -204,29 +168,16 @@ definitions:
           request_headers:
             Authorization: Basic {{ config['applications'][0]['app_api_key'] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: SUCCESS
-                    http_codes:
-                      - 400
-                    error_message: >-
-                      Plan is not supported, please get a premium plan for
-                      accessing stream
+            $ref: "#/definitions/base_error_handler"
+            response_filters:
+              - $ref: "#/definitions/rate_limited_filter"
+              - type: HttpResponseFilter
+                action: SUCCESS
+                http_codes:
+                  - 400
+                error_message: >-
+                  Plan is not supported, please get a premium plan for
+                  accessing stream
         record_selector:
           type: RecordSelector
           extractor:
@@ -251,6 +202,20 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/outcomes"
+  rate_limited_filter:
+    type: HttpResponseFilter
+    action: RATE_LIMITED
+    http_codes:
+      - 429
+    error_message: Rate limits hit
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 3
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 2
+    response_filters:
+      - $ref: "#/definitions/rate_limited_filter"
   base_requester:
     type: HttpRequester
     url_base: https://onesignal.com/api/v1/
