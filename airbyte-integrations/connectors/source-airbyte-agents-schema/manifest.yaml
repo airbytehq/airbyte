@@ -1,0 +1,388 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: >-
+  Materializes an Agents Schema (https://github.com/dbt-labs/agents_schema) from Airbyte's own
+  configuration metadata. Given a destination actor id, it enumerates the connections landing in that
+  destination and emits AGENTS-shaped streams (`root`, `airbyte_stream`) describing every active
+  stream and its physical destination table. Sync these to Parquet, DuckDB, or back into a warehouse
+  `AGENTS` schema so a SQL agent can discover how Airbyte-landed data is laid out.
+
+check:
+  type: CheckStream
+  stream_names:
+    - root
+
+definitions:
+  # Shared bearer authenticator. The access token is minted against the public API token endpoint
+  # and reused unchanged against both the public API (`base_requester`) and the internal Config API
+  # (`config_requester`) — the same pattern PyAirbyte uses.
+  authenticator:
+    type: SessionTokenAuthenticator
+    login_requester:
+      type: HttpRequester
+      url_base: >-
+        {{ "https://{}/api/public/v1/applications/token".format(config['host'])
+        if config['host'] else
+        "https://api.airbyte.com/v1/applications/token" }}
+      authenticator:
+        type: NoAuth
+      http_method: POST
+      request_parameters: {}
+      request_headers: {}
+      request_body_json:
+        client_id: "{{ config['client_id'] }}"
+        grant-type: client_credentials
+        client_secret: "{{ config['client_secret'] }}"
+    session_token_path:
+      - access_token
+    request_authentication:
+      type: Bearer
+
+  base_requester:
+    type: HttpRequester
+    url_base: >-
+      {{ "https://{}/api/public/v1/".format(config['host']) if config['host']
+      else "https://api.airbyte.com/v1/" }}
+    authenticator:
+      $ref: "#/definitions/authenticator"
+
+  # Internal Config API (`web_backend/*`). Unlike the public API it returns each connection's full
+  # configured catalog with field-level types plus sync freshness. Cloud host is `cloud.airbyte.com`
+  # (not `api.airbyte.com`); self-managed swaps the public suffix `/api/public/v1` for `/api/v1`.
+  config_requester:
+    type: HttpRequester
+    url_base: >-
+      {{ "https://{}/api/v1/".format(config['host']) if config['host']
+      else "https://cloud.airbyte.com/api/v1/" }}
+    authenticator:
+      $ref: "#/definitions/authenticator"
+
+  streams:
+    # Parent stream: resolve the destination's workspace so `connections` can be scoped
+    # server-side. Not synced directly (kept out of the top-level `streams` list); it exists only
+    # to feed the SubstreamPartitionRouter below.
+    destination:
+      type: DeclarativeStream
+      name: destination
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "destinations/{{ config['destination_id'] }}"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: NoPagination
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+    # Parent stream: the connections landing in the target destination, scoped server-side to the
+    # destination's workspace (via the `destination` parent) and filtered to the destination id.
+    # Not synced directly; it feeds one partition per connection to `airbyte_stream`.
+    connections_index:
+      type: DeclarativeStream
+      name: connections_index
+      primary_key:
+        - connectionId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: connections
+          http_method: GET
+          request_parameters:
+            limit: "100"
+            includeDeleted: "false"
+            workspaceIds: "{{ stream_partition.workspace_id }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/streams/destination"
+              parent_key: workspaceId
+              partition_field: workspace_id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['destinationId'] == config['destination_id'] }}"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('next', {}) }}"
+            stop_condition: "{{ not response.get('next', {}) }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            connectionId:
+              type: string
+    airbyte_stream:
+      type: DeclarativeStream
+      name: airbyte_stream
+      primary_key:
+        - connection_id
+        - stream_namespace
+        - stream_name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/config_requester"
+          path: web_backend/connections/get
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            # The Config API edge (cloud.airbyte.com) rejects the default client User-Agent with a
+            # 403; a non-default User-Agent is required to reach the API.
+            User-Agent: airbyte-source-airbyte-agents-schema
+          request_body_json:
+            connectionId: "{{ stream_partition.connection_id }}"
+            withRefreshedCatalog: false
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/streams/connections_index"
+              parent_key: connectionId
+              partition_field: connection_id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.AgentsStreamCatalogExtractor
+        paginator:
+          type: NoPagination
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/airbyte_stream"
+    root:
+      type: DeclarativeStream
+      name: root
+      primary_key:
+        - provider
+        - key
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "destinations/{{ config['destination_id'] }}"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.AgentsRootExtractor
+        paginator:
+          type: NoPagination
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/root"
+
+streams:
+  - $ref: "#/definitions/streams/root"
+  - $ref: "#/definitions/streams/airbyte_stream"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - destination_id
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        description: >-
+          The client id of an Airbyte API application. Exchanged for a short-lived access token used
+          as the bearer credential against the Airbyte API.
+      client_secret:
+        type: string
+        order: 1
+        title: Client Secret
+        airbyte_secret: true
+        description: The client secret of the Airbyte API application.
+      destination_id:
+        type: string
+        order: 2
+        title: Destination ID
+        description: >-
+          The actor id (GUID) of the destination to describe. Every connection landing in this
+          destination is enumerated; the workspace is inferred from the destination, so it is not a
+          separate input.
+      host:
+        type: string
+        order: 3
+        title: Self-Managed Host
+        description: >-
+          The host of your Self-Managed Airbyte deployment (e.g. airbyte.mydomain.com). Leave blank
+          for Airbyte Cloud (api.airbyte.com).
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    root: false
+    airbyte_stream: false
+  assist: {}
+
+schemas:
+  root:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    required:
+      - provider
+      - key
+    properties:
+      provider:
+        type: string
+        description: Agents Schema provider namespace (always `airbyte` for this connector).
+      key:
+        type: string
+        description: Row key — `index` for the self-describing index, or `skill/<name>` for guidance.
+      content:
+        type:
+          - string
+          - "null"
+        description: JSON index payload or free-form markdown guidance.
+  airbyte_stream:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    required:
+      - connection_id
+      - stream_name
+    properties:
+      connection_id:
+        type: string
+      connection_name:
+        type:
+          - string
+          - "null"
+      workspace_id:
+        type:
+          - string
+          - "null"
+      source_id:
+        type:
+          - string
+          - "null"
+      destination_id:
+        type:
+          - string
+          - "null"
+      stream_name:
+        type: string
+      stream_namespace:
+        type:
+          - string
+          - "null"
+      sync_mode:
+        type:
+          - string
+          - "null"
+      primary_key:
+        type:
+          - array
+          - "null"
+      cursor_field:
+        type:
+          - array
+          - "null"
+      selected_fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      columns:
+        type:
+          - array
+          - "null"
+        description: >-
+          Typed column list from the connection's configured catalog. Each item is
+          `{name, type}` where `type` is the stream's JSON Schema type for that field.
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type:
+                - string
+                - array
+                - "null"
+      destination_sync_mode:
+        type:
+          - string
+          - "null"
+      last_sync_status:
+        type:
+          - string
+          - "null"
+        description: Status of the connection's most recent sync job (e.g. succeeded, failed).
+      last_sync_at:
+        type:
+          - integer
+          - "null"
+        description: Epoch seconds when the connection's most recent sync job was created.
+      is_syncing:
+        type:
+          - boolean
+          - "null"
+      destination_namespace:
+        type:
+          - string
+          - "null"
+      destination_table_name:
+        type:
+          - string
+          - "null"
+      prefix:
+        type:
+          - string
+          - "null"
+      namespace_definition:
+        type:
+          - string
+          - "null"
+      namespace_format:
+        type:
+          - string
+          - "null"
+      connection_status:
+        type:
+          - string
+          - "null"
