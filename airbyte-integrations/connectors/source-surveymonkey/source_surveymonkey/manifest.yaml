@@ -25,12 +25,10 @@ definitions:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: X-Ratelimit-App-Global-Minute-Reset
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: X-Ratelimit-App-Global-Minute-Reset
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -69,12 +67,10 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: X-Ratelimit-App-Global-Minute-Reset
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: X-Ratelimit-App-Global-Minute-Reset
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -112,12 +108,10 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: X-Ratelimit-App-Global-Minute-Reset
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: X-Ratelimit-App-Global-Minute-Reset
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -156,12 +150,10 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: X-Ratelimit-App-Global-Minute-Reset
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: X-Ratelimit-App-Global-Minute-Reset
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -224,12 +216,10 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: X-Ratelimit-App-Global-Minute-Reset
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: X-Ratelimit-App-Global-Minute-Reset
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -278,12 +268,10 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: X-Ratelimit-App-Global-Minute-Reset
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: X-Ratelimit-App-Global-Minute-Reset
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -314,12 +302,10 @@ streams:
                       type: BearerAuthenticator
                       api_token: "{{ config['credentials']['access_token'] }}"
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: WaitTimeFromHeader
-                              header: X-Ratelimit-App-Global-Minute-Reset
+                      type: DefaultErrorHandler
+                      backoff_strategies:
+                        - type: WaitTimeFromHeader
+                          header: X-Ratelimit-App-Global-Minute-Reset
                     request_body_json: {}
                   record_selector:
                     type: RecordSelector
