@@ -85,7 +85,7 @@ Version 1.0.0 removes the redundant `applications_demographics_answers`, `applic
 
 Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string. This is another reason to give 1.0.0 its own tables: the v1 tables type those columns as string, and destinations do not change a column's type on a schema refresh.
 
-Most of the fields above are not gone from Harvest. Harvest v3 moved them off the parent record onto their own collection endpoints, and this release does not sync those endpoints yet. Adding the rest is tracked for a follow-up release and will require adding the corresponding scopes to your Greenhouse OAuth application and re-running consent. Until then, Harvest v3 still serves this data at:
+Most of the fields above are not gone from Harvest. Harvest v3 moved them off the parent record onto their own collection endpoints, and this release does not sync those endpoints yet. Adding the rest is tracked for a follow-up release and will require Airbyte to request the corresponding scopes in the consent flow, so you will need to re-run consent once those streams ship. Until then, Harvest v3 still serves this data at:
 
 | Dropped v1 field | Harvest v3 endpoint |
 |---|---|
