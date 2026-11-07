@@ -1,13 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-"""Entry point for source-smoke-test.
-
-Delegates to the PyAirbyte CLI smoke test source implementation.
-"""
+"""Entry point for source-smoke-test."""
 
 import sys
 
-from airbyte.cli.smoke_test_source.source import SourceSmokeTest
 from airbyte_cdk.entrypoint import launch
+from source_smoke_test.source import SourceSmokeTest
 
 
 def run() -> None:
