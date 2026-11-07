@@ -49,14 +49,16 @@ Be careful using variables marked as `alpha`. They aren't meant for public consu
 
 ## Jobs
 
-1. `SYNC_JOB_MAX_ATTEMPTS` - Defines the number of attempts a sync will attempt before failing. _Legacy - this is superseded by the values below_
-2. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_SUCCESSIVE` - Defines the max number of successive attempts in which no data was synchronized before failing the job.
-3. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which no data was synchronized before failing the job.
-4. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MIN_INTERVAL_S` - Defines the minimum backoff interval in seconds between failed attempts in which no data was synchronized.
-5. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MAX_INTERVAL_S` - Defines the maximum backoff interval in seconds between failed attempts in which no data was synchronized.
-6. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_BASE` - Defines the exponential base of the backoff interval between failed attempts in which no data was synchronized.
-7. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_SUCCESSIVE` - Defines the max number of attempts in which some data was synchronized before failing the job.
-8. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which some data was synchronized before failing the job.
+The following retry defaults apply to Airbyte Core. The failure limits count failed attempts, not additional retries. Airbyte retries only while every failure counter is below its limit. For example, a total complete-failure limit of 5 fails the job on the fifth attempt that fails without syncing data.
+
+1. `SYNC_JOB_MAX_ATTEMPTS` - Defines the maximum number of attempts before failing the job. Defaults to 3. Used only if Airbyte can't load the job's retry state because the retry-state activity fails, not when a job has no saved retry state. Set with the Helm value `worker.syncJobMaxAttempts`.
+2. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_SUCCESSIVE` - Defines the maximum number of successive failed attempts that sync no data before failing the job. Defaults to 5.
+3. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_TOTAL` - Defines the maximum total number of failed attempts that sync no data before failing the job. Defaults to 5.
+4. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MIN_INTERVAL_S` - Defines the minimum backoff interval in seconds after failed attempts that sync no data. Defaults to 10.
+5. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MAX_INTERVAL_S` - Defines the maximum backoff interval in seconds after failed attempts that sync no data. Defaults to 1800 (30 minutes).
+6. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_BASE` - Defines the exponential base of the backoff interval after failed attempts that sync no data. Defaults to 3. The backoff is `min(min_interval × base^(n-1), max_interval)` seconds, where `n` is the number of successive complete failures.
+7. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_SUCCESSIVE` - Defines the maximum number of successive failed attempts that sync some data before failing the job. Defaults to 1000.
+8. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_TOTAL` - Defines the maximum total number of failed attempts that sync some data before failing the job. Defaults to 10.
 9. `SYNC_JOB_MAX_TIMEOUT_DAYS` - Defines the number of days a sync job will execute for before timing out.
 10. `JOB_MAIN_CONTAINER_CPU_REQUEST` - Defines the job container's minimum CPU usage. Defaults to none.
 11. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Defines the job container's maximum CPU usage. Defaults to none.
@@ -72,6 +74,17 @@ Be careful using variables marked as `alpha`. They aren't meant for public consu
 21. `JOB_KUBE_BUSYBOX_IMAGE` - Defines the Job pod busybox image.
 22. `JOB_KUBE_CURL_IMAGE` - Defines the Job pod curl image pull.
 23. `JOB_KUBE_NAMESPACE` - Defines the Kubernetes namespace Job pods are created in.
+
+The `SYNC_JOB_RETRIES_*` variables have no dedicated Helm values. Set them on the worker with `worker.extraEnv`, for example:
+
+```yaml title="values.yaml"
+worker:
+  extraEnv:
+    - name: SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_TOTAL
+      value: "5"
+    - name: SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_TOTAL
+      value: "10"
+```
 
 ## Jobs-specific
 
