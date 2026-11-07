@@ -70,6 +70,8 @@ def _shipments_request(
         "LastUpdatedBefore": (last_updated_before or NOW).strftime(TIME_FORMAT),
     }
     if next_token:
+        query_params.pop("LastUpdatedAfter")
+        query_params.pop("LastUpdatedBefore")
         query_params["NextToken"] = next_token
     return RequestBuilder.fba_inbound_shipments_endpoint().with_query_params(query_params)
 
