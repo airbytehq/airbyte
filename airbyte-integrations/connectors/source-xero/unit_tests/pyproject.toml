@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "source-xero-tests"
-version = "2.1.5"
+version = "2.1.7"
 description = "Unit tests for source-xero"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -12,6 +12,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 python = "^3.10,<3.13"
 airbyte-cdk = "^6"
 pytest = "^8"
+requests-mock = "^1.12.1"
 
 [tool.pytest.ini_options]
 filterwarnings = [
