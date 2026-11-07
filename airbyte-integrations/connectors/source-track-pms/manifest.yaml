@@ -48,32 +48,7 @@ definitions:
           path: tags
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -119,32 +94,7 @@ definitions:
           path: pms/nodes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -206,32 +156,7 @@ definitions:
           path: roles
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -277,32 +202,7 @@ definitions:
           path: pms/taxes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -352,32 +252,7 @@ definitions:
           path: pms/units
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -455,32 +330,7 @@ definitions:
           path: users
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -538,32 +388,7 @@ definitions:
           path: pms/folios
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -637,32 +462,7 @@ definitions:
           path: pms/groups
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -732,32 +532,7 @@ definitions:
           path: pms/owners
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -817,32 +592,7 @@ definitions:
           path: v2/pms/quotes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -884,32 +634,7 @@ definitions:
           path: pms/charges
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -977,32 +702,7 @@ definitions:
           path: channel-management/channel/reviews
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1048,32 +748,7 @@ definitions:
           path: crm/contacts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1133,32 +808,7 @@ definitions:
           path: crm/companies
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1218,32 +868,7 @@ definitions:
           path: pms/owners/contracts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1289,32 +914,7 @@ definitions:
           path: crm/tasks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1368,32 +968,7 @@ definitions:
           path: pms/documents
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1439,32 +1014,7 @@ definitions:
           path: pms/rates/types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1514,32 +1064,7 @@ definitions:
           path: pms/date-groups
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1585,32 +1110,7 @@ definitions:
           path: pms/folios/{{ stream_interval.folio_id }}/logs
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1674,32 +1174,7 @@ definitions:
           path: pms/owners/fractionals
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1749,32 +1224,7 @@ definitions:
           path: pms/groups/{{ stream_partition.group_id }}/tags
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1835,32 +1285,7 @@ definitions:
           path: pms/nodes/types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1906,32 +1331,7 @@ definitions:
           path: v2/pms/promo-codes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -1977,32 +1377,7 @@ definitions:
           path: pms/units/{{ stream_partition.unit_id }}/taxes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -2065,32 +1440,7 @@ definitions:
           path: pms/units/types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -2140,32 +1490,7 @@ definitions:
           path: pms/booking-fees
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -2211,32 +1536,7 @@ definitions:
           path: pms/folios/rules
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -2282,32 +1582,7 @@ definitions:
           path: pms/owners/{{ stream_partition.owner_id }}/units
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -2367,32 +1642,7 @@ definitions:
           path: pms/reservations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
           request_parameters:
@@ -2506,32 +1756,7 @@ definitions:
           path: pms/tax-policies
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -2581,32 +1806,7 @@ definitions:
           path: pms/unit-blocks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -2661,32 +1861,7 @@ definitions:
           path: custom-fields
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -2732,32 +1907,7 @@ definitions:
           path: pms/groups/{{ stream_partition.group_id }}/blocks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -2830,32 +1980,7 @@ definitions:
           path: pms/units/lodging-types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -2909,32 +2034,7 @@ definitions:
           path: pms/tax-districts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -2992,32 +2092,7 @@ definitions:
           path: pms/units/{{ stream_interval.unit_id }}/channels
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -3071,32 +2146,7 @@ definitions:
           path: v2/pms/reservations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
           request_parameters:
@@ -3214,32 +2264,7 @@ definitions:
           path: pms/units/amenities
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -3285,32 +2310,7 @@ definitions:
           path: pms/units/bed-types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -3356,32 +2356,7 @@ definitions:
           path: pms/accounting/bills
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -3440,32 +2415,7 @@ definitions:
           path: pms/accounting/items
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -3520,32 +2470,7 @@ definitions:
           path: pms/groups/{{ stream_partition.group_id }}/breakdown
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -3604,32 +2529,7 @@ definitions:
           path: pms/owners/contracts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -3675,32 +2575,7 @@ definitions:
           path: pms/owners/statements
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -3750,32 +2625,7 @@ definitions:
           path: pms/accounting/charges
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -3824,32 +2674,7 @@ definitions:
           path: crm/contacts/{{ stream_partition.contact_id }}/companies
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -3913,32 +2738,7 @@ definitions:
           path: pms/owners/fractionals/{{ stream_partition.fraction_id }}/owners
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -4012,32 +2812,7 @@ definitions:
           path: pms/reservations/types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -4083,32 +2858,7 @@ definitions:
           path: pms/units
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -4189,32 +2939,7 @@ definitions:
           path: users
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -4308,32 +3033,7 @@ definitions:
           path: pms/accounting/accounts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
           request_parameters:
@@ -4384,32 +3084,7 @@ definitions:
           path: pms/accounting/deposits
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -4458,32 +3133,7 @@ definitions:
           path: pms/folios/{{ stream_partition.folio_id | int }}/transactions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
           request_parameters:
@@ -4545,32 +3195,7 @@ definitions:
           path: pms/owners
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -4720,32 +3345,7 @@ definitions:
           path: pms/maintenance/problems
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -4791,32 +3391,7 @@ definitions:
           path: pms/suspend-code-reasons
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -4862,32 +3437,7 @@ definitions:
           path: pms/units/amenity-groups
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -4933,32 +3483,7 @@ definitions:
           path: crm/contacts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -5114,32 +3639,7 @@ definitions:
           path: pms/owners/fractionals/{{ stream_partition.fraction_id }}/inventory
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -5205,32 +3705,7 @@ definitions:
           path: crm/companies/{{ stream_interval.company_id }}/attachments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -5292,32 +3767,7 @@ definitions:
           path: pms/task-lists
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -5369,41 +3819,7 @@ definitions:
           path: v2/pms/units/{{ stream_partition.unit_id }}/daily-pricing
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: "{{ response.status == 404 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track's 404 for a nonexistent resource endpoint. It is no
-                      issue if there is no data.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/ignore_404"
           request_headers:
             accept: application/json
         record_selector:
@@ -5460,32 +3876,7 @@ definitions:
           path: pms/accounting/transactions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
           request_parameters:
@@ -5533,32 +3924,7 @@ definitions:
           path: pms/maintenance/work-orders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -5644,32 +4010,7 @@ definitions:
           path: pms/housekeeping/clean-types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -5723,32 +4064,7 @@ definitions:
           path: pms/housekeeping/work-orders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -5835,32 +4151,7 @@ definitions:
           path: pms/reservations/travel-insurance-products
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -5906,32 +4197,7 @@ definitions:
           path: pms/units
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -5998,32 +4264,7 @@ definitions:
           path: pms/accounting/deposits/payments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -6068,41 +4309,7 @@ definitions:
           path: v2/pms/units/types/{{ stream_partition.unit_type_id }}/daily-pricing
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: "{{ response.status == 404 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track's 404 for a nonexistent resource endpoint. It is no
-                      issue if there is no data.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/ignore_404"
           request_headers:
             accept: application/json
         record_selector:
@@ -6158,32 +4365,7 @@ definitions:
           path: pms/reservations/discount-reasons
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -6231,32 +4413,7 @@ definitions:
             }}/transactions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -6351,32 +4508,7 @@ definitions:
           path: pms/reservations/policies/guarantees
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -6427,32 +4559,7 @@ definitions:
           path: pms/units/types
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -6505,32 +4612,7 @@ definitions:
           path: pms/reservations/cancellation-reasons
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -6576,32 +4658,7 @@ definitions:
           path: pms/reservations/cancellation-policies
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
+            $ref: "#/definitions/error_handlers/default"
           request_headers:
             accept: application/json
         record_selector:
@@ -6628,6 +4685,45 @@ definitions:
       type: BasicHttpAuthenticator
       password: "{{ config[\"api_secret\"] }}"
       username: "{{ config[\"api_key\"] }}"
+  response_filters:
+    invalid_page_409:
+      type: HttpResponseFilter
+      action: IGNORE
+      predicate: "{{ response.status == 409 and response.detail == 'Invalid page provided' }}"
+      http_codes: []
+      error_message: "Track's inappropriate 409 for page numbers too high. Nothing to do but continue to work with the vendor."
+    not_found_404:
+      type: HttpResponseFilter
+      action: IGNORE
+      predicate: "{{ response.status == 404 }}"
+      http_codes: []
+      error_message: "Track's 404 for a nonexistent resource endpoint. It is no issue if there is no data."
+    rate_limited_429:
+      type: HttpResponseFilter
+      action: RATE_LIMITED
+      predicate: "{{ response.status == 429 }}"
+      http_codes: []
+      error_message: "Track rate limit (10,000 requests per 5 minutes) met, waiting 5 minutes and 5 seconds to reset."
+  error_handlers:
+    default:
+      type: DefaultErrorHandler
+      max_retries: 5
+      response_filters:
+        - $ref: "#/definitions/response_filters/invalid_page_409"
+        - $ref: "#/definitions/response_filters/rate_limited_429"
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 305
+    ignore_404:
+      type: DefaultErrorHandler
+      max_retries: 5
+      response_filters:
+        - $ref: "#/definitions/response_filters/invalid_page_409"
+        - $ref: "#/definitions/response_filters/not_found_404"
+        - $ref: "#/definitions/response_filters/rate_limited_429"
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 305
 
 streams:
   - $ref: "#/definitions/streams/accounting_accounts"

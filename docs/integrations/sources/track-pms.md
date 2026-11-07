@@ -117,6 +117,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Subject |
 | ------------------ | ------------ | ---------------- |
+| 4.3.23 | 2026-11-01 | Consolidate duplicated error handlers into shared definitions; no change in sync behavior |
 | 4.3.22 | 2026-10-20 | Update dependencies |
 | 4.3.21 | 2026-10-13 | Update dependencies |
 | 4.3.20 | 2026-10-12 | Mark `api_key` as `airbyte_secret` |
