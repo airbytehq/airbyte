@@ -6,7 +6,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Incremental Stream Considerations
 
-The Twilio REST API supports `DateCreated` filtering on many resource list endpoints. Every stream is declared in `manifest.yaml`; `components.py` only holds the schema-normalization type transformer and the state migrations.
+The Twilio REST API supports `DateCreated` filtering on many resource list endpoints. Every stream is declared in `manifest.yaml`; `components.py` only holds the state migrations.
 
 **Connector type:** Manifest-only, with custom components in `components.py`
 
@@ -15,6 +15,10 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 ### Future incremental stream candidates
 
 None identified yet.
+
+## RFC2822 datetime normalization
+
+The `rfc2822_datetime_fields_to_utc` AddFields transformation on `base_stream` rewrites the seven datetime field names by name, not by schema format. Add any new date-time field name there. Streams whose date fields lack `format: date-time` must set `transformations: []`. ParentStreamConfig copies that override `transformations` must keep the `$ref` first.
 
 ## Alerts request window splitting
 
