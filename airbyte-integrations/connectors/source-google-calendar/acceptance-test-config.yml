@@ -5,6 +5,10 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
+        # The credentials spec was restructured under `credentials` in 1.1.0;
+        # legacy flat configs are migrated at runtime by config_normalization_rules.
+        backward_compatibility_tests_config:
+          disable_for_version: "1.1.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -15,10 +19,11 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
-        # The `colors` stream declares the objects `calendar` and `event` as its primary key.
-        # Changing a stream's primary key is a breaking change; remove this opt-out once the
-        # primary key is fixed.
-        validate_primary_keys_data_type: false
+        empty_streams:
+          - name: "acl"
+            bypass_reason: "Sandbox refresh token lacks the calendar.acls.readonly scope until the OAuth scope change (#86469) lands"
+          - name: "freebusy"
+            bypass_reason: "The sandbox calendar may have no busy blocks in the rolling 75-day window"
   # The CDK standard-test runner used in CI reads only the spec, connection and basic_read
   # sections; the blocks below are kept for the legacy CAT runner and local runs.
   discovery:
