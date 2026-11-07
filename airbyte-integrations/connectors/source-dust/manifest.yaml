@@ -12,40 +12,16 @@ check:
     - usage_metrics
 
 definitions:
-  linked:
-    HttpRequester:
-      authenticator:
-        type: BearerAuthenticator
-        api_token: "{{ config['bearer_token'] }}"
-      error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          - type: DefaultErrorHandler
-            max_retries: 3
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 401
-            backoff_strategies:
-              - type: ConstantBackoffStrategy
-                backoff_time_in_seconds: 30
-          - type: DefaultErrorHandler
-            max_retries: 5
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 429
-                  - 500
-                  - 502
-                  - 503
-                  - 504
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
-      request_headers:
-        accept: application/json
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 3
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 30
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [429]
+        action: RETRY
 
 streams:
   - type: DeclarativeStream
@@ -60,34 +36,7 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['bearer_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 3
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 401
-                  error_message_contains: ""
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 30
-            - type: DefaultErrorHandler
-              max_retries: 5
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-                  error_message_contains: ""
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 5
+          $ref: "#/definitions/error_handler"
         request_headers:
           accept: application/json
         request_parameters:
@@ -162,32 +111,7 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['bearer_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 3
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 401
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 30
-            - type: DefaultErrorHandler
-              max_retries: 5
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 5
+          $ref: "#/definitions/error_handler"
         request_headers:
           accept: application/json
         request_parameters:
@@ -260,32 +184,7 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['bearer_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 3
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 401
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 30
-            - type: DefaultErrorHandler
-              max_retries: 5
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 5
+          $ref: "#/definitions/error_handler"
         request_headers:
           accept: application/json
         request_parameters:
@@ -355,32 +254,7 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['bearer_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 3
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 401
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 30
-            - type: DefaultErrorHandler
-              max_retries: 5
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 5
+          $ref: "#/definitions/error_handler"
         request_headers:
           accept: application/json
         request_parameters:
@@ -454,32 +328,7 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['bearer_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 3
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 401
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 30
-            - type: DefaultErrorHandler
-              max_retries: 5
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 5
+          $ref: "#/definitions/error_handler"
         request_headers:
           accept: application/json
         request_parameters:
@@ -553,32 +402,7 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['bearer_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 3
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 401
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 30
-            - type: DefaultErrorHandler
-              max_retries: 5
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 5
+          $ref: "#/definitions/error_handler"
         request_headers:
           accept: application/json
         request_parameters:
@@ -659,32 +483,7 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['bearer_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 3
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 401
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 30
-            - type: DefaultErrorHandler
-              max_retries: 5
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 5
+          $ref: "#/definitions/error_handler"
         request_headers:
           accept: application/json
         request_parameters:
@@ -779,32 +578,7 @@ streams:
           type: BearerAuthenticator
           api_token: "{{ config['bearer_token'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 3
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 401
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 30
-            - type: DefaultErrorHandler
-              max_retries: 5
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 429
-                    - 500
-                    - 502
-                    - 503
-                    - 504
-              backoff_strategies:
-                - type: ExponentialBackoffStrategy
-                  factor: 5
+          $ref: "#/definitions/error_handler"
         request_headers:
           accept: application/json
         request_parameters:
