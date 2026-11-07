@@ -1,3 +1,8 @@
+# Airbyte employees: this workflow is stage 1 of the base image lifecycle. Publishing here does
+# not update source-declarative-manifest, and it does not move any connector's baseImage pin.
+# See the internal runbook for the full process:
+# https://internal.airbyte.ai/docs/internal-docs/teams/apis/data-replication/runbooks/connector-base-images
+
 name: Docker Image Publishing (On-Demand)
 on:
   workflow_dispatch:
