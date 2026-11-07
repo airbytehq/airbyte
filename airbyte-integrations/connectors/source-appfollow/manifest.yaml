@@ -126,14 +126,12 @@ definitions:
           request_parameters:
             ext_id: "{{ stream_slice.ext_id }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 400
-                    action: IGNORE
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 400
+                action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
