@@ -87,6 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 4.0.4 | 2026-11-05 | [86955](https://github.com/airbytehq/airbyte/pull/86955) | Preserve Export property values when property names collide case-insensitively. |
 | 4.0.3 | 2026-11-03 | [90931](https://github.com/airbytehq/airbyte/pull/90931) | Raise the minimum supported Python version to 3.11 |
 | 4.0.2 | 2026-10-19 | [89045](https://github.com/airbytehq/airbyte/pull/89045) | Fix crash when the Mixpanel API responds with a `Retry-After` header during rate limiting |
 | 4.0.1 | 2026-07-02 | [81392](https://github.com/airbytehq/airbyte/pull/81392) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
