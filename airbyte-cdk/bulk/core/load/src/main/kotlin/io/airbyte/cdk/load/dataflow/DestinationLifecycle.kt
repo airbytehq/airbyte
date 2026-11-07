@@ -82,7 +82,7 @@ class DestinationLifecycle(
     private fun finalizeIndividualStreams(streamLoaders: List<StreamLoader>) {
         if (!completionTracker.allStreamsComplete()) {
             log.warn {
-                "One or more streams did not complete. Skipping destructive finalization operations..."
+                "One or more streams did not complete. Incomplete streams will skip destructive finalization; completed streams will still be finalized."
             }
         }
 
@@ -93,7 +93,7 @@ class DestinationLifecycle(
                         log.info {
                             "Finalizing stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }
-                        it.teardown(completionTracker.allStreamsComplete())
+                        it.teardown(completionTracker.isStreamComplete(it.stream.mappedDescriptor))
                         log.info {
                             "Finalized stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }

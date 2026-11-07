@@ -19,5 +19,8 @@ interface StreamLoader {
 
     suspend fun start() {}
 
+    /**
+     * [completedSuccessfully] indicates whether this stream received its stream-complete message.
+     */
     suspend fun teardown(completedSuccessfully: Boolean) {}
 }
