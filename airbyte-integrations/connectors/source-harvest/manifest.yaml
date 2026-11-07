@@ -25,34 +25,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -122,34 +95,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -199,34 +145,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -276,34 +195,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -353,34 +245,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -430,34 +295,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -507,34 +345,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -584,34 +395,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -661,34 +445,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -738,34 +495,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -815,34 +545,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -892,34 +595,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -969,34 +645,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1046,34 +695,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1123,34 +745,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1198,34 +793,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1294,34 +862,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1390,34 +931,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1486,34 +1000,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1582,34 +1069,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1643,34 +1103,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1739,34 +1172,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1835,34 +1241,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1931,34 +1310,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2027,34 +1379,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2125,34 +1450,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2216,34 +1514,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2307,34 +1578,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2398,34 +1642,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2489,34 +1706,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2566,34 +1756,7 @@ definitions:
           request_headers:
             Harvest-Account-Id: "{{ config['account_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 401
-                    error_message: Please ensure your credentials are valid.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      This is most likely due to insufficient permissions on the
-                      credentials in use.
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: >-
-                      Please ensure that your account ID is properly set. If it
-                      is the case and you are still seeing this error, please
-                      contact Airbyte support.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2647,6 +1810,33 @@ definitions:
       authenticator_selection_path:
         - credentials
         - auth_type
+
+  error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 401
+        error_message: Please ensure your credentials are valid.
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 403
+        error_message: >-
+          This is most likely due to insufficient permissions on the
+          credentials in use.
+      - type: HttpResponseFilter
+        action: IGNORE
+        http_codes:
+          - 404
+        error_message: >-
+          Please ensure that your account ID is properly set. If it
+          is the case and you are still seeing this error, please
+          contact Airbyte support.
 
 concurrency_level:
   type: ConcurrencyLevel
