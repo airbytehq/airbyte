@@ -29,6 +29,13 @@ interface JdbcSharedState {
     /** Sample size limit. */
     val maxSampleSize: Int
 
+    /**
+     * Should concurrent reads re-estimate the size of a table whose 1 / 2^16 sample is full from
+     * sparser samples?
+     */
+    val withSparserSampling: Boolean
+        get() = false
+
     /** Targeted memory footprint of a partition, in bytes. */
     val targetPartitionByteSize: Long
 

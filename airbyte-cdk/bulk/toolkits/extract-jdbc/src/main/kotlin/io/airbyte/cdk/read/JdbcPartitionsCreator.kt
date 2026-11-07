@@ -247,21 +247,26 @@ open class JdbcConcurrentPartitionsCreator<
             }
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
+        val tableByteSize: Long =
+            if (sharedState.withSparserSampling && sample.kind == Sample.Kind.LARGE) {
+                reestimatedTableByteSize(rowByteSizeSample)
+            } else {
+                expectedTableByteSize
+            }
         // Happy path.
         log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
         val secondarySamplingRate: Double =
-            if (expectedTableByteSize <= sharedState.targetPartitionByteSize) {
+            if (tableByteSize <= sharedState.targetPartitionByteSize) {
                 0.0
             } else {
-                val expectedPartitionByteSize: Long =
-                    expectedTableByteSize / sharedState.maxSampleSize
+                val expectedPartitionByteSize: Long = tableByteSize / sharedState.maxSampleSize
                 if (expectedPartitionByteSize < sharedState.targetPartitionByteSize) {
                     expectedPartitionByteSize.toDouble() / sharedState.targetPartitionByteSize
                 } else {
                     1.0
                 }
             }
-        val random = Random(expectedTableByteSize) // RNG output is repeatable.
+        val random = Random(tableByteSize) // RNG output is repeatable.
         val splitBoundaries: List<OpaqueStateValue> =
             sample.sampledValues
                 .filter { random.nextDouble() < secondarySamplingRate }
@@ -278,5 +283,49 @@ open class JdbcConcurrentPartitionsCreator<
         val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
         log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
         return partitions.map { JdbcNonResumablePartitionReader(it) }
+    }
+
+    /**
+     * Re-estimates the size of a table whose sample is [Sample.Kind.LARGE] from sparser samples.
+     */
+    private fun reestimatedTableByteSize(rowByteSizeSample: Sample<Long>): Long {
+        val tableByteSize: Long =
+            rowByteSizeSample.sampledValues.sum() * largeSampleWeight(rowByteSizeSample.valueWeight)
+        log.info { "Table memory size re-estimated at ${tableByteSize shr 20} MiB." }
+        return tableByteSize
+    }
+
+    /**
+     * A [Sample.Kind.LARGE] sample is full at the sparsest rate in [collectSample], which only
+     * shows that the table has at least [JdbcSharedState.maxSampleSize] times [fullSampleWeight]
+     * rows, however many it really has. Samples at sparser rates until one comes back short, and
+     * returns the weight implied by its row count, or the weight of the sparsest rate if every
+     * sample is full.
+     */
+    private fun largeSampleWeight(fullSampleWeight: Long): Long {
+        for (sampleRateInvPow2 in SPARSER_SAMPLE_RATES_INV_POW2) {
+            val sampleRateInv: Long = 1L shl sampleRateInvPow2
+            log.info { "Sampling stream '${stream.label}' at rate 1 / $sampleRateInv." }
+            val count: Int =
+                selectQuerier.executeQuery(partition.samplingQuery(sampleRateInvPow2)).use {
+                    it.asSequence().count()
+                }
+            if (count < sharedState.maxSampleSize) {
+                val weight: Long =
+                    (sampleRateInv * count / sharedState.maxSampleSize).coerceAtLeast(
+                        fullSampleWeight,
+                    )
+                log.info { "Weighing sampled rows in stream '${stream.label}' by $weight." }
+                return weight
+            }
+        }
+        val weight: Long = 1L shl SPARSER_SAMPLE_RATES_INV_POW2.last()
+        log.warn { "Weighing sampled rows in stream '${stream.label}' by at least $weight." }
+        return weight
+    }
+
+    companion object {
+        /** Sampling rates for [largeSampleWeight], as powers of 2, from densest to sparsest. */
+        private val SPARSER_SAMPLE_RATES_INV_POW2: List<Int> = listOf(20, 24, 28)
     }
 }
