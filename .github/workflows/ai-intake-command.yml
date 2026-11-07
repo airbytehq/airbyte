@@ -1,0 +1,442 @@
+# Starts the `!oss_contribution_intake` Devin playbook (airbytehq/ai-skills) on community issues and PRs.
+#
+# Two triggers: an hourly sweep over open community items with no `intake/*` label (off until the
+# INTAKE_SWEEP_ENABLED repo variable is "true"), and `/ai-intake` from a maintainer on one item.
+#
+# The intake agent holds write credentials, so it never reads a community item live. For each item,
+# `.github/scripts/intake_snapshot.uv` fetches it once, screens the community-written text with
+# TypeSafe's Jev classifier, and writes a prompt holding exactly the screened text. Only items that
+# pass start a session, one session per item, and get the `ai-intake-started` label so the sweep
+# doesn't start another. A flagged item, or a flagged linked item, gets a link-only oncall ticket with
+# `skip-triage` instead and is never shown to an agent; the ticket carries a digest of the screened text
+# and its edit history, and `/ai-intake override=<digest>` starts the intake while neither has changed.
+# If GitHub or Jev keeps failing, or the session fails to start, the job fails and labels the item
+# `ai-intake-screen-error`; the sweep retries it after newer items. Sessions that start but never set
+# an `intake/*` label are listed on one oncall ticket.
+#
+# This repo's Actions logs are public, so scores, screening reasons and digests are never logged or
+# posted on the item: they only go into the private oncall ticket. The screen is a filter against
+# untargeted injections, not a security boundary.
+#
+# Runs are dry runs (the playbook writes nothing) unless `dry-run=false` is passed or the
+# INTAKE_DRY_RUN repo variable is "false". The sweep only runs live: a dry run labels nothing, so
+# a dry sweep would start sessions on the same items every hour. Dry-run by dispatch instead.
+# No PR code is checked out or run.
+
+name: AI Intake Command
+
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+    inputs:
+      number:
+        description: "Issue or PR number (manual runs)"
+        required: false
+        type: string
+      dry-run:
+        description: "true: the playbook writes nothing. Empty: the INTAKE_DRY_RUN repo variable decides (default true)."
+        required: false
+        type: string
+      override:
+        description: "Digest from a held item's oncall ticket: skips the screen if the item's text hasn't changed since it was checked."
+        required: false
+        type: string
+      comment-id:
+        description: "The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+      pr:
+        description: "PR number (passed by slash command dispatcher)"
+        type: string
+        required: false
+      repo:
+        description: "Repo (passed by slash command dispatcher)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Git ref (passed by slash command dispatcher, unused: PR code is never checked out)"
+        required: false
+
+run-name: "AI Intake ${{ github.event_name == 'schedule' && 'sweep' || format('#{0}', inputs.number || inputs.pr || 'from comment') }}"
+
+permissions: {}
+
+# Sweeps never overlap, so a sweep job can't queue behind another sweep on the same item and cancel a
+# maintainer's queued `/ai-intake` run there (a group keeps only one pending job). Manual runs don't share it.
+concurrency:
+  group: ${{ github.event_name == 'schedule' && format('{0}-sweep', github.workflow) || format('{0}-run-{1}', github.workflow, github.run_id) }}
+  cancel-in-progress: false
+
+env:
+  # The sweep reads items created in the last 30 days, never before this date; `/ai-intake` works on any item.
+  SWEEP_SINCE: "2026-11-01"
+  SWEEP_LIMIT: "5"
+
+jobs:
+  select:
+    name: Select items
+    if: github.event_name != 'schedule' || vars.INTAKE_SWEEP_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      numbers: ${{ steps.select.outputs.numbers }}
+      stale: ${{ steps.select.outputs.stale }}
+      dry-run: ${{ steps.select.outputs.dry-run }}
+    steps:
+      - name: Authenticate as Octavia Bot
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          owner: airbytehq
+          repositories: "airbyte,oncall"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+          permission-issues: write
+          # Labels and comments on PRs go through the issues API but may need PR write.
+          permission-pull-requests: write
+
+      - name: Checkout the intake script from the default branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Resolve items and dry-run
+        id: select
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_NUMBER: ${{ inputs.number || inputs.pr }}
+          INPUT_COMMENT_ID: ${{ inputs.comment-id }}
+          INPUT_DRY_RUN: ${{ inputs.dry-run }}
+          INPUT_OVERRIDE: ${{ inputs.override }}
+          DEFAULT_DRY_RUN: ${{ vars.INTAKE_DRY_RUN != 'false' }}
+        run: |
+          set -euo pipefail
+
+          # Without the key every item would be held; fail once instead of filing a ticket per item.
+          if [[ -z "$TYPESAFE_API_KEY" ]]; then
+            echo "::error::TYPESAFE_API_KEY is not set; intake needs it to screen items."
+            exit 1
+          fi
+
+          # Checked here, not in the intake job, so a typo isn't reported as a screening error.
+          if [[ -n "$INPUT_OVERRIDE" && ! "$INPUT_OVERRIDE" =~ ^[0-9a-f]{16}$ ]]; then
+            echo "::error::override must be the 16-character digest from the oncall ticket, got '$INPUT_OVERRIDE'."
+            exit 1
+          fi
+
+          dry_run="${INPUT_DRY_RUN:-$DEFAULT_DRY_RUN}"
+          if [[ "$dry_run" != "true" && "$dry_run" != "false" ]]; then
+            echo "::error::dry-run must be true or false, got '$dry_run'."
+            exit 1
+          fi
+
+          stale="[]"
+          if [[ "$EVENT_NAME" == "schedule" && "$dry_run" == "true" ]]; then
+            echo "::notice::Sweep skipped: it only runs live (INTAKE_DRY_RUN=false). Use /ai-intake or a dispatch for dry runs."
+            numbers="[]"
+          elif [[ "$EVENT_NAME" == "schedule" ]]; then
+            selected=$(.github/scripts/intake_snapshot.uv select --since "$SWEEP_SINCE" --limit "$SWEEP_LIMIT")
+            numbers=$(jq -c .numbers <<<"$selected")
+            stale=$(jq -c .stale <<<"$selected")
+          else
+            number="$INPUT_NUMBER"
+            if [[ -z "$number" && -n "$INPUT_COMMENT_ID" ]]; then
+              number=$(gh api "repos/$GITHUB_REPOSITORY/issues/comments/$INPUT_COMMENT_ID" --jq '.issue_url | split("/") | last')
+            fi
+            if ! [[ "$number" =~ ^[0-9]+$ ]]; then
+              echo "::error::Could not resolve an issue or PR number."
+              exit 1
+            fi
+            numbers="[$number]"
+          fi
+
+          # A broken or changed Jev API would otherwise hold every item, each with its own ticket.
+          if [[ "$numbers" != "[]" ]]; then
+            .github/scripts/intake_snapshot.uv canary
+          fi
+
+          echo "Items: $numbers (dry-run: $dry_run); stuck sessions: $stale"
+          echo "numbers=$numbers" >> "$GITHUB_OUTPUT"
+          echo "stale=$stale" >> "$GITHUB_OUTPUT"
+          echo "dry-run=$dry_run" >> "$GITHUB_OUTPUT"
+
+      # One rolling ticket, rewritten only when the list changes. Not retried automatically: a session
+      # that always fails would start again every few hours.
+      - name: Report stuck sessions
+        if: steps.select.outputs.stale != '' && steps.select.outputs.stale != '[]'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          STALE: ${{ steps.select.outputs.stale }}
+        run: |
+          set -euo pipefail
+          title="[OSS Intake] Sessions that never posted a result"
+          items=$(jq -r --arg repo "$GITHUB_REPOSITORY" '.[] | "- [ ] https://github.com/\($repo)/issues/\(.)"' <<<"$STALE")
+          body=$(printf '%s\n' \
+            "These community items got an intake session (label \`ai-intake-started\`) more than 6 hours ago, and no \`intake/*\` label since: the session failed or died." \
+            "" \
+            "$items" \
+            "" \
+            "Check the Devin session (tag \`airbyte-item-<number>\`). To retry, remove \`ai-intake-started\` from the item and run \`/ai-intake\` on it. This list is rewritten by each sweep.")
+          existing=$(gh issue list --repo airbytehq/oncall --state open --search "\"$title\" in:title" --json number,title,body \
+            | jq -c --arg t "$title" '[.[] | select(.title == $t)][0] // empty')
+          if [[ -z "$existing" ]]; then
+            gh issue create --repo airbytehq/oncall --title "$title" --label P3 --body "$body"
+          elif [[ "$(jq -r .body <<<"$existing")" != "$body" ]]; then
+            gh issue edit "$(jq -r .number <<<"$existing")" --repo airbytehq/oncall --body "$body"
+          fi
+
+      - name: Post start comment
+        if: always() && inputs.comment-id != '' && steps.app-token.outcome == 'success'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          body: |
+            > ${{ steps.select.outcome == 'success' && format('**AI Intake started** (dry-run: {0})', steps.select.outputs.dry-run) || '**AI Intake could not start**' }}
+            >
+            > ${{ steps.select.outcome == 'success' && 'Screening the item before the intake session starts.' || 'Nothing was screened or started. See the run.' }}
+            > [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+  intake:
+    name: Intake #${{ matrix.number }}
+    needs: select
+    if: needs.select.outputs.numbers != '[]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        number: ${{ fromJSON(needs.select.outputs.numbers) }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Authenticate as Octavia Bot
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          owner: airbytehq
+          repositories: "airbyte,oncall"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+          permission-issues: write
+          # Labels and comments on PRs go through the issues API but may need PR write.
+          permission-pull-requests: write
+
+      - name: Checkout the intake script from the default branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Build and screen the snapshot
+        id: screen
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+          NUMBER: ${{ matrix.number }}
+          DRY_RUN: ${{ needs.select.outputs.dry-run }}
+          PROMPT_FILE: ${{ runner.temp }}/intake-prompt.md
+          DETAILS_FILE: ${{ runner.temp }}/intake-details.json
+          OVERRIDE: ${{ inputs.override }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          args=(build "$NUMBER" --dry-run "$DRY_RUN" --prompt-file "$PROMPT_FILE" --details-file "$DETAILS_FILE")
+          # Checked in `select`.
+          [[ -n "$OVERRIDE" ]] && args+=(--override "$OVERRIDE")
+          # A run that overlapped this one may have labeled the item since the sweep selected it.
+          [[ "$EVENT_NAME" == "schedule" ]] && args+=(--skip-labeled)
+          result=$(.github/scripts/intake_snapshot.uv "${args[@]}")
+          # Public log: outcome only. Scores, reasons and digests stay in $DETAILS_FILE.
+          echo "$result" | jq .
+          error=$(jq -r '.error // empty' <<<"$result")
+          if [[ -n "$error" ]]; then
+            echo "::error::Could not screen #$NUMBER: $error. Nothing was held; the next sweep tries again."
+            exit 1
+          fi
+          {
+            echo "flagged=$(jq -r .flagged <<<"$result")"
+            echo "skipped=$(jq -r '.skipped // false' <<<"$result")"
+            echo "holds=$(jq -r '.holds // 0' <<<"$result")"
+          } >> "$GITHUB_OUTPUT"
+
+      # The sweep still retries the item, but after newer ones (see `select`). Removed once it screens.
+      - name: Mark the screening error
+        if: failure() && steps.screen.outcome == 'failure' && needs.select.outputs.dry-run == 'false'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NUMBER: ${{ matrix.number }}
+        run: gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ai-intake-screen-error
+
+      # Before the session, not after: if labeling fails no session starts, and if the session start fails
+      # the label still stops the sweep from starting one every hour. Retry by removing it and running /ai-intake.
+      - name: Mark the item as started
+        id: started
+        if: steps.screen.outputs.flagged == 'false' && steps.screen.outputs.skipped != 'true' && needs.select.outputs.dry-run == 'false'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NUMBER: ${{ matrix.number }}
+        run: |
+          set -euo pipefail
+          current=$(gh api "repos/$GITHUB_REPOSITORY/issues/$NUMBER" --jq '.labels[].name')
+          remove=$(grep -x 'ai-intake-screen-error' <<<"$current" || true)
+          gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ai-intake-started ${remove:+--remove-label "$remove"}
+
+      # The prompt holds only the item URL, the dry-run flag, and the screened snapshot.
+      # `issue-number` and `comment-id` are left unset so devin-action adds no live text.
+      - name: Start the intake session
+        id: devin
+        if: steps.screen.outputs.flagged == 'false' && steps.screen.outputs.skipped != 'true'
+        uses: airbytehq/devin-action@main
+        with:
+          playbook-macro: "!oss_contribution_intake"
+          prompt-file: ${{ runner.temp }}/intake-prompt.md
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.app-token.outputs.token }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+          tags: |
+            oss-intake
+            airbyte-item-${{ matrix.number }}
+
+      # Without this the item keeps `ai-intake-started` and the sweep never tries it again.
+      - name: Release the item for a retry
+        if: failure() && steps.devin.outcome == 'failure' && needs.select.outputs.dry-run == 'false'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NUMBER: ${{ matrix.number }}
+        run: gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --remove-label ai-intake-started --add-label ai-intake-screen-error
+
+      # Holds the flagged submission, or flagged linked items when the submission passed (after its session
+      # started, so a failed hold doesn't block it). Link only: the ticket never copies community text, and
+      # `skip-triage` keeps the oncall AI triage from reading the item. `intake/screen-hold` keeps the sweep
+      # from picking it again. Reasons, scores and digests are read from the details file, never from step
+      # outputs or env, which the public log shows.
+      - name: Hold flagged items for a human
+        id: hold
+        if: always() && steps.screen.outcome == 'success' && steps.screen.outputs.holds != '0'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          DETAILS_FILE: ${{ runner.temp }}/intake-details.json
+          DRY_RUN: ${{ needs.select.outputs.dry-run }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          failed=0
+          while IFS= read -r entry; do
+            number=$(jq -r .number <<<"$entry")
+            item_url=$(jq -r .url <<<"$entry")
+            # From the number, not the URL: a PR held before it was fetched has an /issues/ URL, and the
+            # title is how an existing ticket is found.
+            title="[OSS Intake] Held for human review: $GITHUB_REPOSITORY#$number"
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "::notice::Dry run: would hold #$number in oncall."
+              continue
+            fi
+            reason=$(jq -r .reason <<<"$entry")
+            scores=$(jq -r '.scores | to_entries | map("\(.key) \(.value)") | join(", ")' <<<"$entry")
+            digest=$(jq -r '.digest // empty' <<<"$entry")
+            if [[ -n "$digest" ]]; then
+              next="If it is a false positive, check the raw text for instructions aimed at automation: what Jev read includes hidden HTML comments, commit messages, the branch and fork names, and the diff, so read the source (\`gh issue view --json body,comments\`, the commits, the diff), not the rendered page. Then run \`/ai-intake override=$digest\` on it. The override applies only while that text is unchanged; an edit since then is screened again."
+            else
+              next="It could not be screened at all, so take it through intake by hand."
+            fi
+            body=$(printf '%s\n' \
+              "Community item held before AI intake: $item_url" \
+              "" \
+              "- Screening result: $reason" \
+              "- Scores: ${scores:-none}" \
+              "- Run: $RUN_URL" \
+              "" \
+              "No AI session was started for it. Evaluate the item by hand. $next")
+            # One intake/* label at a time: the board sync skips items with several.
+            current=$(gh api "repos/$GITHUB_REPOSITORY/issues/$number" --jq '.labels[].name')
+            remove=$(grep -E '^(intake/|ai-intake-screen-error$)' <<<"$current" | grep -vx 'intake/screen-hold' | paste -sd, - || true)
+            # Label first: if it is missing, nothing is filed that the next sweep would repeat.
+            if ! gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --add-label "intake/screen-hold" ${remove:+--remove-label "$remove"}; then
+              echo "::error::Could not label #$number intake/screen-hold."
+              failed=1
+              continue
+            fi
+            # Without a ticket nobody sees the hold, so swap the label for the retry one if filing fails.
+            if ! {
+              existing=$(gh issue list --repo airbytehq/oncall --state open --search "\"$title\" in:title" --json number,title \
+                | jq -r --arg t "$title" '[.[] | select(.title == $t)][0].number // empty') &&
+              if [[ -n "$existing" ]]; then
+                gh issue comment "$existing" --repo airbytehq/oncall --body "$body"
+              else
+                gh issue create --repo airbytehq/oncall --title "$title" --label skip-triage --label P3 --body "$body"
+              fi
+            }; then
+              echo "::error::Could not file the oncall ticket; labeling #$number ai-intake-screen-error so the sweep retries it."
+              gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --remove-label "intake/screen-hold" --add-label ai-intake-screen-error || true
+              failed=1
+            fi
+          done < <(jq -c '.holds[]' "$DETAILS_FILE")
+          exit "$failed"
+
+      # Reports the outcome on the `/ai-intake` comment. Holds the screening reason (scores), never community text.
+      - name: Summarize the outcome
+        id: outcome
+        if: always() && inputs.comment-id != ''
+        env:
+          SCREEN: ${{ steps.screen.outcome }}
+          FLAGGED: ${{ steps.screen.outputs.flagged }}
+          HOLDS: ${{ steps.screen.outputs.holds }}
+          HOLD: ${{ steps.hold.outcome }}
+          STARTED: ${{ steps.started.outcome }}
+          DEVIN: ${{ steps.devin.outcome }}
+          SESSION_URL: ${{ steps.devin.outputs.session-url }}
+          DRY_RUN: ${{ needs.select.outputs.dry-run }}
+        run: |
+          set -euo pipefail
+          dry=""
+          [[ "$DRY_RUN" == "true" ]] && dry=" (dry run)"
+          if [[ "$SCREEN" != "success" ]]; then
+            text="Could not screen the item; nothing was held and no session started. See the run."
+          # No reason or scores here: this comment is public.
+          elif [[ "$FLAGGED" == "true" && "$HOLD" == "success" ]]; then
+            text="Held for human review$dry; details are on the oncall ticket. No session started."
+          elif [[ "$FLAGGED" == "true" ]]; then
+            text="Flagged, but holding it failed. See the run."
+          elif [[ "$STARTED" == "failure" ]]; then
+            text="Screened clean, but labeling it ai-intake-started failed, so no session started. See the run."
+          elif [[ "$DEVIN" == "success" ]]; then
+            text="Screened clean; intake session started$dry${SESSION_URL:+: $SESSION_URL}."
+          elif [[ "$DRY_RUN" == "true" ]]; then
+            text="Screened clean, but the session did not start. See the run."
+          else
+            text="Screened clean, but the session start failed. The item is labeled ai-intake-screen-error, so the sweep retries it; /ai-intake retries now."
+          fi
+          if [[ "$HOLDS" != "0" && "$FLAGGED" != "true" ]]; then
+            if [[ "$HOLD" == "success" ]]; then
+              text="$text A linked item was held for human review${dry}."
+            else
+              text="$text A linked item was flagged, but holding it failed. See the run."
+            fi
+          fi
+          echo "text=$text" >> "$GITHUB_OUTPUT"
+
+      - name: Report the outcome
+        if: always() && steps.outcome.outcome == 'success'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          edit-mode: append
+          body: |
+            >
+            > **Result:** ${{ steps.outcome.outputs.text }}
