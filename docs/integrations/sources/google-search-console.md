@@ -35,9 +35,8 @@ To authenticate with OAuth in **Airbyte Open Source**, you will need to create a
 - Client ID
 - Client Secret
 - Refresh Token
-- Access Token
 
-More information on the steps to create an OAuth app to access Google APIs and obtain these credentials can be found [in Google's documentation](https://developers.google.com/identity/protocols/oauth2).
+Create an OAuth app and obtain a refresh token with the `https://www.googleapis.com/auth/webmasters.readonly` scope and offline access. The connector uses the refresh token to obtain access tokens automatically; you don't need to supply an **Access Token**. See [Google's authorization guide](https://developers.google.com/webmaster-tools/v1/how-tos/authorizing) and [web-server OAuth flow](https://developers.google.com/identity/protocols/oauth2/web-server#offline).
 
 #### Google service account with JSON key file (Recommended for Airbyte Open Source)
 
@@ -47,11 +46,12 @@ You can authenticate the connection using a JSON key file associated with a Goog
 2. Select an existing project, or create a new project.
 3. At the top of the page, click **+ Create service account**.
 4. Enter a name and description for the service account, then click **Create and Continue**.
-5. Under **Service account permissions**, select the roles to grant to the service account, then click **Continue**. We recommend the **Viewer** role.
+5. Skip the optional project IAM roles, then click **Continue**. Project IAM roles do not grant access to Search Console properties.
    - Optional: Under **Grant users access to this service account**, you may specify the users or groups that are allowed to use and manage the service account.
 6. Go to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) and click on the email address of the service account you just created.
 7. In the **Keys** tab, click **+ Add key**, then click **Create new key**.
 8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
+9. Copy the `client_email` from the JSON key. For each property you want to sync, ask a property owner to open **Settings > Users and permissions > Add user** in Search Console and add this email with **Full** permission. See [Google's permissions guide](https://support.google.com/webmasters/answer/7687615).
 
 :::caution
 This file serves as the only copy of your JSON service key, and you will not be able to re-download it. Be sure to store it in a secure location.
@@ -61,19 +61,7 @@ This file serves as the only copy of your JSON service key, and you will not be 
 You can return to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) at any time to manage your service account or generate additional JSON keys. For more details about service account credentials, see [Google's IAM documentation](https://cloud.google.com/iam/docs/understanding-service-accounts).
 :::
 
-#### Note on delegating domain-wide authority to the service account
-
-Domain-wide delegation is a powerful feature that allows service accounts to access users' data across an organization's Google Workspace environment through 'impersonation'. This authority is necessary in certain use cases, such as when a service account needs broad access across multiple users and services within a domain.
-
-:::note
-Only the super admin of your Google Workspace domain can enable domain-wide delegation of authority to a service account.
-:::
-
-To enable delegated domain-wide authority, follow the steps listed in the [Google documentation](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority). Please make sure to grant the following OAuth scopes to the service account:
-
-- `https://www.googleapis.com/auth/webmasters.readonly`
-
-For more information on this topic, please refer to [this Google article](https://support.google.com/a/answer/162106?hl=en).
+The connector requests the `https://www.googleapis.com/auth/webmasters.readonly` scope and authenticates as the service account itself. It does not impersonate a Google Workspace user, so domain-wide delegation is not required. Grant access to the service account email, not just to the person setting up the connector.
 
 <!-- /env:oss -->
 
@@ -81,48 +69,46 @@ For more information on this topic, please refer to [this Google article](https:
 
 <!-- env:cloud -->
 
-#### For Airbyte Cloud:
+#### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Google Search Console from the Source type dropdown.
+2. Click **Sources** and then click **+ New source**.
+3. On the **Set up the source** page, select **Google Search Console** from the **Source type** dropdown.
 4. Enter a name for the Google Search Console connector.
-5. For **Website URL Property**, enter each Search Console property exactly. Domain properties use `sc-domain:example.com`; URL-prefix properties use the full URL, including protocol and trailing slash, e.g. `https://www.example.com/`. You can add multiple properties.
-6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
-7. To authenticate the connection:
-<!-- env:cloud -->
+5. Select **OAuth** from the authentication dropdown, then click **Sign in with Google** to authorize an account with access to your properties.
+
+<!-- /env:cloud -->
 
 <!-- env:oss -->
-### For Airbyte Open Source:
+#### For Airbyte Open Source
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Google Search Console from the Source type dropdown.
+2. Click **Sources** and then click **+ New source**.
+3. On the **Set up the source** page, select **Google Search Console** from the **Source type** dropdown.
 4. Enter a name for the Google Search Console connector.
+5. Choose an authentication method:
+   - **Service Account Key Authentication** (recommended): Paste the entire JSON key into **Service Account JSON Key** and enter your administrator's email in **Admin Email**. The configuration schema requires the email field, but the connector does not use it to impersonate a user.
+   - **OAuth**: Enter your **Client ID**, **Client Secret**, and **Refresh Token**.
+
 <!-- /env:oss -->
 
-- **For Airbyte Cloud:**
-  - Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to authorize your account.
-    <!-- /env:cloud -->
-    <!-- env:oss -->
-- **For Airbyte Open Source:**
-  - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
-  - Select **Oauth** from the Authentication dropdown, then enter your **Client ID**, **Client Secret**, **Access Token** and **Refresh Token**.
-  <!-- /env:oss -->
+#### Configure the source
 
-8. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
-9. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](#custom-reports) section below for more information on formulating these reports.
-10. (Optional) For **Data Freshness**, you may choose whether to include "fresh" data that has not been finalized by Google, and may be subject to change. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`. Refer to the [Data Freshness](#data-freshness) section below for more information on this parameter.
-11. (Optional) For **Number of Concurrent Threads**, you may configure the number of worker threads used during sync. The default is 40. If you are syncing a large number of site URLs or experiencing rate limit errors, you may want to reduce this value.
-12. (Optional) For **Always Use Aggregation Type Auto**, enable this setting if your search analytics streams fail with a 400 error related to an unsupported `aggregationType`. This overrides the default aggregation type with `auto`, which resolves the error for certain site configurations.
-13. (Optional) For **Search Analytics API Requests Per Minute**, you may configure the maximum number of requests per minute for Search Analytics API calls. The default value of 1200 matches Google's documented maximum quota. If you are experiencing rate limit errors, you may need to lower this value. Most new Google Cloud projects start with a quota of 60 requests per minute. Check your Google Cloud Console quotas to see your actual limit. Refer to the [Rate Limiting](#rate-limiting) section below for more information.
-14. Click **Set up source** and wait for the tests to complete.
+1. For **Website URL Property**, enter each property exactly as Search Console shows it. Domain properties use the `sc-domain:` prefix, for example `sc-domain:example.com`. URL-prefix properties use the full URL, including the protocol and trailing slash, for example `https://www.example.com/`. You can add multiple properties.
+2. For **Start Date**, use the date picker or enter a date in `YYYY-MM-DD` format. The default is `2021-01-01`, but only data within Google's [retention window](#data-retention) is available.
+3. (Optional) For **End Date**, enter a date in `YYYY-MM-DD` format that is on or after the start date. The range includes both dates. Leave this blank to sync through the current date. Search Analytics dates use Pacific Time, as defined by [Google's API](https://developers.google.com/webmaster-tools/v1/searchanalytics/query).
+4. (Optional) Add [custom reports](#custom-reports) using **Custom Reports**.
+5. (Optional) Choose **Data Freshness**. Keep the default `final` for incremental syncs; `all` includes provisional data that may change. See [Data Freshness](#data-freshness).
+6. (Optional) Adjust **Number of concurrent threads**. The form defaults to 40. Reduce concurrency if you encounter rate limit errors.
+7. (Optional) Enable **Always Use Aggregation Type Auto** only if you need to override aggregation for all search analytics streams. Version 2.1.18 and later automatically handle Google News aggregation without this setting. See [Aggregation type errors](#aggregation-type-errors).
+8. (Optional) Set **Search Analytics API Requests Per Minute** to match your Google Cloud project's quota, up to 1,200. See [Rate limiting](#rate-limiting).
+9. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
 ## Supported sync modes
 
-The Google Search Console source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Search Analytics streams, including custom reports, support the following sync modes. The `sites` and `sitemaps` streams support full refresh only.
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -135,23 +121,28 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 
 ## Supported Streams
 
-- [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
-- [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
-- [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) — this stream has a long sync time because it is very detailed; use with care
-- [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics keyword report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics page report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics site report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-- Analytics report by custom dimensions
+- [`sites`](https://developers.google.com/webmaster-tools/v1/sites/get): Property information and the authenticated account's permission level for each configured property.
+- [`sitemaps`](https://developers.google.com/webmaster-tools/v1/sitemaps/list): Sitemaps submitted for each configured property.
+
+The remaining built-in streams use Google's [Search Analytics query endpoint](https://developers.google.com/webmaster-tools/v1/searchanalytics/query):
+
+- `search_analytics_all_fields`: Full analytics report by date, country, device, page, and query. This detailed stream can take longer to sync.
+- `search_analytics_by_country`
+- `search_analytics_by_date`
+- `search_analytics_by_device`
+- `search_analytics_by_page`
+- `search_analytics_by_query`
+- `search_analytics_keyword_page_report`
+- `search_analytics_keyword_site_report_by_page`
+- `search_analytics_keyword_site_report_by_site`
+- `search_analytics_page_report`
+- `search_analytics_site_report_by_page`
+- `search_analytics_site_report_by_site`
+
+Each [custom report](#custom-reports) creates an additional Search Analytics stream with the name you configure.
 
 ### Entity-Relationship Diagram (ERD)
+
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Connector-specific configurations
@@ -203,6 +194,8 @@ When using Incremental Sync mode, we recommend leaving this parameter to its def
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+Search Analytics dimension values, such as `date`, `country`, `device`, `page`, and `query`, are always strings. Starting with version 2.1.19, the connector emits them exactly as Google returns them, so numeric-looking queries like `2024` or `1.20` and quoted queries like `"failed to fetch"` aren't converted or altered. These fields are part of each stream's primary key.
+
 ## Limitations & Troubleshooting
 
 <details>
@@ -216,7 +209,7 @@ Expand to see details about Google Search Console connector limitations and trou
 
 The Search Console API enforces two distinct types of quota on Search Analytics queries. The connector retries automatically when either type is exceeded, but with different backoff durations. For full details, see Google's [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
 
-**QPS (queries per minute) quota**: Limits the number of API requests per minute. Google documents a maximum of 1,200 requests per minute per user and per site, but most new Google Cloud projects start with a lower default of 60 requests per minute. When exceeded, the connector retries with a 60-second backoff.
+**Request-rate quota**: Google documents a maximum of 1,200 requests per minute per user and per site. Your project's quota may be lower; check it before choosing **Search Analytics API Requests Per Minute**. When exceeded, the connector retries with a 60-second backoff, plus jitter.
 
 **Load quota**: Limits the internal resources consumed by queries. Complex queries — particularly those that group or filter by both `page` and `query` dimensions, or that span long date ranges — consume more load. Google measures load quota in 10-minute (short-term) and daily (long-term) windows. When exceeded, the connector retries with a 15-minute backoff, consistent with Google's recommendation to wait 15 minutes before retrying.
 
@@ -227,13 +220,17 @@ To check your actual QPS quota limits:
 3. Search for "Search Console API".
 4. Look for "Requests per minute per user" to see your current limit.
 
-If you need higher QPS limits, enable billing on your Google Cloud project or submit a quota increase request through the Google Cloud Console. You can then configure the **Search Analytics API Requests Per Minute** setting in the connector to match your actual quota.
+If you need higher request-rate limits, review the available quota increase options in the Google Cloud Console. Configure **Search Analytics API Requests Per Minute** to match your actual quota. Enabling billing does not replace checking the quota.
 
 If you hit load quota limits, reduce the complexity of your queries. Avoid grouping or filtering by both `page` and `query` simultaneously, use shorter date ranges, and avoid requerying the same data repeatedly.
 
 #### Data retention
 
 Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. For more information, see [Google's documentation on data freshness and availability](https://support.google.com/webmasters/answer/7576553).
+
+#### Search Analytics data limits
+
+Google's API returns top rows rather than guaranteeing every row. It exposes at most 50,000 rows per day per property and search type, and grouping by page or query can omit data. Pagination does not remove this upstream limit. See [Google's performance data guide](https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data).
 
 #### Retired search appearance values
 
@@ -247,6 +244,12 @@ Two effects are worth planning for:
 - Re-syncing a historical window may no longer reproduce rows for a retired value, so a full refresh can return fewer records than the original sync did.
 
 ### Troubleshooting
+
+#### Aggregation type errors
+
+Starting with version 2.1.18, `search_analytics_site_report_by_site` automatically uses `aggregationType: auto` for `googleNews` and keeps `byProperty` for `web`, `news`, `image`, and `video`. Google [does not support `byProperty`](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) for `googleNews` or `discover`. This stream queries Google News but does not query Discover.
+
+If an older connector version fails with `'BY_PROPERTY' is not a valid aggregation type`, upgrade to version 2.1.18 or later. If you cannot upgrade, enable **Always Use Aggregation Type Auto** as a workaround. This setting overrides aggregation for all search analytics streams, not just Google News, and can change how metrics are grouped. Leave it off unless you need that override.
 
 #### Site URL errors during setup or sync
 
@@ -274,7 +277,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.1.20 | 2026-11-05 | [91063](https://github.com/airbytehq/airbyte/pull/91063) | Clarify Website URL Property formats for Domain and URL-prefix properties |
 | 2.1.19 | 2026-11-05 | [91068](https://github.com/airbytehq/airbyte/pull/91068) | Emit dimension values exactly as Google returns them, including quoted and numeric-looking queries |
-| 2.1.18 | 2026-10-22 | [89665](https://github.com/airbytehq/airbyte/pull/89665) | Fix 400 errors on the search_analytics_site_report_by_site stream by using aggregationType auto for Google News and Discover search types; keep numeric-looking search queries as strings in keyword streams |
+| 2.1.18 | 2026-11-05 | [89665](https://github.com/airbytehq/airbyte/pull/89665) | Fix 400 errors on `search_analytics_site_report_by_site` by using `aggregationType: auto` for Google News; keep numeric-looking search queries as strings in keyword streams |
 | 2.1.17 | 2026-10-13 | [88645](https://github.com/airbytehq/airbyte/pull/88645) | Update dependencies |
 | 2.1.16 | 2026-10-06 | [87882](https://github.com/airbytehq/airbyte/pull/87882) | Update dependencies |
 | 2.1.15 | 2026-09-29 | [87207](https://github.com/airbytehq/airbyte/pull/87207) | Update dependencies |
