@@ -1,0 +1,21 @@
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "body": "A response to the ticket",
+    "body_text": "A response to the ticket",
+    "incoming": false,
+    "private": false,
+    "source": 0,
+    "category": 1,
+    "to_emails": [],
+    "from_email": "agent@example.com",
+    "cc_emails": [],
+    "bcc_emails": [],
+    "created_at": "2024-05-02T00:00:00Z",
+    "updated_at": "2024-05-02T00:00:00Z",
+    "attachments": [],
+    "ticket_id": 1,
+    "source_additional_info": {}
+  }
+]

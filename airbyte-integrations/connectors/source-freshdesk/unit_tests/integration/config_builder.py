@@ -24,5 +24,9 @@ class ConfigBuilder:
         self._config["domain"] = domain
         return self
 
+    def lookback_window_in_days(self, days: int) -> "ConfigBuilder":
+        self._config["lookback_window_in_days"] = days
+        return self
+
     def build(self) -> Mapping[str, Any]:
         return self._config
