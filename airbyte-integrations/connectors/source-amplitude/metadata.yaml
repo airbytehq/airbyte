@@ -75,10 +75,19 @@ data:
     - title: Authentication
       url: https://amplitude.com/docs/apis/authentication
       type: authentication_guide
+    - title: Export API
+      url: https://amplitude.com/docs/apis/analytics/export
+      type: api_reference
+    - title: Dashboard REST API
+      url: https://amplitude.com/docs/apis/analytics/dashboard-rest
+      type: api_reference
     - title: Rate limits
       url: https://amplitude.com/docs/apis/analytics/http-v2
       type: rate_limits
     - title: Product Updates
       url: https://amplitude.com/releases
+      type: api_release_history
+    - title: Product Updates feed
+      url: https://amplitude.com/releases/feed.xml
       type: api_release_history
 metadataSpecVersion: "1.0"
