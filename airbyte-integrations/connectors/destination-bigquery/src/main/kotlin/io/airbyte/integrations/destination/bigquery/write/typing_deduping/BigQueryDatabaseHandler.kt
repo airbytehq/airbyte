@@ -61,7 +61,9 @@ class BigQueryDatabaseHandler(
                 // instead, we hardcode handling for the rate-limit error... which requires matching
                 // against a specific magic string >.>
                 if (
-                    e is BigQueryException && e.code == 403 && e.error.reason == "rateLimitExceeded"
+                    e is BigQueryException &&
+                        e.code == 403 &&
+                        e.error?.reason == "rateLimitExceeded"
                 ) {
                     logger.warn(e) {
                         "Rate limit exceeded while executing SQL (attempt $attemptNumber/$numAttempts). Sleeping ${delay}ms and retrying."
@@ -93,21 +95,13 @@ class BigQueryDatabaseHandler(
          * If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery
          * doesn't do a good job of inferring the query location. Pass it in explicitly.
          */
-        var job =
-            bq.create(
-                JobInfo.of(
-                    JobId.newBuilder()
-                        .setProject(jobProjectId)
-                        .setLocation(datasetLocation)
-                        .build(),
-                    QueryJobConfiguration.of(statement),
-                ),
-            )
-        // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
-        while (JobStatus.State.DONE != job.status.state) {
-            Thread.sleep(1000L)
-            job = job.reload()
-        }
+        val job =
+            try {
+                createAndAwaitJob(statement)
+            } catch (e: BigQueryException) {
+                // Job.reload() throws the job's error directly when a polled job fails.
+                throw wrapWithConfigExceptionIfNeeded(e)
+            }
         job.status.error?.let {
             throw wrapWithConfigExceptionIfNeeded(
                 BigQueryException(listOf(job.status.error) + job.status.executionErrors),
@@ -158,6 +152,25 @@ class BigQueryDatabaseHandler(
         }
     }
 
+    private fun createAndAwaitJob(statement: String): Job {
+        var job =
+            bq.create(
+                JobInfo.of(
+                    JobId.newBuilder()
+                        .setProject(jobProjectId)
+                        .setLocation(datasetLocation)
+                        .build(),
+                    QueryJobConfiguration.of(statement),
+                ),
+            )
+        // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
+        while (JobStatus.State.DONE != job.status.state) {
+            Thread.sleep(1000L)
+            job = job.reload()
+        }
+        return job
+    }
+
     override suspend fun createNamespaces(namespaces: Collection<String>) {
         coroutineScope {
             namespaces.forEach { dataset ->
@@ -180,17 +193,15 @@ class BigQueryDatabaseHandler(
     }
 
     private fun wrapWithConfigExceptionIfNeeded(e: Exception): Exception {
-        when (e) {
-            is BigQueryException -> {
-                if (e.errors.any { it.message.contains(BILLING_CONFIG_ERROR) }) {
-                    return ConfigErrorException(e.reason, e)
-                }
-                if (e.errors.any { it.message.contains(CUSTOM_QUOTA_EXCEEDED_ERROR) }) {
-                    return ConfigErrorException(e.reason, e)
-                }
-            }
+        if (e !is BigQueryException) {
+            return e
         }
-        return e
+        val messages = e.errors.orEmpty().mapNotNull { it?.message } + listOfNotNull(e.message)
+        val isConfigError =
+            messages.any {
+                it.contains(BILLING_CONFIG_ERROR) || it.contains(CUSTOM_QUOTA_EXCEEDED_ERROR)
+            }
+        return if (isConfigError) ConfigErrorException(e.message ?: e.toString(), e) else e
     }
 
     companion object {

@@ -23,6 +23,8 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 class BigQueryDatabaseHandlerTest {
     companion object {
@@ -150,5 +152,50 @@ class BigQueryDatabaseHandlerTest {
         val handler = BigQueryDatabaseHandler(bq, bq, "location", "test-project")
 
         assertThrows<BigQueryException> { handler.execute(Sql.of("select * from nowhere")) }
+    }
+
+    /**
+     * When a running job fails, BigQuery's [Job.reload] throws the job's error as a
+     * [BigQueryException] instead of returning a DONE job, so it never reaches the `job.status.error`
+     * branch.
+     */
+    private fun handlerWhoseReloadThrows(e: BigQueryException): BigQueryDatabaseHandler {
+        val runningJob: Job = mockk {
+            every { status } returns mockk { every { state } returns JobStatus.State.RUNNING }
+            every { reload() } throws e
+        }
+        val bq: BigQuery = mockk {
+            every { create(any(JobInfo::class), *anyVararg()) } returns runningJob
+        }
+        return BigQueryDatabaseHandler(bq, bq, "location", "test-project")
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = [CUSTOM_QUOTA_ERROR, BILLING_ERROR])
+    fun `config errors thrown while polling the job are wrapped as ConfigErrorException`(
+        errorMessage: String
+    ) {
+        val bqError = BigQueryError("quotaExceeded", "", errorMessage)
+        val handler = handlerWhoseReloadThrows(BigQueryException(listOf(bqError)))
+
+        val e = assertThrows<ConfigErrorException> { handler.execute(Sql.of("select 1")) }
+        assertEquals(errorMessage, e.message)
+    }
+
+    @Test
+    fun `config errors without structured errors are wrapped as ConfigErrorException`() {
+        val handler = handlerWhoseReloadThrows(BigQueryException(403, CUSTOM_QUOTA_ERROR))
+
+        assertThrows<ConfigErrorException> { handler.execute(Sql.of("select 1")) }
+    }
+
+    @Test
+    fun `transient errors thrown while polling the job are not wrapped as ConfigErrorException`() {
+        val transientError = "Quota exceeded: too many DML statements outstanding"
+        val bqError = BigQueryError("quotaExceeded", "", transientError)
+        val handler = handlerWhoseReloadThrows(BigQueryException(listOf(bqError)))
+
+        val e = assertThrows<BigQueryException> { handler.execute(Sql.of("select 1")) }
+        assertEquals(transientError, e.message)
     }
 }
