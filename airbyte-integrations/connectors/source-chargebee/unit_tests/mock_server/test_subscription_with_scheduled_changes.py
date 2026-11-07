@@ -5,14 +5,17 @@ from unittest import TestCase
 import freezegun
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 
 from .request_builder import RequestBuilder
 from .response_builder import (
     error_no_scheduled_changes_response,
+    get_json_response,
     subscription_response,
     subscription_response_multiple,
+    subscription_response_page1,
+    subscription_response_page2,
     subscription_with_scheduled_changes_response,
 )
 from .utils import config, read_output
@@ -131,12 +134,29 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
             .with_has_scheduled_changes("true")
             .with_limit(100)
             .build(),
-            subscription_response(),
+            subscription_response_page1(),
+        )
+        http_mocker.get(
+            RequestBuilder.subscriptions_endpoint()
+            .with_sort_by_asc("updated_at")
+            .with_include_deleted("true")
+            .with_has_scheduled_changes("true")
+            .with_limit(100)
+            .with_offset("offset_page_2")
+            .build(),
+            subscription_response_page2(),
         )
         http_mocker.get(
             RequestBuilder.subscription_scheduled_changes_endpoint("sub_001").with_any_query_params().build(),
             subscription_with_scheduled_changes_response(),
         )
+        http_mocker.get(
+            RequestBuilder.subscription_scheduled_changes_endpoint("sub_002").with_any_query_params().build(),
+            HttpResponse(body=get_json_response("subscription_with_scheduled_changes.json").replace("sub_001", "sub_002")),
+        )
 
         output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
-        assert len(output.records) == 1
+        assert [(record.record.data["id"], record.record.data["subscription_id"]) for record in output.records] == [
+            ("sub_001", "sub_001"),
+            ("sub_002", "sub_002"),
+        ]
