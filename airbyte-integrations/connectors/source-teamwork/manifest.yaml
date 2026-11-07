@@ -43,32 +43,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: latestactivity.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -119,32 +93,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: projects.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -195,32 +143,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: projects/metrics/active.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -260,32 +182,6 @@ definitions:
           request_parameters:
             endDate: "{{ today_utc() }}"
             startDate: "{{ format_datetime(config.start_date, '%Y-%m-%d') }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -322,32 +218,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: companies.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -398,32 +268,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: me/timers.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -474,32 +318,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: time.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -548,32 +366,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: time/total.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -609,32 +401,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: dashboards.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -685,32 +451,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: forms.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -761,32 +501,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: milestones.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -838,32 +552,6 @@ definitions:
           request_parameters:
             startDate: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
             endDate: "{{ today_utc() }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -900,32 +588,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: notebooks.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -976,32 +638,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: people.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1038,32 +674,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: notebooks/{{ stream_partition.notebookId }}/comments.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1122,32 +732,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: projectcategories.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1184,32 +768,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: tasklists
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1260,32 +818,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: tasks.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1336,32 +868,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: tags.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1399,32 +905,6 @@ definitions:
           request_parameters:
             startDate: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
             endDate: "{{ today_utc() }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1462,32 +942,6 @@ definitions:
           request_parameters:
             startDate: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
             endDate: "{{ today_utc() }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      Some configuration error, Make sure your configurations
-                      are correct
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: WaitUntilTimeFromHeader
-                    header: X-Rate-Limit-Reset
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    error_message: Rate limit hit
-                    http_codes:
-                      - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1520,6 +974,23 @@ definitions:
       type: BasicHttpAuthenticator
       password: '{{ config["password"] }}'
       username: '{{ config["username"] }}'
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 3
+      backoff_strategies:
+        - type: WaitUntilTimeFromHeader
+          header: X-Rate-Limit-Reset
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 422
+          error_message: >-
+            Teamwork rejected the request as unprocessable (HTTP 422). Check
+            the connector configuration and retry; contact Airbyte support if
+            the error persists.
 
 streams:
   - $ref: "#/definitions/streams/latestactivity"
