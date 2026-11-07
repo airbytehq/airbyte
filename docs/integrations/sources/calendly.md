@@ -23,7 +23,7 @@ The connection check reads only the token owner's profile (`api_user`). A succes
 | --- | --- | --- | --- |
 | `api_key` | `string` | Required. The personal access token created during setup. | |
 | `start_date` | `string` | Required. Read scheduled events starting on or after this time, and outgoing communications, activity log entries and meeting recaps from this time on. Use UTC in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2024-01-01T00:00:00Z`. This filters event start times, not when invitees booked. | |
-| `lookback_days` | `number` | Optional. Days to subtract from the latest synced event's start time for incremental `scheduled_events` reads. The connector rereads events in that window, including their invitees. Use a non-negative value and see the incremental sync limitation below. | 0 |
+| `lookback_days` | `number` | Optional. Incremental `scheduled_events` syncs re-emit events whose `updated_at` falls within this many days before the last synced update, plus a fixed five minutes. Every sync pages through all events from the start date, so 0 is right for most connections. | 0 |
 
 ## Token scopes
 
@@ -59,7 +59,7 @@ Since March 2026, Calendly grants newly created tokens no API access until you s
 | `api_user` | The token owner's profile and current organization | `uri` | Yes | No |
 | `groups` | Groups in the organization | `uri` | Yes | No |
 | `organization_memberships` | Organization members, their roles, and user profiles | `uri` | Yes | No |
-| `scheduled_events` | Scheduled meetings, including their times, status, and location | `uri` | Yes | Yes, using `start_time` |
+| `scheduled_events` | Scheduled meetings, including their times, status, and location | `uri` | Yes | Yes, using `updated_at` |
 | `event_invitees` | Invitees for each scheduled event, including answers, tracking data, and cancellation information | `uri` | Yes | Yes, dependent on `scheduled_events` |
 | `teams` | Teams in the organization | `uri` | Yes | No |
 | `event_type_memberships` | Hosts assigned to each event type | `uri` | Yes | No |
@@ -75,7 +75,7 @@ Since March 2026, Calendly grants newly created tokens no API access until you s
 | `activity_log_entries` | Audit log of actions in the organization | `uri` | Yes | Yes, using `occurred_at` |
 | `meeting_recaps` | Notetaker recaps of meetings the token's user can access | `uri` | Yes | Yes, using the meeting `start_time` |
 
-The connector reads `event_invitees` for the scheduled events returned by the parent stream. It adds `scheduled_event_id` to each invitee record so you can join it to the `id` in `scheduled_events`. `routing_form_submissions` reads the submissions of every routing form returned for the organization.
+The connector reads `event_invitees` for each new or changed scheduled event returned by the parent stream. It reads all invitees for those events and adds `scheduled_event_id` to each invitee record so you can join it to the `id` in `scheduled_events`. The invitee stream's state follows `scheduled_events`. `routing_form_submissions` reads the submissions of every routing form returned for the organization.
 
 Outgoing communications and activity logs require an Enterprise subscription, meeting recaps require a paid plan with Notetaker enabled, and Calendly documents a paid-plan error for contacts. When Calendly reports that the plan or feature is unavailable, these streams complete without records and log a message explaining the requirement. Missing read scopes, owner or admin permission errors, and other forbidden responses still fail the sync.
 
@@ -91,15 +91,11 @@ The scheduling-setup streams read configuration, not live availability or webhoo
 - `locations` lists the meeting location types configured for each member, not the locations of booked meetings. Read `scheduled_events` for meeting-specific locations.
 - `webhook_subscriptions` lists [existing subscriptions](https://developer.calendly.com/api-docs/calendly-api/webhooks/list-webhook-subscriptions). It doesn't create subscriptions or receive webhook event payloads. Read `scheduled_events` and `event_invitees` for bookings and cancellations.
 
-### Incremental sync limitation
+### Incremental sync behavior
 
-:::caution
+Every incremental sync requests `scheduled_events` from the configured start date and emits the events whose `updated_at` changed since the previous sync, including upcoming events, cancellations and reschedules. Each sync therefore pages through all events from the start date, as many `scheduled_events` requests as a Full refresh; on the Free plan, large histories need a later start date or less frequent syncs. In every sync mode, an event updated after a sync starts is left out of that sync, with its invitees, and the next sync that reads it before it changes again emits it; in Full refresh | Overwrite its rows are missing from the destination until then.
 
-`scheduled_events` uses the event's `start_time`, not its creation or modification time, as its incremental cursor. Calendly also returns upcoming events, so the saved cursor can move into the future. Later syncs can miss new bookings for earlier times and updates, such as cancellations, to events outside the lookback window. `event_invitees` depends on these parent events and has the same limitation.
-
-Use Full refresh for both `scheduled_events` and `event_invitees` to reread the events covered by your start date. If you use incremental syncs, set `lookback_days` to at least how far in advance invitees can book. This rereads events in that window, but doesn't capture later changes to older events outside it.
-
-:::
+`event_invitees` follows the parent state and reads all invitees of each new or changed event again. Calendly does not document which invitee changes, such as a no-show or one invitee leaving a group event, update the event's `updated_at`; an invitee change that leaves the event unchanged reaches the destination with the next change to that event or a Full refresh of `event_invitees`.
 
 ## Rate limits
 
@@ -115,7 +111,7 @@ The connector monitors `X-RateLimit-Remaining` and waits when the allowance is e
 | HTTP 403: insufficient scope or permission denied | Check the error for missing scopes. Create a token with the required read scopes, and use an organization owner or administrator account for organization-wide data such as scheduled events, webhook subscriptions, activity logs and outgoing communications. Update the token in Airbyte. |
 | A plan-gated stream syncs no records | Calendly reported that the plan or feature is unavailable; the sync log names the requirement. |
 | A scheduled event, event type, member or routing form disappears during a sync | The connector logs and skips that event's invitees, that event type's hosts, that member's availability schedules and locations, or that form's submissions, then continues. A 404 on other endpoints fails the sync. |
-| New bookings or cancellations are missing | Review the [incremental sync limitation](#incremental-sync-limitation). Use Full refresh for `scheduled_events` and `event_invitees` to reread events covered by your start date. |
+| New bookings or cancellations are missing | Upgrade to 1.0.0; its first sync reads every event from your start date again. Confirm that the connection's start date covers the event. |
 
 ## Upgrading to 0.2.0
 
@@ -132,6 +128,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 1.0.0 | 2026-11-03 | [90864](https://github.com/airbytehq/airbyte/pull/90864) | Fix incremental syncs missing new bookings and cancellations by using updated_at as the scheduled_events cursor, and declare date-time and integer types on existing fields |
 | 0.4.0 | 2026-11-04 | [90848](https://github.com/airbytehq/airbyte/pull/90848) | Add routing forms and submissions, contacts, outgoing communications, activity logs and meeting recaps streams; they need the new `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read` scopes |
 | 0.3.0 | 2026-11-04 | [90847](https://github.com/airbytehq/airbyte/pull/90847) | Add teams, event type memberships, group relationships, user availability schedules, locations, organization invitations and webhook subscriptions streams; user availability schedules, locations and webhook subscriptions need the new `availability:read`, `locations:read` and `webhooks:read` scopes |
 | 0.2.0 | 2026-11-03 | [90829](https://github.com/airbytehq/airbyte/pull/90829) | Handle rate limits and token errors, declare missing fields, fix the crash when `lookback_days` is unset, stop dropping event types updated before 2021 and invitees booked before the start date (refresh these streams to backfill) |
