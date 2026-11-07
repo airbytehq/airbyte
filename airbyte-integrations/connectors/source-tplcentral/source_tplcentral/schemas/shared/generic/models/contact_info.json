@@ -2,7 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "in GETs: the contact; in POSTs or PUTs: identifies existing contact or properties of new contact ",
   "type": "object",
-  "additionalProperties": false,
   "properties": {
     "ContactId": {
       "type": ["null", "integer"]
