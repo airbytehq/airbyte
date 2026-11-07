@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import json
 import logging
 import urllib.parse
 from datetime import timedelta
+from pathlib import Path
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -32,6 +34,7 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -859,3 +862,54 @@ def test_export_stream_lookback_window(requests_mock, export_response, config_ra
     # Verify updated state is set to the latest record time
     new_state = stream.get_updated_state(stream_state, records[-1])
     assert new_state["time"] == "2021-06-16T17:28:00Z"
+
+
+def test_export_transformer_matches_full_schema_normalization():
+    schema = json.loads((Path(source_mixpanel.__file__).parent / "schemas" / "export.json").read_text())
+    for i in range(50):
+        schema["properties"][f"dynamic_{i}"] = {"type": ["null", "string"]}
+    values = ["abc", "1", "2.5", "True", "false", "None", "[1, 2]", "", "-3"]
+    names = list(schema["properties"])
+    records = [
+        {
+            "event": "e",
+            "time": "2021-06-16T16:28:00+00:00",
+            "unknown": values[i % len(values)],
+            **{name: values[(i + j) % len(values)] for j, name in enumerate(names[i % 20 :: 7])},
+        }
+        for i in range(200)
+    ]
+    expected, actual = copy.deepcopy(records), copy.deepcopy(records)
+
+    for record in expected:
+        TypeTransformer(TransformConfig.DefaultSchemaNormalization).transform(record, schema)
+    for record in actual:
+        Export.transformer.transform(record, schema)
+
+    assert actual == expected
+    assert actual != records
+
+
+def test_export_request_has_read_timeout(requests_mock, export_response, config):
+    stream = Export(authenticator=MagicMock(), **config)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
+    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+
+    list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+
+    assert requests_mock.last_request.timeout == (60, 600)
+
+
+@pytest.mark.parametrize("read_seconds, expected_sleep", [(0, 60), (45, 15), (90, None)])
+def test_rate_limit_sleep_only_fills_the_rest_of_the_interval(mocker, export_response, config, read_seconds, expected_sleep):
+    stream = Export(authenticator=MagicMock(), **config)
+    mocker.patch("source_mixpanel.streams.time.monotonic", side_effect=[1000, 1000 + read_seconds])
+    sleep = mocker.patch("source_mixpanel.streams.time.sleep")
+    mocker.patch.object(Export, "process_response", return_value=iter([]))
+
+    list(stream.parse_response(MagicMock(), stream_state={}))
+
+    if expected_sleep is None:
+        sleep.assert_not_called()
+    else:
+        sleep.assert_called_once_with(pytest.approx(expected_sleep))

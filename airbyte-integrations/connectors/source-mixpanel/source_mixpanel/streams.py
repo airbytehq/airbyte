@@ -5,7 +5,7 @@ import time
 from abc import ABC
 from datetime import timedelta
 from functools import cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -123,14 +123,18 @@ class MixpanelStream(HttpStream, ABC):
         stream_state: Mapping[str, Any],
         **kwargs,
     ) -> Iterable[Mapping]:
+        started = time.monotonic()
         # parse the whole response
         yield from self.process_response(response, stream_state=stream_state, **kwargs)
 
         if self.reqs_per_hour_limit > 0:
             # we skip this block, if self.reqs_per_hour_limit = 0,
             # in all other cases wait for X seconds to match API limitations
-            self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
-            time.sleep(3600 / self.reqs_per_hour_limit)
+            # The budget is one request per interval, so a response that took longer than that to read needs no wait
+            wait = 3600 / self.reqs_per_hour_limit - (time.monotonic() - started)
+            if wait > 0:
+                self.logger.info(f"Sleep for {wait:.0f} seconds to match API limitations after reading from {self.name}")
+                time.sleep(wait)
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
         return MixpanelStreamBackoffStrategy(stream=self)
@@ -369,6 +373,31 @@ class ExportSchema(MixpanelStream):
                     parts = []
 
 
+def _is_plain_string(definition: Mapping[str, Any]) -> bool:
+    types = definition.get("type")
+    types = [types] if isinstance(types, str) else types or []
+    return bool(types) and set(types) <= {"null", "string"} and definition.keys() <= {"type", "description"}
+
+
+class NonStringPropertiesTransformer(TypeTransformer):
+    """
+    Export.process_response already makes every property a string, so normalizing the string properties is a no-op
+    that costs most of the connector's CPU on wide schemas. Only the schema's non-string properties are normalized.
+    """
+
+    def __init__(self, config: TransformConfig):
+        super().__init__(config)
+        self._schemas: dict = {}
+
+    def transform(self, record: Dict[str, Any], schema: Mapping[str, Any]) -> None:
+        narrowed = self._schemas.get(id(schema))
+        if narrowed is None or narrowed[0] is not schema:
+            properties = {name: definition for name, definition in schema.get("properties", {}).items() if not _is_plain_string(definition)}
+            narrowed = (schema, {**schema, "properties": properties})
+            self._schemas[id(schema)] = narrowed
+        super().transform(record, narrowed[1])
+
+
 class Export(DateSlicesMixin, IncrementalMixpanelStream):
     """Export event data as it is received and stored within Mixpanel, complete with all event properties
      (including distinct_id) and the exact timestamp the event was fired.
@@ -384,7 +413,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     primary_key: str = None
     cursor_field: str = "time"
 
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    transformer = NonStringPropertiesTransformer(TransformConfig.DefaultSchemaNormalization)
 
     @property
     def url_base(self):
@@ -498,4 +527,5 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     def request_kwargs(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return {"stream": True}
+        # A stalled export stream otherwise blocks the read forever: the read timeout is per socket read, not the whole response
+        return {"stream": True, "timeout": (60, 600)}
