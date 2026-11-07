@@ -299,35 +299,33 @@ definitions:
         field_name: access_key
         inject_into: request_parameter
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          max_retries: 3
-          response_filters:
-            - type: HttpResponseFilter
-              action: IGNORE
-              http_codes:
-                - 403
-              error_message: Subscription needed
-            - type: HttpResponseFilter
-              action: RATE_LIMITED
-              predicate: >-
-                {{ 'rate_limit_reached' in ((response.get('error') or {}).get('type', '') ~ (response.get('error') or {}).get('code', '')) }}
-              error_message: >-
-                Aviationstack per-second rate limit reached; retrying.
-            - type: HttpResponseFilter
-              action: FAIL
-              failure_type: config_error
-              http_codes:
-                - 429
-              error_message: >-
-                Aviationstack rejected the request with HTTP 429 (request quota
-                exceeded): {{ ((response.get('error') or {}).get('info') or (response.get('error') or {}).get('message') or 'usage limit reached').rstrip('.') }}.
-                Every stream page costs one API request against your monthly plan
-                quota (the Free plan allows only 100 requests per month and the
-                full catalog is thousands of records), so wait for the quota to
-                reset, select fewer streams, or upgrade your Aviationstack plan at
-                https://aviationstack.com/product.
+      type: DefaultErrorHandler
+      max_retries: 3
+      response_filters:
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 403
+          error_message: Subscription needed
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          predicate: >-
+            {{ 'rate_limit_reached' in ((response.get('error') or {}).get('type', '') ~ (response.get('error') or {}).get('code', '')) }}
+          error_message: >-
+            Aviationstack per-second rate limit reached; retrying.
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          http_codes:
+            - 429
+          error_message: >-
+            Aviationstack rejected the request with HTTP 429 (request quota
+            exceeded): {{ ((response.get('error') or {}).get('info') or (response.get('error') or {}).get('message') or 'usage limit reached').rstrip('.') }}.
+            Every stream page costs one API request against your monthly plan
+            quota (the Free plan allows only 100 requests per month and the
+            full catalog is thousands of records), so wait for the quota to
+            reset, select fewer streams, or upgrade your Aviationstack plan at
+            https://aviationstack.com/product.
 
 streams:
   - $ref: "#/definitions/streams/airports"
