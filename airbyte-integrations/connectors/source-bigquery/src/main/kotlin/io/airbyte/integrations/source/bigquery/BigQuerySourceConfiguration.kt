@@ -232,7 +232,8 @@ constructor(
             }
         }
 
-        val jdbcProperties: MutableMap<String, String> = mutableMapOf("ProjectId" to jobProjectId)
+        val jdbcProperties: MutableMap<String, String> =
+            mutableMapOf("ProjectId" to jobProjectId, JDBC_DIAGNOSTIC_TELEMETRY to "0")
         val readApiState: String =
             when {
                 useStorageReadApi -> "ENABLED"
@@ -288,6 +289,8 @@ constructor(
         const val JDBC_SERVICE_ACCOUNT_EMAIL = "OAuthServiceAcctEmail"
         /** JDBC property holding the PEM-encoded PKCS#8 private key (`private_key`). */
         const val JDBC_PRIVATE_KEY = "OAuthPvtKey"
+        /** Driver 1.7.0+ sends anonymous usage telemetry to Google unless this is "0". */
+        const val JDBC_DIAGNOSTIC_TELEMETRY = "EnableDiagnosticTelemetry"
 
         /** Fails fast, with a precise message, on credentials the driver could not use. */
         fun parseServiceAccountKey(credentialsJson: String): ServiceAccountKey {
