@@ -50,7 +50,7 @@ _TOKEN_REQUEST = HttpRequest(
     query_params={"grant_type": "account_credentials", "account_id": "test_account_id"},
 )
 
-_USERS_REQUEST = HttpRequest(url=f"{_BASE_URL}/users", query_params={"page_size": "30"})
+_USERS_REQUEST = HttpRequest(url=f"{_BASE_URL}/users", query_params={"page_size": "300"})
 _USERS_RESPONSE = HttpResponse(json.dumps({"users": [{"id": "u1"}, {"id": "u2"}], "next_page_token": ""}))
 _ONE_USER_RESPONSE = HttpResponse(json.dumps({"users": [{"id": "u1"}], "next_page_token": ""}))
 _REPORT_USER_MEETINGS_REQUEST = HttpRequest(
@@ -64,7 +64,7 @@ def _zoom_error(code: int, message: str, status_code: int = 400) -> HttpResponse
 
 
 def _user_meetings_request(user_id: str) -> HttpRequest:
-    return HttpRequest(url=f"{_BASE_URL}/users/{user_id}/meetings", query_params={"page_size": "30"})
+    return HttpRequest(url=f"{_BASE_URL}/users/{user_id}/meetings", query_params={"page_size": "300"})
 
 
 def _read(stream_name: str, config: Dict[str, Any] | None = None) -> EntrypointOutput:
@@ -92,7 +92,7 @@ class TestCode300(TestCase):
             _user_meetings_request("u1"),
             HttpResponse(json.dumps({"meetings": [{"id": 1, "uuid": "aaa=="}], "next_page_token": ""})),
         )
-        registrants_request = HttpRequest(url=f"{_BASE_URL}/meetings/1/registrants", query_params={"page_size": "30"})
+        registrants_request = HttpRequest(url=f"{_BASE_URL}/meetings/1/registrants", query_params={"page_size": "300"})
         http_mocker.get(
             registrants_request,
             _zoom_error(300, "Registration has not been enabled for this meeting.", status_code=404),
@@ -242,7 +242,7 @@ def test_child_streams_skip_deleted_resource_3001(stream_name, parent_resource, 
         _mock_token(http_mocker)
         http_mocker.get(_USERS_REQUEST, _ONE_USER_RESPONSE)
         http_mocker.get(
-            HttpRequest(url=f"{_BASE_URL}/users/u1/{parent_resource}", query_params={"page_size": "30"}),
+            HttpRequest(url=f"{_BASE_URL}/users/u1/{parent_resource}", query_params={"page_size": "300"}),
             HttpResponse(json.dumps({parent_resource: [{"id": 1, "uuid": "aaa=="}], "next_page_token": ""})),
         )
         http_mocker.get(
