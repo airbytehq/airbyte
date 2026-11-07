@@ -381,6 +381,40 @@ class FeedBootstrapTest {
         Assertions.assertEquals("bar", records[1].getData(1).string)
     }
 
+    @Test
+    fun testProtobufChangesMatchTheJsonPath() {
+        val channel = InMemorySocketDataChannel()
+        val (protobufConsumer, socketConsumer) = protobufConsumerWithoutNamespace(channel)
+        val jsonConsumer: StreamRecordConsumer =
+            FeedBootstrap.create(
+                    outputConsumer,
+                    metaFieldDecorator,
+                    StateManager(initialStreamStates = mapOf(streamWithoutNamespace to null)),
+                    streamWithoutNamespace,
+                    DataChannelFormat.JSONL,
+                    DataChannelMedium.STDIO,
+                    bufferSize,
+                    clock,
+                )
+                .streamRecordConsumers()
+                .getValue(streamWithoutNamespace.id)
+        for (change in FieldValueChange.entries) {
+            protobufConsumer.accept(STREAM_RECORD_INPUT_DATA, mapOf(v to change))
+            jsonConsumer.accept(STREAM_RECORD_INPUT_DATA, mapOf(v to change))
+        }
+        socketConsumer.close()
+        val protobufChanges: List<Pair<String, String>> =
+            protobufRecords(channel).map { record ->
+                record.meta.getChanges(0).let { it.change.name to it.reason.name }
+            }
+        val jsonChanges: List<Pair<String, String>> =
+            outputConsumer.records().map { record ->
+                record.meta.changes.single().let { it.change.name to it.reason.name }
+            }
+        Assertions.assertEquals(FieldValueChange.entries.size, protobufChanges.size)
+        Assertions.assertEquals(jsonChanges, protobufChanges)
+    }
+
     companion object {
         const val GLOBAL_RECORD_DATA_JSON =
             """{"k":1,"v":"foo","_ab_cdc_lsn":123,"_ab_cdc_updated_at":"2024-03-01T01:02:03.456789","_ab_cdc_deleted_at":null}"""
