@@ -10,7 +10,13 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 **Connector type:** Manifest-only, with custom components in `components.py`
 
-**Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.
+`conversations` and `executions` filter on creation date only. Later updates (and steps added to long-running executions) are revisited only within the Lookback window; use full refresh for complete current state.
+
+Both cursors use a fixed 2010-01-01 floor rather than Replication Start Date, preserving existing full-refresh data scope. Neither uses Slice Step Duration. Conversations have no step or cursor_granularity, preserving a single request window, with inclusive whole-day StartDate/EndDate filters and date-only state. Executions use DateCreatedFrom/DateCreatedTo and per-flow state, with a fixed P28D step and PT1S granularity because Studio limits date ranges to one calendar month. This slicing also applies when executions is the parent of step, including after lookback is applied.
+
+`step` uses incremental_dependency on executions, retaining flow_sid as an extra field. Its global child cursor has a far-future end, no request options, and no client-side filtering; nested parent_state resumes executions per flow. Conversation children intentionally use base_conversations_stream without an incremental cursor or dependency so they still enumerate all conversations.
+
+Studio DateCreatedFrom is inclusive and DateCreatedTo is exclusive. Convert each inclusive CDK slice end to DateCreatedTo by adding one second, including the final slice ending at now. Adjacent API ranges meet without gaps; the final range can span 28 days plus one second. Conversations StartDate and EndDate are both inclusive and retain the required day-boundary suffixes.
 
 ### Future incremental stream candidates
 
