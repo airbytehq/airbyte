@@ -16,6 +16,7 @@ from airbyte_cdk.models import (
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     Status,
+    SyncMode,
     Type,
 )
 from airbyte_cdk.sources import Source
@@ -90,7 +91,7 @@ class SourceFirebaseRealtimeDatabase(Source):
 
         stream_name = self.stream_name_from(config)
 
-        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema, supported_sync_modes=["full_refresh"]))
+        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh]))
 
         return AirbyteCatalog(streams=streams)
 
