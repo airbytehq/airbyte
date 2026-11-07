@@ -26,7 +26,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from .config import MARKETPLACE_ID, NOW, ConfigBuilder
 from .request_builder import RequestBuilder
 from .response_builder import build_response
-from .utils import config, find_template, mock_auth, read_output
+from .utils import config, find_template, get_stream_by_name, mock_auth, read_output
 
 
 _STREAM_NAME = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2"
@@ -326,6 +326,72 @@ def test_given_document_lookup_forbidden_once_when_read_then_retried_and_records
     assert len(output.errors) == 0
     assert len(output.records) == _RECORDS_PER_DOCUMENT
     http_mocker.assert_number_of_calls(document_request, 2)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_document_lookup_rate_limited_beyond_default_retries_when_read_then_retried_and_records_emitted(
+    http_mocker: HttpMocker,
+) -> None:
+    http_mocker.clear_all_matchers()
+    mock_auth(http_mocker)
+    http_mocker.get(_list_reports_request(), _list_reports_response([_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID)]))
+    http_mocker.get(
+        RequestBuilder.check_report_status_endpoint(_DONE_REPORT_ID).build(),
+        build_response(_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID), status_code=HTTPStatus.OK),
+    )
+    document_request = RequestBuilder.get_document_download_url_endpoint(_DONE_REPORT_DOCUMENT_ID).build()
+    http_mocker.get(
+        document_request,
+        [
+            *[
+                HttpResponse(body="", status_code=HTTPStatus.TOO_MANY_REQUESTS, headers={"x-amzn-RateLimit-Limit": "1000"})
+                for _ in range(6)
+            ],
+            _document_response(_DONE_REPORT_DOCUMENT_ID, _DONE_DOWNLOAD_URL),
+        ],
+    )
+    http_mocker.get(RequestBuilder.download_document_endpoint(_DONE_DOWNLOAD_URL).build(), _download_response())
+
+    output = read_output(config_builder=_config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
+
+    assert len(output.errors) == 0
+    assert len(output.records) == _RECORDS_PER_DOCUMENT
+    http_mocker.assert_number_of_calls(document_request, 7)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@HttpMocker()
+def test_given_document_lookup_rate_limited_on_every_attempt_when_read_then_fails_after_retry_budget(
+    http_mocker: HttpMocker,
+) -> None:
+    http_mocker.clear_all_matchers()
+    mock_auth(http_mocker)
+    http_mocker.get(_list_reports_request(), _list_reports_response([_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID)]))
+    http_mocker.get(
+        RequestBuilder.check_report_status_endpoint(_DONE_REPORT_ID).build(),
+        build_response(_report(_DONE_REPORT_ID, "DONE", _DONE_REPORT_DOCUMENT_ID), status_code=HTTPStatus.OK),
+    )
+    document_request = RequestBuilder.get_document_download_url_endpoint(_DONE_REPORT_DOCUMENT_ID).build()
+    http_mocker.get(
+        document_request,
+        [HttpResponse(body="", status_code=HTTPStatus.TOO_MANY_REQUESTS, headers={"x-amzn-RateLimit-Limit": "1000"}) for _ in range(31)],
+    )
+
+    output = read_output(config_builder=_config(), stream_name=_STREAM_NAME, sync_mode=SyncMode.incremental)
+
+    assert output.errors
+    http_mocker.assert_number_of_calls(document_request, 31)
+
+
+def test_download_target_requester_rate_limit_handler_has_extended_retry_budget() -> None:
+    stream = get_stream_by_name(_STREAM_NAME, _config().build())
+    retriever = stream._stream_partition_generator._partition_factory._retriever
+    job_orchestrator = retriever.stream_slicer._job_orchestrator_factory([])
+    error_handler = job_orchestrator._job_repository.download_target_requester.error_handler
+
+    assert error_handler.max_retries == 30
+    assert error_handler.max_time == 3600
 
 
 @HttpMocker()

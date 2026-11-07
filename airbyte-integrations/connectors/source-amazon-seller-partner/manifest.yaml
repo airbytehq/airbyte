@@ -3647,6 +3647,23 @@ definitions:
       error_handler:
         type: CompositeErrorHandler
         error_handlers:
+          # CustomErrorHandler on the CDK's own DefaultErrorHandler only to set max_time, which the manifest schema does not expose.
+          # Waiting on the 1/min getReportDocument API budget counts toward max_time, so the 600s default gives up after a few tries.
+          - type: CustomErrorHandler
+            class_name: airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler.DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: "Rate limit exceeded for report document lookup. The request will be retried with backoff."
+            max_retries: 30
+            max_time: 3600
+            backoff_strategies:
+              - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                type: CustomBackoffStrategy
+                header: x-amzn-RateLimit-Limit
+                default_backoff_time: 60
           - type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
