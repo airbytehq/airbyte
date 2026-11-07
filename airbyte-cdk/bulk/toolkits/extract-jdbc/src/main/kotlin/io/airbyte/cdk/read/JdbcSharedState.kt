@@ -29,6 +29,13 @@ interface JdbcSharedState {
     /** Sample size limit. */
     val maxSampleSize: Int
 
+    /**
+     * Should concurrent reads pick split boundaries at evenly spaced sampled rows instead of by
+     * secondary sampling?
+     */
+    val withEvenSplitBoundaries: Boolean
+        get() = false
+
     /** Targeted memory footprint of a partition, in bytes. */
     val targetPartitionByteSize: Long
 
