@@ -6,6 +6,20 @@ check:
     - activity_sets
     - contacts
 definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes:
+          - 403
+        action: IGNORE
+      - type: HttpResponseFilter
+        http_codes:
+          - 429
+        action: RETRY
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 6
   streams:
     activity_sets:
       type: DeclarativeStream
@@ -27,24 +41,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                path: /ActivitySets
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -304,23 +301,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -691,23 +672,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -756,23 +721,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -826,23 +775,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1001,23 +934,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1210,23 +1127,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1323,23 +1224,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1452,23 +1337,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1672,23 +1541,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1754,23 +1607,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1839,23 +1676,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1971,23 +1792,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2131,23 +1936,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2434,23 +2223,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2516,23 +2289,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2593,23 +2350,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2952,23 +2693,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3037,23 +2762,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3134,23 +2843,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3216,23 +2909,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3481,23 +3158,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3766,23 +3427,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3863,23 +3508,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3947,23 +3576,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4246,23 +3859,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4321,23 +3918,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4411,23 +3992,7 @@ definitions:
             count_total: "True"
             updated_after_utc: "{{ stream_interval['start_date'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 403
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 6
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4599,24 +4164,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              path: /ActivitySets
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -4873,23 +4421,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5259,23 +4791,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5323,23 +4839,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5392,23 +4892,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5566,23 +5050,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5774,23 +5242,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5884,23 +5336,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -6010,23 +5446,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -6227,23 +5647,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -6308,23 +5712,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -6392,23 +5780,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -6521,23 +5893,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -6680,23 +6036,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -6979,23 +6319,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -7058,23 +6382,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -7132,23 +6440,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -7487,23 +6779,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -7571,23 +6847,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -7666,23 +6926,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -7745,23 +6989,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -8005,23 +7233,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -8287,23 +7499,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -8381,23 +7577,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -8464,23 +7644,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -8762,23 +7926,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -8836,23 +7984,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -8925,23 +8057,7 @@ streams:
           count_total: "True"
           updated_after_utc: "{{ stream_interval['start_date'] }}"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 403
-                  action: IGNORE
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 6
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 429
-                  action: RETRY
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
