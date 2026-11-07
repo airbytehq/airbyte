@@ -23,17 +23,22 @@ definitions:
           request_headers:
             apikey: "{{ config['client_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
-                      - 403
-                      - 404
-                    error_message: Credentails might be expired, please validate
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 400
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: Trustpilot API request is unauthorized or malformed.
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 404
+                failure_type: config_error
+                error_message: Configured "business_units" value is not found in the Trustpilot account.
         record_selector:
           type: RecordSelector
           extractor:
@@ -71,19 +76,17 @@ definitions:
           request_parameters:
             orderBy: createdat.desc
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
-                      - 403
-                      - 404
-                    error_message: >-
-                      Business account needs oauth flow, refer documentation for
-                      more details
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 400
+                  - 401
+                  - 403
+                  - 404
+                failure_type: config_error
+                error_message: Trustpilot API request is unauthorized or malformed.
         record_selector:
           type: RecordSelector
           extractor:
@@ -145,17 +148,17 @@ definitions:
           request_headers:
             apikey: "{{ config['client_id'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
-                      - 403
-                      - 404
-                    error_message: Credentails might be expired, please validate
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 400
+                  - 401
+                  - 403
+                  - 404
+                failure_type: config_error
+                error_message: Trustpilot API request is unauthorized or malformed.
         record_selector:
           type: RecordSelector
           extractor:
