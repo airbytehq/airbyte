@@ -21,19 +21,7 @@ definitions:
           path: teams
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
+            $ref: "#/definitions/error_handlers/rate_limit_retry"
         record_selector:
           type: RecordSelector
           extractor:
@@ -79,19 +67,7 @@ definitions:
           path: groups
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
+            $ref: "#/definitions/error_handlers/rate_limit_retry"
         record_selector:
           type: RecordSelector
           extractor:
@@ -135,19 +111,7 @@ definitions:
           path: groups/{{ stream_partition.group_id }}/collections
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
+            $ref: "#/definitions/error_handlers/rate_limit_retry"
         record_selector:
           type: RecordSelector
           extractor:
@@ -200,19 +164,7 @@ definitions:
           path: groups/{{ stream_partition.group_id }}/members
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
+            $ref: "#/definitions/error_handlers/rate_limit_retry"
         record_selector:
           type: RecordSelector
           extractor:
@@ -266,19 +218,7 @@ definitions:
           path: members
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
+            $ref: "#/definitions/error_handlers/rate_limit_retry"
         record_selector:
           type: RecordSelector
           extractor:
@@ -322,25 +262,7 @@ definitions:
           path: teams/{{ config.team_id or stream_partition.team_id }}/analytics
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            $ref: "#/definitions/error_handlers/rate_limit_retry_ignore_bad_request"
         record_selector:
           type: RecordSelector
           extractor:
@@ -380,19 +302,7 @@ definitions:
           path: collections
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
+            $ref: "#/definitions/error_handlers/rate_limit_retry"
         record_selector:
           type: RecordSelector
           extractor:
@@ -438,19 +348,7 @@ definitions:
           path: folders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
+            $ref: "#/definitions/error_handlers/rate_limit_retry"
         record_selector:
           type: RecordSelector
           extractor:
@@ -482,19 +380,7 @@ definitions:
           path: folders/{{ stream_partition.folder_id }}/items
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
+            $ref: "#/definitions/error_handlers/rate_limit_retry"
         record_selector:
           type: RecordSelector
           extractor:
@@ -532,19 +418,7 @@ definitions:
           path: folders/{{ stream_partition.folder_id }}/parent
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
+            $ref: "#/definitions/error_handlers/rate_limit_retry"
         record_selector:
           type: RecordSelector
           extractor:
@@ -586,19 +460,7 @@ definitions:
           request_parameters:
             q: "{{ config['search_cards_query'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
+            $ref: "#/definitions/error_handlers/rate_limit_retry"
         record_selector:
           type: RecordSelector
           extractor:
@@ -642,25 +504,7 @@ definitions:
           path: teams/{{ stream_partition.team_id }}/tagcategories
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limits hit...Retrying
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            $ref: "#/definitions/error_handlers/rate_limit_retry_ignore_bad_request"
         record_selector:
           type: RecordSelector
           extractor:
@@ -688,6 +532,31 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tag_categories"
+  error_handlers:
+    rate_limit_retry:
+      type: DefaultErrorHandler
+      max_retries: 3
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 2
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+          error_message: Rate limits hit...Retrying
+    rate_limit_retry_ignore_bad_request:
+      $ref: "#/definitions/error_handlers/rate_limit_retry"
+      response_filters:
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes:
+            - 429
+          error_message: Rate limits hit...Retrying
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 400
   base_requester:
     type: HttpRequester
     url_base: https://api.getguru.com/api/v1/
