@@ -14,6 +14,9 @@ from airbyte_cdk.utils import AirbyteTracedException
 logger = logging.getLogger("airbyte")
 
 
+logger = logging.getLogger("airbyte")
+
+
 class CursorPatch(Cursor):
     """
     This is a hack to override FB SDK Cursor's default behaviour. By default, api calls are made using signature
@@ -88,6 +91,18 @@ class CursorPatch(Cursor):
             if non_dict_count:
                 logger.warning("Filtered %d non-dict items from Facebook API response 'data' array.", non_dict_count)
                 response["data"] = [item for item in data if isinstance(item, dict)]
+
+        if isinstance(response.get("data"), list):
+            valid_items = [item for item in response["data"] if isinstance(item, dict)]
+            filtered_count = len(response["data"]) - len(valid_items)
+            if filtered_count > 0:
+                logger.warning(
+                    "Filtered %d malformed (non-dict) item(s) from Meta API response in %s. "
+                    "This is a known Meta API issue where string data is returned instead of objects.",
+                    filtered_count,
+                    self._path,
+                )
+                response = {**response, "data": valid_items}
 
         self._queue = self.build_objects_from_response(response)
         return len(self._queue) > 0
