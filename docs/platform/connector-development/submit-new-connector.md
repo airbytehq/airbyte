@@ -9,7 +9,7 @@ To contribute a new connector in Connector Builder:
 2. When you're happy with the connector, press the **Publish -> Contribute to Marketplace** button.
 3. You'll be prompted for a connector description and your Github Access Token.
 4. Builder will make a new pull request on your behalf automatically!
-5. Airbyte Marketplace team will review the PR.
+5. The Airbyte team will review the PR.
 
 ### Obtaining your Github Access Token
 In order to contribute a new connector from the Airbyte UI, you'll need to obtain your [GitHub Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic). This will allow your GitHub user to author the contribution.
@@ -41,7 +41,7 @@ See the [Connector Development guide](../connector-development/README.md) for mo
 1. Check to see if there is an existing [Discussion](https://github.com/airbytehq/airbyte/discussions/categories/new-connector-request) for a connector you have in mind
 2. If you don't find an existing issue, [Request a New Connector](https://github.com/airbytehq/airbyte/discussions/new?category=new-connector-request)
 
-This will enable our team to make sure your contribution does not overlap with existing works and will comply with the design orientation we are currently heading the product toward. If you do not receive an update on the issue from our team, please ping us on [Slack](https://slack.airbyte.io)!
+This will enable our team to make sure your contribution does not overlap with existing works and will comply with the design orientation we are currently heading the product toward. If you do not receive an update on the issue from our team, please ping us on [Slack](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg)!
 
 ### Open a pull request
 

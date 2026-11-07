@@ -59,7 +59,7 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 6. Add the developer token from [Step 1](#step-1-set-up-bing-ads).
 7. For **Account Names Predicates**, see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in the Bing Ads docs. This filters your accounts by a specified operator and account name. You can use multiple predicate pairs. The **Operator** is one of Contains or Equals. The **Account Name** is a value to compare the Account Name field in rows by the specified operator. For example, for operator=Contains and name=Dev, all accounts where the name contains "Dev" will be replicated. For operator=Equals and name=Airbyte, all accounts where the name equals "Airbyte" will be replicated. Account Name values are not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, leave it at the default value of 0.
+9. For **Lookback window**, enter the number of days before the saved report cursor to re-read for late conversions or corrected metrics. Round conversion windows measured in hours or minutes up to whole days. This applies to all report streams in incremental mode, including budget summary and custom reports, whether or not **Reports Replication Start Date** is set. That start date remains the earliest date to read. Bulk entity streams ignore this setting. If you're not using incremental report streams, leave it at the default value of 0.
 10. For _Custom Reports_, see the [custom reports](#custom-reports) section.
 11. For _Report Name_, enter the name that you want for your custom report.
 12. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
@@ -83,7 +83,7 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
 7. For **Account Names Predicates**, see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in the Bing Ads docs. This filters your accounts by a specified operator and account name. You can use multiple predicate pairs. The **Operator** is one of Contains or Equals. The **Account Name** is a value to compare the Account Name field in rows by the specified operator. For example, for operator=Contains and name=Dev, all accounts where the name contains "Dev" will be replicated. For operator=Equals and name=Airbyte, all accounts where the name equals "Airbyte" will be replicated. Account Name values are not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, leave it at the default value of 0.
+9. For **Lookback window**, enter the number of days before the saved report cursor to re-read for late conversions or corrected metrics. Round conversion windows measured in hours or minutes up to whole days. This applies to all report streams in incremental mode, including budget summary and custom reports, whether or not **Reports Replication Start Date** is set. That start date remains the earliest date to read. Bulk entity streams ignore this setting. If you're not using incremental report streams, leave it at the default value of 0.
 10. For _Custom Reports_, see the [custom reports](#custom-reports) section.
 11. For _Report Name_, enter the name that you want for your custom report.
 12. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
@@ -321,6 +321,26 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.21 | 2026-11-03 | [88968](https://github.com/airbytehq/airbyte/pull/88968) | Add actionable messages for Microsoft Entra refresh token errors |
+| 3.0.20 | 2026-11-03 | [89720](https://github.com/airbytehq/airbyte/pull/89720) | Sync App, Hotel and Objective-based campaigns (and their ad groups and ads), which were previously skipped |
+| 3.0.19 | 2026-11-03 | [90478](https://github.com/airbytehq/airbyte/pull/90478) | Update dependencies |
+| 3.0.18 | 2026-11-02 | [89620](https://github.com/airbytehq/airbyte/pull/89620) | Apply lookback only to report streams to avoid unnecessary full downloads of bulk entities |
+| 3.0.17 | 2026-10-27 | [89793](https://github.com/airbytehq/airbyte/pull/89793) | Update dependencies |
+| 3.0.16 | 2026-10-21 | [89609](https://github.com/airbytehq/airbyte/pull/89609) | Classify expired file download URL errors as transient with a clearer error message |
+| 3.0.15 | 2026-10-20 | [89107](https://github.com/airbytehq/airbyte/pull/89107) | Update dependencies |
+| 3.0.14 | 2026-10-13 | [88521](https://github.com/airbytehq/airbyte/pull/88521) | Update dependencies |
+| 3.0.13 | 2026-10-06 | [87771](https://github.com/airbytehq/airbyte/pull/87771) | Update dependencies |
+| 3.0.12 | 2026-09-29 | [87061](https://github.com/airbytehq/airbyte/pull/87061) | Update dependencies |
+| 3.0.11 | 2026-09-22 | [86541](https://github.com/airbytehq/airbyte/pull/86541) | Update dependencies |
+| 3.0.10 | 2026-09-15 | [85943](https://github.com/airbytehq/airbyte/pull/85943) | Update dependencies |
+| 3.0.9 | 2026-09-08 | [85411](https://github.com/airbytehq/airbyte/pull/85411) | Update dependencies |
+| 3.0.8 | 2026-08-18 | [84507](https://github.com/airbytehq/airbyte/pull/84507) | Update dependencies |
+| 3.0.7 | 2026-08-11 | [83859](https://github.com/airbytehq/airbyte/pull/83859) | Update dependencies |
+| 3.0.6 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 3.0.5 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 3.0.3 — 3.0.4 is built on SDM 7.23.7, which breaks bundled custom components |
+| 3.0.4 | 2026-07-28 | [82806](https://github.com/airbytehq/airbyte/pull/82806) | Update dependencies |
+| 3.0.3 | 2026-07-21 | [82339](https://github.com/airbytehq/airbyte/pull/82339) | Update dependencies |
+| 3.0.2 | 2026-07-14 | [77143](https://github.com/airbytehq/airbyte/pull/77143) | Update dependencies |
 | 3.0.1 | 2026-07-08 | [79625](https://github.com/airbytehq/airbyte/pull/79625) | Add refresh_token_updater to persist rotated Microsoft OAuth refresh tokens; remove non-standard OAuth refresh params |
 | 3.0.0 | 2026-05-12 | [78031](https://github.com/airbytehq/airbyte/pull/78031) | Breaking: include every attribute (dimension) column in the primary keys of all report streams to prevent silent row collapse at the destination during incremental append+dedup. A stream reset is required for the affected report streams after upgrading. |
 | 2.23.17 | 2026-05-29 | [78518](https://github.com/airbytehq/airbyte/pull/78518) | Add num_workers config for user-adjustable concurrency |

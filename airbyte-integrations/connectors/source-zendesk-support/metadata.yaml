@@ -7,11 +7,11 @@ data:
       - ${subdomain}.zendesk.com
       - zendesk.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.4@sha256:f63c39a8a6f28ec20ada2ddf5861f3b1fb7b6a1ef1a8a8d1d537ff684ee3f9bd
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.35.0@sha256:0557872c74928d6b338b208a97fe52e9e8aed8d9674d85d5b5b540bf91c8110c
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 5.4.1
+  dockerImageTag: 5.7.0
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -31,7 +31,12 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
     breakingChanges:
       1.0.0:
         message: "`cursor_field` for `Tickets` stream is changed to `generated_timestamp`"
@@ -100,11 +105,6 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
-        - name: SECRET_ZENDESK_SUPPORT_OAUTH_CREDS
-          fileName: config_oauth.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Zendesk Support API
       url: https://developer.zendesk.com/api-reference/ticketing/introduction/
@@ -124,4 +124,7 @@ data:
     - title: Zendesk Status
       url: https://status.zendesk.com/
       type: status_page
+    - title: Zendesk feature removal announcements
+      url: https://support.zendesk.com/hc/en-us/articles/4408843026714-What-is-being-removed-updated-April-2026
+      type: api_deprecations
 metadataSpecVersion: "1.0"

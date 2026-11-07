@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TableNames
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 import org.apache.commons.codec.digest.DigestUtils
 
 private val LOGGER = KotlinLogging.logger {}
@@ -29,7 +29,7 @@ data class TableCatalog(private val catalog: Map<DestinationStream, TableNameInf
 }
 
 data class TableCatalogByDescriptor(
-    private val catalog: Map<DestinationStream.Descriptor, TableNameInfo>
+    private val catalog: Map<DestinationStream.Descriptor, TableNameInfo>,
 ) : Map<DestinationStream.Descriptor, TableNameInfo> by catalog {
     fun getFinalTableName(desc: DestinationStream.Descriptor): TableName? =
         this[desc]?.tableNames?.finalTableName
@@ -74,19 +74,19 @@ class TableCatalogFactory {
                 // Create a hash-suffixed name to avoid collision
                 val hash =
                     DigestUtils.sha1Hex(
-                            "${originalFinalTableName.namespace}&airbyte&${stream.mappedDescriptor.name}"
+                            "${originalFinalTableName.namespace}&airbyte&${stream.mappedDescriptor.name}",
                         )
                         .substring(0, 3)
                 val newName = "${stream.mappedDescriptor.name}_$hash"
 
                 currentRawProcessedName =
                     rawTableNameGenerator?.getTableName(
-                        stream.mappedDescriptor.copy(name = newName)
+                        stream.mappedDescriptor.copy(name = newName),
                     )
                 processedRawTableNames?.add(currentRawProcessedName!!)
                 currentFinalProcessedName =
                     finalTableNameGenerator.getTableName(
-                        stream.mappedDescriptor.copy(name = newName)
+                        stream.mappedDescriptor.copy(name = newName),
                     )
                 processedFinalTableNames.add(currentFinalProcessedName)
             } else {
@@ -105,7 +105,7 @@ class TableCatalogFactory {
                         rawTableName = currentRawProcessedName,
                         finalTableName = currentFinalProcessedName,
                     ),
-                    columnNameMapping
+                    columnNameMapping,
                 )
         }
 
@@ -221,7 +221,7 @@ class TableCatalogFactory {
         // 6-character column name, which is just silly.
         if (affixLength <= 0) {
             throw IllegalArgumentException(
-                "Cannot solve column name collision: $originalName. We recommend removing this column to continue syncing."
+                "Cannot solve column name collision: $originalName. We recommend removing this column to continue syncing.",
             )
         }
 
@@ -235,7 +235,7 @@ class TableCatalogFactory {
         // We could try to be more clever, but this is already a pretty rare case.
         if (existingNames.hasConflict(newColumnName)) {
             throw IllegalArgumentException(
-                "Cannot solve column name collision: $originalName. We recommend removing this column to continue syncing."
+                "Cannot solve column name collision: $originalName. We recommend removing this column to continue syncing.",
             )
         }
 
@@ -256,5 +256,5 @@ class TableCatalogFactory {
  * because it's not an intuitive behavior)
  */
 private fun Collection<ColumnNameGenerator.ColumnName>.hasConflict(
-    candidate: ColumnNameGenerator.ColumnName
+    candidate: ColumnNameGenerator.ColumnName,
 ) = this.any { it.canonicalName == candidate.canonicalName }

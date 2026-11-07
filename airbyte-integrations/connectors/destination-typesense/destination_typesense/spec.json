@@ -13,6 +13,7 @@
         "title": "API Key",
         "type": "string",
         "description": "Typesense API Key",
+        "airbyte_secret": true,
         "order": 0
       },
       "host": {

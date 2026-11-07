@@ -86,10 +86,18 @@ The Airtable source connector supports the following [sync modes](https://docs.a
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
 - [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) (select a primary key such as `_airtable_id`; Airtable does not provide a source-defined primary key)
+
+Incremental sync compares Airtable's `LAST_MODIFIED_TIME()` with the cursor, falling back to `CREATED_TIME()` when Airtable leaves last-modified blank for never-edited records. Changes only to computed fields (formula, rollup, lookup, and count) are not picked up, and deleted records are not captured. A 15-minute lookback re-reads recent records. `_airtable_extracted_at` is the cursor and contains the end time of the sync window.
 
 ## Supported Streams
 
 This source syncs all tables from your Airtable bases using the Metadata API. If you rename or add a column to an existing table, refresh the source schema in Airbyte to update the catalog.
+
+### Base collaborators
+
+The `base_collaborators` stream lists the people added directly to each base, one record per person per base, with `base_id`, `base_name`, `userId`, `email`, `permissionLevel`, `createdTime`, and `grantedByUserId`. It reads Airtable's [Get base collaborators](https://airtable.com/developers/web/api/get-base-collaborators) endpoint with the `schema.bases:read` scope the connector already uses. Workspace members who weren't added to the base directly, and groups, aren't included. Records contain collaborator email addresses.
 
 ### Performance considerations
 
@@ -157,6 +165,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.8.0 | 2026-11-04 | [90312](https://github.com/airbytehq/airbyte/pull/90312) | Add base_collaborators stream |
+| 4.7.0 | 2026-10-15 | [89000](https://github.com/airbytehq/airbyte/pull/89000) | Add incremental sync support for table streams |
+| 4.6.43 | 2026-10-13 | [88520](https://github.com/airbytehq/airbyte/pull/88520) | Update dependencies |
+| 4.6.42 | 2026-10-06 | [87744](https://github.com/airbytehq/airbyte/pull/87744) | Update dependencies |
+| 4.6.41 | 2026-09-29 | [87090](https://github.com/airbytehq/airbyte/pull/87090) | Update dependencies |
+| 4.6.40 | 2026-09-22 | [86538](https://github.com/airbytehq/airbyte/pull/86538) | Update dependencies |
+| 4.6.39 | 2026-09-15 | [85936](https://github.com/airbytehq/airbyte/pull/85936) | Update dependencies |
+| 4.6.38 | 2026-09-08 | [85385](https://github.com/airbytehq/airbyte/pull/85385) | Update dependencies |
+| 4.6.37 | 2026-08-18 | [84475](https://github.com/airbytehq/airbyte/pull/84475) | Update dependencies |
+| 4.6.36 | 2026-08-11 | [83837](https://github.com/airbytehq/airbyte/pull/83837) | Update dependencies |
+| 4.6.35 | 2026-08-04 | [83351](https://github.com/airbytehq/airbyte/pull/83351) | Update dependencies |
+| 4.6.34 | 2026-07-28 | [82799](https://github.com/airbytehq/airbyte/pull/82799) | Update dependencies |
+| 4.6.33 | 2026-07-21 | [82303](https://github.com/airbytehq/airbyte/pull/82303) | Update dependencies |
+| 4.6.32 | 2026-07-14 | [81711](https://github.com/airbytehq/airbyte/pull/81711) | Update dependencies |
 | 4.6.31 | 2026-07-07 | [80955](https://github.com/airbytehq/airbyte/pull/80955) | Update dependencies |
 | 4.6.30 | 2026-06-24 | [80771](https://github.com/airbytehq/airbyte/pull/80771) | Upgrade CDK to 7.23.3 |
 | 4.6.29 | 2026-06-23 | [80374](https://github.com/airbytehq/airbyte/pull/80374) | Update dependencies |
