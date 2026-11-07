@@ -331,7 +331,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val tableName = TableName("ns", "tbl")
         val columnNameMapping = ColumnNameMapping(mapOf("a1" to "a2"))
@@ -366,7 +366,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
             .thenReturn(
                 TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
                     .setField("_airbyte_extracted_at")
-                    .build()
+                    .build(),
             )
         val sqlOperations = mockk<BigqueryDirectLoadSqlTableOperations>(relaxed = true)
         val stream =
@@ -378,7 +378,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 0,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         val tableName = TableName("ns", "tbl")
         val columnNameMapping = ColumnNameMapping(mapOf("a1" to "a2"))
