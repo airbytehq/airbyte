@@ -1,1 +1,1 @@
-../_shared/README-python-connectors.md
+../_shared/README-java-destinations.md
