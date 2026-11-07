@@ -7,7 +7,7 @@ This page contains the setup guide and reference information for the Vectara des
 The Vectara destination connector allows you to connect any Airbyte source to Vectara and ingest data into Vectara for your RAG pipeline.
 
 :::info
-In case of issues, the following public channels are available for support:
+If you have issues, use the following public channels for support:
 
 - For Airbyte related issues such as data source or processing: [Open a Github issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug%2Carea%2Fconnectors%2Cneeds-triage&projects=&template=1-issue-connector.yaml)
 - For Vectara related issues such as data indexing or RAG: Create a post in the [Vectara forum](https://discuss.vectara.com/) or reach out on [Vectara's Discord server](https://discord.gg/GFb8gMz6UH)
@@ -16,13 +16,22 @@ In case of issues, the following public channels are available for support:
 
 ## Overview
 
-The Vectara destination connector supports Full Refresh Overwrite, Full Refresh Append, and Incremental Append.
+The Vectara destination connector supports Full Refresh Overwrite, Full Refresh Append, and Incremental Append. It uses the [Vectara REST API v2](https://docs.vectara.com/docs/rest-api/).
 
 ### Output schema
 
-All streams will be output into a corpus in Vectara whose name must be specified in the config.
+The connector writes all streams into a single Vectara corpus, which you specify by name in the connector configuration. Each record becomes one structured document in that corpus:
 
-Note that there are no restrictions in naming the Vectara corpus and if a corpus with the specified name is not found, a new corpus with that name will be created. Also, if multiple corpora exists with the same name, an error will be returned as Airbyte will be unable to determine the preferred corpus.
+- **Sections**: Each configured text field becomes one document section, formatted as `field_name: value`.
+- **Title**: The value of the configured title field, or `Untitled` if you don't set a title field or the record doesn't contain it.
+- **Metadata**: The configured metadata fields, plus an `_ab_stream` field that contains `{namespace}_{stream_name}` and identifies the source stream. Values that aren't strings, numbers, or booleans are stored as JSON-encoded strings.
+- **Document ID**: If the stream has a primary key, the document ID is built from the namespace, stream name, and primary key values. If the stream has no primary key, the connector generates a random ID for each record.
+
+The connector looks up the corpus by its exact name:
+
+- If no corpus with that name exists, the connector creates one. It derives the corpus key from the name by replacing any character other than letters, digits, `_`, `=`, and `-` with `_`, and truncating the result to 50 characters. It also creates the `_ab_stream` filter attribute on the new corpus.
+- If exactly one corpus with that name exists, the connector uses it.
+- If more than one corpus has that name, the connection check fails because the connector can't determine which corpus to use.
 
 ## Supported sync modes
 
@@ -34,38 +43,40 @@ Note that there are no restrictions in naming the Vectara corpus and if a corpus
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
+How the sync modes behave in Vectara:
+
+- **Full Refresh - Overwrite**: At the start of the sync, the connector deletes every document in the corpus whose `_ab_stream` metadata matches the stream, then indexes the new records. The stream's documents are unavailable in the corpus until the sync re-indexes them.
+- **Append modes and primary keys**: If a stream has a primary key and a document with the same ID already exists in the corpus, Vectara rejects the new document and the connector keeps the existing one. Updated records with an existing primary key aren't re-indexed in append modes. To pick up changes to existing records, use Full Refresh - Overwrite. If a stream has no primary key, every synced record is indexed as a new document, so repeated syncs can create duplicates.
+
 ## Getting started
 
-You will need a Vectara account to use Vectara with Airbyte. To get started, use the following steps:
+You need a Vectara account to use Vectara with Airbyte.
 
-1. [Sign up](https://vectara.com/integrations/airbyte) for a Vectara account if you don't already have one. Once you have completed your sign up you will have a Vectara customer ID. You can find your customer ID by clicking on your name, on the top-right of the Vectara console window.
-2. Within your account you can create your corpus, which represents an area that stores text data you want to ingest into Vectara.
-   - To create a corpus, use the **"Create Corpus"** button in the console. You then provide a name to your corpus as well as a description. If you click on your created corpus, you can see its name and corpus key right on the top. You can see more details in this [guide](https://docs.vectara.com/docs/console-ui/creating-a-corpus).
-   - Optionally you can define filtering attributes and apply some advanced options.
-   - For the Vectara connector to work properly you **must** define a special meta-data field called `_ab_stream` (string typed) which the connector uses to identify source streams.
-3. The Vectara destination connector uses [OAuth2.0 Credentials](https://docs.vectara.com/docs/api-reference/auth-apis/oauth-2) (an app client created in the Vectara console under **API access > App clients**). You will need your `Client ID` and `Client Secret` handy for your connector setup.
+1. [Sign up](https://vectara.com/integrations/airbyte) for a Vectara account if you don't already have one.
+2. Optionally, create the corpus you want to load data into. If you skip this step, the connector creates the corpus for you during the first connection check or sync.
+   - To create a corpus in the Vectara console, click **Corpora** and then **Create corpus**. Enter a name and a key for the corpus. For details, see [Create a Corpus](https://docs.vectara.com/docs/console-ui/creating-a-corpus).
+   - If you create the corpus yourself, you **must** add a document-level filter attribute named `_ab_stream` with the **Text** data type, and mark it as indexed. The connector uses this attribute to identify source streams and to delete a stream's documents during Full Refresh - Overwrite syncs.
+   - Optionally, add filter attributes for any other metadata fields you want to filter on.
+3. Create an app client for OAuth 2.0 authentication. In the Vectara console, go to **API access** > **App clients** and click **Create app client**. Give the client roles that allow it to list and create corpora, and to index, list, and delete documents in your corpus. Copy the **Client ID** and **Client Secret**. For details, see [App Clients for OAuth](https://docs.vectara.com/docs/console-ui/app-clients) and [OAuth 2.0](https://docs.vectara.com/docs/security/authentication/oauth-2).
 
-### Setup the Vectara Destination in Airbyte
+### Set up the Vectara destination in Airbyte
 
-You should now have all the requirements needed to configure Vectara as a destination in the UI.
+Configure the Vectara destination with the following information:
 
-You'll need the following information to configure the Vectara destination:
+- (Required) **OAuth Client ID** and **OAuth Client Secret**: The credentials of the app client you created.
+- (Optional) **Customer ID**: Kept only for backward compatibility. Vectara API v2 authenticates with the OAuth 2.0 client credentials alone, so you can leave this field empty.
+- (Required) **Corpus Name**: The name of the corpus to load data into. If no corpus with this name exists, the connector creates it.
+- (Optional) **Parallelize**: Index documents into Vectara using multiple threads. Defaults to `false`.
 
-- (Required) OAuth2.0 Credentials
-  - (Required) **Client ID**
-  - (Required) **Client Secret**
-- (Optional) **Customer ID**. Only kept for backwards compatibility; it is no longer needed to authenticate against the Vectara API v2.
-- (Required) **Corpus Name**. You can specify a corpus name you've setup manually given the instructions above, or if you specify a corpus name that does not exist, the connector will generate a new corpus in this name and setup the required meta-data filtering fields within that corpus.
+You can also control how the connector maps record fields to Vectara documents. These settings apply to all streams. Fields that don't exist in a record are ignored. To reference nested fields, use dot notation, for example `user.name`. To reference a field in every element of an array, use a wildcard, for example `users.*.name`.
 
-In addition, in the connector UI you define two set of fields for this connector:
-
-- `text_fields` define the source fields which are turned into text in the Vectara side and are used for query or summarization.
-- `title_field` define the source field which will be used as a title of the document on the Vectara side
-- `metadata_fields` define the source fields which will be added to each document as meta-data.
+- **Text fields to index with Vectara** (`text_fields`): The fields that become document sections, which Vectara uses for search and summarization. If you don't specify any, all fields are text fields. Each record must contain at least one configured text field, or the sync fails.
+- **Text field to use as document title with Vectara** (`title_field`): The field that populates each document's title.
+- **Fields to store as metadata** (`metadata_fields`): The fields to store as document metadata. If you don't specify any, all fields are stored as metadata. When a nested path matches multiple values, the connector stores them as an array in a metadata field named after the path.
 
 ## Namespace support
 
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). All namespaces write to the same corpus. The namespace is part of the `_ab_stream` metadata value, so streams with the same name in different namespaces remain distinguishable.
 
 ## Changelog
 
@@ -74,8 +85,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
-| 0.3.0 | 2026-11-03 | [PR](https://github.com/airbytehq/airbyte/pull/90862) | Upgrade to Python 3.13 (python-connector-base 4.1.1) and airbyte-cdk 7 |
-| 0.2.32 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88339) | Migrate from the retired Vectara API v1 (and per-customer Cognito OAuth endpoint) to API v2 / `auth.vectara.com` |
+| 0.3.0 | 2026-11-03 | [90862](https://github.com/airbytehq/airbyte/pull/90862) | Upgrade to Python 3.13 (python-connector-base 4.1.1) and airbyte-cdk 7 |
+| 0.2.32 | 2026-10-07 | [88339](https://github.com/airbytehq/airbyte/pull/88339) | Migrate from the retired Vectara API v1 (and per-customer Cognito OAuth endpoint) to API v2 / `auth.vectara.com` |
 | 0.2.31 | 2024-11-25 | [48659](https://github.com/airbytehq/airbyte/pull/48659) | Update dependencies |
 | 0.2.30 | 2024-11-04 | [48222](https://github.com/airbytehq/airbyte/pull/48222) | Update dependencies |
 | 0.2.29 | 2024-10-29 | [47744](https://github.com/airbytehq/airbyte/pull/47744) | Update dependencies |
