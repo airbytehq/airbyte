@@ -22,6 +22,9 @@ on:
         required: true
         type: number
 
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 permissions:
   contents: read
   issues: write

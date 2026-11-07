@@ -11,17 +11,17 @@ import org.junit.jupiter.api.Test
 
 abstract class FullRefreshTest(
     testDbExecutor: TestDbExecutor,
-    testAssetResourceNamer: TestAssetResourceNamer
+    testAssetResourceNamer: TestAssetResourceNamer,
 ) : BaseConnectorTest(testDbExecutor, testAssetResourceNamer) {
 
     override fun setupTestData() {
         for (namespace in namespaces) {
             for (table in tables[namespace] ?: emptyList()) {
                 testDbExecutor.executeUpdate(
-                    sqlDialect.buildInsertQuery(table, mapOf("id" to 1, "name" to "foo"))
+                    sqlDialect.buildInsertQuery(table, mapOf("id" to 1, "name" to "foo")),
                 )
                 testDbExecutor.executeUpdate(
-                    sqlDialect.buildInsertQuery(table, mapOf("id" to 2, "name" to "bar"))
+                    sqlDialect.buildInsertQuery(table, mapOf("id" to 2, "name" to "bar")),
                 )
             }
         }

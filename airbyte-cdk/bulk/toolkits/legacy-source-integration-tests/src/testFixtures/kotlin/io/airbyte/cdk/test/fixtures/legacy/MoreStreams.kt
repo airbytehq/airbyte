@@ -11,7 +11,7 @@ object MoreStreams {
     fun <T> toStream(iterator: Iterator<T>?): Stream<T> {
         return StreamSupport.stream(
             Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED),
-            false
+            false,
         )
     }
 

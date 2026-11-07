@@ -236,20 +236,33 @@ Keep in mind the following limitations:
 - Legacy media assets uploaded through the deprecated Assets API (`urn:li:digitalmediaAsset:` URNs) cannot be retrieved through the Videos API and are skipped.
 - Posts or videos that were deleted, or that the authenticated user is not allowed to read, are skipped with a log message rather than failing the sync.
 - Resolving a creative's post requires the `r_organization_social` scope ([Posts API permissions](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api#permissions)). The connector's OAuth flow requests it; if you authenticate with a raw access token that lacks this scope, the stream completes with zero records because every post lookup is skipped.
-- Message Ads (Sponsored InMail) creatives reference InMail content rather than a post; they cannot carry videos retrievable through the Videos API and are skipped.
+- Message Ads (Sponsored InMail) creatives reference InMail content (`urn:li:adInMailContent:` URNs) rather than a post; they cannot carry videos retrievable through the Videos API, so the post lookup is rejected with a `400` and the creative is skipped with a log message rather than failing the sync.
 - The stream intentionally does not use the Videos API `associatedAccount` finder (the account's whole media library): LinkedIn gates that finder at the application level, and applications holding only the `r_ads` scope receive `403 ACCESS_DENIED` from it. Fetching each video by URN works with the standard scopes this connector already requests.
 
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
+## Troubleshooting
+
+- **Invalid or expired access token (401):** Re-authenticate the source to obtain a valid LinkedIn access token.
+- **Ad account access denied (403):** Authorize the `r_ads` scope to read ad accounts and confirm that the authorized member has access in Campaign Manager. If LinkedIn names a different missing scope, such as `rw_ads`, grant that scope and re-authenticate.
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 6.2.9 | 2026-10-30 | [90258](https://github.com/airbytehq/airbyte/pull/90258) | Explain authentication and missing scopes in connection checks |
+| 6.2.8 | 2026-11-03 | [89292](https://github.com/airbytehq/airbyte/pull/89292) | Update dependencies |
+| 6.2.7 | 2026-11-02 | [90379](https://github.com/airbytehq/airbyte/pull/90379) | Restore the creatives stream's DNS retry diagnostic while preserving rate-limit and server-error handling. |
+| 6.2.6 | 2026-10-13 | [88690](https://github.com/airbytehq/airbyte/pull/88690) | Update dependencies |
+| 6.2.5 | 2026-10-06 | [87926](https://github.com/airbytehq/airbyte/pull/87926) | Update dependencies |
+| 6.2.4 | 2026-09-29 | [86321](https://github.com/airbytehq/airbyte/pull/86321) | Fix the `videos` stream failing on Message Ads (Sponsored InMail) creatives and on creatives with a null `content.reference` |
+| 6.2.3 | 2026-09-29 | [87239](https://github.com/airbytehq/airbyte/pull/87239) | Update dependencies |
+| 6.2.2 | 2026-09-22 | [86716](https://github.com/airbytehq/airbyte/pull/86716) | Update dependencies |
 | 6.2.1 | 2026-09-15 | [84019](https://github.com/airbytehq/airbyte/pull/84019) | Update dependencies |
 | 6.2.0 | 2026-09-14 | [76087](https://github.com/airbytehq/airbyte/pull/76087) | Add `organizations` stream via the `organizationAcls` endpoint |
 | 6.1.0 | 2026-09-14 | [81509](https://github.com/airbytehq/airbyte/pull/81509) | Add `videos` stream |

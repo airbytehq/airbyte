@@ -2,7 +2,16 @@
 The Box Connector enables seamless data extraction from Box, allowing users to list, access, and synchronize files or folders from their Box cloud storage. This connector helps automate workflows by integrating Box data with other tools, ensuring efficient file management and analysis
 
 ## Authentication
-Follow [this](https://developer.box.com/guides/authentication/client-credentials/) guide to complete authentication.
+
+This connector uses Box's [Client Credentials Grant (CCG)](https://developer.box.com/guides/authentication/client-credentials/) server authentication. Follow the [setup guide](https://developer.box.com/guides/authentication/client-credentials/client-credentials-setup/):
+
+1. In the [Box Developer Console](https://app.box.com/developers/console), create a **Platform App** of type **Server Authentication (Client Credentials Grant)** and copy its **Client ID** and **Client Secret** from the **Configuration** tab.
+2. Authorize the app. On an enterprise account, submit the app for approval and have an admin authorize it in **Admin Console > Apps > Custom Apps Manager**. Re-authorize the app after every change to its configuration.
+3. Pick the subject the connector authenticates as (**Subject Type**):
+   - `enterprise` — authenticate as the app's Service Account. Works with the default **App Access Only** level; set **User ID or Enterprise ID** to your enterprise ID (**Admin Console > Account & Billing**).
+   - `user` — authenticate as a Managed User or Admin. The app's **App Access Level** must be **App + Enterprise Access** and **Generate User Access Tokens** must be enabled; set **User ID or Enterprise ID** to the user's ID.
+
+If check fails with `400 Bad Request` from `https://api.box.com/oauth2/token`, Box rejected the grant (`invalid_grant - Grant credentials are invalid`): the client ID/secret are wrong or belong to different apps, the app is not authorized in the Admin Console, or the chosen Subject Type is not allowed by the app's access level. See Box's [common errors](https://developer.box.com/guides/authentication/client-credentials/client-credentials-setup/#common-errors).
 
 ## Configuration
 
@@ -10,7 +19,8 @@ Follow [this](https://developer.box.com/guides/authentication/client-credentials
 |-------|------|-------------|---------------|
 | `client_id` | `string` | OAuth Client ID.  |  |
 | `client_secret` | `string` | OAuth Client Secret.  |  |
-| `user` | `number` | User.  |  |
+| `user` | `number` | Box user ID (Subject Type `user`) or enterprise ID (Subject Type `enterprise`) to authenticate as.  |  |
+| `box_subject_type` | `string` | Subject Type: `user` or `enterprise`.  | `user` |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -42,6 +52,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.22 | 2026-10-07 | [88216](https://github.com/airbytehq/airbyte/pull/88216) | Add optional `box_subject_type` (user/enterprise) so the CCG token request can authenticate as the app Service Account; document Box app setup |
 | 0.0.21 | 2026-04-21 | [76536](https://github.com/airbytehq/airbyte/pull/76536) | Update dependencies |
 | 0.0.20 | 2025-05-24 | [60665](https://github.com/airbytehq/airbyte/pull/60665) | Update dependencies |
 | 0.0.19 | 2025-04-26 | [58701](https://github.com/airbytehq/airbyte/pull/58701) | Update dependencies |

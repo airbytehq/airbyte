@@ -1,11 +1,33 @@
+def debeziumVersion = '3.4.3.Final'
+
 dependencies {
-    api platform('io.debezium:debezium-bom:3.1.2.Final')
-    api 'io.debezium:debezium-api'
-    api 'io.debezium:debezium-embedded'
+    // Not the Debezium BOM: its dependency management pins Testcontainers 2.0.2 (renamed
+    // artifacts), JUnit 6 and other test libraries, and the published metadata would carry
+    // those constraints into every connector's test classpath.
+    api "io.debezium:debezium-api:$debeziumVersion"
+    api "io.debezium:debezium-embedded:$debeziumVersion"
+
+    // Debezium's embedded engine pulls in the Kafka Connect runtime, including the Jetty REST server
+    // it never starts. Constraints rather than excludes so nothing that touches those classes at init
+    // can hit NoClassDefFoundError; `api` so the published metadata carries them to connectors.
+    constraints {
+        ['kafka-clients', 'connect-api', 'connect-runtime', 'connect-json', 'connect-transforms', 'connect-file'].each { name ->
+            api("org.apache.kafka:$name:4.1.2") { because 'CVE-2026-33557 (9.1, OAuth JWT bypass in 4.1.0-4.1.1) and CVE-2026-35554 (8.7); Connect artifacts stay on one Kafka version' }
+        }
+        ['jetty-server', 'jetty-http', 'jetty-security', 'jetty-io', 'jetty-util', 'jetty-session', 'jetty-client', 'jetty-alpn-client'].each { name ->
+            api("org.eclipse.jetty:$name:12.0.40") { because 'Scout fixes: jetty-server 12.0.32, jetty-http 12.0.33, jetty-security 12.0.36; 12.0.40 is the latest 12.0.x' }
+        }
+        ['jetty-ee10-servlet', 'jetty-ee10-servlets'].each { name ->
+            api("org.eclipse.jetty.ee10:$name:12.0.40") { because 'same Jetty version as the org.eclipse.jetty artifacts above' }
+        }
+        api('org.lz4:lz4-java:1.8.1') { because 'CVE-2025-12183 (8.8) for any other path that pulls org.lz4; CVE-2025-66566 and CVE-2026-106451 have no fix on the org.lz4 line, Kafka 4.1.2 itself depends on the at.yawk.lz4 fork constrained below' }
+        api('at.yawk.lz4:lz4-java:1.12.0') { because 'CVE-2026-106451 (7.3) in the 1.10.1 that kafka-clients 4.1.2 depends on, fixed in 1.11.4; 1.12.0 is the latest release' }
+        api('org.codehaus.plexus:plexus-utils:3.6.2') { because 'CVE-2025-67030; stays on the 3.x line because maven-artifact 3.9.x consumes it' }
+    }
 
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
-    implementation 'io.debezium:debezium-storage-file'
+    implementation "io.debezium:debezium-storage-file:$debeziumVersion"
     implementation 'commons-io:commons-io:2.17.0'
 
     testFixturesImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
@@ -18,13 +40,19 @@ dependencies {
             }
         }
     }
-    testFixturesImplementation 'com.alibaba:dns-cache-manipulator:1.8.3' // required for testing with mongo
-    testImplementation 'io.debezium:debezium-connector-mysql'
-    testImplementation 'io.debezium:debezium-connector-postgres'
-    testImplementation 'io.debezium:debezium-connector-mongodb'
-    testImplementation 'io.debezium:debezium-connector-sqlserver'
-    testFixturesImplementation 'io.debezium:debezium-testing-testcontainers' // required for testing with mongo
-    testFixturesImplementation 'io.mockk:mockk:1.14.4'
+    // KGP >= 2.0.10 (KT-68278): test no longer inherits testFixturesImplementation deps.
+    testImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
+    testImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
+    testImplementation 'com.alibaba:dns-cache-manipulator:1.8.3' // required for testing with mongo
+    testImplementation("io.debezium:debezium-testing-testcontainers:$debeziumVersion") { // required for testing with mongo
+        // Debezium 3.4.3 builds against Testcontainers 2.0.2 (renamed artifacts); the CDK stays on 1.21.4.
+        exclude group: 'org.testcontainers'
+    }
+    testImplementation "io.debezium:debezium-connector-mysql:$debeziumVersion"
+    testImplementation "io.debezium:debezium-connector-postgres:$debeziumVersion"
+    testImplementation "io.debezium:debezium-connector-mongodb:$debeziumVersion"
+    testImplementation "io.debezium:debezium-connector-sqlserver:$debeziumVersion"
+    testFixturesImplementation 'io.mockk:mockk:1.14.11' // keep in step with the testImplementation version in airbyte-cdk/bulk/build.gradle
     testImplementation 'org.testcontainers:mysql'
     testImplementation 'org.testcontainers:postgresql'
 }

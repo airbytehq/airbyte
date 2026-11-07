@@ -36,7 +36,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "published": "3021-09-08T07:04:28.000Z"
+        "published": "3021-09-08T07:04:28Z"
       },
       "stream_descriptor": {
         "name": "logs"
