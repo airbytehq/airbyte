@@ -1270,6 +1270,18 @@ files = [
 ]
 
 [[package]]
+name = "invoke"
+version = "3.0.3"
+description = "Pythonic task execution"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "invoke-3.0.3-py3-none-any.whl", hash = "sha256:f11327165e5cbb89b2ad1d88d3292b5113332c43b8553b494da435d6ec6f5053"},
+    {file = "invoke-3.0.3.tar.gz", hash = "sha256:437b6a622223824380bfb4e64f612711a6b648c795f565efc8625af66fb57f0c"},
+]
+
+[[package]]
 name = "isodate"
 version = "0.6.1"
 description = "An ISO 8601 date/time/duration parser and formatter"
@@ -2205,25 +2217,21 @@ xml = ["lxml (>=4.9.2)"]
 
 [[package]]
 name = "paramiko"
-version = "3.4.0"
+version = "5.0.0"
 description = "SSH2 protocol library"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "paramiko-3.4.0-py3-none-any.whl", hash = "sha256:43f0b51115a896f9c00f59618023484cb3a14b98bbceab43394a39c6739b7ee7"},
-    {file = "paramiko-3.4.0.tar.gz", hash = "sha256:aac08f26a31dc4dffd92821527d1682d99d52f9ef6851968114a8728f3c274d3"},
+    {file = "paramiko-5.0.0-py3-none-any.whl", hash = "sha256:b7044611c30140d9a75261653210e2002977b71a0497ff3ba0d98d7edbf62f7c"},
+    {file = "paramiko-5.0.0.tar.gz", hash = "sha256:36763b5b95c2a0dcfdf1abc48e48156ee425b21efe2f0e787c2dd5a95c0e5e79"},
 ]
 
 [package.dependencies]
 bcrypt = ">=3.2"
 cryptography = ">=3.3"
+invoke = ">=2.0"
 pynacl = ">=1.5"
-
-[package.extras]
-all = ["gssapi (>=1.4.1) ; platform_system != \"Windows\"", "invoke (>=2.0)", "pyasn1 (>=0.1.7)", "pywin32 (>=2.1.8) ; platform_system == \"Windows\""]
-gssapi = ["gssapi (>=1.4.1) ; platform_system != \"Windows\"", "pyasn1 (>=0.1.7)", "pywin32 (>=2.1.8) ; platform_system == \"Windows\""]
-invoke = ["invoke (>=2.0)"]
 
 [[package]]
 name = "pdf2image"
@@ -4294,4 +4302,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.14"
-content-hash = "0d9fc773db2a7d434a259d94652667c81bbcff2c4a54aebff24aa1ee3a6bffb7"
+content-hash = "6c3127562a6408df998026a568a682116fd72d332c584b5ff5f3c60a378a4137"
