@@ -127,7 +127,8 @@ With root level flattening, the output JSONL is:
     - See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
   - **Authentication** - you must use exactly one of these:
     - **Shared Access Signature** (recommended)
-      - See [this](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers#create-sas-tokens-in-the-azure-portal) for how to create an SAS.
+      - See [this](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers#create-sas-tokens-in-the-azure-portal) for how to create a container SAS.
+      - See [this](https://learn.microsoft.com/en-us/rest/api/storageservices/create-account-sas) for how to create a storage account SAS (required if using an Overwrite sync mode).
     - **Azure Entra ID (Service Principal)**
       - Azure Tenant ID, Azure Client ID, and Azure Client Secret from an Azure service principal with appropriate permissions.
       - See [this](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for how to create a service principal.
