@@ -41,25 +41,7 @@ definitions:
           path: v1/{{ stream_slice.page_id }}/components
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 401
-                    action: IGNORE
-                    error_message: Rate limit hit
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler_max_retries_3"
         record_selector:
           type: RecordSelector
           extractor:
@@ -89,25 +71,7 @@ definitions:
           path: v1/{{ stream_slice.page_id }}/incidents
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 401
-                    action: IGNORE
-                    error_message: Rate limit hit
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler_max_retries_3"
         record_selector:
           type: RecordSelector
           extractor:
@@ -148,25 +112,7 @@ definitions:
             stream_slice.incident_update_id }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 401
-                    action: IGNORE
-                    error_message: Rate limit hit
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler_max_retries_3"
         record_selector:
           type: RecordSelector
           extractor:
@@ -197,23 +143,7 @@ definitions:
                       type: BearerAuthenticator
                       api_token: "{{ config['api_key'] }}"
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              http_codes:
-                                - 401
-                              action: IGNORE
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              http_codes:
-                                - 429
-                              action: RETRY
-                          backoff_strategies:
-                            - type: WaitTimeFromHeader
-                              header: Retry-After
+                      $ref: "#/definitions/error_handler"
                     path: v1/{{ stream_slice.page_id }}/incidents
                   partition_router:
                     type: SubstreamPartitionRouter
@@ -545,25 +475,7 @@ definitions:
           path: v1/{{ stream_slice.page_id }}/maintenances
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 401
-                    action: IGNORE
-                    error_message: Rate limit hit
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler_max_retries_3"
         record_selector:
           type: RecordSelector
           extractor:
@@ -604,25 +516,7 @@ definitions:
             stream_slice.maintenance_update_id }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 401
-                    action: IGNORE
-                    error_message: Rate limit hit
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler_max_retries_3"
         record_selector:
           type: RecordSelector
           extractor:
@@ -653,23 +547,7 @@ definitions:
                       type: BearerAuthenticator
                       api_token: "{{ config['api_key'] }}"
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              http_codes:
-                                - 401
-                              action: IGNORE
-                        - type: DefaultErrorHandler
-                          response_filters:
-                            - type: HttpResponseFilter
-                              http_codes:
-                                - 429
-                              action: RETRY
-                          backoff_strategies:
-                            - type: WaitTimeFromHeader
-                              header: Retry-After
+                      $ref: "#/definitions/error_handler"
                     path: v1/{{ stream_slice.page_id }}/maintenances
                   partition_router:
                     type: SubstreamPartitionRouter
@@ -1020,25 +898,7 @@ definitions:
           path: v1/{{ stream_slice.page_id }}/templates
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 401
-                    action: IGNORE
-                    error_message: Rate limit hit
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler_max_retries_3"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1068,25 +928,7 @@ definitions:
           path: v1/{{ stream_slice.page_id }}/team
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 401
-                    action: IGNORE
-                    error_message: Rate limit hit
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler_max_retries_3"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1117,25 +959,7 @@ definitions:
           path: v1/{{ stream_slice.page_id }}/subscribers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 401
-                    action: IGNORE
-                    error_message: Rate limit hit
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler_max_retries_3"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1165,25 +989,7 @@ definitions:
           path: v1/{{ stream_slice.page_id }}/metrics
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 401
-                    action: IGNORE
-                    error_message: Rate limit hit
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler_max_retries_3"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1231,23 +1037,7 @@ definitions:
           path: https://{{ stream_slice.url }}.instatus.com/summary.json
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 401
-                    action: IGNORE
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 429
-                    action: RETRY
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1271,6 +1061,23 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
+  error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes:
+          - 401
+        action: IGNORE
+      - type: HttpResponseFilter
+        http_codes:
+          - 429
+        action: RETRY
+  error_handler_max_retries_3:
+    $ref: "#/definitions/error_handler"
+    max_retries: 3
 
 streams:
   - $ref: "#/definitions/streams/status_pages"
