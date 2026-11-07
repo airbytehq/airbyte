@@ -1,0 +1,18 @@
+{
+  "data": {
+    "updates": [
+      {
+        "assets": [],
+        "body": "<p>Update body</p>",
+        "created_at": "2024-01-10T10:00:00Z",
+        "creator_id": "123",
+        "id": "1001",
+        "item_id": "2001",
+        "replies": [],
+        "text_body": "Update body",
+        "updated_at": "2024-01-10T10:00:00Z"
+      }
+    ]
+  },
+  "account_id": 123456
+}

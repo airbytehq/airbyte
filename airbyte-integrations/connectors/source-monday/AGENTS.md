@@ -44,6 +44,15 @@ The Monday.com GraphQL API supports filtering by `updated_at` on boards and item
 
 **Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
 
+### `updates` incremental sync
+
+`updates` is a plain incremental stream on `created_at`. `MondayGraphqlRequester._build_updates_query` turns the `DatetimeBasedCursor` slice into the root-level `from_date`/`to_date` arguments; `DatetimeBasedCursor` request options can't express them because the request body is a GraphQL string assembled in Python.
+
+- `from_date` and `to_date` are inclusive, minute-granular (`%Y-%m-%dT%H:%M`), and must be sent together. They only work on the root `updates` query, not on updates nested under `boards`.
+- A slice that starts at the `start_datetime` epoch (`1970-01-01T00:00:00Z`, meaning no state yet) sends no filter, so full refresh and first incremental syncs read every update. There is no `start_date` in the spec and no `step`, so each sync is a single slice from the saved state to now.
+- The filter is on creation date only. `updated_at`/`edited_at` can't be filtered, so edits to an update and new replies on an update are only picked up while the parent update was created within the `lookback_window` (`P1D`). Older edits and replies need a full refresh.
+- `items_per_page: 100` must stay on the stream. Without it no `limit` is sent, monday returns its default of 25 and `PageIncrement` (page size 100) stops after the first page.
+
 ### Future incremental stream candidates
 
 - **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.

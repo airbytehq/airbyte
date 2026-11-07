@@ -42,6 +42,10 @@ The Monday.com GraphQL API supports filtering by `updated_at` on boards and item
 
 **Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
 
+### `updates` incremental sync
+
+The `updates` stream supports incremental sync on `created_at` using monday's root-level `from_date`/`to_date` filters, with a one-day lookback. The filter is on creation date only, so edits and new replies on updates created before the lookback window aren't captured by incremental syncs. Run a full refresh to pick those up.
+
 ### Future incremental stream candidates
 
 - **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
