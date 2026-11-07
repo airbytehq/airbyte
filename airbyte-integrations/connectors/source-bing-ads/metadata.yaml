@@ -26,6 +26,12 @@ data:
     - title: Release notes
       url: https://learn.microsoft.com/en-us/advertising/guides/release-notes?view=bingads-13
       type: api_release_history
+    - title: Migrate to REST API (SOAP deprecation guide)
+      url: https://learn.microsoft.com/en-us/advertising/guides/migrate-to-rest?view=bingads-13
+      type: api_deprecations
+    - title: OAuth Authentication Guide
+      url: https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth?view=bingads-13
+      type: authentication_guide
   erdUrl: https://dbdocs.io/airbyteio/source-bing-ads?view=relationships
   githubIssueLabel: source-bing-ads
   icon: bingads.svg
