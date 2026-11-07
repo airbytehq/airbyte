@@ -1,26 +1,54 @@
 # Tavus
-Website: https://platform.tavus.io/
-API Reference: https://docs.tavus.io/api-reference/phoenix-replica-model/get-replicas
+
+This page contains the setup guide and reference information for the [Tavus](https://www.tavus.io/) source connector. The connector reads your Tavus replicas, videos, conversations, personas, and speeches from the [Tavus API](https://docs.tavus.io/api-reference/overview).
+
+## Prerequisites
+
+- A Tavus account
+- A Tavus API key
+
+### Create a Tavus API key
+
+1. Sign in to the [Tavus PAL Maker](https://maker.tavus.io/dev) and select **API Key** in the sidebar.
+2. Click **Create New Key**.
+3. Enter a name for the key. If you restrict the key to specific IP addresses and use Airbyte Cloud, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to the key's allowed IPs.
+4. Click **Create API Key**, then copy the key.
+
+For more information, see [Authentication](https://docs.tavus.io/api-reference/authentication) in the Tavus documentation.
+
+## Set up the Tavus connector
+
+1. In Airbyte, create a new source and select **Tavus**.
+2. For **API Key**, enter your Tavus API key.
+3. For **Start date**, enter a UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2024-01-01T00:00:00Z`. This value is required. The connector uses it as the starting value of the `updated_at` cursor for incremental streams.
+4. Click **Set up source**.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. Your Tavus API key. You can find this in your Tavus account settings or API dashboard. |  |
-| `start_date` | `string` | Start date.  |  |
+| `start_date` | `string` | Start date. UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. |  |
 
 ## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| replicas | replica_id | DefaultPaginator | ✅ |  ✅  |
-| videos | video_id | DefaultPaginator | ✅ |  ❌  |
-| conversations | conversation_id | DefaultPaginator | ✅ |  ✅  |
-| personas | persona_id | DefaultPaginator | ✅ |  ✅  |
-| speeches | speech_id | DefaultPaginator | ✅ |  ✅  |
 
-## IP allow list
+| Stream Name | Tavus endpoint | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
+|-------------|----------------|-------------|------------|---------------------|----------------------|
+| replicas | `GET /v2/replicas` | replica_id | DefaultPaginator | ✅ |  ✅  |
+| videos | `GET /v2/videos` | video_id | DefaultPaginator | ✅ |  ❌  |
+| conversations | `GET /v2/conversations` | conversation_id | DefaultPaginator | ✅ |  ✅  |
+| personas | `GET /v2/personas` | persona_id | DefaultPaginator | ✅ |  ✅  |
+| speeches | `GET /v2/speech` | speech_id | DefaultPaginator | ✅ |  ✅  |
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+Tavus has renamed some resources in its current documentation. Replicas are now called [faces](https://docs.tavus.io/api-reference/faces/list-faces), and personas are now called [PALs](https://docs.tavus.io/api-reference/pals/list-pals). The connector still uses the original endpoint paths and field names, such as `replica_id` and `persona_id`.
+
+Incremental streams use `updated_at` as the cursor field. The `videos` stream supports only full refresh syncs.
+
+## Limitations and troubleshooting
+
+- **Every sync reads all pages.** The Tavus list endpoints don't support filtering by date, so the connector requests every page of each stream on every sync, including incremental syncs. The connector requests 50 records per page.
+- **The `speeches` stream can sync zero records without an error.** If your Tavus plan doesn't include access to speeches, the Tavus API returns HTTP `500` with the message `Need subscription plan`. The connector ignores HTTP `500` responses for this stream, so the sync succeeds but the `speeches` stream is empty. Because the connector ignores all HTTP `500` responses for this stream, a temporary Tavus server error can also cause missing `speeches` records for that sync.
+- **Rate limiting.** If Tavus returns HTTP `429`, the connector waits and retries the request.
 
 ## Changelog
 
@@ -29,7 +57,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.54 | 2026-11-03 | [90391](https://github.com/airbytehq/airbyte/pull/90391) | Simplify the `speeches` stream error handler configuration; no behavior change |
+| 0.0.54 | 2026-11-04 | [90391](https://github.com/airbytehq/airbyte/pull/90391) | Simplify the `speeches` stream error handler configuration; no behavior change |
 | 0.0.53 | 2026-11-03 | [90756](https://github.com/airbytehq/airbyte/pull/90756) | Update dependencies |
 | 0.0.52 | 2026-10-27 | [90053](https://github.com/airbytehq/airbyte/pull/90053) | Update dependencies |
 | 0.0.51 | 2026-10-20 | [89412](https://github.com/airbytehq/airbyte/pull/89412) | Update dependencies |
