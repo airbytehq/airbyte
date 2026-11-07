@@ -91,7 +91,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
       - `rolling_days` (default): Fetch data for the last **N days including today**.
       - `fixed`: Fetch data for a fixed UTC datetime range.
     - **Inbound Rolling Days**: Used only when `Inbound Replication Mode=rolling_days`. Required when `Inbound Replication Mode=rolling_days`. Default: `30`. Minimum: `1`.
-    - **Inbound Start Datetime** / **Inbound End Datetime**: Used only when `Inbound Replication Mode=fixed`. `Inbound Start Datetime` is required when `Inbound Replication Mode=fixed`. `Inbound End Datetime` is optional; if not set, the connector uses the current UTC time. Format: `YYYY-MM-DDTHH:MM:SSZ` (UTC), e.g. `2026-01-25T00:00:00Z`.
+    - **Inbound Start Datetime** / **Inbound End Datetime**: Used only when `Inbound Replication Mode=fixed`. `Inbound Start Datetime` is required when `Inbound Replication Mode=fixed`. `Inbound End Datetime` is optional; if not set or set in the future, the connector uses the current UTC time. Format: `YYYY-MM-DDTHH:MM:SSZ` (UTC), e.g. `2026-01-25T00:00:00Z`.
     These options affect the following streams: **FbaInboundShipments** and **FbaInboundShipmentItems**.
 18. Click `Set up source`.
 
@@ -125,7 +125,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
       - `rolling_days` (default): Fetch data for the last **N days including today**.
       - `fixed`: Fetch data for a fixed UTC datetime range.
     - **Inbound Rolling Days**: Used only when `Inbound Replication Mode=rolling_days`. Required when `Inbound Replication Mode=rolling_days`. Default: `30`. Minimum: `1`.
-    - **Inbound Start Datetime** / **Inbound End Datetime**: Used only when `Inbound Replication Mode=fixed`. `Inbound Start Datetime` is required when `Inbound Replication Mode=fixed`. `Inbound End Datetime` is optional; if not set, the connector uses the current UTC time. Format: `YYYY-MM-DDTHH:MM:SSZ` (UTC), e.g. `2026-01-25T00:00:00Z`.
+    - **Inbound Start Datetime** / **Inbound End Datetime**: Used only when `Inbound Replication Mode=fixed`. `Inbound Start Datetime` is required when `Inbound Replication Mode=fixed`. `Inbound End Datetime` is optional; if not set or set in the future, the connector uses the current UTC time. Format: `YYYY-MM-DDTHH:MM:SSZ` (UTC), e.g. `2026-01-25T00:00:00Z`.
     These options affect the following streams: **FbaInboundShipments** and **FbaInboundShipmentItems**.
 16. Click `Set up source`.
 
@@ -305,7 +305,7 @@ Some streams send report options that you don't configure. Anything you enter in
 
 Both Vendor Forecasting streams read Amazon's single `GET_VENDOR_FORECASTING_REPORT` report type and differ only in the `sellingProgram` option they send.
 
-Market Basket, Repeat Purchase, and Search Terms support incremental sync with the `endDate` cursor. They backfill complete Sunday–Saturday weeks from **Start Date** (rounded back to Sunday), then resume after the last nonempty week. **End Date** limits the backfill to complete weeks, and a future or absent end date never includes the current unfinished week. Search Terms records gain an `endDate` field equal to the requested week's Saturday, since Amazon supplies the reporting dates outside its rows. A configured start date is used as-is before weekly alignment; if absent, it defaults to approximately two years ago. **Period In Days** and **Report Stream Lookback Window (Hours)** do not affect these weekly streams. An entirely empty read retains its starting checkpoint and retries those periods on later syncs.
+Market Basket, Repeat Purchase, and Search Terms support incremental sync with the `endDate` cursor. They backfill complete Sunday–Saturday weeks from **Start Date** (rounded back to Sunday), then resume after the last nonempty week. **End Date** limits the backfill to complete weeks, and a future or absent end date never includes the current unfinished week. Search Terms records gain an `endDate` field equal to the requested week's Saturday, since Amazon supplies the reporting dates outside its rows. Missing or older start dates are limited to the first complete week within the two-year (730-day) lookback; a partial week at that boundary is omitted. **Period In Days** and **Report Stream Lookback Window (Hours)** do not affect these weekly streams. An entirely empty read retains its starting checkpoint and retries those periods on later syncs.
 
 Full refresh remains available, but now rereads the configured complete-week range rather than only the latest week. Review historical end dates before upgrading to 8.0.0: they can exclude the latest week that was previously returned. See the [8.0.0 migration guide](amazon-seller-partner-migrations.md#upgrading-to-800).
 

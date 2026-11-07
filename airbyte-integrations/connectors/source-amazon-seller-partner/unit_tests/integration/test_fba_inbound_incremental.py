@@ -102,3 +102,28 @@ def test_fixed_window_and_empty_parent(stream_name: str, sync_mode: SyncMode) ->
                 assert state == {"LastUpdatedBefore": "2024-05-10T00:00:00Z"}
             else:
                 assert state["parent_state"] == {"FbaInboundShipments": {"LastUpdatedBefore": "2024-05-10T00:00:00Z"}}
+
+
+@pytest.mark.parametrize("stream_name", STREAMS)
+def test_future_fixed_end_does_not_skip_updates(stream_name: str) -> None:
+    config = ConfigBuilder().with_inbound_fixed_window(pendulum.datetime(2024, 5, 25), pendulum.datetime(2024, 6, 10))
+    with requests_mock.Mocker() as mocker:
+        queries = mock_inbound(mocker, ["FBA-1"])
+        with freezegun.freeze_time("2024-06-01T00:00:00Z"):
+            first = read_output(config, stream_name, SyncMode.incremental)
+        assert queries == expected_queries("2024-05-25T00:00:00Z", "2024-06-01T00:00:00Z")
+        first_state = first.most_recent_state.stream_state.__dict__
+        assert parent_shipment_checkpoint(stream_name, first_state) == {"LastUpdatedBefore": "2024-06-01T00:00:00Z"}
+        queries = mock_inbound(mocker, ["FBA-2"])
+        with freezegun.freeze_time("2024-06-03T00:00:00Z"):
+            second = read_output(config, stream_name, SyncMode.incremental, state=[first.state_messages[-1].state])
+        assert queries == expected_queries("2024-06-01T00:00:00Z", "2024-06-03T00:00:00Z")
+        assert [record.record.data["ShipmentId"] for record in second.records] == ["FBA-2"]
+        second_state = second.most_recent_state.stream_state.__dict__
+        assert parent_shipment_checkpoint(stream_name, second_state) == {"LastUpdatedBefore": "2024-06-03T00:00:00Z"}
+
+
+def parent_shipment_checkpoint(stream_name: str, state: dict) -> dict:
+    if stream_name == "FbaInboundShipments":
+        return state
+    return state["parent_state"]["FbaInboundShipments"]

@@ -134,3 +134,18 @@ def test_only_complete_weeks_and_empty_reports_retried(
         jobs.clear()
         read_output(config, stream_name, SyncMode.incremental, state=[output.state_messages[-1].state])
         assert sorted(job["dataEndTime"][:10] for job in jobs) == expected_week_ends
+
+
+@pytest.mark.parametrize("stream_name,records_path", STREAMS)
+@freezegun.freeze_time("2024-06-02T12:00:00Z")
+def test_stale_weekly_range_does_not_request_expired_history(stream_name: str, records_path: str) -> None:
+    config = ConfigBuilder().with_start_date(pendulum.datetime(2017, 5, 15)).with_end_date(pendulum.datetime(2017, 5, 27, 23, 59, 59))
+    with requests_mock.Mocker() as mocker:
+        jobs = mock_reports(mocker, stream_name, records_path)
+        output = read_output(config, stream_name, SyncMode.incremental)
+        assert jobs == []
+        assert output.records == []
+        config.with_end_date(pendulum.datetime(2022, 6, 11, 23, 59, 59))
+        output = read_output(config, stream_name, SyncMode.full_refresh)
+        assert jobs == expected_jobs(stream_name, [("2022-06-05", "2022-06-11")])
+        assert [record.record.data["endDate"] for record in output.records] == ["2022-06-11", "2022-06-11"]

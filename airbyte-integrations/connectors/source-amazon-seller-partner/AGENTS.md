@@ -250,6 +250,8 @@ emits the same settlement rows more than once, or silently skips reports.
 
 ## 12. Brand Analytics Requests Must Cover Complete Weeks
 
+`start_datetime.min_datetime` enforces the 730-day lower bound before weekly clamping, even for an older configured start date. The partial week at the retention boundary is omitted; requests must remain complete Sunday–Saturday weeks.
+
 Search Terms puts reporting dates in `reportSpecification`, outside the extracted rows. Its `AddFields` transformation must inject the slice's Saturday `endDate` for checkpointing, and that field must be declared in its schema. Test with the actual response shape; adding dates to mocked Search Terms rows hides this failure.
 
 Market Basket, Repeat Purchase, and Search Terms use `reportPeriod: WEEK` and a shared Sunday-clamped cursor on `endDate`. The configured start date rounds back to Sunday. The end date includes only complete Sunday–Saturday periods, capped at the last completed week even when the configured end is in the future. Each creation requester must declare its own slice-based date bounds; `$ref` does not recursively merge request bodies. These streams ignore `period_in_days` and the timestamp-based report lookback option, which would split reporting weeks.
@@ -260,6 +262,8 @@ Nonempty reports resume at the Sunday after the saved Saturday without repeating
 
 ## 13. Inbound Items Checkpoint Through Their Parent Shipments
 
+The shared cursor's `end_datetime.max_datetime` caps future fixed ends at now. Otherwise its synthetic watermark would advance beyond unseen changes and skip them on later incremental reads. This cap applies in full refresh too.
+
 Inbound Shipments uses the existing `getShipments` endpoint's `LastUpdatedAfter`/`LastUpdatedBefore` filters. Amazon does not return the shipment update timestamp, so records receive a synthetic `LastUpdatedBefore` equal to the requested upper bound. Inbound Shipment Items keeps the per-shipment endpoint and inherits that field through `SubstreamPartitionRouter` with `incremental_dependency: true` and a global child cursor. The child's persisted `parent_state` must survive between reads even when the parent is not selected in the catalog.
 
 The first request uses `QueryType=DATE_RANGE`; subsequent pages use `QueryType=NEXT_TOKEN` with no date parameters. Saved state becomes the next request's lower bound, with boundary overlap rather than adding a second. Rolling mode still enforces its configured rolling lower bound; use fixed mode to recover history after a longer outage. Empty windows retain their starting checkpoint and are retried. Item quantities can change without updating the parent shipment timestamp; retain full refresh to detect those independent item changes.
@@ -268,7 +272,7 @@ The first request uses `QueryType=DATE_RANGE`; subsequent pages use `QueryType=N
 
 ## Incremental Stream Considerations
 
-The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 7 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
+The Amazon Seller Partner API uses an asynchronous report generation model. Most report streams are generated on demand via `createReport` / `getReport`. Supported Brand Analytics reports use weekly date bounds, while FBA inbound streams use shipment update windows. Removed Brand Analytics report types and vendor forecasting reports remain full refresh only.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
