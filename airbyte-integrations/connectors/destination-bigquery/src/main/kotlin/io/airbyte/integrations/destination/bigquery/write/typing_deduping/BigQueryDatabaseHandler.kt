@@ -197,10 +197,9 @@ class BigQueryDatabaseHandler(
             return e
         }
         val messages = e.errors.orEmpty().mapNotNull { it?.message } + listOfNotNull(e.message)
-        val isConfigError =
-            messages.any {
-                it.contains(BILLING_CONFIG_ERROR) || it.contains(CUSTOM_QUOTA_EXCEEDED_ERROR)
-            }
+        val isConfigError = messages.any {
+            it.contains(BILLING_CONFIG_ERROR) || it.contains(CUSTOM_QUOTA_EXCEEDED_ERROR)
+        }
         return if (isConfigError) ConfigErrorException(e.message ?: e.toString(), e) else e
     }
 

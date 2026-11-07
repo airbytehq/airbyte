@@ -156,8 +156,8 @@ class BigQueryDatabaseHandlerTest {
 
     /**
      * When a running job fails, BigQuery's [Job.reload] throws the job's error as a
-     * [BigQueryException] instead of returning a DONE job, so it never reaches the `job.status.error`
-     * branch.
+     * [BigQueryException] instead of returning a DONE job, so it never reaches the
+     * `job.status.error` branch.
      */
     private fun handlerWhoseReloadThrows(e: BigQueryException): BigQueryDatabaseHandler {
         val runningJob: Job = mockk {
@@ -173,7 +173,7 @@ class BigQueryDatabaseHandlerTest {
     @ParameterizedTest
     @ValueSource(strings = [CUSTOM_QUOTA_ERROR, BILLING_ERROR])
     fun `config errors thrown while polling the job are wrapped as ConfigErrorException`(
-        errorMessage: String
+        errorMessage: String,
     ) {
         val bqError = BigQueryError("quotaExceeded", "", errorMessage)
         val handler = handlerWhoseReloadThrows(BigQueryException(listOf(bqError)))
