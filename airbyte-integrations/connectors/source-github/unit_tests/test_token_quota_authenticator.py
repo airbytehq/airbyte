@@ -105,7 +105,12 @@ def test_authenticator_instance_is_shared_with_manifest_streams(rate_limit_mock_
     resolve_repositories_and_organizations(source, config)
 
     assert get_authenticator(source, config) is manifest_authenticator
-    assert len(source._constructor._rate_limited_authenticators) == 1
+    # The `SelectiveAuthenticator` also builds the unselected GitHub App branch, so the cache
+    # holds one instance per branch; only one of them is over these tokens.
+    token_authenticators = [
+        cached for cached in source._constructor._rate_limited_authenticators.values() if list(cached._tokens) == ["token1", "token2"]
+    ]
+    assert token_authenticators == [manifest_authenticator]
 
 
 def test_quota_is_charged_once_across_repository_resolution_and_probe_stream(rate_limit_mock_response, requests_mock):

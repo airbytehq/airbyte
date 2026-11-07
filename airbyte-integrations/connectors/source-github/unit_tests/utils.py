@@ -2,19 +2,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 from pathlib import Path
 from typing import Any, Iterable, List, Mapping, Optional, Tuple
 from unittest import mock
 from urllib.parse import parse_qsl, urlparse
 
 import requests
+from components import ConfigNormalization
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
-    RateLimitedMultipleTokenAuthenticator as RateLimitedMultipleTokenAuthenticatorModel,
+    SelectiveAuthenticator as SelectiveAuthenticatorModel,
 )
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     UnionPartitionRouter as UnionPartitionRouterModel,
@@ -63,6 +65,7 @@ def resolve_repositories_and_organizations(source: YamlDeclarativeSource, config
             message="No authentication tokens found in config.",
             failure_type=FailureType.config_error,
         )
+    config = normalized_config(config)
 
     def enumerate_router(definition_name: str, partition_key: str) -> List[str]:
         router = source._constructor.create_component(
@@ -87,15 +90,25 @@ def resolve_repositories_and_organizations(source: YamlDeclarativeSource, config
     return organizations, repositories
 
 
+def normalized_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
+    """`config` after the manifest's `ConfigNormalization`, which the source applies to its own
+    copy. Components built from a test's raw config need it: it is what picks the authenticator."""
+    config = copy.deepcopy(dict(config))
+    ConfigNormalization().transform(config)
+    return config
+
+
 def get_authenticator(source: YamlDeclarativeSource, config: Mapping[str, Any]) -> DeclarativeAuthenticator:
-    """Return the manifest's `RateLimitedMultipleTokenAuthenticator` — the same cached
-    instance the manifest streams' requesters use (`ModelToComponentFactory` caches by
-    resolved constructor arguments). `config` must be the normalized config the source was
-    constructed with: a differently resolved config yields a different cached instance."""
+    """Return the manifest's `RateLimitedMultipleTokenAuthenticator` for the config's
+    `credentials.option_title` — the same cached instance the manifest streams' requesters use
+    (the `SelectiveAuthenticator` returns the selected branch, and `ModelToComponentFactory`
+    caches it by resolved constructor arguments). `config` must be the config the source was
+    constructed with: a differently resolved config yields a different cached instance. It is
+    normalized here the way the source normalizes it, which is what picks the branch."""
     return source._constructor.create_component(
-        model_type=RateLimitedMultipleTokenAuthenticatorModel,
+        model_type=SelectiveAuthenticatorModel,
         component_definition=source.resolved_manifest["definitions"]["requester_base"]["authenticator"],
-        config=config,
+        config=normalized_config(config),
     )
 
 

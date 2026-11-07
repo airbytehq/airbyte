@@ -719,6 +719,11 @@ class ConfigNormalization(ConfigTransformation):
             config["api_url"] = "https://api.github.com"
         if not config["api_url"].endswith("/"):
             config["api_url"] = config["api_url"] + "/"
+        # The authenticator is chosen by `credentials.option_title`. Configs with only a root
+        # `access_token`, or `credentials` without a title, have always meant a static token.
+        credentials = config.get("credentials")
+        if not isinstance(credentials, Mapping) or not credentials.get("option_title"):
+            config["credentials"] = {**(credentials if isinstance(credentials, Mapping) else {}), "option_title": "PAT Credentials"}
         if not config.get("repositories") and config.get("repository"):
             config["repositories"] = set(filter(None, config["repository"].split(" ")))
         if not config.get("branches") and config.get("branch"):
@@ -768,3 +773,30 @@ class ApiUrlValidationStrategy(ValidationStrategy):
         else:
             return
         raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+
+
+class GitHubAppInstallationsValidationStrategy(ValidationStrategy):
+    """Reject two installations of the same GitHub App.
+
+    An app has at most one installation per account, so a repeated App ID means installations on
+    different owners. Each sees only its own owner's private repositories, and the other owner's
+    repositories would be skipped as inaccessible (404) with only a warning.
+    """
+
+    def __init__(self, **kwargs: Any) -> None:
+        pass
+
+    def validate(self, value: Any) -> None:
+        if not isinstance(value, list):
+            return
+        app_ids = [str(item.get("app_id", "")).strip() for item in value if isinstance(item, Mapping)]
+        repeated = sorted({app_id for app_id in app_ids if app_id and app_ids.count(app_id) > 1})
+        if repeated:
+            raise AirbyteTracedException(
+                message=(
+                    f"GitHub App {', '.join(repeated)} is entered for more than one installation. Each installation "
+                    "must belong to a different GitHub App installed on the same organization or account. To sync "
+                    "several organizations with one app, create one connection per organization."
+                ),
+                failure_type=FailureType.config_error,
+            )
