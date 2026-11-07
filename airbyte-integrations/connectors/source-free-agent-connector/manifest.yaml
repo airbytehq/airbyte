@@ -25,12 +25,10 @@ definitions:
           path: /users
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -71,12 +69,10 @@ definitions:
           path: /categories
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -117,12 +113,10 @@ definitions:
           path: /categories
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -163,12 +157,10 @@ definitions:
           path: /categories
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -209,12 +201,10 @@ definitions:
           path: /categories
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -253,12 +243,10 @@ definitions:
           path: /accounting/balance_sheet
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -284,12 +272,10 @@ definitions:
           path: /bank_accounts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -315,12 +301,10 @@ definitions:
           path: /bank_transaction_explanations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -389,12 +373,10 @@ definitions:
           path: /bank_transactions
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -465,12 +447,10 @@ definitions:
           request_parameters:
             nested_bill_items: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -525,12 +505,10 @@ definitions:
           path: /company/tax_timeline
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -558,12 +536,10 @@ definitions:
           request_parameters:
             view: all
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -604,12 +580,10 @@ definitions:
           path: /corporation_tax_returns
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -648,12 +622,10 @@ definitions:
           path: /credit_note_reconciliations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -711,12 +683,10 @@ definitions:
             sort: "-updated_at"
             nested_credit_note_items: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -775,12 +745,10 @@ definitions:
           request_parameters:
             nested_estimate_items: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -838,12 +806,10 @@ definitions:
           path: /expenses
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -900,12 +866,10 @@ definitions:
           path: /final_accounts_reports
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -945,12 +909,10 @@ definitions:
           path: /hire_purchases
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -994,12 +956,10 @@ definitions:
             sort: "-updated_at"
             nested_invoice_items: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1056,12 +1016,10 @@ definitions:
           path: /journal_sets
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1100,12 +1058,10 @@ definitions:
           path: /notes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1160,12 +1116,10 @@ definitions:
             '%Y') }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1209,12 +1163,10 @@ definitions:
           path: /company
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1238,12 +1190,10 @@ definitions:
           path: /company
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1268,17 +1218,15 @@ definitions:
           path: /payroll{{  stream_partition.path }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
         record_selector:
           type: RecordSelector
           extractor:
@@ -1320,12 +1268,10 @@ definitions:
           path: /price_list_items
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1364,12 +1310,10 @@ definitions:
           path: /accounting/profit_and_loss/summary
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1398,12 +1342,10 @@ definitions:
             sort: "-updated_at"
             nested: "true"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1459,12 +1401,10 @@ definitions:
           request_parameters:
             sort: "-updated_at"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1521,12 +1461,10 @@ definitions:
           path: /timeslips
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1581,12 +1519,10 @@ definitions:
           path: /notes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
