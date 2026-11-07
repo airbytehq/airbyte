@@ -23,21 +23,6 @@ definitions:
           request_parameters:
             limit: "500"
             start_date: "{{ timestamp(config['start_date']) | int }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 500
-                    action: FAIL
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 504
         record_selector:
           type: RecordSelector
           extractor:
@@ -75,21 +60,6 @@ definitions:
           request_parameters:
             limit: "500"
             start_date: "{{ timestamp(config['start_date']) | int }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 500
-                    action: FAIL
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 504
         record_selector:
           type: RecordSelector
           extractor:
@@ -119,6 +89,8 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.qualaroo.com/api/v1/
+    error_handler:
+      type: DefaultErrorHandler
     authenticator:
       type: CustomAuthenticator
       class_name: source_declarative_manifest.components.CustomAuthenticator
