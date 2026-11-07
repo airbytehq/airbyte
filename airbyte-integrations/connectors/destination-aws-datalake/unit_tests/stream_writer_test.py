@@ -183,6 +183,14 @@ def get_big_schema_configured_stream():
                 "properties": {"id": {"type": ["null", "integer"]}, "name": {"type": ["null", "string"]}},
                 "additionalProperties": False,
             },
+            "array_of_objects_empty_properties": {
+                "type": ["null", "array"],
+                "items": {
+                    "type": ["null", "object"],
+                    "properties": {},
+                    "additionalProperties": True,
+                },
+            },
         },
     }
 
@@ -374,6 +382,7 @@ def test_get_glue_dtypes_from_json_schema():
         "nested_nested_bad_object": "string",
         "object_with_additional_properties": "string",
         "object_no_additional_properties": "struct<id:bigint,name:string>",
+        "array_of_objects_empty_properties": "string",
         "percentage": "double",
         "phone_number_ids": "string",
         "questions": "array<struct<id:bigint,question:string,answer:string>>",
@@ -394,6 +403,7 @@ def test_get_glue_dtypes_from_json_schema():
         "nested_nested_bad_object",
         "phone_number_ids",
         "object_with_additional_properties",
+        "array_of_objects_empty_properties",
     }
 
 
