@@ -1,0 +1,474 @@
+# Airbyte manifest-only source for the Unify Bulk API.
+#
+# The Bulk API is asynchronous; the AsyncRetriever's three requesters map to its
+# three calls:
+#   creation_requester -> POST {resource}/query-jobs              (create job)
+#   polling_requester  -> GET  {resource}/query-jobs/{id}         (poll status)
+#   download_requester -> GET  {resource}/query-jobs/{id}/results (page results)
+#
+# Reusable pieces live under `definitions` and are pulled in with `$ref`. `$ref`
+# is a shallow merge (no deep merge of nested mappings), so each stream spells
+# out its own full `request_body_json` rather than layering onto a partial.
+#
+# See: https://docs.unifygtm.com/developers/guides/request-data/bulk-api
+
+version: 7.23.3
+
+type: DeclarativeSource
+
+definitions:
+  # --- auth + requesters -----------------------------------------------------
+
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "{{ config['api_key'] }}"
+    inject_into:
+      type: RequestOption
+      field_name: "X-Api-Key"
+      inject_into: header
+
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['base_url'] }}"
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    # Retry 429/5xx; WaitTimeFromHeader makes 429 retries honor the API's
+    # Retry-After header instead of falling back to exponential backoff.
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+
+  # Job-creation skeleton; each stream $refs this and adds its `request_body_json`.
+  base_creation_requester:
+    $ref: "#/definitions/base_requester"
+    http_method: POST
+    path: "{{ parameters['resource'] }}/query-jobs"
+
+  # --- retriever -------------------------------------------------------------
+
+  # Shared across streams; each supplies only its own `creation_requester`. Paths
+  # are parameterized on `{{ parameters['resource'] }}`.
+  base_async_retriever:
+    type: AsyncRetriever
+    status_mapping:
+      type: AsyncJobStatusMap
+      running: ["CREATED", "PENDING", "RUNNING", "IN_PROGRESS"]
+      completed: ["FINISHED"]
+      failed: ["FAILED", "CANCELED", "EXPIRED"]
+      # Unify has no timed-out status; the CDK requires the key, so leave it
+      # empty and let polling_job_timeout be the only timeout path.
+      timeout: []
+    status_extractor:
+      type: DpathExtractor
+      field_path: ["status"]
+    # Unify returns no download URL; the job id is the download target.
+    download_target_extractor:
+      type: DpathExtractor
+      field_path: ["job_id"]
+    polling_job_timeout: "{{ config['poll_timeout_minutes'] }}"
+    polling_requester:
+      $ref: "#/definitions/base_requester"
+      http_method: GET
+      path: "{{ parameters['resource'] }}/query-jobs/{{ creation_response['job_id'] }}"
+    download_requester:
+      $ref: "#/definitions/base_requester"
+      http_method: GET
+      path: "{{ parameters['resource'] }}/query-jobs/{{ download_target }}/results"
+      request_headers:
+        Accept: "application/json"
+    # JSON results are a page-based envelope {total, page, page_size, data};
+    # page until a short/empty page.
+    download_paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: PageIncrement
+        page_size: "{{ config['page_size'] }}"
+        start_from_page: 1
+      page_size_option:
+        type: RequestOption
+        field_name: "page_size"
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: "page"
+        inject_into: request_parameter
+    # The AsyncRetriever extracts download rows via download_extractor; the
+    # record_selector below is only a post-extract transform, never the download.
+    download_extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["data"]
+
+  # --- cursors ---------------------------------------------------------------
+
+  # Object/sequence resources advance on updated_at; the immutable event stream
+  # on timestamp (the only datetime the events resource can filter on).
+  cursor_updated_at:
+    type: DatetimeBasedCursor
+    cursor_field: "updated_at"
+    # datetime_format is the canonical form for state and the gte filter;
+    # cursor_datetime_formats also parses fractional seconds the API may return.
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+  cursor_timestamp:
+    type: DatetimeBasedCursor
+    cursor_field: "timestamp"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+  # --- schemas ---------------------------------------------------------------
+
+  # Known columns are typed; additionalProperties lets any other attribute the
+  # Bulk API returns flow through (nested objects/lists arrive as JSON).
+  schema_object:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        id: { type: ["null", "string"] }
+        created_at: { type: ["null", "string"], format: date-time }
+        updated_at: { type: ["null", "string"], format: date-time }
+  schema_event:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        id: { type: ["null", "string"] }
+        created_at: { type: ["null", "string"], format: date-time }
+        timestamp: { type: ["null", "string"], format: date-time }
+  schema_sequence:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      additionalProperties: true
+      properties:
+        id: { type: ["null", "string"] }
+        created_at: { type: ["null", "string"], format: date-time }
+        updated_at: { type: ["null", "string"], format: date-time }
+        started_at: { type: ["null", "string"], format: date-time }
+        ended_at: { type: ["null", "string"], format: date-time }
+
+  # --- streams ---------------------------------------------------------------
+  #
+  # Each stream sets $parameters.resource (the resource base path). Object
+  # resources (company, person, opportunity) require a `query` with
+  # select/sort_by/metadata; events and sequences take an optional `filter`.
+  streams:
+    # `select` lists the scalar standard attributes so the table comes out flat.
+    company:
+      type: DeclarativeStream
+      name: company
+      primary_key: ["id"]
+      $parameters:
+        resource: "/data/v1/objects/company"
+      schema_loader:
+        $ref: "#/definitions/schema_object"
+      incremental_sync:
+        $ref: "#/definitions/cursor_updated_at"
+      retriever:
+        $ref: "#/definitions/base_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/base_creation_requester"
+          request_body_json:
+            query:
+              select:
+                name: true
+                domain: true
+                description: true
+                industry: true
+                employee_count: true
+                revenue: true
+                founded: true
+                status: true
+                lead_source: true
+                linkedin_url: true
+                last_activity_at: true
+              sort_by:
+                field: "updated_at"
+                direction: "ASCENDING"
+              metadata:
+                updated_at:
+                  gte: "{{ stream_interval['start_time'] }}"
+
+    person:
+      type: DeclarativeStream
+      name: person
+      primary_key: ["id"]
+      $parameters:
+        resource: "/data/v1/objects/person"
+      schema_loader:
+        $ref: "#/definitions/schema_object"
+      incremental_sync:
+        $ref: "#/definitions/cursor_updated_at"
+      retriever:
+        $ref: "#/definitions/base_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/base_creation_requester"
+          request_body_json:
+            query:
+              select:
+                email: true
+                first_name: true
+                last_name: true
+                title: true
+                status: true
+                lead_source: true
+                linkedin_url: true
+                do_not_email: true
+                email_opt_out: true
+                last_activity_at: true
+              sort_by:
+                field: "updated_at"
+                direction: "ASCENDING"
+              metadata:
+                updated_at:
+                  gte: "{{ stream_interval['start_time'] }}"
+
+    # company/person/record_owner reference attributes are left out to keep the
+    # table flat; add them to `select` if you want them.
+    opportunity:
+      type: DeclarativeStream
+      name: opportunity
+      primary_key: ["id"]
+      $parameters:
+        resource: "/data/v1/objects/opportunity"
+      schema_loader:
+        $ref: "#/definitions/schema_object"
+      incremental_sync:
+        $ref: "#/definitions/cursor_updated_at"
+      retriever:
+        $ref: "#/definitions/base_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/base_creation_requester"
+          request_body_json:
+            query:
+              select:
+                name: true
+                uniqueness_key: true
+                amount: true
+                stage: true
+                opportunity_type: true
+                lead_source: true
+                original_created_at: true
+                hubspot_url: true
+                salesforce_url: true
+              sort_by:
+                field: "updated_at"
+                direction: "ASCENDING"
+              metadata:
+                updated_at:
+                  gte: "{{ stream_interval['start_time'] }}"
+
+    # timestamp is the only datetime the events resource can filter on.
+    event:
+      type: DeclarativeStream
+      name: event
+      primary_key: ["id"]
+      $parameters:
+        resource: "/data/v1/events"
+      schema_loader:
+        $ref: "#/definitions/schema_event"
+      incremental_sync:
+        $ref: "#/definitions/cursor_timestamp"
+      retriever:
+        $ref: "#/definitions/base_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/base_creation_requester"
+          request_body_json:
+            filter:
+              timestamp:
+                gte: "{{ stream_interval['start_time'] }}"
+
+    sequence_enrollment:
+      type: DeclarativeStream
+      name: sequence_enrollment
+      primary_key: ["id"]
+      $parameters:
+        resource: "/sequences/v1/enrollments"
+      schema_loader:
+        $ref: "#/definitions/schema_sequence"
+      incremental_sync:
+        $ref: "#/definitions/cursor_updated_at"
+      retriever:
+        $ref: "#/definitions/base_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/base_creation_requester"
+          request_body_json:
+            filter:
+              updated_at:
+                gte: "{{ stream_interval['start_time'] }}"
+
+    sequence_enrollment_step:
+      type: DeclarativeStream
+      name: sequence_enrollment_step
+      primary_key: ["id"]
+      $parameters:
+        resource: "/sequences/v1/enrollment-steps"
+      schema_loader:
+        $ref: "#/definitions/schema_sequence"
+      incremental_sync:
+        $ref: "#/definitions/cursor_updated_at"
+      retriever:
+        $ref: "#/definitions/base_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/base_creation_requester"
+          request_body_json:
+            filter:
+              updated_at:
+                gte: "{{ stream_interval['start_time'] }}"
+
+    # Synchronous metadata stream backing the connection `check`. Unlike the Bulk
+    # streams, this is a plain SimpleRetriever GET that returns immediately (no
+    # create -> poll -> download job lifecycle), so `check` verifies credentials
+    # with a single cheap request instead of burning a Bulk job. It lists the
+    # objects available to the API key ({status, data: [{provider, api_name,
+    # display_name, description}]}); CheckStream requires it to be a registered
+    # stream, so it also appears in the catalog as a small full-refresh stream.
+    object_definitions:
+      type: DeclarativeStream
+      name: object_definitions
+      primary_key: ["api_name"]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: true
+          properties:
+            provider: { type: ["null", "string"] }
+            api_name: { type: ["null", "string"] }
+            display_name: { type: ["null", "string"] }
+            description: { type: ["null", "string"] }
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          http_method: GET
+          path: "/data/v1/objects"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["data"]
+
+# --- streams (top level) -----------------------------------------------------
+
+streams:
+  - $ref: "#/definitions/streams/company"
+  - $ref: "#/definitions/streams/person"
+  - $ref: "#/definitions/streams/opportunity"
+  - $ref: "#/definitions/streams/event"
+  - $ref: "#/definitions/streams/sequence_enrollment"
+  - $ref: "#/definitions/streams/sequence_enrollment_step"
+  - $ref: "#/definitions/streams/object_definitions"
+
+# --- concurrency -------------------------------------------------------------
+
+# Per-stream cap on in-flight Bulk jobs; each sync issues exactly one.
+max_concurrent_async_job_count: 1
+
+# Streams synced in parallel: config-driven via num_workers (default 2), capped
+# at 6 (one per stream). Each parallel stream creates another job, and job
+# creation is rate-limited (~100/day), so keep it modest.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config['num_workers'] or 2 }}"
+  max_concurrency: 6
+
+# --- connection check --------------------------------------------------------
+
+# Verifies credentials with the synchronous `object_definitions` stream: a single
+# GET /data/v1/objects. This avoids the create -> poll -> download Bulk lifecycle
+# (and its job-creation quota) that checking an async stream like `company` would
+# trigger just to validate the API key.
+check:
+  type: CheckStream
+  stream_names: ["object_definitions"]
+
+# --- configuration spec ------------------------------------------------------
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Unify Source Spec
+    type: object
+    required: ["api_key"]
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          User-backed Unify API key, sent as the `X-Api-Key` header. Generate one
+          in Settings -> Developers
+          (https://app.unifygtm.com/dashboard/settings/integrations/api-keys).
+        airbyte_secret: true
+        order: 0
+      base_url:
+        type: string
+        title: API Base URL
+        description: Base URL for the Unify API.
+        default: "https://api.unifygtm.com"
+        order: 1
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          Only records changed at or after this UTC timestamp are synced on the
+          first run. Defaults to the beginning of time (full backfill).
+        format: date-time
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples: ["2024-01-01T00:00:00Z"]
+        default: "1970-01-01T00:00:00Z"
+        order: 2
+      page_size:
+        type: integer
+        title: Result Page Size
+        description: JSON result page size when downloading job results (max 2000).
+        minimum: 1
+        maximum: 2000
+        default: 1000
+        order: 3
+      poll_timeout_minutes:
+        type: integer
+        title: Poll Timeout (minutes)
+        description: Maximum minutes to wait for a single query job to finish.
+        minimum: 1
+        default: 60
+        order: 4
+      num_workers:
+        type: integer
+        title: Concurrent Streams
+        description: >-
+          How many streams to sync in parallel. Higher values finish faster but
+          create more Bulk query jobs at once; keep it modest to stay within
+          Unify's job-creation rate limit. Capped at 6 (one per stream).
+        minimum: 1
+        maximum: 6
+        default: 2
+        order: 5
