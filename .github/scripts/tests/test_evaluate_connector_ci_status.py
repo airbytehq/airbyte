@@ -41,6 +41,7 @@ EVALUATE_STATUS_STEP = step("connector-ci-checks-summary", "evaluate-status")
 EVALUATE_STATUS_SCRIPT = EVALUATE_STATUS_STEP["run"]
 DETECT_CDK_PRERELEASE_SCRIPT = step("cdk-prerelease-check", "detect-cdk-prerelease")["run"]
 EVALUATE_CDK_PRERELEASE_SCRIPT = step("cdk-prerelease-check", "evaluate-cdk-prerelease")["run"]
+EVALUATE_REGISTRY_PINS_SCRIPT = step("registry-pin-check", "evaluate-registry-pins")["run"]
 # Jobs evaluated by the 'Evaluate Status' loop, for example "connector-qa-checks".
 EVALUATED_JOBS = re.findall(r'"([a-z-]+)=\$\{[A-Z_]+_RESULT:-\}"', EVALUATE_STATUS_SCRIPT)
 
@@ -346,3 +347,156 @@ def test_connectors_filter_ignores_removed_files():
 def test_connectors_filter_uses_some_with_excludes():
     # With the default 'some' quantifier, every negated pattern matches all other files.
     assert PATHS_FILTER_STEP["with"]["predicate-quantifier"] == "some-with-excludes"
+
+
+# --- Registry version pin warnings ---
+
+REGISTRY_METADATA_PATH = "airbyte-integrations/connectors/source-foo/metadata.yaml"
+
+
+def registry_metadata(
+    version: str,
+    cloud_pin: str | None = None,
+    oss_pin: str | None = None,
+    description: str = "Example connector",
+):
+    metadata = f"""data:
+  dockerImageTag: {version}
+  description: {description}
+"""
+    if cloud_pin is not None or oss_pin is not None:
+        metadata += "  registryOverrides:\n"
+        if cloud_pin is not None:
+            metadata += f"    cloud:\n      dockerImageTag: {cloud_pin}\n"
+        if oss_pin is not None:
+            metadata += f"    oss:\n      dockerImageTag: {oss_pin}\n"
+    return metadata
+
+
+def run_registry_pin_check(
+    head_metadata: str,
+    base_metadata: str | None,
+    matrix: str = '{"connector":["source-foo"]}',
+):
+    with TemporaryDirectory() as directory:
+        repo = Path(directory)
+        subprocess.run(["git", "init", "--initial-branch=master"], cwd=repo, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.name", "Test"], cwd=repo, check=True)
+        subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
+        metadata_path = repo / REGISTRY_METADATA_PATH
+        if base_metadata is None:
+            (repo / "README.md").write_text("Base commit\n")
+        else:
+            metadata_path.parent.mkdir(parents=True)
+            metadata_path.write_text(base_metadata)
+        subprocess.run(["git", "add", "."], cwd=repo, check=True)
+        subprocess.run(["git", "commit", "-m", "base"], cwd=repo, check=True, capture_output=True)
+        metadata_path.parent.mkdir(parents=True, exist_ok=True)
+        metadata_path.write_text(head_metadata)
+        completed, _ = run_bash(
+            EVALUATE_REGISTRY_PINS_SCRIPT,
+            {"BASE_REF": "master", "CONNECTORS_MATRIX": matrix},
+            cwd=repo,
+        )
+        return completed
+
+
+def registry_warnings(stdout: str) -> list[str]:
+    return [line for line in stdout.splitlines() if line.startswith("::warning ")]
+
+
+def test_registry_pin_check_warns_when_version_bump_is_held_back_by_cloud_pin():
+    completed = run_registry_pin_check(
+        registry_metadata("1.0.1", cloud_pin="1.0.0"),
+        registry_metadata("1.0.0", cloud_pin="1.0.0"),
+    )
+    warnings = registry_warnings(completed.stdout)
+    assert completed.returncode == 0
+    assert len(warnings) == 1
+    assert f"file={REGISTRY_METADATA_PATH},line=6,title=Registry version pin (Cloud)::" in warnings[0]
+    assert "source-foo 1.0.1 will not reach the Cloud registry" in warnings[0]
+    assert "pins it to 1.0.0" in warnings[0]
+
+
+def test_registry_pin_check_does_not_warn_when_pin_moves_in_lockstep_with_version():
+    completed = run_registry_pin_check(
+        registry_metadata("1.0.1", cloud_pin="1.0.1"),
+        registry_metadata("1.0.0", cloud_pin="1.0.0"),
+    )
+    assert completed.returncode == 0
+    assert registry_warnings(completed.stdout) == []
+
+
+def test_registry_pin_check_does_not_warn_when_version_bumps_without_a_pin():
+    completed = run_registry_pin_check(registry_metadata("1.0.1"), registry_metadata("1.0.0"))
+    assert completed.returncode == 0
+    assert registry_warnings(completed.stdout) == []
+
+
+def test_registry_pin_check_warns_when_cloud_pin_is_removed_without_version_bump():
+    completed = run_registry_pin_check(
+        registry_metadata("1.0.0"),
+        registry_metadata("1.0.0", cloud_pin="1.0.0"),
+    )
+    warnings = registry_warnings(completed.stdout)
+    assert completed.returncode == 0
+    assert len(warnings) == 1
+    assert f"file={REGISTRY_METADATA_PATH},line=2,title=Registry version pin (Cloud)::" in warnings[0]
+    assert "removes the pin to 1.0.0" in warnings[0]
+    assert "Metadata-only changes do not publish" in warnings[0]
+
+
+def test_registry_pin_check_warns_when_cloud_pin_is_added_without_version_bump():
+    completed = run_registry_pin_check(
+        registry_metadata("1.0.0", cloud_pin="0.9.0"),
+        registry_metadata("1.0.0"),
+    )
+    warnings = registry_warnings(completed.stdout)
+    assert completed.returncode == 0
+    assert len(warnings) == 1
+    assert "adds a pin to 0.9.0" in warnings[0]
+
+
+def test_registry_pin_check_warns_when_oss_pin_changes_without_version_bump():
+    completed = run_registry_pin_check(
+        registry_metadata("1.0.0", oss_pin="0.9.0"),
+        registry_metadata("1.0.0", oss_pin="0.8.0"),
+    )
+    warnings = registry_warnings(completed.stdout)
+    assert completed.returncode == 0
+    assert len(warnings) == 1
+    assert f"file={REGISTRY_METADATA_PATH},line=6,title=Registry version pin (OSS)::" in warnings[0]
+    assert "changes the pin from 0.8.0 to 0.9.0" in warnings[0]
+
+
+def test_registry_pin_check_ignores_unrelated_metadata_edits():
+    completed = run_registry_pin_check(
+        registry_metadata("1.0.0", cloud_pin="1.0.0", description="Updated description"),
+        registry_metadata("1.0.0", cloud_pin="1.0.0"),
+    )
+    assert completed.returncode == 0
+    assert registry_warnings(completed.stdout) == []
+
+
+def test_registry_pin_check_warns_for_a_new_connector_with_a_different_cloud_pin():
+    completed = run_registry_pin_check(registry_metadata("1.0.0", cloud_pin="0.9.0"), None)
+    warnings = registry_warnings(completed.stdout)
+    assert completed.returncode == 0
+    assert len(warnings) == 1
+    assert "source-foo 1.0.0 will not reach the Cloud registry" in warnings[0]
+
+
+def test_registry_pin_check_ignores_empty_connector_matrix_entry():
+    completed = run_registry_pin_check(
+        registry_metadata("1.0.0"),
+        registry_metadata("1.0.0"),
+        matrix='{"connector":[""]}',
+    )
+    assert completed.returncode == 0
+    assert registry_warnings(completed.stdout) == []
+
+
+def test_registry_pin_check_is_non_blocking_and_not_evaluated_by_summary():
+    assert JOBS["registry-pin-check"]["continue-on-error"] is True
+    assert "registry-pin-check" not in JOBS["connector-ci-checks-summary"]["needs"]
+    assert "registry-pin-check" not in EVALUATED_JOBS
