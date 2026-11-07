@@ -61,48 +61,26 @@ definitions:
     limit: "{{ parameters['items_per_page'] }}"
     nested_limit: "{{ parameters.get('nested_items_per_page', 1) }}"
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: "DefaultErrorHandler"
-          response_filters:
-            # New unified error format (API version 2025-01+): errors are in response['errors'][0]['extensions']['code']
-            # Complexity budget exhausted - retry with backoff
-            - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'COMPLEXITY_BUDGET_EXHAUSTED' }}"
-              action: RETRY
-            # Cursor expired error - reset pagination (new format)
-            - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'CursorExpiredError' }}"
-              action: RESET_PAGINATION
-            # Field limit exceeded (e.g., subitems concurrency) - retry with backoff
-            - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'FIELD_LIMIT_EXCEEDED' }}"
-              action: RETRY
-            # Generic error handling for new format - fail with descriptive message
-            - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') is not none }}"
-              action: FAIL
-              failure_type: config_error
-              error_message: "{{ response['errors'][0].get('message', 'Unknown API error') }} (Error code: {{ response['errors'][0].get('extensions', {}).get('code', 'unknown') }}). For more information about Monday.com API errors, please visit: https://developer.monday.com/api-reference/docs/error-handling"
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: retry-after
-            - type: ConstantBackoffStrategy
-              backoff_time_in_seconds: 60
-        - type: "DefaultErrorHandler"
-          description: "
-            Ignore the slice when there is no access to the requested entity - 'code: 403, message: None'.
-            https://github.com/airbytehq/alpha-beta-issues/issues/846
-            "
-          response_filters:
-            - http_codes: [403]
-              action: IGNORE
-        - type: "DefaultErrorHandler"
-          description: "
-            Retry when `Internal Server Error occures - `code: 500, message: Internal server error`.
-            https://github.com/airbytehq/alpha-beta-issues/issues/245
-            "
-          response_filters:
-            - http_codes: [500, 502]
-              action: RETRY
-          backoff_strategies:
-            - type: ExponentialBackoffStrategy
+      type: DefaultErrorHandler
+      response_filters:
+        # New unified error format (API version 2025-01+): errors are in response['errors'][0]['extensions']['code']
+        # Complexity budget exhausted - retry with backoff
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'COMPLEXITY_BUDGET_EXHAUSTED' }}"
+          action: RETRY
+        # Cursor expired error - reset pagination (new format)
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'CursorExpiredError' }}"
+          action: RESET_PAGINATION
+        # Field limit exceeded (e.g., subitems concurrency) - retry with backoff
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'FIELD_LIMIT_EXCEEDED' }}"
+          action: RETRY
+        # Skip the slice when there is no access to the requested entity (403)
+        - http_codes: [403]
+          action: IGNORE
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: retry-after
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
 
   default_paginator:
     type: "DefaultPaginator"

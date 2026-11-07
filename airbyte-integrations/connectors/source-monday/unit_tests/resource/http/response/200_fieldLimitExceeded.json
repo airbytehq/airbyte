@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "message": "Field limit exceeded",
+      "extensions": {
+        "code": "FIELD_LIMIT_EXCEEDED"
+      }
+    }
+  ]
+}
