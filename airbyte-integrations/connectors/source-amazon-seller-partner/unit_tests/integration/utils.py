@@ -87,3 +87,14 @@ def assert_message_in_log_output(message: str, entrypoint_output: EntrypointOutp
     assert any(
         message in airbyte_message.log.message for airbyte_message in entrypoint_output.logs if airbyte_message.log.level == log_level
     )
+
+
+def assert_no_rate_limited_status(stdout: str) -> None:
+    for line in stdout.splitlines():
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        stream_status = message.get("trace", {}).get("stream_status")
+        assert not any(reason.get("type") == "RATE_LIMITED" for reason in (stream_status or {}).get("reasons", []))
