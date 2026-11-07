@@ -385,7 +385,7 @@ spec:
           in 'yourcompany.nocrm.io'.
         name: subdomain
         order: 1
-        title: Subdomain
+        title: Account Subdomain
     additionalProperties: true
 
 metadata:
