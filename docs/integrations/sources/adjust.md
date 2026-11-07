@@ -1,39 +1,55 @@
 # Adjust
 
-This is a setup guide for the Adjust source connector which ingests data from the reports API.
+This page guides you through setting up the [Adjust](https://www.adjust.com/) source connector. The connector syncs aggregated mobile measurement data from the [Adjust Report Service API](https://dev.adjust.com/en/api/rs-api/reports/).
 
 ## Prerequisites
 
-An API token is required to get hold of reports from the Adjust reporting API. See the [Adjust API authentication help article](https://help.adjust.com/en/article/report-service-api-authentication) on how to obtain a key.
+- An Adjust API token. You can find your token on the **My profile** tab of your Adjust dashboard. See [Report service API authentication](https://dev.adjust.com/en/api/rs-api/authentication/). If your organization uses single sign-on (SSO), API tokens aren't available in the Adjust dashboard.
+- The names of the metrics and dimensions you want to sync.
 
-As Adjust allows you to setup custom events etc that are specific to your apps, only a subset of available metrics are made pre-selectable. To list all metrics that are available, query the filters data endpoint. Information about available metrics are available in the [Datascape metrics glossary](https://help.adjust.com/en/article/datascape-metrics-glossary).
+### List app-specific metrics
 
-### Full Metrics Listing
+The **Metrics to ingest** field only offers a fixed set of standard metrics. Adjust also supports metrics that are specific to your apps, such as custom event metrics and cohort metrics, which you can enter in the **Additional metrics for ingestion** field. To find the available metric names, see the [Datascape metrics glossary](https://help.adjust.com/en/article/datascape-metrics-glossary).
 
-Take a look at the [filters data endpoint documentation](https://help.adjust.com/en/article/filters-data-endpoint) to see available filters. The example below shows how to obtain the events that are defined for your apps (replace the `API_KEY` with the key obtained in the previous step):
+To list the event slugs defined for your apps, query the [Events endpoint](https://dev.adjust.com/en/api/rs-api/events/). Replace `API_TOKEN` with your Adjust API token:
 
 ```sh
-curl --header 'Authorization: Bearer API_KEY' 'https://dash.adjust.com/control-center/reports-service/filters_data?required_filters=event_metrics' | jq
+curl --header 'Authorization: Bearer API_TOKEN' 'https://automate.adjust.com/reports-service/events' | jq
 ```
 
 ## Set up the Adjust source connector
 
 1. Click **Sources** and then click **+ New source**.
-2. On the Set up the source page, select **Adjust** from the Source type dropdown.
+2. On the **Set up the source** page, select **Adjust** from the **Source type** dropdown.
 3. Enter a name for your new source.
-4. For **API Token**, enter your API key obtained in the previous step.
-5. For **Ingestion Start Date**, enter a date in YYYY-MM-DD format (UTC timezone is assumed). Data starting from this date will be replicated.
-6. In the **Metrics to Ingest** field, select the metrics of interest to query.
-7. Enter any additional, custom metrics, to query in the **Additional Metrics** box. Available metrics can be listed as described in the Prerequisites section. These selected metrics are assumed to be decimal values.
-8. In the **Dimensions** field, select the dimensions to group metrics by.
-9. Click **Set up source**.
+4. For **API Token**, enter your Adjust API token.
+5. For **Ingest Start Date**, enter the date to start syncing data from, in `YYYY-MM-DD` format. The connector assumes UTC.
+6. For **Metrics to ingest**, select at least one metric.
+7. (Optional) For **Additional metrics for ingestion**, enter the names of any app-specific or cohort metrics. The connector types these columns as numbers.
+8. For **Dimensions**, select at least one dimension to group metrics by. The connector always adds the `day` dimension, so you don't need to select it.
+9. (Optional) Turn on **Until Today** to stop each sync at the current time instead of requesting data through the following day.
+10. Click **Set up source**.
 
 ## Supported sync modes
 
-The source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Adjust source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- Full Refresh
-- Incremental
+- Full Refresh - Overwrite
+- Full Refresh - Append
+- Incremental - Append
+
+The stream doesn't define a primary key, so Incremental - Append + Deduped isn't supported.
+
+## Supported streams
+
+The connector syncs a single stream, `AdjustReport`, from the Adjust [JSON report endpoint](https://dev.adjust.com/en/api/rs-api/reports/). Each record contains the metrics you selected, grouped by `day` and the dimensions you selected. The stream schema includes only the columns for your selected metrics and dimensions, plus `day`.
+
+For incremental syncs, the connector uses `day` as the cursor and requests one day of data per API call.
+
+## Limitations
+
+- The Adjust Report Service API allows up to 50 requests per second per source IP address and returns `429 Too Many Requests` when you exceed this limit. See [Report service API rate limits](https://dev.adjust.com/en/api/rs-api/rate-limits/).
+- Changing the selected metrics or dimensions changes the stream schema. Refresh the source schema in your connection after you change them.
 
 ## IP allow list
 
