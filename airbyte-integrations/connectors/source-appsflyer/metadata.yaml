@@ -48,7 +48,7 @@ data:
     - title: API documentation
       url: https://dev.appsflyer.com/hc/reference
       type: api_reference
-    - title: Authentication
-      url: https://dev.appsflyer.com/hc/docs/authentication
+    - title: Managing AppsFlyer tokens
+      url: https://support.appsflyer.com/hc/en-us/articles/360004562377-Managing-AppsFlyer-tokens
       type: authentication_guide
 metadataSpecVersion: "1.0"
