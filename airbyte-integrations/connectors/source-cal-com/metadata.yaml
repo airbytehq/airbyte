@@ -34,9 +34,18 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
-    - title: Cal.com API reference
-      url: https://cal.com/docs/api-reference/introduction
+    - title: Cal.com API v2 reference
+      url: https://cal.com/docs/api-reference/v2/introduction
       type: api_reference
-    - title: Cal.com authentication
-      url: https://cal.com/docs/api-reference/authentication
+    - title: Cal.com API v2 OpenAPI specification
+      url: https://cal.com/docs/api-reference/v2/openapi.json
+      type: openapi_spec
+    - title: Cal.com OAuth authentication
+      url: https://cal.com/docs/api-reference/v2/oauth
       type: authentication_guide
+    - title: Cal.com API v1 shutdown and v1 to v2 migration guide
+      url: https://cal.com/docs/api-reference/v2/v1-v2-differences
+      type: api_deprecations
+    - title: Cal.com source code (API v2 implementation)
+      url: https://github.com/calcom/cal.com
+      type: code_repository
