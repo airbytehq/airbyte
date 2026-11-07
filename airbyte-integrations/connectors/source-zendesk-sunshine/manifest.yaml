@@ -23,12 +23,10 @@ definitions:
           request_headers:
             Content-Type: application/json
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -66,12 +64,10 @@ definitions:
           request_headers:
             Content-Type: application/json
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -118,12 +114,10 @@ definitions:
                 {{ stream_interval.start_time.strftime('%Y-%m-%d
                 %H:%M:%s.%f')[:-3] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -181,12 +175,10 @@ definitions:
           request_headers:
             Content-Type: application/json
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -238,12 +230,10 @@ definitions:
           request_headers:
             Content-Type: application/json
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -283,12 +273,10 @@ definitions:
           request_headers:
             Content-Type: application/json
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
