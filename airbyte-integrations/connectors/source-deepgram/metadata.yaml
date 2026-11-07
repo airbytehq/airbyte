@@ -1,0 +1,44 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.deepgram.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-deepgram
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.28.3@sha256:6c926ab34644e3fb6f5422aea148599eef8a8d877cd8b8b28b3e7af914d93bbf
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 6b333d47-55a7-4157-8095-fa1659571901
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-deepgram
+  githubIssueLabel: source-deepgram
+  icon: icon.svg
+  license: ELv2
+  name: Deepgram
+  releaseDate: 2026-09-08
+  releaseStage: alpha
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  documentationUrl: https://docs.airbyte.com/integrations/sources/deepgram
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
+  externalDocumentationUrls:
+    - title: API reference
+      url: https://developers.deepgram.com/reference/manage
+      type: api_reference
+    - title: Authentication
+      url: https://developers.deepgram.com/docs/authenticating
+      type: authentication_guide

@@ -1,0 +1,17 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-deepgram:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    bypass_reason: "No Deepgram credentials are available yet; manifest was built from the public API docs"
+  discovery:
+    bypass_reason: "No Deepgram credentials are available yet; manifest was built from the public API docs"
+  basic_read:
+    bypass_reason: "No Deepgram credentials are available yet; manifest was built from the public API docs"
+  incremental:
+    bypass_reason: "No Deepgram credentials are available yet; manifest was built from the public API docs"
+  full_refresh:
+    bypass_reason: "No Deepgram credentials are available yet; manifest was built from the public API docs"
