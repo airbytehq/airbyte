@@ -44,10 +44,16 @@ data:
     - title: Dixa API reference
       url: https://docs.dixa.io/openapi/
       type: api_reference
+    - title: Dixa Exports API reference
+      url: https://docs.dixa.io/openapi/exports-api/v1
+      type: api_reference
+    - title: Dixa Exports API OpenAPI spec
+      url: https://docs.dixa.io/_bundle/openapi/exports-api/index.yaml
+      type: openapi_spec
     - title: Dixa authentication
-      url: https://docs.dixa.io/openapi/dixa-api/#section/Authentication
+      url: https://docs.dixa.io/docs/tutorial-create-an-api-token
       type: authentication_guide
-    - title: Dixa rate limits
-      url: https://docs.dixa.io/openapi/dixa-api/#section/Rate-limiting
-      type: rate_limits
+    - title: Dixa status page
+      url: https://status.dixa.io/
+      type: status_page
 metadataSpecVersion: "1.0"
