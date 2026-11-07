@@ -46,6 +46,11 @@ Be careful using variables marked as `alpha`. They aren't meant for public consu
 1. `TEMPORAL_HOST` - Defines the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
 2. `INTERNAL_API_HOST` - Defines the url where the Airbyte Server is hosted at. Please include the port. Airbyte services use this information.
 3. `AIRBYTE_URL` -  Formerly `WEBAPP_URL`. Defines the URL the Airbyte web app is hosted at. Please include the port. Airbyte services use this information. You can set this variable to your custom domain name to change the Airbyte instance URL provided in notifications.
+4. `MICRONAUT_SERVER_MAX_REQUEST_SIZE` - Maximum HTTP request body size, in bytes. Defaults to `52428800` (50 MB).
+5. `MICRONAUT_SERVER_MAX_REQUEST_BUFFER_SIZE` - Maximum buffered HTTP request body size, in bytes. Defaults to `52428800` (50 MB).
+6. `NETTY_AGGREGATOR_MAX_CONTENT_LENGTH` - Maximum content length for the Netty HTTP aggregator, in bytes. Defaults to `52428800` (50 MB).
+
+When changing the request body limit, set all three variables to the same value on `server`, `worker`, and `workloadApiServer`. For a Helm configuration example and ingress requirements, see [Request body size](../deploying-airbyte/integrations/ingress.md#request-body-size).
 
 ## Jobs
 
