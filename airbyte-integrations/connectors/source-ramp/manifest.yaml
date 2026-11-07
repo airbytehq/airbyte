@@ -12,6 +12,45 @@ check:
     - transactions
 
 definitions:
+  response_filters:
+    # A filter matches when the status code is in `http_codes` OR the predicate is true, so the
+    # Ramp-specific filters below match on `error_v2.error_code` alone.
+    missing_scope:
+      type: HttpResponseFilter
+      predicate: "{{ (response.get('error_v2') or {}).get('error_code') == 'DEVELOPER_7100' }}"
+      action: FAIL
+      failure_type: config_error
+      error_message: >-
+        Your Ramp app is not allowed to read this data ({{ (response.get('error_v2') or {}).get('message') }}).
+        In Ramp, open Company > Developer > your app, grant the missing read scope, then re-test the
+        source.{{ parameters.get('access_note', '') }}
+    revoked_token:
+      type: HttpResponseFilter
+      predicate: "{{ (response.get('error_v2') or {}).get('error_code') == 'DEVELOPER_7002' }}"
+      action: FAIL
+      failure_type: config_error
+      error_message: >-
+        Ramp no longer accepts this connector's access token. Check that the Ramp app still exists and
+        its client secret has not been rotated, then re-test the source.
+    unauthorized:
+      type: HttpResponseFilter
+      http_codes:
+        - 401
+      action: FAIL
+      failure_type: config_error
+      error_message: >-
+        Ramp rejected the connector's credentials. Re-enter the client ID and client secret from
+        Ramp > Company > Developer > your app.
+    forbidden:
+      type: HttpResponseFilter
+      http_codes:
+        - 403
+      action: FAIL
+      failure_type: config_error
+      error_message: >-
+        Ramp denied access to this data. In Ramp, open Company > Developer > your app and check it has the
+        {{ parameters.get('required_scope', 'required read') }} scope, then re-test the
+        source.{{ parameters.get('access_note', '') }}
   linked:
     HttpRequester:
       authenticator:
@@ -62,41 +101,11 @@ definitions:
         backoff_strategies:
           - type: ExponentialBackoffStrategy
             factor: 2
-        # A filter matches when the status code is in `http_codes` OR the predicate is true, so the
-        # Ramp-specific filters below match on `error_v2.error_code` alone.
         response_filters:
-          - type: HttpResponseFilter
-            predicate: "{{ (response.get('error_v2') or {}).get('error_code') == 'DEVELOPER_7100' }}"
-            action: FAIL
-            failure_type: config_error
-            error_message: >-
-              Your Ramp app is not allowed to read this data ({{ (response.get('error_v2') or {}).get('message') }}).
-              In Ramp, open Company > Developer > your app, grant the missing read scope, then re-test the
-              source.{{ parameters.get('access_note', '') }}
-          - type: HttpResponseFilter
-            predicate: "{{ (response.get('error_v2') or {}).get('error_code') == 'DEVELOPER_7002' }}"
-            action: FAIL
-            failure_type: config_error
-            error_message: >-
-              Ramp no longer accepts this connector's access token. Check that the Ramp app still exists and
-              its client secret has not been rotated, then re-test the source.
-          - type: HttpResponseFilter
-            http_codes:
-              - 401
-            action: FAIL
-            failure_type: config_error
-            error_message: >-
-              Ramp rejected the connector's credentials. Re-enter the client ID and client secret from
-              Ramp > Company > Developer > your app.
-          - type: HttpResponseFilter
-            http_codes:
-              - 403
-            action: FAIL
-            failure_type: config_error
-            error_message: >-
-              Ramp denied access to this data. In Ramp, open Company > Developer > your app and check it has the
-              {{ parameters.get('required_scope', 'required read') }} scope, then re-test the
-              source.{{ parameters.get('access_note', '') }}
+          - $ref: "#/definitions/response_filters/missing_scope"
+          - $ref: "#/definitions/response_filters/revoked_token"
+          - $ref: "#/definitions/response_filters/unauthorized"
+          - $ref: "#/definitions/response_filters/forbidden"
       request_headers:
         Content-Type: application/json
     Paginator:
@@ -1916,19 +1925,18 @@ streams:
       requester:
         $ref: "#/definitions/linked/Requester"
         url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/vendors/{{ stream_partition['vendor_id'] }}/contacts"
-        # A vendor deleted after the parent read returns 404; skip it instead of failing the stream.
-        # The 404 handler goes first: on FAIL the composite falls through and returns the shared handler's result.
+        # A deleted vendor returns 404 with DEVELOPER_7002, so the 404 filter must stay before the shared filters.
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              max_retries: 5
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 404
-                  action: IGNORE
-            - $ref: "#/definitions/linked/HttpRequester/error_handler"
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 404
+              action: IGNORE
+            - $ref: "#/definitions/response_filters/missing_scope"
+            - $ref: "#/definitions/response_filters/revoked_token"
+            - $ref: "#/definitions/response_filters/unauthorized"
+            - $ref: "#/definitions/response_filters/forbidden"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
