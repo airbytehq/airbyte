@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ClockFactory
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.EmittedField
@@ -24,8 +25,10 @@ import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
+import io.airbyte.integrations.source.postgres.config.UserDefinedCursorIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
+import io.airbyte.integrations.source.postgres.operations.types.PostgresUuidFieldType
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.every
 import io.mockk.mockk
@@ -38,8 +41,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class PostgresSourceJdbcPartitionFactoryTest {
 
@@ -431,10 +436,19 @@ class PostgresSourceJdbcPartitionFactoryTest {
         stream: Stream,
         incumbentStateValue: OpaqueStateValue?,
     ): StreamFeedBootstrap =
+        streamFeedBootstrap(
+            stream,
+            StateManager(initialStreamStates = mapOf(stream to incumbentStateValue)),
+        )
+
+    private fun streamFeedBootstrap(
+        stream: Stream,
+        stateManager: StateManager,
+    ): StreamFeedBootstrap =
         StreamFeedBootstrap(
             outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
             metaFieldDecorator = mockk<MetaFieldDecorator>(relaxed = true),
-            stateManager = StateManager(initialStreamStates = mapOf(stream to incumbentStateValue)),
+            stateManager = stateManager,
             stream,
             DataChannelFormat.JSONL,
             DataChannelMedium.STDIO,
@@ -510,5 +524,102 @@ class PostgresSourceJdbcPartitionFactoryTest {
 
         assertNull(cdcFactory(databaseMajorVersion = 13).create(bootstrap))
         assertNull(cdcFactory(databaseMajorVersion = 14).create(bootstrap))
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // create() with a user-defined cursor of type uuid: rejected with a configuration error.
+    // ---------------------------------------------------------------------------------------
+    private val userCursorConfig =
+        cdcConfig.copy(incrementalConfiguration = UserDefinedCursorIncrementalConfiguration)
+    private val uuidField = EmittedField("user_id", PostgresUuidFieldType)
+
+    private fun userCursorStream(
+        cursor: EmittedField?,
+        syncMode: ConfiguredSyncMode,
+        name: String = "profiles",
+    ) =
+        Stream(
+            id = StreamIdentifier.from(StreamDescriptor().withNamespace("public").withName(name)),
+            schema = setOf(idField, uuidField),
+            configuredSyncMode = syncMode,
+            configuredPrimaryKey = listOf(uuidField),
+            configuredCursor = cursor,
+        )
+
+    private fun userCursorFactory(): PostgresSourceJdbcPartitionFactory =
+        PostgresSourceJdbcPartitionFactory(
+            sharedState = mockk<DefaultJdbcSharedState>(relaxed = true),
+            selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>(),
+            config = userCursorConfig,
+            handler = mockk<CatalogValidationFailureHandler>(),
+            connectionFactory = connectionFactory(databaseMajorVersion = 13),
+        )
+
+    @Test
+    fun `create rejects a uuid cursor with a configuration error`() {
+        val stream = userCursorStream(cursor = uuidField, ConfiguredSyncMode.INCREMENTAL)
+        val error =
+            assertThrows<ConfigErrorException> {
+                userCursorFactory().create(streamFeedBootstrap(stream, null))
+            }
+        val message = error.message!!
+        assertTrue(message.contains("\"user_id\""), message)
+        assertTrue(message.contains("\"public.profiles\""), message)
+        assertTrue(message.contains("uuid"), message)
+    }
+
+    @Test
+    fun `create rejects a uuid cursor regardless of the saved state`() {
+        val stream = userCursorStream(cursor = uuidField, ConfiguredSyncMode.INCREMENTAL)
+        assertThrows<ConfigErrorException> {
+            userCursorFactory().create(streamFeedBootstrap(stream, Jsons.objectNode()))
+        }
+    }
+
+    @Test
+    fun `create lists every uuid cursor of the catalog and fails the other streams too`() {
+        val profiles = userCursorStream(uuidField, ConfiguredSyncMode.INCREMENTAL, "profiles")
+        val teams = userCursorStream(uuidField, ConfiguredSyncMode.INCREMENTAL, "teams")
+        val users = userCursorStream(idField, ConfiguredSyncMode.INCREMENTAL, "users")
+        val stateManager =
+            StateManager(
+                initialStreamStates = mapOf(profiles to null, teams to null, users to null),
+            )
+        val error =
+            assertThrows<ConfigErrorException> {
+                userCursorFactory().create(streamFeedBootstrap(users, stateManager))
+            }
+        val message = error.message!!
+        assertTrue(message.contains("\"public.profiles\""), message)
+        assertTrue(message.contains("\"public.teams\""), message)
+        assertTrue(!message.contains("\"public.users\""), message)
+    }
+
+    @Test
+    fun `create does not apply the uuid cursor check in CDC mode`() {
+        // In CDC mode the cursor is source-defined; a stale uuid cursor in the catalog is ignored.
+        val stream = userCursorStream(cursor = uuidField, ConfiguredSyncMode.INCREMENTAL)
+        assertInstanceOf(
+            PostgresSourceJdbcUnsplittableSnapshotPartition::class.java,
+            cdcFactory(databaseMajorVersion = 13).create(streamFeedBootstrap(stream, null)),
+        )
+    }
+
+    @Test
+    fun `create accepts a non-uuid cursor`() {
+        val stream = userCursorStream(cursor = idField, ConfiguredSyncMode.INCREMENTAL)
+        assertInstanceOf(
+            PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition::class.java,
+            userCursorFactory().create(streamFeedBootstrap(stream, null)),
+        )
+    }
+
+    @Test
+    fun `create ignores a uuid cursor left on a full refresh stream`() {
+        val stream = userCursorStream(cursor = uuidField, ConfiguredSyncMode.FULL_REFRESH)
+        assertInstanceOf(
+            PostgresSourceJdbcUnsplittableSnapshotPartition::class.java,
+            userCursorFactory().create(streamFeedBootstrap(stream, null)),
+        )
     }
 }
