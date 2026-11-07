@@ -306,6 +306,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.11.0 | 2026-10-20 | [89540](https://github.com/airbytehq/airbyte/pull/89540) | Upgrade to airbyte-cdk 7 and Python 3.13 |
 | 0.10.5 | 2026-10-22 | [89687](https://github.com/airbytehq/airbyte/pull/89687) | Keep syncing drive files and report a clear error when the deprecated Microsoft Graph sharedWithMe API stops returning shared items |
 | 0.10.4 | 2025-08-21 | [65118](https://github.com/airbytehq/airbyte/pull/65118) | Decertify connector |
 | 0.10.3 | 2025-07-13 | [60562](https://github.com/airbytehq/airbyte/pull/60562) | Update dependencies |
