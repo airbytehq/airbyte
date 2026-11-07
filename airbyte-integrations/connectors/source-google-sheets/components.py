@@ -618,5 +618,4 @@ class GridDataErrorHandler(DefaultErrorHandler):
                     error_message=f"Internal server error encountered: {str(e)}. Retrying with backoff.",
                 )
 
-        # Return None to pass response to next handler in the composite chain (DefaultErrorHandler)
-        return None
+        return super().interpret_response(response_or_exception)
