@@ -1,0 +1,660 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "SyncCRMAccounts",
+  "additionalProperties": true,
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": ["null", "integer"]
+    },
+    "Accountant": {
+      "description": "Reference to the accountant of the customer. Conditions: The referred accountant must have value > 0 in the field IsAccountant",
+      "type": ["null", "string"]
+    },
+    "AccountManager": {
+      "description": "ID of the account manager",
+      "type": ["null", "string"]
+    },
+    "AccountManagerFullName": {
+      "description": "Name of the account manager",
+      "type": ["null", "string"]
+    },
+    "AccountManagerHID": {
+      "description": "Number of the account manager",
+      "type": ["null", "integer"]
+    },
+    "ActivitySector": {
+      "description": "Reference to Activity sector of the account",
+      "type": ["null", "string"]
+    },
+    "ActivitySubSector": {
+      "description": "Reference to Activity sub-sector of the account",
+      "type": ["null", "string"]
+    },
+    "AddressLine1": {
+      "description": "Visit address first line",
+      "type": ["null", "string"]
+    },
+    "AddressLine2": {
+      "description": "Visit address second line",
+      "type": ["null", "string"]
+    },
+    "AddressLine3": {
+      "description": "Visit address third line",
+      "type": ["null", "string"]
+    },
+    "AddressSource": {
+      "description": "CRM creation source",
+      "type": ["null", "integer"]
+    },
+    "AutomaticProcessProposedEntry": {
+      "description": "Automatically create entries for complete entry proposals",
+      "type": ["null", "integer"]
+    },
+    "Blocked": {
+      "description": "Indicates if the account is blocked",
+      "type": ["null", "boolean"]
+    },
+    "BRIN": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "BSN": {
+      "description": "Citizen Service Number for the Netherlands",
+      "type": ["null", "string"]
+    },
+    "BusinessType": {
+      "description": "Reference to the business type of the account",
+      "type": ["null", "string"]
+    },
+    "CanDropShip": {
+      "description": "Indicates the default for the possibility to drop ship when an item is linked to a supplier",
+      "type": ["null", "boolean"]
+    },
+    "ChamberOfCommerce": {
+      "description": "Chamber of commerce number",
+      "type": ["null", "string"]
+    },
+    "City": {
+      "description": "Visit address City",
+      "type": ["null", "string"]
+    },
+    "Classification": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "Classification1": {
+      "description": "Account classification 1",
+      "type": ["null", "string"]
+    },
+    "Classification2": {
+      "description": "Account classification 2",
+      "type": ["null", "string"]
+    },
+    "Classification3": {
+      "description": "Account classification 3",
+      "type": ["null", "string"]
+    },
+    "Classification4": {
+      "description": "Account classification 4",
+      "type": ["null", "string"]
+    },
+    "Classification5": {
+      "description": "Account classification 5",
+      "type": ["null", "string"]
+    },
+    "Classification6": {
+      "description": "Account classification 6",
+      "type": ["null", "string"]
+    },
+    "Classification7": {
+      "description": "Account classification 7",
+      "type": ["null", "string"]
+    },
+    "Classification8": {
+      "description": "Account classification 8",
+      "type": ["null", "string"]
+    },
+    "ClassificationDescription": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "Code": {
+      "description": "Unique key, fixed length numeric string with leading spaces, length 18. IMPORTANT: When you use OData $filter on this field you have to make sure the filter parameter contains the leading spaces",
+      "type": ["null", "string"]
+    },
+    "CodeAtSupplier": {
+      "description": "Code under which your own company is known at the account",
+      "type": ["null", "string"]
+    },
+    "CompanySize": {
+      "description": "Reference to Company size of the account",
+      "type": ["null", "string"]
+    },
+    "ConsolidationScenario": {
+      "description": "Consolidation scenario (Time & Billing). Values: 0 = No consolidation, 1 = Item, 2 = Item + Project, 3 = Item + Employee, 4 = Item + Employee + Project, 5 = Project + WBS + Item, 6 = Project + WBS + Item + Employee. Item means in this case including Unit and Price, these also have to be the same to consolidate",
+      "type": ["null", "integer"]
+    },
+    "ControlledDate": {
+      "description": "Date of the latest control of account data with external web service",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Costcenter": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "CostcenterDescription": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "CostPaid": {
+      "description": "Obsolete",
+      "type": ["null", "integer"]
+    },
+    "Country": {
+      "description": "Country code",
+      "type": ["null", "string"]
+    },
+    "CountryName": {
+      "description": "Country name",
+      "type": ["null", "string"]
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": ["null", "string"]
+    },
+    "CreditLinePurchase": {
+      "description": "Maximum amount of credit for Purchase. If no value has been defined, there is no credit limit",
+      "type": ["null", "number"]
+    },
+    "CreditLineSales": {
+      "description": "Maximum amount of credit for sales. If no value has been defined, there is no credit limit",
+      "type": ["null", "number"]
+    },
+    "Currency": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "CustomerSince": {
+      "description": "Obsolete",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "CustomField": {
+      "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
+      "type": ["null", "string"]
+    },
+    "DatevCreditorCode": {
+      "description": "DATEV creditor code for Germany legislation",
+      "type": ["null", "string"]
+    },
+    "DatevDebtorCode": {
+      "description": "DATEV debtor code for Germany legislation",
+      "type": ["null", "string"]
+    },
+    "DeliveryAdvice": {
+      "description": "Allows a customer to do goods delivery based on setting complete, partial or partial no back order. Values:  0 = Partial,  1 = Complete,  2 = PartialNoBackOrder",
+      "type": ["null", "integer"]
+    },
+    "DiscountPurchase": {
+      "description": "Default discount percentage for purchase. This is stored as a fraction. ie 5.5% is stored as .055",
+      "type": ["null", "number"]
+    },
+    "DiscountSales": {
+      "description": "Default discount percentage for sales. This is stored as a fraction. ie 5.5% is stored as .055",
+      "type": ["null", "number"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "Document": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "DunsNumber": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "Email": {
+      "description": "E-Mail address of the account",
+      "type": ["null", "string"]
+    },
+    "EnableSalesPaymentLink": {
+      "description": "Indicates whether payment link is activated for sales",
+      "type": ["null", "boolean"]
+    },
+    "EndDate": {
+      "description": "Determines in combination with the start date if the account is active. If the current date is > end date the account is inactive",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "EORINumber": {
+      "description": "EORI number",
+      "type": ["null", "string"]
+    },
+    "EstablishedDate": {
+      "description": "RegistrationDate",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Fax": {
+      "description": "Fax number",
+      "type": ["null", "string"]
+    },
+    "GLAccountPurchase": {
+      "description": "Default (corporate) GL offset account for purchase (cost)",
+      "type": ["null", "string"]
+    },
+    "GLAccountSales": {
+      "description": "Default (corporate) GL offset account for sales (revenue)",
+      "type": ["null", "string"]
+    },
+    "GLAP": {
+      "description": "Default GL account for Accounts Payable",
+      "type": ["null", "string"]
+    },
+    "GLAR": {
+      "description": "Default GL account for Accounts Receivable",
+      "type": ["null", "string"]
+    },
+    "GlnNumber": {
+      "description": "Global Location Number can be used by companies to identify their locations, giving them complete flexibility to identify any type or level of location required",
+      "type": ["null", "string"]
+    },
+    "HasWithholdingTaxSales": {
+      "description": "Indicates whether a customer has withholding tax on sales",
+      "type": ["null", "boolean"]
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "IgnoreDatevWarningMessage": {
+      "description": "Suppressed warning message when there is duplication on the DATEV code",
+      "type": ["null", "boolean"]
+    },
+    "IncotermAddressPurchase": {
+      "description": "Address of Incoterm for Purchase",
+      "type": ["null", "string"]
+    },
+    "IncotermAddressSales": {
+      "description": "Address of Incoterm for Sales",
+      "type": ["null", "string"]
+    },
+    "IncotermCodePurchase": {
+      "description": "Code of Incoterm for Purchase",
+      "type": ["null", "string"]
+    },
+    "IncotermCodeSales": {
+      "description": "Code of Incoterm for Sales",
+      "type": ["null", "string"]
+    },
+    "IncotermVersionPurchase": {
+      "description": "Version of Incoterm for Purchase  Supported version for Incoterms : 2010, 2020",
+      "type": ["null", "integer"]
+    },
+    "IncotermVersionSales": {
+      "description": "Version of Incoterm for Sales  Supported version for Incoterms : 2010, 2020",
+      "type": ["null", "integer"]
+    },
+    "IntraStatArea": {
+      "description": "Intrastat Area",
+      "type": ["null", "string"]
+    },
+    "IntraStatDeliveryTerm": {
+      "description": "Intrastat delivery method",
+      "type": ["null", "string"]
+    },
+    "IntraStatSystem": {
+      "description": "System for Intrastat",
+      "type": ["null", "string"]
+    },
+    "IntraStatTransactionA": {
+      "description": "Transaction type A for Intrastat",
+      "type": ["null", "string"]
+    },
+    "IntraStatTransactionB": {
+      "description": "Transaction type B for Intrastat",
+      "type": ["null", "string"]
+    },
+    "IntraStatTransportMethod": {
+      "description": "Transport method for Intrastat",
+      "type": ["null", "string"]
+    },
+    "InvoiceAccount": {
+      "description": "ID of account to be invoiced instead of this account",
+      "type": ["null", "string"]
+    },
+    "InvoiceAccountCode": {
+      "description": "Code of InvoiceAccount",
+      "type": ["null", "string"]
+    },
+    "InvoiceAccountName": {
+      "description": "Name of InvoiceAccount",
+      "type": ["null", "string"]
+    },
+    "InvoiceAttachmentType": {
+      "description": "Indicates which attachment types should be sent when a sales invoice is printed. Only values in related table with Invoice=1 are allowed",
+      "type": ["null", "integer"]
+    },
+    "InvoicingMethod": {
+      "description": "Method of sending for sales invoices. Values: 1: Paper, 2: EMail, 4: Mailbox (electronic exchange), 8: Send and track",
+      "type": ["null", "integer"]
+    },
+    "IsAccountant": {
+      "description": "Indicates whether the account is an accountant. Values: 0 = No accountant, 1 = True, but accountant doesn't want his name to be published in the list of accountants, 2 = True, and accountant is published in the list of accountants",
+      "type": ["null", "integer"]
+    },
+    "IsAgency": {
+      "description": "Indicates whether the accounti is an agency",
+      "type": ["null", "integer"]
+    },
+    "IsAnonymised": {
+      "description": "Indicates whtether the account is anonymised.",
+      "type": ["null", "integer"]
+    },
+    "IsBank": {
+      "description": "Obsolete",
+      "type": ["null", "boolean"]
+    },
+    "IsCompetitor": {
+      "description": "Indicates whether the account is a competitor",
+      "type": ["null", "integer"]
+    },
+    "IsExtraDuty": {
+      "description": "Indicates whether a customer is eligible for extra duty",
+      "type": ["null", "boolean"]
+    },
+    "IsMailing": {
+      "description": "Indicates if the account is excluded from mailing marketing information",
+      "type": ["null", "integer"]
+    },
+    "IsMember": {
+      "description": "Obsolete",
+      "type": ["null", "boolean"]
+    },
+    "IsPilot": {
+      "description": "Indicates whether the account is a pilot account",
+      "type": ["null", "boolean"]
+    },
+    "IsPurchase": {
+      "description": "Obsolete",
+      "type": ["null", "boolean"]
+    },
+    "IsReseller": {
+      "description": "Indicates whether the account is a reseller",
+      "type": ["null", "boolean"]
+    },
+    "IsSales": {
+      "description": "Indicates whether the account is allowed for sales",
+      "type": ["null", "boolean"]
+    },
+    "IsSupplier": {
+      "description": "Indicates whether the account is a supplier",
+      "type": ["null", "boolean"]
+    },
+    "Language": {
+      "description": "Language code",
+      "type": ["null", "string"]
+    },
+    "LanguageDescription": {
+      "description": "Language description",
+      "type": ["null", "string"]
+    },
+    "Latitude": {
+      "description": "Latitude (used by Google maps)",
+      "type": ["null", "number"]
+    },
+    "LeadPurpose": {
+      "description": "Reference to Lead purpose of an account",
+      "type": ["null", "string"]
+    },
+    "LeadSource": {
+      "description": "Reference to Lead source of an account",
+      "type": ["null", "string"]
+    },
+    "LogoFileName": {
+      "description": "The file name (without path, but with extension) of the image",
+      "type": ["null", "string"]
+    },
+    "LogoThumbnailUrl": {
+      "description": "Thumbnail url of the logo",
+      "type": ["null", "string"]
+    },
+    "LogoUrl": {
+      "description": "Url to retrieve the logo",
+      "type": ["null", "string"]
+    },
+    "Longitude": {
+      "description": "Longitude (used by Google maps)",
+      "type": ["null", "number"]
+    },
+    "MainContact": {
+      "description": "Reference to main contact person",
+      "type": ["null", "string"]
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": ["null", "string"]
+    },
+    "Name": {
+      "description": "Account name",
+      "type": ["null", "string"]
+    },
+    "OINNumber": {
+      "description": "Dutch government identification number",
+      "type": ["null", "string"]
+    },
+    "Parent": {
+      "description": "ID of the parent account",
+      "type": ["null", "string"]
+    },
+    "PayAsYouEarn": {
+      "description": "Indicates the loan repayment plan for UK legislation",
+      "type": ["null", "string"]
+    },
+    "PaymentConditionPurchase": {
+      "description": "Code of default payment condition for purchase",
+      "type": ["null", "string"]
+    },
+    "PaymentConditionPurchaseDescription": {
+      "description": "Description of PaymentConditionPurchase",
+      "type": ["null", "string"]
+    },
+    "PaymentConditionSales": {
+      "description": "Code of default payment condition for sales",
+      "type": ["null", "string"]
+    },
+    "PaymentConditionSalesDescription": {
+      "description": "Description of PaymentConditionSales",
+      "type": ["null", "string"]
+    },
+    "Phone": {
+      "description": "Phone number",
+      "type": ["null", "string"]
+    },
+    "PhoneExtension": {
+      "description": "Phone number extention",
+      "type": ["null", "string"]
+    },
+    "Postcode": {
+      "description": "Visit address postcode",
+      "type": ["null", "string"]
+    },
+    "PriceList": {
+      "description": "Default sales price list for account",
+      "type": ["null", "string"]
+    },
+    "PurchaseCurrency": {
+      "description": "Currency of purchase",
+      "type": ["null", "string"]
+    },
+    "PurchaseCurrencyDescription": {
+      "description": "Description of PurchaseCurrency",
+      "type": ["null", "string"]
+    },
+    "PurchaseLeadDays": {
+      "description": "Indicates number of days required to receive a purchase. Acts as a default",
+      "type": ["null", "integer"]
+    },
+    "PurchaseVATCode": {
+      "description": "Default VAT code used for purchase entries",
+      "type": ["null", "string"]
+    },
+    "PurchaseVATCodeDescription": {
+      "description": "Description of PurchaseVATCode",
+      "type": ["null", "string"]
+    },
+    "RecepientOfCommissions": {
+      "description": "Define the relation that should be taken in the official document of the rewarding fiscal fiches Belcotax",
+      "type": ["null", "boolean"]
+    },
+    "Remarks": {
+      "description": "Remarks",
+      "type": ["null", "string"]
+    },
+    "Reseller": {
+      "description": "ID of the reseller account. Conditions: the target account must have the property IsReseller turned on",
+      "type": ["null", "string"]
+    },
+    "ResellerCode": {
+      "description": "Code of Reseller",
+      "type": ["null", "string"]
+    },
+    "ResellerName": {
+      "description": "Name of Reseller",
+      "type": ["null", "string"]
+    },
+    "RSIN": {
+      "description": "Fiscal number for NL legislation",
+      "type": ["null", "string"]
+    },
+    "SalesCurrency": {
+      "description": "Currency of Sales used for Time & Billing",
+      "type": ["null", "string"]
+    },
+    "SalesCurrencyDescription": {
+      "description": "Description of SalesCurrency",
+      "type": ["null", "string"]
+    },
+    "SalesTaxSchedule": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "SalesTaxScheduleCode": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "SalesTaxScheduleDescription": {
+      "description": "Obsolete",
+      "type": ["null", "string"]
+    },
+    "SalesVATCode": {
+      "description": "Default VAT code for a sales entry",
+      "type": ["null", "string"]
+    },
+    "SalesVATCodeDescription": {
+      "description": "Description of SalesVATCode",
+      "type": ["null", "string"]
+    },
+    "SearchCode": {
+      "description": "Search code",
+      "type": ["null", "string"]
+    },
+    "SecurityLevel": {
+      "description": "Security level (0 - 100)",
+      "type": ["null", "integer"]
+    },
+    "SeparateInvPerProject": {
+      "description": "Separate invoice per project (Time & Billing)",
+      "type": ["null", "integer"]
+    },
+    "SeparateInvPerSubscription": {
+      "description": "Indicates how invoices are generated from subscriptions. 0 = subscriptions belonging to the same customer are combined in a single invoice. 1 = each subscription results in one invoice. In both cases, each individual subscription line results in one invoice line",
+      "type": ["null", "integer"]
+    },
+    "ShippingLeadDays": {
+      "description": "Indicates the number of days it takes to send goods to the customer. Acts as a default",
+      "type": ["null", "integer"]
+    },
+    "ShippingMethod": {
+      "description": "Default shipping method",
+      "type": ["null", "string"]
+    },
+    "ShowRemarkForSales": {
+      "description": "Indicates whether to display Ordered by account's remarks when creating a new sales order",
+      "type": ["null", "boolean"]
+    },
+    "Source": {
+      "description": "CRM creation source",
+      "type": ["null", "integer"]
+    },
+    "StartDate": {
+      "description": "Indicates in combination with the end date if the account is active",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "State": {
+      "description": "State/Province/County code When changing the Country and the State is filled, the State must be assigned with a valid value from the selected country or set to empty",
+      "type": ["null", "string"]
+    },
+    "StateName": {
+      "description": "Name of State",
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "description": "If the status field is filled this means the account is a customer. The value indicates the customer status. Possible values: A=None, S=Suspect, P=Prospect, C=Customer",
+      "type": ["null", "string"]
+    },
+    "StatusSince": {
+      "description": "Obsolete",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "TradeName": {
+      "description": "Trade name can be registered and shown with the client (for all legislations)",
+      "type": ["null", "string"]
+    },
+    "Type": {
+      "description": "Account type: Values: A = Relation, D = Division",
+      "type": ["null", "string"]
+    },
+    "UniqueTaxpayerReference": {
+      "description": "Unique taxpayer reference for UK legislation",
+      "type": ["null", "string"]
+    },
+    "VATLiability": {
+      "description": "Indicates the VAT status of an account to be able to identify the relation that should be selected in the VAT debtor listing in Belgium",
+      "type": ["null", "string"]
+    },
+    "VATNumber": {
+      "description": "The number under which the account is known at the Value Added Tax collection agency",
+      "type": ["null", "string"]
+    },
+    "Website": {
+      "description": "Website of the account",
+      "type": ["null", "string"]
+    }
+  }
+}

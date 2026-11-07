@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "SyncPayrollEmploymentSalaries",
+  "additionalProperties": true,
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": ["null", "integer"]
+    },
+    "Created": {
+      "description": "Created date.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Description": {
+      "description": "General section: Custom description",
+      "type": ["null", "string"]
+    },
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "Employee": {
+      "description": "Employee ID",
+      "type": ["null", "string"]
+    },
+    "EmployeeFullName": {
+      "description": "Name of employee",
+      "type": ["null", "string"]
+    },
+    "EmployeeHID": {
+      "description": "Numeric number of Employee",
+      "type": ["null", "integer"]
+    },
+    "Employment": {
+      "description": "Employment",
+      "type": ["null", "string"]
+    },
+    "EmploymentNumber": {
+      "description": "Employment number",
+      "type": ["null", "integer"]
+    },
+    "EmploymentSalaryType": {
+      "description": "Salary type of employment. 1 - Periodical (fixed), 2 - Per hour (variable)",
+      "type": ["null", "integer"]
+    },
+    "EmploymentSalaryTypeDescription": {
+      "description": "Salary Type Description",
+      "type": ["null", "string"]
+    },
+    "EndDate": {
+      "description": "Salary record end date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ExternalRate": {
+      "description": "Rate Section: External rate",
+      "type": ["null", "number"]
+    },
+    "Frequency": {
+      "description": "Frequency: 1 - Yearly, 2 - Quarterly, 3 - Monthly, 4 - 4-weekly, 5 - Weekly, 11 - Yearly (Pro forma), 12 - Quarterly (Pro forma), 13 - Monthly (Pro forma), 14 - 4-Weekly (Pro forma), 15 - Weekly (Pro forma)",
+      "type": ["null", "integer"]
+    },
+    "FrequencyDescription": {
+      "description": "Payroll period frequency description",
+      "type": ["null", "string"]
+    },
+    "FulltimeAmount": {
+      "description": "Salary when working fulltime",
+      "type": ["null", "number"]
+    },
+    "HourlyWage": {
+      "description": "Hourly wage",
+      "type": ["null", "number"]
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "IntercompanyRate": {
+      "description": "Rate Section: Intercompany rate",
+      "type": ["null", "number"]
+    },
+    "InternalRate": {
+      "description": "Internal rate for time & billing or professional service user",
+      "type": ["null", "number"]
+    },
+    "JobLevel": {
+      "description": "Employee job level in context of a wage scale",
+      "type": ["null", "integer"]
+    },
+    "Modified": {
+      "description": "Last modified date.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": ["null", "string"]
+    },
+    "StartDate": {
+      "description": "Salary record start date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

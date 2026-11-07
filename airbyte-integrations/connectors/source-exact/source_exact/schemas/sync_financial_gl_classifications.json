@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "SyncFinancialGLClassifications",
+  "additionalProperties": true,
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": ["null", "integer"]
+    },
+    "Abstract": {
+      "description": "Abstract elements are only used in presentation linkbases to group other elements. They are not supposed to be used in instance documents",
+      "type": ["null", "boolean"]
+    },
+    "Balance": {
+      "description": "Only used for amount concepts: in that case either 'debit' or 'credit'",
+      "type": ["null", "string"]
+    },
+    "Code": {
+      "description": "The Code is unique",
+      "type": ["null", "string"]
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": ["null", "string"]
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": ["null", "string"]
+    },
+    "Description": {
+      "description": "Description of the element. Note that this description is only used for division-specific taxonomies (or reporting schemes).",
+      "type": ["null", "string"]
+    },
+    "Division": {
+      "description": "Division is optional. For taxonomies of Taxonomies.Type = 0 (general taxonomies), the Division is empty. For division specific taxonomies it is mandatory",
+      "type": ["null", "integer"]
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": ["null", "string"]
+    },
+    "IsTupleSubElement": {
+      "description": "Obsolete",
+      "type": ["null", "boolean"]
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": ["null", "string"]
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": ["null", "string"]
+    },
+    "Name": {
+      "description": "The Name is unique in the namespace",
+      "type": ["null", "string"]
+    },
+    "Nillable": {
+      "description": "Determines whether usage of the element is mandatory in an instance document",
+      "type": ["null", "boolean"]
+    },
+    "Parent": {
+      "description": "Parent element for reporting schemes. In a reporting scheme, an element can have only one parent. This column is only used for reporting schemes. Note that in a real taxonomy, elements can have multiple parents.",
+      "type": ["null", "string"]
+    },
+    "PeriodType": {
+      "description": "Only used for item concepts: either 'instant' or 'duration'. 'instant' is used for balance types of concepts, 'duration' is used for P&L types of concepts",
+      "type": ["null", "string"]
+    },
+    "SubstitutionGroup": {
+      "description": "Mostly import sutstitutiongroup is xbrli:tuple, which makes the element a tuple concept. The default substitutiongroup for item concepts is xbrli:item",
+      "type": ["null", "string"]
+    },
+    "TaxonomyNamespace": {
+      "description": "Namespace of the element",
+      "type": ["null", "string"]
+    },
+    "TaxonomyNamespaceDescription": {
+      "description": "Description of TaxonomyNamespace",
+      "type": ["null", "string"]
+    },
+    "Type": {
+      "description": "Type of the element",
+      "type": ["null", "string"]
+    }
+  }
+}
