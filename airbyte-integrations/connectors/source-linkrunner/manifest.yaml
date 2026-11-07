@@ -24,21 +24,16 @@ definitions:
         api_token: "{{ config['linkrunner-key'] }}"
         header: linkrunner-key
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          - type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 429
-                  - 500
-                  - 502
-                  - 503
-                  - 504
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+              - 500
+              - 502
+              - 503
+              - 504
       request_parameters:
         filter: "{{ config.get('filter', 'ALL') }}"
         channel: "{{ config.get('channel', '') }}"
