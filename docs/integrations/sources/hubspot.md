@@ -95,6 +95,7 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 | `listings`                  | `crm.objects.listings.read`                                                                                  |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
+| `projects`                  | `crm.objects.projects.read`                                                                                  |
 | `contacts_property_history` | `crm.objects.contacts.read`                                                                                  |
 | `companies_property_history` | `crm.objects.companies.read`                                                                                |
 | `deals_property_history`    | `crm.objects.deals.read`                                                                                     |
@@ -302,6 +303,7 @@ The HubSpot source connector supports the following streams:
 - [Owners Archived](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental)
 - [Users](https://developers.hubspot.com/docs/api-reference/settings-user-provisioning-v3/users/get-settings-v3-users-) \(Full-Refresh\)
 - [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
+- [Projects](https://developers.hubspot.com/docs/api-reference/latest/crm/objects/projects/guide) \(Client-Side Incremental\)
 - [Properties](https://developers.hubspot.com/docs/api/crm/properties) \(Full Refresh\)
 - [Contacts Property History](https://developers.hubspot.com/docs/api/crm/contacts) \(Client-Side Incremental\)
 - [Companies Property History](https://developers.hubspot.com/docs/api/crm/companies) \(Client-Side Incremental\)
@@ -518,6 +520,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.15.0 | 2026-11-07 | [81532](https://github.com/airbytehq/airbyte/pull/81532) | Add `projects` stream to sync HubSpot CRM Projects objects (skipped gracefully when the account lacks the `crm.objects.projects.read` scope) |
 | 6.14.0 | 2026-11-04 | [88970](https://github.com/airbytehq/airbyte/pull/88970) | Add `listings` stream |
 | 6.13.3 | 2026-11-03 | [90251](https://github.com/airbytehq/airbyte/pull/90251) | Migrate `deal_pipelines` to Pipelines API 2026-09 ahead of the V1 sunset. Columns, primary key and cursor are unchanged; stages gain `writePermissions`. See [Notes on the `deal_pipelines` stream](#notes-on-the-deal_pipelines-stream) |
 | 6.13.2 | 2026-11-03 | [88157](https://github.com/airbytehq/airbyte/pull/88157) | Fix custom object association streams with a `contacts` `from_object`: use the `lastmodifieddate` parent cursor, as the standard association streams do, instead of `hs_lastmodifieddate`, which contacts do not have and which made the stream emit no records. Document association streams as Full Refresh. |
