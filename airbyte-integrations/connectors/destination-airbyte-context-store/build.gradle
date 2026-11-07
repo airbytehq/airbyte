@@ -1,0 +1,42 @@
+plugins {
+    id 'application'
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = ['load-iceberg-parquet']
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.airbyte_context_store.AirbyteContextStoreDestination'
+
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+ext {
+    junitVersion = '5.11.3'
+}
+
+configurations.configureEach {
+    // Exclude additional SLF4J providers from all classpaths
+    exclude group:"org.slf4j", module:"slf4j-reload4j"
+}
+
+dependencies {
+    // The write path, catalog handling and checks are the S3 Data Lake implementation. This
+    // connector only replaces its spec and configuration factory.
+    implementation project(':airbyte-integrations:connectors:destination-s3-data-lake')
+
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
+    implementation("jakarta.inject:jakarta.inject-api:2.0.1")
+    implementation("io.micronaut:micronaut-inject:4.6.1")
+    implementation("com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39")
+
+    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${project.ext.junitVersion}")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:${project.ext.junitVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.ext.junitVersion}")
+}
