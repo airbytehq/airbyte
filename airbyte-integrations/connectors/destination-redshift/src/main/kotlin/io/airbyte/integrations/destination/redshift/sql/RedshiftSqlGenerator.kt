@@ -46,6 +46,58 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
                 Meta.COLUMN_NAME_AB_GENERATION_ID to
                     ColumnType(RedshiftDataType.BIGINT.typeName, false),
             )
+
+        private val TEMPORAL_TYPES =
+            setOf(
+                RedshiftDataType.DATE.typeName,
+                RedshiftDataType.TIME.typeName,
+                RedshiftDataType.TIMETZ.typeName,
+                RedshiftDataType.TIMESTAMP.typeName,
+                RedshiftDataType.TIMESTAMPTZ.typeName,
+            )
+
+        private val DIRECTLY_CASTABLE =
+            setOf(
+                RedshiftDataType.BOOLEAN.typeName to RedshiftDataType.BIGINT.typeName,
+                RedshiftDataType.BOOLEAN.typeName to RedshiftDataType.SUPER.typeName,
+                RedshiftDataType.BIGINT.typeName to RedshiftDataType.BOOLEAN.typeName,
+                RedshiftDataType.BIGINT.typeName to RedshiftDataType.NUMERIC.typeName,
+                RedshiftDataType.BIGINT.typeName to RedshiftDataType.VARCHAR.typeName,
+                RedshiftDataType.BIGINT.typeName to RedshiftDataType.SUPER.typeName,
+                RedshiftDataType.NUMERIC.typeName to RedshiftDataType.BIGINT.typeName,
+                RedshiftDataType.NUMERIC.typeName to RedshiftDataType.VARCHAR.typeName,
+                RedshiftDataType.NUMERIC.typeName to RedshiftDataType.SUPER.typeName,
+                RedshiftDataType.VARCHAR.typeName to RedshiftDataType.BIGINT.typeName,
+                RedshiftDataType.VARCHAR.typeName to RedshiftDataType.NUMERIC.typeName,
+                RedshiftDataType.VARCHAR.typeName to RedshiftDataType.DATE.typeName,
+                RedshiftDataType.VARCHAR.typeName to RedshiftDataType.TIME.typeName,
+                RedshiftDataType.VARCHAR.typeName to RedshiftDataType.TIMETZ.typeName,
+                RedshiftDataType.VARCHAR.typeName to RedshiftDataType.TIMESTAMP.typeName,
+                RedshiftDataType.VARCHAR.typeName to RedshiftDataType.TIMESTAMPTZ.typeName,
+                RedshiftDataType.DATE.typeName to RedshiftDataType.VARCHAR.typeName,
+                RedshiftDataType.DATE.typeName to RedshiftDataType.TIMESTAMP.typeName,
+                RedshiftDataType.DATE.typeName to RedshiftDataType.TIMESTAMPTZ.typeName,
+                RedshiftDataType.TIME.typeName to RedshiftDataType.VARCHAR.typeName,
+                RedshiftDataType.TIME.typeName to RedshiftDataType.TIMETZ.typeName,
+                RedshiftDataType.TIMETZ.typeName to RedshiftDataType.VARCHAR.typeName,
+                RedshiftDataType.TIMETZ.typeName to RedshiftDataType.TIME.typeName,
+                RedshiftDataType.TIMESTAMP.typeName to RedshiftDataType.VARCHAR.typeName,
+                RedshiftDataType.TIMESTAMP.typeName to RedshiftDataType.DATE.typeName,
+                RedshiftDataType.TIMESTAMP.typeName to RedshiftDataType.TIME.typeName,
+                RedshiftDataType.TIMESTAMP.typeName to RedshiftDataType.TIMESTAMPTZ.typeName,
+                RedshiftDataType.TIMESTAMPTZ.typeName to RedshiftDataType.VARCHAR.typeName,
+                RedshiftDataType.TIMESTAMPTZ.typeName to RedshiftDataType.DATE.typeName,
+                RedshiftDataType.TIMESTAMPTZ.typeName to RedshiftDataType.TIMETZ.typeName,
+                RedshiftDataType.TIMESTAMPTZ.typeName to RedshiftDataType.TIMESTAMP.typeName,
+                RedshiftDataType.SUPER.typeName to RedshiftDataType.BOOLEAN.typeName,
+                RedshiftDataType.SUPER.typeName to RedshiftDataType.BIGINT.typeName,
+                RedshiftDataType.SUPER.typeName to RedshiftDataType.NUMERIC.typeName,
+                RedshiftDataType.SUPER.typeName to RedshiftDataType.DATE.typeName,
+                RedshiftDataType.SUPER.typeName to RedshiftDataType.TIME.typeName,
+                RedshiftDataType.SUPER.typeName to RedshiftDataType.TIMETZ.typeName,
+                RedshiftDataType.SUPER.typeName to RedshiftDataType.TIMESTAMP.typeName,
+                RedshiftDataType.SUPER.typeName to RedshiftDataType.TIMESTAMPTZ.typeName,
+            )
     }
 
     fun createNamespace(namespace: String): String =
@@ -432,7 +484,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
      * 3. DROP the old column
      * 4. RENAME the temp column to the original name
      *
-     * For SUPER <-> VARCHAR conversions, uses `JSON_SERIALIZE()` / `JSON_PARSE()` instead of CAST.
+     * Uses explicit expressions for pairs Redshift cannot CAST, TRY_CAST otherwise, and NULL plus a
+     * `DESTINATION_TYPECAST_ERROR` when no conversion exists.
      */
     fun matchSchemas(
         tableName: TableName,
@@ -473,6 +526,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
      * ```
      * 4. DROP the original column
      * 5. RENAME the temp column to the original name
+     *
+     * Uses explicit expressions for pairs Redshift cannot CAST, TRY_CAST otherwise, and NULL plus a
+     * `DESTINATION_TYPECAST_ERROR` when no conversion exists.
      */
     private fun buildTypeChangeStatements(
         fullyQualifiedTableName: String,
@@ -485,17 +541,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         val oldType = typeChange.originalType.type
         val newType = typeChange.newType.type
 
-        val castExpression =
-            when {
-                // SUPER -> VARCHAR: serialize JSON to string
-                oldType == RedshiftDataType.SUPER.typeName && newType.startsWith("varchar") ->
-                    "JSON_SERIALIZE($quotedName)"
-                // VARCHAR -> SUPER: parse if valid JSON, otherwise NULL
-                oldType.startsWith("varchar") && newType == RedshiftDataType.SUPER.typeName ->
-                    "CASE WHEN IS_VALID_JSON($quotedName) OR IS_VALID_JSON_ARRAY($quotedName) THEN JSON_PARSE($quotedName) END"
-                // All other conversions: standard CAST
-                else -> "CAST($quotedName AS $newType)"
-            }
+        val castExpression = buildCastExpression(quotedName, oldType, newType)
 
         return buildList {
             // Step 1: Add temp column with the new type
@@ -519,6 +565,45 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             add("ALTER TABLE $fullyQualifiedTableName RENAME COLUMN $tempColumn TO $quotedName;")
         }
     }
+
+    private fun buildCastExpression(
+        quotedName: String,
+        oldType: String,
+        newType: String,
+    ): String {
+        val normalizedOldType = normalizeTypeForCast(oldType)
+        val normalizedNewType = normalizeTypeForCast(newType)
+
+        return when {
+            oldType == RedshiftDataType.SUPER.typeName && newType.startsWith("varchar") ->
+                "JSON_SERIALIZE($quotedName)"
+            oldType.startsWith("varchar") && newType == RedshiftDataType.SUPER.typeName ->
+                "CASE WHEN IS_VALID_JSON($quotedName) OR IS_VALID_JSON_ARRAY($quotedName) THEN JSON_PARSE($quotedName) END"
+            oldType.startsWith("varchar") && newType == RedshiftDataType.BOOLEAN.typeName ->
+                "CASE WHEN LOWER(TRIM($quotedName)) IN ('true', 't', 'yes', 'y', '1') THEN TRUE WHEN LOWER(TRIM($quotedName)) IN ('false', 'f', 'no', 'n', '0') THEN FALSE END"
+            oldType == RedshiftDataType.BOOLEAN.typeName && newType.startsWith("varchar") ->
+                "CASE WHEN $quotedName THEN 'true' WHEN NOT $quotedName THEN 'false' END"
+            oldType == RedshiftDataType.BOOLEAN.typeName &&
+                newType == RedshiftDataType.NUMERIC.typeName ->
+                "CAST(CASE WHEN $quotedName THEN 1 WHEN NOT $quotedName THEN 0 END AS $newType)"
+            oldType == RedshiftDataType.NUMERIC.typeName &&
+                newType == RedshiftDataType.BOOLEAN.typeName -> "($quotedName <> 0)"
+            oldType in TEMPORAL_TYPES && newType == RedshiftDataType.SUPER.typeName ->
+                "CAST(CAST($quotedName AS ${RedshiftDataType.VARCHAR.typeName}) AS $newType)"
+            oldType == RedshiftDataType.TIMESTAMP.typeName &&
+                newType == RedshiftDataType.TIMETZ.typeName ->
+                "CAST(CAST($quotedName AS ${RedshiftDataType.TIMESTAMPTZ.typeName}) AS $newType)"
+            oldType == RedshiftDataType.TIMESTAMPTZ.typeName &&
+                newType == RedshiftDataType.TIME.typeName ->
+                "CAST(CAST($quotedName AS ${RedshiftDataType.TIMESTAMP.typeName}) AS $newType)"
+            Pair(normalizedOldType, normalizedNewType) in DIRECTLY_CASTABLE ->
+                "TRY_CAST($quotedName AS $newType)"
+            else -> "CAST(NULL AS $newType)"
+        }
+    }
+
+    private fun normalizeTypeForCast(type: String): String =
+        if (type.startsWith("varchar")) RedshiftDataType.VARCHAR.typeName else type
 
     /**
      * Builds an UPDATE statement that appends a DESTINATION_TYPECAST_ERROR change entry to
