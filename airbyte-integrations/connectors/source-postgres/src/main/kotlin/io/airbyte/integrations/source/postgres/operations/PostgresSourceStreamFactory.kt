@@ -46,6 +46,9 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
 
     val viewsBySchema: MutableMap<String, List<String>> = mutableMapOf()
 
+    /** (schema, table) of every table in the publication, by publication name. */
+    val tablesByPublication: MutableMap<String, Set<Pair<String, String>>> = mutableMapOf()
+
     @Suppress("UNCHECKED_CAST")
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
@@ -126,10 +129,20 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
                     .contains(discoveredStream.id.name) == true
         }
 
+        // CDC reads the changes of published tables only: an incremental stream on any
+        // other table would get its snapshot and then never another change.
+        val isPublished =
+            postgresConfig.cdc?.let { cdc ->
+                val published =
+                    tablesByPublication.getOrPut(cdc.publication) {
+                        getTablesInPublication(cdc.publication)
+                    }
+                (discoveredStream.id.namespace to discoveredStream.id.name) in published
+            } ?: true
         val supportsIncremental =
             when {
                 isXmin -> !isView
-                isCdc -> hasPK
+                isCdc -> hasPK && isPublished
                 else -> hasPotentialCursorFields
             }
         val syncModes =
@@ -159,6 +172,22 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
                 stmt.setString(1, schema)
                 stmt.executeQuery().use { rs ->
                     generateSequence { if (rs.next()) rs.getString("viewname") else null }.toList()
+                }
+            }
+        }
+
+    private fun getTablesInPublication(publication: String): Set<Pair<String, String>> =
+        jdbcConnectionFactory.get().use { conn ->
+            val query =
+                "SELECT schemaname, tablename FROM pg_catalog.pg_publication_tables WHERE pubname = ?"
+            conn.prepareStatement(query).use { stmt ->
+                stmt.setString(1, publication)
+                stmt.executeQuery().use { rs ->
+                    generateSequence {
+                        if (rs.next()) rs.getString("schemaname") to rs.getString("tablename")
+                        else null
+                    }
+                        .toSet()
                 }
             }
         }
