@@ -12,7 +12,7 @@ This page describes the step-by-step process of setting up the Redshift destinat
 - A Redshift cluster ([provisioned](https://docs.aws.amazon.com/redshift/latest/gsg/new-user.html)
   or [serverless](https://docs.aws.amazon.com/redshift/latest/gsg/new-user-serverless.html))
 - An [S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) for staging data
-- AWS IAM credentials
+- AWS IAM credentials (an access key, or an IAM role assumable through OIDC web identity on self-managed deployments)
   with [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html)
   to the S3 bucket
 
@@ -89,12 +89,36 @@ configure an S3 bucket and IAM credentials for this purpose.
    if you don't already have one for staging.
 2. Place the S3 bucket in the **same AWS region** as your Redshift cluster to minimize networking
    costs and improve performance.
-3. [Create an IAM user](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html) (or
+3. To authenticate with an access key,
+   [create an IAM user](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html) (or
    use an existing one)
    with [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html)
-   to the staging bucket.
+   to the staging bucket. To authenticate with an IAM role instead, skip to
+   [Authenticate with an IAM role (OIDC web identity)](#authenticate-with-an-iam-role-oidc-web-identity).
 4. [Generate an access key](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
    for the IAM user.
+
+#### Authenticate with an IAM role (OIDC web identity)
+
+Self-managed only. If you run Airbyte on Kubernetes with OIDC-based workload identity (for example,
+[IAM roles for service accounts on Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)),
+the connector can use temporary credentials instead of static access keys.
+
+1. Create an IAM role
+   with [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html)
+   to the staging bucket, and a trust policy that allows your cluster's OIDC provider to assume it.
+2. Make sure the connector's job pods have the `AWS_ROLE_ARN` and `AWS_WEB_IDENTITY_TOKEN_FILE` environment variables
+   set. With EKS IRSA, annotating the service account that runs the job pods does this automatically.
+3. Leave **S3 Access Key ID** and **S3 Secret Access Key** empty.
+
+The connector exchanges the web identity token for temporary credentials through STS `AssumeRoleWithWebIdentity`. It
+uses them both to upload to S3 and in the Redshift `COPY` command, which includes the session token.
+
+If you enter access keys, the connector always uses them, even when a web identity token is available. It only uses
+the web identity token when no access keys are configured.
+
+NOTE: Connector versions 4.0.13 and earlier require access keys. If you roll back to one of those versions, add access
+keys to any connection that relies on the web identity token first.
 
 See the [S3 Staging fields](#s3-staging-fields) table for the full list of required and optional
 S3 configuration parameters.
@@ -137,8 +161,8 @@ Navigate to the Airbyte UI to set up Redshift as a destination:
 |:-----------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [S3 Bucket Name](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html)                          | The name of the staging S3 bucket you created in Step 2. Example: `airbyte-staging-bucket`                                                                                                                                                                     |
 | S3 Bucket Region                                                                                                             | The region of the S3 staging bucket. Place in the same region as your Redshift cluster to reduce costs. Example: `us-east-1`                                                                                                                                   |
-| [S3 Access Key ID](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) | The AWS Access Key ID for an IAM user with read and write permissions to the staging bucket.                                                                                                                                                                   |
-| S3 Secret Access Key                                                                                                         | The corresponding AWS Secret Access Key for the Access Key ID.                                                                                                                                                                                                 |
+| [S3 Access Key ID](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) (Optional) | The AWS Access Key ID for an IAM user with read and write permissions to the staging bucket. Required unless the connector runs with an OIDC web identity token. See [Authenticate with an IAM role (OIDC web identity)](#authenticate-with-an-iam-role-oidc-web-identity). |
+| S3 Secret Access Key (Optional)                                                                                              | The corresponding AWS Secret Access Key for the Access Key ID. Required when you enter an Access Key ID.                                                                                                                                                       |
 | S3 Bucket Path (Optional)                                                                                                    | The directory under the S3 bucket where staging data will be written. If not provided, defaults to the root directory. The connector writes staging files to `<bucket path>/<schema>/<table>/`. Example: `data_sync/redshift` |
 | S3 Filename Pattern (Optional)                                                                                               | The pattern for S3 staging file names. Supported placeholders: `{date}` (UTC date as `yyyy_MM_dd`), `{date:<format>}` (UTC date in a custom Java `SimpleDateFormat` pattern, for example `{date:yyyy_MM}`), `{timestamp}` and `{timestamp:millis}` (epoch milliseconds), `{timestamp:micro}` (epoch microseconds), `{part_number}`, `{sync_id}`, and `{format_extension}` (`.csv.gz`). Unsupported placeholders are left in the file name as-is. Spaces are replaced with underscores, and `.csv.gz` is appended if the resolved name doesn't already end with it. If not provided, file names use a timestamp and a random suffix. |
 | Purge Staging Files and Tables (Optional)                                                                                    | Whether to delete the staging files from S3 after completing the sync. Default: `true`. Set to `false` to retain files for debugging or auditing.                                                                                                              |
@@ -276,6 +300,14 @@ to the staging S3 bucket. Verify that:
 - The IAM user has a policy allowing `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject`, and `s3:ListBucket` on the
   staging bucket.
 - There is no S3 bucket policy blocking access.
+- If you use OIDC web identity, `AWS_ROLE_ARN` and `AWS_WEB_IDENTITY_TOKEN_FILE` are set in the connector pod, the
+  role's trust policy allows your OIDC provider and service account, and the role (not an IAM user) has the policy
+  listed above.
+- If you use OIDC web identity, the access key fields are empty. Configured access keys always take precedence over
+  the web identity token.
+
+If neither a web identity token nor access keys are available, the check fails with an AWS SDK
+"Unable to load credentials" error.
 
 ## Namespace support
 
@@ -297,7 +329,8 @@ This is by design for performance reasons.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.0   | 2026-10-26 | TBD                                                        | Support OIDC web identity credentials (`AWS_WEB_IDENTITY_TOKEN_FILE` + `AWS_ROLE_ARN`) for S3 staging and COPY; access keys become an optional fallback. |
+| 4.1.0 | 2026-11-07 | [90145](https://github.com/airbytehq/airbyte/pull/90145) | Support OIDC web identity credentials (`AWS_WEB_IDENTITY_TOKEN_FILE` + `AWS_ROLE_ARN`) for S3 staging and COPY. S3 access keys are now optional; when provided, they take precedence. |
+| 4.0.13 | 2026-10-22 | [89657](https://github.com/airbytehq/airbyte/pull/89657) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; AWS SDK 2.57.2. |
 | 4.0.12 | 2026-10-15 | [87619](https://github.com/airbytehq/airbyte/pull/87619) | Upgrade to Bulk CDK 1.1.1. |
 | 4.0.11  | 2026-10-15 | [88985](https://github.com/airbytehq/airbyte/pull/88985)   | Suppress a SpotBugs false positive (`NP_NONNULL_PARAM_VIOLATION`) on the suspend `createNamespace` so the connector lint passes; no functional change.                                                            |
 | 4.0.10  | 2026-09-03 | [85284](https://github.com/airbytehq/airbyte/pull/85284)   | Use `svv_all_schemas` instead of `information_schema.schemata` for schema existence check to support users with USAGE/CREATE-only grants.                                                                         |

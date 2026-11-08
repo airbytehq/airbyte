@@ -21,19 +21,21 @@ private val log = KotlinLogging.logger {}
  * Manages AWS credentials and S3 client creation for staging operations.
  *
  * Credentials are resolved in order:
- * 1. OIDC web identity token (`AWS_WEB_IDENTITY_TOKEN_FILE` + `AWS_ROLE_ARN` env vars), exchanged
+ * 1. Static access key + secret key from the S3 staging configuration, if provided. Explicitly
+ *    configured keys always win, so an ambient pod role never silently overrides them.
+ * 2. OIDC web identity token (`AWS_WEB_IDENTITY_TOKEN_FILE` + `AWS_ROLE_ARN` env vars), exchanged
  *    for temporary credentials via STS AssumeRoleWithWebIdentity.
- * 2. Static access key + secret key from the S3 staging configuration, if provided.
  */
 @Singleton
 class S3Connect(private val configuration: RedshiftConfiguration) {
 
-    fun createCredentialsProvider(): AwsCredentialsProvider {
+    /** [webIdentityProvider] is a parameter so tests can substitute the OIDC token source. */
+    fun createCredentialsProvider(
+        webIdentityProvider: AwsCredentialsProvider =
+            WebIdentityTokenFileCredentialsProvider.create(),
+    ): AwsCredentialsProvider {
         val s3Config = configuration.uploadingMethod!!
-        val providers =
-            mutableListOf<AwsCredentialsProvider>(
-                WebIdentityTokenFileCredentialsProvider.create(),
-            )
+        val providers = mutableListOf<AwsCredentialsProvider>()
         if (!s3Config.accessKeyId.isNullOrBlank() && !s3Config.secretAccessKey.isNullOrBlank()) {
             providers.add(
                 StaticCredentialsProvider.create(
@@ -41,6 +43,7 @@ class S3Connect(private val configuration: RedshiftConfiguration) {
                 ),
             )
         }
+        providers.add(webIdentityProvider)
         return AwsCredentialsProviderChain.builder().credentialsProviders(providers).build()
     }
 
