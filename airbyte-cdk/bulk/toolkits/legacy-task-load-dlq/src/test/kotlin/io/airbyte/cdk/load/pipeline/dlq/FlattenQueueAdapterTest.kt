@@ -127,6 +127,70 @@ class FlattenQueueAdapterTest {
         }
     }
 
+    @Test
+    fun `rejections only reduce counts for their checkpoint`() {
+        val first = CheckpointId("first")
+        val second = CheckpointId("second")
+        assertCheckpointCounts(
+            listOf(record(1).copy(checkpointId = first), record(2).copy(checkpointId = first)),
+            linkedMapOf(first to CheckpointValue(3, 30), second to CheckpointValue(1, 10)),
+            mapOf(
+                first to CheckpointValue(1, 30, rejectedRecords = 2),
+                second to CheckpointValue(1, 10),
+            ),
+        )
+    }
+
+    @Test
+    fun `unattributed rejections are added only to the last checkpoint`() {
+        val first = CheckpointId("first")
+        val second = CheckpointId("second")
+        assertCheckpointCounts(
+            listOf(
+                record(1).copy(checkpointId = first),
+                record(2).copy(checkpointId = second),
+                record(3),
+            ),
+            linkedMapOf(first to CheckpointValue(3, 30), second to CheckpointValue(3, 30)),
+            mapOf(
+                first to CheckpointValue(2, 30, rejectedRecords = 1),
+                second to CheckpointValue(1, 30, rejectedRecords = 2),
+            ),
+        )
+    }
+
+    @Test
+    fun `empty rejected records emit no messages`() {
+        assertCheckpointCounts(emptyList(), emptyMap(), emptyMap())
+    }
+
+    private fun assertCheckpointCounts(
+        records: List<DestinationRecordRaw>,
+        counts: Map<CheckpointId, CheckpointValue>,
+        expected: Map<CheckpointId, CheckpointValue>,
+    ) {
+        runBlocking {
+            queue.publish(
+                PipelineMessage(
+                    checkpointCounts = counts,
+                    key = StreamKey(STREAM.mappedDescriptor),
+                    value = DlqStepOutput(BatchState.COMPLETE, records),
+                    postProcessingCallback = null,
+                    context = PipelineContext(null, null),
+                ),
+                0,
+            )
+        }
+        val messages = finalQueue.published.mapNotNull { it as? PipelineMessage }
+        assertEquals(records, messages.map { it.value })
+        val actual =
+            messages
+                .flatMap { it.checkpointCounts.entries }
+                .groupBy({ it.key }, { it.value })
+                .mapValues { it.value.reduce { acc, value -> acc.plus(value) } }
+        assertEquals(expected, actual)
+    }
+
     companion object {
         val STREAM =
             DestinationStream(

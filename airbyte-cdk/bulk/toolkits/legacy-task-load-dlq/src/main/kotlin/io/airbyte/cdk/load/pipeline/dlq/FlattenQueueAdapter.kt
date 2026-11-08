@@ -71,10 +71,21 @@ class FlattenQueueAdapter<K : WithStream>(
                         context = context,
                     )
                 } else {
-                    val updatedCounts = checkpointCounts.mapValues { (_, v) ->
+                    // A batch can span several checkpoints. Charge each rejected record to its
+                    // own checkpoint; charging every checkpoint with all of them over-reports
+                    // rejected records and under-reports loaded ones. Records without a
+                    // checkpoint go to the last one so the totals still add up.
+                    val rejectedByCheckpoint =
+                        failedRecords.groupingBy { it.checkpointId }.eachCount()
+                    val unattributed = rejectedByCheckpoint[null] ?: 0
+                    val fallbackCheckpoint = checkpointCounts.keys.lastOrNull()
+                    val updatedCounts = checkpointCounts.mapValues { (checkpointId, v) ->
+                        val rejected =
+                            (rejectedByCheckpoint[checkpointId] ?: 0) +
+                                (if (checkpointId == fallbackCheckpoint) unattributed else 0)
                         v.copy(
-                            records = v.records - failedRecords.size,
-                            rejectedRecords = v.rejectedRecords + failedRecords.size,
+                            records = v.records - rejected,
+                            rejectedRecords = v.rejectedRecords + rejected,
                         )
                     }
 

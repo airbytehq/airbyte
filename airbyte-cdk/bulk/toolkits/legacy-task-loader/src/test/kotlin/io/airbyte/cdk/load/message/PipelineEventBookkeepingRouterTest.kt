@@ -115,6 +115,7 @@ class PipelineEventBookkeepingRouterTest {
         val event = r.handleStreamMessage(msg) as PipelineMessage<*, *>
 
         assertEquals(mapOf(CheckpointId("1") to CheckpointValue(1, 10L)), event.checkpointCounts)
+        assertEquals(CheckpointId("1"), (event.value as DestinationRecordRaw).checkpointId)
         verify { streamManager1.incrementReadCount(CheckpointId("1")) }
     }
 
@@ -133,6 +134,7 @@ class PipelineEventBookkeepingRouterTest {
         val event = r.handleStreamMessage(msg) as PipelineMessage<*, *>
 
         assertEquals(mapOf(CheckpointId("abc") to CheckpointValue(1, 5L)), event.checkpointCounts)
+        assertEquals(CheckpointId("abc"), (event.value as DestinationRecordRaw).checkpointId)
         verify { streamManager2.incrementReadCount(CheckpointId("abc")) }
     }
 

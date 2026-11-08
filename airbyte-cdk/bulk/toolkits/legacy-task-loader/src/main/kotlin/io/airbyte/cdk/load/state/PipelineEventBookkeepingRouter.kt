@@ -124,8 +124,13 @@ class PipelineEventBookkeepingRouter(
 
         return when (message) {
             is DestinationRecord -> {
-                val record = message.asDestinationRecordRaw()
-                val checkpointId = resolveCheckpointId(record.checkpointId, stream.mappedDescriptor)
+                val raw = message.asDestinationRecordRaw()
+                val checkpointId = resolveCheckpointId(raw.checkpointId, stream.mappedDescriptor)
+                // Keep the resolved checkpoint on the record so later steps (for example the dead
+                // letter queue, which counts rejected records per checkpoint) can attribute it.
+                val record =
+                    if (raw.checkpointId == checkpointId) raw
+                    else raw.copy(checkpointId = checkpointId)
                 manager.incrementReadCount(checkpointId)
                 manager.incrementByteCount(record.serializedSizeBytes, checkpointId)
                 PipelineMessage(
