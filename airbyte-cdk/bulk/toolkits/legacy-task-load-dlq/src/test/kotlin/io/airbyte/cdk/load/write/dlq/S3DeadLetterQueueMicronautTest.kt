@@ -6,6 +6,8 @@ package io.airbyte.cdk.load.write.dlq
 
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.S3ObjectStorageConfig
+import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
+import io.airbyte.cdk.load.file.s3.S3Client
 import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Property
@@ -14,6 +16,7 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Named
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Test
 
 private const val TEST_CONFIG =
@@ -46,12 +49,14 @@ class S3DeadLetterQueueMicronautTest {
         }
 
     @Inject lateinit var objectStorageConfig: ObjectStorageConfig
+    @Inject lateinit var objectStorageClient: ObjectStorageClient<*>
 
     @Named("dlqPipelineSteps") @Inject lateinit var pipelineSteps: List<LoadPipelineStep>
 
     @Test
-    fun `verify the configuration is the DisabledObjectStorageConfig`() {
+    fun `verify the configuration and client use S3`() {
         assertEquals(S3ObjectStorageConfig::class, objectStorageConfig::class)
+        assertInstanceOf(S3Client::class.java, objectStorageClient)
     }
 
     @Test

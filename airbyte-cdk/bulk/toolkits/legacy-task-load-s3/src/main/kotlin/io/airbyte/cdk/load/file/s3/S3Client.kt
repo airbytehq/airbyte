@@ -35,6 +35,7 @@ import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.io.InputStream
@@ -193,6 +194,14 @@ class S3ClientFactory(
 
     @Singleton
     @Secondary
+    @Requires(
+        beans =
+            [
+                AWSArnRoleConfigurationProvider::class,
+                AWSAccessKeyConfigurationProvider::class,
+                S3BucketConfigurationProvider::class,
+            ],
+    )
     fun make(): S3Client {
         log.info { "Creating S3 client using Kotlin SDK" }
 

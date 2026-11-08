@@ -9,11 +9,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.annotation.OptBoolean
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.aws.AWSAccessKeySpecification
 import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientSpecification
 import io.airbyte.cdk.load.command.object_storage.CSVFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionSpecification
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionSpecificationProvider
@@ -31,6 +33,7 @@ abstract class ConfigurationSpecificationWithDlq(
 enum class ObjectStorageType(@get:JsonValue val type: String) {
     None("None"),
     S3("S3"),
+    AzureBlob("AzureBlob"),
 }
 
 @JsonTypeInfo(
@@ -41,6 +44,7 @@ enum class ObjectStorageType(@get:JsonValue val type: String) {
 @JsonSubTypes(
     JsonSubTypes.Type(value = DisabledObjectStorageSpec::class, name = "None"),
     JsonSubTypes.Type(value = S3ObjectStorageSpec::class, name = "S3"),
+    JsonSubTypes.Type(value = AzureBlobObjectStorageSpec::class, name = "AzureBlob"),
 )
 sealed interface ObjectStorageSpec {
     @get:JsonSchemaTitle("Object Storage Type")
@@ -55,6 +59,54 @@ class DisabledObjectStorageSpec : ObjectStorageSpec {
 const val SECRET = """"airbyte_secret":true"""
 const val ALWAYS_SHOW = """"always_show":true"""
 const val HIDDEN = """"airbyte_hidden":true"""
+
+class AzureBlobObjectStorageSpec :
+    ObjectStorageSpec,
+    AzureBlobStorageClientSpecification,
+    ObjectStorageCompressionSpecificationProvider,
+    ObjectStorageFormatSpecificationProvider {
+    override val storageType = ObjectStorageType.AzureBlob
+
+    @get:JsonProperty("azure_blob_storage_account_name", required = true)
+    override lateinit var azureBlobStorageAccountName: String
+
+    @get:JsonProperty("azure_blob_storage_container_name", required = true)
+    override lateinit var azureBlobStorageContainerName: String
+
+    @get:JsonSchemaTitle("Azure Blob Storage Endpoint Domain Name")
+    @get:JsonProperty("azure_blob_storage_endpoint_domain_name", isRequired = OptBoolean.FALSE)
+    @get:JsonSchemaInject(json = """{"default":"blob.core.windows.net"}""")
+    val azureBlobStorageEndpointDomainName: String = "blob.core.windows.net"
+
+    override val azureBlobStorageSharedAccessSignature: String? = null
+    override val azureBlobStorageAccountKey: String? = null
+    override val azureTenantId: String? = null
+    override val azureClientId: String? = null
+    override val azureClientSecret: String? = null
+
+    @get:JsonSchemaTitle("Prefix Path in the Container")
+    @get:JsonPropertyDescription("All files in the container will be prefixed by this.")
+    @get:JsonProperty("bucket_path", isRequired = OptBoolean.FALSE)
+    val bucketPath: String = ""
+
+    @get:JsonSchemaTitle("Output Format")
+    @get:JsonProperty("format", isRequired = OptBoolean.FALSE)
+    @get:JsonSchemaInject(json = """{"default":"CSV",$HIDDEN}""")
+    override val format: ObjectStorageFormatSpecification = CSVFormatSpecification()
+
+    @get:JsonSchemaInject(json = """{$HIDDEN}""")
+    override val compression: ObjectStorageCompressionSpecification? = null
+
+    @get:JsonProperty("path_format")
+    @get:JsonSchemaInject(json = """{"default":"{sync_id}/{namespace}/{stream_name}/",$HIDDEN}""")
+    val pathFormat: String? = "{sync_id}/{namespace}/{stream_name}/"
+
+    @get:JsonProperty("file_name_format")
+    @get:JsonSchemaInject(
+        json = """{"default":"{date}_{timestamp}_{part_number}{format_extension}",$HIDDEN}""",
+    )
+    val fileNameFormat: String? = "{date}_{timestamp}_{part_number}{format_extension}"
+}
 
 class S3ObjectStorageSpec :
     ObjectStorageSpec,

@@ -4,16 +4,20 @@
 
 package io.airbyte.cdk.load.write.dlq
 
+import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
+import io.airbyte.cdk.load.file.object_storage.ObjectStorageClient
 import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
+import io.micronaut.context.BeanContext
 import io.micronaut.context.annotation.Property
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Named
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 
 private const val TEST_CONFIG =
@@ -40,6 +44,8 @@ class NoDeadLetterQueueMicronautTest {
         }
 
     @Inject lateinit var objectStorageConfig: ObjectStorageConfig
+    @Inject lateinit var beanContext: BeanContext
+    @Inject lateinit var checker: DlqChecker
 
     @Named("dlqPipelineSteps") @Inject lateinit var pipelineSteps: List<LoadPipelineStep>
 
@@ -51,5 +57,7 @@ class NoDeadLetterQueueMicronautTest {
     @Test
     fun `verify the dlqPipelineSteps are empty`() {
         assertEquals(0, pipelineSteps.size)
+        assertFalse(beanContext.findBean(ObjectStorageClient::class.java).isPresent)
+        checker.check(objectStorageConfig)
     }
 }

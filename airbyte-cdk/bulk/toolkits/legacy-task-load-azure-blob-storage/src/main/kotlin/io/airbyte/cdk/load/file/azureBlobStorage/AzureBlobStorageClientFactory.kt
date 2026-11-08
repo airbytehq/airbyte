@@ -10,6 +10,7 @@ import com.azure.storage.blob.BlobServiceClientBuilder
 import com.azure.storage.common.StorageSharedKeyCredential
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfigurationProvider
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
@@ -31,6 +32,7 @@ class AzureBlobStorageClientFactory(
 
     @Singleton
     @Secondary
+    @Requires(beans = [AzureBlobStorageClientConfigurationProvider::class])
     fun make(): AzureBlobClient {
         val config = azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration
         val endpointDomainName =
