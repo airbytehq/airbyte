@@ -117,7 +117,7 @@ Amounts on insights rows (`spend`, `cpc`, `cpm`, and the budget columns such as 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.9 | 2026-11-03 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Prepare the connector for certification |
+| 0.1.9 | 2026-11-03 | [91299](https://github.com/airbytehq/airbyte/pull/91299) | Prepare the connector for certification |
 | 0.1.8 | 2026-11-03 | [90660](https://github.com/airbytehq/airbyte/pull/90660) | Update dependencies |
 | 0.1.7 | 2026-10-27 | [90026](https://github.com/airbytehq/airbyte/pull/90026) | Update dependencies |
 | 0.1.6 | 2026-10-21 | [88396](https://github.com/airbytehq/airbyte/pull/88396) | Declare missing documented schema fields |
