@@ -25,20 +25,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/changeRequests
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -74,20 +60,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/workspaces
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -125,20 +97,6 @@ definitions:
           http_method: GET
           request_parameters:
             workspace_id: "{{ stream_partition.workspace_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -196,20 +154,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/users
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -245,20 +189,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/segments/ws/{{ stream_partition.workspaceId }}
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -319,30 +249,13 @@ definitions:
             stream_partition.segment_name }}/keys
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                    error_message: Segment not defined for the partition
+            $ref: "#/definitions/base_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+                error_message: Segment not defined for the partition
         record_selector:
           type: RecordSelector
           extractor:
@@ -400,20 +313,6 @@ definitions:
           http_method: GET
           request_parameters:
             wsId: "{{ stream_partition.workspaceId }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -456,20 +355,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/environments/ws/{{ stream_partition.wsId }}
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -512,20 +397,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/trafficTypes/ws/{{ stream_partition.wsId }}
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -568,20 +439,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/groups
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -617,20 +474,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/splits/ws/{{ stream_partition.wsId }}
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
         record_selector:
           type: RecordSelector
           extractor:
@@ -683,6 +526,14 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: '{{ config["api_key"] }}'
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 3
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 2
 
 streams:
   - $ref: "#/definitions/streams/changeRequests"
