@@ -28,6 +28,9 @@ class DefaultJdbcSharedState(
     override val maxSampleSize: Int
         get() = constants.maxSampleSize
 
+    override val withEvenSplitBoundaries: Boolean
+        get() = constants.withEvenSplitBoundaries
+
     val maxPartitionThroughputBytesPerSecond: Long =
         constants.expectedThroughputBytesPerSecond / configuration.maxConcurrency
 
