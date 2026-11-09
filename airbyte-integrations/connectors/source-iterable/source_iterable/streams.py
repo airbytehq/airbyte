@@ -14,6 +14,7 @@ from pendulum.datetime import DateTime
 from requests import HTTPError
 from requests.exceptions import ChunkedEncodingError
 
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import CheckpointMixin, package_name_from_class
@@ -33,13 +34,19 @@ class IterableStream(HttpStream, ABC):
     # to prevent 429 error on other streams
     ignore_further_slices = False
 
-    url_base = "https://api.iterable.com/api/"
     primary_key = "id"
 
-    def __init__(self, authenticator):
+    def __init__(self, authenticator, region: str = "US"):
         self._cred = authenticator
         self._slice_retry = 0
+        self._region = region
         super().__init__(authenticator)
+
+    @property
+    def url_base(self) -> str:
+        if self._region == "EU":
+            return "https://api.eu.iterable.com/api/"
+        return "https://api.iterable.com/api/"
 
     @property
     def retry_factor(self) -> int:
@@ -366,7 +373,11 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
                 self.logger.warn("ChunkedEncodingError occurred, decrease days range and try again")
                 stream_slice = self._adjustable_generator.reduce_range()
         else:
-            raise Exception(f"ChunkedEncodingError: Reached maximum number of retires: {self.CHUNKED_ENCODING_ERROR_RETRIES}")
+            raise AirbyteTracedException(
+                message="Iterable Export API response repeatedly closed for the selected event window.",
+                internal_message=f"ChunkedEncodingError: Reached maximum number of retries: {self.CHUNKED_ENCODING_ERROR_RETRIES}",
+                failure_type=FailureType.system_error,
+            )
 
 
 class IterableExportEventsStreamAdjustableRange(IterableExportStreamAdjustableRange, ABC):
@@ -407,7 +418,7 @@ class CampaignsMetrics(IterableStream):
         return params
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        lists = Campaigns(authenticator=self._cred)
+        lists = Campaigns(authenticator=self._cred, region=self._region)
         campaign_ids = []
         for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
             campaign_ids.append(list_record["id"])

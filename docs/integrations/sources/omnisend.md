@@ -29,6 +29,10 @@ The connector has a rate limit of 400 requests per 1 minute.
 
 - Omnisend API Key
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -36,6 +40,7 @@ The connector has a rate limit of 400 requests per 1 minute.
 
 | Version | Date       | Pull Request                                             | Subject        |
 |:--------|:-----------| :------------------------------------------------------- | :------------- |
+| 0.3.12 | 2026-11-03 | [78855](https://github.com/airbytehq/airbyte/pull/78855) | Update dependencies |
 | 0.3.11 | 2025-05-10 | [60078](https://github.com/airbytehq/airbyte/pull/60078) | Update dependencies |
 | 0.3.10 | 2025-05-03 | [59470](https://github.com/airbytehq/airbyte/pull/59470) | Update dependencies |
 | 0.3.9 | 2025-04-27 | [59086](https://github.com/airbytehq/airbyte/pull/59086) | Update dependencies |

@@ -80,8 +80,7 @@ internal class S3DataLakeUtilTest {
 
     @BeforeEach
     fun setup() {
-        icebergUtil =
-            IcebergUtil(tableIdGenerator, AirbyteValueCoercer(useFastTimestampParsing = true))
+        icebergUtil = IcebergUtil(tableIdGenerator, AirbyteValueCoercer())
         s3DataLakeUtil = S3DataLakeUtil(icebergUtil, assumeRoleCredentials = null)
     }
 
@@ -92,7 +91,7 @@ internal class S3DataLakeUtilTest {
             mapOf(
                 CatalogUtil.ICEBERG_CATALOG_TYPE to CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE,
                 CatalogProperties.URI to "http://localhost:19120/api/v1",
-                CatalogProperties.WAREHOUSE_LOCATION to "s3://test/"
+                CatalogProperties.WAREHOUSE_LOCATION to "s3://test/",
             )
         val catalog = icebergUtil.createCatalog(catalogName = catalogName, properties = properties)
         Assertions.assertNotNull(catalog)
@@ -109,7 +108,7 @@ internal class S3DataLakeUtilTest {
             every {
                 withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
             } returns this
             every { withSortOrder(any()) } returns this
@@ -129,12 +128,12 @@ internal class S3DataLakeUtilTest {
             icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
-                schema = schema
+                schema = schema,
             )
         Assertions.assertNotNull(table)
         verify(exactly = 1) {
             catalog.createNamespace(
-                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace()
+                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace(),
             )
         }
         verify(exactly = 1) { tableBuilder.create() }
@@ -149,7 +148,7 @@ internal class S3DataLakeUtilTest {
             every {
                 withProperty(
                     TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
+                    FileFormat.PARQUET.name.lowercase(),
                 )
             } returns this
             every { withSortOrder(any()) } returns this
@@ -168,12 +167,12 @@ internal class S3DataLakeUtilTest {
             icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
-                schema = schema
+                schema = schema,
             )
         Assertions.assertNotNull(table)
         verify(exactly = 0) {
             catalog.createNamespace(
-                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace()
+                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace(),
             )
         }
         verify(exactly = 1) { tableBuilder.create() }
@@ -194,12 +193,12 @@ internal class S3DataLakeUtilTest {
             icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
-                schema = schema
+                schema = schema,
             )
         Assertions.assertNotNull(table)
         verify(exactly = 0) {
             catalog.createNamespace(
-                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace()
+                tableIdGenerator.toTableIdentifier(streamDescriptor).namespace(),
             )
         }
         verify(exactly = 1) {
@@ -239,20 +238,21 @@ internal class S3DataLakeUtilTest {
                 awsAccessKeyConfiguration = awsAccessKeyConfiguration,
                 icebergCatalogConfiguration = icebergCatalogConfiguration,
                 s3BucketConfiguration = s3BucketConfiguration,
+                flushBatchSizeMb = null,
             )
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config = configuration)
         Assertions.assertEquals(
             CatalogUtil.ICEBERG_CATALOG_TYPE_NESSIE,
-            catalogProperties[CatalogUtil.ICEBERG_CATALOG_TYPE]
+            catalogProperties[CatalogUtil.ICEBERG_CATALOG_TYPE],
         )
         Assertions.assertEquals(nessieServerUri, catalogProperties[CatalogProperties.URI])
         Assertions.assertEquals(
             warehouseLocation,
-            catalogProperties[CatalogProperties.WAREHOUSE_LOCATION]
+            catalogProperties[CatalogProperties.WAREHOUSE_LOCATION],
         )
         Assertions.assertEquals(
             S3FileIO::class.java.name,
-            catalogProperties[CatalogProperties.FILE_IO_IMPL]
+            catalogProperties[CatalogProperties.FILE_IO_IMPL],
         )
         Assertions.assertEquals("main", catalogProperties["nessie.ref"])
         Assertions.assertEquals(awsAccessKey, catalogProperties["s3.access-key-id"])
@@ -282,7 +282,7 @@ internal class S3DataLakeUtilTest {
             }
         Assertions.assertEquals(
             "GenerationId must be non-negative. Provided: ${stream.generationId}",
-            exception.message
+            exception.message,
         )
     }
 
@@ -294,7 +294,7 @@ internal class S3DataLakeUtilTest {
                 linkedMapOf(
                     "id" to FieldType(IntegerType, nullable = false),
                     "name" to FieldType(StringType, nullable = true),
-                )
+                ),
             )
         val stream =
             DestinationStream(
@@ -308,7 +308,7 @@ internal class S3DataLakeUtilTest {
                 tableSchema =
                     makeTableSchema(
                         objectSchema,
-                        Dedupe(primaryKey = listOf(primaryKeys), cursor = primaryKeys)
+                        Dedupe(primaryKey = listOf(primaryKeys), cursor = primaryKeys),
                     ),
             )
         val schema = icebergUtil.toIcebergSchema(stream = stream)
@@ -326,7 +326,7 @@ internal class S3DataLakeUtilTest {
     private fun createGlueTestConfiguration(
         roleArn: String? = null,
         accessKeyId: String? = "access-key",
-        secretAccessKey: String? = "secret-access-key"
+        secretAccessKey: String? = "secret-access-key",
     ): S3DataLakeConfiguration {
         return S3DataLakeConfiguration(
             awsAccessKeyConfiguration =
@@ -348,9 +348,10 @@ internal class S3DataLakeUtilTest {
                         GlueCatalogConfiguration(
                             glueId = "123456789012",
                             awsArnRoleConfiguration = AWSArnRoleConfiguration(roleArn = roleArn),
-                            databaseName = "test_db"
-                        )
+                            databaseName = "test_db",
+                        ),
                 ),
+            flushBatchSizeMb = null,
         )
     }
 
@@ -363,25 +364,25 @@ internal class S3DataLakeUtilTest {
         // Verify it uses static credentials mode, not assume role mode
         Assertions.assertEquals(
             CatalogUtil.ICEBERG_CATALOG_TYPE_GLUE,
-            catalogProperties[CatalogUtil.ICEBERG_CATALOG_TYPE]
+            catalogProperties[CatalogUtil.ICEBERG_CATALOG_TYPE],
         )
         Assertions.assertEquals(
             "s3://test/",
-            catalogProperties[CatalogProperties.WAREHOUSE_LOCATION]
+            catalogProperties[CatalogProperties.WAREHOUSE_LOCATION],
         )
         Assertions.assertEquals("access-key", catalogProperties["s3.access-key-id"])
         Assertions.assertEquals("secret-access-key", catalogProperties["s3.secret-access-key"])
         Assertions.assertEquals(
             "aws-creds-static-creds",
-            catalogProperties["client.credentials-provider.aws-creds-mode"]
+            catalogProperties["client.credentials-provider.aws-creds-mode"],
         )
         Assertions.assertEquals(
             "access-key",
-            catalogProperties["client.credentials-provider.access-key-id"]
+            catalogProperties["client.credentials-provider.access-key-id"],
         )
         Assertions.assertEquals(
             "secret-access-key",
-            catalogProperties["client.credentials-provider.secret-access-key"]
+            catalogProperties["client.credentials-provider.secret-access-key"],
         )
     }
 
@@ -394,17 +395,17 @@ internal class S3DataLakeUtilTest {
         // Verify it uses static credentials mode
         Assertions.assertEquals(
             CatalogUtil.ICEBERG_CATALOG_TYPE_GLUE,
-            catalogProperties[CatalogUtil.ICEBERG_CATALOG_TYPE]
+            catalogProperties[CatalogUtil.ICEBERG_CATALOG_TYPE],
         )
         Assertions.assertEquals(
             "s3://test/",
-            catalogProperties[CatalogProperties.WAREHOUSE_LOCATION]
+            catalogProperties[CatalogProperties.WAREHOUSE_LOCATION],
         )
         Assertions.assertEquals("access-key", catalogProperties["s3.access-key-id"])
         Assertions.assertEquals("secret-access-key", catalogProperties["s3.secret-access-key"])
         Assertions.assertEquals(
             "aws-creds-static-creds",
-            catalogProperties["client.credentials-provider.aws-creds-mode"]
+            catalogProperties["client.credentials-provider.aws-creds-mode"],
         )
     }
 
@@ -415,7 +416,7 @@ internal class S3DataLakeUtilTest {
                 linkedMapOf(
                     "id" to FieldType(IntegerType, nullable = true),
                     "name" to FieldType(StringType, nullable = true),
-                )
+                ),
             )
         val stream =
             DestinationStream(

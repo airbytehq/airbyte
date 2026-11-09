@@ -36,9 +36,9 @@ class MsSqlServerDatatypeIntegrationTest {
         fun startAndProvisionTestContainer() {
             dbContainer =
                 MsSqlServerContainerFactory.shared(
-                    "mcr.microsoft.com/mssql/server:2022-latest",
+                    "mcr.microsoft.com/mssql/server:2025-latest",
                     MsSqlServerContainerFactory.WithNetwork,
-                    MsSqlServerContainerFactory.WithTestDatabase
+                    MsSqlServerContainerFactory.WithTestDatabase,
                 )
         }
     }
@@ -50,7 +50,7 @@ object MsSqlServerDatatypeTestOperations :
         MsSqlServerSourceConfigurationSpecification,
         MsSqlServerSourceConfiguration,
         MsSqlServerSourceConfigurationFactory,
-        MsSqlServerDatatypeTestCase
+        MsSqlServerDatatypeTestCase,
     > {
 
     private val log = KotlinLogging.logger {}
@@ -60,14 +60,14 @@ object MsSqlServerDatatypeTestOperations :
         MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_CURSOR
 
     override fun streamConfigSpec(
-        container: MSSQLServerContainer<*>
+        container: MSSQLServerContainer<*>,
     ): MsSqlServerSourceConfigurationSpecification =
         MsSqlServerContainerFactory.config(container).also {
             it.setIncrementalValue(UserDefinedCursor())
         }
 
     override fun globalConfigSpec(
-        container: MSSQLServerContainer<*>
+        container: MSSQLServerContainer<*>,
     ): MsSqlServerSourceConfigurationSpecification =
         MsSqlServerContainerFactory.config(container).also { it.setIncrementalValue(Cdc()) }
 
@@ -113,6 +113,11 @@ object MsSqlServerDatatypeTestOperations :
                 }
             }
         }
+        // SQL Agent is disabled in the test container, so the CDC capture job never runs.
+        // Without this, fn_cdc_get_min_lsn returns NULL and the validation fails.
+        JdbcConnectionFactory(config).get().use { connection ->
+            connection.createStatement().use { stmt -> stmt.execute("EXEC sys.sp_cdc_scan") }
+        }
     }
 
     override fun populateStreams(config: MsSqlServerSourceConfiguration) {
@@ -153,12 +158,12 @@ object MsSqlServerDatatypeTestOperations :
                 stmt.execute("DROP TABLE IF EXISTS dbo.cdc_dummy")
                 stmt.execute("CREATE TABLE dbo.cdc_dummy (id INT PRIMARY KEY)")
                 stmt.execute(
-                    "EXEC sys.sp_cdc_enable_table @source_schema = 'dbo', @source_name = 'cdc_dummy', @role_name = NULL"
+                    "EXEC sys.sp_cdc_enable_table @source_schema = 'dbo', @source_name = 'cdc_dummy', @role_name = NULL",
                 )
 
                 // Insert data to generate LSN
                 stmt.execute(
-                    "INSERT INTO dbo.cdc_dummy (id) SELECT COALESCE(MAX(id), 0) + 1 FROM dbo.cdc_dummy"
+                    "INSERT INTO dbo.cdc_dummy (id) SELECT COALESCE(MAX(id), 0) + 1 FROM dbo.cdc_dummy",
                 )
 
                 // Start CDC capture job and trigger scan
@@ -234,6 +239,19 @@ object MsSqlServerDatatypeTestOperations :
     val numericValues =
         mapOf(
             "'99999'" to "99999",
+            "NULL" to "null",
+        )
+
+    val decimalScale0Values =
+        mapOf(
+            "12345" to "12345",
+            "-9999999999" to "-9999999999",
+            "NULL" to "null",
+        )
+
+    val decimalScale2Values =
+        mapOf(
+            "123.45" to "123.45",
             "NULL" to "null",
         )
 
@@ -455,6 +473,26 @@ object MsSqlServerDatatypeTestOperations :
                 MsSqlServerDatatypeTestCase(
                     "NUMERIC",
                     numericValues,
+                    LeafAirbyteSchemaType.INTEGER,
+                ),
+                MsSqlServerDatatypeTestCase(
+                    "DECIMAL(10,0)",
+                    decimalScale0Values,
+                    LeafAirbyteSchemaType.INTEGER,
+                ),
+                MsSqlServerDatatypeTestCase(
+                    "NUMERIC(10,0)",
+                    decimalScale0Values,
+                    LeafAirbyteSchemaType.INTEGER,
+                ),
+                MsSqlServerDatatypeTestCase(
+                    "DECIMAL(10,2)",
+                    decimalScale2Values,
+                    LeafAirbyteSchemaType.NUMBER,
+                ),
+                MsSqlServerDatatypeTestCase(
+                    "NUMERIC(10,2)",
+                    decimalScale2Values,
                     LeafAirbyteSchemaType.NUMBER,
                 ),
                 MsSqlServerDatatypeTestCase(

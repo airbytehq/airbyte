@@ -15,7 +15,7 @@ import kotlin.random.Random
  *
  * @param clock injectable clock for testability. Use default UTC clock in production.
  * @param randomNameSegmentGenerator injectable randomized segment generator for testability. Use
- * default in production.
+ *   default in production.
  */
 class TestAssetResourceNamer(
     private val clock: Clock = Clock.systemUTC(), // always use UTC to avoid race conditions

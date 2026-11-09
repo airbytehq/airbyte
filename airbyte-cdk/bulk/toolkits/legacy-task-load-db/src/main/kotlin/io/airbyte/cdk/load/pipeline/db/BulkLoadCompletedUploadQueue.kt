@@ -27,16 +27,19 @@ class BulkLoadCompletedUploadQueue<K : WithStream, T : RemoteObject<*>> {
     @Requires(bean = BulkLoaderFactory::class)
     @Named("objectLoaderCompletedUploadQueue")
     fun bulkLoadCompletedUploadQueue(
-        bulkLoader: BulkLoaderFactory<K, T>
+        bulkLoader: BulkLoaderFactory<K, T>,
     ): PartitionedQueue<PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>> =
         StrictPartitionedQueue(
             (0 until bulkLoader.maxNumConcurrentLoads)
                 .map {
                     ChannelMessageQueue<
-                        PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>>(
-                        Channel(ObjectLoaderQueueBeanFactory.OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS)
+                        PipelineEvent<K, ObjectLoaderUploadCompleter.UploadResult<T>>,
+                    >(
+                        Channel(
+                            ObjectLoaderQueueBeanFactory.OBJECT_LOADER_MAX_ENQUEUED_COMPLETIONS,
+                        ),
                     )
                 }
-                .toTypedArray()
+                .toTypedArray(),
         )
 }

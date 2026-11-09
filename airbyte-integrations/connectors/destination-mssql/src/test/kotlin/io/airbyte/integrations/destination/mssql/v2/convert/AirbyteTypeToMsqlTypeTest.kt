@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test
 
 class AirbyteTypeToMsqlTypeTest {
 
-    private val converter = AirbyteTypeToMssqlType()
+    private val converter = AirbyteTypeToMssqlType
 
     @Test
     fun testConvertObjectType() {

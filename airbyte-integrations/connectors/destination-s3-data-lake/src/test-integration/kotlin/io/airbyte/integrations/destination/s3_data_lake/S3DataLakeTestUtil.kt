@@ -30,7 +30,10 @@ object S3DataLakeTestUtil {
 
     fun parseConfig(path: Path) =
         getConfig(
-            ValidatedJsonUtils.parseOne(S3DataLakeSpecification::class.java, Files.readString(path))
+            ValidatedJsonUtils.parseOne(
+                S3DataLakeSpecification::class.java,
+                Files.readString(path),
+            ),
         )
 
     fun getAwsAssumeRoleCredentials(): AwsAssumeRoleCredentials {
@@ -54,13 +57,9 @@ object S3DataLakeTestUtil {
 
     fun getCatalog(
         config: S3DataLakeConfiguration,
-        awsAssumeRoleCredentials: AwsAssumeRoleCredentials?
+        awsAssumeRoleCredentials: AwsAssumeRoleCredentials?,
     ): Catalog {
-        val icebergUtil =
-            IcebergUtil(
-                SimpleTableIdGenerator(),
-                AirbyteValueCoercer(useFastTimestampParsing = true)
-            )
+        val icebergUtil = IcebergUtil(SimpleTableIdGenerator(), AirbyteValueCoercer())
         val s3DataLakeUtil = S3DataLakeUtil(icebergUtil, awsAssumeRoleCredentials)
         val props = s3DataLakeUtil.toCatalogProperties(config)
         return icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)

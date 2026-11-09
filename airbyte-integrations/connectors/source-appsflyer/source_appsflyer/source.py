@@ -6,7 +6,6 @@ import csv
 import logging
 from abc import ABC
 from datetime import date, datetime, timedelta
-from decimal import Decimal
 from http import HTTPStatus
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Sequence, Tuple, Union
 
@@ -86,9 +85,12 @@ class AppsflyerStream(HttpStream, ABC):
         return is_forbidden and is_template_match
 
     def is_raw_data_reports_reached_limit(self, response: requests.Response) -> bool:
-        template = "Your API calls limit has been reached for report type"
+        templates = [
+            "Your API calls limit has been reached for report type",
+            "You've reached your maximum number of",
+        ]
         is_bad_request = response.status_code == HTTPStatus.BAD_REQUEST
-        is_template_match = template in response.text
+        is_template_match = any(t in response.text for t in templates)
 
         return is_bad_request and is_template_match
 
@@ -97,7 +99,7 @@ class AppsflyerStream(HttpStream, ABC):
         is_raw_data_reports_reached_limit = self.is_raw_data_reports_reached_limit(response)
         is_rejected = is_aggregate_reports_reached_limit or is_raw_data_reports_reached_limit
 
-        return is_rejected or super().should_retry(response)
+        return is_rejected or response.status_code == 429 or 500 <= response.status_code < 600
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if self.is_raw_data_reports_reached_limit(response):
@@ -107,7 +109,13 @@ class AppsflyerStream(HttpStream, ABC):
         elif self.is_aggregate_reports_reached_limit(response):
             wait_time = 60
         else:
-            return super().backoff_time(response)
+            retry_after = response.headers.get("Retry-After")
+            if retry_after:
+                try:
+                    return float(retry_after)
+                except ValueError:
+                    pass
+            return None
 
         logging.getLogger("airbyte").log(logging.INFO, f"Rate limit exceeded. Retry in {wait_time} seconds.")
         return wait_time
@@ -116,8 +124,6 @@ class AppsflyerStream(HttpStream, ABC):
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
         if original_value == "" or original_value == "N/A" or original_value == "NULL":
             return None
-        if isinstance(original_value, float):
-            return Decimal(original_value)
         return original_value
 
 
@@ -139,7 +145,7 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
             ) from e
 
     def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         cursor_value = stream_state.get(self.cursor_field)
@@ -366,7 +372,7 @@ class SourceAppsflyer(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             timezone = config.get("timezone", "UTC")
-            if timezone not in pendulum.timezones:
+            if timezone not in pendulum.timezones():
                 return False, "The supplied timezone is invalid."
             app_id = config["app_id"]
             api_token = config["api_token"]

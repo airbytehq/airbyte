@@ -99,6 +99,10 @@ The Gutendex source connector supports the following [sync modes](https://docs.a
 
 There is no published rate limit. However, since this data updates infrequently, it is recommended to set the update cadence to 24hr or higher.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -106,6 +110,8 @@ There is no published rate limit. However, since this data updates infrequently,
 
 | Version | Date       | Pull Request                                              | Subject                                     |
 | :------ |:-----------| :-------------------------------------------------------- |:--------------------------------------------|
+| 0.2.14 | 2026-10-13 | [78743](https://github.com/airbytehq/airbyte/pull/78743) | Update dependencies |
+| 0.2.13 | 2026-10-08 | [88363](https://github.com/airbytehq/airbyte/pull/88363) | Replace the default Airbyte icon with a generic book icon |
 | 0.2.12 | 2025-05-24 | [60673](https://github.com/airbytehq/airbyte/pull/60673) | Update dependencies |
 | 0.2.11 | 2025-05-10 | [59245](https://github.com/airbytehq/airbyte/pull/59245) | Update dependencies |
 | 0.2.10 | 2025-04-26 | [58752](https://github.com/airbytehq/airbyte/pull/58752) | Update dependencies |

@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 import json
 
 import freezegun
@@ -75,6 +76,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properti
         ("goals", "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("leads", "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("line_items", "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        ("listings", "listings", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("marketing_emails", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("owners", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("owners_archived", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -176,6 +178,46 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
 
     records = run_read(stream)
     assert records
+
+
+def test_deal_pipelines_read_uses_2026_09_response_shape(requests_mock, config):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    requests_mock.get(
+        "https://api.hubapi.com/crm/pipelines/2026-09/deals",
+        json={
+            "results": [
+                {
+                    "id": "b9152945-a594-4835-9676-a6f405fecd71",
+                    "label": "New Business Pipeline",
+                    "displayOrder": 3,
+                    "createdAt": "2021-01-14T14:52:53.956Z",
+                    "updatedAt": "2023-04-04T14:59:14.263Z",
+                    "archived": False,
+                    "stages": [
+                        {
+                            "id": "9567448",
+                            "label": "Initial Qualification",
+                            "displayOrder": 0,
+                            "createdAt": "2021-01-14T14:52:53.956Z",
+                            "updatedAt": "2023-04-04T14:59:14.263Z",
+                            "metadata": {"isClosed": "false", "probability": "0.1"},
+                            "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                            "archived": False,
+                        }
+                    ],
+                }
+            ]
+        },
+    )
+
+    output = read_from_stream(config, "deal_pipelines", SyncMode.full_refresh)
+
+    assert len(output.records) == 1
+    record = output.records[0].record.data
+    assert record["pipelineId"] == "b9152945-a594-4835-9676-a6f405fecd71"
+    assert record["updatedAt"] == 1680620354263
+    assert record["objectType"] == "DEAL"
+    assert record["stages"][0]["stageId"] == "9567448"
 
 
 @pytest.mark.parametrize(
@@ -673,7 +715,7 @@ def test_cast_record_fields_if_needed(
         ("companies_property_history", "crm.objects.companies.read", "https://api.hubapi.com/properties/v2/companies/properties", "GET"),
         ("contact_lists", "crm.lists.read", "https://api.hubapi.com/crm/v3/lists/search", "POST"),
         ("contacts_property_history", "crm.objects.contacts.read", "https://api.hubapi.com/properties/v2/contacts/properties", "GET"),
-        ("deal_pipelines", "crm.objects.contacts.read", "https://api.hubapi.com/crm-pipelines/v1/pipelines/deals", "GET"),
+        ("deal_pipelines", "crm.objects.contacts.read", "https://api.hubapi.com/crm/pipelines/2026-09/deals", "GET"),
         ("deals", "crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deal/search", "POST"),
         ("deals_property_history", "crm.objects.deals.read", "https://api.hubapi.com/properties/v2/deals/properties", "GET"),
         ("email_events", "content", "https://api.hubapi.com/email/public/v1/events", "GET"),
@@ -694,6 +736,7 @@ def test_cast_record_fields_if_needed(
         ("engagements_meetings", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/meetings/search", "POST"),
         ("engagements_notes", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/notes/search", "POST"),
         ("engagements_tasks", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/tasks/search", "POST"),
+        ("engagements_task_pipelines", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/pipelines/tasks", "GET"),
         ("marketing_emails", "content", "https://api.hubapi.com/marketing/v3/emails", "GET"),
         ("deals_archived", "contacts, crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deals", "GET"),
         ("forms", "forms", "https://api.hubapi.com/marketing/v3/forms", "GET"),
@@ -720,6 +763,7 @@ def test_cast_record_fields_if_needed(
             "https://api.hubapi.com/crm/v3/objects/leads/search",
             "POST",
         ),
+        ("listings", "crm.objects.listings.read", "https://api.hubapi.com/crm/v3/objects/listings/search", "POST"),
         ("tickets", "tickets", "https://api.hubapi.com/crm/v3/objects/ticket/search", "POST"),
         ("users", "crm.objects.users.read, settings.users.read", "https://api.hubapi.com/settings/v3/users", "GET"),
     ],
@@ -1094,3 +1138,122 @@ def test_list_memberships_fails_on_unrelated_400(requests_mock, config, mock_dyn
         run_read(stream)
 
     assert unrelated_400_mock.call_count >= 1
+
+
+@pytest.mark.parametrize(
+    "stream_name,lookback_minutes,expected_timedelta",
+    [
+        pytest.param("companies_property_history", 0, datetime.timedelta(0), id="companies-default-no-lookback"),
+        pytest.param("contacts_property_history", 0, datetime.timedelta(0), id="contacts-default-no-lookback"),
+        pytest.param("deals_property_history", 0, datetime.timedelta(0), id="deals-default-no-lookback"),
+        pytest.param("companies_property_history", 60, datetime.timedelta(minutes=60), id="companies-60min-lookback"),
+        pytest.param("contacts_property_history", 1440, datetime.timedelta(minutes=1440), id="contacts-1day-lookback"),
+        pytest.param("deals_property_history", 43200, datetime.timedelta(minutes=43200), id="deals-30day-lookback"),
+    ],
+)
+def test_property_history_streams_lookback_window(
+    requests_mock, config, stream_name, lookback_minutes, expected_timedelta, mock_dynamic_schema_requests
+):
+    """Property history streams use the `property_history_lookback_window` config
+    to set lookback and prevent cursor drift from HubSpot calculated properties."""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    config["property_history_lookback_window"] = lookback_minutes
+    stream = find_stream(stream_name, config)
+    cursor = stream._cursor
+    assert (
+        cursor._lookback_window == expected_timedelta
+    ), f"{stream_name} with {lookback_minutes}min config: expected {expected_timedelta}, got {cursor._lookback_window}"
+
+
+PROPERTY_HISTORY_STREAMS = [
+    pytest.param("deals_property_history", "deals", "deals_property_history_properties", id="deals"),
+    pytest.param("contacts_property_history", "contacts", "contacts_property_history_properties", id="contacts"),
+    pytest.param("companies_property_history", "companies", "companies_property_history_properties", id="companies"),
+]
+
+
+def _mock_property_history_stream(requests_mock, entity, properties):
+    """Mock the properties endpoint and the CRM objects endpoint for a property history stream."""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    requests_mock.get(
+        f"https://api.hubapi.com/properties/v2/{entity}/properties",
+        json=[{"name": name, "type": "string"} for name in properties],
+        status_code=200,
+    )
+    objects_mock = requests_mock.get(
+        f"https://api.hubapi.com/crm/v3/objects/{entity}",
+        json={
+            "results": [
+                {
+                    "id": "123",
+                    "propertiesWithHistory": {
+                        name: [{"value": "value", "timestamp": "2021-01-10T00:00:00.000Z", "sourceType": "CRM"}] for name in properties
+                    },
+                }
+            ]
+        },
+        status_code=200,
+    )
+    return objects_mock
+
+
+def _requested_properties_with_history(objects_mock):
+    """Return the flattened list of `propertiesWithHistory` values sent on requests to the objects endpoint."""
+    requested = []
+    for request in objects_mock.request_history:
+        for value in request.qs.get("propertieswithhistory", []):
+            requested.extend(value.split(","))
+    return requested
+
+
+@pytest.mark.parametrize("stream_name,entity,config_key", PROPERTY_HISTORY_STREAMS)
+def test_property_history_streams_filter_properties(requests_mock, config, stream_name, entity, config_key):
+    """When `<entity>_property_history_properties` is set, only the configured
+    properties are requested in `propertiesWithHistory`."""
+    config[config_key] = ["dealstage"]
+    objects_mock = _mock_property_history_stream(requests_mock, entity, ["dealstage", "amount", "hs_analytics_source"])
+
+    output = read_from_stream(config, stream_name, SyncMode.full_refresh)
+
+    assert objects_mock.call_count >= 1
+    assert _requested_properties_with_history(objects_mock) == ["dealstage"]
+    assert output.records
+
+
+@pytest.mark.parametrize("stream_name,entity,config_key", PROPERTY_HISTORY_STREAMS)
+def test_property_history_streams_all_properties_by_default(requests_mock, config, stream_name, entity, config_key):
+    """Without the config option, history is requested for every property."""
+    all_properties = ["dealstage", "amount", "hs_analytics_source"]
+    objects_mock = _mock_property_history_stream(requests_mock, entity, all_properties)
+
+    output = read_from_stream(config, stream_name, SyncMode.full_refresh)
+
+    assert objects_mock.call_count >= 1
+    assert sorted(_requested_properties_with_history(objects_mock)) == sorted(all_properties)
+    assert output.records
+
+
+@pytest.mark.parametrize("stream_name,entity,config_key", PROPERTY_HISTORY_STREAMS)
+def test_property_history_streams_empty_list_config(requests_mock, config, stream_name, entity, config_key):
+    """An empty list behaves like an unset config: all properties are requested."""
+    config[config_key] = []
+    all_properties = ["dealstage", "amount"]
+    objects_mock = _mock_property_history_stream(requests_mock, entity, all_properties)
+
+    read_from_stream(config, stream_name, SyncMode.full_refresh)
+
+    assert sorted(_requested_properties_with_history(objects_mock)) == sorted(all_properties)
+
+
+@pytest.mark.parametrize("stream_name,entity,config_key", PROPERTY_HISTORY_STREAMS)
+def test_property_history_streams_nonexistent_property(requests_mock, config, stream_name, entity, config_key):
+    """A configured property absent from the properties endpoint filters out
+    everything; the sync must not crash. The objects request is still sent,
+    with an empty `propertiesWithHistory` parameter."""
+    config[config_key] = ["nonexistent_property"]
+    objects_mock = _mock_property_history_stream(requests_mock, entity, ["dealstage", "amount"])
+
+    read_from_stream(config, stream_name, SyncMode.full_refresh)
+
+    assert objects_mock.call_count >= 1
+    assert _requested_properties_with_history(objects_mock) == [""]

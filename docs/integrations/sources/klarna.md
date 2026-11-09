@@ -55,6 +55,10 @@ Klarna API has [rate limiting](https://developers.klarna.com/api/#api-rate-limit
 
 Connector will handle an issue with rate limiting as Klarna returns 429 status code when limits are reached
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -62,6 +66,7 @@ Connector will handle an issue with rate limiting as Klarna returns 429 status c
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.24 | 2026-10-27 | [78792](https://github.com/airbytehq/airbyte/pull/78792) | Update dependencies |
 | 0.3.23 | 2025-05-24 | [60684](https://github.com/airbytehq/airbyte/pull/60684) | Update dependencies |
 | 0.3.22 | 2025-05-10 | [59777](https://github.com/airbytehq/airbyte/pull/59777) | Update dependencies |
 | 0.3.21 | 2025-05-03 | [59239](https://github.com/airbytehq/airbyte/pull/59239) | Update dependencies |

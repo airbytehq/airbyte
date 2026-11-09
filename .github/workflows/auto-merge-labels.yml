@@ -1,6 +1,6 @@
 name: "Auto-Merge Label Removal"
 
-# When the last auto-merge label is removed from a PR, disable GitHub's
+# When the auto-merge label is removed from a PR, disable GitHub's
 # native auto-merge so the PR no longer merges automatically.
 
 permissions: {}
@@ -13,16 +13,10 @@ on:
 jobs:
   disable-auto-merge:
     name: Disable native auto-merge
-    # Runs when either auto-merge label is removed and the other is not
-    # still present on the PR.
     if: >
       github.event.action == 'unlabeled'
-      && (
-        github.event.label.name == 'auto-merge'
-        || github.event.label.name == 'auto-merge/bypass-ci-checks'
-      )
+      && github.event.label.name == 'auto-merge'
       && !contains(github.event.pull_request.labels.*.name, 'auto-merge')
-      && !contains(github.event.pull_request.labels.*.name, 'auto-merge/bypass-ci-checks')
     permissions: {}
     runs-on: ubuntu-24.04
     steps:

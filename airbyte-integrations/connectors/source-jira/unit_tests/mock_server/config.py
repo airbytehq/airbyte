@@ -20,16 +20,19 @@ class ConfigBuilder:
 
     def __init__(self) -> None:
         self._config: Dict[str, Any] = {
-            "api_token": "any_api_token",
+            "credentials": {
+                "auth_type": "API Token",
+                "api_token": "any_api_token",
+                "email": "integration-test@airbyte.io",
+            },
             "domain": "airbyteio.atlassian.net",
-            "email": "integration-test@airbyte.io",
             "start_date": "2021-01-01T00:00:00Z",
             "projects": [],
         }
 
     def with_api_token(self, api_token: str) -> "ConfigBuilder":
         """Set the API token for authentication."""
-        self._config["api_token"] = api_token
+        self._config["credentials"]["api_token"] = api_token
         return self
 
     def with_domain(self, domain: str) -> "ConfigBuilder":
@@ -39,7 +42,7 @@ class ConfigBuilder:
 
     def with_email(self, email: str) -> "ConfigBuilder":
         """Set the email for authentication."""
-        self._config["email"] = email
+        self._config["credentials"]["email"] = email
         return self
 
     def with_start_date(self, start_datetime: datetime) -> "ConfigBuilder":

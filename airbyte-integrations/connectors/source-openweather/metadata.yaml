@@ -3,11 +3,11 @@ data:
     hosts:
       - api.openweathermap.org
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.2@sha256:1bfcca53335b2669b02414180fe9ad96b0abd9c95d6cbf50089c1d881fc07801
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.45.0@sha256:a4947a37ef760ff501856dbeec22830826c1d214f0e530abfa9831e57f019809
   connectorSubtype: api
   connectorType: source
   definitionId: 561d7787-b45e-4f3b-af58-0163c3ba9d5a
-  dockerImageTag: 0.3.49
+  dockerImageTag: 0.3.71
   dockerRepository: airbyte/source-openweather
   documentationUrl: https://docs.airbyte.com/integrations/sources/openweather
   githubIssueLabel: source-openweather
@@ -44,4 +44,12 @@ data:
     - title: OpenWeather API documentation
       url: https://openweathermap.org/api
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"

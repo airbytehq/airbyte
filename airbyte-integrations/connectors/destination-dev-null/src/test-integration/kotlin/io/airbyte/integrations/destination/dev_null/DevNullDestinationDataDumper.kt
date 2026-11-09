@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 object DevNullDestinationDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         // E2e destination doesn't actually write records, so we shouldn't even
         // have tests that try to read back the records
@@ -21,7 +21,7 @@ object DevNullDestinationDataDumper : DestinationDataDumper {
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw NotImplementedError()
     }

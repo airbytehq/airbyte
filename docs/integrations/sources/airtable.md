@@ -52,7 +52,7 @@ This page contains the setup guide and reference information for the [Airtable](
    - To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown click **Authenticate your Airtable account** to sign in with Airtable, select required workspaces you want to sync and authorize your account.
    - To authenticate using a Personal Access Token, select **Personal Access Token** from the Authentication dropdown and enter the Access Token for your Airtable account.
      :::info
-     When using OAuth, you may see a `400` or `401` error causing a failed sync. You can re-authenticate your Airtable connector to solve the issue temporarily. We are working on a permanent fix that you can follow [here](https://github.com/airbytehq/airbyte/issues/25278).
+     When using OAuth, you may see a `400` or `401` error causing a failed sync. If this occurs, re-authenticate your Airtable connector by clicking **Authenticate your Airtable account** again in the connector settings.
      :::
 
 6. Click **Set up source**.
@@ -86,34 +86,49 @@ The Airtable source connector supports the following [sync modes](https://docs.a
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
 - [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) (select a primary key such as `_airtable_id`; Airtable does not provide a source-defined primary key)
+
+Incremental sync compares Airtable's `LAST_MODIFIED_TIME()` with the cursor, falling back to `CREATED_TIME()` when Airtable leaves last-modified blank for never-edited records. Changes only to computed fields (formula, rollup, lookup, and count) are not picked up, and deleted records are not captured. A 15-minute lookback re-reads recent records. `_airtable_extracted_at` is the cursor and contains the end time of the sync window.
 
 ## Supported Streams
 
-This source allows you to pull all available tables and bases using `Metadata API` for a given authenticated user. In case you rename or add a column to any existing table, you will need to recreate the source to update the Airbyte catalog.
+This source syncs all tables from your Airtable bases using the Metadata API. If you rename or add a column to an existing table, refresh the source schema in Airbyte to update the catalog.
 
-### Performance Considerations
+### Base collaborators
 
-See information about rate limits [here](https://airtable.com/developers/web/api/rate-limits).
+The `base_collaborators` stream lists the people added directly to each base, one record per person per base, with `base_id`, `base_name`, `userId`, `email`, `permissionLevel`, `createdTime`, and `grantedByUserId`. It reads Airtable's [Get base collaborators](https://airtable.com/developers/web/api/get-base-collaborators) endpoint with the `schema.bases:read` scope the connector already uses. Workspace members who weren't added to the base directly, and groups, aren't included. Records contain collaborator email addresses.
+
+### Performance considerations
+
+Airtable enforces the following [rate limits](https://airtable.com/developers/web/api/rate-limits):
+
+- 5 requests per second per base
+- 50 requests per second across all requests from a given user or service account
+
+If either limit is exceeded, the API returns a `429` status code and requests must wait 30 seconds before retrying. The connector handles this automatically with built-in backoff and retry logic.
 
 ## Data type map
 
 | Integration Type        | Airbyte Type                           | Nullable |
 | :---------------------- | :------------------------------------- | -------- |
 | `multipleAttachments`   | `string`                               | Yes      |
-| `autoNumber`            | `string`                               | Yes      |
+| `autoNumber`            | `number`                               | Yes      |
 | `barcode`               | `string`                               | Yes      |
 | `button`                | `string`                               | Yes      |
 | `checkbox`              | `boolean`                              | Yes      |
 | `singleCollaborator`    | `string`                               | Yes      |
 | `count`                 | `number`                               | Yes      |
 | `createdBy`             | `string`                               | Yes      |
-| `createdTime`           | `datetime`, `format: date-time`        | Yes      |
+| `aiText`                | `string`                               | Yes      |
+| `createdTime`           | `datetime` or `date`                   | Yes      |
 | `currency`              | `number`                               | Yes      |
 | `email`                 | `string`                               | Yes      |
 | `date`                  | `string`, `format: date`               | Yes      |
 | `duration`              | `number`                               | Yes      |
 | `lastModifiedBy`        | `string`                               | Yes      |
-| `lastModifiedTime`      | `datetime`, `format: date-time`        | Yes      |
+| `dateTime`              | `datetime`, `format: date-time`        | Yes      |
+| `lastModifiedTime`      | `datetime`, `date`, or `string`        | Yes      |
 | `multipleRecordLinks`   | `array with strings`                   | Yes      |
 | `multilineText`         | `string`                               | Yes      |
 | `multipleCollaborators` | `array with strings`                   | Yes      |
@@ -124,18 +139,24 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 | `rating`                | `number`                               | Yes      |
 | `richText`              | `string`                               | Yes      |
 | `singleLineText`        | `string`                               | Yes      |
+| `singleSelect`          | `string`                               | Yes      |
+| `simpleText`            | `string`                               | Yes      |
+| `manualSort`            | `string`                               | Yes      |
 | `externalSyncSource`    | `string`                               | Yes      |
 | `url`                   | `string`                               | Yes      |
-| `formula`               | `string`, `number` or `array with any` | Yes      |
-| `lookup`                | `array with any`                       | Yes      |
-| `multipleLookupValues`  | `array with any`                       | Yes      |
-| `rollup`                | `array with any`                       | Yes      |
+| `formula`               | `string`, `number`, or `array`         | Yes      |
+| `lookup`                | `array` (typed by result field)        | Yes      |
+| `multipleLookupValues`  | `array` (typed by result field)        | Yes      |
+| `rollup`                | `array` (typed by result field)        | Yes      |
 
-- All the fields are `nullable` by default, meaning that the field could be empty.
-- The `array with any` - represents the classic array with one of the other Airtable data types inside, such as:
-  - string
-  - number/integer
-  - nested lists/objects
+- All fields are nullable, meaning any field value could be empty.
+- `createdTime` and `lastModifiedTime` emit `datetime` or `date` depending on the field's display configuration in Airtable. If no result type is configured for `lastModifiedTime`, it emits `string`.
+- `formula` emits `number` when the result type is numeric (number, currency, percent, duration), `array` for array-producing formulas (ARRAYCOMPACT, ARRAYFLATTEN, ARRAYUNIQUE, ARRAYSLICE), and `string` otherwise.
+- `lookup`, `multipleLookupValues`, and `rollup` emit typed arrays matching the referenced field's type (e.g., array of numbers for numeric fields, array of strings for text fields).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -144,6 +165,26 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.8.0 | 2026-11-04 | [90312](https://github.com/airbytehq/airbyte/pull/90312) | Add base_collaborators stream |
+| 4.7.0 | 2026-10-15 | [89000](https://github.com/airbytehq/airbyte/pull/89000) | Add incremental sync support for table streams |
+| 4.6.43 | 2026-10-13 | [88520](https://github.com/airbytehq/airbyte/pull/88520) | Update dependencies |
+| 4.6.42 | 2026-10-06 | [87744](https://github.com/airbytehq/airbyte/pull/87744) | Update dependencies |
+| 4.6.41 | 2026-09-29 | [87090](https://github.com/airbytehq/airbyte/pull/87090) | Update dependencies |
+| 4.6.40 | 2026-09-22 | [86538](https://github.com/airbytehq/airbyte/pull/86538) | Update dependencies |
+| 4.6.39 | 2026-09-15 | [85936](https://github.com/airbytehq/airbyte/pull/85936) | Update dependencies |
+| 4.6.38 | 2026-09-08 | [85385](https://github.com/airbytehq/airbyte/pull/85385) | Update dependencies |
+| 4.6.37 | 2026-08-18 | [84475](https://github.com/airbytehq/airbyte/pull/84475) | Update dependencies |
+| 4.6.36 | 2026-08-11 | [83837](https://github.com/airbytehq/airbyte/pull/83837) | Update dependencies |
+| 4.6.35 | 2026-08-04 | [83351](https://github.com/airbytehq/airbyte/pull/83351) | Update dependencies |
+| 4.6.34 | 2026-07-28 | [82799](https://github.com/airbytehq/airbyte/pull/82799) | Update dependencies |
+| 4.6.33 | 2026-07-21 | [82303](https://github.com/airbytehq/airbyte/pull/82303) | Update dependencies |
+| 4.6.32 | 2026-07-14 | [81711](https://github.com/airbytehq/airbyte/pull/81711) | Update dependencies |
+| 4.6.31 | 2026-07-07 | [80955](https://github.com/airbytehq/airbyte/pull/80955) | Update dependencies |
+| 4.6.30 | 2026-06-24 | [80771](https://github.com/airbytehq/airbyte/pull/80771) | Upgrade CDK to 7.23.3 |
+| 4.6.29 | 2026-06-23 | [80374](https://github.com/airbytehq/airbyte/pull/80374) | Update dependencies |
+| 4.6.28 | 2026-06-16 | [79749](https://github.com/airbytehq/airbyte/pull/79749) | Update dependencies |
+| 4.6.27 | 2026-06-09 | [79201](https://github.com/airbytehq/airbyte/pull/79201) | Update dependencies |
+| 4.6.26 | 2026-06-02 | [76518](https://github.com/airbytehq/airbyte/pull/76518) | Update dependencies |
 | 4.6.25 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 4.6.24 | 2026-03-10 | [74540](https://github.com/airbytehq/airbyte/pull/74540) | Update dependencies |
 | 4.6.23 | 2026-02-24 | [73755](https://github.com/airbytehq/airbyte/pull/73755) | Update dependencies |

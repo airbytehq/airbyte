@@ -29,6 +29,7 @@ object AzureBlobStorageTestContainer {
             client.serviceClient.createBlobContainer(CONTAINER_NAME)
         }
     }
+
     // intentionally no stop method - testcontainers automatically stop when their parent java
     // process exits (via ryuk)
 

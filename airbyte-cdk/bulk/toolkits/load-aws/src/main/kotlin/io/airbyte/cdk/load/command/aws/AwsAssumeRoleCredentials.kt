@@ -8,7 +8,7 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 // For some reason, micronaut doesn't handle plain `@Requires(property = "...")` when you declare
 // the application.yaml as `foo: ${FOO_BAR}`.
@@ -41,7 +41,9 @@ const val ACCESS_KEY_PROPERTY = "airbyte.destination.aws.assume-role.access-key"
 const val SECRET_KEY_PROPERTY = "airbyte.destination.aws.assume-role.secret-key"
 const val EXTERNAL_ID_PROPERTY = "airbyte.destination.aws.assume-role.external-id"
 
-private object AssumeRoleCredentialsCondition : Condition {
+// Must be a class with a public no-arg constructor: Micronaut instantiates @Requires conditions
+// itself.
+internal class AssumeRoleCredentialsCondition : Condition {
     override fun matches(context: ConditionContext<*>): Boolean {
         val accessKey = context.getProperty(ACCESS_KEY_PROPERTY, String::class.java).orElse("")
         val secretKey = context.getProperty(SECRET_KEY_PROPERTY, String::class.java).orElse("")

@@ -1,5 +1,5 @@
 ---
-products: oss-community, oss-enterprise
+products: oss-community
 ---
 
 import Tabs from '@theme/Tabs';
@@ -23,6 +23,49 @@ Managing ingress with Airbyte works differently depending on whether you deploy 
 
     Use the Helm chart ingress configuration if you want Airbyte to manage ingress creation and updates automatically. Use your own ingress if you need custom ingress configurations beyond what the Helm chart provides, or if you prefer to manage ingress independently.
 
+## Request body size
+
+The Airbyte server, workers, and workload API server each default to a maximum request body size of 50 MB (52,428,800 bytes). Larger requests, such as requests containing large discovered catalogs, can fail with HTTP `413` errors.
+
+Airbyte's Helm chart ingress routes only to the Airbyte server. For requests from outside the cluster, configure your ingress controller and any reverse proxies to allow at least the server's request body limit. The worker and workload API server limits apply to requests inside the cluster, not traffic through this ingress.
+
+For ingress-nginx, the default [`proxy-body-size`](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#proxy-body-size) is `1m`. Use the [`nginx.ingress.kubernetes.io/proxy-body-size` annotation](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#custom-max-body-size) to set the limit for your ingress. The NGINX examples below set it to `"50m"` to match Airbyte's default.
+
+:::warning abctl request limit
+
+abctl v0.30.4 limits incoming requests to 10 MB through its NGINX ingress, even when the Airbyte server allows larger requests. Increasing the limit on a reverse proxy in front of abctl doesn't raise this ingress limit.
+
+:::
+
+### Increase the limit for a Helm deployment
+
+To allow larger requests, set all three [request size variables](../../operator-guides/configuring-airbyte.md#airbyte-services) to the same byte value on `server`, `worker`, and `workloadApiServer` in your `values.yaml` file. Raising only one limit can still result in HTTP `413` errors. For requests through the server ingress, also increase the ingress and any reverse proxy limits to match.
+
+For example, this configuration sets the service limits to 100 MB (104,857,600 bytes) and the ingress-nginx limit to `100m`:
+
+```yaml
+server:
+  env_vars:
+    MICRONAUT_SERVER_MAX_REQUEST_SIZE: "104857600"
+    MICRONAUT_SERVER_MAX_REQUEST_BUFFER_SIZE: "104857600"
+    NETTY_AGGREGATOR_MAX_CONTENT_LENGTH: "104857600"
+worker:
+  env_vars:
+    MICRONAUT_SERVER_MAX_REQUEST_SIZE: "104857600"
+    MICRONAUT_SERVER_MAX_REQUEST_BUFFER_SIZE: "104857600"
+    NETTY_AGGREGATOR_MAX_CONTENT_LENGTH: "104857600"
+workloadApiServer:
+  env_vars:
+    MICRONAUT_SERVER_MAX_REQUEST_SIZE: "104857600"
+    MICRONAUT_SERVER_MAX_REQUEST_BUFFER_SIZE: "104857600"
+    NETTY_AGGREGATOR_MAX_CONTENT_LENGTH: "104857600"
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+```
+
+Apply the updated values with `helm upgrade`.
+
 ## Before you begin: you must set up an ingress controller
 
 Before enabling ingress in Airbyte, you must have an ingress controller deployed in your Kubernetes cluster. Airbyte doesn't install or manage the ingress controller. Without one, your configurations in Airbyte can't do anything. Refer to your ingress controller's documentation for installation instructions.
@@ -45,15 +88,14 @@ You can configure ingress directly in your `values.yaml` file. Airbyte will auto
 
 ### Basic configuration
 
-Add the following to your `values.yaml` file. This example includes both required backend services for Airbyte to function properly:
+Add the following to your `values.yaml` file. This example routes requests to the Airbyte server:
 
 ```yaml
 ingress:
   enabled: true
   className: "nginx"  # Specify your ingress class (e.g., "nginx", "alb", etc.)
-  annotations: {}
-    # Add any ingress-specific annotations here
-    # Example for NGINX:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     # nginx.ingress.kubernetes.io/ssl-redirect: "false"
   hosts:
     - host: airbyte.example.com  # Replace with your domain
@@ -61,9 +103,6 @@ ingress:
         - path: /
           pathType: Prefix
           backend: server  # Routes to airbyte-server (UI and API)
-        - path: /connector-builder
-          pathType: Prefix
-          backend: connector-builder-server  # Required for connector builder
   tls: []
     # Optionally configure TLS
     # - secretName: airbyte-tls
@@ -71,10 +110,7 @@ ingress:
     #     - airbyte.example.com
 ```
 
-The `backend` field specifies which Airbyte service to route to:
-
-- `server` - Routes to the main Airbyte API server (handles UI and API requests)
-- `connector-builder-server` - Routes to the connector builder service (required for Airbyte's connector builder to work)
+The `backend` field must be `server`. The Helm chart rejects other backend values.
 
 ### Switching from external ingress to Helm chart ingress
 
@@ -135,22 +171,13 @@ metadata:
   name: airbyte-ingress # ingress name, example: airbyte-production-ingress
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
 spec:
   ingressClassName: nginx
   rules:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
-          # BEGIN: Self-Managed Enterprise only - Do not include if you are an open source user
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte-keycloak-svc 
-                name: airbyte-airbyte-keycloak-svc 
-                port: 
-                  number: 8180 
-            path: /auth
-            pathType: Prefix
-          # END: Self-Managed Enterprise only
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
@@ -198,15 +225,6 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
-          # BEGIN: Self-Managed Enterprise only - Do not include if you are an open source user
-          - backend:
-              service:
-                name: airbyte-airbyte-keycloak-svc
-                port:
-                  number: 8180
-            path: /auth
-            pathType: Prefix
-          # END: Self-Managed Enterprise only
           - backend:
               service:
                 name: airbyte-airbyte-connector-builder-server-svc
