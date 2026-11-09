@@ -1224,6 +1224,33 @@ definitions:
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Reset
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Recurly rejected the API key (HTTP 401). In Recurly, open
+            Integrations > API Credentials, copy an active private API key for
+            this site, and paste it into the API Key field of this source.
+        - type: HttpResponseFilter
+          http_codes:
+            - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Recurly denied access (HTTP 403). Use a private API key from the site
+            you want to sync, and make sure the key is enabled and allowed to
+            read data in Recurly under Integrations > API Credentials.
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -1256,28 +1283,32 @@ spec:
       api_key:
         type: string
         description: >-
-          Recurly API Key. See the  <a
-          href="https://docs.airbyte.com/integrations/sources/recurly">docs</a>
-          for more information on how to generate this key.
+          A private API key for your Recurly site. In Recurly, open Integrations >
+          API Credentials, then copy an existing private key or add a new one.
         order: 0
         title: API Key
         airbyte_secret: true
       begin_time:
         type: string
+        title: Start Date
         description: >-
-          ISO8601 timestamp from which the replication from Recurly API will
-          start from.
+          UTC date and time to start replicating data from, in the format
+          YYYY-MM-DDTHH:mm:ssZ. Leave empty to replicate the last five years.
         order: 1
         pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
         examples:
           - "2021-12-01T00:00:00Z"
       end_time:
         type: string
+        title: End Date
         description: >-
-          ISO8601 timestamp to which the replication from Recurly API will stop.
-          Records after that date won't be imported.
+          UTC date and time to stop replicating data at, in the format
+          YYYY-MM-DDTHH:mm:ssZ. Records updated after this time are not
+          replicated. Leave empty to replicate up to the time of the sync.
         order: 2
         pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
         examples:
           - "2021-12-01T00:00:00Z"
       num_workers:
@@ -1291,7 +1322,9 @@ spec:
         - 1
         - 2
         - 3
-        description: The number of worker threads to use for the sync.
+        description: >-
+          The number of requests the connector sends to Recurly in parallel.
+          Values below 2 run with 2 workers.
       accounts_step_days:
         type: integer
         title: Days in length for each API call to get data
@@ -1307,12 +1340,31 @@ spec:
       is_sandbox:
         type: boolean
         description: >-
-          Set to true for sandbox accounts (400 requests/min, all types). Defaults to false for production accounts (1,000 GET requests/min).
+          Turn on for Recurly sandbox sites, which allow fewer requests (2,000
+          per five minutes) than production sites (5,000 GET requests per five
+          minutes). The connector paces its requests to stay within the limit.
         default: false
         order: 5
         title: Use Sandbox Environment
-    
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Appends the UTC suffix to dates saved before it was required.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["begin_time"]
+                value: "{{ config['begin_time'] }}Z"
+            condition: "{{ config.get('begin_time') and not config['begin_time'].endswith('Z') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["end_time"]
+                value: "{{ config['end_time'] }}Z"
+            condition: "{{ config.get('end_time') and not config['end_time'].endswith('Z') }}"
 
 metadata:
   autoImportSchema:
@@ -1397,35 +1449,26 @@ metadata:
 # Rate Limits: https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits
 #
 # In order to provide a fast response time to all our customers, we may rate limit excessive requests. By default, new Recurly sites have the following API rate limits:
-#
-# Sandbox sites: 400 requests/min (all request types count), or 2,000 requests over a 5-minute sliding window.
-# Production sites: 1,000 GET requests/min, or 5,000 GET requests over a 5-minute sliding window. POST, PUT, DELETE requests are not rate-limited in production.
-#
-# The rate limit is calculated over a 5-minute sliding window. A production site could make 4,000 GET requests in one minute without hitting the limit if prior minutes have fewer than 1,000 requests.
-#
-# If an API request exceeds the rate limit, the API returns a 429 Too Many Requests HTTP status. The rate limit is indicated by X-RateLimit-Limit, remaining requests by X-RateLimit-Remaining, and reset time by X-RateLimit-Reset (UNIX epoch seconds).
-#
-# We set default_concurrency to 10, assuming ~250ms per request (4 requests/sec per stream), resulting in 10 streams × 4 requests/sec = 2,400 requests/min. This exceeds the sandbox limit (400 requests/min) and production limit (1,000 GET requests/min),
-# but the api_budget throttles requests to stay within the 400 (sandbox) or 1,000 (production) requests per 5-minute window, with backoff handling for 429 errors.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  default_concurrency: "{{ [config.get('num_workers', 10) | int, 2] | max }}"
   max_concurrency: 20
 
 api_budget:
   type: HTTPAPIBudget
-  ratelimit_reset_header: "X-RateLimit-Reset"
-  ratelimit_remaining_header: "X-RateLimit-Remaining"
+  ratelimit_reset_header: X-RateLimit-Reset
+  ratelimit_remaining_header: X-RateLimit-Remaining
   status_codes_for_ratelimit_hit: [429]
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ 400 if config.get('is_sandbox', false) else 1000 }}"
-          interval: "PT5M"  # 5-minute sliding window
+        - limit: "{{ 2000 if config.get('is_sandbox', false) else 5000 }}"
+          interval: "PT5M"
       matchers:
-        - method: "GET"
-          url_base: "{{ config['subdomain'] }}"
-          url_path_pattern: ".*"  # Match all paths
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://v3.recurly.com
+          url_path_pattern: ".*"
 schemas:
   accounts:
     type: object
