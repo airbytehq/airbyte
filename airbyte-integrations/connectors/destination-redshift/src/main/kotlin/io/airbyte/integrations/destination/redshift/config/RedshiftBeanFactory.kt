@@ -52,7 +52,7 @@ class RedshiftBeanFactory {
      * Configures aggregate publishing thresholds for the CDK dataflow pipeline.
      *
      * Redshift loads data via S3 staging + COPY, which has fixed per-invocation overhead. Larger
-     * batches amortize this cost better. 200 MB per aggregate with 1 GB total across all streams
+     * batches amortize this cost better. 150 MB per aggregate with 500 MB total across all streams
      * balances throughput against memory usage.
      *
      * maxRecordsPerAgg is very high so that we always hit the flush limits based on Bytes metric
@@ -62,7 +62,7 @@ class RedshiftBeanFactory {
         AggregatePublishingConfig(
             maxRecordsPerAgg = 10_000_000_000_000L,
             maxEstBytesPerAgg = 150_000_000L,
-            maxEstBytesAllAggregates = 1_500_000_000L,
+            maxEstBytesAllAggregates = 500_000_000L,
             maxBufferedAggregates = 10,
         )
 }
