@@ -70,7 +70,6 @@ from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .api import (
-    _STREAM_REQUEST_TIMEOUT_SECONDS,
     PARENT_SALESFORCE_OBJECTS,
     UNSUPPORTED_FILTERING_STREAMS,
     Salesforce,
@@ -93,6 +92,9 @@ csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
 _JOB_TRANSIENT_ERRORS_MAX_RETRY = 1
+# (connect, read) timeout for stream data requests: REST queries and every Bulk API job call. The read value is the
+# longest silence allowed between bytes, so it stays above the 2 minutes Salesforce gives a SOQL query to execute.
+_STREAM_REQUEST_TIMEOUT_SECONDS = (30, 180)
 
 
 class SalesforceStream(HttpStream, ABC):

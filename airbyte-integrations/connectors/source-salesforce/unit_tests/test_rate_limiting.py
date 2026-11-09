@@ -17,14 +17,13 @@ from source_salesforce.api import (
     _LOGIN_DEDUP_SECONDS,
     _REFRESH_FAILURE_BACKOFF_SECONDS,
     _REQUEST_TIMEOUT_SECONDS,
-    _STREAM_REQUEST_TIMEOUT_SECONDS,
     _TOKEN_REFRESH_INTERVAL_SECONDS,
     API_VERSION,
     Salesforce,
     SalesforceTokenProvider,
 )
 from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
-from source_salesforce.streams import BulkDatetimeStreamSlicer
+from source_salesforce.streams import _STREAM_REQUEST_TIMEOUT_SECONDS, BulkDatetimeStreamSlicer
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
