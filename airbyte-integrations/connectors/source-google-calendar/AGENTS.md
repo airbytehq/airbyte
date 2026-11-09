@@ -11,7 +11,7 @@ Flat OAuth fields (`client_id`, `client_secret`, `client_refresh_token_2`) feedi
 ## Per-stream reference
 
 | Stream | Endpoint | PK | Sync modes | Cursor | Partitioned |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | colors | `colors` | kind | full_refresh | — | no |
 | settings | `users/me/settings` | id | full_refresh | — | no |
 | calendarlist | `users/me/calendarList` | id | full_refresh | — | no |
