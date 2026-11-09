@@ -8,7 +8,8 @@
 #
 # Status options are matched to labels by name, ignoring case and punctuation: `intake/needs-information`
 # matches "Needs information" or "needs-information". A missing option fails the run and lists the
-# options the project has.
+# options the project has. An open item whose last `intake/*` label is removed, with none added within a
+# minute, has its Status cleared (the card stays on the board).
 #
 # No PR code is checked out or run; the job only calls the GitHub API. The Octavia Bot app must have
 # org-level Projects: write permission (the same one `community-api-source-pr-board.yml` uses).
@@ -83,10 +84,14 @@ jobs:
 
             // Live state, not the event payload: a label swap fires two events, and both should
             // see the final labels.
-            const { data: item } = await github.rest.issues.get({ ...context.repo, issue_number: number });
-            const intakeLabels = item.labels
-              .map((label) => (typeof label === 'string' ? label : label.name))
-              .filter((name) => name.startsWith('intake/'));
+            const liveItem = async () => {
+              const { data } = await github.rest.issues.get({ ...context.repo, issue_number: number });
+              const labels = data.labels
+                .map((label) => (typeof label === 'string' ? label : label.name))
+                .filter((name) => name.startsWith('intake/'));
+              return { item: data, intakeLabels: labels };
+            };
+            let { item, intakeLabels } = await liveItem();
 
             let wanted;
             if (item.state === 'closed') {
@@ -98,8 +103,15 @@ jobs:
             } else if (intakeLabels.length === 1) {
               wanted = [normalize(intakeLabels[0].slice('intake/'.length))];
             } else if (!intakeLabels.length) {
-              core.info(`#${number} has no intake/* label; leaving any existing card as it is.`);
-              return;
+              // A re-run removes every intake/* label before adding the new one, so wait before
+              // clearing: if a label comes back, its own `labeled` run sets the Status.
+              await new Promise((resolve) => setTimeout(resolve, 60000));
+              ({ item, intakeLabels } = await liveItem());
+              if (intakeLabels.length || item.state === 'closed') {
+                core.info(`#${number} changed while waiting; its own run syncs it.`);
+                return;
+              }
+              wanted = null;
             } else {
               core.warning(`#${number} has several intake/* labels (${intakeLabels.join(', ')}); skipping.`);
               return;
@@ -128,6 +140,40 @@ jobs:
             if (!project.field?.id) {
               throw new Error(`Project "${project.title}" has no Status single-select field.`);
             }
+            const kind = item.pull_request ? 'PR' : 'issue';
+            if (wanted === null) {
+              // The label was removed and nothing replaced it: clear the Status so the card doesn't
+              // show a state the item has left. An item not on the project is left off it.
+              const { node } = await github.graphql(
+                `query($id: ID!) {
+                  node(id: $id) {
+                    ... on Issue { projectItems(first: 50) { nodes { id project { id } } } }
+                    ... on PullRequest { projectItems(first: 50) { nodes { id project { id } } } }
+                  }
+                }`,
+                { id: item.node_id },
+              );
+              const card = node?.projectItems?.nodes.find((candidate) => candidate.project.id === project.id);
+              if (!card) {
+                core.info(`#${number} has no intake/* label and no card on "${project.title}"; nothing to sync.`);
+                return;
+              }
+              if (dryRun) {
+                core.notice(`Dry run: would clear the Status of ${kind} #${number} on "${project.title}".`);
+                return;
+              }
+              await github.graphql(
+                `mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!) {
+                  clearProjectV2ItemFieldValue(input: { projectId: $projectId, itemId: $itemId, fieldId: $fieldId }) {
+                    projectV2Item { id }
+                  }
+                }`,
+                { projectId: project.id, itemId: card.id, fieldId: project.field.id },
+              );
+              core.notice(`Cleared the Status of ${kind} #${number} on "${project.title}": it has no intake/* label.`);
+              return;
+            }
+
             const option = project.field.options.find((candidate) => wanted.includes(normalize(candidate.name)));
             if (!option) {
               throw new Error(
@@ -136,7 +182,6 @@ jobs:
               );
             }
 
-            const kind = item.pull_request ? 'PR' : 'issue';
             if (dryRun) {
               core.notice(`Dry run: would set ${kind} #${number} to Status "${option.name}" on "${project.title}".`);
               return;
