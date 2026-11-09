@@ -11,3 +11,7 @@ Airbyte Cloud runs and syncs your data using a specific set of IP addresses. All
 Airbyte defaults to running syncs in the United States. To change this, or to check your data residency, see your [data residency](/platform/cloud/managing-airbyte-cloud/manage-data-residency) for each workspace.
 
 <AirbyteCloudIps />
+
+## Context layer
+
+If your organization uses the [context layer](../context-layer/readme.md), also allow the [context layer IP addresses](../context-layer/readme.md#ip-allow-list).

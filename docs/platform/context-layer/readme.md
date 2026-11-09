@@ -33,6 +33,16 @@ An organization admin [manages agent access and search independently](manage-acc
 
 Agent access and search are available only in Airbyte Cloud, not self-managed Airbyte Core or Enterprise. In workspaces on customer-owned Enterprise Flex data planes, you can't turn on agent access for sources or destinations, and search isn't available for connections.
 
+## IP allow list
+
+Agent access and search use the [Airbyte Cloud IP addresses](../operating-airbyte/ip-allowlist.md), plus the following addresses. If a source or destination restricts inbound traffic by IP address, allow these addresses too.
+
+| Geography     | Region    | IP address (CIDR) | IP addresses   |
+| ------------- | --------- | ----------------- | -------------- |
+| United States | us-west-2 | N/A               | 44.226.44.242  |
+| United States | us-west-2 | N/A               | 35.163.106.179 |
+| United States | us-west-2 | N/A               | 44.227.212.246 |
+
 ## Usage limits
 
 The context layer is free to use. Each organization can make up to 100,000 direct reads and searches combined per month. Other Airbyte MCP tools don't count toward this limit. Direct reads also count toward the API rate limits of the source you read from. SQL queries and search backfills use destination compute, which your destination provider may charge for.
