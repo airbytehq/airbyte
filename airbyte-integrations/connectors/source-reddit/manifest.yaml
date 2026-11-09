@@ -44,19 +44,17 @@ definitions:
             limit: "{{ config['limit'] }}"
             include_over_18: "{{ config['include_over_18'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit... Retrying
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: Rate limit hit... Retrying
         record_selector:
           type: RecordSelector
           extractor:
@@ -93,19 +91,17 @@ definitions:
             limit: "{{ config['limit'] }}"
             include_over_18: "{{ config['include_over_18'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit... Retrying
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: Rate limit hit... Retrying
         record_selector:
           type: RecordSelector
           extractor:
@@ -142,19 +138,17 @@ definitions:
             limit: "5"
             include_over_18: "{{ config['include_over_18'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit... Retrying
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: Rate limit hit... Retrying
         record_selector:
           type: RecordSelector
           extractor:
@@ -190,19 +184,17 @@ definitions:
             limit: "{{ config['limit'] }}"
             include_over_18: "{{ config['include_over_18'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit... Retrying
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: Rate limit hit... Retrying
         record_selector:
           type: RecordSelector
           extractor:
@@ -239,16 +231,14 @@ definitions:
             limit: "{{ config['limit'] }}"
             include_over_18: "{{ config['include_over_18'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit... Retrying
+            type: DefaultErrorHandler
+            max_retries: 3
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 429
+                error_message: Rate limit hit... Retrying
         record_selector:
           type: RecordSelector
           extractor:
