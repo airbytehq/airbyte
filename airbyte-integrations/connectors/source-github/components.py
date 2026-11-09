@@ -4,20 +4,19 @@
 
 """Custom low-code components for source-github.
 
-Everything here exists because the GitHub GraphQL responses cannot be reshaped into the
-connector's long-standing REST-compatible record shape with declarative transformations
-alone. Pagination, page-size reduction, error handling and incremental behavior are all
-handled by the manifest.
+The manifest configures stream behavior; custom components implement the transformations,
+pagination, and backoff logic it cannot express.
 """
 
 import base64
 import binascii
+import json
 import logging
 import struct
 from dataclasses import InitVar, dataclass
 from itertools import groupby
 from os import getenv
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlparse
 
 import requests
@@ -27,15 +26,17 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import (
     PaginationStrategy,
 )
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.transformations.config_transformations.config_transformation import (
     ConfigTransformation,
 )
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
-from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -54,6 +55,56 @@ GRAPHQL_REACTION_TO_REST = {
     "ROCKET": "rocket",
     "EYES": "eyes",
 }
+
+
+def _is_rate_limited_response(response: requests.Response) -> bool:
+    """Whether GitHub identifies an HTTP response as rate limited."""
+    if response.status_code == 429 or "Retry-After" in response.headers:
+        return True
+    if response.status_code != 200 and response.headers.get("X-RateLimit-Remaining") == "0":
+        return True
+
+    try:
+        body = response.json()
+    except ValueError:
+        return False
+    if not isinstance(body, Mapping):
+        return False
+
+    message = body.get("message")
+    if isinstance(message, str):
+        normalized_message = message.lower()
+        if "api rate limit exceeded" in normalized_message or "secondary rate limit" in normalized_message:
+            return True
+
+    errors = body.get("errors")
+    return isinstance(errors, list) and any(isinstance(error, Mapping) and error.get("type") == "RATE_LIMITED" for error in errors)
+
+
+@dataclass
+class RateLimitedResponseBackoffStrategy(BackoffStrategy):
+    """Apply nested header waits only to responses GitHub identifies as rate limited."""
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    backoff_strategies: List[BackoffStrategy]
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        if not isinstance(response_or_exception, requests.Response) or not _is_rate_limited_response(response_or_exception):
+            return None
+
+        for strategy in self.backoff_strategies:
+            wait = strategy.backoff_time(
+                response_or_exception=response_or_exception,
+                attempt_count=attempt_count,
+            )
+            if wait:
+                return wait
+        return None
 
 
 def _extract_database_id_from_node_id(node_id: Optional[str]) -> Optional[int]:
@@ -596,6 +647,59 @@ class CommitsBranchPartitionRouter(SubstreamPartitionRouter):
                         StreamSlice(partition={"branch": default_branch, "parent_slice": {"repository": repository}}, cursor_slice={})
                     ]
             yield from wanted
+
+
+# `extra_fields` key under which `workflow_run_attempts` receives the whole parent run: the
+# manifest asks for the field path `[]`, which dpath resolves to the record itself and the
+# router keys by the joined path, i.e. the empty string.
+PARENT_RUN_EXTRA_FIELD = ""
+
+
+@dataclass
+class WorkflowRunAttemptsRetriever(SimpleRetriever):
+    """Emits attempt 1 of a run that was never re-run from the parent listing, without a request.
+
+    The listing item of a single-attempt run is the attempt: compared live with
+    `GET .../runs/{id}/attempts/1`, every field matches except `jobs_url` and `logs_url`, which the
+    attempt endpoint scopes to the attempt and which are rebuilt here from `url`, plus `created_at`
+    and `updated_at`, which the attempt endpoint rounds up to the next second for about a quarter
+    of runs (the listing and `GET .../runs/{id}` agree with each other). Most runs have a single
+    attempt, so this drops about one request per run. Re-runs walk the attempt chain unchanged.
+
+    The record still goes through the record selector, so the manifest's record filter applies to
+    it exactly as to a fetched attempt.
+    """
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[[Optional[requests.Response]], Iterable[Record]],
+        stream_slice: StreamSlice,
+    ) -> Iterable[Record]:
+        run = (stream_slice.extra_fields or {}).get(PARENT_RUN_EXTRA_FIELD)
+        if not self._is_single_attempt_run(run):
+            yield from super()._read_pages(records_generator_fn, stream_slice)
+            return
+        attempt = dict(run)
+        attempt["jobs_url"] = f"{run['url']}/attempts/1/jobs"
+        attempt["logs_url"] = f"{run['url']}/attempts/1/logs"
+        response = requests.Response()
+        response._content = json.dumps(attempt).encode("utf-8")
+        response.status_code = 200
+        response.encoding = "utf-8"
+        yield from records_generator_fn(response)
+
+    @staticmethod
+    def _is_single_attempt_run(run: Any) -> bool:
+        # `type(...) is int` rather than `== 1`, which `True` would also satisfy. A run without a
+        # usable `run_attempt` or `url` takes the request path, which handles it already.
+        return (
+            isinstance(run, Mapping)
+            and type(run.get("run_attempt")) is int
+            and run["run_attempt"] == 1
+            and not run.get("previous_attempt_url")
+            and isinstance(run.get("url"), str)
+            and bool(run["url"])
+        )
 
 
 @dataclass

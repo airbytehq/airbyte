@@ -31,7 +31,6 @@ acceptance_tests:
             bypass_reason: "data changes very fast"
           - name: native_query_snippets
             bypass_reason: "data changes very fast"
-        fail_on_extra_columns: false
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

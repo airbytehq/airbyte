@@ -8,20 +8,32 @@ This page contains the setup guide and reference information for the [Pylon](htt
 
 ## Prerequisites
 
-- A Pylon account with an Admin role.
-- A Pylon API token. Only Admin users can create API tokens. Generate one in your Pylon dashboard under **Settings > API**. For details, see [Pylon's authentication guide](https://docs.usepylon.com/pylon-docs/developer/api/authentication).
+- A Pylon API token created by an Admin under **Settings > Integrations & dev > API tokens**. Choose a role that can read the data you plan to sync. If the token acts as a user or bot, it inherits that identity's current role and permissions. Pylon tokens have no separate scopes. For creation steps, see [Pylon's authentication guide](https://docs.usepylon.com/pylon-docs/developer/api/authentication).
+- Access to Tags for the source connection check, plus access to each selected stream and its parent stream. A successful connection check does not verify access to every stream.
 
 ## Setup guide
 
 <FieldAnchor field="api_token">
 
-Enter your **API Token**. This is the Bearer token used to authenticate all requests to the Pylon API.
+Enter only your **API Token**, without the word `Bearer` or surrounding spaces. The connector adds the authentication header to all requests to the Pylon API.
+
+</FieldAnchor>
+
+<FieldAnchor field="region">
+
+Select **Region** to match your Pylon tenant and API token. **US** (the default) uses `https://api.usepylon.com` with tokens prefixed `pylon_api_`. **EU** uses `https://api.eu.usepylon.com` with tokens prefixed `pylon_api_eu_`. For older tokens without a prefix, choose the region where your Pylon tenant is hosted. Existing configurations without Region continue to use US.
 
 </FieldAnchor>
 
 <FieldAnchor field="start_date">
 
-Optionally, enter a **Start Date** in UTC format (`YYYY-MM-DDTHH:MM:SSZ`). This controls how far back the connector syncs data for the Issues stream and its child streams (Issue Messages and Issue Threads). If not provided, defaults to 30 days ago.
+Optionally, enter a **Start Date** in UTC format (`YYYY-MM-DDTHH:MM:SSZ`). The connector uses the issue's `updated_at`, not its creation date, to select Issues and the parent issues for Issue Messages and Issue Threads. If omitted, the starting point defaults to 30 days before each sync. Set an explicit date to keep a fixed history window for the child streams. Subsequent incremental Issues syncs resume from the saved cursor.
+
+</FieldAnchor>
+
+<FieldAnchor field="num_workers">
+
+Optionally, set **Number of Workers** from **2** to **10** (default: **3**). At least two workers are required so child streams can read records while generating parent partitions. Lower this value if other integrations share your organization's API allowance.
 
 </FieldAnchor>
 
@@ -32,6 +44,11 @@ The Pylon source connector supports the following [sync modes](https://docs.airb
 - Full Refresh | Overwrite
 - Full Refresh | Append
 - Incremental Sync | Append (Issues stream only)
+- Incremental Sync | Append + Deduped (Issues stream only; recommended)
+
+Issue time filters are inclusive. Each incremental sync can re-emit issues at the saved cursor, and adjacent query windows can replay records at their shared edges. **Incremental | Append** retains these replays as duplicate rows, including another copy each sync of an issue at the saved cursor. Use **Incremental | Append + Deduped**, with `id` as the primary key, to keep one row per issue.
+
+An issue updated exactly at a shared window edge also generates two child partitions. **Issue Messages** and **Issue Threads** can therefore emit the same child rows twice within one sync. **Full Refresh | Overwrite** does not deduplicate rows within that sync. With a fixed Start Date, this rare edge case can recur on every sync until the issue is updated. It does not lose data; deduplicate child rows downstream by `id` if needed.
 
 ## Supported streams
 
@@ -55,10 +72,12 @@ The Pylon source connector supports the following streams:
 
 ### Stream notes
 
-- **Issues** is the only incremental stream. It uses `updated_at` as its cursor field and the `POST /issues/search` endpoint, so incremental syncs capture all issue modifications, not just newly created issues. Data is fetched in 30-day windows because Pylon caps the `updated_at` filter at a 30-day range per request.
-- **Issue Messages** and **Issue Threads** are child streams of Issues. They fetch data for each issue returned by the Issues stream, so the Start Date you configure indirectly limits these streams as well.
-- **Knowledge Base Articles** is a child stream of Knowledge Bases.
-- **Custom Fields** queries the Pylon API once for each of the three supported object types: account, issue, and contact.
+- **Issues** is the only incremental stream. It uses `updated_at` as its cursor field and the `POST /issues/search` endpoint, so incremental syncs capture all issue modifications, not just newly created issues. The connector chooses 30-day query windows; this is not a documented Pylon search API limit. Inclusive bounds overlap at window edges to avoid subsecond gaps. The final query can extend up to one second beyond the cursor interval's end, and its bounds remain fixed across pages.
+- **Issue Messages** and **Issue Threads** are full-refresh child streams of Issues. On every sync, they re-read all messages or threads for each issue updated since **Start Date**, independently of the Issues stream's saved incremental cursor. They do not filter on the message or thread timestamp, so child records can predate **Start Date**. Both streams include `issue_id`, which you can join to Issues on `id`.
+- **Knowledge Base Articles** is a full-refresh child stream of Knowledge Bases. It includes `knowledge_base_id`, which you can join to Knowledge Bases on `id`.
+- **Custom Fields** retrieves field definitions for three object types: account, issue, and contact. It does not retrieve definitions for other Pylon object types.
+- **Users** includes both active and deactivated users.
+- All streams other than Issues support full refresh only and do not save an incremental cursor. **Start Date** does not limit streams other than Issues, Issue Messages, and Issue Threads.
 
 ### Upgrading to 0.0.8
 
@@ -71,15 +90,23 @@ If you need a longer backfill, set Start Date to the desired date before the fir
 
 ## Limitations & Troubleshooting
 
+### Authentication and permissions
+
+- For `wrong_region_token` (HTTP 401), change **Region** to match your Pylon tenant and token.
+- For `invalid_api_token` (HTTP 401), check that the token is correct and has not been rotated or revoked. If the token has an IP allowlist, allow the public egress IP addresses used by Airbyte. Pylon returns the same error when an IP address is blocked.
+- For HTTP 403, give the token's role read access to the affected data, or deselect the stream. Child streams also require access to their parent data. The connector fails on permission errors rather than silently skipping inaccessible streams.
+
+For other error codes, see [Pylon's error reference](https://docs.usepylon.com/pylon-docs/developer/api/errors).
+
 ### Rate limiting
 
-The Pylon API enforces per-endpoint rate limits. The endpoints used by this connector are limited as follows:
+The [Pylon API rate limits](https://docs.usepylon.com/pylon-docs/developer/api/rate-limits) apply per endpoint and are shared by all API tokens in your organization:
 
-- `POST /issues/search` (Issues): 20 requests per minute
-- `GET /issues/{id}/messages` (Issue Messages) and `GET /issues/{id}/threads` (Issue Threads): 20 requests per minute each
-- Most other endpoints: 60 requests per minute
+- `GET /activity-types` and `GET /issue-statuses`: 30 requests per minute each.
+- `POST /issues/search`, `GET /issues/{id}/messages`, `GET /issues/{id}/threads`, and `GET /knowledge-bases/{id}/articles`: 120 requests per minute each.
+- Other endpoints used by this connector: 300 requests per minute each.
 
-The connector handles rate-limited responses (HTTP 429) with exponential backoff and retries up to 3 times.
+The connector budgets requests separately for each endpoint. For rate-limited responses (HTTP 429), it uses `Retry-After`, then `X-Retry-After` if the first header is absent, then exponential backoff if neither is present, with up to five retries. A selected retry-header wait of 120 seconds or more stops the stream rather than waiting. By default, the connector uses three workers, with a minimum of two and a maximum of ten. Lower **Number of Workers** if other integrations also use your organization's API allowance.
 
 ## IP allow list
 
@@ -92,6 +119,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.0.31 | 2026-11-06 | [91022](https://github.com/airbytehq/airbyte/pull/91022) | Add EU region support, documented fields, deactivated users, inclusive issue windows, parent IDs on child streams, actionable errors, request budgets, and configurable concurrency. |
+| 0.0.30 | 2026-11-03 | [90398](https://github.com/airbytehq/airbyte/pull/90398) | Simplify error handling while preserving retry and rate-limit behavior. |
+| 0.0.29 | 2026-11-03 | [90704](https://github.com/airbytehq/airbyte/pull/90704) | Update dependencies |
+| 0.0.28 | 2026-10-27 | [90041](https://github.com/airbytehq/airbyte/pull/90041) | Update dependencies |
+| 0.0.27 | 2026-10-20 | [89362](https://github.com/airbytehq/airbyte/pull/89362) | Update dependencies |
 | 0.0.26 | 2026-10-13 | [88765](https://github.com/airbytehq/airbyte/pull/88765) | Update dependencies |
 | 0.0.25 | 2026-10-06 | [87996](https://github.com/airbytehq/airbyte/pull/87996) | Update dependencies |
 | 0.0.24 | 2026-09-29 | [87314](https://github.com/airbytehq/airbyte/pull/87314) | Update dependencies |

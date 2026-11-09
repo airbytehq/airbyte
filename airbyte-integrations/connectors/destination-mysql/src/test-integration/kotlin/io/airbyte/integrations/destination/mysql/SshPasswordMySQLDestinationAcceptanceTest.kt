@@ -17,7 +17,7 @@ class SshPasswordMySQLDestinationAcceptanceTest : SshMySQLDestinationAcceptanceT
      * that container.
      */
     @Disabled(
-        "Our dbt interface doesn't correctly parse the SSH password. Won't fix this test, since DV2 will replace normalization."
+        "Our dbt interface doesn't correctly parse the SSH password. Won't fix this test, since DV2 will replace normalization.",
     )
     @Throws(Exception::class)
     override fun testSyncWithNormalization(messagesFilename: String, catalogFilename: String) {
@@ -28,10 +28,10 @@ class SshPasswordMySQLDestinationAcceptanceTest : SshMySQLDestinationAcceptanceT
      * Similar to [.testSyncWithNormalization], disable the custom dbt test.
      *
      * TODO: get custom dbt transformations working
-     * https://github.com/airbytehq/airbyte/issues/33547
+     *   https://github.com/airbytehq/airbyte/issues/33547
      */
     @Disabled(
-        "Our dbt interface doesn't correctly parse the SSH password. https://github.com/airbytehq/airbyte/issues/33547 to fix this."
+        "Our dbt interface doesn't correctly parse the SSH password. https://github.com/airbytehq/airbyte/issues/33547 to fix this.",
     )
     @Throws(Exception::class)
     override fun testCustomDbtTransformations() {

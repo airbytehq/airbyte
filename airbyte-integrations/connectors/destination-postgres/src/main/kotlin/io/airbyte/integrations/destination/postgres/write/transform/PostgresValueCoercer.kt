@@ -85,7 +85,7 @@ class PostgresValueCoercer : ValueCoercer {
                 // Validate against BIGINT range
                 if (abValue.value !in BIGINT_RANGE) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else ValidationResult.Valid
             }
@@ -93,7 +93,7 @@ class PostgresValueCoercer : ValueCoercer {
                 // Validate against NUMERIC range
                 if (abValue.value < NUMERIC_MIN || abValue.value > NUMERIC_MAX) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else ValidationResult.Valid
             }
@@ -104,7 +104,7 @@ class PostgresValueCoercer : ValueCoercer {
                 val currentValue = (value.abValue as StringValue).value
                 if (currentValue.length * 4 > TEXT_LIMIT_BYTES) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else ValidationResult.Valid
             }
@@ -114,7 +114,7 @@ class PostgresValueCoercer : ValueCoercer {
                     seconds < TIMESTAMP_MIN_EPOCH_SECONDS || seconds > TIMESTAMP_MAX_EPOCH_SECONDS
                 ) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else ValidationResult.Valid
             }
@@ -124,7 +124,7 @@ class PostgresValueCoercer : ValueCoercer {
                     seconds < TIMESTAMP_MIN_EPOCH_SECONDS || seconds > TIMESTAMP_MAX_EPOCH_SECONDS
                 ) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else ValidationResult.Valid
             }

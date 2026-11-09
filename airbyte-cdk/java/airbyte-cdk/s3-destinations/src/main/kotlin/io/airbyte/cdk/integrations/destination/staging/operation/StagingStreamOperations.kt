@@ -24,19 +24,20 @@ class StagingStreamOperations<DestinationState : MinimumDestinationState>(
     destinationInitialStatus: DestinationInitialStatus<DestinationState>,
     private val fileUploadFormat: FileUploadFormat,
     private val destinationColumns: JavaBaseConstants.DestinationColumns,
-    disableTypeDedupe: Boolean = false
+    disableTypeDedupe: Boolean = false,
 ) :
     AbstractStreamOperation<DestinationState, SerializableBuffer>(
         storageOperation,
         destinationInitialStatus,
-        disableTypeDedupe
+        disableTypeDedupe,
     ) {
 
     private val log = KotlinLogging.logger {}
+
     override fun writeRecordsImpl(
         streamConfig: StreamConfig,
         suffix: String,
-        stream: Stream<PartialAirbyteMessage>
+        stream: Stream<PartialAirbyteMessage>,
     ) {
         val writeBuffer =
             StagingSerializedBufferFactory.initializeBuffer(fileUploadFormat, destinationColumns)
@@ -47,7 +48,7 @@ class StagingStreamOperations<DestinationState : MinimumDestinationState>(
                     record.serialized!!,
                     Jsons.serialize(record.record!!.meta),
                     streamConfig.generationId,
-                    record.record!!.emittedAt
+                    record.record!!.emittedAt,
                 )
             }
             it.flush()

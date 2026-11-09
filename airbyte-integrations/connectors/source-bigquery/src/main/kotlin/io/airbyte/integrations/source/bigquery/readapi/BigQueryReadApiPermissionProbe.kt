@@ -164,8 +164,7 @@ open class BigQueryReadApiPermissionProbe(
                 .filterIsInstance<StatusRuntimeException>()
                 .firstOrNull()
                 ?.status
-                ?.description
-                ?: denied.message ?: denied.toString()
+                ?.description ?: denied.message ?: denied.toString()
         val project: String = config.jobProjectId
         val problem: String =
             when {
@@ -200,8 +199,7 @@ open class BigQueryReadApiPermissionProbe(
         val job: Job =
             bigquery()
                 .create(JobInfo.of(QueryJobConfiguration.newBuilder(PROBE_QUERY).build()))
-                .waitFor()
-                ?: throw IllegalStateException("the job vanished before it completed")
+                .waitFor() ?: throw IllegalStateException("the job vanished before it completed")
         job.status?.error?.let { error -> throw IllegalStateException(error.message) }
         val configuration: QueryJobConfiguration = job.getConfiguration()
         return configuration.destinationTable

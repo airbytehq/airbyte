@@ -70,10 +70,10 @@ class IcebergTableSynchronizer(
      * @param incomingSchema The schema describing incoming data.
      * @param columnTypeChangeBehavior How to handle column type changes.
      * @param requireSeparateCommitsForColumnReplace If true, when replacing a column (deleting and
-     * re-adding with the same name but different type), the delete and add operations are committed
-     * separately. This is required for some catalogs (like BigLake) that don't support deleting and
-     * adding a column with the same name in a single commit, even with different field IDs. Default
-     * is false for backward compatibility.
+     *   re-adding with the same name but different type), the delete and add operations are
+     *   committed separately. This is required for some catalogs (like BigLake) that don't support
+     *   deleting and adding a column with the same name in a single commit, even with different
+     *   field IDs. Default is false for backward compatibility.
      * @return The updated [Schema], after changes have been applied and committed.
      */
     fun maybeApplySchemaChanges(
@@ -135,11 +135,11 @@ class IcebergTableSynchronizer(
                         superTypeFinder.findSuperType(
                             existingType = existingField.type(),
                             incomingType = incomingField.type(),
-                            columnName = columnName
+                            columnName = columnName,
                         )
                     if (superType !is PrimitiveType) {
                         throw ConfigErrorException(
-                            "Currently only primitive type updates are supported. Attempted type: $superType"
+                            "Currently only primitive type updates are supported. Attempted type: $superType",
                         )
                     }
                     update.updateColumn(columnName, superType)
@@ -178,7 +178,7 @@ class IcebergTableSynchronizer(
             // Only 1-level nesting is supported
             if (parentPath.count { it == PARENT_CHILD_SEPARATOR } > 0) {
                 throw ConfigErrorException(
-                    "Adding nested columns more than 1 level deep is not supported: $newColumnFqn"
+                    "Adding nested columns more than 1 level deep is not supported: $newColumnFqn",
                 )
             }
 
@@ -193,7 +193,7 @@ class IcebergTableSynchronizer(
                     val parentField =
                         incomingSchema.findField(parentPath)
                             ?: error(
-                                "Parent field \"$parentPath\" not found in the incoming schema."
+                                "Parent field \"$parentPath\" not found in the incoming schema.",
                             )
 
                     require(parentField.type().isStructType) {
@@ -202,7 +202,7 @@ class IcebergTableSynchronizer(
 
                     parentField.type().asStructType().asSchema().findField(leafName)
                         ?: error(
-                            "Sub-field \"$leafName\" not found in the schema under \"$parentPath\"."
+                            "Sub-field \"$leafName\" not found in the schema under \"$parentPath\".",
                         )
                 }
 
@@ -221,8 +221,9 @@ class IcebergTableSynchronizer(
         val updatedIdentifierFields =
             if (diff.identifierFieldsChanged) incomingSchema.identifierFieldNames().toList()
             else emptyList()
-        val hasReplacedIdentifierFields =
-            replacedColumns.any { it in updatedIdentifierFields.toSet() }
+        val hasReplacedIdentifierFields = replacedColumns.any {
+            it in updatedIdentifierFields.toSet()
+        }
 
         if (diff.identifierFieldsChanged && !hasReplacedIdentifierFields) {
             // No conflict: can update identifier fields in the same update
@@ -302,6 +303,7 @@ class IcebergTableSynchronizer(
      *
      * This method handles three cases:
      * 1. Identifier fields changed → rebuild sort order from new identifiers (covers
+     *
      * ```
      *    Dedupe→Append, PK changes within Dedupe)
      * ```

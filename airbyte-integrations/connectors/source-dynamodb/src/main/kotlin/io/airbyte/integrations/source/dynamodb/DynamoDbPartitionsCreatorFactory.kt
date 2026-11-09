@@ -56,7 +56,7 @@ class DynamoDbPartitionsCreator(
             is DynamoDbReadPlan.Done -> emptyList()
             is DynamoDbReadPlan.Finalize ->
                 listOf(
-                    DynamoDbTerminalStateReader(plan.stream, plan.scan, plan.cursor, feedBootstrap)
+                    DynamoDbTerminalStateReader(plan.stream, plan.scan, plan.cursor, feedBootstrap),
                 )
             is DynamoDbReadPlan.Scan ->
                 plan.partitions.map { DynamoDbPartitionReader(it, feedBootstrap, sharedState) }

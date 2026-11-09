@@ -24,6 +24,7 @@ class TaskScopeProviderUTest {
     private fun makeLoopingTask(terminalCondition: TerminalCondition) =
         object : Task {
             override val terminalCondition: TerminalCondition = terminalCondition
+
             override suspend fun execute() {
                 while (true) {
                     delay(mockTimeout / 2)
@@ -42,15 +43,16 @@ class TaskScopeProviderUTest {
         val selfTerminatingTask =
             object : Task {
                 override val terminalCondition: TerminalCondition = SelfTerminating
+
                 override suspend fun execute() {
                     completed.complete(Unit)
                 }
             }
         val provider = TaskScopeProvider(config)
         launch {
-                provider.launch(selfTerminatingTask)
-                completed.await()
-            }
+            provider.launch(selfTerminatingTask)
+            completed.await()
+        }
             .join()
         assertDoesNotThrow { provider.close() }
     }

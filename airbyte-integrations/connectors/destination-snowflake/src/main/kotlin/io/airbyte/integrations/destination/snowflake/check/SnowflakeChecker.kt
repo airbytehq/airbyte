@@ -21,6 +21,7 @@ import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClie
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import jakarta.inject.Singleton
@@ -49,7 +50,7 @@ class SnowflakeChecker(
                 Meta.AirbyteMetaFields.META.fieldName to
                     AirbyteValue.from(emptyMap<String, String>()),
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
-                CHECK_COLUMN_NAME.toSnowflakeCompatibleName() to AirbyteValue.from("test-value")
+                CHECK_COLUMN_NAME.toSnowflakeCompatibleName() to AirbyteValue.from("test-value"),
             )
         val outputSchema =
             if (snowflakeConfiguration.legacyRawTablesOnly) {
@@ -59,30 +60,31 @@ class SnowflakeChecker(
             }
         val tableName =
             "_airbyte_connection_test_${
-                UUID.randomUUID().toString().replace("-".toRegex(), "")}".toSnowflakeCompatibleName()
+                UUID.randomUUID().toString().replace("-".toRegex(), "")}"
+                .toSnowflakeCompatibleName()
         val qualifiedTableName = TableName(namespace = outputSchema, name = tableName)
         val tableSchema =
             StreamTableSchema(
                 tableNames =
                     TableNames(
                         finalTableName = qualifiedTableName,
-                        tempTableName = qualifiedTableName
+                        tempTableName = qualifiedTableName,
                     ),
                 columnSchema =
                     ColumnSchema(
                         inputToFinalColumnNames =
                             mapOf(
-                                CHECK_COLUMN_NAME to CHECK_COLUMN_NAME.toSnowflakeCompatibleName()
+                                CHECK_COLUMN_NAME to CHECK_COLUMN_NAME.toSnowflakeCompatibleName(),
                             ),
                         finalSchema =
                             mapOf(
                                 CHECK_COLUMN_NAME.toSnowflakeCompatibleName() to
-                                    io.airbyte.cdk.load.component.ColumnType("VARCHAR", false)
+                                    io.airbyte.cdk.load.component.ColumnType("VARCHAR", false),
                             ),
                         inputSchema =
-                            mapOf(CHECK_COLUMN_NAME to FieldType(StringType, nullable = false))
+                            mapOf(CHECK_COLUMN_NAME to FieldType(StringType, nullable = false)),
                     ),
-                importType = Append
+                importType = Append,
             )
 
         val destinationStream =
@@ -93,11 +95,14 @@ class SnowflakeChecker(
                 minimumGenerationId = 0L,
                 syncId = 0L,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = tableSchema
+                tableSchema = tableSchema,
             )
         runBlocking {
             try {
                 snowflakeAirbyteClient.createNamespace(outputSchema)
+                snowflakeAirbyteClient.createNamespace(
+                    escapeJsonIdentifier(snowflakeConfiguration.internalTableSchema),
+                )
                 snowflakeAirbyteClient.createTable(
                     stream = destinationStream,
                     tableName = qualifiedTableName,

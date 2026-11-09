@@ -15,6 +15,10 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
+        # The `colors` stream declares the objects `calendar` and `event` as its primary key.
+        # Changing a stream's primary key is a breaking change; remove this opt-out once the
+        # primary key is fixed.
+        validate_primary_keys_data_type: false
   # The CDK standard-test runner used in CI reads only the spec, connection and basic_read
   # sections; the blocks below are kept for the legacy CAT runner and local runs.
   discovery:
