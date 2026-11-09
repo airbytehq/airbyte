@@ -395,10 +395,10 @@ sealed class FeedBootstrap<T : Feed>(
                         .SOURCE_RECORD_SIZE_LIMITATION
                 FieldValueChange.FIELD_SIZE_LIMITATION_ERASURE ->
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
-                        .SOURCE_RECORD_SIZE_LIMITATION
+                        .SOURCE_FIELD_SIZE_LIMITATION
                 FieldValueChange.FIELD_SIZE_LIMITATION_TRUNCATION ->
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
-                        .SOURCE_RECORD_SIZE_LIMITATION
+                        .SOURCE_FIELD_SIZE_LIMITATION
                 FieldValueChange.DESERIALIZATION_FAILURE_TOTAL ->
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
                         .SOURCE_SERIALIZATION_ERROR
