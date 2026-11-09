@@ -117,15 +117,16 @@ definitions:
               - type: DefaultErrorHandler
                 max_retries: 100
                 backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 5
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
-                    predicate: "{{ response.status_code == 429 }}"
                     http_codes:
                       - 429
-                    error_message: Failed with Error 429 status code, retrying again
+                    error_message: Breezy HR API rate limit exceeded for the candidates stream.
               - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
@@ -211,6 +212,8 @@ definitions:
   base_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
       - type: WaitUntilTimeFromHeader
         header: X-RateLimit-Reset
     response_filters:
@@ -218,21 +221,25 @@ definitions:
         action: FAIL
         failure_type: config_error
         http_codes:
-          - 400
           - 401
+        predicate: >-
+          {{ response is mapping and response.get('error') is mapping
+             and response['error'].get('type') in ['missingAccessToken', 'invalidAccessToken'] }}
         error_message: >-
-          Breezy HR rejected the request: {{ response.get('error', {}).get('message', 'invalid or missing access token') }}.
-          Enter a valid Personal Access Token (Breezy HR app > My Settings > API Keys) as the API Key,
-          and your company's `_id` (returned by GET https://api.breezy.hr/v3/companies) as the Company ID.
+          Breezy HR access token is missing or invalid. Set API Key to a valid Personal Access Token from Breezy HR's My Settings > API Keys.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: system_error
+        http_codes:
+          - 400
+        error_message: Breezy HR rejected the API request as invalid.
       - type: HttpResponseFilter
         action: FAIL
         failure_type: config_error
         http_codes:
           - 403
         error_message: >-
-          Breezy HR denied access to company "{{ config['company_id'] }}": {{ response.get('error', {}).get('message', 'forbidden') }}.
-          The user who created the API Key must be a member of this company. Verify the Company ID is the
-          company `_id` returned by GET https://api.breezy.hr/v3/companies (not the company name or URL slug).
+          Breezy HR denied access to the configured company. Verify Company ID is the company's _id and the API Key's user has access to that company.
 
 streams:
   - $ref: "#/definitions/streams/positions"
