@@ -137,7 +137,7 @@ Aircall returns at most 10,000 calls, contacts, conversations or engagements for
 
 ### Six months of call history
 
-Aircall keeps only six months of call history in the API ([List all Calls](https://developers.aircall.io/api-references/#list-all-calls)). The connector reads `calls` from 186 days back on every full refresh and on the first incremental sync. Older calls aren't returned, so syncing `calls` in an Overwrite mode, clearing it, or running a Refresh and Remove Records sync deletes calls older than six months from the destination for good. Keep `calls` in `Incremental | Append + Deduped`, and use [Refresh and Retain Records](https://docs.airbyte.com/platform/operator-guides/refreshes#refresh-and-retain-records) to re-read the last six months. To get older calls, ask [Aircall Support](https://support.aircall.io/) for a one-time export.
+Aircall keeps only six months of call history in the API ([List all Calls](https://developers.aircall.io/api-references/#list-all-calls)). The connector reads `calls` from 365 days back on every full refresh and on the first incremental sync, which covers all the history Aircall keeps. Older calls aren't returned, so syncing `calls` in an Overwrite mode, clearing it, or running a Refresh and Remove Records sync deletes calls older than six months from the destination for good. Keep `calls` in `Incremental | Append + Deduped`, and use [Refresh and Retain Records](https://docs.airbyte.com/platform/operator-guides/refreshes#refresh-and-retain-records) to re-read the last six months. To get older calls, ask [Aircall Support](https://support.aircall.io/) for a one-time export.
 
 ### Rate limit
 

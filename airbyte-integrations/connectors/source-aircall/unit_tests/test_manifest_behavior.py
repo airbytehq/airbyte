@@ -140,11 +140,11 @@ def test_calls_incremental_windows_pagination_and_state() -> None:
                 http_mocker.assert_number_of_calls(second_request, 1)
 
 
-def test_calls_default_window_reads_186_daily_windows_within_the_rate_budget(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_calls_default_window_reads_365_daily_windows_within_the_rate_budget(monkeypatch: pytest.MonkeyPatch) -> None:
     with freeze_time(_NOW) as clock, HttpMocker() as http_mocker:
         sleeps = _sleep_moves_clock(clock, monkeypatch)
         end = _epoch(_NOW)
-        windows = _call_requests(end - 186 * _WINDOW_SECONDS, end)
+        windows = _call_requests(end - 365 * _WINDOW_SECONDS, end)
         requests = [_request("/calls", {"from": str(start), "to": str(stop), "per_page": "50"}) for start, stop in windows]
         for request in requests:
             http_mocker.get(request, _response("calls", []))
@@ -155,16 +155,24 @@ def test_calls_default_window_reads_186_daily_windows_within_the_rate_budget(mon
         assert output.errors == []
         for request in requests:
             http_mocker.assert_number_of_calls(request, 1)
-        # 120 requests per minute: the 121st waits for the window to move on.
-        assert 59 <= sum(sleeps) <= 61
+        # 100 + 100 + 100 + 65 requests across four rate windows means three waits.
+        assert 179 <= sum(sleeps) <= 181
 
 
-def test_calls_full_refresh_starts_at_now_minus_186_days() -> None:
+def test_calls_full_refresh_starts_at_now_minus_365_days() -> None:
     with freeze_time(_NOW), HttpMocker() as http_mocker:
-        start = _epoch(_NOW) - 186 * _WINDOW_SECONDS
         end = _epoch(_NOW)
+        start = end - 365 * _WINDOW_SECONDS
+        recent_call = _call_record(end - 10 * _WINDOW_SECONDS, 1)
+        older_call = _call_record(end - 187 * _WINDOW_SECONDS, 2)
         request = _request("/calls", {"from": str(start), "to": str(end), "per_page": "50"})
-        http_mocker.get(request, _response("calls", [_call_record(start, 1)]))
+        previous_lower_bound = older_call["started_at"] + _WINDOW_SECONDS
+        previous_request = _request(
+            "/calls",
+            {"from": str(previous_lower_bound), "to": str(end), "per_page": "50"},
+        )
+        http_mocker.get(request, _response("calls", [recent_call, older_call]))
+        http_mocker.get(previous_request, _response("calls", [recent_call]))
 
         output = _read_stream(
             "calls",
@@ -173,7 +181,9 @@ def test_calls_full_refresh_starts_at_now_minus_186_days() -> None:
         )
 
         assert output.errors == []
-        assert [record.record.data["started_at"] for record in output.records] == [start]
+        records = [record.record.data for record in output.records]
+        assert [record["id"] for record in records] == [1, 2]
+        assert records[1]["started_at"] == older_call["started_at"]
         http_mocker.assert_number_of_calls(request, 1)
 
 
@@ -243,7 +253,7 @@ def test_contacts_default_window_count_is_thirty_days() -> None:
 )
 def test_401_and_403_are_config_errors_with_actionable_message(status_code: int, message: str) -> None:
     with freeze_time(_NOW), HttpMocker() as http_mocker:
-        start = _epoch(_NOW) - 186 * _WINDOW_SECONDS
+        start = _epoch(_NOW) - 365 * _WINDOW_SECONDS
         request = _request("/calls", {"from": str(start), "to": str(_epoch(_NOW)), "per_page": "50"})
         http_mocker.get(request, HttpResponse(body='{"message":"Forbidden"}', status_code=status_code))
 
@@ -262,7 +272,7 @@ def test_401_and_403_are_config_errors_with_actionable_message(status_code: int,
 
 def test_calls_split_a_window_that_hits_the_result_cap() -> None:
     with freeze_time(_NOW), HttpMocker() as http_mocker:
-        start = _epoch(_NOW) - 186 * _WINDOW_SECONDS
+        start = _epoch(_NOW) - 365 * _WINDOW_SECONDS
         end = _epoch(_NOW)
         first_end = start + (end - start + 1) // 2 - 1
         oversized = _request("/calls", {"from": str(start), "to": str(end), "per_page": "50"})
@@ -312,7 +322,7 @@ def test_contacts_result_cap_is_a_config_error() -> None:
         pytest.param(
             "calls",
             _NOW,
-            {"from": str(_epoch(_NOW) - 186 * _WINDOW_SECONDS), "to": str(_epoch(_NOW))},
+            {"from": str(_epoch(_NOW) - 365 * _WINDOW_SECONDS), "to": str(_epoch(_NOW))},
             {"window_in_days": 365},
             id="calls",
         ),
@@ -351,7 +361,7 @@ def test_calls_window_still_over_the_cap_fails_after_ten_splits() -> None:
 def test_429_waits_until_the_reset_header_then_reads_records(monkeypatch: pytest.MonkeyPatch, unit: int) -> None:
     with freeze_time(_NOW) as clock, HttpMocker() as http_mocker:
         sleeps = _sleep_moves_clock(clock, monkeypatch)
-        start = _epoch(_NOW) - 186 * _WINDOW_SECONDS
+        start = _epoch(_NOW) - 365 * _WINDOW_SECONDS
         request = _request("/calls", {"from": str(start), "to": str(_epoch(_NOW)), "per_page": "50"})
         http_mocker.get(
             request,
@@ -387,7 +397,7 @@ def test_429_waits_until_the_reset_header_then_reads_records(monkeypatch: pytest
 def test_500_without_reset_header_retries_with_fallback_backoff(monkeypatch: pytest.MonkeyPatch) -> None:
     with freeze_time(_NOW) as clock, HttpMocker() as http_mocker:
         sleeps = _sleep_moves_clock(clock, monkeypatch)
-        start = _epoch(_NOW) - 186 * _WINDOW_SECONDS
+        start = _epoch(_NOW) - 365 * _WINDOW_SECONDS
         request = _request("/calls", {"from": str(start), "to": str(_epoch(_NOW)), "per_page": "50"})
         http_mocker.get(
             request,
