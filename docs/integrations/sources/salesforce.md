@@ -15,7 +15,7 @@ You may also need the following. This article explains how to get them.
 - Optional, but recommended: A dedicated [Salesforce user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US)
 - For **ClientCredentials** (Use your own External Client App), a local External Client App configured for the client credentials flow and a My Domain URL
 <!-- env:oss -->
-- For Airbyte Open Source: Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
+- For Airbyte Open Source with **Client** (Airbyte Connected App): Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials, including a refresh token
 <!-- /env:oss -->
 
 ## Setup guide
@@ -105,7 +105,7 @@ Create a local External Client App (ECA) in your Salesforce org to connect witho
 5. In **External Client App Manager**, open the app's actions list and select **Edit Policies**. In the client credentials
    policy, enable **Client Credentials Flow** if needed, set **Run As** to the integration user's username, and save the
    policies. See Salesforce's [External Client App client credentials policy guide](https://help.salesforce.com/s/articleView?id=xcloud.policies_configure_client_credentials_flow_for_external_client_apps.htm&language=en_US&type=5).
-   Salesforce notes that client-credentials policy changes for Connected Apps can take a few minutes to propagate; allow time before testing ([Salesforce guidance](https://help.salesforce.com/s/articleView?id=000886201&language=en_US&type=1)).
+   Policy changes can take a few minutes to take effect, so wait before you test the connection ([Salesforce guidance](https://help.salesforce.com/s/articleView?id=000886201&language=en_US&type=1)).
 6. In **External Client App Manager**, open the app's actions list and select **Edit Settings**. Expand **OAuth Settings**,
    then select **Consumer Key and Secret** to copy the consumer key and secret. Salesforce might prompt you to verify
    your identity before showing them; see the [client credentials flow guide](https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_client_credentials_flow.htm&language=en_US&type=5).
@@ -233,7 +233,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ### Connection test login failures
 
-Starting in version 2.10.4, the connector reports common Salesforce login and API access failures as configuration errors with a message that says what to fix, instead of the raw Salesforce response. The following table lists each message, the Salesforce errors that produce it, and how to resolve it.
+Starting in version 2.10.4, the connector reports common Salesforce login and API access failures as configuration errors with a message that says what to fix, instead of the raw Salesforce response. The following table lists each message, the Salesforce errors that produce it, and how to resolve it. Except for the API access message, these messages apply to the **Client** (Airbyte Connected App) method. For **ClientCredentials**, see [ClientCredentials authentication errors](#clientcredentials-authentication-errors).
 
 | Error message starts with | Salesforce error | Resolution |
 | :------------------------ | :--------------- | :--------- |
@@ -386,6 +386,8 @@ Responsibility for the connected-app setting depends on how you authenticate:
 | Refresh Token is missing for the Client method. Authenticate your Salesforce account, or select ClientCredentials. | Re-authenticate with **Client** (Airbyte Connected App) or set **Authentication Method** to **ClientCredentials** (Use your own External Client App). |
 | Salesforce rejected the client credentials. Check Client ID, Client Secret and My Domain URL against your External Client App. | Verify the app credentials and My Domain URL. |
 
+If Salesforce returns a token endpoint error that isn't in this table, the connector reports the raw Salesforce response, prefixed with `An error occurred:`. The **API access disabled** message in [Connection test login failures](#connection-test-login-failures) applies to both methods.
+
 ### OAuth authorization when PKCE is required
 
 Salesforce lets admins require the [Proof Key for Code Exchange (PKCE)](https://help.salesforce.com/s/articleView?id=xcloud.shr_security_require_proof_key_for_code_exchange_pkce.htm&type=5) extension for OAuth authorization flows, either org-wide or on the connected app. Before connector version 2.9.1, authorizing the connector in an org that requires PKCE failed because the authorization request sent no `code_challenge`. Starting in version 2.9.1, the connector sends a `code_challenge` (using the S256 method) in the authorization request and the matching `code_verifier` in the token exchange, so authorization works whether or not your org requires PKCE. No configuration changes are needed.
@@ -432,8 +434,8 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 2.11.1 | 2026-11-09 | [91215](https://github.com/airbytehq/airbyte/pull/91215) | Add request timeouts and TCP keepalive so a stalled connection no longer hangs the sync |
-| 2.11.0 | 2026-10-23 | [89735](https://github.com/airbytehq/airbyte/pull/89735) | Add the ClientCredentials authentication method (Use your own External Client App) as the default, alongside Client (Airbyte Connected App) |
+| 2.11.1 | 2026-11-10 | [91215](https://github.com/airbytehq/airbyte/pull/91215) | Add request timeouts and TCP keepalive so a stalled connection no longer hangs the sync |
+| 2.11.0 | 2026-11-09 | [89735](https://github.com/airbytehq/airbyte/pull/89735) | Add the ClientCredentials authentication method (Use your own External Client App) as the default, alongside Client (Airbyte Connected App) |
 | 2.10.5 | 2026-11-03 | [90894](https://github.com/airbytehq/airbyte/pull/90894) | Require Python 3.11 or newer, retaining support for Python 3.11–3.13. |
 | 2.10.4 | 2026-10-30 | [90253](https://github.com/airbytehq/airbyte/pull/90253) | Explain Salesforce OAuth, API permission, and IP restriction failures with actionable guidance and sandbox login hints. |
 | 2.10.3 | 2026-10-23 | [87665](https://github.com/airbytehq/airbyte/pull/87665) | Let REST streams use the refreshed access token, so a session invalidated mid-pagination no longer fails the sync, and mask rotated refresh tokens in logs |
