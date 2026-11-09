@@ -33,10 +33,10 @@ data:
           makes `numbers` and `teams` full refresh only, and declares the types the Aircall API documents:
           `calls.contact`, `assigned_to`, `transferred_by` and `transferred_to` become objects, `numbers.priority`
           an integer and `users.created_at` a timestamp. After upgrading, refresh the source schema and switch
-          `numbers` and `teams` to `Full Refresh | Overwrite`. Clearing `calls`, or switching it from an append mode to
-          an Overwrite mode, permanently deletes calls older than six months, which Aircall no longer returns: copy the
-          table first. Some destinations need a step before the first sync, such as Snowflake for append-mode `calls`
-          and ClickHouse for append-mode `users`. See the
+          `numbers` and `teams` from an Incremental mode to `Full Refresh | Overwrite`. Clearing `calls`, or switching
+          it from an append mode to an Overwrite mode, permanently deletes calls older than six months, which Aircall
+          no longer returns: copy the table first. Some destinations need a step before the first sync, such as
+          Snowflake for append-mode `calls` and ClickHouse for append-mode `users`. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/aircall-migrations#upgrading-to-100).
         upgradeDeadline: "2026-11-23"
         deadlineAction: disable
