@@ -19,26 +19,26 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
-          - name: "webhooks"
-            bypass_reason: "Sandbox account cannot seed this stream"
+          - name: webhooks
+            bypass_reason: "The test account has no webhooks (checked 2026-11-09); covered by mock-server tests."
           - name: calls
-            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+            bypass_reason: "The test account has no calls (checked 2026-11-09); calls can only be seeded by placing real calls. Covered by mock-server tests."
           - name: numbers
-            bypass_reason: "The test account returned no records for this stream on 2026-10-09; declared empty until test data is seeded."
+            bypass_reason: "The test account's number has an integer `priority`, which the schema declares as a string until 1.0.0 (checked 2026-11-09)."
           - name: conversations
-            bypass_reason: "Not verified: the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+            bypass_reason: "The test account has no conversations (checked 2026-11-09); covered by mock-server tests."
           - name: conversation_engagements
-            bypass_reason: "Not verified: the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+            bypass_reason: "The test account has no conversations, so no engagements (checked 2026-11-09); covered by mock-server tests."
           - name: campaigns
-            bypass_reason: "Not verified: the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+            bypass_reason: "The test account has no outbound campaigns (checked 2026-11-09); covered by mock-server tests."
           - name: campaign_outcomes
-            bypass_reason: "Not verified: the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+            bypass_reason: "The test account has no campaign outcomes (checked 2026-11-09); covered by mock-server tests."
           - name: trackers
-            bypass_reason: "Not verified: the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+            bypass_reason: "The test account has no trackers (checked 2026-11-09); covered by mock-server tests."
           - name: sms_templates
-            bypass_reason: "Not verified: the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+            bypass_reason: "The test account has no SMS templates (checked 2026-11-09); covered by mock-server tests."
           - name: whatsapp_templates
-            bypass_reason: "Not verified: the GSM test key is revoked (airbytehq/airbyte-internal-issues#18378); covered by mock-server tests."
+            bypass_reason: "The test account's only number has no WhatsApp capability (checked 2026-11-09); covered by mock-server tests."
   incremental:
     tests:
       - config_path: "secrets/config.json"
