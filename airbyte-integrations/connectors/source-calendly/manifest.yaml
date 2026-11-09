@@ -438,6 +438,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /group_relationships
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/group_relationships_error_handler"
           request_parameters:
             count: "100"
         record_selector:
@@ -462,14 +464,14 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: current_organization
+              parent_key: uri
               request_option:
                 type: RequestOption
-                field_name: organization
+                field_name: group
                 inject_into: request_parameter
-              partition_field: organization_uri
+              partition_field: group_uri
               stream:
-                $ref: "#/definitions/streams/api_user"
+                $ref: "#/definitions/streams/groups"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -663,6 +665,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /routing_forms
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/plan_gated_error_handler"
           request_parameters:
             count: "100"
         record_selector:
@@ -1002,6 +1006,16 @@ definitions:
         action: IGNORE
         error_message: "Skipping submissions of a routing form that Calendly no longer returns (404)."
       - $ref: "#/definitions/error_filters/server_error"
+  group_relationships_error_handler:
+    $ref: "#/definitions/base_error_handler"
+    response_filters:
+      - $ref: "#/definitions/error_filters/unauthorized"
+      - $ref: "#/definitions/error_filters/forbidden"
+      - type: HttpResponseFilter
+        http_codes: [404]
+        action: IGNORE
+        error_message: "Skipping relationships of a group that Calendly no longer returns (404): {{ request_url }}"
+      - $ref: "#/definitions/error_filters/server_error"
   plan_gated_error_handler:
     $ref: "#/definitions/base_error_handler"
     response_filters:
@@ -1009,6 +1023,7 @@ definitions:
         predicate: >-
           {{ response is mapping and 'required_scopes' not in response and (response.get('message') or '').rstrip('.') in [
             'Please upgrade your Calendly account to Enterprise',
+            'Please upgrade your Calendly account to Teams',
             'Please upgrade to a paid Calendly account',
             'Meeting recap access is not available. Required features are not enabled for your account',
             'Contact creation is not available. Required features are not enabled for your account'
@@ -1016,7 +1031,7 @@ definitions:
         action: IGNORE
         error_message: >-
           Calendly skipped this stream: outgoing communications and activity logs require Enterprise;
-          contacts require a paid plan; meeting recaps require a paid plan with Notetaker enabled.
+          routing forms require Teams; contacts require a paid plan; meeting recaps require a paid plan with Notetaker enabled.
           Upgrade the Calendly plan or deselect the stream.
           Calendly response: {{ response.get('message') }}
       - $ref: "#/definitions/error_filters/unauthorized"

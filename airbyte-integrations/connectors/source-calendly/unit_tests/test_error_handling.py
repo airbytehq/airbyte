@@ -95,6 +95,9 @@ def test_each_requester_classifies_errors(stream: str, status: int, action: Resp
     elif stream == "routing_form_submissions" and status == 404:
         assert resolution.response_action == ResponseAction.IGNORE
         assert resolution.error_message == "Skipping submissions of a routing form that Calendly no longer returns (404)."
+    elif stream == "group_relationships" and status == 404:
+        assert resolution.response_action == ResponseAction.IGNORE
+        assert resolution.error_message == f"Skipping relationships of a group that Calendly no longer returns (404): {URL}"
     else:
         assert resolution.response_action == action
         assert resolution.failure_type == failure_type

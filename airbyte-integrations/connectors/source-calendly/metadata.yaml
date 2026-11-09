@@ -36,6 +36,12 @@ data:
       - api_user
   connectorTestSuitesOptions:
     - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-CALENDLY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   documentationUrl: https://docs.airbyte.com/integrations/sources/calendly
   tags:
     - language:manifest-only
