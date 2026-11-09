@@ -79,9 +79,9 @@ The connector reads `event_invitees` for the scheduled events returned by the pa
 
 Routing forms and their submissions require Teams, outgoing communications and activity logs require an Enterprise subscription, meeting recaps require a paid plan with Notetaker enabled, and Calendly documents a paid-plan error for contacts. When Calendly reports that the plan or feature is unavailable, these streams complete without records and log a message explaining the requirement. Missing read scopes, owner or admin permission errors, and other forbidden responses still fail the sync.
 
-`group_relationships` reads relationships separately for each group returned by `groups`, using only the `group` filter. If there are no groups, it makes no relationship requests and completes without records. A group deleted during the sync is skipped; permission errors still fail the sync.
+`group_relationships` reads the relationships of each group returned by `groups`, so organizations without groups sync it without records. A group deleted during the sync is skipped; permission errors still fail the sync.
 
-Calendly's [OpenAPI specification](https://developer.calendly.com/openapi/calendly-api.yaml) deprecates `calendar_event` on `scheduled_events` as `LegacyCalendarEvent`. This field can be null; the connector preserves it without changing requests.
+Calendly's [OpenAPI specification](https://developer.calendly.com/openapi/calendly-api.yaml) marks `calendar_event` on `scheduled_events` as deprecated, and it can be null.
 
 The incremental `outgoing_communications`, `activity_log_entries` and `meeting_recaps` streams request a window that ends at the sync time, so their cursors never move past it, and they do not use `lookback_days`. Calendly returns a meeting recap only after processing finishes, so each sync reads recaps of meetings that started up to three days before the saved cursor again; recaps that become available or change later than that need a Full refresh.
 
@@ -136,7 +136,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
-| 0.4.1 | 2026-11-09 | [91293](https://github.com/airbytehq/airbyte/pull/91293) | Skip unavailable Teams routing forms and read group relationships per group so accounts without groups complete successfully. |
+| 0.4.1 | 2026-11-09 | [91293](https://github.com/airbytehq/airbyte/pull/91293) | Fix syncs that failed on `routing_forms` and `routing_form_submissions` below the Calendly Teams plan, and on `group_relationships` in organizations without groups |
 | 0.4.0 | 2026-11-04 | [90848](https://github.com/airbytehq/airbyte/pull/90848) | Add routing forms and submissions, contacts, outgoing communications, activity logs and meeting recaps streams; they need the new `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read` scopes |
 | 0.3.0 | 2026-11-04 | [90847](https://github.com/airbytehq/airbyte/pull/90847) | Add teams, event type memberships, group relationships, user availability schedules, locations, organization invitations and webhook subscriptions streams; user availability schedules, locations and webhook subscriptions need the new `availability:read`, `locations:read` and `webhooks:read` scopes |
 | 0.2.0 | 2026-11-03 | [90829](https://github.com/airbytehq/airbyte/pull/90829) | Handle rate limits and token errors, declare missing fields, fix the crash when `lookback_days` is unset, stop dropping event types updated before 2021 and invitees booked before the start date (refresh these streams to backfill) |
