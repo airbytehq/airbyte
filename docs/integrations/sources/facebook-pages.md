@@ -38,7 +38,7 @@ After all the steps, it should look something like this:
 2. Select **Facebook Pages** and enter a name for the source.
 3. For **Page Access Token**, enter the long-lived Page token you generated in Step 1. The connector also accepts a long-lived User token, as long as that user can generate a Page token for the Page you configure.
 4. For **Page ID**, enter the Page's ID or username. If your Page URL is `https://www.facebook.com/Test-1111111111`, use `Test-1111111111`.
-5. (Optional) Set **Page Size** to control the number of records requested per API call for the `post` and `post_insights` streams. The default is 100, and valid values are 1 through 100. Decrease it if you see "Please reduce the amount of data you're asking for" errors.
+5. (Optional) Set **Page Size** to control the number of records requested per API call for every paginated stream: `post`, `post_insights`, `video_insights`, `reel_insights`, `comment`, and `rating`. The default is 100, and valid values are 1 through 100. Decrease it if you see "Please reduce the amount of data you're asking for" errors.
 6. (Optional) Set **Page Insights Metrics**, **Post Insights Metrics**, **Video Insights Metrics**, or **Reel Insights Metrics** to choose which metrics each insights stream requests. See [Insights metrics and period](#insights-metrics-and-period).
 7. (Optional) Set **Page Insights Period** to request a single aggregation period, such as `day`, for the `page_insights` stream. Valid values are `day`, `week`, `days_28`, `month`, `lifetime`, and `total_over_range`.
 8. (Optional) Set **Start Date** to the earliest date the `page_insights` stream reads, in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2024-01-01T00:00:00Z`. Meta keeps about two years of Page Insights history. See [Supported sync modes](#supported-sync-modes).
@@ -70,6 +70,8 @@ The `post` stream is full refresh by default. If you switch it to Incremental, t
 The `page_insights` stream is full refresh by default, which asks Facebook for its default trailing window only. If you switch it to Incremental, the connector keeps the newest `end_time` it has seen and asks Facebook only for the days after it on the next sync. Set **Start Date** to backfill history, which the connector reads in 90-day windows because Facebook returns at most 90 days per request and keeps about two years of history. **Start Date** applies in both modes, so a full refresh with it set also reads from that date in 90-day windows. The newest point Facebook returns belongs to a day that is usually still in progress, so each incremental sync re-reads the last two days before the saved `end_time`, and you can expect those days to appear again in your destination. Each record is one metric and period for one window, so if your destination deduplicates on the primary key, use Incremental - Append rather than a deduplicated mode, or windows overwrite each other. If you leave **Start Date** empty, the first incremental sync reads Facebook's default window and the next syncs continue from there, so a connection paused for more than 90 days may need a reset or a **Start Date** before it can catch up.
 
 ## Supported Streams
+
+The `video_insights`, `reel_insights`, `comment`, and `rating` streams were added in version 3.1.0 and need permissions that older tokens might not have. If Facebook rejects one of their requests with a permission error (error code `10`, a code from `200` to `299`, or a message that mentions a permission), the connector logs the error and skips the request instead of failing the sync, so these streams can sync zero records without an error. If one of them is empty, check that your token has the permissions listed in [Step 1](#step-1-set-up-facebook-pages).
 
 | Stream | Graph API endpoint | Notes |
 | :--- | :--- | :--- |
@@ -133,6 +135,15 @@ If you use your own Meta app, it might need [App Review](https://developers.face
 The person who generates the token must also be able to perform the required task on the Page.
 For Page Insights, Meta requires access to a Page that you own or administer, or on which you can perform the `ANALYZE` task.
 
+### "Error while generating page access token" error
+
+Before it reads any stream, the connector exchanges the token you configured for a Page access token by calling [`/{page-id}?fields=access_token`](https://developers.facebook.com/docs/pages/access-tokens#get-a-page-access-token). If Meta rejects that call, the check or sync fails with `Error while generating page access token:` followed by Meta's response.
+
+To resolve this error:
+
+- Confirm that **Page ID** is the ID or username of the Page the token belongs to. A Page access token can only generate a token for its own Page.
+- Confirm that the user who generated the token can still perform a task on the Page, and that the token hasn't expired or been invalidated, for example by a password change. Generate a new long-lived token if needed.
+
 ### "Please reduce the amount of data you're asking for" error
 
 The Graph API returns this error (error code 1, often with HTTP 500) when a response is too large to build in time. Because Meta returns it intermittently, the connector retries the request with backoff. If the retries are exhausted, the sync fails with a transient error and usually succeeds on a later attempt. Version 2.1.3 failed the sync immediately with a configuration error instead of retrying; upgrade to 2.1.4 or later to restore the retries.
@@ -193,6 +204,8 @@ Starting from version 2.0.4, the `product_catalogs` field is no longer synced in
 
 Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting, follow the instructions in the Setup Guide above to generate a Long-Lived Page Token.
 
+Starting from version 3.0.2, the connector exchanges your token for a Page access token once per sync instead of before every Graph API request, so syncs make fewer API calls.
+
 When Meta throttles a request, it reports how long until access returns in the `X-Business-Use-Case-Usage` response header, and the connector waits that long, up to 10 minutes, before retrying instead of retrying on a fixed schedule. Each extra stream and metric you enable adds to that usage, and the `comment` stream in particular makes one request per post.
 
 The Graph API can report rate limits with HTTP 400 and an error code such as `4`, `17`, `32`, `613`, or `80001`. Starting from version 2.1.3, the connector recognizes these codes, and any error Meta marks as transient, and retries the request with backoff instead of failing immediately. Retries are limited, so if your Page stays throttled long enough to exhaust them, the sync still fails with a transient error and succeeds on a later attempt once the quota resets.
@@ -213,7 +226,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 3.2.0   | 2026-11-09 | [90124](https://github.com/airbytehq/airbyte/pull/90124)       | Add an optional incremental sync mode and a `start_date` setting to the `page_insights` stream, which reads a `since` and `until` date range in 90-day windows.        |
 | 3.1.0   | 2026-11-09 | [90123](https://github.com/airbytehq/airbyte/pull/90123)       | Configurable insights metrics and period, new video, Reels, comment and rating streams, incremental posts                                                              |
 | 3.0.2   | 2026-11-09 | [90130](https://github.com/airbytehq/airbyte/pull/90130)       | Exchange the Page access token once per sync instead of before every request, and resolve the schema's date-time paths once per stream instead of per record           |
-| 3.0.1   | 2026-11-03 | [90914](https://github.com/airbytehq/airbyte/pull/90914)       | Require Python 3.11 for future CDK compatibility.                                                                                                                      |
+| 3.0.1   | 2026-11-04 | [90914](https://github.com/airbytehq/airbyte/pull/90914)       | Require Python 3.11 for future CDK compatibility.                                                                                                                      |
 | 3.0.0 | 2026-10-13 | [85780](https://github.com/airbytehq/airbyte/pull/85780) | Remove the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking`, and `start_info`, and the `live_videos` edge, from the `page` stream. Remove `current_location`, `genre`, and `network` from nested page objects in the `page` and `post` streams. |
 | 2.1.4 | 2026-09-22 | [86489](https://github.com/airbytehq/airbyte/pull/86489) | Retry Facebook's "Please reduce the amount of data you're asking for" error again instead of failing the sync as a configuration error. |
 | 2.1.3 | 2026-09-08 | [78077](https://github.com/airbytehq/airbyte/pull/78077) | Fail fast on deterministic Facebook API bad request errors as config errors, surface the Facebook error message, and keep retrying rate-limit and transient errors. |
