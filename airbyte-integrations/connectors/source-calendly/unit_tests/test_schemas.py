@@ -1,17 +1,38 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import copy
 import hashlib
 import json
+import re
+from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
 import yaml
-from conftest import _YAML_FILE_PATH
+from _helpers import CONFIG, USER, collection, invitees_request, list_request, read_stream, request, resource
+from conftest import _YAML_FILE_PATH, get_source
+from jsonschema import Draft7Validator
+
+from airbyte_cdk.test.entrypoint_wrapper import discover
+from airbyte_cdk.test.mock_http import HttpMocker
 
 
 STRING = {"type": ["string", "null"]}
 OBJECT = {"type": ["object", "null"]}
 DATE_TIME = {"type": ["string", "null"], "format": "date-time"}
+# Keep date-time validation local: jsonschema may omit it without rfc3339-validator.
+FORMAT_CHECKER = copy.deepcopy(Draft7Validator.FORMAT_CHECKER)
+RFC3339 = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})")
+
+
+@FORMAT_CHECKER.checks("date-time", raises=ValueError)
+def is_date_time(value: object) -> bool:
+    return not isinstance(value, str) or (
+        RFC3339.fullmatch(value) is not None and datetime.fromisoformat(value.replace("Z", "+00:00")) is not None
+    )
+
+
 # Every field this release adds, with its exact declared type and format.
 ADDED_FIELDS = {
     "event_types": {
@@ -207,3 +228,102 @@ def test_new_stream_schemas_keep_their_types_and_formats(stream: str) -> None:
     schema = yaml.safe_load(_YAML_FILE_PATH.read_text())["schemas"][stream]
     assert schema["additionalProperties"] is True
     assert hashlib.sha256(json.dumps(schema_fields(schema), sort_keys=True).encode()).hexdigest() == NEW_STREAM_TYPE_FORMAT_DIGESTS[stream]
+
+
+def set_json_path(record: dict[str, Any], path: str, value: Any) -> None:
+    current = record
+    parts = path.strip("/").split("/")
+    for part in parts[:-1]:
+        if part == "[]":
+            assert isinstance(current, list) and current
+            current = current[0]
+        else:
+            assert isinstance(current, dict) and part in current
+            current = current[part]
+    if parts[-1] == "[]":
+        assert isinstance(current, list) and current
+        current[0] = value
+    else:
+        assert isinstance(current, dict) and parts[-1] in current
+        current[parts[-1]] = value
+
+
+@pytest.mark.parametrize("stream", RETYPED_FIELDS)
+def test_discovered_schema_accepts_read_records_and_rejects_pre_1_0_0_values(stream: str) -> None:
+    created_at = "2024-01-02T03:04:05.123456Z"
+    updated_at = "2024-01-03T03:04:05.123456Z"
+    event_id = "schema-event"
+    event_record = {
+        "uri": f"https://api.calendly.com/scheduled_events/{event_id}",
+        "start_time": "2024-01-15T10:00:00.000000Z",
+        "end_time": "2024-01-15T10:30:00.000000Z",
+        "created_at": created_at,
+        "updated_at": updated_at,
+        "cancellation": {"created_at": created_at},
+        "event_guests": [{"created_at": created_at, "updated_at": updated_at}],
+        "event_memberships": [{"buffered_start_time": created_at, "buffered_end_time": updated_at}],
+    }
+    enriched_user = {**USER, "created_at": created_at, "updated_at": updated_at}
+    valid_records = {
+        "api_user": enriched_user,
+        "event_types": {
+            "uri": "https://api.calendly.com/event_types/schema-event-type",
+            "created_at": created_at,
+            "updated_at": updated_at,
+            "position": 0,
+            "custom_questions": [{"position": 1}],
+            "duration_options": [15, 30],
+        },
+        "groups": {
+            "uri": "https://api.calendly.com/groups/schema-group",
+            "created_at": created_at,
+            "updated_at": updated_at,
+        },
+        "organization_memberships": {
+            "uri": "https://api.calendly.com/organization_memberships/schema-membership",
+            "created_at": created_at,
+            "updated_at": updated_at,
+            "user": {"uri": USER["uri"], "created_at": created_at, "updated_at": updated_at},
+        },
+        "scheduled_events": event_record,
+        "event_invitees": {
+            "uri": "https://api.calendly.com/invitees/schema-invitee",
+            "created_at": created_at,
+            "updated_at": updated_at,
+            "cancellation": {"created_at": created_at},
+            "questions_and_answers": [{"position": 1}],
+        },
+    }
+    discovered = discover(get_source(CONFIG), CONFIG)
+    schema = next(item.json_schema for item in discovered.catalog.catalog.streams if item.name == stream)
+    targets = [request("users/me")]
+
+    with HttpMocker() as http:
+        http.get(targets[0], resource(enriched_user))
+        if stream == "event_invitees":
+            parent_request = list_request("scheduled_events")
+            child_request = invitees_request(event_id)
+            http.get(parent_request, collection([event_record]))
+            http.get(child_request, collection([valid_records[stream]]))
+            targets.extend([parent_request, child_request])
+        elif stream != "api_user":
+            stream_request = list_request(stream)
+            http.get(stream_request, collection([valid_records[stream]]))
+            targets.append(stream_request)
+
+        output = read_stream(stream)
+
+        assert not output.errors
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        validator = Draft7Validator(schema, format_checker=FORMAT_CHECKER)
+        validator.validate(record)
+
+        for path, definition in RETYPED_FIELDS[stream].items():
+            mutated = copy.deepcopy(record)
+            rejected_value = "2024-01-15 10:00" if definition.get("format") == "date-time" else 1.5
+            set_json_path(mutated, path, rejected_value)
+            assert not validator.is_valid(mutated), path
+
+        for target in targets:
+            http.assert_number_of_calls(target, 1)
