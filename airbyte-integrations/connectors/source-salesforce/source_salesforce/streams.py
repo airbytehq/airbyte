@@ -60,14 +60,12 @@ from airbyte_cdk.sources.declarative.requesters.request_options import (
 from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
-from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
     IsoMillisConcurrentStreamStateConverter,
 )
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.tcp_keepalive import TcpKeepaliveHTTPAdapter
 from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -126,12 +124,6 @@ class SalesforceStream(HttpStream, ABC):
         self.start_date = self.format_start_date(start_date)
         self._job_tracker = job_tracker
         self._message_repository = message_repository
-        # HttpClient never changes a session passed into it, so mount the CDK's keepalive adapter here: a dropped
-        # connection then fails in about two minutes instead of blocking the read forever.
-        self._http_client._session.mount(
-            "https://",
-            TcpKeepaliveHTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE),
-        )
         self._http_client = HttpClient(
             self.stream_name,
             self.logger,
@@ -142,6 +134,12 @@ class SalesforceStream(HttpStream, ABC):
                 token_provider=SalesforceTokenProvider(self.sf_api),
             ),
         )
+
+    @property
+    def use_tcp_keepalive(self) -> bool:
+        # A dropped connection fails in about two minutes instead of blocking the read forever. The client built in
+        # __init__ reuses HttpStream's session, so it gets keepalive too.
+        return True
 
     def read_records(
         self,
