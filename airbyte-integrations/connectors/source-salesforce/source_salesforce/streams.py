@@ -60,17 +60,19 @@ from airbyte_cdk.sources.declarative.requesters.request_options import (
 from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
+from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
     IsoMillisConcurrentStreamStateConverter,
 )
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.tcp_keepalive import TcpKeepaliveHTTPAdapter
 from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .api import (
-    _REQUEST_TIMEOUT_SECONDS,
+    _STREAM_REQUEST_TIMEOUT_SECONDS,
     PARENT_SALESFORCE_OBJECTS,
     UNSUPPORTED_FILTERING_STREAMS,
     Salesforce,
@@ -124,6 +126,12 @@ class SalesforceStream(HttpStream, ABC):
         self.start_date = self.format_start_date(start_date)
         self._job_tracker = job_tracker
         self._message_repository = message_repository
+        # HttpClient never changes a session passed into it, so mount the CDK's keepalive adapter here: a dropped
+        # connection then fails in about two minutes instead of blocking the read forever.
+        self._http_client._session.mount(
+            "https://",
+            TcpKeepaliveHTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE),
+        )
         self._http_client = HttpClient(
             self.stream_name,
             self.logger,
@@ -421,7 +429,7 @@ class RestSalesforceStream(SalesforceStream):
                 stream_slice=stream_slice,
                 next_page_token=next_page_token,
             ),
-            request_kwargs={"timeout": _REQUEST_TIMEOUT_SECONDS},
+            request_kwargs={"timeout": _STREAM_REQUEST_TIMEOUT_SECONDS},
         )
 
 
@@ -650,6 +658,9 @@ class BulkSalesforceStream(SalesforceStream):
             disable_retries=False,
             message_repository=self._message_repository,
             use_cache=False,
+            connect_timeout_in_seconds=_STREAM_REQUEST_TIMEOUT_SECONDS[0],
+            read_timeout_in_seconds=_STREAM_REQUEST_TIMEOUT_SECONDS[1],
+            use_tcp_keepalive=True,
             decoder=decoder,
             stream_response=False,
         )
@@ -674,6 +685,9 @@ class BulkSalesforceStream(SalesforceStream):
             disable_retries=False,
             message_repository=self._message_repository,
             use_cache=False,
+            connect_timeout_in_seconds=_STREAM_REQUEST_TIMEOUT_SECONDS[0],
+            read_timeout_in_seconds=_STREAM_REQUEST_TIMEOUT_SECONDS[1],
+            use_tcp_keepalive=True,
             decoder=decoder,
             stream_response=False,
         )
@@ -700,6 +714,9 @@ class BulkSalesforceStream(SalesforceStream):
             disable_retries=False,
             message_repository=self._message_repository,
             use_cache=False,
+            connect_timeout_in_seconds=_STREAM_REQUEST_TIMEOUT_SECONDS[0],
+            read_timeout_in_seconds=_STREAM_REQUEST_TIMEOUT_SECONDS[1],
+            use_tcp_keepalive=True,
             stream_response=True,
         )
         download_retriever = SimpleRetriever(
@@ -757,6 +774,9 @@ class BulkSalesforceStream(SalesforceStream):
             disable_retries=False,
             message_repository=self._message_repository,
             use_cache=False,
+            connect_timeout_in_seconds=_STREAM_REQUEST_TIMEOUT_SECONDS[0],
+            read_timeout_in_seconds=_STREAM_REQUEST_TIMEOUT_SECONDS[1],
+            use_tcp_keepalive=True,
             stream_response=False,
         )
         delete_requester = HttpRequester(
@@ -772,6 +792,9 @@ class BulkSalesforceStream(SalesforceStream):
             disable_retries=False,
             message_repository=self._message_repository,
             use_cache=False,
+            connect_timeout_in_seconds=_STREAM_REQUEST_TIMEOUT_SECONDS[0],
+            read_timeout_in_seconds=_STREAM_REQUEST_TIMEOUT_SECONDS[1],
+            use_tcp_keepalive=True,
             stream_response=False,
         )
         status_extractor = DpathExtractor(
