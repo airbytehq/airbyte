@@ -17,6 +17,7 @@ interface MinimumDestinationState {
      * this function (e.g. `currentState.withSoftReset<DestinationState>(softReset)`).
      *
      * Implementations generally look like this: (note the unchecked `as T` cast)
+     *
      * ```kotlin
      * data class ExampleState(val needsSoftReset: Boolean, <other fields...>): MinimumDestinationState {
      *   override fun needsSoftReset(): Boolean {

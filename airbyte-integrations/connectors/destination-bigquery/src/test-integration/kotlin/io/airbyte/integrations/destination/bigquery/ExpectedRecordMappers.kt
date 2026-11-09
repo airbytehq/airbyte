@@ -51,13 +51,13 @@ object IntegralNumberRecordMapper : ExpectedRecordMapper {
             }
             is ArrayValue ->
                 ArrayValue(
-                    value.values.map { mapNestedIntegralNumberToInteger(it, level = level + 1) }
+                    value.values.map { mapNestedIntegralNumberToInteger(it, level = level + 1) },
                 )
             is ObjectValue ->
                 ObjectValue(
                     value.values.mapValuesTo(linkedMapOf()) { (_, v) ->
                         mapNestedIntegralNumberToInteger(v, level = level + 1)
-                    }
+                    },
                 )
             else -> value
         }
@@ -77,7 +77,7 @@ object TimeWithTimezoneMapper : ExpectedRecordMapper {
                             StringValue(value.value.format((DateTimeFormatter.ISO_OFFSET_TIME)))
                         else -> value
                     }
-                }
+                },
             )
         return expectedRecord.copy(data = mappedData)
     }
@@ -105,11 +105,11 @@ object RootLevelTimestampsToUtcMapper : ExpectedRecordMapper {
                             TimeWithTimezoneValue(value.value.withOffsetSameInstant(ZoneOffset.UTC))
                         is TimestampWithTimezoneValue ->
                             TimestampWithTimezoneValue(
-                                value.value.withOffsetSameInstant(ZoneOffset.UTC)
+                                value.value.withOffsetSameInstant(ZoneOffset.UTC),
                             )
                         else -> value
                     }
-                }
+                },
             )
         return expectedRecord.copy(data = mappedData)
     }

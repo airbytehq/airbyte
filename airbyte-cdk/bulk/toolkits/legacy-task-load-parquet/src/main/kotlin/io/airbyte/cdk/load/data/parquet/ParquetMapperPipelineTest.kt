@@ -18,8 +18,8 @@ import io.airbyte.cdk.load.data.UnionValueToDisjointRecord
 
 /**
  * @deprecated This class is deprecated and will be removed in a future release. We are
- * transitioning to a new mapping pattern using EnrichedDestinationRecordAirbyteValue and
- * EnrichedAirbyteValue for improved type safety and consistency.
+ *   transitioning to a new mapping pattern using EnrichedDestinationRecordAirbyteValue and
+ *   EnrichedAirbyteValue for improved type safety and consistency.
  *
  * For examples on implementing the new pattern, please refer to:
  * - DestinationRecordRaw.asEnrichedDestinationRecordAirbyteValue()

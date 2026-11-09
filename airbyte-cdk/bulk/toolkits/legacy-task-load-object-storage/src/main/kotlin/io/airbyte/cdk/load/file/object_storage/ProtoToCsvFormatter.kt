@@ -50,7 +50,7 @@ class ProtoToCsvFormatter(
             "ProtoToCsvFormatter only supports DestinationRecordProtobufSource"
         }
         printer.printRecord(
-            *writer.toCsvRow(record, src, record.rawData.sourceMeta.changes + unknownColumnChanges)
+            *writer.toCsvRow(record, src, record.rawData.sourceMeta.changes + unknownColumnChanges),
         )
     }
 
@@ -58,6 +58,7 @@ class ProtoToCsvFormatter(
         printer.flush()
         outputStream.flush()
     }
+
     override fun close() {
         printer.close()
         outputStream.close()

@@ -49,18 +49,17 @@ class ClickhouseTestTableOperationsClient(
         // Format timestamps as yyyy-MM-dd HH:mm:ss.SSS for DateTime64(3) columns;
         // Java's OffsetDateTime/LocalDateTime.toString() may omit seconds or millis,
         // which ClickHouse cannot parse.
-        val fixed =
-            records.map { record ->
-                record.mapValues { (_, value) ->
-                    when (value) {
-                        is TimestampWithTimezoneValue ->
-                            StringValue(value.value.format(CLICKHOUSE_DATETIME_FORMAT))
-                        is TimestampWithoutTimezoneValue ->
-                            StringValue(value.value.format(CLICKHOUSE_DATETIME_FORMAT))
-                        else -> value
-                    }
+        val fixed = records.map { record ->
+            record.mapValues { (_, value) ->
+                when (value) {
+                    is TimestampWithTimezoneValue ->
+                        StringValue(value.value.format(CLICKHOUSE_DATETIME_FORMAT))
+                    is TimestampWithoutTimezoneValue ->
+                        StringValue(value.value.format(CLICKHOUSE_DATETIME_FORMAT))
+                    else -> value
                 }
             }
+        }
         client
             .insert(
                 "`${table.namespace}`.`${table.name}`",
@@ -101,11 +100,12 @@ class ClickhouseTestTableOperationsClient(
                 client
                     .queryRecords(
                         """
-                    SELECT *
-                    FROM system.mutations
-                    WHERE database = {database:String}
-                      AND table = {table:String}
-                    """.trimIndent(),
+                        SELECT *
+                        FROM system.mutations
+                        WHERE database = {database:String}
+                          AND table = {table:String}
+                        """
+                            .trimIndent(),
                         mapOf(
                             "database" to table.namespace,
                             "table" to table.name,

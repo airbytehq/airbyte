@@ -1,5 +1,52 @@
 # Klaviyo Migration Guide
 
+## Upgrading to 4.0.0
+
+Klaviyo retires API revision `2024-10-15` on 2026-10-15, so this release moves every stream to revision `2026-01-15`. Only the `campaigns` and `campaigns_detailed` streams change shape; all other streams keep the same schema.
+
+This upgrade does not break syncs or destinations. The same campaigns and campaign messages keep syncing, with the same record counts and, except for SMS message labels (see below), the same values; the `attributes` and `campaign_messages` columns keep their names and types. For that reason the connector upgrades automatically at the deadline instead of disabling connections. The breaking-change notice is for awareness: some values move to different nested paths inside those two columns, so anything downstream of the destination that reads the old paths (SQL models, dashboards, dbt tests) returns `null` for them after the upgrade until it is pointed at the new paths.
+
+### Who is affected
+
+Only connections that sync `campaigns` or `campaigns_detailed`, and only if a downstream query, model or dashboard reads one of the nested paths listed below.
+
+### What changed in `campaigns` and `campaigns_detailed`
+
+Klaviyo flattened `send_strategy`. The method-specific option objects are gone and their fields now sit directly under `send_strategy`:
+
+| Before                                                | After                                             |
+| ----------------------------------------------------- | ------------------------------------------------- |
+| `send_strategy.options_static.datetime`               | `send_strategy.datetime`                          |
+| `send_strategy.options_static.is_local`               | `send_strategy.options.is_local`                  |
+| `send_strategy.options_static.send_past_recipients_immediately` | `send_strategy.options.send_past_recipients_immediately` |
+| `send_strategy.options_sto.date`                      | `send_strategy.date`                              |
+| `send_strategy.options_throttled.datetime`            | `send_strategy.datetime`                          |
+| `send_strategy.options_throttled.throttle_percentage` | `send_strategy.throttle_percentage`               |
+
+`send_strategy.method` is unchanged. Fields that do not apply to the campaign's method are omitted, where the previous revision returned them as `null`.
+
+### What changed in `campaigns_detailed` only
+
+Each entry of `campaign_messages` now carries its channel-specific configuration under `attributes.definition`:
+
+| Before                                        | After                                                    |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `campaign_messages[].attributes.channel`        | `campaign_messages[].attributes.definition.channel`        |
+| `campaign_messages[].attributes.label`          | `campaign_messages[].attributes.definition.label`          |
+| `campaign_messages[].attributes.content.*`      | `campaign_messages[].attributes.definition.content.*`      |
+| `campaign_messages[].attributes.render_options.*` | `campaign_messages[].attributes.definition.render_options.*` |
+
+`definition` also exposes mobile push message fields that the previous revision did not return (`content.title`, `content.dynamic_image`, `content.action_buttons`, `options.badge`, `options.on_open`, `options.play_sound`, `kv_pairs`, `notification_type`), and each message gains a `relationships.image` link. `created_at`, `updated_at`, `send_times` and the campaign and template relationships are unchanged.
+
+Klaviyo no longer generates a `label` for SMS campaign messages, so `campaign_messages[].attributes.definition.label` is absent for them at this revision (`null` in typed destinations).
+
+### Migration steps
+
+1. Upgrade the connector to version 4.0.0, or wait for the automatic upgrade on the deadline. Syncs continue either way.
+2. Update any downstream queries, models or dashboards that read `send_strategy.options_static`, `send_strategy.options_sto`, `send_strategy.options_throttled`, or the campaign message `channel`, `label`, `content` and `render_options` fields to the new paths above.
+3. In your connection, open the **Schema** tab and click **Refresh source schema**, then accept the changes for `campaigns` and `campaigns_detailed` so the new fields show up in typed destination columns.
+4. Optionally, clear `campaigns` and `campaigns_detailed` so that rows written before the upgrade are rewritten in the new shape; without a clear they keep the old paths in destinations that append rather than overwrite. Before clearing, note that the connector only re-reads campaigns updated on or after your **Start Date** (the last year if Start Date is blank) and cannot re-read campaigns deleted in Klaviyo, so back up the tables or set Start Date earlier than your oldest campaign first.
+
 ## Upgrading to 3.0.0
 
 This release changes the record shape of `flow_series_reports`, changes what `campaign_values_reports` writes in `date`, and changes the reporting periods both report streams request. Both streams need a schema refresh and a clear.

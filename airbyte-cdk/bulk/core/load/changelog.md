@@ -7,6 +7,42 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.9 — 2026-10-21
+
+[#89635](https://github.com/airbytehq/airbyte/pull/89635) — Dependency CVE fixes, no code change. Compile against bulk-cdk-core-base 1.0.8 (sshd-mina 2.20.0, mina-core 2.0.31, bcprov 1.86). legacy-task-load-parquet: Hadoop 3.4.0 → 3.4.3 (protobuf 3.21 → 3.25 shade, drops commons-beanutils, brings dnsjava 3.6.1 and nimbus-jose-jwt 10.4) with Hadoop's embedded Jetty 9.4 excluded, Parquet 1.15.1 → 1.18.1 (shaded parquet-jackson moves to jackson 2.22.2, aircompressor 2.0.3), constraint on jline 3.30.17; lz4-java stays 1.8.0 because 1.8.1 is POM-only on Maven Central. load-iceberg-parquet: Hadoop 3.4.1 → 3.4.3 (Jetty excluded), constraints on zookeeper 3.8.6, httpcore5/httpcore5-h2 5.4.4 and Parquet 1.18.1 (Iceberg stays 1.11.0). load-fusion: AWS SDK BOM 2.31.54 → 2.57.2. legacy-task-load-avro: Avro 1.11.0 → 1.11.4. legacy-task-load-azure-blob-storage: azure-identity 1.13.2 → 1.18.7 (msal4j 1.16.2 → 1.26.0, azure-core 1.55.5 → 1.60.0, azure-core-http-netty 1.15.13 → 1.16.8); msal4j 1.26.0 keeps oauth2-oidc-sdk in test scope only, so oauth2-oidc-sdk 11.9.1 and json-smart 2.5.0 (CVE-2024-57699) leave the runtime classpath. A netty-bom 4.1.139.Final floor is declared on the toolkits that bring netty in (load-fusion, legacy-task-load-parquet, load-iceberg-parquet, legacy-task-load-azure-blob-storage); connectors on Micronaut 4.10.31 already resolve netty 4.2.19.
+
+### 1.1.8 — 2026-10-16
+
+[#89040](https://github.com/airbytehq/airbyte/pull/89040) — Repo-wide reformat with ktfmt 0.65 (trailing commas on one-per-line parameter and argument lists, blank lines between declarations) and removal of SpotBugs suppressions that 4.10.5 on the K2 compiler no longer needs; no behaviour change.
+
+### 1.1.7 — 2026-10-16
+
+[#89039](https://github.com/airbytehq/airbyte/pull/89039) — Compile against the published bulk-cdk-core-base 1.0.6 (Kotlin 2.4 toolchain) instead of 1.0.3; no code change.
+
+### 1.1.6 — 2026-10-16
+
+[#89031](https://github.com/airbytehq/airbyte/pull/89031) — Kotlin compiler 2.4.21 with K2, KSP 2.3.10, kotlinx-coroutines 1.11.0 and mockk 1.14.11 (lifting the strictly-1.13.13 pin); KSP is now declared per source set (`kspTestFixtures`, `kspIntegrationTest`) because KSP2 no longer applies to every compilation; released alongside base 1.0.6 and extract 1.1.20; no runtime behaviour change in load.
+
+### 1.1.5 — 2026-10-15
+
+[#88992](https://github.com/airbytehq/airbyte/pull/88992) — Bump Micronaut to 4.10.31, Jackson to 2.21.7 (Kotlin runtime 2.1.21), JUnit to 5.14 and SpotBugs to 4.10.5; Dagger and `javax.inject` are removed in favour of `jakarta.inject` only. `ReservingDeserializingInputFlow`, `DestinationMessageFactory`, `ObjectLoaderPartFormatter` and `DefaultTempTableNameGenerator` get `@Inject` constructors without Kotlin default values on primitive parameters: inject-kotlin 4.8+ emits unverifiable bytecode for such constructors and Micronaut silently dropped the beans (`NoSuchBeanException` in dependants). Runtime behaviour is unchanged.
+
+### 1.1.4 — 2026-10-15
+
+[#89002](https://github.com/airbytehq/airbyte/pull/89002) — Test and testFixtures dependencies are declared explicitly (Kotlin Gradle plugin 2.0.10+ no longer propagates `implementation` dependencies into testFixtures, nor `testFixturesImplementation` into tests), and K2-lint cleanups that also compile on Kotlin 1.9. No behaviour change.
+
+### 1.1.3 — 2026-10-12
+
+[#88497](https://github.com/airbytehq/airbyte/pull/88497) — Add `DestinationConfigurationFactory` tests (core and legacy-task-loader) pinning that a connector `ConfigErrorException` passes through `make()` unchanged. No behaviour change; released alongside extract 1.1.16, which gains the same pass-through in `SourceConfigurationFactory`.
+
+### 1.1.2 — 2026-10-08
+
+Fix: Iceberg toolkit no longer emits NOT NULL constraints nested inside list types (e.g. _airbyte_meta.changes), which Databricks/Delta rejects; existing tables are relaxed in place via schema evolution.
+
+### 1.1.1 — 2026-09-24
+
+Add the Fusion archive toolkit to the published bulk load CDK toolkits.
+
 ### 1.1.0 — 2026-09-10
 
 [#82231](https://github.com/airbytehq/airbyte/pull/82231) - Feat: Add `tableIsEmpty` to `TableOperationsClient` and use existence checks (instead of `COUNT(*)`) when gathering direct-load initial status.
