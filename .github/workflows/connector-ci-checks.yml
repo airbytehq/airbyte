@@ -369,15 +369,13 @@ jobs:
           check-latest: true
           update-environment: true
 
-      - name: Install and configure Poetry
-        if: matrix.connector
-        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
-        with:
-          version: 1.8.5
-
       - name: Install the latest version of uv
         if: matrix.connector
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install Poetry
+        if: matrix.connector
+        run: uv tool install poetry==1.8.5
 
       - name: Install system dependencies
         if: matrix.connector
@@ -560,15 +558,13 @@ jobs:
           python-version: "3.11"
           check-latest: true
           update-environment: true
-      - name: Install and configure Poetry
-        if: matrix.connector
-        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
-        with:
-          version: 1.8.5
-
       - name: Install the latest version of uv
         if: matrix.connector
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install Poetry
+        if: matrix.connector
+        run: uv tool install poetry==1.8.5
 
       - name: Install system dependencies
         if: matrix.connector

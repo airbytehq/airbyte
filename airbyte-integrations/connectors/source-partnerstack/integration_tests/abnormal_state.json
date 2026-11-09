@@ -1,5 +1,13 @@
-{
-  "customers": {
-    "updated_at": "11654622676000"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "customers"
+      },
+      "stream_state": {
+        "updated_at": "11654622676000"
+      }
+    }
   }
-}
+]
