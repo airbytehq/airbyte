@@ -12,6 +12,8 @@ _Incremental_ syn means only changed resources are copied from Recurly. For the 
 Several output streams are available from this source:
 
 - [Accounts](https://docs.recurly.com/docs/accounts)
+- [Account Acquisitions](https://docs.recurly.com/docs/accounts)
+- [Account Balances](https://docs.recurly.com/docs/accounts)
 - [Account Notes](https://docs.recurly.com/docs/accounts#account-notes)
 - [Account Coupon Redemptions](https://docs.recurly.com/docs/coupons#redemptions)
 - [Add Ons](https://docs.recurly.com/docs/plans#add-ons-1)
@@ -20,7 +22,11 @@ Several output streams are available from this source:
 - [Unique Coupons](https://docs.recurly.com/docs/bulk-unique-coupons)
 - [Credit Payments](https://docs.recurly.com/docs/invoices)
 - [Automated Exports](https://docs.recurly.com/docs/export-overview)
+- [Gift Cards](https://docs.recurly.com/docs/gift-cards)
+- [External Subscriptions](https://developers.recurly.com/api/v2021-02-25/index.html#operation/list_external_subscriptions)
+- [External Subscription Payment Phases](https://developers.recurly.com/api/v2021-02-25/index.html#operation/list_external_subscription_external_payment_phases)
 - [Invoices](https://docs.recurly.com/docs/invoices)
+- [Items](https://developers.recurly.com/api/v2021-02-25/index.html#operation/list_items)
 - [Measured Units](https://developers.recurly.com/api/v2021-02-25/index.html#tag/measured_unit)
 - [Line Items](https://docs.recurly.com/docs/invoices#line-items)
 - [Plans](https://docs.recurly.com/docs/plans)
@@ -29,6 +35,11 @@ Several output streams are available from this source:
 - [Subscriptions](https://docs.recurly.com/docs/subscriptions)
 - [Subscription Changes](https://docs.recurly.com/docs/change-subscription#subscription-changes)
 - [Transactions](https://docs.recurly.com/docs/transactions)
+- [Usage Records](https://docs.recurly.com/docs/usage-based-billing)
+
+The `account_acquisitions` and `items` streams support Full Refresh and Incremental syncs. The `account_balances`, `gift_cards`, `external_subscriptions`, `external_subscription_payment_phases`, and `usage_records` streams support Full Refresh only. The `usage_records` stream reads all billing statuses (`billing_status=all`), including billed and unbilled usage.
+
+The `gift_cards`, `external_subscriptions` (and their payment phases), `usage_records`, and `items` streams require the corresponding Recurly site features: gift cards, external subscriptions, usage-based billing, and the item catalog, respectively. The item catalog also requires Credit Invoices. Enable the relevant features on your Recurly site before syncing these streams.
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -70,6 +81,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.4.0 | 2026-11-09 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add account_acquisitions, account_balances, gift_cards, external_subscriptions, external_subscription_payment_phases, usage_records and items streams |
 | 1.3.69 | 2026-11-03 | [90721](https://github.com/airbytehq/airbyte/pull/90721) | Update dependencies |
 | 1.3.68 | 2026-10-20 | [89408](https://github.com/airbytehq/airbyte/pull/89408) | Update dependencies |
 | 1.3.67 | 2026-10-13 | [88767](https://github.com/airbytehq/airbyte/pull/88767) | Update dependencies |
