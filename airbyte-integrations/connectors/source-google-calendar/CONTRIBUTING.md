@@ -26,4 +26,4 @@ source-declarative-manifest read --config secrets/config.json --catalog integrat
 cd unit_tests && poetry install --no-root && poetry run pytest   # unit tests
 ```
 
-Acceptance tests are configured in `acceptance-test-config.yml` and run through connector CI. The legacy `discovery`, `incremental`, and `full_refresh` blocks are not run by the CDK standard-test runner; it reads `spec`, `connection`, and `basic_read`. The basic-read catalog excludes `acl` until the sandbox token has the scope; `freebusy` may be empty.
+Acceptance tests are configured in `acceptance-test-config.yml` and run through connector CI. The CDK standard-test runner reads every section: `connection` (check), `discovery` (discover), `basic_read` and `full_refresh` (read), and the `future_state` of `incremental` (a read that starts from `integration_tests/abnormal_state.json` and must return no records). `basic_read` allows `acl` to be empty until the sandbox token has the `calendar.acls.readonly` scope, and `freebusy` to be empty when the sandbox calendar has no busy blocks.
