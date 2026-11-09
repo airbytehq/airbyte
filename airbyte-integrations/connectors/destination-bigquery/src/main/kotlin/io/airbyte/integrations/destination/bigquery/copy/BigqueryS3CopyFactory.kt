@@ -1,12 +1,14 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.destination.bigquery.copy
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.fusion.FusionConfiguration
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.StorageWriteApiConfiguration
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -26,6 +28,14 @@ class BigqueryS3CopyFactory {
         @Named("dataChannelFormat") dataChannelFormat: DataChannelFormat,
     ): BigqueryS3Copy =
         createForOperation(operation) { config ->
+            // The archive copies the load input of GCS staging and batched standard inserts; rows
+            // appended through the Storage Write API have none.
+            if (bigqueryConfiguration.loadingMethod is StorageWriteApiConfiguration) {
+                throw ConfigErrorException(
+                    "The Storage Write API loading method is not available while the Fusion " +
+                        "load-input archive is enabled. Use GCS Staging or Batched Standard Inserts.",
+                )
+            }
             val runId = UUID.randomUUID()
             EnabledBigqueryS3Copy(
                 config,

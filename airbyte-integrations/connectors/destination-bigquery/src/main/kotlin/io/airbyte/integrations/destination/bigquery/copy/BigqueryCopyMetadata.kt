@@ -25,6 +25,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.StorageWriteApiConfiguration
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import java.security.MessageDigest
 import java.time.Instant
@@ -159,6 +160,8 @@ class BigqueryCopyMetadata(
                     when (bigqueryConfiguration.loadingMethod) {
                         is GcsStagingConfiguration -> "GCS_STAGING"
                         BatchedStandardInsertConfiguration -> "BATCHED_STANDARD_INSERT"
+                        StorageWriteApiConfiguration ->
+                            error("BigqueryS3CopyFactory rejects the Storage Write API")
                     },
                 "table_mode" to if (raw) "raw" else "direct",
                 "input_format" to dataChannelFormat.name,

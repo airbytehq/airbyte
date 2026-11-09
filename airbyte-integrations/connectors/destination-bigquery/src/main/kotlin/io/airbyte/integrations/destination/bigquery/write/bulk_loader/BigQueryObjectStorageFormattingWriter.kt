@@ -13,6 +13,8 @@ import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriterFactory
 import io.airbyte.cdk.load.file.object_storage.ProtoToCsvFormatter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalogByDescriptor
+import io.airbyte.integrations.destination.bigquery.copy.BigqueryS3Copy
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -42,12 +44,22 @@ class BigQueryObjectStorageFormattingWriter(
 @Singleton
 class BigQueryObjectStorageFormattingWriterFactory(
     private val config: BigqueryConfiguration,
+    private val names: TableCatalogByDescriptor,
     @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat,
+    private val archive: BigqueryS3Copy,
 ) : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
         outputStream: OutputStream,
     ): ObjectStorageFormattingWriter {
+        if (config.stagesAvroFiles(archive)) {
+            return bigQueryAvroFormattingWriter(
+                stream,
+                names[stream.mappedDescriptor]!!.columnNameMapping,
+                dataChannelFormat,
+                outputStream,
+            )
+        }
         return if (config.legacyRawTablesOnly) {
             if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
                 ProtoToCsvFormatter(

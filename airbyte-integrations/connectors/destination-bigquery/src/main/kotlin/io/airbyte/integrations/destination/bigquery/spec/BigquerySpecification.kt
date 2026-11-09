@@ -123,11 +123,13 @@ class BigquerySpecification : ConfigurationSpecification() {
 @JsonSubTypes(
     JsonSubTypes.Type(value = GcsStagingSpecification::class, name = "GCS Staging"),
     JsonSubTypes.Type(value = BatchedStandardInsertSpecification::class, name = "Standard"),
+    JsonSubTypes.Type(value = StorageWriteApiSpecification::class, name = "Storage Write API"),
 )
 sealed class LoadingMethodSpecification(@JsonProperty("method") val method: LoadingMethod) {
     enum class LoadingMethod(@get:JsonValue val typeName: String) {
         BATCHED_STANDARD_INSERT("Standard"),
         GCS("GCS Staging"),
+        STORAGE_WRITE_API("Storage Write API"),
     }
 }
 
@@ -152,11 +154,25 @@ class GcsStagingSpecification :
     @get:JsonProperty("keep_files_in_gcs-bucket", defaultValue = "Delete all tmp files from GCS")
     @get:JsonSchemaInject(json = """{"order": 3}""")
     val filePostProcessing: GcsFilePostProcessing? = null
+
+    @get:JsonSchemaTitle("Staging File Format")
+    @get:JsonPropertyDescription(
+        """The format of the files staged in GCS. BigQuery reads an Avro file with several workers and a gzipped CSV file with one, and Avro needs far less CPU to write, so loads are faster. Avro does not apply in legacy raw tables mode. Defaults to CSV (gzip).""",
+    )
+    @get:JsonProperty("staging_file_format", defaultValue = "CSV (gzip)")
+    @get:JsonSchemaInject(json = """{"order": 4}""")
+    val stagingFileFormat: GcsStagingFileFormat? = null
     override val gcsBucketName: String = ""
     override val path: String = ""
     override val credential: GcsAuthSpecification =
         GcsHmacKeySpecification(accessKeyId = "", secretAccessKey = "")
 }
+
+@JsonSchemaTitle("Storage Write API")
+@JsonSchemaDescription(
+    "Streams records into BigQuery with the Storage Write API, each batch in a pending stream committed when the batch is flushed. No staging bucket or load jobs. Billed per GB ingested beyond the free monthly allowance. Not available in legacy raw tables mode.",
+)
+class StorageWriteApiSpecification : LoadingMethodSpecification(LoadingMethod.STORAGE_WRITE_API)
 
 // bigquery supports a subset of GCS regions.
 // See https://cloud.google.com/bigquery/docs/locations#supported_locations
@@ -210,6 +226,11 @@ enum class BigqueryRegion(@get:JsonValue val region: String, val gcsRegion: GcsR
 enum class GcsFilePostProcessing(@get:JsonValue val postProcesing: String) {
     DELETE("Delete all tmp files from GCS"),
     KEEP("Keep all tmp files in GCS"),
+}
+
+enum class GcsStagingFileFormat(@get:JsonValue val fileFormat: String) {
+    CSV_GZIP("CSV (gzip)"),
+    AVRO("Avro"),
 }
 
 enum class TransformationPriority(@get:JsonValue val transformationPriority: String) {
