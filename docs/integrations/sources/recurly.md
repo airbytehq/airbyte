@@ -70,7 +70,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
-| 2.0.0 | 2026-11-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Corrected `subscriptions.coupon_redemptions` to an array and added date-time format to coupon and external-account timestamps. See the [migration guide](/integrations/sources/recurly-migrations#upgrading-to-200) |
+| 2.0.0 | 2026-11-09 | [91302](https://github.com/airbytehq/airbyte/pull/91302) | Corrected `subscriptions.coupon_redemptions` to an array and added date-time format to coupon and external-account timestamps. See the [migration guide](/integrations/sources/recurly-migrations#upgrading-to-200) |
 | 1.3.69 | 2026-11-03 | [90721](https://github.com/airbytehq/airbyte/pull/90721) | Update dependencies |
 | 1.3.68 | 2026-10-20 | [89408](https://github.com/airbytehq/airbyte/pull/89408) | Update dependencies |
 | 1.3.67 | 2026-10-13 | [88767](https://github.com/airbytehq/airbyte/pull/88767) | Update dependencies |
