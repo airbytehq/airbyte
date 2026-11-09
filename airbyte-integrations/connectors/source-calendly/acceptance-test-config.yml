@@ -4,7 +4,18 @@ connector_image: airbyte/source-calendly:dev
 acceptance_tests:
   spec:
     tests:
+      # 1.1.0 moves the top-level `api_key` into `credentials`; the config migration in manifest.yaml
+      # rewrites saved configs, so the spec backward-compatibility findings are waived for each version
+      # that can be the published `latest` when 1.1.0 merges.
       - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.4.0"
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.4.1"
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
