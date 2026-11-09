@@ -31,6 +31,7 @@ data:
           Reset or clear only affected streams whose destination cannot alter the column type.
           See https://docs.airbyte.com/integrations/sources/recurly-migrations#upgrading-to-200.
         upgradeDeadline: "2026-11-23"
+        deadlineAction: auto_upgrade
         scopedImpact:
           - scopeType: stream
             impactedScopes:
