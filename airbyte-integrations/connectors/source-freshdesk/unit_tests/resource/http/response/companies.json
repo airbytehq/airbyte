@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "name": "Company One",
+    "description": "A Freshdesk company",
+    "note": "Example company",
+    "domains": ["example.com"],
+    "created_at": "2014-01-08T09:08:53Z",
+    "updated_at": "2014-01-08T09:08:53Z",
+    "custom_fields": {},
+    "health_score": "Healthy",
+    "account_tier": "Premium",
+    "renewal_date": "2025-01-01",
+    "industry": "Technology"
+  }
+]
