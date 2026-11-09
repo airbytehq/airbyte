@@ -4,9 +4,13 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 # airbytehq/airbyte#90136 (docs/hydra/hands-free-determinism-plan.md).
 #
 # Shape:
-#   1. Trigger fires (currently workflow_dispatch + repository_dispatch; the
-#      full trigger set — check_run, pull_request synchronize/labeled, weekend
-#      cron — lands in Phase 2 PRs).
+#   1. Trigger fires: workflow_dispatch, repository_dispatch (session
+#      completion), `hyd-chain-v2` being added to a PR (pull_request labeled),
+#      or a required CI check completing (check_run for the octavia-bot
+#      Summary check, workflow_run for the other six). CI wakes exit in the
+#      `gate` job until all 7 required checks have completed. The remaining
+#      Phase 2 triggers — pull_request synchronize and the weekend cron — land
+#      in separate PRs.
 #   2. Fast pre-flight: skip the PR unless OPEN + hyd-chain-v2 + no hyd-pause +
 #      no community/fork. The v2 label is intentionally separate from `hyd-chain`
 #      so this workflow and the existing hydra-stage-handoff.yml can run in
@@ -20,6 +24,13 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #      blockers array.
 #   4. Switch on next_action and dispatch the matching slash-command workflow
 #      via curl. No Devin session is launched for the decision itself.
+#   5. Idempotency (HYD-372): each dispatch first records a hidden
+#      `hydra_handoff_v2` marker comment keyed on (pr, head_sha, next_action)
+#      and skips when that key is already on the PR, so repeat wakes on the
+#      same head don't dispatch the same stage twice. A new push changes the
+#      key. To retry a stage on the same head, dispatch with `force: true`.
+#   6. Post actionable assess results (including dry-runs) to Slack in
+#      #hydra-handoff-watcher, excluding idempotency skips.
 #
 # Dry-run: controlled by workflow_dispatch input (preferred) or by the
 # HYDRA_HANDOFF_V2_DRY_RUN repo variable (default: 'true' until the dispatcher
@@ -34,13 +45,41 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 # meanwhile.
 
 on:
-  # Dispatcher-emitted completion signals. The slash-command workflows that
-  # pivot to wait-for-stopped-status in HYD-369 will POST to the dispatches
-  # API with event_type=handoff and {pr, head_sha, source_stage} in the
-  # client_payload. Until that pivot lands, this fires only via
-  # workflow_dispatch.
+  # Dispatcher-emitted completion signals. The slash-command workflows pivoted
+  # in HYD-369 POST to the dispatches API with event_type=handoff and
+  # {pr, head_sha, source_stage} in the client_payload.
   repository_dispatch:
     types: [handoff]
+  # Opt-in kickstart: one handoff pass when `hyd-chain-v2` is added,
+  # instead of waiting for the next stage or CI wake. The gate's `if:` drops
+  # every other label. Labels added with GITHUB_TOKEN don't fire this, so
+  # automation that adds the label must use an App token.
+  pull_request:
+    types: [labeled]
+  # Required-CI-check completions. The 7 required checks on `master` come
+  # from two kinds of producer, and each needs its own trigger:
+  #   - "Connector CI Checks Summary" is posted by the octavia-bot GitHub App
+  #     via the Checks API, so it fires `check_run`.
+  #   - The other six are plain Actions jobs. GitHub never fires `check_run`
+  #     for check suites created by Actions, so they're caught with
+  #     `workflow_run` on the workflows that produce them.
+  # The job-level `if:` below narrows both triggers. The names are duplicated
+  # from branch protection for v1; HYD-375 moves them to a repo variable with
+  # a drift-detection CI check.
+  # Disabled until v2 is ready to roll out; uncomment to enable CI wakes.
+  # check_run:
+  #   types: [completed]
+  # workflow_run:
+  #   types: [completed]
+  #   # Workflow names (not check names). Produced checks, in order:
+  #   #   Format Check; CDK Check + Bulk CDK version check result; Enforce PR
+  #   #   structure; Check Changelog Updated; Connectors CDK Version Check.
+  #   workflows:
+  #     - "Global Format Check"
+  #     - "Java CDK Tests"
+  #     - "PR cannot modify both bulk CDK and connectors"
+  #     - "Changelog Update Check"
+  #     - "Connectors CDK Version Check"
   workflow_dispatch:
     inputs:
       pr:
@@ -52,38 +91,157 @@ on:
         required: false
         type: boolean
         default: true
+      force:
+        description: "Force. Dispatch even if the same next_action was already dispatched for this PR's head SHA. Use it to retry a stage that failed without pushing."
+        required: false
+        type: boolean
+        default: false
 
-run-name: "Hydra v2 handoff for PR #${{ github.event.inputs.pr || github.event.client_payload.pr }}"
+run-name: "Hydra v2 handoff for PR #${{ github.event.inputs.pr || github.event.client_payload.pr || github.event.pull_request.number || github.event.check_run.pull_requests[0].number || github.event.workflow_run.pull_requests[0].number }}"
 
 # GITHUB_TOKEN is unused: all reads/writes go through the Octavia app token.
 permissions: {}
 
-concurrency:
-  # Serialise handoff runs per PR so burst-firing events don't double-dispatch.
-  # cancel-in-progress is deliberately false: cancelling after a slash-command
-  # dispatch has fired would leave a session running that nobody owns.
-  group: hydra-stage-handoff-v2-${{ github.event.inputs.pr || github.event.client_payload.pr }}
-  cancel-in-progress: false
-
 jobs:
-  handoff:
-    name: Compute next_action and dispatch
+  # Runs on every wake, with no concurrency, so early CI wakes never enter the
+  # handoff's concurrency group. CI wakes only pass once all 7 required checks
+  # on the PR head SHA have completed (any conclusion; red CI still routes to
+  # fix_ci). The Connector CI Checks Summary only rolls up Connector CI's own
+  # jobs, so it can't stand in for the 7. Dispatch and label wakes pass straight through.
+  gate:
+    name: Wait for required checks
     runs-on: ubuntu-latest
+    # Drop CI events that aren't a required check on a same-repo PR, and
+    # label events other than hyd-chain-v2 on a same-repo PR, before the
+    # runner starts. Fork PRs (and pushes to master) have empty
+    # pull_requests[], so the index check drops them.
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'repository_dispatch' ||
+      (github.event_name == 'pull_request' &&
+        github.event.label.name == 'hyd-chain-v2' &&
+        github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'check_run' &&
+        github.event.check_run.pull_requests[0] != null &&
+        github.event.check_run.name == 'Connector CI Checks Summary') ||
+      (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.pull_requests[0] != null)
     steps:
       - name: Resolve PR number
         id: pr
         env:
           INPUT_PR: ${{ github.event.inputs.pr }}
           CLIENT_PR: ${{ github.event.client_payload.pr }}
+          LABELED_PR: ${{ github.event.pull_request.number }}
+          CHECK_PR: ${{ github.event.check_run.pull_requests[0].number }}
+          WORKFLOW_RUN_PR: ${{ github.event.workflow_run.pull_requests[0].number }}
         run: |
           set -euo pipefail
-          PR="${INPUT_PR:-$CLIENT_PR}"
+          PR="${INPUT_PR:-${CLIENT_PR:-${LABELED_PR:-${CHECK_PR:-$WORKFLOW_RUN_PR}}}}"
           if [[ -z "$PR" ]]; then
-            echo "::error::no PR number resolved from inputs or client_payload"
+            echo "::error::no PR number resolved from inputs, client_payload, pull_request, check_run, or workflow_run"
             exit 1
           fi
           echo "number=$PR" | tee -a "$GITHUB_OUTPUT"
 
+      - name: Pass dispatch and label wakes through
+        id: ci-wake
+        if: github.event_name != 'check_run' && github.event_name != 'workflow_run'
+        run: echo "ready=true" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Authenticate as GitHub App
+        id: get-app-token
+        if: github.event_name == 'check_run' || github.event_name == 'workflow_run'
+        uses: actions/create-github-app-token@v3.0.0
+        with:
+          owner: airbytehq
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Check required checks on head SHA
+        id: checks
+        if: github.event_name == 'check_run' || github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          # Keep in sync with the required status checks ruleset on `master`;
+          # HYD-375 moves this to a repo variable with a drift check.
+          REQUIRED_CHECKS: |-
+            Connector CI Checks Summary
+            Connectors CDK Version Check
+            CDK Check
+            Bulk CDK version check result
+            Enforce PR structure
+            Format Check
+            Check Changelog Updated
+        run: |
+          set -euo pipefail
+          read -r HEAD_SHA HAS_LABEL < <(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --json headRefOid,labels \
+            --jq '"\(.headRefOid) \([.labels[].name] | index("hyd-chain-v2") != null)"')
+          {
+            echo "## Hydra v2 gate"
+            echo "- PR: #$PR_NUMBER"
+            echo "- Head SHA: \`$HEAD_SHA\`"
+            echo "- \`hyd-chain-v2\` label: $HAS_LABEL"
+          } >>"$GITHUB_STEP_SUMMARY"
+          if [[ "$HAS_LABEL" != "true" ]]; then
+            echo "::notice::Not ready: PR #$PR_NUMBER has no hyd-chain-v2 label"
+            echo "ready=false" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # One TSV line per check run, streamed across all pages.
+          RUNS=$(gh api --paginate \
+            "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs?filter=latest&per_page=100" \
+            --jq '.check_runs[] | [.name, .status] | @tsv')
+
+          # A check that doesn't exist yet counts as pending; any completed
+          # run (including skipped/neutral/failure) counts as done.
+          PENDING=()
+          {
+            echo ""
+            echo "| Required check | State |"
+            echo "| --- | --- |"
+          } >>"$GITHUB_STEP_SUMMARY"
+          while IFS= read -r NAME; do
+            STATUSES=$(awk -F'\t' -v n="$NAME" '$1 == n { print $2 }' <<<"$RUNS")
+            if [[ -z "$STATUSES" ]]; then
+              STATE=missing
+            elif grep -qvx completed <<<"$STATUSES"; then
+              STATE=running
+            else
+              STATE=completed
+            fi
+            [[ "$STATE" != completed ]] && PENDING+=("$NAME")
+            echo "| $NAME | $STATE |" >>"$GITHUB_STEP_SUMMARY"
+          done <<<"$REQUIRED_CHECKS"
+
+          if (( ${#PENDING[@]} > 0 )); then
+            echo "::notice::Not ready: waiting on ${#PENDING[@]} required check(s): $(IFS=';'; echo "${PENDING[*]}")"
+            echo "ready=false" | tee -a "$GITHUB_OUTPUT"
+          else
+            echo "::notice::All required checks completed on $HEAD_SHA"
+            echo "ready=true" | tee -a "$GITHUB_OUTPUT"
+          fi
+    outputs:
+      pr: ${{ steps.pr.outputs.number }}
+      ready: ${{ steps.ci-wake.outputs.ready || steps.checks.outputs.ready }}
+
+  handoff:
+    name: Compute next_action and dispatch
+    needs: gate
+    if: needs.gate.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    # Serialise handoff runs per PR so burst-firing events don't
+    # double-dispatch. cancel-in-progress is deliberately false: cancelling
+    # after a slash-command dispatch has fired would leave a session running
+    # that nobody owns.
+    concurrency:
+      group: hydra-stage-handoff-v2-${{ needs.gate.outputs.pr }}
+      cancel-in-progress: false
+    steps:
       - name: Resolve dry-run mode
         id: mode
         env:
@@ -114,7 +272,7 @@ jobs:
         id: eligibility
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr }}
         run: |
           set -euo pipefail
           PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
@@ -164,7 +322,7 @@ jobs:
           DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
           DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
           HYDRA_EXPERIMENTAL_ASSESS: "1"
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr }}
         run: |
           set -euo pipefail
           OUT=$(node "$RUNNER_TEMP/hydra.mjs" pr "$PR_NUMBER" --assess)
@@ -176,7 +334,11 @@ jobs:
           TARGET=$(jq -r '.assessment.target // ""' <<<"$OUT")
           BLOCKERS=$(jq -r '(.assessment.blockers // []) | join("; ")' <<<"$OUT")
           MARK_READY=$(jq -r '.assessment.mark_ready_for_review // false' <<<"$OUT")
+          # The head hydra assessed, so the idempotency key matches the decision.
+          HEAD_SHA=$(jq -r --arg ref "airbytehq/airbyte#$PR_NUMBER" \
+            'first(.prs[]? | select(.ref == $ref) | .facts.head_sha) // ""' <<<"$OUT")
           echo "next_action=$NEXT_ACTION" | tee -a "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
           echo "reason=$REASON" >> "$GITHUB_OUTPUT"
           echo "target=$TARGET" >> "$GITHUB_OUTPUT"
           echo "blockers=$BLOCKERS" >> "$GITHUB_OUTPUT"
@@ -185,10 +347,13 @@ jobs:
 
       - name: Dispatch next action
         if: steps.eligibility.outputs.eligible == 'true'
+        id: dispatch
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr }}
           NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
+          HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
+          FORCE: ${{ github.event.inputs.force }}
           TARGET: ${{ steps.assess.outputs.target }}
           REASON: ${{ steps.assess.outputs.reason }}
           BLOCKERS: ${{ steps.assess.outputs.blockers }}
@@ -196,32 +361,87 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Sets CLAIMED=true when this run may dispatch WORKFLOW. The marker
+          # is posted before the dispatch, and the handoff job is serialised
+          # per PR, so a queued wake sees it and skips. Only [bot] comments
+          # count, so outside commenters can't block a dispatch.
+          claim_dispatch() {
+            local WORKFLOW="$1"
+            CLAIMED=false
+            [[ -z "$HEAD_SHA" ]] \
+              && echo "::error::hydra output has no head_sha for airbytehq/airbyte#$PR_NUMBER; refusing to dispatch without an idempotency key" \
+              && exit 1
+            local KEY_FIELDS="pr=$PR_NUMBER; head_sha=$HEAD_SHA; next_action=$NEXT_ACTION"
+            local KEY="<!-- hydra_handoff_v2: $KEY_FIELDS -->"
+            echo "idempotency_key=$KEY_FIELDS" | tee -a "$GITHUB_OUTPUT"
+            local BODIES
+            BODIES=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+              --jq '.[] | select(.user.login | endswith("[bot]")) | .body')
+            if [[ "$FORCE" != "true" ]] && grep -qF "$KEY" <<<"$BODIES"; then
+              echo "::notice::Skipping dispatch: $NEXT_ACTION was already dispatched for PR #$PR_NUMBER at $HEAD_SHA"
+              echo "idempotency=skipped" | tee -a "$GITHUB_OUTPUT"
+              return 0
+            fi
+            local RESULT=recorded
+            [[ "$FORCE" == "true" ]] && RESULT=forced
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "::notice::WOULD record idempotency key ($RESULT): $KEY"
+              echo "idempotency=would-be-$RESULT" | tee -a "$GITHUB_OUTPUT"
+              CLAIMED=true
+              return 0
+            fi
+            local BODY="${KEY}
+          ↪️ Hydra v2 handoff: dispatching \`$WORKFLOW\` (\`$NEXT_ACTION\`) for head \`${HEAD_SHA:0:7}\`. [Workflow run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+            MARKER_ID=$(gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --jq '.id' -f body="$BODY")
+            echo "idempotency=$RESULT" | tee -a "$GITHUB_OUTPUT"
+            CLAIMED=true
+          }
+
+          # When the request never reached GitHub (curl 6/7: DNS, connect) or
+          # GitHub rejected it (22: HTTP error), the marker is deleted so the
+          # next wake retries. Other failures (timeouts, dropped connections)
+          # may have dispatched, so the marker stays.
+          send_dispatch() {
+            local URL="$1" DATA="$2" RC=0
+            curl -fsS -X POST \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "$URL" -d "$DATA" || RC=$?
+            [[ "$RC" == 0 ]] && return 0
+            if [[ "$RC" =~ ^(6|7|22)$ ]]; then
+              echo "::error::Dispatch not accepted (curl exit $RC); removing idempotency marker so a later wake can retry"
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/comments/$MARKER_ID" --silent \
+                || echo "::warning::Couldn't remove marker comment $MARKER_ID; retry with force: true"
+            else
+              echo "::error::Dispatch outcome unknown (curl exit $RC); keeping the marker. Check the stage's runs, and retry with force: true if it didn't start"
+            fi
+            exit 1
+          }
+
           dispatch_airbyte() {
             local WORKFLOW="$1"
+            claim_dispatch "$WORKFLOW"
+            [[ "$CLAIMED" == "true" ]] || return 0
             if [[ "$DRY_RUN" == "true" ]]; then
               echo "::notice::WOULD dispatch $WORKFLOW for PR #$PR_NUMBER"
               return 0
             fi
-            curl -fsS -X POST \
-              -H "Authorization: token $GH_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/airbytehq/airbyte/actions/workflows/$WORKFLOW/dispatches" \
-              -d "{\"ref\":\"master\",\"inputs\":{\"pr\":\"$PR_NUMBER\"}}"
+            send_dispatch "https://api.github.com/repos/airbytehq/airbyte/actions/workflows/$WORKFLOW/dispatches" \
+              "{\"ref\":\"master\",\"inputs\":{\"pr\":\"$PR_NUMBER\"}}"
             echo "::notice::Dispatched $WORKFLOW for PR #$PR_NUMBER"
           }
 
           dispatch_oncall() {
             local WORKFLOW="$1"
             local ISSUE="$2"
+            claim_dispatch "$WORKFLOW"
+            [[ "$CLAIMED" == "true" ]] || return 0
             if [[ "$DRY_RUN" == "true" ]]; then
               echo "::notice::WOULD dispatch $WORKFLOW for oncall issue #$ISSUE"
               return 0
             fi
-            curl -fsS -X POST \
-              -H "Authorization: token $GH_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/airbytehq/oncall/actions/workflows/$WORKFLOW/dispatches" \
-              -d "{\"ref\":\"main\",\"inputs\":{\"issue-number\":\"$ISSUE\"}}"
+            send_dispatch "https://api.github.com/repos/airbytehq/oncall/actions/workflows/$WORKFLOW/dispatches" \
+              "{\"ref\":\"main\",\"inputs\":{\"issue-number\":\"$ISSUE\"}}"
             echo "::notice::Dispatched $WORKFLOW for issue #$ISSUE"
           }
 
@@ -288,6 +508,61 @@ jobs:
               ;;
           esac
 
+      - name: Resolve Variables
+        id: resolve-vars
+        if: ${{ !cancelled() && steps.eligibility.outputs.eligible == 'true' }}
+        env:
+          SLACK_CHANNEL: C0CF6T8MVNH # #hydra-handoff-watcher
+          PR_NUMBER: ${{ needs.gate.outputs.pr }}
+          NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
+          TARGET: ${{ steps.assess.outputs.target }}
+          REASON: ${{ steps.assess.outputs.reason }}
+          BLOCKERS: ${{ steps.assess.outputs.blockers }}
+          HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
+          DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+          IDEMPOTENCY: ${{ steps.dispatch.outputs.idempotency }}
+          DISPATCH_OUTCOME: ${{ steps.dispatch.outcome }}
+        run: |
+          set -euo pipefail
+          NOTIFY=$(jq -nr 'env | .NEXT_ACTION as $action |
+            (["prove", "review", "ready", "resolve_conflicts", "fix", "triage", "fix_ci", "escalate"] | index($action) != null)
+            and (.IDEMPOTENCY != "skipped")')
+          echo "notify=$NOTIFY" | tee -a "$GITHUB_OUTPUT"
+          PAYLOAD_FILE="$RUNNER_TEMP/handoff-slack-payload.json"
+          jq -n 'env |
+            (if .DISPATCH_OUTCOME != "success" then "failed (step outcome: \(.DISPATCH_OUTCOME))"
+             elif .NEXT_ACTION == "fix_ci" or .NEXT_ACTION == "escalate" then "not handled (\(.NEXT_ACTION))"
+             elif ((["prove", "review", "ready", "resolve_conflicts"] | index(env.NEXT_ACTION) != null)
+                   and .TARGET != "airbytehq/airbyte#\(.PR_NUMBER)")
+                  or ((["fix", "triage"] | index(env.NEXT_ACTION) != null)
+                      and (.TARGET | test("^airbytehq/oncall#[0-9]+$") | not))
+               then "skipped because target is another item"
+             elif .DRY_RUN == "true" then "would dispatch"
+             else "dispatched" end) as $dispatch |
+            (.TARGET | capture("^(?<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)#(?<number>[0-9]+)$")? // null) as $target |
+            (if $target != null then "<\(.GITHUB_SERVER_URL)/\($target.repo)/issues/\($target.number)|\(.TARGET)>"
+             else .TARGET end) as $target_text |
+            {channel: .SLACK_CHANNEL, unfurl_links: false, unfurl_media: false,
+             text: ([("next_action: \(.NEXT_ACTION)" +
+                      (if .TARGET != "" then " | target: \($target_text)" else "" end) +
+                      (if .TARGET == "" or .TARGET != "\(.GITHUB_REPOSITORY)#\(.PR_NUMBER)"
+                       then " | PR: <\(.GITHUB_SERVER_URL)/\(.GITHUB_REPOSITORY)/pull/\(.PR_NUMBER)|#\(.PR_NUMBER)>" else "" end)),
+                     "Reason: \(.REASON)",
+                     (if .BLOCKERS != "" then "Blockers: \(.BLOCKERS)" else empty end),
+                     "Head: \(.HEAD_SHA[0:7]) | dry-run: \(if .DRY_RUN == "true" then "yes" else "no" end)",
+                     "Dispatch: \($dispatch)",
+                     "<\(.GITHUB_SERVER_URL)/\(.GITHUB_REPOSITORY)/actions/runs/\(.GITHUB_RUN_ID)|Workflow run>"] | join("\n"))}' \
+            > "$PAYLOAD_FILE"
+          echo "payload-file=$PAYLOAD_FILE" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Post assess result to Slack
+        if: ${{ !cancelled() && steps.resolve-vars.outputs.notify == 'true' }}
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload-file-path: ${{ steps.resolve-vars.outputs.payload-file }}
+
       - name: Summarize
         if: always()
         env:
@@ -296,8 +571,11 @@ jobs:
           REASON: ${{ steps.assess.outputs.reason }}
           TARGET: ${{ steps.assess.outputs.target }}
           BLOCKERS: ${{ steps.assess.outputs.blockers }}
+          HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
+          IDEMPOTENCY: ${{ steps.dispatch.outputs.idempotency }}
+          IDEMPOTENCY_KEY: ${{ steps.dispatch.outputs.idempotency_key }}
           DRY_RUN: ${{ steps.mode.outputs.dry_run }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr }}
         run: |
           {
             echo "## Hydra v2 handoff"
@@ -307,6 +585,8 @@ jobs:
             [[ -n "${REASON:-}" ]] && echo "- Reason: ${REASON}"
             [[ -n "${TARGET:-}" ]] && echo "- Target: ${TARGET}"
             [[ -n "${BLOCKERS:-}" ]] && echo "- Blockers: ${BLOCKERS}"
+            [[ -n "${HEAD_SHA:-}" ]] && echo "- Head SHA: \`${HEAD_SHA}\`"
+            [[ -n "${IDEMPOTENCY:-}" ]] && echo "- Idempotency: ${IDEMPOTENCY} (\`${IDEMPOTENCY_KEY}\`)"
             echo "- Dry run: ${DRY_RUN:-unknown}"
             true
           } | tee -a "$GITHUB_STEP_SUMMARY"
