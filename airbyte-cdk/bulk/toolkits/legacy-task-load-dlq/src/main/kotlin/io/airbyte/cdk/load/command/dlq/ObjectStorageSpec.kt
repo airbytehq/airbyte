@@ -68,10 +68,10 @@ class AzureBlobObjectStorageSpec :
     override val storageType = ObjectStorageType.AzureBlob
 
     @get:JsonProperty("azure_blob_storage_account_name", required = true)
-    override lateinit var azureBlobStorageAccountName: String
+    override val azureBlobStorageAccountName: String = ""
 
     @get:JsonProperty("azure_blob_storage_container_name", required = true)
-    override lateinit var azureBlobStorageContainerName: String
+    override val azureBlobStorageContainerName: String = ""
 
     @get:JsonSchemaTitle("Azure Blob Storage Endpoint Domain Name")
     @get:JsonProperty("azure_blob_storage_endpoint_domain_name", isRequired = OptBoolean.FALSE)

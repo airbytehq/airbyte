@@ -16,10 +16,8 @@ import io.airbyte.cdk.load.file.object_storage.StreamingUpload
 import io.micronaut.context.BeanProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import io.mockk.verify
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,9 +29,11 @@ import org.junit.jupiter.params.provider.ValueSource
 class DlqCheckerTest {
     @Test
     fun `disabled storage never resolves a client`() {
-        val provider = mockk<BeanProvider<ObjectStorageClient<*>>>()
+        val provider =
+            BeanProvider<ObjectStorageClient<*>> {
+                throw AssertionError("Disabled storage must not resolve an object storage client")
+            }
         DlqChecker(provider).check(DisabledObjectStorageConfig())
-        verify(exactly = 0) { provider.get() }
     }
 
     @ParameterizedTest
@@ -52,8 +52,7 @@ class DlqCheckerTest {
                 )
                 .toObjectStorageConfig() as AzureBlobObjectStorageConfig<*>
         val client = mockk<ObjectStorageClient<AzureBlob>>()
-        val provider = mockk<BeanProvider<ObjectStorageClient<*>>>()
-        every { provider.get() } returns client
+        val provider = BeanProvider<ObjectStorageClient<*>> { client }
         val upload = mockk<StreamingUpload<AzureBlob>>()
         val key = slot<String>()
         val bytes = slot<ByteArray>()
