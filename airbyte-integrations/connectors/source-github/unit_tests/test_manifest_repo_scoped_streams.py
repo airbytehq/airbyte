@@ -197,8 +197,8 @@ def test_inaccessible_repository_is_skipped(sleep_mock, status_code, body, expec
     assert statuses[-1] == "COMPLETE"
     assert [record["repository"] for record in records] == ["docker/compose"]
     # Skipped on the first response: none of these is worth retrying, and 410 in particular is
-    # absent from the CDK default mapping, so without its filter it would burn five retries
-    # behind the 60s backoff floor before failing the stream.
+    # absent from the CDK default mapping, so without its filter it would burn five exponential
+    # backoff retries before failing the stream.
     assert endpoint.call_count == 1
     # The declarative IGNORE path logs the filter's `error_message` at INFO. It carries no slice
     # context, so this cannot assert *which* repository was skipped — see the "KNOWN GAP" note in

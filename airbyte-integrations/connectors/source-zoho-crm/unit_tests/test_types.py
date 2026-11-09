@@ -53,10 +53,38 @@ def test_module_schema():
             "Modified_Time": {"format": "date-time", "type": "string"},
             "id": {"type": "string"},
         },
-        "required": ["id", "Modified_Time", "Content"],
+        "required": ["id", "Modified_Time"],
         "schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
     }
+
+
+def test_module_schema_does_not_require_system_mandatory_fields():
+    fields = [
+        FieldMeta(
+            json_type="string",
+            length=None,
+            api_name="Mandatory_Field",
+            data_type="text",
+            decimal_place=None,
+            system_mandatory=True,
+            display_label="Mandatory Field",
+        ),
+        FieldMeta(
+            json_type="string",
+            length=None,
+            api_name="Optional_Field",
+            data_type="text",
+            decimal_place=None,
+            system_mandatory=False,
+            display_label="Optional Field",
+        ),
+    ]
+    schema = ModuleMeta(api_name="Events", module_name="Events", api_supported=True, fields=fields).schema
+
+    assert schema.required == ["id", "Modified_Time"]
+    assert "Mandatory_Field" in schema.properties
+    assert "Optional_Field" in schema.properties
 
 
 def test_field_schema_unknown_type():
