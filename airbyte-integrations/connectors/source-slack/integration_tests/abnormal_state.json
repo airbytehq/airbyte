@@ -16,17 +16,8 @@
         "name": "channel_messages"
       },
       "stream_state": {
-        "state": { "float_ts": 2534945416.0 },
+        "use_global_cursor": false,
         "states": [
-          {
-            "partition": {
-              "channel_id": "C04LTCM2Y56",
-              "parent_slice": {}
-            },
-            "cursor": {
-              "float_ts": 2534945416.0
-            }
-          },
           {
             "partition": {
               "channel": "C04KX3KEZ54",
@@ -54,7 +45,10 @@
               "float_ts": 2534945416.0
             }
           }
-        ]
+        ],
+        "state": {
+          "float_ts": 2534945416.0
+        }
       }
     }
   }
