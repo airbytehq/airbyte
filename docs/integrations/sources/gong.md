@@ -64,7 +64,7 @@ You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
 
 <FieldAnchor field="scorecards_review_method">
 
-- **Scorecards Review Method** (optional). Which answered scorecards to fetch: `MANUAL`, `AUTOMATIC` (scored by Gong's AI) or `BOTH`. The Gong API only returns manually reviewed scorecards unless asked otherwise, so choose `AUTOMATIC` or `BOTH` to sync AI-scored scorecards. The default is `MANUAL`, which keeps the previous behavior.
+- **Scorecards Review Method** (optional). Which answered scorecards to fetch: `MANUAL`, `AUTOMATIC` (scored by Gong's AI) or `BOTH`. The Gong API only returns manually reviewed scorecards unless asked otherwise, so choose `AUTOMATIC` or `BOTH` to sync AI-scored scorecards. The default is `MANUAL`, which keeps the previous behavior. If you change this on an existing connection, only scorecards reviewed after the last sync are added. To backfill older ones, refresh the answered scorecards stream.
 
 </FieldAnchor>
 <HideInUI>
