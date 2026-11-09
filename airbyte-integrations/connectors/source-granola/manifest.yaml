@@ -114,6 +114,9 @@ definitions:
           # Granola refuses to return oversized transcripts inline and answers 413
           # TRANSCRIPT_TOO_LARGE. Skip the note here instead of failing the sync; the
           # full transcript is available from the note_transcripts stream.
+          # A note listed by the parent stream can answer 404 NOTE_NOT_FOUND on this path
+          # (deleted, unshared, still processing, or out of the key's scope). Skip that note
+          # instead of failing every remaining detail request.
           error_handler:
             $ref: "#/definitions/base_error_handler"
             response_filters:
@@ -129,6 +132,13 @@ definitions:
                   Skipping a note in detailed_notes because its transcript is too large to
                   be returned inline. Sync the note_transcripts stream to replicate this
                   transcript.
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+                error_message: >-
+                  Skipping a note in detailed_notes because Granola returned 404 for this note.
+                  The note was likely deleted, unshared, or still processing.
         record_selector:
           type: RecordSelector
           extractor:

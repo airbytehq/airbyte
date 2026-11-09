@@ -9,7 +9,7 @@ from unittest import TestCase
 import freezegun
 from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import AirbyteStateMessage, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, Level, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -25,6 +25,7 @@ _TRANSCRIPT_TOO_LARGE = {
     "code": "TRANSCRIPT_TOO_LARGE",
     "message": "Transcript is too large to return inline. Retrieve it in pages from /v1/notes/{note_id}/transcript.",
 }
+_NOTE_NOT_FOUND = {"code": "NOTE_NOT_FOUND", "message": "Note not found"}
 
 
 def _note(note_id: str, updated_at: str) -> Dict[str, Any]:
@@ -183,3 +184,39 @@ class TestDetailedNotesIncremental(TestCase):
         state = _stream_state(output)
         assert state["use_global_cursor"] is True
         assert state["parent_state"]["notes"]["updated_at"] == "2026-01-12T08:00:00Z"
+
+    @HttpMocker()
+    def test_404_note_not_found_skips_note_without_retrying_and_emits_advanced_parent_state(self, http_mocker: HttpMocker):
+        """A note listed by /v1/notes whose detail request answers 404 is skipped instead of failing the stream."""
+        notes = [
+            _note("note-available", "2026-01-11T08:00:00Z"),
+            _note("note-missing", "2026-01-12T08:00:00Z"),
+        ]
+        list_request = _notes_request("2026-01-10T09:59:59Z")
+        http_mocker.get(list_request, _notes_response(notes))
+        available_request = _detail_request("note-available")
+        http_mocker.get(available_request, HttpResponse(body=json.dumps(notes[0]), status_code=200))
+        missing_request = _detail_request("note-missing")
+        http_mocker.get(missing_request, HttpResponse(body=json.dumps(_NOTE_NOT_FOUND), status_code=404))
+        prior_state = {
+            "use_global_cursor": True,
+            "state": {"updated_at": "2026-01-10T10:00:00Z"},
+            "lookback_window": 0,
+            "parent_state": {"notes": {"updated_at": "2026-01-10T10:00:00Z"}},
+        }
+
+        output = _read(StateBuilder().with_stream_state(_STREAM_NAME, prior_state).build())
+
+        assert output.errors == []
+        assert [message.record.data["id"] for message in output.records] == ["note-available"]
+        http_mocker.assert_number_of_calls(list_request, 1)
+        http_mocker.assert_number_of_calls(available_request, 1)
+        http_mocker.assert_number_of_calls(missing_request, 1)
+        skip_logs = [message.log for message in output.logs if "Granola returned 404 for this note" in message.log.message]
+        assert [log.level for log in skip_logs] == [Level.INFO]
+        assert _stream_state(output) == {
+            "use_global_cursor": True,
+            "state": {"updated_at": "2026-01-11T08:00:00Z"},
+            "lookback_window": 0,
+            "parent_state": {"notes": {"updated_at": "2026-01-12T08:00:00Z"}},
+        }
