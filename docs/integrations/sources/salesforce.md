@@ -386,7 +386,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 2.11.1 | 2026-11-09 | [91215](https://github.com/airbytehq/airbyte/pull/91215) | Add connect and read timeouts and TCP keepalive to REST and Bulk API requests, so a stalled or dropped connection is retried or fails the sync instead of hanging it indefinitely |
+| 2.11.1 | 2026-11-09 | [91215](https://github.com/airbytehq/airbyte/pull/91215) | Add request timeouts and TCP keepalive so a stalled connection no longer hangs the sync |
 | 2.11.0 | 2026-10-23 | [89735](https://github.com/airbytehq/airbyte/pull/89735) | Add the ClientCredentials authentication method (Use your own External Client App) as the default, alongside Client (Airbyte Connected App) |
 | 2.10.5 | 2026-11-03 | [90894](https://github.com/airbytehq/airbyte/pull/90894) | Require Python 3.11 or newer, retaining support for Python 3.11–3.13. |
 | 2.10.4 | 2026-10-30 | [90253](https://github.com/airbytehq/airbyte/pull/90253) | Explain Salesforce OAuth, API permission, and IP restriction failures with actionable guidance and sandbox login hints. |
