@@ -257,13 +257,14 @@ In the event of a failure, the Airbyte platform will retry the pipeline. Each of
 
 ### Retry Rules
 
-Based on the outcome of previous attempts, the number of permitted attempts per job changes. By default, Airbyte is configured to allow the following:
+By default in Airbyte Core, Airbyte retries a failed attempt until the job reaches either limit:
 
-- 5 subsequent attempts where no data was synchronized
-- 10 total attempts where no data was synchronized
-- 20 total attempts where some data was synchronized
+- 5 failed attempts that synced no data
+- 10 failed attempts that synced some data
 
-For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+"Synced some data" means at least one record was committed or rejected. Each limit counts attempts across the whole job, not only attempts in a row. Airbyte doesn't retry an attempt that fails with a configuration error, such as invalid credentials, because a retry can't fix it.
+
+In Airbyte Core, you can change these limits. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs).
 
 ### Workflow Restarts and Retry Limits
 
@@ -280,16 +281,16 @@ The error message says "the sync should work fine on the next retry," but this r
 
 ### Retry Backoff
 
-After an attempt where no data was synchronized, we implement a short backoff period before starting a new attempt. This will increase with each successive complete failure—a partially successful attempt will reset this value.
+Backoff applies only after failed attempts that synced no data. It increases with each successive complete failure. Partial failures retry without backoff and reset the successive complete-failure count.
 
-By default, Airbyte is configured to backoff with the following values:
+By default, Airbyte Core uses the following backoff intervals:
 
 - 10 seconds after the first complete failure
 - 30 seconds after the second
 - 90 seconds after the third
 - 4 minutes and 30 seconds after the fourth
 
-For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+In Airbyte Core, you can change these values. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs).
 
 The duration of expected backoff between attempts can be viewed in the logs accessible from the job history UI.
 
@@ -364,62 +365,38 @@ To help illustrate what is possible, below are a couple examples of how the retr
     <tbody>
         <tr>
             <td>1</td>
-            <td>Yes</td>
-        </tr>
-        <tr>
-            <td>2</td>
-            <td>Yes</td>
-        </tr>
-        <tr>
-            <td>3</td>
-            <td>Yes</td>
-        </tr>
-        <tr>
-            <td>4</td>
-            <td>Yes</td>
-        </tr>
-        <tr>
-            <td>5</td>
-            <td>Yes</td>
-        </tr>
-        <tr>
-            <td>6</td>
-            <td>Yes</td>
-        </tr>
-        <tr>
-            <td>7</td>
             <td>No</td>
         </tr>
         <tr>
             <td colspan="2">10 second backoff</td>
         </tr>
         <tr>
-            <td>8</td>
+            <td>2</td>
             <td>No</td>
         </tr>
         <tr>
             <td colspan="2">30 second backoff</td>
         </tr>
         <tr>
-            <td>9</td>
+            <td>3</td>
             <td>No</td>
         </tr>
         <tr>
             <td colspan="2">90 second backoff</td>
         </tr>
         <tr>
-            <td>10</td>
+            <td>4</td>
             <td>No</td>
         </tr>
         <tr>
             <td colspan="2">4 minute 30 second backoff</td>
         </tr>
         <tr>
-            <td>11</td>
+            <td>5</td>
             <td>No</td>
         </tr>
         <tr>
-            <td colspan="2">Job Fails — successive failure limit reached</td>
+            <td colspan="2">Job fails — 5 attempts synced no data</td>
         </tr>
     </tbody>
 </table>

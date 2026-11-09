@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 43ae66ee-e3df-4fb7-bff5-9625d25cdc14
-  dockerImageTag: 0.0.76
+  dockerImageTag: 0.0.77
   dockerRepository: airbyte/source-productboard
   githubIssueLabel: source-productboard
   icon: icon.svg
@@ -40,3 +40,11 @@ data:
     - title: Productboard authentication
       url: https://developer.productboard.com/#section/Authentication
       type: authentication_guide
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
