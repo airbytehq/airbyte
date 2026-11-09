@@ -24,7 +24,7 @@ The custom backoff strategy computes wait time as the reciprocal of the `Retry-A
 
 **Why this matters:** If you see a `Retry-After` value of 0.5, the connector waits 2 seconds (1/0.5), not 0.5 seconds. This inverted interpretation is specific to Amazon's rate limit header semantics and would produce incorrect wait times if applied to other APIs.
 
-`download_target_requester` retries 429 responses up to 30 times / 3600s through a `CustomErrorHandler` wrapping the CDK `DefaultErrorHandler`. This wrapper sets `max_time`, which the manifest schema does not expose; waits for the shared API budget count toward that limit.
+`download_target_requester` (`getReportDocument`, shared by every report stream) uses `RateLimitRetryBudgetErrorHandler` from `components.py`. 429 responses get up to 30 retries / 3600s; 403s, 5xx and connection errors keep 5 retries / 600s. A plain `DefaultErrorHandler` or `CompositeErrorHandler` cannot express this: `HttpClient` applies one `max_retries` / `max_time` to every retryable error, and a composite takes `max_retries` from its first handler and the largest `max_time` of all of them. Waiting for the shared 1/min API budget happens inside the retried request, so it counts toward both time limits.
 
 ## 4. Regression Tests Will Not Run for This Connector
 

@@ -3645,36 +3645,30 @@ definitions:
       request_headers:
         content-type: "application/json"
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          # CustomErrorHandler on the CDK's own DefaultErrorHandler only to set max_time, which the manifest schema does not expose.
-          # Waiting on the 1/min getReportDocument API budget counts toward max_time, so the 600s default gives up after a few tries.
-          - type: CustomErrorHandler
-            class_name: airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler.DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 429
-                error_message: "Rate limit exceeded for report document lookup. The request will be retried with backoff."
-            max_retries: 30
-            max_time: 3600
-            backoff_strategies:
-              - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                type: CustomBackoffStrategy
-                header: x-amzn-RateLimit-Limit
-                default_backoff_time: 60
-          - type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 403
-            backoff_strategies:
-              - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
-                type: CustomBackoffStrategy
-                header: x-amzn-RateLimit-Limit
-                default_backoff_time: 60
+        # 429s get 30 retries / 1h: waiting on the 1/min getReportDocument API budget counts toward max_time, so the 600s
+        # default gave up after a few tries. 403s, 5xx and connection errors keep the CDK default of 5 retries / 10 min,
+        # which a single max_retries / max_time (or a CompositeErrorHandler) cannot express; see the class docstring.
+        type: CustomErrorHandler
+        class_name: source_declarative_manifest.components.RateLimitRetryBudgetErrorHandler
+        max_retries: 30
+        max_time: 3600
+        other_errors_max_retries: 5
+        other_errors_max_time: 600
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+            error_message: "Rate limit exceeded for report document lookup. The request will be retried with backoff."
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 403
+        backoff_strategies:
+          - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+            type: CustomBackoffStrategy
+            header: x-amzn-RateLimit-Limit
+            default_backoff_time: 60
 
     download_requester:
       type: HttpRequester
