@@ -29,14 +29,12 @@ definitions:
           path: /organizers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -74,14 +72,12 @@ definitions:
           path: /organizers/{{ stream_partition.organizer }}/events
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -129,14 +125,12 @@ definitions:
             stream_partition.event }}/taxrules
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -244,14 +238,12 @@ definitions:
             stream_partition.event }}/items
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -306,14 +298,12 @@ definitions:
             stream_partition.event }}/orders
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -368,14 +358,12 @@ definitions:
             stream_partition.event }}/vouchers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -430,14 +418,12 @@ definitions:
             stream_partition.event }}/discounts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -492,14 +478,12 @@ definitions:
             stream_partition.event }}/checkinlists
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -554,14 +538,12 @@ definitions:
             stream_partition.event }}/waitinglistentries
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -614,14 +596,12 @@ definitions:
           path: /organizers/{{ stream_partition.organizer }}/customers
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -667,14 +647,12 @@ definitions:
           path: /organizers/{{ stream_partition.organizer }}/saleschannels
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -718,14 +696,12 @@ definitions:
           path: /organizers/{{ stream_partition.organizer }}/membershiptypes
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -769,14 +745,12 @@ definitions:
           path: /organizers/{{ stream_partition.organizer }}/memberships
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -822,14 +796,12 @@ definitions:
           path: /organizers/{{ stream_partition.organizer }}/giftcards
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -875,14 +847,12 @@ definitions:
           path: /organizers/{{ stream_partition.organizer }}/reusablemedia
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -928,14 +898,12 @@ definitions:
           path: /organizers/{{ stream_partition.organizer }}/teams
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -981,14 +949,12 @@ definitions:
           path: /organizers/{{ stream_partition.organizer }}/devices
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -1034,14 +1000,12 @@ definitions:
           path: /organizers/{{ stream_partition.organizer }}/webhooks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -1087,14 +1051,12 @@ definitions:
           path: /organizers/{{ stream_partition.organizer }}/seatingplans
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
@@ -1142,14 +1104,12 @@ definitions:
             stream_partition.event }}/auto_checkin_rules
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
         record_selector:
           type: RecordSelector
           extractor:
