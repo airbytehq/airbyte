@@ -172,16 +172,17 @@ change.
 ## 8. `vendor_contacts` skips vendors that return 404
 
 `vendor_contacts` reads `GET /vendors/{vendor_id}/contacts` for every vendor from the parent read. A
-vendor deleted between the parent page and its contacts call returns 404, so the stream wraps the shared
-handler in a `CompositeErrorHandler` whose first handler ignores 404. The order matters for every other
-error: the composite returns early only on actions such as success, retry or ignore, and on a failure it
-moves on and returns the **last** handler's result. With the shared handler last, a 403 still gets its
-scope message. A bad-token 404 (`DEVELOPER_7002`) is ignored here too, but the parent `vendors` read fails
-on it first. The stream's key is `[vendor_id, id]`, with `vendor_id` added from the partition.
+deleted vendor returns 404 with `DEVELOPER_7002`, so the stream uses one `DefaultErrorHandler` that
+`$ref`s the shared handler and overrides `response_filters` with 404 `IGNORE` first, followed by the
+shared filters reused by `$ref` from `definitions.response_filters`. Order matters because a deleted
+vendor's 404 carries `DEVELOPER_7002`, which the shared `revoked_token` filter would otherwise turn into
+a "token revoked" failure. A bad-token 404 is ignored here too, but the parent `vendors` read fails on it
+first. As on every other stream, a non-404 response carrying `DEVELOPER_7100` or `DEVELOPER_7002` now
+hits those filters; before, the composite's first handler answered 2xx/5xx itself. The stream's key is
+`[vendor_id, id]`, with `vendor_id` added from the partition.
 
 **Why this matters:** Moving the 404 filter into the shared handler would hide bad-token failures on
-every stream (see section 2). Putting the 404 handler last would make its generic default mapping the
-answer for every failure on this stream, losing the shared handler's actionable messages.
+every stream (see section 2). Add new shared filters to `definitions.response_filters` and to both lists.
 
 ## 9. Date fields are typed, except three that Ramp does not return in ISO 8601
 
