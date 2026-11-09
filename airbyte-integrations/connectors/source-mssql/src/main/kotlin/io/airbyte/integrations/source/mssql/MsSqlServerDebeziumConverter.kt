@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql
 import io.debezium.spi.converter.CustomConverter
 import io.debezium.spi.converter.RelationalColumn
 import java.math.BigDecimal
+import java.sql.Types
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -49,7 +50,7 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
 
     override fun converterFor(
         field: RelationalColumn,
-        registration: CustomConverter.ConverterRegistration<SchemaBuilder>
+        registration: CustomConverter.ConverterRegistration<SchemaBuilder>,
     ) {
         val typeName = field.typeName().uppercase()
 
@@ -65,7 +66,7 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
             MSSQL_DATETIMEOFFSET_TYPE -> {
                 registration.register(
                     SchemaBuilder.string().optional(),
-                    this::convertDateTimeOffset
+                    this::convertDateTimeOffset,
                 )
             }
             MSSQL_TIME_TYPE -> {
@@ -93,7 +94,7 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
             MSSQL_UNIQUEIDENTIFIER_TYPE -> {
                 registration.register(
                     SchemaBuilder.string().optional(),
-                    this::convertUniqueIdentifier
+                    this::convertUniqueIdentifier,
                 )
             }
             MSSQL_XML_TYPE -> {
@@ -106,8 +107,32 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
                 registration.register(SchemaBuilder.string().optional(), this::convertSqlVariant)
             }
             else -> {
-                // For unhandled types, just return as string
-                logger.debug("Unhandled SQL Server type: {}", typeName)
+                // User-defined alias types (e.g. CREATE TYPE x FROM datetime) report the alias
+                // as typeName, so resolve temporal aliases via their JDBC type instead.
+                // JDBC TIMESTAMP covers SQL Server datetime, datetime2 and smalldatetime;
+                // DATE is date and TIME is time.
+                val jdbcType = field.jdbcType()
+                val temporalConverter: ((Any?) -> Any?)? =
+                    when (jdbcType) {
+                        Types.TIMESTAMP -> this::convertDateTime
+                        Types.DATE -> this::convertDate
+                        Types.TIME -> this::convertTime
+                        else -> null
+                    }
+
+                if (temporalConverter != null) {
+                    registration.register(SchemaBuilder.string().optional()) { value ->
+                        temporalConverter(value)
+                    }
+                    logger.info(
+                        "Resolved user-defined type {} for column {} via JDBC type {}",
+                        field.typeName(),
+                        field.name(),
+                        jdbcType,
+                    )
+                } else {
+                    logger.debug("Unhandled SQL Server type: {}", typeName)
+                }
             }
         }
     }
@@ -285,7 +310,7 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
         } catch (e: Exception) {
             logger.warn(
                 "Failed to deserialize spatial binary as ${if (isGeography) "Geography" else "Geometry"}: {}",
-                e.message
+                e.message,
             )
             // Fallback to base64 if deserialization fails
             Base64.getEncoder().encodeToString(bytes)

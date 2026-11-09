@@ -29,6 +29,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-11-03 | [90391](https://github.com/airbytehq/airbyte/pull/90391) | Simplify the `speeches` stream error handler configuration; no behavior change |
+| 0.0.53 | 2026-11-03 | [90756](https://github.com/airbytehq/airbyte/pull/90756) | Update dependencies |
+| 0.0.52 | 2026-10-27 | [90053](https://github.com/airbytehq/airbyte/pull/90053) | Update dependencies |
+| 0.0.51 | 2026-10-20 | [89412](https://github.com/airbytehq/airbyte/pull/89412) | Update dependencies |
+| 0.0.50 | 2026-10-13 | [88829](https://github.com/airbytehq/airbyte/pull/88829) | Update dependencies |
+| 0.0.49 | 2026-10-06 | [88069](https://github.com/airbytehq/airbyte/pull/88069) | Update dependencies |
+| 0.0.48 | 2026-09-29 | [87363](https://github.com/airbytehq/airbyte/pull/87363) | Update dependencies |
 | 0.0.47 | 2026-09-22 | [86837](https://github.com/airbytehq/airbyte/pull/86837) | Update dependencies |
 | 0.0.46 | 2026-09-15 | [86241](https://github.com/airbytehq/airbyte/pull/86241) | Update dependencies |
 | 0.0.45 | 2026-09-08 | [85708](https://github.com/airbytehq/airbyte/pull/85708) | Update dependencies |

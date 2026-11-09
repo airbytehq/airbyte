@@ -8,22 +8,29 @@ import logging
 from datetime import datetime, timedelta
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
-from unittest.mock import ANY, MagicMock, Mock, patch
+from unittest.mock import ANY, MagicMock, Mock, PropertyMock, patch
 
 import pytest
+from botocore.exceptions import ClientError, EndpointConnectionError
 from botocore.stub import Stubber
 from moto import mock_sts
 from pydantic.v1 import AnyUrl
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 
 logger = logging.Logger("")
+
+
+def _iam_user_credentials():
+    return {"auth_type": "iam_user", "aws_access_key_id": "test", "aws_secret_access_key": "test"}
+
 
 endpoint_values = ["https://fake.com", None]
 _get_matching_files_cases = [
@@ -118,8 +125,15 @@ def test_get_matching_files(
         aws_access_key_id = aws_secret_access_key = None if endpoint else "test"
         reader.config = Config(
             bucket="test",
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
+            credentials=(
+                {"auth_type": "default_credentials"}
+                if endpoint
+                else {
+                    "auth_type": "iam_user",
+                    "aws_access_key_id": aws_access_key_id,
+                    "aws_secret_access_key": aws_secret_access_key,
+                }
+            ),
             streams=[],
             endpoint=endpoint,
         )
@@ -192,8 +206,11 @@ def test_given_multiple_pages_when_get_matching_files_then_pass_continuation_tok
     reader = SourceS3StreamReader()
     reader.config = Config(
         bucket="test",
-        aws_access_key_id="aws_access_key_id",
-        aws_secret_access_key="aws_secret_access_key",
+        credentials={
+            "auth_type": "iam_user",
+            "aws_access_key_id": "aws_access_key_id",
+            "aws_secret_access_key": "aws_secret_access_key",
+        },
         streams=[],
         endpoint=None,
     )
@@ -204,7 +221,7 @@ def test_given_multiple_pages_when_get_matching_files_then_pass_continuation_tok
 
 def test_get_matching_files_exception():
     reader = SourceS3StreamReader()
-    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+    reader.config = Config(bucket="test", credentials=_iam_user_credentials(), streams=[])
     stub = Stubber(reader.s3_client)
     stub.add_client_error("list_objects_v2")
     stub.activate()
@@ -229,12 +246,11 @@ def test_open_file_without_config_raises_exception():
 def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
     smart_open_mock.return_value = io.BytesIO()
     reader = SourceS3StreamReader()
-    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+    reader.config = Config(bucket="test", credentials=_iam_user_credentials(), streams=[])
     try:
         reader.config = Config(
             bucket="test",
-            aws_access_key_id="test",
-            aws_secret_access_key="test",
+            credentials=_iam_user_credentials(),
             streams=[],
             endpoint=None,
         )
@@ -263,8 +279,7 @@ def test_upload(mock_boto_client, s3_reader_file_size_mock):
     bucket_name = "test"
     reader.config = Config(
         bucket=bucket_name,
-        aws_access_key_id="test",
-        aws_secret_access_key="test",
+        credentials=_iam_user_credentials(),
         streams=[],
         endpoint=None,
         delivery_method={"delivery_type": "use_file_transfer"},
@@ -318,17 +333,56 @@ def test_get_iam_s3_client(boto3_client_mock):
     reader = SourceS3StreamReader()
     reader.config = Config(
         bucket="test",
-        role_arn="arn:aws:iam::123456789012:role/my-role",
+        credentials={"auth_type": "iam_role", "role_arn": "arn:aws:iam::123456789012:role/my-role"},
         streams=[],
         endpoint=None,
     )
 
     # Call _get_iam_s3_client
-    with Stubber(reader.s3_client):
-        s3_client = reader._get_iam_s3_client({})
+    s3_client = reader._get_iam_s3_client({})
 
     # Assertions to validate the s3 client
     assert s3_client is not None
+
+
+@pytest.mark.parametrize(
+    "credentials, expected_kwargs",
+    [
+        pytest.param({"auth_type": "default_credentials"}, {}, id="default-credentials"),
+        pytest.param(
+            {
+                "auth_type": "iam_user",
+                "aws_access_key_id": "access",
+                "aws_secret_access_key": "secret",
+            },
+            {"aws_access_key_id": "access", "aws_secret_access_key": "secret"},
+            id="iam-user",
+        ),
+    ],
+)
+@patch("source_s3.v4.stream_reader.boto3.client")
+def test_s3_client_uses_selected_non_role_credentials(boto3_client_mock, credentials, expected_kwargs):
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", credentials=credentials, streams=[])
+
+    reader.s3_client
+
+    boto3_client_mock.assert_called_once_with("s3", **expected_kwargs)
+
+
+def test_s3_client_uses_assume_role_for_iam_role(mocker):
+    reader = SourceS3StreamReader()
+    reader.config = Config(
+        bucket="test",
+        credentials={"auth_type": "iam_role", "role_arn": "arn:aws:iam::123456789012:role/my-role"},
+        streams=[],
+    )
+    get_iam_s3_client = mocker.patch.object(reader, "_get_iam_s3_client", return_value=Mock())
+
+    client = reader.s3_client
+
+    assert client is get_iam_s3_client.return_value
+    get_iam_s3_client.assert_called_once_with({})
 
 
 @pytest.mark.parametrize(
@@ -350,10 +404,72 @@ def test_filter_file_by_start_date(start_date: datetime, last_modified_date: dat
 
     reader.config = Config(
         bucket="test",
-        aws_access_key_id="test",
-        aws_secret_access_key="test",
+        credentials=_iam_user_credentials(),
         streams=[],
         start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
     )
 
     assert expected_result == reader.is_modified_after_start_date(last_modified_date)
+
+
+def _reader_for_bucket_check() -> SourceS3StreamReader:
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="acme-exports", credentials={"auth_type": "default_credentials"}, streams=[])
+    return reader
+
+
+def test_check_bucket_access_lists_one_object():
+    reader = _reader_for_bucket_check()
+    with patch.object(SourceS3StreamReader, "s3_client", new_callable=MagicMock) as s3_client:
+        s3_client.list_objects_v2 = MagicMock(return_value={"KeyCount": 0})
+
+        reader.check_bucket_access(logger)
+
+    s3_client.list_objects_v2.assert_called_once_with(Bucket="acme-exports", MaxKeys=1)
+
+
+@pytest.mark.parametrize(
+    "error, expected_message",
+    [
+        pytest.param(
+            ClientError({"Error": {"Code": "NoSuchBucket", "Message": "The specified bucket does not exist"}}, "ListObjectsV2"),
+            "The bucket acme-exports does not exist.",
+            id="no-such-bucket",
+        ),
+        pytest.param(
+            ClientError({"Error": {"Code": "AccessDenied", "Message": "Access Denied"}}, "ListObjectsV2"),
+            "Airbyte cannot list the bucket 'acme-exports' with the configured credentials: AccessDenied Access Denied",
+            id="access-denied",
+        ),
+        pytest.param(
+            ClientError({"Error": {"Code": "InvalidAccessKeyId"}}, "ListObjectsV2"),
+            "Airbyte cannot list the bucket 'acme-exports' with the configured credentials: InvalidAccessKeyId",
+            id="invalid-key-without-message",
+        ),
+        pytest.param(
+            EndpointConnectionError(endpoint_url="https://my-s3-endpoint.com"),
+            "Airbyte could not reach the bucket 'acme-exports': Could not connect to the endpoint URL: \"https://my-s3-endpoint.com\"",
+            id="unreachable-endpoint",
+        ),
+    ],
+)
+def test_check_bucket_access_raises_a_config_error(error, expected_message):
+    reader = _reader_for_bucket_check()
+    with patch.object(SourceS3StreamReader, "s3_client", new_callable=MagicMock) as s3_client:
+        s3_client.list_objects_v2 = MagicMock(side_effect=error)
+
+        with pytest.raises(CustomFileBasedException) as exc_info:
+            reader.check_bucket_access(logger)
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert exc_info.value.message == expected_message
+
+
+def test_check_bucket_access_reports_a_client_creation_failure():
+    reader = _reader_for_bucket_check()
+    with patch.object(SourceS3StreamReader, "s3_client", new_callable=PropertyMock, side_effect=RuntimeError("STS says no")):
+        with pytest.raises(CustomFileBasedException) as exc_info:
+            reader.check_bucket_access(logger)
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert exc_info.value.message == "Airbyte could not reach the bucket 'acme-exports': STS says no"

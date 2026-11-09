@@ -11,28 +11,68 @@ interfering. The legacy streams kept that state in per-stream dicts keyed by rep
 """
 
 import json
+import time
 from unittest.mock import MagicMock
 
 import pytest
 import requests
 from components import (
     DeepNestedGraphQLPaginationStrategy,
-    DeepNestedGraphQLRecordExtractor,
     NestedGraphQLPaginationStrategy,
-    NestedGraphQLRecordExtractor,
+    RateLimitedResponseBackoffStrategy,
     ReleasesRecordTransformation,
     _extract_database_id_from_node_id,
     _resolve_page_size,
 )
 
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
+    WaitTimeFromHeaderBackoffStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_until_time_from_header_backoff_strategy import (
+    WaitUntilTimeFromHeaderBackoffStrategy,
+)
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+from .utils import make_source
 
 
 def _response(payload):
     response = MagicMock(spec=requests.Response)
     response.json.return_value = payload
     return response
+
+
+def _http_response(status_code, headers=None, body=None, raw_body=None):
+    response = requests.Response()
+    response.status_code = status_code
+    response.headers.update(headers or {})
+    response._content = raw_body if raw_body is not None else json.dumps(body).encode()
+    return response
+
+
+def _rate_limited_backoff_strategy():
+    config = {"max_waiting_time": 120}
+    parameters = {}
+    return RateLimitedResponseBackoffStrategy(
+        config=config,
+        parameters=parameters,
+        backoff_strategies=[
+            WaitTimeFromHeaderBackoffStrategy(
+                header="Retry-After",
+                parameters=parameters,
+                config=config,
+                max_waiting_time_in_seconds=7201,
+            ),
+            WaitUntilTimeFromHeaderBackoffStrategy(
+                header="X-RateLimit-Reset",
+                parameters=parameters,
+                config=config,
+                min_wait=60,
+                max_waiting_time_in_seconds=7201,
+            ),
+        ],
+    )
 
 
 def _page_info(has_next_page, end_cursor=None):
@@ -212,54 +252,6 @@ def test_nested_strategy_requires_its_documents_in_parameters(missing):
             drilldown_field="pullRequest",
             child_connection="reviews",
         )
-
-
-# --- NestedGraphQLRecordExtractor ---------------------------------------------------------
-
-
-def _reviews_extractor():
-    return NestedGraphQLRecordExtractor(
-        config={},
-        parameters={},
-        list_connection="pullRequests",
-        drilldown_field="pullRequest",
-        child_connection="reviews",
-        parent_fields={"url": "pull_request_url"},
-    )
-
-
-def test_nested_extractor_reads_the_listing_shape_and_copies_parent_fields():
-    records = list(
-        _reviews_extractor().extract_records(
-            _response(_listing([_pull_request(1, [{"id": 11}, {"id": 12}]), _pull_request(2, [{"id": 21}])]))
-        )
-    )
-
-    assert [record["id"] for record in records] == [11, 12, 21]
-    assert {record["repository"] for record in records} == {"airbytehq/airbyte"}
-    assert records[0]["pull_request_url"] == "https://github.com/pr/1"
-    assert records[2]["pull_request_url"] == "https://github.com/pr/2"
-
-
-def test_nested_extractor_reads_the_drilldown_shape():
-    payload = {
-        "data": {
-            "repository": {
-                "name": "airbyte",
-                "owner": {"login": "airbytehq"},
-                "pullRequest": _pull_request(3, [{"id": 31}]),
-            }
-        }
-    }
-
-    records = list(_reviews_extractor().extract_records(_response(payload)))
-
-    assert [record["id"] for record in records] == [31]
-    assert records[0]["pull_request_url"] == "https://github.com/pr/3"
-
-
-def test_nested_extractor_yields_nothing_for_an_inaccessible_repository():
-    assert list(_reviews_extractor().extract_records(_response({"data": {"repository": None}}))) == []
 
 
 # --- DeepNestedGraphQLPaginationStrategy --------------------------------------------------
@@ -462,49 +454,6 @@ def test_deep_strategy_reads_its_documents_from_parameters():
     assert strategy.documents["Reaction"] == "ROOT_COMMENT"
 
 
-# --- DeepNestedGraphQLRecordExtractor -----------------------------------------------------
-
-
-def test_deep_extractor_reads_the_repository_shape():
-    payload = _deep_listing([_deep_pull_request("PR_1", [_review("RV_1", 1, [_comment("C_1", 1), _comment("C_2", 2)])])])
-
-    records = list(DeepNestedGraphQLRecordExtractor(config={}, parameters={}).extract_records(_response(payload)))
-
-    assert [record["id"] for record in records] == [10, 20]
-    assert [record["comment_id"] for record in records] == [1, 2]
-    assert {record["repository"] for record in records} == {"airbytehq/airbyte"}
-
-
-@pytest.mark.parametrize(
-    ("typename", "node"),
-    [
-        ("PullRequest", _deep_pull_request("PR_1", [_review("RV_1", 1, [_comment("C_1", 3)])])),
-        ("PullRequestReview", _review("RV_1", 1, [_comment("C_1", 3)])),
-        ("PullRequestReviewComment", _comment("C_1", 3)),
-    ],
-)
-def test_deep_extractor_reads_every_drilldown_shape(typename, node):
-    payload = {"data": {"node": {**node, "__typename": typename, "repository": {"name": "airbyte", "owner": {"login": "airbytehq"}}}}}
-
-    records = list(DeepNestedGraphQLRecordExtractor(config={}, parameters={}).extract_records(_response(payload)))
-
-    assert [record["id"] for record in records] == [30]
-    assert records[0]["comment_id"] == 3
-    assert records[0]["repository"] == "airbytehq/airbyte"
-
-
-def test_deep_extractor_sets_the_user_type_when_present():
-    """The legacy record carried `user.type`, which the GraphQL `user` field does not return."""
-    comment = _comment("C_1", 1)
-    comment["reactions"]["nodes"] = [{"id": 1, "user": {"login": "octocat"}}, {"id": 2, "user": None}]
-    payload = _deep_listing([_deep_pull_request("PR_1", [_review("RV_1", 1, [comment])])])
-
-    records = list(DeepNestedGraphQLRecordExtractor(config={}, parameters={}).extract_records(_response(payload)))
-
-    assert records[0]["user"]["type"] == "User"
-    assert records[1]["user"] is None
-
-
 # --- Releases transformation ---------------------------------------------------------------
 
 
@@ -598,3 +547,72 @@ def test_resolve_page_size_reports_a_bad_value_as_a_config_error(page_size):
 
     assert exception.value.failure_type == FailureType.config_error
     assert "page size" in exception.value.message
+
+
+def test_rate_limited_backoff_only_uses_header_waits_for_rate_limits():
+    strategy = _rate_limited_backoff_strategy()
+    reset_at = int(time.time()) + 3000
+
+    response = _http_response(
+        500,
+        headers={"X-RateLimit-Reset": str(reset_at), "X-RateLimit-Remaining": "4000"},
+        body={"message": "Server Error"},
+    )
+    assert strategy.backoff_time(response, 0) is None
+
+    response = _http_response(
+        403,
+        headers={"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(reset_at)},
+        body={"message": "API rate limit exceeded."},
+    )
+    wait = strategy.backoff_time(response, 0)
+    assert wait is not None and 2990 <= wait <= 3001
+
+    response = _http_response(429, headers={"Retry-After": "120"})
+    assert strategy.backoff_time(response, 0) == 120
+
+    response = _http_response(
+        403,
+        body={"message": "You have exceeded a secondary rate limit."},
+    )
+    assert strategy.backoff_time(response, 0) == 60
+
+    response = _http_response(
+        200,
+        headers={"X-RateLimit-Reset": str(reset_at)},
+        body={"errors": [{"type": "RATE_LIMITED", "message": "Rate limit exceeded"}]},
+    )
+    wait = strategy.backoff_time(response, 0)
+    assert wait is not None and 2990 <= wait <= 3001
+
+
+def test_rate_limited_backoff_uses_retry_after_header_without_status_signal():
+    strategy = _rate_limited_backoff_strategy()
+    response = _http_response(500, headers={"Retry-After": "30"})
+
+    assert strategy.backoff_time(response, 0) == 30
+
+
+def test_rate_limited_backoff_ignores_exceptions_and_invalid_json():
+    strategy = _rate_limited_backoff_strategy()
+
+    assert strategy.backoff_time(requests.exceptions.ReadTimeout("timed out"), 0) is None
+    assert strategy.backoff_time(_http_response(502, raw_body=b"not JSON"), 0) is None
+    assert strategy.backoff_time(_http_response(502, body=[]), 0) is None
+
+
+def test_manifest_builds_nested_rate_limit_backoff_strategies_and_caps():
+    config = {
+        "credentials": {"personal_access_token": "token"},
+        "max_waiting_time": 2,
+        "repositories": ["docker/compose"],
+    }
+    source = make_source(config=config)
+    stream = next(stream for stream in source.streams(config=config) if stream.name == "review_comments")
+    requester = stream._stream_partition_generator._partition_factory._retriever.requester
+    [strategy] = requester.error_handler.backoff_strategies
+
+    assert isinstance(strategy, RateLimitedResponseBackoffStrategy)
+    assert isinstance(strategy.backoff_strategies[0], WaitTimeFromHeaderBackoffStrategy)
+    assert isinstance(strategy.backoff_strategies[1], WaitUntilTimeFromHeaderBackoffStrategy)
+    assert [child._max_waiting_time_in_seconds.eval(strategy.config) for child in strategy.backoff_strategies] == [121, 121]

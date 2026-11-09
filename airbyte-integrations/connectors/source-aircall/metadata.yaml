@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
-  dockerImageTag: 0.4.24
+  dockerImageTag: 0.6.0
   dockerRepository: airbyte/source-aircall
   githubIssueLabel: source-aircall
   icon: aircall.svg
@@ -39,15 +39,41 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0@sha256:a249dd191ff2b4e5a7c6fd3749395d4a2f5beee988165ebabfacb17199e5b378
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.45.0@sha256:a4947a37ef760ff501856dbeec22830826c1d214f0e530abfa9831e57f019809
+  allowedHosts:
+    hosts:
+      - api.aircall.io
+  maxSecondsBetweenMessages: 3600
+  suggestedStreams:
+    streams:
+      - calls
+      - users
+      - numbers
+      - contacts
+      - teams
+      - tags
   externalDocumentationUrls:
     - title: API documentation
-      url: https://developer.aircall.io/api-references/
+      url: https://developers.aircall.io/api-references/
       type: api_reference
     - title: Authentication
-      url: https://developer.aircall.io/api-references/#authentication
+      url: https://developers.aircall.io/api-references/#authentication
       type: authentication_guide
     - title: Rate limits
-      url: https://developer.aircall.io/api-references/#rate-limit
+      url: https://developers.aircall.io/api-references/#rate-limiting
       type: rate_limits
+    - title: API announcements
+      url: https://developers.aircall.io/api-references/#announcements
+      type: api_deprecations
+    - title: Status page
+      url: https://status.aircall.com/
+      type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"

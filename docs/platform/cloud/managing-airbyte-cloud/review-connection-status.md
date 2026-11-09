@@ -54,7 +54,7 @@ To view the connection status:
 
 ### Queued connections (Cloud Pro and Enterprise Flex)
 
-On Cloud Pro and Enterprise Flex plans, when your organization's committed data worker capacity is fully utilized, newly triggered sync jobs enter a "Queued" state. Queued connections display an orange hourglass icon.
+On Cloud Pro and Enterprise Flex plans, when the committed data worker capacity allocated to a region is fully utilized, newly triggered sync jobs in that region enter a "Queued" state. Queued connections display a yellow hourglass icon.
 
 A queued job is cancelled when:
 

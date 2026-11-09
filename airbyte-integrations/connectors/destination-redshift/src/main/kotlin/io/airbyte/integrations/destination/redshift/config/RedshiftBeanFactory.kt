@@ -24,7 +24,7 @@ class RedshiftBeanFactory {
     @Singleton
     fun redshiftConfiguration(
         configFactory: RedshiftConfigurationFactory,
-        specFactory: ConfigurationSpecificationSupplier<RedshiftSpecification>
+        specFactory: ConfigurationSpecificationSupplier<RedshiftSpecification>,
     ): RedshiftConfiguration {
         val spec = specFactory.get()
         return configFactory.makeWithoutExceptionHandling(spec)

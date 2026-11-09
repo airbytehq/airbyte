@@ -1,5 +1,19 @@
 # Breezometer
 
+:::warning
+
+## Deprecation Notice
+
+The Breezometer source connector has been archived and is no longer available for new connections in Airbyte.
+
+BreezoMeter was acquired by Google in September 2022 and its standalone API has been wound down: the BreezoMeter website and API documentation (`breezometer.com`, `docs.breezometer.com`) now redirect to the [Google Maps Platform Environment APIs](https://mapsplatform.google.com/maps-products/#environment-section), new BreezoMeter API keys can no longer be obtained, and the Weather API endpoints used by the `weather_current` and `weather_forecast` streams no longer exist. The replacement products (Google Maps Platform Air Quality API and Pollen API) use a different host, authentication scheme, request format and response schema, so this connector cannot be migrated to them in place.
+
+### Recommended Actions
+
+Users who still need environmental data are advised to use the [Google Maps Platform Air Quality API](https://developers.google.com/maps/documentation/air-quality) and [Pollen API](https://developers.google.com/maps/documentation/pollen) via a custom connector. For guidance, please visit our [Custom Connector documentation](https://docs.airbyte.com/connector-development/).
+
+:::
+
 Breezometer connector lets you request environment information like air quality, pollen forecast, current and forecasted weather and wildfires for a specific location.
 
 ## Prerequisites
@@ -43,6 +57,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------ |
+| 0.2.25 | 2026-10-07 | [88295](https://github.com/airbytehq/airbyte/pull/88295) | Archive connector: BreezoMeter API was folded into Google Maps Platform after the Google acquisition; vendor docs/signup are gone and the Weather API endpoints no longer exist |
 | 0.2.24 | 2025-05-10 | [59868](https://github.com/airbytehq/airbyte/pull/59868) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59319](https://github.com/airbytehq/airbyte/pull/59319) | Update dependencies |
 | 0.2.22 | 2025-04-26 | [58734](https://github.com/airbytehq/airbyte/pull/58734) | Update dependencies |

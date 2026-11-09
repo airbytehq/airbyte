@@ -2,42 +2,15 @@ version: "7.28.3"
 type: DeclarativeSource
 
 definitions:
-  # Config-derived Jinja fragments, hoisted so the two routers that expand wildcards and the
-  # two record filters that match against them cannot drift apart. `$ref` in value position
-  # resolves to the scalar before component construction, so these behave exactly like the
-  # literal strings they replace.
-  #
-  # `wildcard_organizations` lists the orgs named by a wildcard entry (`org/*`, `org/prefix*`,
-  # `org/pre*fix`). The star is matched wherever it sits in the repo part, which makes this
-  # expression the exact complement of the explicit-repo list below (`^([^*]+)$`, i.e. "contains
-  # no star") and consistent with `wildcard_repository_filter`. An earlier `[*]$` anchor left an
-  # entry with an interior star matching neither list, so it was dropped with no request and no
-  # warning while the legacy Python resolver expanded it.
-  # `wildcard_repository_filter` keeps a repo whose `full_name` matches any wildcard entry —
-  # and passes everything when config declares no wildcard at all, which is the legacy
-  # `Repositories(pattern=None)` behavior. That pass-all clause is inert for the resolver
-  # stream, whose partitions *are* the wildcard orgs: with no wildcards it has no partitions
-  # and the filter never runs.
+  # Config-derived Jinja fragments shared by the wildcard routers and record filters so they cannot drift.
+  # `wildcard_organizations` must stay the exact complement of the explicit-repo list. See AGENTS.md "Manifest design notes".
   wildcard_organizations: "{{ config.get('repositories', []) | map('regex_search', '^([^/]+)/[^/]*[*]') | select | unique | list }}"
   wildcard_repository_filter: >-
     {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
        or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
 
-  # `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM` — the per-page size of the four REST streams
-  # the legacy code marked `large_stream = True`: `pull_requests`, `comments`, `issues` and
-  # `review_comments`. Every other REST stream sends `constants.DEFAULT_PAGE_SIZE` (100).
-  #
-  # The value is written out rather than read from `page_size_for_large_streams`, which was
-  # removed from the spec in 1.0.1 and cannot be set from the UI since. What the legacy code
-  # produced for a config without that key is 10, so 10 is what this reproduces. A config that
-  # still carries the key through the API or Terraform no longer steers these streams — see
-  # `graphql_large_stream_page_size` for the same note on the GraphQL side.
-  #
-  # Whether 10 is the right number is a separate question with evidence on both sides: it costs
-  # roughly 10x the requests and several times the wall clock of `per_page=100`, and it was
-  # introduced to stop a 502 storm on `pull_requests` against a very large organization, which
-  # later secondary-rate-limit handling may since have addressed on its own. Raising it is a
-  # deliberate, measurable change and not part of restoring the migration's fidelity.
+  # Per-page size of the legacy `large_stream` REST streams (`pull_requests`, `comments`, `issues`).
+  # Hardcoded legacy default; `page_size_for_large_streams` left the spec in 1.0.1. See AGENTS.md "Page sizes" before raising it.
   large_stream_page_size: "10"
 
   requester_base:
@@ -52,15 +25,8 @@ definitions:
       token_delimiter: ","
       auth_method: "token"
       header: "Authorization"
-      # Same `is not none` guard as the backoff caps below, and for the same reason. A default
-      # in `.get` only applies when the key is *absent*: a present-but-null `max_waiting_time`
-      # (reachable via the API, Terraform or embedded use) returns None, which renders as the
-      # literal "None", so the previous expression produced "PTNoneM" and every command failed at
-      # startup. The error reads `ISO8601Error: Unrecognised ISO 8601 date format: ''` because
-      # isodate splits on the "T" and reports the empty date half, not because the value was
-      # empty. `check` overrides `max_waiting_time` with 1 deliberately (see the `check`
-      # component), so the guard must distinguish null from 0 — which is why this is
-      # `is not none` rather than `or 120`.
+      # `is not none`, not a `.get` default or `or 120`: a null value renders "PTNoneM" and fails every
+      # command, and `check`'s small override must not read as absent.
       max_wait_time: "PT{{ config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120 }}M"
       quota_status_source:
         type: QuotaStatusSource
@@ -68,20 +34,9 @@ definitions:
         request_headers:
           Accept: "application/vnd.github+json"
           X-GitHub-Api-Version: "2022-11-28"
-        # GitHub Enterprise Server ships with HTTP API rate limiting disabled, and an instance
-        # in that state answers `GET /rate_limit` with 404 {"message": "Rate limiting is not
-        # enabled."}. Seeding runs before the first stream request, so without this the whole
-        # connection died on a generic "Resource not found" — every command, not just sync.
-        # Listed statuses seed that token's pools as untracked instead: no exhaustion waits, no
-        # proactive throttling, no rotation on exhaustion, while requests are still signed and
-        # tokens still rotate. Only 404, deliberately. An untracked token stays untracked for
-        # the whole sync (the endpoint is never consulted for it again), so a status the
-        # endpoint can also return transiently would cost quota tracking for the entire run.
-        # 401/403 must never be listed — a revoked credential would then read as "quota
-        # tracking unavailable" instead of as an auth failure. GitHub documents 404 as a
-        # possible response for this endpoint but never states that it means rate limiting is
-        # off; that mapping comes from GHES responses in the wild, which is exactly why the CDK
-        # leaves it to the connector.
+        # GHES with rate limiting disabled answers `GET /rate_limit` with 404: seed that token as untracked instead of
+        # failing every command. 404 only: untracked lasts the whole sync, so no transient status (5xx, 429), and never
+        # 401/403 (a revoked token would look untracked). See AGENTS.md "Authenticator quota pools".
         unavailable_status_codes: [404]
       quotas:
         - type: TokenQuota
@@ -89,21 +44,14 @@ definitions:
           remaining_path: ["resources", "core", "remaining"]
           reset_path: ["resources", "core", "reset"]
           limit_path: ["resources", "core", "limit"]
-          # Reconcile the pool against every response, not just the initial /rate_limit
-          # seeding. GitHub returns these headers on every authenticated REST response, and
-          # the local counters drift whenever the token is shared with another client, when
-          # requests overlap under `concurrency_level`, or when a sync outlives its seeding.
+          # Reconcile the pool from every response's headers, not only the initial /rate_limit seeding.
+          # See AGENTS.md "Authenticator quota pools".
           remaining_header: "X-RateLimit-Remaining"
           reset_header: "X-RateLimit-Reset"
           limit_header: "X-RateLimit-Limit"
-          # No `exhaustion_status_codes`, deliberately. GitHub's 403 is not exclusively a
-          # rate-limit code: a secondary limit (403 + `Retry-After`, primary quota untouched)
-          # and a missing-scope denial both use it, and neither carries
-          # `X-RateLimit-Remaining: 0`. Listing 403 would zero the pool for those, which on a
-          # single-token config leaves nothing to rotate to and turns a retryable wait into
-          # "Rate limit is exceeded for all provided tokens." Primary exhaustion needs no
-          # status code here: GitHub reports it as `X-RateLimit-Remaining: 0`, which the
-          # header reconciliation above already picks up.
+          # No `exhaustion_status_codes` on purpose: GitHub's 403 also means secondary limit or missing scope.
+          # Primary exhaustion arrives as `X-RateLimit-Remaining: 0`, which the header reconciliation picks up.
+          # See AGENTS.md "Authenticator quota pools".
         - type: TokenQuota
           name: graphql
           remaining_path: ["resources", "graphql", "remaining"]
@@ -146,176 +94,28 @@ definitions:
       $ref: "#/definitions/skip_inaccessible_error_handler"
 
   # --- Error handling -------------------------------------------------------------
-  #
-  # Replicates the legacy GithubStreamABC error contract. Rate limits are waited out
-  # instead of failing the sync; GitHub signals them three different ways, and the legacy
-  # handler retried on any of them
-  # (the Python `GithubStreamABCErrorHandler`, removed in 2.7.0), so all three are
-  # matched by the filters below, ahead of the 404/403/409 filters:
-  #   1. a `Retry-After` header (sent on most, but per the docs not all, secondary-limit
-  #      responses);
-  #   2. an "API rate limit exceeded" message (primary limit) or an "exceeded a secondary
-  #      rate limit" message (secondary limit without `Retry-After` — note secondary limits
-  #      are tracked separately from the primary quota, so `X-RateLimit-Remaining` may still
-  #      be non-zero);
-  #   3. `X-RateLimit-Remaining: 0` on an error response, which is the fallback the docs
-  #      prescribe when `Retry-After` is absent. The declarative predicate cannot see the
-  #      status code, so "is an error response" is approximated by GitHub's error envelope
-  #      (a JSON object with a `message`); successful payloads are arrays, or objects
-  #      without a top-level `message`, and must not match — the request that spends the
-  #      last quota point returns 200 with `X-RateLimit-Remaining: 0` and its records have
-  #      to be kept (token rotation handles the exhausted token).
-  # Unmatched responses (401, 429, 5xx, ...) fall back to the CDK default mapping.
-  #
-  # What differs per requester is only the terminal 403/409 handling, so the filters are
-  # separate definitions composed into the two handlers at the end of this block.
-  # `DefaultErrorHandler` returns the first matching filter, which is why order matters:
-  # every handler lists `success_filter` first — it evaluates filters before checking
-  # `response.ok`, so a 200 carrying `Retry-After` would otherwise be classified
-  # RATE_LIMITED and have its records discarded — then the rate-limit filters, then the
-  # terminal 404/403/409/410 ones.
-  #
-  # DELIBERATE DIVERGENCE — 502/504 after retries. Both handlers leave 5xx to the CDK default
-  # mapping, so a repository that keeps returning 502/504 is retried and then fails the stream.
-  # Legacy retried the same way but `GithubStreamABC.read_records` caught the exhausted-retries
-  # `AirbyteTracedException` for 502/504, logged a warning and moved on to the next repository
-  # (the `BAD_GATEWAY` and `GATEWAY_TIMEOUT` branches of that method), i.e. it reported a
-  # COMPLETE sync with that repository's records silently missing. Failing the stream is the
-  # better contract — the connector reports INCOMPLETE rather than COMPLETE-with-gaps.
-  # Parity is not reachable declaratively anyway: `DefaultErrorHandler` has no "retry N times, then ignore",
-  # and a `502/504 -> IGNORE` filter would drop the repository on the *first* blip instead of
-  # retrying it. Pinned by `test_repeated_502_fails_the_stream`.
-  #
-  # DELIBERATE DIVERGENCE — 404 and 409 are skipped on the first response. Legacy overrode the
-  # CDK defaults for both (the Python `GITHUB_DEFAULT_ERROR_MAPPING`, removed in 2.7.0: 404 -> RETRY and
-  # 409 -> RETRY), so a repo-scoped stream retried up to `max_retries = 5` and only reached the
-  # warn-and-skip branch of `read_records` once the budget was spent. The filters below are
-  # `IGNORE`, which the CDK applies immediately. For a *persistent* 404/409 the outcome is
-  # identical and arrives faster, which is the point; for a *transient* one — GitHub is
-  # eventually consistent and does answer 404 for a repository that exists — the repository's
-  # records are now dropped from a sync that still reports COMPLETE, where legacy's second
-  # attempt would have served them. Not reachable declaratively for the same reason as 502/504:
-  # `DefaultErrorHandler` has no "retry N times, then ignore". Accepted rather than fixed,
-  # because the blips are rare and the alternative is retrying every genuinely deleted
-  # repository five times; revisit together with the CDK follow-up below.
-  #
-  # Note the two divergences point opposite ways: 502/504 got louder than legacy, 404/409 got
-  # quieter. Both are deliberate.
-  #
-  # KNOWN GAP — skip logging. The `IGNORE` path logs the filter's `error_message` at INFO
-  # (`http_client.py`), whereas legacy logged `Skipping <stream> for repository <repo>` at
-  # WARNING. So a scope-starved token can now produce a zero-record COMPLETE sync whose only
-  # trace is a handful of unattributed INFO lines.
-  #
-  # Be precise about what the CDK does and does not allow here, because this note gets copied
-  # forward by every migration step:
-  #   - `stream_partition` is NOT reachable. `HttpResponseFilter._create_error_message` passes
-  #     only `config`, `response` and `headers`, and referencing the slice does not degrade to
-  #     blank — Jinja raises `undeclared variables` and kills the stream.
-  #   - The stream name IS reachable, but only awkwardly. `InterpolatedString.eval` forwards
-  #     `parameters` into the Jinja context, so `{{ parameters.get('...') }}` renders — except
-  #     that a `$ref`d filter definition carries `parameters == {}`. Recovering the name costs a
-  #     `$parameters` entry on each stream plus a per-stream copy of every skip filter, which
-  #     trades the shared definitions above (and the ordering guarantees they encode) for one
-  #     word in a log line. Not worth it while the repository — the part a user actually needs —
-  #     stays out of reach either way.
-  # Follow-up: give `HttpResponseFilter` access to the stream slice in the CDK, which fixes both
-  # halves at once (same bucket as the token rotation follow-up noted below).
+  # First matching filter wins: `success_filter`, then rate-limit filters, then terminal 404/403/409/410.
+  # Deliberate divergences from legacy (502/504, 404/409, skip logging): AGENTS.md "Error handling".
   rate_limit_backoff_strategies:
-    # Both strategies are capped by the user's Max Waiting Time, so that setting bounds every
-    # rate-limit wait rather than only the ones the authenticator decides before sending.
-    # `check` runs with `config_overrides.max_waiting_time: 1`, which makes the cap 61s:
-    # an interactive check then fails fast on an exhausted quota instead of sleeping
-    # until the reset. A sync keeps the user's budget.
-    #
-    # Requires CDK >= 7.28.1, which ships airbytehq/airbyte-python-cdk#1126. Before it,
-    # `HttpClient` asked the authenticator for a spare credential only *after* a strategy returned
-    # a wait, and a cap raises instead of returning — so a budget shorter than the distance to the
-    # reset ended the stream rather than rotating onto a healthy token (measured on 7.28.0: 30min
-    # budget against a 60min reset failed with a second token idle). The rotation question is now
-    # asked first and the cap only governs waits that are actually taken, which
-    # `test_short_wait_budget_does_not_cost_token_rotation` proves end to end. 7.28.1 also resolves
-    # the cap at construction, so an expression this manifest got wrong fails at startup rather
-    # than at whichever rate limit reaches it first.
-    #
-    # `is not none` rather than `or 120`: a present-but-null `max_waiting_time` would reach the
-    # multiplication as None, and a falsy test would read check's deliberate 0 as absent and hand
-    # it 120 minutes. `+ 1` keeps the budget inclusive — the CDK compares with `>=`, so a user on
-    # the spec's minimum of 1 minute would otherwise get a 60s cap equal to the `min_wait: 60`
-    # floor below, and every headerless 5xx would fail instead of retrying.
-    - type: WaitTimeFromHeader
-      header: "Retry-After"
-      max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
-    - type: WaitUntilTimeFromHeader
-      header: "X-RateLimit-Reset"
-      min_wait: 60
-      # The cap is compared against the computed wait, not the raw reset timestamp, and it is
-      # applied after `min_wait` — so during check, where the cap is 1s, even the 60s floor below
-      # is refused.
-      max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
-      # The 60s floor the legacy Python backoff strategy enforced, so a reset
-      # timestamp already in the past, or seconds away, doesn't turn into a tight retry
-      # loop against a quota that hasn't actually refilled.
-      #
-      # It does NOT land on exactly the same responses legacy floored. Measured:
-      #
-      #                                     here    legacy
-      #   403 + Retry-After: 30              30s      60s    <- floor missing
-      #   403 + X-RateLimit-Reset now+10     60s      60s
-      #   403 + reset already past           60s      60s
-      #   500 / timeout, no such headers     60s     expo    <- floor leaking
-      #
-      # Two CDK strategies with mismatched options are why: WaitTimeFromHeader has no
-      # `min_wait` at all, so Retry-After is used raw; WaitUntilTimeFromHeader returns
-      # `min_wait` outright when its header is *absent* rather than treating it as a floor
-      # on a computed wait, and backoff_strategies are shared by every retryable response
-      # on the requesters that inherit these handlers.
-      #
-      # Accepted deliberately, after measuring the alternatives:
-      #   - A CompositeErrorHandler with `min_wait` on a rate-limit-only branch changes
-      #     nothing. `CompositeErrorHandler.backoff_strategies` flattens every child's
-      #     strategies into one list -- its own docstring says the list "is not used to map
-      #     different strategies to different error conditions" -- and HttpClient takes the
-      #     first truthy one regardless of which branch matched. Byte-identical backoffs.
-      #   - Dropping `min_wait` fixes the leak but costs more: a stale or near reset then
-      #     returns None, the rate-limit path lands on backoff.expo with jitter=None, and
-      #     the retry budget is spent at 1s, 2s, 4s, 8s, 16s against a limit that has not
-      #     refilled. That is what the floor exists to prevent.
-      #
-      # The fix belongs in the CDK: WaitUntilTimeFromHeader should return None when its
-      # header is missing (`min_wait` is documented as a "minimum time to wait for safety",
-      # i.e. a floor on a computed wait), and WaitTimeFromHeader should gain `min_wait`.
-      # With the header present but stale, max(negative, min_wait) already yields 60s, so
-      # the floor survives exactly where it belongs. Four other connectors combine these
-      # two strategies and would move the same way.
-      #
-      # Until then: a headerless 5xx or a connection timeout waits 60s per attempt, up to
-      # max_retries (5), on every stream that inherits these handlers.
-      # The wait below is only paid when rotating cannot help. CDK 7.26.0 reconciles the
-      # authenticator's counters against every response (the `*_header` fields on the
-      # quota pools above), so a primary rate limit — which GitHub reports as
-      # `X-RateLimit-Remaining: 0` — spends the rejected token's pool, and `HttpClient`
-      # asks `has_alternative_token` before sleeping on a RATE_LIMITED resolution: with a
-      # spare token it retries in 0.1s on that token instead of waiting out this window.
-      # This covers the reactive rotation the legacy strategy did at the 10-minute mark
-      # in the legacy Python backoff strategy.
-      # Still waited out, correctly: a secondary rate limit, where the token's counters
-      # stay positive. GitHub scopes secondary limits per account, so rotating to another
-      # token of the same account would only be rejected again.
+    # Both waits are capped by Max Waiting Time (`check` overrides it to 1, a 61s cap). Needs CDK >= 7.28.1.
+    # `is not none` keeps null at 120 min; `+ 1` keeps a 1-minute budget above the 60s `min_wait` floor.
+    # Gated on rate-limited responses: 5xx/timeouts use CDK exponential backoff (airbytehq/oncall#13837).
+    - type: CustomBackoffStrategy
+      class_name: source_declarative_manifest.components.RateLimitedResponseBackoffStrategy
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+        - type: WaitUntilTimeFromHeader
+          header: "X-RateLimit-Reset"
+          min_wait: 60
+          # The cap is compared against the computed wait, after `min_wait` (61s in check, so the floor still fits).
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+          # 60s floor from the legacy backoff. Waited out only when rotating cannot help
+          # (no spare token, or a secondary limit). See AGENTS.md "Backoff floor".
 
-  # Short-circuit successful responses before any rate-limit filter sees them.
-  # DefaultErrorHandler evaluates response_filters *before* it checks `response.ok`
-  # (default_error_handler.py::interpret_response) and returns on the first match, so
-  # without this a 200 that merely carries `Retry-After` — GHE, a proxy or a CDN
-  # throttling on its own account — is classified RATE_LIMITED: its records are
-  # discarded and the request is retried until `max_retries` runs out, failing the
-  # stream. The guard has to live in its own filter rather than as a conjunct in the
-  # predicates below, because `http_codes` is OR'd with `predicate` inside a filter
-  # (http_response_filter.py::_matches_filter) and the predicate context carries only
-  # the parsed body and the headers — no status code.
-  # Deliberately 200 only: GitHub answers 202 on /stats/contributors to mean "still
-  # computing, retry later", which `contributor_activity` backs off on today and which
-  # must not become a success when that stream migrates onto one of these handlers.
+  # Must stay first: filters run before `response.ok`, so a 200 with `Retry-After` would be rate-limited.
+  # 200 only: a 202 is `contributor_activity`'s "still computing, retry" signal.
   success_filter:
     type: HttpResponseFilter
     http_codes: [200]
@@ -353,44 +153,13 @@ definitions:
 
   exhausted_quota_filter:
     type: HttpResponseFilter
-    # `is not none` (rather than a bare `response.get('message')`) is required:
-    # InterpolatedBoolean compares the *rendered* string against a fixed
-    # false-values list that does not include "None", so a falsy `.get()` would
-    # evaluate to true and rate-limit successful responses.
+    # `is not none` is required: a falsy `.get()` renders "None", which InterpolatedBoolean reads as true.
     predicate: "{{ headers.get('X-RateLimit-Remaining') == '0' and response is mapping and response.get('message') is not none }}"
     action: RATE_LIMITED
     error_message: "GitHub rate limit exhausted (X-RateLimit-Remaining: 0). Waiting for the rate limit window to reset before retrying."
 
-  # GitHub answers 410 Gone when the feature backing an endpoint is turned off for the
-  # repository ("Issues are disabled for this repo.", "Projects are disabled for this repo."),
-  # and the legacy Python handler skipped exactly those (`is_gone_with_feature_disabled`).
-  # 410 is absent from the CDK default mapping, so without this filter such a response would be
-  # retried five times behind the 60s backoff floor and then fail the stream.
-  #
-  # This has to be a predicate rather than `http_codes: [410] + error_message_contains`:
-  # HttpResponseFilter ORs its conditions, so combining them would skip *every* 410. The predicate
-  # cannot see the status code, so it keys off GitHub's error envelope instead — the same
-  # `response is mapping` guard the quota filter above uses, since a successful list response is a
-  # JSON array and a successful single-repo response has no top-level `message`. `| string` keeps a
-  # non-string `message` from raising inside the template.
-  #
-  # Because the status code is invisible here, the message match is deliberately narrower than
-  # legacy's bare "is disabled"/"are disabled": it must name a feature GitHub can actually turn off
-  # for a repository behind one of this connector's endpoints. Legacy could afford the loose match
-  # because it had already established `status_code == 410`; here the same loose match would also
-  # swallow a 401 "Your account is disabled" or any future error whose wording happens to mention
-  # something disabled, silently dropping the repository. Migrating a stream whose feature can be
-  # disabled per repository means adding that word to the list below — and the failure mode if it
-  # is forgotten is `gone_fail_filter` failing the stream with an actionable message, not a silent
-  # skip.
-  #
-  # Two escaping traps, both silent:
-  #   - `!= ''` rather than `is not none`. The CDK's `regex_search` filter returns an empty string
-  #     on no match, and InterpolatedBoolean's false-values list does not contain "None", so
-  #     `is not none` would render "True" for every response and skip everything.
-  #   - `\\b`, not `\b`. Jinja parses its own string literals with Python escapes, so a single
-  #     `\b` reaches `re` as a backspace character (0x08) and the pattern never matches — the
-  #     failure is a filter that quietly stops skipping, not an error.
+  # 410 skip for a per-repository feature that is turned off ("Issues are disabled for this repo.").
+  # The predicate must name the feature and keep `!= ''` and `\\b`; see AGENTS.md "Error handling" before editing.
   disabled_feature_skip_filter:
     type: HttpResponseFilter
     predicate: >-
@@ -421,13 +190,19 @@ definitions:
     action: IGNORE
     error_message: "Syncing this stream isn't available for this organization/repository (HTTP 404). Skipping."
 
-  # Legacy re-raised 403 for the org listing (the `Organizations` branch of
-  # `GithubStreamABC.read_records`), so `repositories_resolver` and the user-facing
-  # `repositories` stream fail with an actionable scopes/SSO message. That is what lets `check`
-  # catch a token with bad scopes. This filter is deliberately NOT on `repository_stats`: legacy
-  # resolved explicit `org/repo` entries with `RepositoryStats`, a plain `GithubStream`, which
-  # took the *other* branch and skipped a 403 with a warning — see
-  # `resolve_explicit_repository_error_handler`.
+  # A 404 mid attempt-chain (run deleted) is skipped; it loses that run's older attempts for good (the cursor
+  # still advances), but FAIL would wedge the stream on every deleted run. See AGENTS.md "Error handling".
+  attempt_not_found_skip_filter:
+    type: HttpResponseFilter
+    http_codes: [404]
+    action: IGNORE
+    error_message: >-
+      A workflow run attempt returned HTTP 404, so the remaining earlier attempts of that
+      run were not read. The run was most likely deleted between the run listing and this
+      request. Skipping the rest of that run's attempt chain.
+
+  # 403 fails repo listing/resolution (legacy `Organizations` branch) so `check` catches bad scopes.
+  # Deliberately not on `repository_stats`; see `resolve_explicit_repository_error_handler`.
   forbidden_fail_filter:
     type: HttpResponseFilter
     http_codes: [403]
@@ -439,17 +214,8 @@ definitions:
       or this organization may require SAML SSO authorization.
       See https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api
 
-  # Legacy skipped 403 with a warning for the repo-scoped streams (the non-`Organizations`
-  # branch of `GithubStreamABC.read_records`): one repository the token cannot read must not
-  # fail the other partitions. This filter runs after the rate-limit filters above, so a
-  # secondary-limit 403 is still retried rather than silently dropping the repository.
-  #
-  # The wording covers both audiences deliberately. `skip_inaccessible_error_handler` carries this
-  # filter for the repo-scoped streams *and* for `organizations`/`teams`/`users`, whose partition
-  # is an organization, and `stream_partition` is unreachable from `error_message` (see the note on
-  # skip logging in `AGENTS.md`), so the text cannot name which one it was. `read:org` is listed
-  # first because it is the scope the org-scoped streams need and the one legacy called out for
-  # them by name.
+  # 403 skips one unreadable repository/org; runs after the rate-limit filters so secondary-limit 403s retry.
+  # Wording covers repo- and org-scoped streams because `error_message` cannot see the partition.
   forbidden_skip_filter:
     type: HttpResponseFilter
     http_codes: [403]
@@ -459,10 +225,7 @@ definitions:
       missing required scopes (`read:org` for the organization-scoped streams, `repo` for
       repository data), or this organization may require SAML SSO authorization. Skipping it.
 
-  # GitHub answers 409 "Git Repository is empty." for a repository with no commits
-  # (`branches` and `tags` hit this). Legacy IGNOREd that exact message and retried any
-  # other 409 until `read_records` warned and skipped the slice, so skipping every 409
-  # here is the same observable outcome without spending the retry budget.
+  # 409 "Git Repository is empty." (`branches`, `tags`); skipping every 409 matches legacy's end result.
   empty_repository_skip_filter:
     type: HttpResponseFilter
     http_codes: [409]
@@ -480,11 +243,7 @@ definitions:
       - $ref: "#/definitions/secondary_rate_limit_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
       - $ref: "#/definitions/unauthorized_fail_filter"
-      # No `disabled_feature_skip_filter` here, deliberately. The endpoints on this handler are
-      # the repository listing and resolution (`/orgs/{org}/repos`, `/repos/{owner}/{repo}`), which
-      # have no per-repository feature to disable and so never send that 410. Including it would
-      # let any error envelope mentioning a disabled feature match *before* `forbidden_fail_filter`
-      # and turn the 403 that `check` relies on into a silent skip.
+      # No `disabled_feature_skip_filter` here: it would match before `forbidden_fail_filter` and hide check's 403.
       - $ref: "#/definitions/not_found_skip_filter"
       - $ref: "#/definitions/forbidden_fail_filter"
       - $ref: "#/definitions/gone_fail_filter"
@@ -506,23 +265,33 @@ definitions:
       - $ref: "#/definitions/empty_repository_skip_filter"
       - $ref: "#/definitions/gone_fail_filter"
 
-  # `comments` alone raised its retry budget to 7 in Python (`Comments.max_retries`); every
-  # other repo-scoped stream used the base 5. It is the highest-volume REST stream in the
-  # connector and so meets transient 5xx most often. `DefaultErrorHandler.max_retries`
-  # defaults to 5, so without this override the stream would give up two attempts earlier
-  # than it does today.
+  # `skip_inaccessible_error_handler` with the attempt-specific 404 message swapped in. Spelled
+  # out rather than composed because a manifest `$ref` cannot replace one entry of a list.
+  attempt_chain_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      $ref: "#/definitions/rate_limit_backoff_strategies"
+    response_filters:
+      - $ref: "#/definitions/success_filter"
+      - $ref: "#/definitions/retry_after_rate_limit_filter"
+      - $ref: "#/definitions/primary_rate_limit_filter"
+      - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/exhausted_quota_filter"
+      - $ref: "#/definitions/unauthorized_fail_filter"
+      - $ref: "#/definitions/disabled_feature_skip_filter"
+      - $ref: "#/definitions/attempt_not_found_skip_filter"
+      - $ref: "#/definitions/forbidden_skip_filter"
+      - $ref: "#/definitions/empty_repository_skip_filter"
+      - $ref: "#/definitions/gone_fail_filter"
+
+  # `comments` keeps legacy's 7 retries (`Comments.max_retries`); every other stream uses the default 5.
+  # See AGENTS.md "Error handling".
   comments_error_handler:
     $ref: "#/definitions/skip_inaccessible_error_handler"
     max_retries: 7
 
-  # `repository_stats` resolves the explicit `org/repo` entries the user typed, and a 403 there
-  # is one repository the token cannot see — a SAML-protected org is the common case. It must not
-  # take the other repositories down with it: a 403 raised while partitions are being generated
-  # kills the partition generator, so the stream reads nothing at all rather than skipping one
-  # partition. Legacy skipped it with a warning and synced the rest, and this keeps that.
-  #
-  # `check` still catches a bad token: with every explicit entry skipped the resolved repository
-  # list is empty, and `CheckStream` fails with "no stream slices were found" for that case.
+  # A 403 on one explicit `org/repo` (e.g. a SAML org) skips it instead of killing partition generation.
+  # `check` still fails when every entry is skipped ("no stream slices were found"). See AGENTS.md "Error handling".
   resolve_explicit_repository_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -538,43 +307,61 @@ definitions:
       - $ref: "#/definitions/forbidden_skip_filter"
       - $ref: "#/definitions/gone_fail_filter"
 
+  # Since July 2026 GitHub lists stargazers only to admins/collaborators (404/403 for everyone else).
+  # These messages name that restriction and take the repository from `request_url`. See AGENTS.md "Error handling".
+  stargazers_restricted_not_found_skip_filter:
+    type: HttpResponseFilter
+    http_codes: [404]
+    action: IGNORE
+    error_message: >-
+      Repository `{{ request_url | regex_search('/repos/([^/]+/[^/]+)/') }}`:
+      GitHub returned HTTP 404 for this repository's stargazers list. GitHub only lists stargazers
+      to repository admins and collaborators, so this is expected when the token is neither; it can
+      also mean the repository was deleted or renamed. Skipping it.
+
+  stargazers_restricted_forbidden_skip_filter:
+    type: HttpResponseFilter
+    http_codes: [403]
+    action: IGNORE
+    error_message: >-
+      Repository `{{ request_url | regex_search('/repos/([^/]+/[^/]+)/') }}`:
+      GitHub denied access to this repository's stargazers list (HTTP 403). GitHub only lists
+      stargazers to repository admins and collaborators, so the token needs admin or collaborator
+      access to the repository (and SAML SSO authorization if the organization requires it).
+      Skipping it.
+
+  # `skip_inaccessible_error_handler` with the two stargazers filters above in place of the generic
+  # 404/403 ones. Keep the filter order identical to it: the rate-limit filters must stay ahead of
+  # the 403 IGNORE so a secondary-limit 403 is still retried.
+  stargazers_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      $ref: "#/definitions/rate_limit_backoff_strategies"
+    response_filters:
+      - $ref: "#/definitions/success_filter"
+      - $ref: "#/definitions/retry_after_rate_limit_filter"
+      - $ref: "#/definitions/primary_rate_limit_filter"
+      - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/exhausted_quota_filter"
+      - $ref: "#/definitions/unauthorized_fail_filter"
+      - $ref: "#/definitions/disabled_feature_skip_filter"
+      - $ref: "#/definitions/stargazers_restricted_not_found_skip_filter"
+      - $ref: "#/definitions/stargazers_restricted_forbidden_skip_filter"
+      - $ref: "#/definitions/empty_repository_skip_filter"
+      - $ref: "#/definitions/gone_fail_filter"
+
   page_link_paginator:
     type: DefaultPaginator
     page_token_option:
       type: RequestPath
     pagination_strategy:
-      # GitHub's documented end-of-data signal is the absence of a `rel="next"` link
-      # header — a short page is not guaranteed to be the last page. This mirrors the
-      # legacy `GithubStreamABC.next_page_token`, which parsed `page` out of that same link.
-      # Inferring the end from `last_page_size < 100` instead would silently truncate the org
-      # repo list that drives every downstream partition.
-      # The full `next` URL becomes the request path (`DefaultPaginator.path()` returns the
-      # token for a `RequestPath` option, and `HttpRequester` accepts an absolute URL as
-      # path). Extracting only `page=N` is not enough: past GitHub's large-dataset threshold
-      # the next link carries an opaque `after` cursor and page-only requests are rejected
-      # with 422. The requester's `request_parameters`/`since` are still appended and
-      # duplicate the ones already in the URL with identical values, which GitHub accepts.
-      # CursorPaginationStrategy replaces `headers["link"]` with `response.links`, so this
-      # walks that dict. Chained `.get(...)` with defaults is required rather than
-      # `headers.link.next.url`: on the last page there is no `next` link, and attribute
-      # access would raise Jinja's UndefinedError. InterpolatedString defaults `default` to
-      # the template itself, so JinjaInterpolation.eval's UndefinedError guard just
-      # re-evaluates the same failing expression and the error escapes, failing the sync.
-      # On the last page there is no `next` link, so the cursor renders "" which becomes
-      # None; CursorPaginationStrategy ends on `token if token else None`, so pagination stops.
+      # Follow the `rel="next"` URL verbatim: a short page is not the last one, and large listings page by `after`.
+      # Chained `.get(...)` is required; attribute access raises on the last page. See AGENTS.md "Pagination".
       type: CursorPagination
       cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", "") }}'
 
-  # Resolver streams: internal parent streams used only to drive the shared
-  # partition routers below. They are not exposed in the catalog.
-  #
-  # `repositories_resolver` expands wildcard patterns (e.g. `org/*`) by listing
-  # each wildcard org's repos and filtering them against the anchored pattern
-  # derived inline from config. `repository_stats` resolves explicit `org/repo`
-  # entries and exposes the canonical `full_name` and `organization.login`;
-  # entries that 404 or 403 are skipped with a warning (see
-  # `resolve_explicit_repository_error_handler`), matching the legacy warn-and-continue
-  # behavior.
+  # Resolver streams: internal parents (not in the catalog) that drive the shared partition routers below.
+  # `repositories_resolver` expands wildcards; `repository_stats` resolves explicit `org/repo` entries.
   repositories_resolver_stream:
     type: DeclarativeStream
     name: repositories_resolver
@@ -680,30 +467,9 @@ definitions:
                   - "null"
                   - string
 
-  # Shared partition routers. Repo-scoped streams reference
-  # `repository_partition_router`. For orgs there are deliberately two routers with
-  # different audiences: the `repositories` stream references
-  # `organization_partition_router` (config-derived candidates), the org-scoped Python
-  # streams reference `organization_resolution_partition_router` (payload-confirmed).
-  # Picking the wrong one for an org-scoped stream is what broke 2.2.0 — see below.
-  #
-  # `repository_partition_router` yields the deduplicated union of
-  # wildcard-expanded repos and validated explicit repos.
-  #
-  # `organization_partition_router` yields the deduplicated union of wildcard
-  # orgs (derived inline from config) and the orgs owning explicit repos.
-  # User-owned repos have no `organization` object, so the substream child
-  # skips them (they contribute a repository but not an organization).
-  # It drives the `repositories` stream, which has to *attempt* `orgs/{org}/repos`
-  # for a wildcard entry to learn whether the login is an organization at all.
-  #
-  # `organization_resolution_partition_router` is the narrower list the org-scoped
-  # streams slice on, and must not be the router above: a login taken from
-  # config text is only a *candidate* org, and `orgs/{login}` 404s on every
-  # org-scoped stream when it is a user. Both branches here take the org from a
-  # response payload instead — `owner/login` of the repos `orgs/{org}/repos`
-  # returned, `organization/login` of `repos/{owner}/{repo}` (absent for user-owned
-  # repos) — which is how the legacy Python resolver built the list.
+  # Shared partition routers. The two org routers are NOT interchangeable (the wrong one broke 2.2.0):
+  # `organization_partition_router` (config-derived) is for `repositories` only; org-scoped streams use
+  # `organization_resolution_partition_router` (payload-confirmed). See AGENTS.md "Organizations must be payload-confirmed".
   repository_partition_router:
     type: UnionPartitionRouter
     partition_field: repository
@@ -802,23 +568,12 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
-        # `or` rather than `config.get('start_date', default)`: the default is only
-        # substituted when the key is *absent*, so a present-but-null `start_date`
-        # (reachable via the API, Terraform or embedded use) would reach MinMaxDatetime as
-        # the literal string "None" and abort the stream. Any falsy value falls back to the
-        # epoch, matching the legacy "no start_date means replicate everything" behavior.
+        # `or`, not a `.get` default: a null `start_date` would render "None"; any falsy value means the epoch.
         datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      # The listing is served most-recent-first (`sort=updated&direction=desc`), so the
-      # cursor stop condition ends pagination at the first page whose last record is at or
-      # below the partition cursor. This replaces the legacy `Repositories.is_sorted =
-      # "desc"` early break; without it every incremental sync walked the org's entire
-      # repo listing (ceil(repos/100) requests per org per sync instead of ~1).
-      # The CDK's data-feed post-pagination filter drops the boundary page's records that
-      # are at or below the partition cursor, so only records newer than the cursor are
-      # emitted. Note that ConcurrentPerPartitionCursor seeds a partition that has no state
-      # from the *global* cursor, so repos of an org added to `repositories` after the
-      # first sync are only emitted if updated after that cursor.
+      # Listing is `sort=updated&direction=desc`, so the data feed stops at the first already-synced page.
+      # A partition with no state is seeded from the global cursor (an org added later only gets newer repos).
+      # See AGENTS.md "Incremental REST streams".
       is_data_feed: true
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
@@ -1413,10 +1168,7 @@ definitions:
                       - string
 
   # --- Repo-scoped full-refresh REST streams --------------------------------------
-  #
-  # The streams below differ only in path, primary key and schema, so they share this
-  # retriever. Each is partitioned by `repository_partition_router`, and `page` pagination
-  # follows GitHub's `rel="next"` link header exactly as the legacy streams did.
+  # Shared retriever: partitioned by `repository_partition_router`, paginated by the `rel="next"` link.
   repository_scoped_retriever:
     type: SimpleRetriever
     record_selector:
@@ -1917,17 +1669,8 @@ definitions:
               - "null"
               - string
 
-  # Requester for the organization-scoped streams (`orgs/{organization}/...`). Same transport as
-  # `requester_base`; an organization the token cannot read is skipped rather than failing the
-  # sync, which is what the legacy `GithubStreamABC.read_records` did for these three streams
-  # (404 -> "isn't available for organization", 403 -> "may be missing the `read:org` scope").
-  #
-  # `use_cache` is here for `teams` specifically. The Python `Teams` class stays behind as
-  # `TeamMembers`' parent (see its docstring) and it caches too, so both name their cache
-  # `teams.sqlite` and one read of `orgs/{org}/teams` serves the declarative stream and the
-  # parent read. Without it the listing is fetched twice per organization whenever `teams` and
-  # `team_members` are both selected. Harmless for `organizations` and `users`, which read each
-  # URL once either way.
+  # Requester for `orgs/{organization}/...` streams; an unreadable organization is skipped, as in legacy.
+  # `use_cache` lets `team_members` reuse the `teams` listing pages. See AGENTS.md "Incremental REST streams".
   organization_scoped_requester:
     $ref: "#/definitions/requester_base"
     use_cache: true
@@ -1947,19 +1690,12 @@ definitions:
         field_path: []
     paginator:
       $ref: "#/definitions/page_link_paginator"
-    # `organization_resolution_partition_router`, not `organization_partition_router`: these
-    # endpoints only exist for real organizations, so the partition list has to be the
-    # payload-confirmed one. The config-derived router hands over any wildcard owner, including a
-    # personal account, and it also yields an org whose wildcard matched no repository — the
-    # org-scoped streams must see neither, which is why they take this payload-confirmed list
-    # rather than the config-derived router. See that definition's comment.
+    # Payload-confirmed router only: these endpoints exist only for real orgs.
+    # See AGENTS.md "Organizations must be payload-confirmed".
     partition_router:
       $ref: "#/definitions/organization_resolution_partition_router"
 
-  # Replaces the legacy `Organizations.transform`, which stamped the partition's organization onto
-  # every record. Applied to `teams` and `users` only: `Organizations.parse_response` yielded the
-  # API payload untouched, and `organizations.json` has no `organization` property, so injecting
-  # it there would add a field the Python implementation never emitted.
+  # Stamps the partition's org onto `teams`/`users` records (legacy `Organizations.transform`), not `organizations`.
   add_organization_transformation:
     - type: AddFields
       fields:
@@ -4254,6 +3990,8 @@ definitions:
       requester:
         $ref: "#/definitions/repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/stargazers"
+        error_handler:
+          $ref: "#/definitions/stargazers_error_handler"
         request_headers:
           User-Agent: "PostmanRuntime/7.28.0"
           Accept: "application/vnd.github.v3.star+json"
@@ -6120,21 +5858,9 @@ definitions:
             type: string
 
   # --- Group D: server-side incremental REST streams -------------------------------
-  #
-  # `comments`, `issues` and `review_comments` are the REST streams whose endpoint filters by
-  # cursor server-side: GitHub's `since` returns records with `updated_at >= since`. Legacy
-  # expressed this as `IncrementalMixin`, which added `since` from
-  # `SemiIncrementalMixin.get_starting_point` — `max(start_date, per-repository state)`.
-  #
-  # Deliberately no `is_client_side_incremental`. Legacy filtered in Python as well
-  # (`SemiIncrementalMixin.read_records` kept records with `cursor_value > start_point`,
-  # strictly greater), but that filter could only ever drop the boundary records `since` had
-  # already narrowed the response down to. The CDK's equivalent compares
-  # `start <= cursor <= end` (`ConcurrentCursor.should_be_synced`) — inclusive at the start —
-  # so enabling it would not drop them either. The observable difference is that a record
-  # whose `updated_at` is exactly the stored cursor is re-emitted once per sync where legacy
-  # suppressed it. That is at-least-once delivery of an unchanged record, which is what every
-  # declarative incremental stream does, and destinations dedupe it on the primary key.
+  # `comments`, `issues`, `review_comments` filter server-side with `since`; no `is_client_side_incremental`
+  # (its inclusive filter adds nothing). The boundary record is re-emitted once per sync.
+  # See AGENTS.md "Incremental REST streams".
   server_side_since_cursor:
     type: DatetimeBasedCursor
     cursor_field: "updated_at"
@@ -6143,21 +5869,14 @@ definitions:
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     start_datetime:
       type: MinMaxDatetime
-      # `or` rather than `config.get('start_date', default)`: a present-but-null `start_date` would
-      # otherwise reach MinMaxDatetime as the literal string "None". Legacy sent no `since` when
-      # `start_date` was unset. 2008 predates every GitHub repository and selects the same records;
-      # the epoch does not — GitHub answers `since=1970-01-01T00:00:00Z` on the issues endpoint with
-      # an empty list.
+      # `or` guards a null `start_date`. 2008 rather than the epoch: `since=1970-...` returns an empty issues list.
       datetime: "{{ config.get('start_date') or '2008-01-01T00:00:00Z' }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     start_time_option:
       type: RequestOption
       inject_into: request_parameter
       field_name: "since"
-    # No `end_time_option`: these endpoints take no upper bound and legacy sent none. No
-    # `step`/`cursor_granularity` either, so each repository is one open-ended window and
-    # pagination walks the `rel="next"` links exactly as before, rather than being sliced into
-    # date windows the legacy implementation never used.
+    # No end bound or step: one open-ended window per repository, as legacy sent.
 
   comments_stream:
     # API docs: https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#list-issue-comments-for-a-repository
@@ -6171,13 +5890,8 @@ definitions:
         # The endpoint is `issues/comments`, not `comments` — `comments` is
         # `commit_comments`. Legacy spelled this out by overriding `Comments.path`.
         path: "repos/{{ stream_partition.repository }}/issues/comments"
-        # `use_cache = True` on the Python class, kept for the same reason: `IssueCommentReactions`
-        # reads this listing as its parent and stays Python until Step 7. Both sides name the
-        # cache `comments.sqlite`, so a page this stream already fetched is free for that parent
-        # read. The two only share entries while the URLs match — the parent read sends
-        # `since=start_date` where this stream sends `since=<cursor>` — which is exactly the
-        # legacy behavior, since `ReactionStream` passed `start_date` there too.
-        # TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): drop with Step 7.
+        # Cached so `issue_comment_reactions` reads this listing as its parent from already-fetched pages.
+        # Keep while `issue_comment_reactions` uses this listing as its parent. See AGENTS.md "Incremental REST streams".
         use_cache: true
         error_handler:
           $ref: "#/definitions/comments_error_handler"
@@ -6532,14 +6246,10 @@ definitions:
       requester:
         $ref: "#/definitions/large_stream_repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/issues"
-        # `use_cache = True` on the Python class, kept because `IssueTimelineEvents` reads this
-        # listing as its parent and stays Python until Step 7 — see `comments_stream` above.
-        # TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): drop with Step 7.
+        # Cached so `issue_timeline_events` reads this listing as its parent from already-fetched pages.
+        # Keep while `issue_timeline_events` uses this listing as its parent. See AGENTS.md "Incremental REST streams".
         use_cache: true
-        # `request_parameters` replaces the shared dict rather than merging into it, so
-        # `per_page` is restated from the same hoisted expression the requester uses.
-        # `state`/`sort`/`direction` are `Issues.stream_base_params`: without `state=all` GitHub
-        # returns open issues only, which would silently drop every closed issue.
+        # Replaces (not merges) the shared params, so `per_page` is restated; without `state=all` closed issues are lost.
         request_parameters:
           per_page:
             $ref: "#/definitions/large_stream_page_size"
@@ -6549,13 +6259,7 @@ definitions:
     transformations:
       $ref: "#/definitions/add_repository_and_rename_reactions_transformation"
     incremental_sync:
-      # Legacy also set `Issues.is_sorted = "asc"`, which did not filter or stop pagination —
-      # `SemiIncrementalMixin` only breaks early on `"desc"`. Its single effect was
-      # `state_checkpoint_interval = page_size`, i.e. a STATE message every page. The concurrent
-      # declarative cursor checkpoints per partition instead, so an interrupted sync now restarts
-      # the repository it was reading rather than resuming mid-listing. Same trade Step 4 made for
-      # the organization-scoped streams; the `asc` ordering above is kept so the request shape and
-      # the order records reach the destination are unchanged.
+      # Legacy `is_sorted = "asc"` only checkpointed per page; the declarative cursor checkpoints per partition.
       $ref: "#/definitions/server_side_since_cursor"
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
@@ -7404,6 +7108,11 @@ definitions:
       $ref: "#/definitions/repository_scoped_retriever"
       requester:
         $ref: "#/definitions/large_stream_repository_scoped_requester"
+        # GitHub's `pulls/comments` listing times out (HTTP 500 after ~8s) on very large
+        # repositories at small page sizes when no `page` is given; `per_page=100` answered in
+        # ~1–1.6s. This stream is the exception to `large_stream_page_size`.
+        request_parameters:
+          per_page: "100"
         # `pulls/comments`, not `review_comments`; legacy overrode `ReviewComments.path` for it.
         path: "repos/{{ stream_partition.repository }}/pulls/comments"
         # No `use_cache` here, unlike `comments` and `issues`. `ReviewComments.use_cache = True`
@@ -8579,10 +8288,8 @@ definitions:
           - path: ["issue_number"]
             value: "{{ stream_partition.number }}"
     schema_loader:
-      # Inlined like every other stream. The shared `base_event` definition was referenced
-      # 23 times in the file this replaces; a manifest `$ref` cannot express that (the
-      # manifest's own resolver would swallow `#/definitions/...`), so it is expanded at
-      # every use, exactly as the file loader resolved it at runtime.
+      # Inline; the shared `base_event` is expanded at all 23 uses: an in-schema `#/definitions/…` resolves against the
+      # manifest root, not this schema. See AGENTS.md "Migration to manifest-only (complete)".
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
@@ -15802,10 +15509,15 @@ definitions:
     max_retries: 5
     # No `WaitUntilTimeFromHeader` here: it answers its `min_wait` whenever the reset header is
     # absent, which would turn every 202 into a 60-second wait instead of the 90 below.
+    # The Retry-After wait is wrapped in `RateLimitedResponseBackoffStrategy` like the shared list;
+    # every `Retry-After` response counts as rate limited, so behavior is unchanged.
     backoff_strategies:
-      - type: WaitTimeFromHeader
-        header: "Retry-After"
-        max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+      - type: CustomBackoffStrategy
+        class_name: source_declarative_manifest.components.RateLimitedResponseBackoffStrategy
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: "Retry-After"
+            max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
       - type: ConstantBackoffStrategy
         backoff_time_in_seconds: 90
     response_filters:
@@ -16429,10 +16141,8 @@ definitions:
       requester:
         $ref: "#/definitions/repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/actions/runs"
-        # The slice start is what `WorkflowRunsPaginationStrategy` stops on; GitHub ignores the header.
         request_headers:
           User-Agent: "PostmanRuntime/7.28.0"
-          X-Airbyte-Window-Start: "{{ stream_slice['start_time'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -16445,9 +16155,15 @@ definitions:
           inject_into: request_parameter
           field_name: "page"
         pagination_strategy:
-          type: CustomPaginationStrategy
-          class_name: source_declarative_manifest.components.WorkflowRunsPaginationStrategy
+          type: CursorPagination
           cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", "") | regex_search("[?&]page=([0-9]+)") }}'
+          # Stop once the page's oldest run was created > 32 days (the re-run window) before the slice start.
+          # Reads the raw page, not `last_record`; keep every operand a comparison (a bare None reads as true).
+          stop_condition: >-
+            {%- set runs = (response.get('workflow_runs') if response is mapping else none) or [] -%}
+            {%- set oldest = runs[-1].get('created_at') if runs and runs[-1] is mapping else none -%}
+            {{ oldest is not none and stream_interval.get('start_time') is not none
+               and str_to_datetime(oldest) < str_to_datetime(stream_interval['start_time']) - duration('P32D') }}
     incremental_sync:
       $ref: "#/definitions/client_side_filtered_cursor"
     state_migrations:
@@ -17609,26 +17325,890 @@ definitions:
             description: Repository information associated with the job
             type: string
 
-  # --- GraphQL streams ------------------------------------------------------------
-  #
-  # The GraphQL streams post a parameterized document to `/graphql` and let the paginator
-  # inject `variables.first` and `variables.after`. Injecting into `variables` (rather than
-  # inlining the values into the query text, as the legacy sgqlc builders did) is what makes
-  # `REDUCE_PAGE_SIZE` work: the CDK rebuilds the request body on the retry, so a reduced
-  # page size actually reaches GitHub.
-  #
-  # `combine_mappings` merges nested body_json paths when the values do not collide, so the
-  # requester owning `variables.owner`/`variables.name` and the paginator owning
-  # `variables.first`/`variables.after` compose without either clobbering the other.
+  # `schemas/shared/user.json`, hoisted so the inline schema below can reference it. A
+  # JSON-Schema `$ref` to a *file* does not work in a manifest - it resolves to the bare string
+  # and drops the sibling keys. See AGENTS.md "Workflow run attempts: two silent traps"; shared sub-schemas belong here, under `#/`.
+  github_user_schema:
+    type:
+      - "null"
+      - object
+    properties:
+      login:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      node_id:
+        type:
+          - "null"
+          - string
+      avatar_url:
+        type:
+          - "null"
+          - string
+      gravatar_id:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      html_url:
+        type:
+          - "null"
+          - string
+      followers_url:
+        type:
+          - "null"
+          - string
+      following_url:
+        type:
+          - "null"
+          - string
+      gists_url:
+        type:
+          - "null"
+          - string
+      starred_url:
+        type:
+          - "null"
+          - string
+      subscriptions_url:
+        type:
+          - "null"
+          - string
+      organizations_url:
+        type:
+          - "null"
+          - string
+      repos_url:
+        type:
+          - "null"
+          - string
+      events_url:
+        type:
+          - "null"
+          - string
+      received_events_url:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      site_admin:
+        type:
+          - "null"
+          - boolean
 
-  # GitHub answers 502/504 when a GraphQL query is too expensive to resolve inside its
-  # internal deadline — it is a statement about the size of *this* request, not a transient
-  # server fault, so retrying the identical query just burns the budget and times out again.
-  # The legacy Python handler (`GitHubGraphQLErrorHandler`) tried to halve
-  # `stream.page_size` and return RETRY, but HttpClient replays the same PreparedRequest and
-  # the oversized `first` was already serialized into the body, so the retry never benefited;
-  # only a later page saw the smaller size, and any non-502/504 response reset it. This action
-  # re-enters the fetch with a smaller `first`, which is the behavior that was intended.
+  # oncall#8827. The run listing returns only a run's latest attempt, so a re-run erases the
+  # earlier ones from `workflow_runs` - they were never emitted, and no primary-key change there
+  # brings them back. Only the per-attempt endpoint has them, one attempt per request.
+  workflow_run_attempts_stream:
+    # API docs: https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#get-a-workflow-run-attempt
+    type: DeclarativeStream
+    name: workflow_run_attempts
+    # Every attempt of a run carries the same `id`, so `run_attempt` is what makes a record unique.
+    primary_key: ["id", "run_attempt"]
+    retriever:
+      # Emits a never-re-run run's only attempt from the parent record, saving the `/attempts/1` request.
+      # As a CustomRetriever it gets no client-side filter or transformations (this stream needs neither).
+      type: CustomRetriever
+      class_name: source_declarative_manifest.components.WorkflowRunAttemptsRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        # Absolute `run_url` (works on GHES); start at the latest attempt and walk back.
+        # `or 1`: a missing `run_attempt` renders "None" and would 404; such a run has a single attempt.
+        path: "{{ stream_partition.run_url }}/attempts/{{ stream_slice.extra_fields.run_attempt or 1 }}"
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/attempt_chain_error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          # Unlike the listing, the attempt endpoint returns a single workflow run object.
+          type: DpathExtractor
+          field_path: []
+        # Drops error bodies on a 200 and records without a usable `run_attempt`; the walk continues.
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('id') is integer and record.get('run_attempt') is integer }}"
+      paginator:
+        # `previous_attempt_url` is the documented back-link, null on attempt 1 - the chain is
+        # literally cursor pagination. There is no "list attempts" endpoint to page instead.
+        type: DefaultPaginator
+        $parameters:
+          # The factory fills this in for a SimpleRetriever but not for a CustomRetriever's
+          # nested paginator, which then fails to build. Same expression as `requester_base`.
+          url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['previous_attempt_url'] }}"
+          # Ends at attempt 1 (null `previous_attempt_url`); the rest is a loop guard (no page cap) that stops
+          # only when the chain provably failed to descend. See AGENTS.md "Workflow runs and attempts".
+          stop_condition: >-
+            {{ not response.get('previous_attempt_url')
+            or (response.get('url') is string
+            and not response['previous_attempt_url'].startswith(response['url'] ~ '/attempts/'))
+            or (response.get('run_attempt') is number
+            and ((response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)(?:[/?#]|$)') or '') == ''
+            or (response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)(?:[/?#]|$)') | int) >= response['run_attempt'])) }}
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/workflow_runs_stream"
+            parent_key: "url"
+            partition_field: "run_url"
+            # Latest attempt number, addressing the first request of the chain, and the whole
+            # run (the empty path resolves to the record itself), from which the retriever emits
+            # a single-attempt run without a request. Both are already in the listing.
+            extra_fields:
+              - - run_attempt
+              - []
+            # The parent picks runs by the run's `updated_at`; every attempt of a chosen run is emitted. Never filter attempts.
+            incremental_dependency: true
+    incremental_sync:
+      # Exists only so `incremental_dependency` persists parent state; it filters nothing.
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      # One partition per run: per-partition state would grow by an entry per run and be dropped
+      # again at ConcurrentPerPartitionCursor.DEFAULT_MAX_PARTITIONS_NUMBER. A run is never
+      # revisited, so the parent's per-repository state is the resumption point.
+      global_substream_cursor: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: ID of the workflow run. Shared by every attempt of the same run.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the workflow.
+            type:
+              - "null"
+              - string
+          node_id:
+            description: Node ID of the workflow run.
+            type:
+              - "null"
+              - string
+          head_branch:
+            description: The branch associated with the head commit.
+            type:
+              - "null"
+              - string
+          head_sha:
+            description: SHA of the head commit.
+            type:
+              - "null"
+              - string
+          path:
+            description: The path where the workflow file is located.
+            type:
+              - "null"
+              - string
+          display_title:
+            description: Title to display for the workflow run.
+            type:
+              - "null"
+              - string
+          run_number:
+            description: The unique number assigned to the workflow run.
+            type:
+              - "null"
+              - integer
+          event:
+            description: The event that triggered the workflow run.
+            type:
+              - "null"
+              - string
+          status:
+            description: The current status of the workflow run.
+            type:
+              - "null"
+              - string
+          conclusion:
+            description: The outcome or result of the workflow run.
+            type:
+              - "null"
+              - string
+          workflow_id:
+            description: ID of the workflow associated with the run.
+            type:
+              - "null"
+              - integer
+          check_suite_id:
+            description: ID of the associated GitHub check suite.
+            type:
+              - "null"
+              - integer
+          check_suite_node_id:
+            description: Node ID of the associated GitHub check suite.
+            type:
+              - "null"
+              - string
+          url:
+            description: URL to access details of the workflow run.
+            type:
+              - "null"
+              - string
+          html_url:
+            description: URL to view the workflow run on GitHub.
+            type:
+              - "null"
+              - string
+          pull_requests:
+            description: List of all pull requests associated with the workflow run.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties: {}
+              additionalProperties: true
+          created_at:
+            description: The timestamp when this attempt was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description: The timestamp when the workflow run was last updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          run_attempt:
+            description: Attempt number of this workflow run attempt.
+            type:
+              - "null"
+              - integer
+          referenced_workflows:
+            description: List of workflows referenced by the workflow runs
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                path:
+                  description: Path of the referenced workflow file
+                  type:
+                    - "null"
+                    - string
+                sha:
+                  description: SHA hash of the referenced workflow
+                  type:
+                    - "null"
+                    - string
+                ref:
+                  description: Type of reference to the workflow
+                  type:
+                    - "null"
+                    - string
+          run_started_at:
+            description: The timestamp when the workflow run started.
+            type:
+              - "null"
+              - string
+            format: date-time
+          jobs_url:
+            description: URL to access jobs associated with this workflow run attempt.
+            type:
+              - "null"
+              - string
+          logs_url:
+            description: URL to access logs generated by this workflow run attempt.
+            type:
+              - "null"
+              - string
+          check_suite_url:
+            description: URL to access the check suite details.
+            type:
+              - "null"
+              - string
+          artifacts_url:
+            description: URL to access artifacts generated by the workflow run.
+            type:
+              - "null"
+              - string
+          cancel_url:
+            description: URL to cancel the workflow run if supported.
+            type:
+              - "null"
+              - string
+          rerun_url:
+            description: URL to rerun the workflow.
+            type:
+              - "null"
+              - string
+          previous_attempt_url:
+            description: URL to access the previous attempt of the workflow run, null for the first attempt.
+            type:
+              - "null"
+              - string
+          workflow_url:
+            description: URL to access details of the workflow.
+            type:
+              - "null"
+              - string
+          head_commit:
+            description: Details about the commit associated with the workflow run.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the head commit.
+                type:
+                  - "null"
+                  - string
+              tree_id:
+                description: ID of the tree associated with the head commit.
+                type:
+                  - "null"
+                  - string
+              message:
+                description: The commit message of the head commit.
+                type:
+                  - "null"
+                  - string
+              timestamp:
+                description: Timestamp of the head commit.
+                type:
+                  - "null"
+                  - string
+              author:
+                description: The author details of the head commit.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  email:
+                    type:
+                      - "null"
+                      - string
+              committer:
+                description: The committer details of the head commit.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  email:
+                    type:
+                      - "null"
+                      - string
+          repository:
+            description: Details about the repository where the workflow run is executed.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the repository.
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                description: Node ID of the repository.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the repository.
+                type:
+                  - "null"
+                  - string
+              full_name:
+                description: Full name of the repository.
+                type:
+                  - "null"
+                  - string
+              private:
+                description: Indicates if the repository is private.
+                type:
+                  - "null"
+                  - boolean
+              owner:
+                description: The owner of the repository.
+                $ref: "#/definitions/github_user_schema"
+              html_url:
+                description: HTML URL of the repository.
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the repository.
+                type:
+                  - "null"
+                  - string
+              fork:
+                description: Indicates if the repository is a fork.
+                type:
+                  - "null"
+                  - boolean
+              url:
+                description: URL of the repository.
+                type:
+                  - "null"
+                  - string
+              forks_url:
+                description: URL to access forks of the repository.
+                type:
+                  - "null"
+                  - string
+              keys_url:
+                description: URL to access keys of the repository.
+                type:
+                  - "null"
+                  - string
+              collaborators_url:
+                description: URL to access collaborators of the repository.
+                type:
+                  - "null"
+                  - string
+              teams_url:
+                description: URL to access teams in the repository.
+                type:
+                  - "null"
+                  - string
+              hooks_url:
+                description: URL to access hooks in the repository.
+                type:
+                  - "null"
+                  - string
+              issue_events_url:
+                description: URL to access issue events in the repository.
+                type:
+                  - "null"
+                  - string
+              events_url:
+                description: URL to access events associated with the repository.
+                type:
+                  - "null"
+                  - string
+              assignees_url:
+                description: URL to access assignees of the repository.
+                type:
+                  - "null"
+                  - string
+              branches_url:
+                description: URL to access branches of the repository.
+                type:
+                  - "null"
+                  - string
+              tags_url:
+                description: URL to access tags in the repository.
+                type:
+                  - "null"
+                  - string
+              blobs_url:
+                description: URL to access blobs in the repository.
+                type:
+                  - "null"
+                  - string
+              git_tags_url:
+                description: URL to access git tags in the repository.
+                type:
+                  - "null"
+                  - string
+              git_refs_url:
+                description: URL to access git refs in the repository.
+                type:
+                  - "null"
+                  - string
+              trees_url:
+                description: URL to access trees in the repository.
+                type:
+                  - "null"
+                  - string
+              statuses_url:
+                description: URL to access commit statuses in the repository.
+                type:
+                  - "null"
+                  - string
+              languages_url:
+                description: URL to access languages used in the repository.
+                type:
+                  - "null"
+                  - string
+              stargazers_url:
+                description: URL to access stargazers of the repository.
+                type:
+                  - "null"
+                  - string
+              contributors_url:
+                description: URL to access contributors of the repository.
+                type:
+                  - "null"
+                  - string
+              subscribers_url:
+                description: URL to access subscribers of the repository.
+                type:
+                  - "null"
+                  - string
+              subscription_url:
+                description: URL for subscription to the repository.
+                type:
+                  - "null"
+                  - string
+              commits_url:
+                description: URL to access commits in the repository.
+                type:
+                  - "null"
+                  - string
+              git_commits_url:
+                description: URL to access git commits in the repository.
+                type:
+                  - "null"
+                  - string
+              comments_url:
+                description: URL to access comments in the repository.
+                type:
+                  - "null"
+                  - string
+              issue_comment_url:
+                description: URL to access issue comments in the repository.
+                type:
+                  - "null"
+                  - string
+              contents_url:
+                description: URL to access contents of the repository.
+                type:
+                  - "null"
+                  - string
+              compare_url:
+                description: URL to compare the repository with another ref/commit.
+                type:
+                  - "null"
+                  - string
+              merges_url:
+                description: URL to access merges in the repository.
+                type:
+                  - "null"
+                  - string
+              archive_url:
+                description: URL to access the repository's archive.
+                type:
+                  - "null"
+                  - string
+              downloads_url:
+                description: URL to access downloads in the repository.
+                type:
+                  - "null"
+                  - string
+              issues_url:
+                description: URL to access issues in the repository.
+                type:
+                  - "null"
+                  - string
+              pulls_url:
+                description: URL to access pulls in the repository.
+                type:
+                  - "null"
+                  - string
+              milestones_url:
+                description: URL to access milestones in the repository.
+                type:
+                  - "null"
+                  - string
+              notifications_url:
+                description: URL to access notifications in the repository.
+                type:
+                  - "null"
+                  - string
+              labels_url:
+                description: URL to access labels in the repository.
+                type:
+                  - "null"
+                  - string
+              releases_url:
+                description: URL to access releases in the repository.
+                type:
+                  - "null"
+                  - string
+              deployments_url:
+                description: URL to access deployments of the repository.
+                type:
+                  - "null"
+                  - string
+          head_repository:
+            description: Information about the repository where the workflow was triggered.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the repository.
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                description: Node ID of the repository.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the repository.
+                type:
+                  - "null"
+                  - string
+              full_name:
+                description: Full name of the repository.
+                type:
+                  - "null"
+                  - string
+              private:
+                description: Indicates if the repository is private.
+                type:
+                  - "null"
+                  - boolean
+              owner:
+                description: The owner of the repository.
+                $ref: "#/definitions/github_user_schema"
+              html_url:
+                description: HTML URL of the repository.
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the repository.
+                type:
+                  - "null"
+                  - string
+              fork:
+                description: Indicates if the repository is a fork.
+                type:
+                  - "null"
+                  - boolean
+              url:
+                description: URL of the repository.
+                type:
+                  - "null"
+                  - string
+              forks_url:
+                description: URL to access forks of the repository.
+                type:
+                  - "null"
+                  - string
+              keys_url:
+                description: URL to access keys of the repository.
+                type:
+                  - "null"
+                  - string
+              collaborators_url:
+                description: URL to access collaborators of the repository.
+                type:
+                  - "null"
+                  - string
+              teams_url:
+                description: URL to access teams in the repository.
+                type:
+                  - "null"
+                  - string
+              hooks_url:
+                description: URL to access hooks in the repository.
+                type:
+                  - "null"
+                  - string
+              issue_events_url:
+                description: URL to access issue events in the repository.
+                type:
+                  - "null"
+                  - string
+              events_url:
+                description: URL to access events associated with the repository.
+                type:
+                  - "null"
+                  - string
+              assignees_url:
+                description: URL to access assignees of the repository.
+                type:
+                  - "null"
+                  - string
+              branches_url:
+                description: URL to access branches of the repository.
+                type:
+                  - "null"
+                  - string
+              tags_url:
+                description: URL to access tags in the repository.
+                type:
+                  - "null"
+                  - string
+              blobs_url:
+                description: URL to access blobs in the repository.
+                type:
+                  - "null"
+                  - string
+              git_tags_url:
+                description: URL to access git tags in the repository.
+                type:
+                  - "null"
+                  - string
+              git_refs_url:
+                description: URL to access git refs in the repository.
+                type:
+                  - "null"
+                  - string
+              trees_url:
+                description: URL to access trees in the repository.
+                type:
+                  - "null"
+                  - string
+              statuses_url:
+                description: URL to access commit statuses in the repository.
+                type:
+                  - "null"
+                  - string
+              languages_url:
+                description: URL to access languages used in the repository.
+                type:
+                  - "null"
+                  - string
+              stargazers_url:
+                description: URL to access stargazers of the repository.
+                type:
+                  - "null"
+                  - string
+              contributors_url:
+                description: URL to access contributors of the repository.
+                type:
+                  - "null"
+                  - string
+              subscribers_url:
+                description: URL to access subscribers of the repository.
+                type:
+                  - "null"
+                  - string
+              subscription_url:
+                description: URL for subscription to the repository.
+                type:
+                  - "null"
+                  - string
+              commits_url:
+                description: URL to access commits in the repository.
+                type:
+                  - "null"
+                  - string
+              git_commits_url:
+                description: URL to access git commits in the repository.
+                type:
+                  - "null"
+                  - string
+              comments_url:
+                description: URL to access comments in the repository.
+                type:
+                  - "null"
+                  - string
+              issue_comment_url:
+                description: URL to access issue comments in the repository.
+                type:
+                  - "null"
+                  - string
+              contents_url:
+                description: URL to access contents of the repository.
+                type:
+                  - "null"
+                  - string
+              compare_url:
+                description: URL to compare the repository with another ref/commit.
+                type:
+                  - "null"
+                  - string
+              merges_url:
+                description: URL to access merges in the repository.
+                type:
+                  - "null"
+                  - string
+              archive_url:
+                description: URL to access the repository's archive.
+                type:
+                  - "null"
+                  - string
+              downloads_url:
+                description: URL to access downloads in the repository.
+                type:
+                  - "null"
+                  - string
+              issues_url:
+                description: URL to access issues in the repository.
+                type:
+                  - "null"
+                  - string
+              pulls_url:
+                description: URL to access pulls in the repository.
+                type:
+                  - "null"
+                  - string
+              milestones_url:
+                description: URL to access milestones in the repository.
+                type:
+                  - "null"
+                  - string
+              notifications_url:
+                description: URL to access notifications in the repository.
+                type:
+                  - "null"
+                  - string
+              labels_url:
+                description: URL to access labels in the repository.
+                type:
+                  - "null"
+                  - string
+              releases_url:
+                description: URL to access releases in the repository.
+                type:
+                  - "null"
+                  - string
+              deployments_url:
+                description: URL to access deployments of the repository.
+                type:
+                  - "null"
+                  - string
+          actor:
+            description: The user or entity responsible for triggering the workflow run.
+            $ref: "#/definitions/github_user_schema"
+          triggering_actor:
+            description: The user or entity that triggered the workflow run.
+            $ref: "#/definitions/github_user_schema"
+
+  # --- GraphQL streams ------------------------------------------------------------
+  # The paginator injects `variables.first`/`after` (not query text), so a `REDUCE_PAGE_SIZE` retry really shrinks the page.
+
+  # A GraphQL 502/504 means the query was too expensive: retry the page with a smaller `first`.
   graphql_reduce_page_size_filter:
     type: HttpResponseFilter
     http_codes: [502, 504]
@@ -17638,15 +18218,8 @@ definitions:
       GitHub could not resolve the GraphQL query within its deadline. Retrying the same page
       with a smaller page size.
 
-  # A repository the token cannot read is answered with HTTP 200, `data.repository: null` and
-  # an `errors` entry whose `type` is NOT_FOUND (the repository does not exist, was renamed, or
-  # the token's scopes/SSO hide it) or FORBIDDEN. `not_found_skip_filter` and
-  # `forbidden_skip_filter` match on status alone, so neither ever sees it, and the generic body
-  # filter below would retry the same unreadable repository until the attempts run out and then
-  # fail the stream. Every other stream in this connector skips such a repository and syncs the
-  # rest, so these two GraphQL error types get the same treatment as the REST 404/403.
-  # The `selectattr('type', 'defined')` guard is needed for the same reason as below: `errors`
-  # is not always a list of objects.
+  # 200 + `data.repository: null` + a NOT_FOUND/FORBIDDEN error: skip the repository like a REST 404/403.
+  # `selectattr('type', 'defined')` because `errors` is not always a list of objects.
   graphql_body_not_found_skip_filter:
     type: HttpResponseFilter
     predicate: >-
@@ -17659,20 +18232,8 @@ definitions:
       FORBIDDEN). The repository may have been deleted or renamed, or the token may be missing
       the `repo` scope or SAML SSO authorization for it. Skipping it.
 
-  # GitHub's GraphQL API reports most failures as HTTP 200 with an `errors` array in the body:
-  # rate limiting (`errors[].type == "RATE_LIMITED"`), query timeouts ("Something went wrong
-  # while executing your query") and node-limit breaches. `success_filter` matches on status
-  # alone and `DefaultErrorHandler` stops at the first matching filter, so these two must come
-  # before it. Without them a 200 carrying `errors` is consumed as an empty successful page:
-  # the extractor yields nothing, the paginator sees no next page, the partition ends early and
-  # the sync is reported successful with part of the data missing and nothing in the logs. The
-  # deleted `GitHubGraphQLErrorHandler` had both branches (`check_graphql_rate_limited` and the
-  # `_safe_json_get_errors` retry).
-  #
-  # `errors` is not always a list of objects — the legacy test for this used
-  # `{"errors": "not found"}` — so neither predicate may assume a shape. `selectattr` over a
-  # string iterates its characters, none of which has a `type`, so the rate-limit predicate
-  # simply matches nothing there and the generic filter below picks the response up.
+  # GraphQL reports rate limits and timeouts as 200 + `errors`; these must precede `success_filter` or the
+  # page reads as empty and the partition silently ends. `errors` may be a string, so assume no shape.
   graphql_body_rate_limited_filter:
     type: HttpResponseFilter
     predicate: >-
@@ -17694,25 +18255,8 @@ definitions:
     backoff_strategies:
       $ref: "#/definitions/rate_limit_backoff_strategies"
     response_filters:
-      # `DefaultErrorHandler` stops at the first filter that matches, so the order here is the
-      # whole contract. Three groups, in this order:
-      #
-      # 1. The body-only predicates that must outrank a status match. A GraphQL failure carries
-      #    its reason in the body whatever the status is: a query timeout is reported as `errors`
-      #    on a 200 *and* on a 502/504, so `graphql_reduce_page_size_filter` has to sit above the
-      #    generic body filter or a timed-out page is retried at the same size instead of being
-      #    halved - the feature this stream group exists for. The rate-limit body filter stays on
-      #    top of it: a page size reduction is the wrong answer to a spent quota.
-      # 2. `success_filter`, which the body filters must precede: it classifies every 200 as a
-      #    success and would stop the chain. It cannot be dropped either - it is what keeps a 200
-      #    carrying `Retry-After` from being read as a rate limit, so it still has to run for
-      #    every 200 whose body has no `errors`.
-      # 3. The status-only filters. They are last because a 502/504 reaching one of them first
-      #    would be retried unchanged or skipped outright.
-      #
-      # The one thing this order gives up: a 502/504 that also carries rate-limit headers is
-      # reduced rather than waited out. GitHub answers rate limits with 403/429, not 502, so that
-      # combination is not a shape it sends.
+      # Order is the contract: body filters (rate limit, page-size reduction, not-found, generic), then
+      # `success_filter`, then status-only filters. See AGENTS.md "GraphQL error handling" before reordering.
       - $ref: "#/definitions/graphql_body_rate_limited_filter"
       - $ref: "#/definitions/graphql_reduce_page_size_filter"
       - $ref: "#/definitions/graphql_body_not_found_skip_filter"
@@ -17733,50 +18277,19 @@ definitions:
     error_handler:
       $ref: "#/definitions/graphql_error_handler"
 
-  # Halving on every rejected page, floored at 1. The loop ends either at the floor or on
-  # `max_attempts`, and which of the two ends it depends on where the stream starts: the two
-  # page sizes here land on either side of that. From `graphql_large_stream_page_size` (10)
-  # the sequence is 10 -> 5 -> 2 -> 1: three reductions, the floor is reached, and the retries
-  # below take over. From 100 -- `reviews`, `issue_reactions`, `pull_request_comment_reactions`
-  # and `projects_v2` -- it is 100 -> 50 -> 25 -> 12 -> 6 -> 3, and the sixth reduction is one
-  # past `max_attempts`, so those streams fail at a page size of 3 and never reach the floor or
-  # its retries. Raising the budget to 6 would let them; that is a deliberate change to how
-  # long a stuck partition holds a sync open, so it is not made here, but no comment or message
-  # below may assume the floor was reached.
-  # `reset_policy: NEVER` keeps the reduced size for the rest of the partition:
-  # restoring it after each good page re-triggers the timeout on the next page, which is the
-  # ineffective behavior the legacy handler had. The size is local to one `_read_pages` call,
-  # so one repository reducing does not change the page size any other repository is using.
+  # Halve per rejected page, floor 1; `reset_policy: NEVER` keeps the reduced size for the partition.
+  # Streams starting at 100 exhaust `max_attempts` at size 3 and never reach the floor.
   graphql_page_size_reduction:
     type: PageSizeReduction
     reduction_factor: 2
     minimum_page_size: 1
     max_attempts: 5
     reset_policy: NEVER
-    # A `REDUCE_PAGE_SIZE` response never reaches the error handler's retry budget or its
-    # backoff strategies, so these two settings are the whole retry contract for a 502/504 on
-    # the GraphQL endpoint, and they exist to keep it comparable to the one every other stream
-    # has. GitHub answers 502/504 both to a query it could not finish in time and to a passing
-    # problem of its own, and the response looks the same either way.
-    #
-    # `backoff_seconds` is multiplied by the attempt number, and `retries_at_minimum_page_size`
-    # re-issues the page unchanged once there is nothing left to halve, where waiting is the
-    # only thing left to try. From a page size of 10 that gives 10 -> 5 -> 2 -> 1 and then three
-    # attempts at 1: seven requests over about two minutes. Without the retries at the floor a
-    # stream that reached 1 would fail on its next rejected page, which is fewer attempts than
-    # any other stream of this connector gets.
+    # The whole GraphQL 502/504 retry contract (bypasses the error handler's retries and backoff).
+    # From 10: 10, 5, 2, 1, then three more attempts at 1, about two minutes.
     backoff_seconds: 10
     retries_at_minimum_page_size: 3
-    # Appended to the CDK's terminal message once the reduction budget or the retries at the
-    # floor run out, whichever the stream hits first. The CDK only knows that GitHub rejected
-    # every page size it asked for; the remediation is connector-specific.
-    #
-    # There is no page-size setting to point the user at: the sizes are fixed in this manifest.
-    # The message also cannot name the smallest page that was tried, because that differs per
-    # stream — the CDK's own sentence, which this one is appended to, already states it. So this
-    # says only that shrinking the page has been exhausted, and names the two things left that a
-    # user can act on. A more recent start date is deliberately not among them: these streams
-    # filter client-side, so it would not make GitHub's per-page query any cheaper.
+    # Appended to the CDK's terminal message. Page sizes are fixed here, so it names only what a user can act on.
     failure_message: >-
       GitHub kept rejecting this query at every page size the connector asked for, so a smaller
       page is not what it is waiting for. This is usually a transient condition on GitHub's side
@@ -17794,17 +18307,7 @@ definitions:
       inject_into: body_json
       field_path: ["variables", "after"]
 
-  # Applies to `releases` and `pull_request_stats` only -- the two streams the legacy code
-  # marked `large_stream = True`. The legacy default of 10 is preserved deliberately: this
-  # migration is meant to be behavior-preserving, and `REDUCE_PAGE_SIZE` is the safety net
-  # rather than a licence to raise the default. Raising it is a separate, measurable change.
-  # Every other GraphQL stream was never a `large_stream` and keeps
-  # constants.DEFAULT_PAGE_SIZE (100).
-  #
-  # Written out rather than read from `page_size_for_large_streams`, for the reasons on
-  # `large_stream_page_size` above. The GraphQL side has the stronger claim to the number:
-  # `releases` materializes `description` and `descriptionHTML` per node, and `first=100`
-  # still reproduces a 502 in about 11 seconds against nodejs/node today.
+  # `releases` and `pull_request_stats` (legacy `large_stream`) keep legacy 10; `first=100` still 502s on large repos.
   graphql_large_stream_page_size: 10
 
   releases_stream:
@@ -17825,7 +18328,7 @@ definitions:
             query: |
               query Releases($owner: String!, $name: String!, $first: Int!, $after: String) {
                 repository(owner: $owner, name: $name) {
-                  releases(first: $first, after: $after, orderBy: {field: CREATED_AT, direction: ASC}) {
+                  releases(first: $first, after: $after, orderBy: {field: CREATED_AT, direction: DESC}) {
                     nodes {
                       node_id: id
                       id: databaseId
@@ -17904,10 +18407,7 @@ definitions:
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.ReleasesRecordTransformation
     incremental_sync:
-      # Semi-incremental, matching legacy `SemiIncrementalMixin`: the query is ordered
-      # CREATED_AT ASC and every page is read, with records at or below the partition cursor
-      # dropped client-side. Ascending order means there is no early exit to take, so
-      # `is_data_feed` would be wrong here.
+      # Query is CREATED_AT DESC, so `is_data_feed` stops at the first already-synced page.
       type: DatetimeBasedCursor
       cursor_field: "created_at"
       cursor_datetime_formats:
@@ -17917,7 +18417,7 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      is_client_side_incremental: true
+      is_data_feed: true
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
     schema_loader:
@@ -18515,12 +19015,7 @@ definitions:
           - path: ["repository"]
             value: "{{ stream_partition.repository }}"
     incremental_sync:
-      # The query is ordered UPDATED_AT DESC and `is_data_feed` ends the partition at the
-      # first record at or below the cursor. This is the declarative form of the legacy
-      # `is_sorted = "desc"` early exit, which exists because walking every pull request on
-      # each incremental sync exhausted the GraphQL point budget and tripped heartbeat
-      # timeouts on large organizations. The legacy stream used ASC on the very first read
-      # (no state) purely to get mid-partition checkpointing; DESC reads the same records.
+      # Query is UPDATED_AT DESC; the `is_data_feed` early exit avoids rescanning every PR each sync.
       type: DatetimeBasedCursor
       cursor_field: "updated_at"
       cursor_datetime_formats:
@@ -18766,12 +19261,28 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          type: CustomRecordExtractor
-          class_name: source_declarative_manifest.components.NestedGraphQLRecordExtractor
-          list_connection: "pullRequests"
-          drilldown_field: "pullRequest"
-          child_connection: "reviews"
-          parent_fields: { "url": "pull_request_url" }
+          # Union of the listing and drill-down shapes; copies the pull request `url` onto reviews as `pull_request_url`.
+          type: CombinedExtractor
+          mode: union
+          extractors:
+            - type: DpathExtractor
+              field_path: ["data", "repository", "pullRequests", "nodes"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reviews", "nodes"]
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["url"]
+                    record_path: ["pull_request_url"]
+            - type: DpathExtractor
+              field_path: ["data", "repository", "pullRequest"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reviews", "nodes"]
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["url"]
+                    record_path: ["pull_request_url"]
       paginator:
         type: DefaultPaginator
         # No `page_token_option`: the token is a traversal state object, not a value to inject.
@@ -18791,6 +19302,10 @@ definitions:
       partition_router:
         $ref: "#/definitions/repository_partition_router"
     transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_partition.repository }}"
       - type: AddFields
         # `commit_id` replaced the nested `commit { oid }` in the REST-shaped record.
         condition: "{{ record.get('commit') }}"
@@ -19033,12 +19548,28 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          type: CustomRecordExtractor
-          class_name: source_declarative_manifest.components.NestedGraphQLRecordExtractor
-          list_connection: "issues"
-          drilldown_field: "issue"
-          child_connection: "reactions"
-          parent_fields: { "number": "issue_number" }
+          # Union of the listing and drill-down shapes; copies the issue `number` onto reactions as `issue_number`.
+          type: CombinedExtractor
+          mode: union
+          extractors:
+            - type: DpathExtractor
+              field_path: ["data", "repository", "issues", "nodes"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["number"]
+                    record_path: ["issue_number"]
+            - type: DpathExtractor
+              field_path: ["data", "repository", "issue"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["number"]
+                    record_path: ["issue_number"]
       paginator:
         type: DefaultPaginator
         # No `page_token_option`: the token is a traversal state object, not a value to inject.
@@ -19057,6 +19588,11 @@ definitions:
           page_size: 100
       partition_router:
         $ref: "#/definitions/repository_partition_router"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_partition.repository }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "created_at"
@@ -19306,23 +19842,54 @@ definitions:
           value:
             query: "{{ next_page_token['next_page_token']['document'] if next_page_token else parameters['root_repository_document'] }}"
             variables:
-              # `owner`/`name` are only declared by the repository listing document; the
-              # drill-down documents root at `node(id:)` and declare neither, so they are
-              # omitted whenever the token carries a drill-down document. A GraphQL document
-              # rejects a variable it does not declare, which is why this cannot just always
-              # send all of them. The test is which document the token carries, not the mere
-              # presence of a token: the listing paginates too (`typename: PullRequest` re-roots
-              # at the listing, with no node id), and dropping the variables on its second page
-              # made GitHub answer `data: null`, so the stream stopped after the first page and
-              # only the newest `graphql_large_stream_page_size` pull requests were ever scanned.
+              # Only the listing document declares `owner`/`name`: omit them for drill-down documents (GraphQL rejects
+              # undeclared variables), but keep them on listing pages (`typename: PullRequest`) or pagination stops.
               owner: "{{ None if next_page_token and next_page_token['next_page_token']['typename'] != 'PullRequest' else stream_partition.repository.split('/')[0] }}"
               name: "{{ None if next_page_token and next_page_token['next_page_token']['typename'] != 'PullRequest' else stream_partition.repository.split('/')[1] }}"
               after: "{{ next_page_token['next_page_token']['after'] if next_page_token else None }}"
       record_selector:
         type: RecordSelector
         extractor:
-          type: CustomRecordExtractor
-          class_name: source_declarative_manifest.components.DeepNestedGraphQLRecordExtractor
+          # Union over four roots (repository listing, PR, review, comment node); copies comment `id` as `comment_id`.
+          type: CombinedExtractor
+          mode: union
+          extractors:
+            - type: DpathExtractor
+              field_path: ["data", "repository", "pullRequests", "nodes", "*", "reviews", "nodes", "*", "comments", "nodes", "*"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["id"]
+                    record_path: ["comment_id"]
+            - type: DpathExtractor
+              field_path: ["data", "node", "reviews", "nodes", "*", "comments", "nodes", "*"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["id"]
+                    record_path: ["comment_id"]
+            - type: DpathExtractor
+              field_path: ["data", "node", "comments", "nodes", "*"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["id"]
+                    record_path: ["comment_id"]
+            - type: DpathExtractor
+              field_path: ["data", "node"]
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field: ["reactions", "nodes"]
+                parent_fields:
+                  - type: ParentFieldPath
+                    parent_path: ["id"]
+                    record_path: ["comment_id"]
       paginator:
         type: DefaultPaginator
         page_size_option:
@@ -19336,6 +19903,17 @@ definitions:
           page_size: 100
       partition_router:
         $ref: "#/definitions/repository_partition_router"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["repository"]
+            value: "{{ stream_partition.repository }}"
+      - type: AddFields
+        # The legacy record carried `user.type`, and `user` is not a union in these documents.
+        condition: "{{ record.get('user') }}"
+        fields:
+          - path: ["user", "type"]
+            value: "User"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "created_at"
@@ -19428,11 +20006,7 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  # `is not none` rather than `.get('num_workers', 4)`, the same guard the wait budget uses: a
-  # default in `.get` only applies when the key is *absent*, so a present-but-null `num_workers`
-  # (reachable via the API, Terraform or embedded use) renders as "None" and
-  # `ConcurrencyLevel.get_concurrency_level` raises `ValueError: default_concurrency did not
-  # evaluate to an integer` — while the source is being constructed, so every command fails.
+  # `is not none`, not a `.get` default: a null `num_workers` renders "None" and fails source construction.
   default_concurrency: "{{ config['num_workers'] if config.get('num_workers') is not none else 4 }}"
   max_concurrency: 25
 
@@ -19470,6 +20044,7 @@ streams:
   - $ref: "#/definitions/contributor_activity_stream"
   - $ref: "#/definitions/workflow_runs_stream"
   - $ref: "#/definitions/workflow_jobs_stream"
+  - $ref: "#/definitions/workflow_run_attempts_stream"
   - $ref: "#/definitions/releases_stream"
   - $ref: "#/definitions/projects_v2_stream"
   - $ref: "#/definitions/pull_request_stats_stream"
@@ -19477,15 +20052,9 @@ streams:
   - $ref: "#/definitions/issue_reactions_stream"
   - $ref: "#/definitions/pull_request_comment_reactions_stream"
 
-# `branches` slices on `repository_partition_router`, so `check` runs the same repository
-# resolution the streams do — a config whose repos resolve to nothing fails here with
-# "no stream slices were found" — and then reads one page of `repos/{repo}/branches`.
-# `config_overrides.max_waiting_time: 1` is the interactive check's fail-fast budget:
-# it makes the authenticator raise "Rate limit is exceeded for all provided tokens."
-# on an exhausted quota instead of sleeping up to the default 120 minutes. 1 rather
-# than 0 because the backoff caps resolve to `max_waiting_time * 60 + 1` and the
-# `WaitUntilTimeFromHeader` floor is 60s — a 1s cap would fail the first transient
-# error (500, 429 without headers) with the rate-limit message; 61s retries a blip.
+# Runs the same repository resolution as the streams (nothing resolved: "no stream slices were found").
+# `max_waiting_time: 1` fails fast on an exhausted quota; 1 rather than 0 so the 61s cap still retries a blip.
+# Headerless 5xx use exponential backoff and never consult that cap.
 check:
   type: CheckStream
   stream_names: [branches]

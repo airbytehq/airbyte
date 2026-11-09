@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-calendly
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.30.0@sha256:a249dd191ff2b4e5a7c6fd3749395d4a2f5beee988165ebabfacb17199e5b378
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.45.0@sha256:a4947a37ef760ff501856dbeec22830826c1d214f0e530abfa9831e57f019809
   connectorSubtype: api
   connectorType: source
   definitionId: b8f2cbee-b073-4dd8-9b80-97d7bae967a4
-  dockerImageTag: 0.1.52
+  dockerImageTag: 0.4.1
   dockerRepository: airbyte/source-calendly
   githubIssueLabel: source-calendly
   icon: icon.svg
@@ -26,8 +26,22 @@ data:
   releaseDate: 2025-01-27
   releaseStage: alpha
   supportLevel: community
+  maxSecondsBetweenMessages: 3600
+  suggestedStreams:
+    streams:
+      - scheduled_events
+      - event_invitees
+      - event_types
+      - organization_memberships
+      - api_user
   connectorTestSuitesOptions:
     - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-CALENDLY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   documentationUrl: https://docs.airbyte.com/integrations/sources/calendly
   tags:
     - language:manifest-only
@@ -36,15 +50,35 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
+    - title: Calendly OpenAPI specification
+      url: https://developer.calendly.com/openapi/calendly-api.yaml
+      type: openapi_spec
     - title: Calendly API reference
-      url: https://developer.calendly.com/api-docs
+      url: https://developer.calendly.com/api-docs/overview/api/reference
       type: api_reference
     - title: Calendly authentication
-      url: https://developer.calendly.com/getting-started
+      url: https://developer.calendly.com/docs/authentication/overview
       type: authentication_guide
+    - title: Calendly personal access tokens
+      url: https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens
+      type: authentication_guide
+    - title: Calendly authorization scopes
+      url: https://developer.calendly.com/docs/authentication/scopes
+      type: permissions_scopes
+    - title: Calendly API release notes
+      url: https://developer.calendly.com/release-notes
+      type: api_release_history
     - title: Calendly API rate limits
-      url: https://developer.calendly.com/api-docs/ZG9jOjM2MzE2MDM4-api-conventions#rate-limiting
+      url: https://developer.calendly.com/api-docs/overview/rate-limits
       type: rate_limits
     - title: Calendly Status
       url: https://status.calendly.com/
       type: status_page
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true

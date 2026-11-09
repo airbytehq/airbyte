@@ -46,9 +46,9 @@ class MsSqlServerCdcLsnValidationIntegrationTest {
                 listOf(
                     CaptureInstance("dbo", "users", "dbo_users"),
                     CaptureInstance("dbo", "orders", "dbo_orders"),
-                    CaptureInstance("dbo", "restricted", "dbo_restricted")
-                )
-            )
+                    CaptureInstance("dbo", "restricted", "dbo_restricted"),
+                ),
+            ),
         )
     }
 
@@ -99,7 +99,7 @@ class MsSqlServerCdcLsnValidationIntegrationTest {
             val adminConfig = ops.adminConfig(dbContainer)
             ops.createStreams(adminConfig) // CDC + tables + gating roles + scan
             ops.createLimitedUser(
-                adminConfig
+                adminConfig,
             ) // creates the limited user: login + db_datareader, no gating role
         }
 
@@ -131,17 +131,17 @@ object MsSqlServerCdcLsnValidationTestOperations {
                 "dbo",
                 "restricted",
                 "dbo_restricted",
-                gatingRole = "cdc_restricted"
+                gatingRole = "cdc_restricted",
             ),
         )
 
     fun globalConfigSpec(
-        container: MSSQLServerContainer<*>
+        container: MSSQLServerContainer<*>,
     ): MsSqlServerSourceConfigurationSpecification =
         MsSqlServerContainerFactory.config(container).also { it.setIncrementalValue(Cdc()) }
 
     fun limitedGlobalConfigSpec(
-        container: MSSQLServerContainer<*>
+        container: MSSQLServerContainer<*>,
     ): MsSqlServerSourceConfigurationSpecification =
         globalConfigSpec(container).also {
             it.username = LIMITED_USER
@@ -178,7 +178,7 @@ object MsSqlServerCdcLsnValidationTestOperations {
                     stmt.execute(
                         "EXEC sys.sp_cdc_enable_table " +
                             "@source_schema='${ci.schema}', @source_name='${ci.table}', " +
-                            "@role_name=$roleArg, @capture_instance='${ci.captureInstance}'"
+                            "@role_name=$roleArg, @capture_instance='${ci.captureInstance}'",
                     )
                 }
             }
@@ -190,6 +190,7 @@ object MsSqlServerCdcLsnValidationTestOperations {
      * 1. Create the login (with password) and the database user.
      * 2. Add the user to the db_datareader role.
      * 3. createStreams() creates one table gated by the cdc_restricted role, which this limited
+     *
      * ```
      *    user is not a member of.
      * ```
@@ -213,7 +214,7 @@ object MsSqlServerCdcLsnValidationTestOperations {
                     ConfiguredAirbyteStream()
                         .withStream(AirbyteStream().withNamespace(ci.schema).withName(ci.table))
                         .withSyncMode(SyncMode.INCREMENTAL)
-                }
+                },
             )
 
     fun ops(
