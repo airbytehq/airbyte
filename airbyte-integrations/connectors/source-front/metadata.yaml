@@ -34,6 +34,15 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
+    - title: Front API news and updates
+      url: https://community.front.com/api-news-updates-40
+      type: api_release_history
+    - title: Front deprecation policy
+      url: https://dev.frontapp.com/docs/deprecation-policy
+      type: api_deprecations
+    - title: Front OpenAPI specifications
+      url: https://github.com/frontapp/front-api-specs
+      type: spec_repository
     - title: Front API reference
       url: https://dev.frontapp.com/reference/introduction
       type: api_reference
@@ -44,7 +53,7 @@ data:
       url: https://dev.frontapp.com/docs/rate-limiting
       type: rate_limits
     - title: Front Status
-      url: https://status.front.com/
+      url: https://www.frontstatus.com/
       type: status_page
   releases:
     rolloutConfiguration:
