@@ -197,7 +197,7 @@ class KeyPairAuthSpecification(
     @get:JsonSchemaTitle("Passphrase")
     @get:JsonPropertyDescription("Passphrase for private key")
     @get:JsonProperty("private_key_password")
-    @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
+    @get:JsonSchemaInject(json = """{"order": 1, "airbyte_secret": true}""")
     val privateKeyPassword: String? = null,
 ) : CredentialsSpecification(Type.PRIVATE_KEY)
 
