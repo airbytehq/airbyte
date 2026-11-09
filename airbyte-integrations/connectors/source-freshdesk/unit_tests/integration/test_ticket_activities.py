@@ -4,14 +4,20 @@ import logging
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import call, patch
 
 import pytest
+import requests
 from requests_mock import Mocker
 
 from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, FailureType, SyncMode, YamlDeclarativeSource
 from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
+    ExponentialBackoffStrategy,
+    WaitTimeFromHeaderBackoffStrategy,
+)
 from airbyte_cdk.sources.streams.call_rate import APIBudget
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, DefaultBackoffStrategy
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
@@ -427,6 +433,68 @@ def test_ticket_activities_next_sync_does_not_reemit_synced_records(requests_moc
     ]
     assert [record.record.data["ticket_id"] for record in second_sync.records] == [22]
     assert min(export_dates) == day.isoformat()
+
+
+def test_ticket_activities_manifest_configures_declarative_backoff_strategies() -> None:
+    stream = _ticket_activities_stream(ConfigBuilder().domain(_DOMAIN).build())
+    retriever = stream._stream_partition_generator._partition_factory._retriever
+    strategies = retriever._http_client._backoff_strategies
+
+    assert [type(strategy) for strategy in strategies] == [WaitTimeFromHeaderBackoffStrategy, ExponentialBackoffStrategy]
+
+    def first_backoff_time(response: requests.Response, attempt_count: int) -> float:
+        return next(backoff_time for strategy in strategies if (backoff_time := strategy.backoff_time(response, attempt_count)))
+
+    response = requests.Response()
+    response.status_code = 429
+    response.headers["Retry-After"] = "34"
+    assert first_backoff_time(response, 1) == 34
+
+    response.headers["Retry-After"] = "abc"
+    assert first_backoff_time(response, 1) == 2
+    assert first_backoff_time(response, 5) == 32
+
+    response.headers.pop("Retry-After")
+    assert first_backoff_time(response, 1) == 2
+    assert first_backoff_time(response, 5) == 32
+
+
+@pytest.mark.parametrize(
+    ("status_code", "headers", "expected_sleep"),
+    [(429, {"Retry-After": "34"}, 35), (500, {}, 3)],
+)
+def test_ticket_activities_manifest_read_retries_with_configured_backoff(
+    requests_mock: Mocker, status_code: int, headers: dict, expected_sleep: int
+) -> None:
+    requests_mock.get(
+        _EXPORT_URL,
+        [
+            {"status_code": status_code, "headers": headers, "json": {}},
+            {"status_code": 200, "json": {"export": {"url": _DOWNLOAD_URL}}},
+        ],
+    )
+    requests_mock.get(
+        _DOWNLOAD_URL,
+        json={"activities_data": [_activity(performed_at=datetime.now(timezone.utc).strftime("%d-%m-%Y %H:%M:%S +0000"))]},
+    )
+    config = (
+        ConfigBuilder().domain(_DOMAIN).start_date(datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)).build()
+    )
+    catalog = CatalogBuilder().with_stream("ticket_activities", SyncMode.incremental).build()
+    source = YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=None)
+
+    with patch("airbyte_cdk.sources.streams.http.rate_limiting.time.sleep") as sleep:
+        result = entrypoint_read(source, config, catalog, None)
+
+    assert [record.record.data["ticket_id"] for record in result.records] == [600]
+    assert call(expected_sleep) in sleep.call_args_list
+
+
+def test_ticket_activities_retriever_without_backoff_strategy_uses_cdk_default() -> None:
+    retriever = TicketActivitiesRetriever(config=ConfigBuilder().domain(_DOMAIN).build(), parameters={})
+
+    assert len(retriever._http_client._backoff_strategies) == 1
+    assert isinstance(retriever._http_client._backoff_strategies[0], DefaultBackoffStrategy)
 
 
 def test_ticket_activities_stream_is_incremental() -> None:
