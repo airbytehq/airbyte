@@ -20,8 +20,9 @@ This page contains the setup guide and reference information for the [Google Cal
 To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Refresh Token** from your own Google Cloud project:
 
 1. Enable the Google Calendar API for your project in the [API Library](https://console.cloud.google.com/apis/library/calendar-json.googleapis.com).
-2. Create an OAuth client (type **Web application**) on the [Credentials page](https://console.cloud.google.com/apis/credentials). Add `https://developers.google.com/oauthplayground` as an authorized redirect URI.
-3. Obtain a refresh token with the [OAuth 2.0 Playground](https://developers.google.com/oauthplayground):
+2. Configure the [OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent); Google does not create an OAuth client until the project has one. For a Google Workspace account in a Google Cloud organization, choose **Internal**. Otherwise choose **External** and set the publishing status to **In production**: Google expires refresh tokens issued to an External app in **Testing** after 7 days, and syncs then fail with an authentication error. Because the Calendar scopes are sensitive, an unverified app in production shows a "Google hasn't verified this app" warning when you authorize it; you can continue past it for your own account. Add the `calendar.readonly` and `calendar.acls.readonly` scopes.
+3. Create an OAuth client (type **Web application**) on the [Credentials page](https://console.cloud.google.com/apis/credentials). Add `https://developers.google.com/oauthplayground` as an authorized redirect URI.
+4. Obtain a refresh token with the [OAuth 2.0 Playground](https://developers.google.com/oauthplayground):
    - Click the gear icon, check **Use your own OAuth credentials**, and enter your Client ID and Client Secret.
    - Authorize the scopes `https://www.googleapis.com/auth/calendar.readonly` and `https://www.googleapis.com/auth/calendar.acls.readonly`, then exchange the authorization code for tokens. The `calendar.acls.readonly` scope is required for the `acl` stream; `calendar.readonly` alone is sufficient for all other streams.
 
@@ -110,6 +111,7 @@ Expand to see details about Google Calendar connector limitations and troublesho
 
 ### Troubleshooting
 
+- If syncs start failing with a rejected refresh token (`invalid_grant`) about a week after setup, the OAuth app's consent screen is probably an **External** app in **Testing**, whose refresh tokens expire after 7 days. Set its publishing status to **In production**, generate a new refresh token, and paste it into **Refresh token**.
 - Check out common troubleshooting issues for the Google Calendar source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
