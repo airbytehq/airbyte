@@ -64,9 +64,9 @@ object DatabricksExpectedRecordMapper : ExpectedRecordMapper {
  * Unity Catalog caps a catalog at 10,000 schemas and each CI run leaves a few hundred behind, so
  * the CDK default of 30 days exhausts the quota (`UC_RESOURCE_QUOTA_EXCEEDED`).
  *
- * Drops run on [DROP_PARALLELISM] connections: this runs inside a test's `@AfterEach` (10 minute
- * timeout) and a serial `DROP SCHEMA ... CASCADE` takes ~0.7s, so a day's worth of schemas would
- * not finish in time.
+ * Drops run on [DROP_PARALLELISM] connections: this runs inside a test's `@AfterEach` (bounded by
+ * `JunitMethodExecutionTimeout`) and a serial `DROP SCHEMA ... CASCADE` takes ~0.7s, so a day's
+ * worth of schemas would not finish in time.
  */
 object DatabricksDataCleaner : DestinationCleaner {
     private val log = KotlinLogging.logger {}
