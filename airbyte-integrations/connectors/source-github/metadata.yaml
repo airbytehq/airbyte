@@ -6,7 +6,7 @@ data:
     hosts:
       - ${api_url}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.45.1.post11.dev42213119752@sha256:1042633eab54771d581b1f46095e9077c6594aa9de09f6a8e35838f6ae40fe72
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0.post8.dev42627167644@sha256:0096d7610440be1b5da5daf1ee1efe0de8592f1e6550a904a9deed07248df37f
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
