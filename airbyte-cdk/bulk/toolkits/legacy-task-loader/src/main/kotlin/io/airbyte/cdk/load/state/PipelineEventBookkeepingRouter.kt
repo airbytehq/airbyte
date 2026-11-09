@@ -117,9 +117,11 @@ class PipelineEventBookkeepingRouter(
             syncManager.awaitSetupComplete()
             log.info { "Setup complete, starting stream ${stream.mappedDescriptor}" }
             openStreamQueue.publish(stream)
-            syncManager.getOrAwaitStreamLoader(stream.mappedDescriptor)
-            log.info { "Initialization for stream ${stream.mappedDescriptor} complete" }
         }
+
+        // Other data channels can carry the same stream, so every message waits for it to open
+        syncManager.getOrAwaitStreamLoader(stream.mappedDescriptor)
+
         val manager = syncManager.getStreamManager(stream.mappedDescriptor)
 
         return when (message) {

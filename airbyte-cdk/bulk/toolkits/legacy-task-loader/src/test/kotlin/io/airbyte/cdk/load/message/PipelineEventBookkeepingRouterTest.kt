@@ -23,11 +23,18 @@ import io.airbyte.cdk.load.util.deserializeToNode
 import io.mockk.*
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class PipelineEventBookkeepingRouterTest {
 
     private val catalog = mockk<DestinationCatalog>(relaxed = true)
@@ -66,7 +73,11 @@ class PipelineEventBookkeepingRouterTest {
             namespaceMapper = NamespaceMapper(),
         )
 
-    private fun router(numDataChannels: Int, markEndOfStreamAtEnd: Boolean = false) =
+    private fun router(
+        numDataChannels: Int,
+        markEndOfStreamAtEnd: Boolean = false,
+        syncManager: SyncManager = this.syncManager,
+    ) =
         PipelineEventBookkeepingRouter(
             catalog = catalog,
             syncManager = syncManager,
@@ -78,6 +89,19 @@ class PipelineEventBookkeepingRouterTest {
             markEndOfStreamAtEndOfSync = markEndOfStreamAtEnd,
             namespaceMapper = namespaceMapper,
         )
+
+    private fun record(stream: DestinationStream) =
+        DestinationRecord(
+            stream = stream,
+            message = mockk(relaxed = true),
+            serializedSizeBytes = 0L,
+            checkpointId = null,
+            airbyteRawId = UUID.randomUUID(),
+        )
+
+    /** A real [SyncManager], so that callers really wait on the stream loader. */
+    private suspend fun syncManagerWithSetupComplete() =
+        SyncManager(catalog).also { it.markSetupComplete() }
 
     @BeforeEach
     fun setup() {
@@ -155,6 +179,94 @@ class PipelineEventBookkeepingRouterTest {
         coVerify { syncManager.awaitSetupComplete() }
         coVerify { openStreamQueue.publish(stream1) }
         coVerify { syncManager.getOrAwaitStreamLoader(stream1.mappedDescriptor) }
+    }
+
+    @Test
+    fun `second channel waits until the stream loader has started`() = runTest {
+        val sync = syncManagerWithSetupComplete()
+        val r = router(numDataChannels = 2, syncManager = sync)
+
+        val first = async { r.handleStreamMessage(record(stream1)) }
+        runCurrent()
+        val second = async { r.handleStreamMessage(record(stream1)) }
+        runCurrent()
+
+        assertFalse(first.isCompleted)
+        assertFalse(second.isCompleted)
+
+        sync.registerStartedStreamLoader(stream1.mappedDescriptor, Result.success(mockk()))
+        runCurrent()
+
+        assertTrue(first.isCompleted)
+        assertTrue(second.isCompleted)
+
+        // The second channel must wait even though the first removed the stream from unopenedStreams.
+        coVerify(exactly = 1) { openStreamQueue.publish(stream1) }
+    }
+
+    @Test
+    fun `failed stream start reaches every waiting channel`() = runTest {
+        val sync = syncManagerWithSetupComplete()
+        val r = router(numDataChannels = 2, syncManager = sync)
+        val failure = IllegalStateException("start failed")
+
+        val first = async { runCatching { r.handleStreamMessage(record(stream1)) } }
+        runCurrent()
+        val second = async { runCatching { r.handleStreamMessage(record(stream1)) } }
+        runCurrent()
+
+        assertFalse(first.isCompleted)
+        assertFalse(second.isCompleted)
+
+        sync.registerStartedStreamLoader(stream1.mappedDescriptor, Result.failure(failure))
+        runCurrent()
+
+        assertSame(failure, first.await().exceptionOrNull())
+        assertSame(failure, second.await().exceptionOrNull())
+    }
+
+    @Test
+    fun `channel arriving after the stream has started does not wait`() = runTest {
+        val sync = syncManagerWithSetupComplete()
+        val r = router(numDataChannels = 2, syncManager = sync)
+
+        val first = async { r.handleStreamMessage(record(stream1)) }
+        runCurrent()
+        sync.registerStartedStreamLoader(stream1.mappedDescriptor, Result.success(mockk()))
+        runCurrent()
+        assertTrue(first.isCompleted)
+
+        val late = async { r.handleStreamMessage(record(stream1)) }
+        runCurrent()
+
+        // After initialization completes, later records pass the router without waiting
+        assertTrue(late.isCompleted)
+        coVerify(exactly = 1) { openStreamQueue.publish(stream1) }
+    }
+
+    @Test
+    fun `waiting on one stream does not block another stream`() = runTest {
+        val sync = syncManagerWithSetupComplete()
+        val r = router(numDataChannels = 2, syncManager = sync)
+
+        val onStream1 = async { r.handleStreamMessage(record(stream1)) }
+        runCurrent()
+        val onStream2 = async { r.handleStreamMessage(record(stream2)) }
+        runCurrent()
+
+        assertFalse(onStream1.isCompleted)
+        assertFalse(onStream2.isCompleted)
+
+        sync.registerStartedStreamLoader(stream2.mappedDescriptor, Result.success(mockk()))
+        runCurrent()
+
+        assertTrue(onStream2.isCompleted)
+        assertFalse(onStream1.isCompleted)
+
+        sync.registerStartedStreamLoader(stream1.mappedDescriptor, Result.success(mockk()))
+        runCurrent()
+
+        assertTrue(onStream1.isCompleted)
     }
 
     @Test
