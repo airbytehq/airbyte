@@ -19,11 +19,11 @@ Clearing a stream deletes its destination data. Calendly doesn't return deleted 
 
 ### Who must act
 
-You don't need to clear `scheduled_events` or `event_invitees` for the cursor change. Version 1.0.0 ignores the old `start_time` state, so the first sync after the upgrade reads every event that starts on or after your start date with all of its invitees, including the bookings and cancellations that 0.2.0 missed. In Incremental | Append + Deduped mode these rows replace the existing ones by `uri`; in Incremental | Append mode the first sync appends one more copy of each event and invitee. If you moved your start date later after the first sync, move it back first.
+You don't need to clear `scheduled_events` or `event_invitees` for the cursor change. Version 1.0.0 ignores the old `start_time` state, so the first sync after the upgrade reads every event that starts on or after your start date with all of its invitees, including the bookings and cancellations that earlier versions missed. In Incremental | Append + Deduped mode these rows replace the existing ones by `uri`; in Incremental | Append mode the first sync appends one more copy of each event and invitee. If you moved your start date later after the first sync, move it back first.
 
 Every connection must refresh the source schema so the new column types apply. Whether you also need to clear a stream depends on your destination; see the destination notes.
 
-If you raised `lookback_days` to work around the 0.2.0 incremental limitation, set it back to `0`: a larger value now re-emits every event updated in that window and reads its invitees again on every sync. If you switched `scheduled_events` and `event_invitees` to Full refresh for the same reason, you can switch them back to Incremental | Append + Deduped; Full refresh reads the invitees of every event on every sync.
+If you raised `lookback_days` to work around the incremental limitation of earlier versions, set it back to `0`: a larger value now re-emits every event updated in that window and reads its invitees again on every sync. If you switched `scheduled_events` and `event_invitees` to Full refresh for the same reason, you can switch them back to Incremental | Append + Deduped; Full refresh reads the invitees of every event on every sync.
 
 ### Destination notes
 
@@ -50,7 +50,7 @@ Update SQL queries, dbt models, dashboards and exports that read the retyped top
 
 ### Rollback
 
-Rolling back to 0.2.0 brings back its incremental defect: depending on the saved state it either reads again from your start date or resumes from an old upcoming-event cursor, and either way its incremental syncs stall. If you roll back, sync `scheduled_events` and `event_invitees` in Full refresh while you stay on 0.2.0. Don't refresh the schema after rolling back on a destination that already converted the columns, or typed destinations convert the timestamps and integers back to text and decimals in a different text format.
+Rolling back to a 0.x version brings back the incremental defect: depending on the saved state it either reads again from your start date or resumes from an old upcoming-event cursor, and either way its incremental syncs stall. If you roll back, sync `scheduled_events` and `event_invitees` in Full refresh while you stay on 0.x. Don't refresh the schema after rolling back on a destination that already converted the columns, or typed destinations convert the timestamps and integers back to text and decimals in a different text format.
 
 ## Connector upgrade guide
 
