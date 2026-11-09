@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 51766ab3-df25-4c8c-98a4-647440d0dfbb
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-productive
   githubIssueLabel: source-productive
   icon: icon.svg
@@ -40,6 +40,13 @@ data:
             impactedScopes:
               - project_assignments
               - boards
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   documentationUrl: https://docs.airbyte.com/integrations/sources/productive
   tags:
     - language:manifest-only

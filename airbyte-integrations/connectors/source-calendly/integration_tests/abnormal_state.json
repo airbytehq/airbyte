@@ -1,0 +1,27 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "event_types" },
+      "stream_state": { "updated_at": "2099-01-01T00:00:00.000000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "scheduled_events" },
+      "stream_state": { "start_time": "2099-01-01T00:00:00.000000Z" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "event_invitees" },
+      "stream_state": {
+        "parent_state": {
+          "scheduled_events": { "start_time": "2099-01-01T00:00:00.000000Z" }
+        }
+      }
+    }
+  }
+]

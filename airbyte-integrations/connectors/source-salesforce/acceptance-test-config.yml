@@ -6,6 +6,9 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_salesforce/spec.yaml"
+        backward_compatibility_tests_config:
+          # auth_type const Client -> enum [Client, ClientCredentials] widens the allowed values; the checker reports the added enum as narrowing.
+          disable_for_version: "2.10.2"
   connection:
     tests:
       - config_path: "secrets/config.json"
