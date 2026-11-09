@@ -87,6 +87,7 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [Roles](https://www.twilio.com/docs/conversations/api/role-resource#read-multiple-role-resources) | Full refresh |
 | [Services](https://www.twilio.com/docs/conversations/api/service-resource#read-multiple-service-resources) | Full refresh |
 | [Steps](https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources) | Full refresh |
+| [Subaccounts](https://www.twilio.com/docs/usage/api/account#read-multiple-account-resources) | Full refresh |
 | [Transcriptions](https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources) | Full refresh |
 | [Trunks](https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties) | Full refresh |
 | [Usage Records](https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources) | Full refresh, incremental |
@@ -95,6 +96,10 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [Users](https://www.twilio.com/docs/conversations/api/user-resource) | Full refresh |
 | [Verify Services](https://www.twilio.com/docs/verify/api/service#maincontent) | Full refresh |
 | [Voice Pricing Countries](https://www.twilio.com/docs/voice/pricing#pricing-voice-country-instance-resource) | Full refresh |
+
+### Accounts and subaccounts
+
+The `accounts` stream returns the account in your credentials and all of its subaccounts. Streams on `api.twilio.com/2010-04-01`, such as `calls`, `messages`, `recordings`, and `usage_records`, are read for every account that `accounts` returns, so main account credentials sync subaccount data too. The `subaccounts` stream returns the same list without the main account, and leaves out `auth_token`. It makes its own request to Twilio, so selecting it adds one request per page of accounts to each sync.
 
 ### Pricing streams
 
@@ -167,6 +172,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.2.0 | 2026-11-09 | [90969](https://github.com/airbytehq/airbyte/pull/90969) | Add `subaccounts` stream |
 | 1.1.9 | 2026-11-03 | [90752](https://github.com/airbytehq/airbyte/pull/90752) | Update dependencies |
 | 1.1.8 | 2026-10-27 | [90064](https://github.com/airbytehq/airbyte/pull/90064) | Update dependencies |
 | 1.1.7 | 2026-10-20 | [89453](https://github.com/airbytehq/airbyte/pull/89453) | Update dependencies |

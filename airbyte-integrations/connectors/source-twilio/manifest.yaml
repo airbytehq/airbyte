@@ -230,6 +230,16 @@ definitions:
 
   subaccounts_stream:
     $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/base_stream/retriever/record_selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('owner_account_sid') and record.get('owner_account_sid') != record.get('sid') }}"
+    transformations:
+      - type: RemoveFields
+        field_pointers: [["auth_token"]]
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -976,15 +986,15 @@ spec:
     properties:
       account_sid:
         airbyte_secret: true
-        description: Your Twilio Account SID. Find it in the Twilio Console at https://www.twilio.com/console
+        description: Twilio account SID
         order: 1
-        title: Account sid
+        title: Account ID
         type: string
       auth_token:
         airbyte_secret: true
-        description: Your Twilio Auth Token. Find it in the Twilio Console at https://www.twilio.com/console. Used together with Account SID to authenticate API requests.
+        description: Twilio Auth Token.
         order: 2
-        title: Auth token
+        title: Auth Token
         type: string
       start_date:
         description:
@@ -995,12 +1005,11 @@ spec:
         format: date-time
         order: 3
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        pattern_descriptor: UTC date and time in ISO 8601 format, e.g. 2020-10-01T00:00:00Z
-        title: Replication start date
+        title: Replication Start Date
         type: string
       lookback_window:
         default: 0
-        description: How far into the past (in minutes) to look for records when performing an incremental sync. A value of 0 means only new records after the sync starts will be captured.
+        description: How far into the past to look for records. (in minutes)
         examples:
           - 60
         maximum: 576000
@@ -1016,10 +1025,10 @@ spec:
         default: 3
         examples: [1, 2, 3]
         order: 5
-        description: The number of worker threads to use for the sync. Higher values may speed up synchronization but increase API load on your Twilio account.
+        description: The number of worker threads to use for the sync.
       slice_step_duration:
         type: string
-        title: Slice step duration
+        title: Slice Step Duration
         description: The time window size for each data slice when syncing incremental streams. Smaller windows may help avoid timeouts for accounts with large data volumes.
         default: P1M
         enum:
