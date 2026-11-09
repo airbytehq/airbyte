@@ -317,6 +317,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.12.48 | 2026-11-03 | [90938](https://github.com/airbytehq/airbyte/pull/90938) | Preserve Google Sheets retry and sheet-skipping behavior with simplified error handling. |
 | 0.12.47 | 2026-10-30 | [90255](https://github.com/airbytehq/airbyte/pull/90255) | Validate spreadsheet links and explain authentication, API enablement, and access failures in connection checks |
 | 0.12.46 | 2026-11-03 | [90596](https://github.com/airbytehq/airbyte/pull/90596) | Update dependencies |
 | 0.12.45 | 2026-10-27 | [89945](https://github.com/airbytehq/airbyte/pull/89945) | Update dependencies |
