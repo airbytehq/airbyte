@@ -8,6 +8,12 @@ The `PinterestAnalyticsBackoffStrategy` extracts the retry wait time from the re
 
 **Why this matters:** Standard retry logic that only reads HTTP headers will miss Pinterest's retry guidance entirely and fall back to exponential backoff. The connector's regex-based extraction is brittle and will break if Pinterest changes the wording of their error message. If the regex fails to match, it falls back to exponential backoff capped at 120 seconds.
 
+## 2. Analytics Errors Must Not Skip Partitions
+
+The synchronous analytics retriever uses one `DefaultErrorHandler`, inheriting `PinterestAnalyticsBackoffStrategy` and referencing the shared analytics filters. It retains retries for every HTTP 400 (CDK matches `http_codes` OR `predicate`) and HTTP 409; it does not inherit the base handler's 409 `IGNORE`. HTTP 429 uses the Pinterest rate-limit message when the body has `code: 8`, otherwise the default 429 message. Body-only `code: 8` does not override other HTTP classifications, including successful responses. The re-authentication message is restricted to HTTP 401. The shared base and async report-creation handlers remain independent.
+
+**Why this matters:** Copying the base handler's filters into analytics would silently skip 409 partitions and treat successful `code: 8` payloads as rate-limited. Keep those filters separate when changing analytics error handling.
+
 ## Incremental Stream Considerations
 
 The Pinterest API supports date-based filtering on analytics endpoints. The connector uses Python custom components referenced from the manifest.

@@ -6,6 +6,10 @@ The `PinterestAnalyticsBackoffStrategy` extracts the retry wait time from the re
 
 **Why this matters:** Standard retry logic that only reads HTTP headers will miss Pinterest's retry guidance entirely and fall back to exponential backoff. The connector's regex-based extraction is brittle and will break if Pinterest changes the wording of their error message. If the regex fails to match, it falls back to exponential backoff capped at 120 seconds.
 
+## 2. Analytics Errors Must Not Skip Partitions
+
+Analytics retries conflicting requests instead of skipping their data, and successful responses are not treated as rate-limited based on a body code alone. These rules differ from the shared API and report-creation handlers; see [AGENTS.md](./AGENTS.md) for the filter details.
+
 ## Incremental Stream Considerations
 
 The Pinterest API supports date-based filtering on analytics endpoints. The connector uses Python custom components referenced from the manifest.
