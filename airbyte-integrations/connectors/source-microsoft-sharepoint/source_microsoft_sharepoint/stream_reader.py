@@ -244,9 +244,27 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             # Initial object is a folder, start file retrieval
             yield from get_files(f"{item_url}/children", path)
 
+    @staticmethod
+    def _get_children_page(folder, next_url: Optional[str]):
+        page = folder.children
+        if next_url is None:
+            return page.get()
+        folder.context.load(page, before_loaded=lambda request: setattr(request, "url", next_url))
+        return page
+
+    def _get_children(self, folder) -> List[Any]:
+        """Returns all children of a folder, following @odata.nextLink. Each page is retried with a freshly built query."""
+        children, next_url = [], None
+        while True:
+            page = execute_query_with_retry(lambda url=next_url: self._get_children_page(folder, url))
+            children.extend(page)
+            next_url = getattr(page, "_next_request_url", None)
+            if not next_url:
+                return children
+
     def _list_directories_and_files(self, root_folder, path) -> Iterable[MicrosoftSharePointRemoteFile]:
         """Enumerates folders and files starting from a root folder."""
-        drive_items = execute_query_with_retry(root_folder.children.get())
+        drive_items = self._get_children(root_folder)
         for item in drive_items:
             item_path = path + "/" + item.name if path else item.name
             if item.is_file:
