@@ -167,6 +167,19 @@ class PipelineEventBookkeepingRouterTest {
     }
 
     @Test
+    fun `DestinationRecordStreamComplete counts the stream as completed once`() = runTest {
+        val r = router(2, markEndOfStreamAtEnd = true)
+        assertEquals(0, r.completionCount)
+        assertEquals(emptySet(), r.completedStreams())
+
+        r.handleStreamMessage(DestinationRecordStreamComplete(stream1, 0L))
+        r.handleStreamMessage(DestinationRecordStreamComplete(stream1, 0L))
+
+        assertEquals(1, r.completionCount)
+        assertEquals(setOf(stream1.mappedDescriptor), r.completedStreams())
+    }
+
+    @Test
     fun `legacy file transfer record infers checkpoint id and publishes`() = runTest {
         val r = router(1)
         r.handleStreamMessage(

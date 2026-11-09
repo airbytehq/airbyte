@@ -394,13 +394,14 @@ object ByteArrayPool {
     }
 }
 
+/**
+ * Starts with a fresh array of [minCapacity] and takes a slab from [ByteArrayPool] for each part
+ * after the first. The slabs are part-sized, and a sync holds one of these buffers for every stream
+ * on every input partition, most of which never fill a part.
+ */
 class PooledByteArrayOutputStream(private val minCapacity: Int = 32 * 1024) :
-    ManagedByteArrayOutputStream(0) {
-    /** Borrow a new array exactly sized to `count`, copy data, return it. */
-    init {
-        buf = ByteArrayPool.borrow(minCapacity)
-    }
-
+    ManagedByteArrayOutputStream(minCapacity) {
+    /** Copies the data to a new array exactly sized to `count`. */
     override fun extractBytes(): ByteArray =
         ByteArray(count).also { System.arraycopy(buf, 0, it, 0, count) }
 

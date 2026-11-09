@@ -29,8 +29,15 @@ data class PipelineMessage<K : WithStream, T>(
 data class PipelineEndOfStream<K : WithStream, T>(val stream: DestinationStream.Descriptor) :
     PipelineEvent<K, T>
 
-/** Timed recurring event to keep the pipeline alive if no data is coming. */
-class PipelineHeartbeat<K : WithStream, T> : PipelineEvent<K, T>
+/**
+ * Timed recurring event to keep the pipeline alive if no data is coming.
+ *
+ * A step also finishes its state for [completedStreams]: streams whose input is complete, though
+ * their end-of-stream has not reached this partition yet.
+ */
+class PipelineHeartbeat<K : WithStream, T>(
+    val completedStreams: Set<DestinationStream.Descriptor> = emptySet(),
+) : PipelineEvent<K, T>
 
 /** Contextual pass through data. */
 data class PipelineContext(

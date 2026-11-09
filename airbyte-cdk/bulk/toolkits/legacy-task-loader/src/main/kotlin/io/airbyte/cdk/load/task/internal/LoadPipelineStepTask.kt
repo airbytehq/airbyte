@@ -244,6 +244,14 @@ class LoadPipelineStepTask<S : AutoCloseable, K1 : WithStream, T, K2 : WithStrea
                         stateStore
                     }
                     is PipelineHeartbeat -> {
+                        // The stream stays open here: records still on their way to this
+                        // partition start a new state.
+                        val completedKeys =
+                            stateStore.stateWithCounts.keys.filter {
+                                it.stream in input.completedStreams
+                            }
+                        finishKeys(stateStore, completedKeys, "stream complete")
+
                         flushStrategy?.let { strategy ->
                             val now = System.currentTimeMillis()
                             val keysToRemove =
