@@ -27,9 +27,7 @@ definitions:
           path: /sell/fulfillment/v1/order
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
         record_selector:
           type: RecordSelector
           extractor:
