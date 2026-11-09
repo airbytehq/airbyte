@@ -10,7 +10,7 @@ To set up the Facebook Pages source connector, you need a Facebook app, a long-l
 This connector calls v24.0 of the Facebook Graph API.
 :::
 
-Meta only returns Page Insights data for Pages with 100 or more likes. The connector checks the connection by reading the `page_insights` stream, and an empty response still passes, so a Page with fewer than 100 likes can be set up and will sync `page` and `post`, but its insights streams return no records until it reaches 100 likes.
+Meta only returns Page Insights data for Pages with 100 or more likes. The connector checks the connection by reading the `page_insights` stream, and an empty response still passes, so a Page with fewer than 100 likes can be set up and will sync its non-insights streams, such as `page` and `post`, but its insights streams return no records until it reaches 100 likes.
 
 ## Setup guide
 
@@ -39,6 +39,10 @@ After all the steps, it should look something like this:
 3. For **Page Access Token**, enter the long-lived Page token you generated in Step 1. The connector also accepts a long-lived User token, as long as that user can generate a Page token for the Page you configure.
 4. For **Page ID**, enter the Page's ID or username. If your Page URL is `https://www.facebook.com/Test-1111111111`, use `Test-1111111111`.
 5. (Optional) Set **Page Size** to control the number of records requested per API call for the `post` and `post_insights` streams. The default is 100, and valid values are 1 through 100. Decrease it if you see "Please reduce the amount of data you're asking for" errors.
+6. (Optional) Set **Page Insights Metrics**, **Post Insights Metrics**, **Video Insights Metrics**, or **Reel Insights Metrics** to choose which metrics each insights stream requests. See [Insights metrics and period](#insights-metrics-and-period).
+7. (Optional) Set **Page Insights Period** to request a single aggregation period, such as `day`, for the `page_insights` stream. Valid values are `day`, `week`, `days_28`, `month`, `lifetime`, and `total_over_range`.
+8. (Optional) Set **Start Date** to the earliest date the `page_insights` stream reads, in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2024-01-01T00:00:00Z`. Meta keeps about two years of Page Insights history. See [Supported sync modes](#supported-sync-modes).
+9. Click **Set up source**.
 
 ### Creating your own OAuth App
 
@@ -78,6 +82,8 @@ The `page_insights` stream is full refresh by default, which asks Facebook for i
 | `comment` | [`/{post-id}/comments`](https://developers.facebook.com/docs/graph-api/reference/post/comments/) for each post in `/{page-id}/feed` | One record per comment, including replies, with the parent `post_id` added. This makes one request per post, so a Page with many posts uses many API calls. Needs `pages_read_user_content`. |
 | `rating` | [`/{page-id}/ratings`](https://developers.facebook.com/docs/graph-api/reference/page/ratings/) | One record per recommendation or review. Recommendations have no ID of their own, so this stream has no primary key. Needs `pages_read_user_content`. |
 
+### Insights metrics and period
+
 You can choose which metrics each insights stream requests with the **Page Insights Metrics**, **Post Insights Metrics**, **Video Insights Metrics**, and **Reel Insights Metrics** settings. If you leave a setting empty, the connector requests these defaults:
 
 - `page_insights`: `page_total_actions`, `page_post_engagements`, `page_fan_adds_by_paid_non_paid_unique`, `page_media_view`, `page_total_media_view_unique`
@@ -94,7 +100,7 @@ All insights streams inherit Meta's own limits on Page Insights: data is availab
 ## Reference
 
 This connector uses the [Meta Graph API](https://developers.facebook.com/docs/graph-api/) with the `https://graph.facebook.com/v24.0` endpoint.
-Airbyte requests the selected Page and Post fields from the connector catalog, and requests a fixed set of Page Insights and Post Insights metrics.
+Airbyte requests the selected Page and Post fields from the connector catalog, and requests the insights metrics you configure, or the defaults listed in [Insights metrics and period](#insights-metrics-and-period).
 
 For programmatic configuration, use these parameter names:
 
@@ -103,6 +109,12 @@ For programmatic configuration, use these parameter names:
 | `access_token` | Yes | Long-lived Page access token for the Facebook Page. The connector also accepts a long-lived User access token that can generate a Page access token for the configured Page. |
 | `page_id` | Yes | Facebook Page ID. |
 | `page_size` | No | Number of records to request per page for the `post` and `post_insights` streams. Defaults to `100`. Valid values are `1` through `100`. |
+| `page_insights_metrics` | No | Array of metrics for the `page_insights` stream. Replaces the defaults. |
+| `post_insights_metrics` | No | Array of metrics for the `post_insights` stream. Replaces the defaults. |
+| `video_insights_metrics` | No | Array of lifetime metrics for the `video_insights` stream. Replaces the defaults. |
+| `reel_insights_metrics` | No | Array of lifetime metrics for the `reel_insights` stream. Replaces the defaults. |
+| `page_insights_period` | No | Aggregation period for the `page_insights` stream: `day`, `week`, `days_28`, `month`, `lifetime`, or `total_over_range`. If empty, Facebook returns every period it supports. |
+| `start_date` | No | Earliest date for the `page_insights` stream, in the format `YYYY-MM-DDTHH:MM:SSZ`. If empty, Facebook's default window is used. |
 
 ## Limitations & Troubleshooting
 
@@ -199,8 +211,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 3.2.0   | 2026-11-09 | [90124](https://github.com/airbytehq/airbyte/pull/90124)       | Add an optional incremental sync mode and a `start_date` setting to the `page_insights` stream, which reads a `since` and `until` date range in 90-day windows.        |
-| 3.1.0   | 2026-10-27 | [90123](https://github.com/airbytehq/airbyte/pull/90123)       | Configurable insights metrics and period, new video, Reels, comment and rating streams, incremental posts                                                              |
-| 3.0.2   | 2026-11-04 | [90130](https://github.com/airbytehq/airbyte/pull/90130)       | Exchange the Page access token once per sync instead of before every request, and resolve the schema's date-time paths once per stream instead of per record           |
+| 3.1.0   | 2026-11-09 | [90123](https://github.com/airbytehq/airbyte/pull/90123)       | Configurable insights metrics and period, new video, Reels, comment and rating streams, incremental posts                                                              |
+| 3.0.2   | 2026-11-09 | [90130](https://github.com/airbytehq/airbyte/pull/90130)       | Exchange the Page access token once per sync instead of before every request, and resolve the schema's date-time paths once per stream instead of per record           |
 | 3.0.1   | 2026-11-03 | [90914](https://github.com/airbytehq/airbyte/pull/90914)       | Require Python 3.11 for future CDK compatibility.                                                                                                                      |
 | 3.0.0 | 2026-10-13 | [85780](https://github.com/airbytehq/airbyte/pull/85780) | Remove the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking`, and `start_info`, and the `live_videos` edge, from the `page` stream. Remove `current_location`, `genre`, and `network` from nested page objects in the `page` and `post` streams. |
 | 2.1.4 | 2026-09-22 | [86489](https://github.com/airbytehq/airbyte/pull/86489) | Retry Facebook's "Please reduce the amount of data you're asking for" error again instead of failing the sync as a configuration error. |
