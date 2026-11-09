@@ -9,6 +9,14 @@ import TabItem from "@theme/TabItem";
 
 Most programmatic interactions with Airbyte require an access token. An access token represents an individual Airbyte user, and it has the same permissions as that Airbyte user.
 
+Permissions alone don't guarantee access to every operation. When authentication is turned on, which is the default for Helm deployments, Airbyte also checks each request against the following:
+
+- **The type of caller.** Some operations are reserved for Airbyte's internal components, such as workers that report sync progress or save discovered schemas. Access tokens from users and applications can't perform these operations, even if the user is an instance admin.
+- **The token's scope.** If a token is scoped to a single workspace, it can only act on resources in that workspace.
+- **Where saved resources belong.** Airbyte checks the workspace that a saved source, destination, or connection belongs to, not only the IDs in the request. Every resource in the request must belong to a workspace that the user has the required permission in.
+
+If your access token is missing, invalid, or expired, Airbyte returns `401 Unauthorized`. Get a new access token and try again. If your access token is valid but doesn't allow the operation, Airbyte returns `403 Forbidden`. A new access token doesn't fix this. Check the user's permissions and the workspace that the resources belong to instead.
+
 :::tip
 Using a service account for this purpose is helpful. If you rely on making requests to the Airbyte API using personal credentials, your apps and scripts could break if someone leaves your organization.
 :::

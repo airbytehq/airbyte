@@ -1,37 +1,39 @@
 # Aircall
 
-This page contains the setup guide and reference information for the [Aircall](https://developer.aircall.io/api-references/#rest-api) source
+This page contains the setup guide and reference information for the [Aircall](https://developers.aircall.io/api-references/#rest-api) source
 
 ## Prerequisites
 
-Access Token (which acts as bearer token) is mandate for this connector to work, It could be seen at settings (ref - https://dashboard.aircall.io/integrations/api-keys).
+Create an API key in the Aircall Dashboard under **Integrations & API > API Keys**. The API ID and API token are both required.
 
 ## Setup guide
 
 ### Step 1: Set up Aircall connection
 
-- Get an Aircall access token via settings (ref - https://dashboard.aircall.io/integrations/api-keys)
-- Setup params (All params are required)
+- Create an API key in **Integrations & API > API Keys** in the Aircall Dashboard.
+- Enter the required API ID and API token.
 - Available params
-  - api_id: The auto generated id
-  - api_token: Seen at the Aircall settings (ref - https://dashboard.aircall.io/integrations/api-keys)
-  - start_date: Date filter for eligible streams, enter
+  - `api_id`: Your Aircall API ID.
+  - `api_token`: The API token shown with the API ID.
+  - `window_in_days` (Window size): optional days of calls per request window, default 1. Calls split a window that hits Aircall's 10,000-result limit on their own; larger windows save requests only for companies with few calls.
+  - `contacts_window_in_days` (Contacts window size): optional days of new contacts per request window, default 30. Lower it if a contacts sync fails with the 10,000-results error.
+  - `num_workers`: optional concurrent workers, from 1 to 4 (default 2). All workers share one budget of 100 requests per minute, below Aircall's company-wide limit of 120.
 
 ### Step 2: Set up the Aircall connector in Airbyte
 
-#### For Airbyte Cloud:
+#### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Aircall connector and select **Aircall** from the Source type dropdown.
-4. Enter your `api_id, api_token and start_date`.
+4. Enter your API ID and API token.
 5. Click **Set up source**.
 
-#### For Airbyte OSS:
+#### For Airbyte OSS
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. Enter your `api_id, api_token and start_date`.
+3. Enter your API ID and API token.
 4. Click **Set up source**.
 
 ## Supported sync modes
@@ -48,15 +50,24 @@ The Aircall source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-- calls
-- company
-- contacts
-- numbers
-- tags
-- user_availability
-- users (uses the Aircall User V2 API)
-- teams
-- webhooks
+| Stream                   | Sync mode                 | Notes                                                                                                                                                                                                                                                                                                                                                                                                           |
+| :----------------------- | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| calls                    | Full refresh, incremental | Incremental syncs read the last three days again. See below.                                                                                                                                                                                                                                                                                                                                                    |
+| company                  | Full refresh              | Used for connection checks.                                                                                                                                                                                                                                                                                                                                                                                     |
+| contacts                 | Full refresh              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| numbers                  | Full refresh, incremental | Incremental sync rereads all records to capture edits.                                                                                                                                                                                                                                                                                                                                                          |
+| tags                     | Full refresh              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| user_availability        | Full refresh              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| users                    | Full refresh              | Uses the Aircall User V2 API.                                                                                                                                                                                                                                                                                                                                                                                   |
+| teams                    | Full refresh, incremental | Incremental sync rereads all records to capture edits.                                                                                                                                                                                                                                                                                                                                                          |
+| webhooks                 | Full refresh              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| conversations            | Full refresh, incremental | Needs the Conversations API. Incremental syncs pick up conversations with a new call or message; a close, reopen or assignment without new activity arrives with the next activity or a full refresh.                                                                                                                                                                                                           |
+| conversation_engagements | Full refresh, incremental | Needs the Conversations API. The first sync makes one request per conversation. Incremental syncs read the engagements of every conversation with activity since three days before the last sync, so a daily schedule keeps them small; closes, reopens and assignments without a new call or message arrive only with a full refresh. Aircall returns at most the newest 10,000 engagements of a conversation. |
+| campaigns                | Full refresh              | Outbound campaigns.                                                                                                                                                                                                                                                                                                                                                                                             |
+| campaign_outcomes        | Full refresh              | Outcomes agents can set on campaign calls.                                                                                                                                                                                                                                                                                                                                                                      |
+| trackers                 | Full refresh              | Needs AI Assist or AI Assist Pro; returns no records without it.                                                                                                                                                                                                                                                                                                                                                |
+| sms_templates            | Full refresh              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| whatsapp_templates       | Full refresh              | Read per number; numbers not registered for WhatsApp return no templates.                                                                                                                                                                                                                                                                                                                                       |
 
 ## API method example
 
@@ -64,7 +75,9 @@ GET https://api.aircall.io/v1/numbers
 
 ## Performance considerations
 
-Aircall [API reference](https://api.aircall.io/v1) has v1 at present. The connector as default uses v1.
+The connector uses Aircall's [v1 API](https://developers.aircall.io/api-references/), and the [User V2 API](https://developers.aircall.io/api-references/#list-all-users-v2) for users. Calls, contacts and conversations are read in date windows because Aircall returns at most [10,000 records per query](https://developers.aircall.io/api-references/#pagination); a calls window that hits the limit is split and read again, and conversations continue from the last record's time. Without the Conversations API, every sync that selects `conversations` or `conversation_engagements` still spends one request per 30 days of history on the refused windows, so deselect both streams when the API is not enabled. The connector uses 100 of the [120 requests per minute](https://developers.aircall.io/api-references/#rate-limiting) Aircall allows each company, leaving room for the company's other integrations. Calls start 365 days back, covering the six months of call history Aircall keeps; the Start date saved by versions before 0.5.0 is no longer used.
+
+The `calls` stream has no primary key before version 1.0.0. Incremental syncs read the last three days of calls again, and a day with more than 10,000 calls is read more than once, so Append mode stores those calls again. Use Append + Deduped with `id` as the primary key to keep one row per call. The same applies to `conversations` and `conversation_engagements`, whose incremental syncs also read the last three days again.
 
 ## IP allow list
 
@@ -75,8 +88,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                                                   | Subject                     |
-| :------ | :--------- | :----------------------------------------------------------------------------- | :-------------------------- |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.6.0 | 2026-11-03 | [90837](https://github.com/airbytehq/airbyte/pull/90837) | Add `conversations`, `conversation_engagements`, `campaigns`, `campaign_outcomes`, `trackers`, `sms_templates` and `whatsapp_templates` streams |
+| 0.5.0 | 2026-11-03 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Read calls incrementally in daily windows that split at Aircall's 10,000-result limit, read contacts in date windows, honour Aircall's rate limit, declare `user_availability` `id` and `availability`, and read numbers and teams once per sync |
 | 0.4.27 | 2026-10-13 | [88524](https://github.com/airbytehq/airbyte/pull/88524) | Update dependencies |
 | 0.4.26 | 2026-10-06 | [87742](https://github.com/airbytehq/airbyte/pull/87742) | Update dependencies |
 | 0.4.25 | 2026-09-29 | [87057](https://github.com/airbytehq/airbyte/pull/87057) | Update dependencies |
@@ -119,7 +134,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.2.2 | 2024-06-21 | [39920](https://github.com/airbytehq/airbyte/pull/39920) | Update dependencies |
 | 0.2.2 | 2024-06-20 | [39681](https://github.com/airbytehq/airbyte/pull/39681) | Update dependencies |
 | 0.2.1 | 2024-06-06 | [38454](https://github.com/airbytehq/airbyte/pull/38454) | [autopull] base image + poetry + up_to_date |
-| 0.2.0   | 2023-06-20 | [Correcting availablity typo](https://github.com/airbytehq/airbyte/pull/27433) | Correcting availablity typo |
-| 0.1.0   | 2023-04-19 | [Init](https://github.com/airbytehq/airbyte/pull/)                             | Initial commit              |
+| 0.2.0 | 2023-06-20 | [Correcting availablity typo](https://github.com/airbytehq/airbyte/pull/27433) | Correcting availablity typo |
+| 0.1.0 | 2023-04-19 | [Init](https://github.com/airbytehq/airbyte/pull/) | Initial commit |
 
 </details>
