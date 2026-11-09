@@ -5,10 +5,13 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
+import yaml
 from freezegun import freeze_time
 from requests_mock import ANY, Mocker
 
 from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.sources.declarative.models import ConcurrencyLevel as ConcurrencyLevelModel
+from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
@@ -82,6 +85,24 @@ def _mock_empty_insights(requests_mock: Mocker) -> None:
 def _insights_query(requests_mock: Mocker) -> dict:
     [request] = [r for r in requests_mock.request_history if r.path == "/v1/ad_account/insights"]
     return parse_qs(urlsplit(request.url).query)
+
+
+@pytest.mark.parametrize(
+    ("config", "expected_concurrency"),
+    [
+        pytest.param({"num_workers": 1}, 2, id="minimum"),
+        pytest.param({}, 3, id="default"),
+    ],
+)
+def test_concurrency_level_resolves_from_config(config: dict, expected_concurrency: int) -> None:
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    concurrency_level = ModelToComponentFactory().create_component(
+        model_type=ConcurrencyLevelModel,
+        component_definition=manifest["concurrency_level"],
+        config=config,
+    )
+
+    assert concurrency_level.get_concurrency_level() == expected_concurrency
 
 
 def test_discover_publishes_keys_schemas_and_cursors() -> None:

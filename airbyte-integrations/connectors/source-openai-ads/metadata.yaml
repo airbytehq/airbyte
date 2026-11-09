@@ -1,5 +1,6 @@
 metadataSpecVersion: "1.0"
 data:
+  maxSecondsBetweenMessages: 3600
   allowedHosts:
     hosts:
       - "api.ads.openai.com"
@@ -17,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a152c0b0-6c5d-43d6-a74c-72df24dae70e
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   dockerRepository: airbyte/source-openai-ads
   githubIssueLabel: source-openai-ads
   icon: icon.svg
@@ -50,3 +51,20 @@ data:
     - title: OpenAI Ads API authentication
       url: https://developers.openai.com/ads/api-reference/authentication
       type: authentication_guide
+    - title: OpenAI Ads OpenAPI spec
+      url: https://developers.openai.com/ads/openapi.json
+      type: openapi_spec
+    - title: OpenAI Ads API rate limits
+      url: https://developers.openai.com/ads/api-overview#rate-limits
+      type: rate_limits
+    - title: OpenAI Ads API changelog
+      url: https://developers.openai.com/ads/api-overview#changelog
+      type: api_release_history
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true

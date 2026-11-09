@@ -131,6 +131,18 @@ def test_spend_limit_windows_403_message_names_billing_permission_and_prints_the
     assert output.is_in_logs("permission to manage billing")
 
 
+def test_spend_limit_windows_403_message_caps_the_api_reason_at_300_characters(requests_mock: Mocker) -> None:
+    reason = "A" * 300 + "B" * 700
+    requests_mock.get(f"{_URL}/ad_account/spend_limit_windows", status_code=403, json={"error": {"message": reason}})
+
+    output = _read("spend_limit_windows")
+
+    assert output.errors == []
+    assert output.records == []
+    assert output.is_in_logs(f"Skipping spend_limit_windows: the API answered 403 \\({reason[:300]}\\)")
+    assert not output.is_in_logs(f"Skipping spend_limit_windows: the API answered 403 \\({reason[:301]}\\)")
+
+
 @pytest.mark.parametrize(
     ("body", "expected_reason"),
     [
