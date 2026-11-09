@@ -23,7 +23,7 @@ from source_salesforce.api import (
     SalesforceTokenProvider,
 )
 from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
-from source_salesforce.streams import _STREAM_REQUEST_TIMEOUT_SECONDS, BulkDatetimeStreamSlicer
+from source_salesforce.streams import BulkDatetimeStreamSlicer
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
@@ -278,7 +278,7 @@ def test_rest_stream_request_is_sent_with_timeout(requests_mock, stream_config, 
 
     list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
-    assert requests_mock.last_request.timeout == _STREAM_REQUEST_TIMEOUT_SECONDS
+    assert requests_mock.last_request.timeout == _REQUEST_TIMEOUT_SECONDS
 
 
 def test_bulk_job_requests_are_sent_with_timeout(requests_mock, stream_api) -> None:
@@ -301,7 +301,7 @@ def test_bulk_job_requests_are_sent_with_timeout(requests_mock, stream_api) -> N
         ("GET", "results"),
         ("DELETE", "a_job"),
     }
-    assert [r.timeout for r in bulk_requests] == [_STREAM_REQUEST_TIMEOUT_SECONDS] * len(bulk_requests)
+    assert [r.timeout for r in bulk_requests] == [_REQUEST_TIMEOUT_SECONDS] * len(bulk_requests)
 
 
 def test_bulk_requesters_use_tcp_keepalive(stream_api) -> None:
@@ -316,7 +316,7 @@ def test_bulk_requesters_use_tcp_keepalive(stream_api) -> None:
     assert set(requesters) == {"creation requester", "polling requester", "download requester", "abort requester", "delete requester"}
     for kwargs in requesters.values():
         assert kwargs["use_tcp_keepalive"] is True
-        assert (kwargs["connect_timeout_in_seconds"], kwargs["read_timeout_in_seconds"]) == _STREAM_REQUEST_TIMEOUT_SECONDS
+        assert (kwargs["connect_timeout_in_seconds"], kwargs["read_timeout_in_seconds"]) == _REQUEST_TIMEOUT_SECONDS
 
 
 def test_rest_stream_session_uses_tcp_keepalive(stream_config, stream_api) -> None:

@@ -246,9 +246,11 @@ AUTH_TYPE_CLIENT = "Client"
 AUTH_TYPE_CLIENT_CREDENTIALS = "ClientCredentials"
 
 _TOKEN_REFRESH_INTERVAL_SECONDS = 1800  # Refresh Salesforce access token every 30 minutes (well before the default 2-hour session timeout)
-# (connect, read) timeout for requests made through the shared Salesforce client (OAuth token, describe).
-# Without it, a stalled response blocks forever while _login_lock is held, freezing every stream thread.
-_REQUEST_TIMEOUT_SECONDS = (30, 120)
+# (connect, read) timeout for every request: OAuth token, describe, REST queries and Bulk API job calls. The read
+# value is the longest silence allowed between bytes, so it stays above the 2 minutes Salesforce gives a SOQL query
+# to execute. Without it, a stalled response blocks forever, and a stalled token request holds _login_lock and
+# freezes every stream thread.
+_REQUEST_TIMEOUT_SECONDS = (30, 180)
 # After a failed proactive refresh, wait this long before the next attempt instead of retrying on every
 # request. _perform_login stamps _last_login_time only on success, so without a backoff a failed refresh
 # would leave the staleness check permanently satisfied and turn every subsequent request into a full
