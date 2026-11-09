@@ -531,8 +531,8 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
-|:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :----------- | :----------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 6.2.0 | 2026-10-30 | [90231](https://github.com/airbytehq/airbyte/pull/90231) | Declare the sections of the stepped setup form (Connect account, Review & set up) in the spec and make CHECK section-aware through the `check-section` config key |
 | 6.1.12 | 2026-11-04 | [90852](https://github.com/airbytehq/airbyte/pull/90852) | Build the insights stream schema once per stream instead of for every record, which speeds up insights syncs, most of all custom insights |
 | 6.1.11 | 2026-11-04 | [90896](https://github.com/airbytehq/airbyte/pull/90896) | Raise minimum supported Python version to 3.11 |
