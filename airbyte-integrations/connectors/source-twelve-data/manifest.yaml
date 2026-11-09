@@ -35,23 +35,21 @@ definitions:
             exchange: "{{ config['exchange'] }}"
             symbol: "{{ config['symbol'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
         record_selector:
           type: RecordSelector
           extractor:
@@ -74,23 +72,21 @@ definitions:
           path: forex_pairs
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
         record_selector:
           type: RecordSelector
           extractor:
@@ -111,23 +107,21 @@ definitions:
           path: cryptocurrencies
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
         record_selector:
           type: RecordSelector
           extractor:
@@ -153,23 +147,21 @@ definitions:
             country: "{{ config[\"country\"] }}"
             exchange: "{{ config['exchange'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
         record_selector:
           type: RecordSelector
           extractor:
@@ -196,23 +188,21 @@ definitions:
             country: "{{ config[\"country\"] }}"
             exchange: "{{ config['exchange'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
         record_selector:
           type: RecordSelector
           extractor:
@@ -239,23 +229,21 @@ definitions:
             country: "{{ config[\"country\"] }}"
             exchange: "{{ config['exchange'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
         record_selector:
           type: RecordSelector
           extractor:
@@ -278,23 +266,21 @@ definitions:
           path: commodities
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
         record_selector:
           type: RecordSelector
           extractor:
@@ -319,23 +305,21 @@ definitions:
           request_parameters:
             country: "{{ config[\"country\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
         record_selector:
           type: RecordSelector
           extractor:
@@ -439,31 +423,29 @@ definitions:
             symbol: "{{ stream_partition.symb }}"
             interval: "{{ config['interval'] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                      - 404
-                    error_message: >-
-                      Symbol is not available on your Twelve Data plan or was not
-                      found; skipping it.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                  - 404
+                error_message: >-
+                  Symbol is not available on your Twelve Data plan or was not
+                  found; skipping it.
         record_selector:
           type: RecordSelector
           extractor:
@@ -500,31 +482,29 @@ definitions:
           request_parameters:
             symbol: "{{ stream_partition.symb }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                      - 404
-                    error_message: >-
-                      Symbol is not available on your Twelve Data plan or was not
-                      found; skipping it.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                  - 404
+                error_message: >-
+                  Symbol is not available on your Twelve Data plan or was not
+                  found; skipping it.
         record_selector:
           type: RecordSelector
           extractor:
@@ -554,31 +534,29 @@ definitions:
           request_parameters:
             symbol: "{{ stream_partition.symb  }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                      - 404
-                    error_message: >-
-                      Symbol is not available on your Twelve Data plan or was not
-                      found; skipping it.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                  - 404
+                error_message: >-
+                  Symbol is not available on your Twelve Data plan or was not
+                  found; skipping it.
         record_selector:
           type: RecordSelector
           extractor:
@@ -608,31 +586,29 @@ definitions:
           request_parameters:
             symbol: "{{ stream_partition.symb }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                      - 404
-                    error_message: >-
-                      Symbol is not available on your Twelve Data plan or was not
-                      found; skipping it.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                  - 404
+                error_message: >-
+                  Symbol is not available on your Twelve Data plan or was not
+                  found; skipping it.
         record_selector:
           type: RecordSelector
           extractor:
@@ -673,31 +649,29 @@ definitions:
           request_parameters:
             symbol: "{{ stream_partition.symb }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 403
-                      - 404
-                    error_message: >-
-                      Symbol is not available on your Twelve Data plan or was not
-                      found; skipping it.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 403
+                  - 404
+                error_message: >-
+                  Symbol is not available on your Twelve Data plan or was not
+                  found; skipping it.
         record_selector:
           type: RecordSelector
           extractor:
@@ -729,23 +703,21 @@ definitions:
           request_parameters:
             country: "{{ config[\"country\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 60
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Your request failed as you ran out of API credits for the
-                      current minute.
-                    error_message_contains: >-
-                      Wait for the next minute or consider switching to a higher
-                      tier plan at https://twelvedata.com/pricing
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: >-
+                  Your request failed as you ran out of API credits for the
+                  current minute.
+                error_message_contains: >-
+                  Wait for the next minute or consider switching to a higher
+                  tier plan at https://twelvedata.com/pricing
         record_selector:
           type: RecordSelector
           extractor:
