@@ -10,6 +10,7 @@ import pytest
 import requests_mock
 from config_builder import ConfigBuilder
 from source_salesforce.api import API_VERSION
+from source_salesforce.exceptions import MISSING_REFRESH_TOKEN_MESSAGE
 from source_salesforce.source import SourceSalesforce
 
 from airbyte_cdk import AirbyteEntrypoint
@@ -127,12 +128,23 @@ class TestCheckEntrypoint:
             )
 
     def test_account_section_requires_its_fields(self, tmp_path):
+        config = {key: value for key, value in ACCOUNT_SECTION_CONFIG.items() if key != "client_secret"}
+
+        with requests_mock.Mocker() as mocker:
+            login = _given_login(mocker)
+
+            assert _run_check(tmp_path, config) == (Status.FAILED.value, "Config validation error: 'client_secret' is a required property")
+
+        assert not login.called
+
+    def test_account_section_requires_the_refresh_token_of_the_client_method(self, tmp_path):
+        """The spec no longer requires `refresh_token` (ClientCredentials has none), so the connector's own check rejects it."""
         config = {key: value for key, value in ACCOUNT_SECTION_CONFIG.items() if key != "refresh_token"}
 
         with requests_mock.Mocker() as mocker:
             login = _given_login(mocker)
 
-            assert _run_check(tmp_path, config) == (Status.FAILED.value, "Config validation error: 'refresh_token' is a required property")
+            assert _run_check(tmp_path, config) == (Status.FAILED.value, MISSING_REFRESH_TOKEN_MESSAGE)
 
         assert not login.called
 

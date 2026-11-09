@@ -6,7 +6,6 @@ connectionSpecification:
   required:
     - client_id
     - client_secret
-    - refresh_token
   additionalProperties: true
   # Stepped setup form: `groups` is the existing spec keyword and `sections` the new one, each section listing the
   # groups it shows, in form order. Properties opt into a group with `group`. A section with `check: true` is checked
@@ -40,37 +39,60 @@ connectionSpecification:
       title: Sandbox
       description: >-
         Toggle if you're using a <a
-        href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce Sandbox</a>
+        href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce Sandbox</a>.
+        Used by Client (Airbyte Connected App). With ClientCredentials (Use your own External Client App), the My Domain URL selects the org.
       type: boolean
       default: false
-      order: 0
+      order: 2
       group: account
     auth_type:
+      title: Authentication Method
+      description: >-
+        How Airbyte authenticates with Salesforce. <b>ClientCredentials</b> (Use your own External Client App): connect with your own Salesforce External Client App using the OAuth 2.0 client credentials flow; requires your My Domain URL. <b>Client</b> (Airbyte Connected App): sign in with Salesforce through Airbyte's Connected App.
       type: string
-      const: Client
-    client_id:
-      title: Client ID
-      description: Enter your Salesforce developer application's <a
-        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
+      enum:
+        - ClientCredentials
+        - Client
+      default: ClientCredentials
+      order: 0
+      group: account
+      always_show: true
+    domain_url:
+      title: My Domain URL
+      description: >-
+        Required for ClientCredentials (Use your own External Client App). Not used by Client (Airbyte Connected App).
+        Your org's My Domain URL from Salesforce Setup > My Domain.
       type: string
+      pattern: ^$|^https://[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.my\.salesforce\.com/?$
+      pattern_descriptor: https://<your-domain>.my.salesforce.com
+      examples:
+        - https://acme.my.salesforce.com
+        - https://acme--uat.sandbox.my.salesforce.com
       order: 1
       group: account
+      always_show: true
+    client_id:
+      title: Client ID (Consumer Key)
+      description: Enter the consumer key for ClientCredentials (Use your own External Client App) or Client (Airbyte Connected App).
+      type: string
+      order: 3
+      group: account
     client_secret:
-      title: Client Secret
-      description: Enter your Salesforce developer application's <a
-        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
+      title: Client Secret (Consumer Secret)
+      description: Enter the consumer secret for ClientCredentials (Use your own External Client App) or Client (Airbyte Connected App).
       type: string
       airbyte_secret: true
-      order: 2
+      order: 4
       group: account
     refresh_token:
       title: Refresh Token
       description: >-
         Enter your application's <a
         href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
+        Used by Client (Airbyte Connected App). Not used by ClientCredentials (Use your own External Client App).
       type: string
       airbyte_secret: true
-      order: 3
+      order: 5
       group: account
     start_date:
       title: Start Date
@@ -84,7 +106,7 @@ connectionSpecification:
         - "2021-07-25"
         - "2021-07-25T00:00:00Z"
       format: date-time
-      order: 4
+      order: 6
       group: filters
     end_date:
       title: End Date
@@ -98,7 +120,7 @@ connectionSpecification:
         - "2021-07-26"
         - "2021-07-26T00:00:00Z"
       format: date-time
-      order: 5
+      order: 7
       group: filters
     force_use_bulk_api:
       title: Force to use BULK API
@@ -146,11 +168,11 @@ connectionSpecification:
         these values as literal strings (for example, "NA" meaning "North America"). Empty fields
         are still synced as null. Leaving this disabled preserves the connector's historical behavior.
       default: false
-      order: 7
+      order: 12
       group: filters
     streams_criteria:
       type: array
-      order: 6
+      order: 11
       group: filters
       items:
         type: object
