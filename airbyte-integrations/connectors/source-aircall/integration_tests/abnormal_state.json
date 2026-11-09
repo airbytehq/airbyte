@@ -19,5 +19,25 @@
       "stream_state": { "started_at": "253402300799" },
       "stream_descriptor": { "name": "calls" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "last_engagement_at": "253402300799" },
+      "stream_descriptor": { "name": "conversations" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "use_global_cursor": true,
+        "state": { "created_at": "9999-12-31T23:59:59.000Z" },
+        "parent_state": {
+          "conversations": { "last_engagement_at": "253402300799" }
+        }
+      },
+      "stream_descriptor": { "name": "conversation_engagements" }
+    }
   }
 ]
