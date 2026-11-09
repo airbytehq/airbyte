@@ -5,9 +5,7 @@
     "title": "Redis ADBC source",
     "type": "object",
     "additionalProperties": false,
-    "required": [
-      "uri"
-    ],
+    "required": ["uri"],
     "properties": {
       "uri": {
         "type": "string",
@@ -18,10 +16,7 @@
       },
       "connection_type": {
         "type": "string",
-        "enum": [
-          "redis",
-          "flight_sql"
-        ],
+        "enum": ["redis", "flight_sql"],
         "default": "redis",
         "description": "Flight SQL requires a separately operated compatible SQL gateway."
       },
@@ -32,9 +27,7 @@
         "items": {
           "type": "string"
         },
-        "default": [
-          "public"
-        ],
+        "default": ["public"],
         "description": "Exact database schema names to discover. Use an empty string for a gateway without schemas. Only tables and views exposed through ADBC metadata are read."
       },
       "catalog": {
@@ -60,3 +53,4 @@
     }
   }
 }
+
