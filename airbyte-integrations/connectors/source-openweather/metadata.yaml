@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 561d7787-b45e-4f3b-af58-0163c3ba9d5a
-  dockerImageTag: 0.3.70
+  dockerImageTag: 0.3.71
   dockerRepository: airbyte/source-openweather
   documentationUrl: https://docs.airbyte.com/integrations/sources/openweather
   githubIssueLabel: source-openweather
@@ -44,4 +44,12 @@ data:
     - title: OpenWeather API documentation
       url: https://openweathermap.org/api
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
