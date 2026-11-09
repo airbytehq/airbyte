@@ -3243,7 +3243,9 @@ schemas:
         type:
           - "null"
           - string
-        description: The id of the company the segment is attached to.
+        description: >-
+          The Intercom ID of the company this segment is attached to, the same
+          value as `id` in the `companies` stream.
       type:
         type:
           - "null"
