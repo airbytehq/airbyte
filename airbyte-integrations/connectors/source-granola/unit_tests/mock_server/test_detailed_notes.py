@@ -212,7 +212,7 @@ class TestDetailedNotesIncremental(TestCase):
         http_mocker.assert_number_of_calls(list_request, 1)
         http_mocker.assert_number_of_calls(available_request, 1)
         http_mocker.assert_number_of_calls(missing_request, 1)
-        skip_logs = [message.log for message in output.logs if "Granola returned 404 for this note" in message.log.message]
+        skip_logs = [message.log for message in output.logs if "returned 404 when its details were requested" in message.log.message]
         assert [log.level for log in skip_logs] == [Level.INFO]
         assert _stream_state(output) == {
             "use_global_cursor": True,
