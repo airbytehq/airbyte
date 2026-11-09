@@ -353,6 +353,42 @@ def test_reference_streams_read_the_whole_range_in_one_window(stream_name: str, 
 
 
 @freeze_time(FROZEN_NOW)
+@pytest.mark.parametrize("start_date", [None, ""])
+def test_reference_stream_defaults_start_date_to_one_year_ago(start_date, manifest):
+    config = _frozen_config()
+    if start_date is None:
+        del config["start_date"]
+    else:
+        config["start_date"] = start_date
+
+    request = HttpRequest(
+        QUERY_URL,
+        query_params={
+            "query": _query(
+                "Account",
+                "2025-03-15T12:00:00+00:00",
+                "2026-03-15T12:00:00+00:00",
+            )
+        },
+    )
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, _page("Account", 1, 3))
+
+        output = read(
+            _source(config, manifest),
+            config=config,
+            catalog=_catalog("accounts"),
+            state=None,
+        )
+
+        http_mocker.assert_number_of_calls(request, 1)
+
+    assert output.errors == []
+    assert len(output.records) == 3
+
+
+@freeze_time(FROZEN_NOW)
 def test_reference_stream_incremental_read_starts_from_state(manifest):
     config = _frozen_config(start_date="2020-01-01T00:00:00Z")
     state = [
@@ -398,12 +434,11 @@ def test_reference_stream_incremental_read_starts_from_state(manifest):
 
 
 @freeze_time(FROZEN_NOW)
-def test_transaction_streams_keep_30_day_windows(manifest):
-    config = _frozen_config(start_date="2026-01-01T00:00:00Z")
+def test_transaction_streams_use_365_day_windows(manifest):
+    config = _frozen_config(start_date="2025-01-01T00:00:00Z")
     windows = [
-        ("2026-01-01T00:00:00+00:00", "2026-01-31T00:00:00+00:00"),
-        ("2026-01-31T00:00:00+00:00", "2026-03-02T00:00:00+00:00"),
-        ("2026-03-02T00:00:00+00:00", "2026-03-15T12:00:00+00:00"),
+        ("2025-01-01T00:00:00+00:00", "2026-01-01T00:00:00+00:00"),
+        ("2026-01-01T00:00:00+00:00", "2026-03-15T12:00:00+00:00"),
     ]
     requests = [
         HttpRequest(
@@ -428,7 +463,7 @@ def test_transaction_streams_keep_30_day_windows(manifest):
             http_mocker.assert_number_of_calls(request, 1)
 
     assert output.errors == []
-    assert len(output.records) == 3
+    assert [record.record.data["Id"] for record in output.records] == ["1", "2"]
 
 
 @freeze_time(FROZEN_NOW)
@@ -526,6 +561,28 @@ def test_page_size_of_200_is_migrated_to_1000(stored, expected, manifest, capsys
 
 def test_page_size_defaults_to_1000(manifest):
     assert manifest["spec"]["connection_specification"]["properties"]["max_results"]["default"] == 1000
+
+
+@freeze_time(FROZEN_NOW)
+@pytest.mark.parametrize(
+    "start_date,expected",
+    [
+        (None, "2025-03-15T12:00:00Z"),
+        ("", "2025-03-15T12:00:00Z"),
+        ("2020-01-01T00:00:00Z", "2020-01-01T00:00:00Z"),
+    ],
+)
+def test_start_date_migration_defaults_only_missing_or_empty_values(start_date, expected, manifest):
+    config = _frozen_config()
+    if start_date is None:
+        del config["start_date"]
+    else:
+        config["start_date"] = start_date
+
+    migrated_config = dict(config)
+    _source(config, manifest)._spec_component.migrate_config(migrated_config)
+
+    assert migrated_config["start_date"] == expected
 
 
 @freeze_time(FROZEN_NOW)
