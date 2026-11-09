@@ -6,8 +6,9 @@ import logging
 from typing import Any, Mapping
 
 import pytest
+import yaml
 from _helpers import CONFIG, USER, collection, list_request, mock_user, read_stream, request
-from conftest import get_source
+from conftest import _YAML_FILE_PATH, get_source
 
 from airbyte_cdk.models import FailureType, Status, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -147,13 +148,43 @@ def test_oauth_invalid_grant_asks_to_reauthenticate() -> None:
         assert "Re-authenticate with Calendly in the Airbyte source settings" in error.message
 
 
-def test_oauth_check_with_revoked_access_token_asks_to_reauthenticate() -> None:
+def test_oauth_stored_token_rejected_before_its_expiry_is_refreshed_once() -> None:
+    # Calendly can reject a token shortly before the expiry the connector computed from `expires_in`.
+    config = oauth_config(access_token="stored_access_token", token_expiry_date="2099-01-01T00:00:00Z")
+    with HttpMocker() as http:
+        rejected = request("users/me", token="stored_access_token")
+        http.get(rejected, HttpResponse(body='{"title":"Unauthenticated","message":"The access token is invalid"}', status_code=401))
+        refresh = token_request()
+        http.post(refresh, token_response())
+        target = mock_user(http, token="new_access_token")
+        output = read_stream("api_user", config)
+        assert not output.errors
+        assert [record.record.data for record in output.records] == [USER]
+        for call in [rejected, refresh, target]:
+            http.assert_number_of_calls(call, 1)
+
+
+def test_oauth_check_with_revoked_access_asks_to_reauthenticate() -> None:
     config = oauth_config(access_token="revoked_access_token", token_expiry_date="2099-01-01T00:00:00Z")
     with HttpMocker() as http:
         target = request("users/me", token="revoked_access_token")
-        http.get(target, HttpResponse(body='{"title":"Unauthenticated","message":"Token revoked"}', status_code=401))
+        http.get(target, HttpResponse(body='{"title":"Unauthenticated","message":"The access token is invalid"}', status_code=401))
+        body = {"error": "invalid_grant", "error_description": "The provided authorization grant is invalid"}
+        refresh = token_request()
+        http.post(refresh, HttpResponse(body=json.dumps(body), status_code=400))
         status = get_source(config).check(logging.getLogger("airbyte"), config)
         assert status.status == Status.FAILED
-        assert "If the source uses OAuth, re-authenticate with Calendly in the Airbyte source settings" in status.message
-        assert "Calendly response (401): Token revoked" in status.message
+        assert "Calendly rejected the OAuth refresh token" in status.message
+        assert "Re-authenticate with Calendly in the Airbyte source settings" in status.message
         http.assert_number_of_calls(target, 1)
+        http.assert_number_of_calls(refresh, 1)
+
+
+def test_oauth_consent_and_code_exchange_use_pkce() -> None:
+    # Calendly rejects authorization requests without an S256 code challenge and code exchanges without the verifier.
+    advanced_auth = yaml.safe_load(_YAML_FILE_PATH.read_text())["spec"]["advanced_auth"]
+    connector_input = advanced_auth["oauth_config_specification"]["oauth_connector_input_specification"]
+    assert "code_challenge_method=S256" in connector_input["consent_url"]
+    assert "code_challenge={{ state_value | codechallengeS256 }}" in connector_input["consent_url"]
+    assert connector_input["access_token_params"]["code_verifier"] == "{{ state_value }}"
+    assert connector_input["state"] == {"min": 43, "max": 128}

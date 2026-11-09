@@ -17,11 +17,12 @@ def test_check_only_reads_current_user() -> None:
         http.assert_number_of_calls(target, 1)
 
 
-def test_check_rejects_invalid_token() -> None:
+def test_check_rejects_invalid_token(recorded_sleeps) -> None:
+    # A personal access token cannot be refreshed, so the 401 is retried before the check fails with the token message.
     with HttpMocker() as http:
         target = request("users/me")
         http.get(target, HttpResponse(body='{"title":"Unauthenticated","message":"Token revoked"}', status_code=401))
         status = get_source(CONFIG).check(logging.getLogger("airbyte"), CONFIG)
         assert status.status == Status.FAILED
         assert "create a new token in Calendly" in status.message
-        http.assert_number_of_calls(target, 1)
+        http.assert_number_of_calls(target, 6)

@@ -21,9 +21,13 @@ The Calendly source syncs your organization members, groups, teams, invitations,
 
 Calendly rotates the OAuth refresh token every time Airbyte requests a new access token, and Airbyte stores the new token automatically. If Calendly rejects the refresh token, for example after you revoke Airbyte's access in Calendly, re-authenticate in the source settings.
 
+Every refresh spends the previous refresh token, so use one connection per OAuth source. Two connections that refresh the same source at the same time leave one of them asking you to re-authenticate; if several connections read the same Calendly account, use a personal access token.
+
 <!-- /env:cloud -->
 
 ### Authenticate with a personal access token
+
+In Airbyte Open Source, use a personal access token unless you registered your own Calendly OAuth application.
 
 1. In Calendly, open the **Profile** menu, select **Developer**, then **Personal access tokens**. If **Developer** isn't available, use the **Integrations** page instead.
 2. Select **Create personal access token**, name the token, and select the read scopes listed in [Token scopes](#token-scopes).
