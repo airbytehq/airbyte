@@ -200,7 +200,8 @@ class PipelineEventBookkeepingRouterTest {
         assertTrue(first.isCompleted)
         assertTrue(second.isCompleted)
 
-        // The second channel must wait even though the first removed the stream from unopenedStreams.
+        // The second channel must wait even though the first removed the stream from
+        // unopenedStreams.
         coVerify(exactly = 1) { openStreamQueue.publish(stream1) }
     }
 
