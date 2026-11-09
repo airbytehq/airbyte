@@ -10,7 +10,7 @@ The Airbyte MCP works with self-managed Airbyte Core, but there are known issues
 
 The hosted Airbyte MCP server at `https://mcp.airbyte.com/mcp` only works with Airbyte Cloud. To use the Airbyte MCP with a self-managed Airbyte Core deployment, run the Airbyte MCP server locally on your computer and point it at your deployment's API. Your MCP client starts the server for you.
 
-Pipeline management and troubleshooting tools work with self-managed Airbyte. The [context layer](../context-layer/readme.md), including direct reads and connector skills, is only available in Airbyte Cloud.
+Pipeline management and troubleshooting tools work with self-managed Airbyte. The [context layer](../context-layer/readme.md), including direct reads, search, and connector skills, is only available in Airbyte Cloud.
 
 ## Prerequisites
 
@@ -73,11 +73,11 @@ Keep your client secret out of the chat and out of version control. Your agent c
 ## Known issues in Core deployments
 
 - **Links don't open.** Links to Airbyte that the Airbyte MCP returns include `/api/public/v1` in the path, so they return an error in your browser. Remove `/api/public/v1` from the link to open the page. For details, see [PyAirbyte issue #563](https://github.com/airbytehq/PyAirbyte/issues/563).
-- **Workspace isn't found by default.** If you don't set `AIRBYTE_CLOUD_WORKSPACE_ID`, tools that need a workspace can fail. Error messages may suggest tools that don't exist, like `list_workspaces`. Set `AIRBYTE_CLOUD_WORKSPACE_ID`, or ask your agent to use `list_cloud_workspaces` and `set_default_cloud_workspace`.
+- **Workspace isn't found by default.** If you don't set `AIRBYTE_CLOUD_WORKSPACE_ID`, tools that need a workspace can fail. Set `AIRBYTE_CLOUD_WORKSPACE_ID`, or ask your agent to use `list_workspaces` and `set_default_workspace`.
 - **Last job status is empty.** When your agent lists connections, the status of the last job may be empty even after a successful sync. Your agent can still check individual jobs and read their logs.
 - **Billing and usage tools don't work.** These features only exist in Airbyte Cloud.
-- **No context layer.** Direct reads and connector skills aren't available.
-- **No knowledge search.** The `search_airbyte_knowledge_sources` tool is only available in the hosted Airbyte MCP. To give your agent Airbyte documentation and knowledge, also connect the [Airbyte knowledge MCP server](/community/mcp-servers/airbyte-knowledge-mcp).
+- **No context layer.** Direct reads, search, and connector skills aren't available.
+- **No knowledge search.** The `search_airbyte_knowledge_sources` tool is only available in the hosted Airbyte MCP. To give your agent Airbyte documentation and knowledge, also connect the [Airbyte knowledge MCP server](/platform/airbyte-knowledge-mcp).
 - **No browser sign-in.** The local server signs in with your application's client ID and client secret, not with OAuth or single sign-on.
 
 If you find other problems, [open an Airbyte MCP issue](https://github.com/airbytehq/PyAirbyte/issues/new?template=airbyte-mcp-beta.yml). Don't include secrets or credentials in these issues, as they're publicly viewable.

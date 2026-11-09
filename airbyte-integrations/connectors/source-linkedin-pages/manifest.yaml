@@ -31,19 +31,14 @@ definitions:
     failure_type: config_error
     http_codes: [401]
     error_message: >-
-      LinkedIn rejected the credentials (401). The access token has expired or
-      was revoked; re-authenticate the source. LinkedIn said:
-      {{ ('' ~ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response'))[:300] }}
+      LinkedIn access token is invalid, expired or revoked. Re-authenticate the source.
   forbidden_filter:
     type: HttpResponseFilter
     action: FAIL
     failure_type: config_error
     http_codes: [403]
     error_message: >-
-      LinkedIn denied the request (403). The token needs the rw_organization_admin
-      scope and the LinkedIn member who authorized it must have the ADMINISTRATOR
-      role on organization {{ config['org_id'] }}. LinkedIn said:
-      {{ ('' ~ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response'))[:300] }}
+      LinkedIn organization access is denied. Re-authenticate with {{ (response | string | regex_search('(?<![a-zA-Z0-9_])((?:r|rw|w)_[a-z_]{1,60})(?![a-zA-Z0-9_])')) or 'r_organization_social and rw_organization_admin' }} and ensure the authorized member has the ADMINISTRATOR role on organization {{ config['org_id'] }}.
   rate_limit_filter:
     type: HttpResponseFilter
     action: RATE_LIMITED
@@ -59,10 +54,7 @@ definitions:
     failure_type: config_error
     http_codes: [404]
     error_message: >-
-      LinkedIn returned 404 for organization {{ config['org_id'] }}. The page may
-      be deactivated, the Organization ID may be wrong, or the app may lack access
-      to this API. LinkedIn said:
-      {{ ('' ~ ((response if response is mapping else {}).get('message') or 'see the LinkedIn error response'))[:300] }}
+      LinkedIn organization {{ config['org_id'] }} was not found or is inaccessible. Check the Organization ID, that the page is active, the member's ADMINISTRATOR role, and the app's API access.
   version_sunset_filter:
     type: HttpResponseFilter
     action: FAIL

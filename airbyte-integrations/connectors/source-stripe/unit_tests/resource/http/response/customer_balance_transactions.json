@@ -1,0 +1,22 @@
+{
+  "object": "list",
+  "url": "/v1/customers/synthetic/balance_transactions",
+  "has_more": false,
+  "data": [
+    {
+      "id": "synthetic-transaction",
+      "object": "balance_transaction",
+      "amount": 100,
+      "available_on": 1,
+      "created": 1,
+      "currency": "usd",
+      "description": "synthetic transaction",
+      "fee": 0,
+      "fee_details": [],
+      "net": 100,
+      "reporting_category": "charge",
+      "status": "available",
+      "type": "charge"
+    }
+  ]
+}
