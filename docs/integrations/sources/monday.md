@@ -111,6 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.3 | 2026-11-09 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Skip null activity log entries returned with GraphQL errors instead of failing the `activity_logs`, `boards`, and `items` streams |
 | 2.6.2 | 2026-10-13 | [87933](https://github.com/airbytehq/airbyte/pull/87933) | Update dependencies |
 | 2.6.1 | 2026-09-29 | [87243](https://github.com/airbytehq/airbyte/pull/87243) | Update dependencies |
 | 2.6.0 | 2026-09-24 | [85170](https://github.com/airbytehq/airbyte/pull/85170) | Move OAuth to Monday's OAuth 2.1 flow (PKCE, new token endpoint, rotating refresh tokens); migrate existing legacy OAuth tokens automatically on the first run; prompt the admin to install the Airbyte app during authorization |
