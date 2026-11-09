@@ -29,6 +29,10 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
 
 3. Update your `values.yaml` file if necessary. In most cases, you only need to do this if you want to implement a new feature from the new version.
 
+   :::note
+   Pass your custom values file with `--values <your values file>` when you upgrade. Don't use `--reuse-values`: it reuses the old release's values instead of the new chart's defaults. This can omit new settings, such as `temporal.adminTools`, or retain outdated default images. Keep only your custom overrides in your values file, rather than copying all defaults from an older chart.
+   :::
+
 4. Run the following command to upgrade.
 
    ```bash

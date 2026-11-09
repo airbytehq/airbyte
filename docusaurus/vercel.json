@@ -9,6 +9,11 @@
   },
   "redirects": [
     {
+      "source": "/platform/enterprise-flex",
+      "destination": "/platform/hybrid-deployment",
+      "statusCode": 301
+    },
+    {
       "source": "/platform/using-airbyte/getting-started/academy",
       "destination": "/platform/using-airbyte/getting-started/oss-quickstart",
       "statusCode": 308
