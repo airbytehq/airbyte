@@ -1836,6 +1836,7 @@ schemas:
           $schema: http://json-schema.org/draft-07/schema#
           properties:
             created_at:
+              format: date-time
               type:
                 - "null"
                 - string
@@ -1856,6 +1857,7 @@ schemas:
                 - "null"
                 - string
             updated_at:
+              format: date-time
               type:
                 - "null"
                 - string
@@ -2292,6 +2294,7 @@ schemas:
               title: Plan mini details
             title: Plans
           redeem_by:
+            format: date-time
             type:
               - "null"
               - string
@@ -3140,6 +3143,7 @@ schemas:
           title: Plan mini details
         title: Plans
       redeem_by:
+        format: date-time
         type:
           - "null"
           - string
@@ -5532,108 +5536,110 @@ schemas:
       coupon_redemptions:
         type:
           - "null"
-          - object
+          - array
         description: Details of any coupons redeemed for the subscription.
         $schema: http://json-schema.org/draft-07/schema#
-        properties:
-          coupon:
-            type:
-              - "null"
-              - object
-            properties:
-              code:
-                type:
-                  - "null"
-                  - string
-              coupon_type:
-                type:
-                  - "null"
-                  - string
-              discount:
-                type:
-                  - "null"
-                  - object
-                properties:
+        items:
+          type: object
+          properties:
+            coupon:
+              type:
+                - "null"
+                - object
+              properties:
+                code:
                   type:
+                    - "null"
+                    - string
+                coupon_type:
+                  type:
+                    - "null"
+                    - string
+                discount:
+                  type:
+                    - "null"
+                    - object
+                  properties:
                     type:
-                      - "null"
-                      - string
-                  currencies:
-                    type:
-                      - "null"
-                      - array
-                    items:
+                      type:
+                        - "null"
+                        - string
+                    currencies:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type:
+                          - "null"
+                          - object
+                        properties:
+                          amount:
+                            type:
+                              - "null"
+                              - number
+                          currency:
+                            type:
+                              - "null"
+                              - string
+                    percent:
+                      type:
+                        - "null"
+                        - integer
+                    trial:
                       type:
                         - "null"
                         - object
                       properties:
-                        amount:
+                        length:
                           type:
                             - "null"
-                            - number
-                        currency:
+                            - integer
+                        unit:
                           type:
                             - "null"
                             - string
-                  percent:
-                    type:
-                      - "null"
-                      - integer
-                  trial:
-                    type:
-                      - "null"
-                      - object
-                    properties:
-                      length:
-                        type:
-                          - "null"
-                          - integer
-                      unit:
-                        type:
-                          - "null"
-                          - string
-              expired_at:
-                type:
-                  - "null"
-                  - string
-                format: date-time
-              id:
-                type:
-                  - "null"
-                  - string
-              name:
-                type:
-                  - "null"
-                  - string
-              object:
-                type:
-                  - "null"
-                  - string
-              state:
-                type:
-                  - "null"
-                  - string
-          created_at:
-            type:
-              - "null"
-              - string
-            format: date-time
-          discounted:
-            type:
-              - "null"
-              - number
-          id:
-            type:
-              - "null"
-              - string
-          object:
-            type:
-              - "null"
-              - string
-          state:
-            type:
-              - "null"
-              - string
+                expired_at:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                id:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                object:
+                  type:
+                    - "null"
+                    - string
+                state:
+                  type:
+                    - "null"
+                    - string
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            discounted:
+              type:
+                - "null"
+                - number
+            id:
+              type:
+                - "null"
+                - string
+            object:
+              type:
+                - "null"
+                - string
+            state:
+              type:
+                - "null"
+                - string
       created_at:
         type:
           - "null"
@@ -6705,6 +6711,7 @@ schemas:
           - string
           - "null"
       created_at:
+        format: date-time
         type:
           - string
           - "null"
@@ -6777,6 +6784,7 @@ schemas:
           - number
           - "null"
       updated_at:
+        format: date-time
         type: string
     required:
       - id

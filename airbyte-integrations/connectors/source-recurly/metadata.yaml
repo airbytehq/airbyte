@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
-  dockerImageTag: 1.3.69
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-recurly
   documentationUrl: https://docs.airbyte.com/integrations/sources/recurly
   githubIssueLabel: source-recurly
@@ -21,6 +21,24 @@ data:
       enabled: true
   releases:
     breakingChanges:
+      2.0.0:
+        message: >-
+          The subscriptions.coupon_redemptions field is now an array instead of an object.
+          The accounts.external_accounts[].created_at and updated_at,
+          account_coupon_redemptions.coupon.redeem_by, coupons.redeem_by, and
+          unique_coupons_parent.created_at and updated_at fields now use the date-time format.
+          After upgrading, refresh the source schema for the affected streams.
+          Reset or clear only affected streams whose destination cannot alter the column type.
+          See https://docs.airbyte.com/integrations/sources/recurly-migrations#upgrading-to-200.
+        upgradeDeadline: "2026-11-23"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - subscriptions
+              - accounts
+              - account_coupon_redemptions
+              - coupons
+              - unique_coupons_parent
       1.0.0:
         message:
           Version 1.0.0 introduces a number of schema updates to the Recurly
