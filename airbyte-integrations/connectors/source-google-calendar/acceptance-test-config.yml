@@ -20,8 +20,9 @@ acceptance_tests:
             bypass_reason: "Sandbox refresh token lacks the calendar.acls.readonly scope until the OAuth scope change (#86469) lands"
           - name: "freebusy"
             bypass_reason: "The sandbox calendar may have no busy blocks in the rolling 75-day window"
-  # The CDK standard-test runner used in CI reads every section below. Entries sharing a config run
-  # once, without basic_read's empty_streams; incremental runs read_from_future_state separately.
+  # The CDK standard-test runner used in CI reads every section below. Entries sharing a config are
+  # merged into one scenario whose basic read leaves out basic_read's empty_streams; incremental runs
+  # read_from_future_state separately.
   discovery:
     tests:
       - config_path: "secrets/config.json"
