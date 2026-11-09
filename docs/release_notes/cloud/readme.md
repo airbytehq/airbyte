@@ -1,5 +1,62 @@
 # Airbyte Cloud release notes
 
+## November 6, 2026
+
+Connections
+
+- You can again copy a source or destination's configuration using **Copy JSON** in its setup or settings header. The copy includes your unsaved edits and masks passwords and other secret fields.
+- If your Standard or Plus plan has a sync-frequency limit, that limit now also applies when you start a sync manually: one hour for Standard and 15 minutes for Plus, with a five-minute grace period. The wait is measured from the start of your last successful sync, so failed or cancelled syncs do not start a new wait.
+- By default, your sync jobs now allow up to 10 failed attempts that each moved some data, down from 20. This reduces repeated retries before a persistently failing sync is marked as failed.
+- Your syncs no longer get stuck showing **Running** when a connector reports a very large number of errors. Airbyte keeps a limited set of errors in the sync summary and indicates when additional errors are available in the logs.
+
+## November 4, 2026
+
+Connections
+
+- In source and destination setup forms, required settings that already have a default value now appear in the collapsed section with the optional settings, so the main form shows only what you need to fill in. Airbyte still uses the default value unless you change it.
+- When a setting in a source or destination setup form has only one option, the form no longer shows a dropdown with nothing to choose. If that option has its own fields, they appear directly under the setting. Otherwise, the setting is hidden.
+- After you click **Save as a draft** while setting up a source or destination, you can now leave the page without a warning about unsaved changes. The warning returns if you edit the form again.
+
+## November 3, 2026
+
+Connections
+
+- Required fields in source and destination setup forms are now marked with an asterisk, so you can see at a glance which settings you must fill in.
+- Images in a connector's setup guide now load correctly. Previously, some images in the guide appeared broken.
+- When you test a source or destination or refresh a connection's schema, Airbyte now shows the result sooner after the check finishes.
+
+Platform
+
+- You can now replace your workspace's dbt Cloud service token by entering a new token and saving. You no longer need to delete your dbt Cloud configuration first, and the dbt Cloud transformations on your connections keep running with the new token.
+- Airbyte now loads faster when you first open it or refresh a page.
+
+API
+
+- You can now turn schema change notifications on or off for a connection when you create, update, or read it through the public API. If you don't set this when you create a connection, notifications are turned on when your workspace's connection update notifications use email or a webhook.
+
+## November 2, 2026
+
+Connections
+
+- When you authenticate a source or destination, the setup form now shows **Authentication successful** with a check mark after you finish, and keeps **Re-authenticate** available. This confirmation stays in the form instead of appearing only in a temporary notification.
+- Schema discovery during your syncs now uses the intended 30-minute time limit instead of stopping after nine minutes. If discovery times out, your error message shows the time limit that was applied.
+
+Platform
+
+- Your billing grace-period countdown and, during a Standard trial, your trial countdown now show the correct number of days remaining across daylight-saving time changes.
+- On the Standard and Plus plans, if you can manage billing, the **Update** link in **Payment method** on your organization's **Billing** page now opens the full billing portal, where you can replace or remove a saved payment method. Previously, it opened a page that only let you add one.
+
+## October 30, 2026
+
+Connections
+
+- Notes, tips, and warnings in a connector's setup guide now display correctly when they have a title or appear inside a numbered or bulleted step. Previously, some of these callouts showed up as plain text or broke the layout of the step they were in.
+
+Platform
+
+- When several informational notices appear at the top of Airbyte, you can now collapse them with a single toggle and expand them again with **Show more**. Airbyte remembers your choice, and warnings and errors always stay visible. If a new notice appears, the group expands so you see it.
+- If SCIM provisioning with Microsoft Entra ID is enabled for your organization, Airbyte now accepts user provisioning requests that include Entra ID's enterprise user extension. Previously, Airbyte rejected these requests, so Entra ID couldn't create or update those users.
+
 ## October 29, 2026
 
 Connections

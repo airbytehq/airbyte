@@ -72,4 +72,4 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         skip_comprehensive_incremental_tests: true
         future_state:
-          bypass_reason: "This test does not make sense using Concurrent CDK"
+          future_state_path: "integration_tests/abnormal_state.json"

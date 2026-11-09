@@ -29,6 +29,7 @@ Dust AI is an enterprise AI platform and &quot;operating system&quot; that allow
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.12 | 2026-11-03 | [90530](https://github.com/airbytehq/airbyte/pull/90530) | Update dependencies |
 | 0.0.11 | 2026-10-27 | [87835](https://github.com/airbytehq/airbyte/pull/87835) | Update dependencies |
 | 0.0.10 | 2026-09-29 | [87154](https://github.com/airbytehq/airbyte/pull/87154) | Update dependencies |
 | 0.0.9 | 2026-09-22 | [86619](https://github.com/airbytehq/airbyte/pull/86619) | Update dependencies |

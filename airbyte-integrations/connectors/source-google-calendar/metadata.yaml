@@ -19,7 +19,7 @@ data:
     breakingChanges:
       1.0.0:
         message: "Version 1.0.0 changes three streams. `events`: the primary key changes from `id` to `[calendar_id, id]`, because Google keeps event IDs unique per calendar only; `calendar_id` now holds the calendar's real ID, so connections configured with the alias `primary` get the account's email address; and date and date-time fields are typed as dates and timestamps. `calendars` now returns calendar resources instead of calendar-list entries. `colors` gets the primary key `kind`, and its `updated` field is typed as a timestamp. Leaving Calendar Id empty now reads every calendar in the account's calendar list, including hidden ones: `events` from the calendars the account can read, `acl` from those it owns, and `freebusy` from all of them. After upgrading, refresh the source schema and clear the affected streams. Clearing `events` can permanently delete event history Google no longer returns (deleted events, and events last modified before Start Date); back up the table and read the migration guide before you clear. See https://docs.airbyte.com/integrations/sources/google-calendar-migrations#upgrading-to-100"
-        upgradeDeadline: "2026-11-07"
+        upgradeDeadline: "2026-11-23"
         deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream
@@ -32,7 +32,7 @@ data:
       enabled: false
       packageName: airbyte-source-google-calendar
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.45.0@sha256:a4947a37ef760ff501856dbeec22830826c1d214f0e530abfa9831e57f019809
   connectorSubtype: api
   connectorType: source
   definitionId: c01b6259-bdf4-45ff-bcd5-66424cd2f18b
