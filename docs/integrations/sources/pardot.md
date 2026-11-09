@@ -105,6 +105,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.0.62 | 2026-11-03 | [85889](https://github.com/airbytehq/airbyte/pull/85889) | Add Salesforce Feature Retirements to external documentation URLs |
 | 1.0.62 | 2026-11-03 | [90699](https://github.com/airbytehq/airbyte/pull/90699) | Update dependencies |
 | 1.0.61 | 2026-10-27 | [89997](https://github.com/airbytehq/airbyte/pull/89997) | Update dependencies |
 | 1.0.60 | 2026-10-20 | [89350](https://github.com/airbytehq/airbyte/pull/89350) | Update dependencies |
