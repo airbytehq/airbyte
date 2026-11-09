@@ -884,10 +884,45 @@ definitions:
     type: HttpRequester
     url_base: https://api.calendly.com
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      $ref: "#/definitions/authenticator"
     error_handler:
       $ref: "#/definitions/base_error_handler"
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      oauth2.0: "#/definitions/oauth_authenticator"
+      api_key: "#/definitions/personal_access_token_authenticator"
+  personal_access_token_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['api_key'] }}"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://auth.calendly.com/oauth/token
+    grant_type: refresh_token
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    access_token_value: "{{ config['credentials'].get('access_token', '') }}"
+    refresh_request_headers:
+      Authorization: "Basic {{ (config['credentials']['client_id'] ~ ':' ~ config['credentials']['client_secret']) | base64encode }}"
+    refresh_request_body:
+      client_id: "{{ config['credentials']['client_id'] }}"
+    refresh_token_error_status_codes: [400, 401]
+    refresh_token_error_key: error
+    refresh_token_error_values: [invalid_grant, invalid_client]
+    refresh_token_error_messages:
+      invalid_grant: >-
+        Calendly rejected the OAuth refresh token because it is expired, revoked or was already used.
+        Re-authenticate with Calendly in the Airbyte source settings.
+      invalid_client: >-
+        Calendly rejected the OAuth client ID or client secret.
+        Re-authenticate with Calendly in the Airbyte source settings.
+    refresh_token_updater:
+      refresh_token_name: refresh_token
+      access_token_config_path: ["credentials", "access_token"]
+      refresh_token_config_path: ["credentials", "refresh_token"]
+      token_expiry_date_config_path: ["credentials", "token_expiry_date"]
   base_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -996,9 +1031,10 @@ definitions:
       action: FAIL
       failure_type: config_error
       error_message: >-
-        Calendly rejected the personal access token because it is invalid or revoked.
-        Create a new token in Calendly (open the Profile menu, select Developer, then Personal access tokens)
-        and update it in the Airbyte source settings.
+        Calendly rejected the access token because it is invalid, expired or revoked.
+        If the source uses OAuth, re-authenticate with Calendly in the Airbyte source settings.
+        If it uses a personal access token, create a new token in Calendly (open the Profile menu, select Developer,
+        then Personal access tokens) and update it in the Airbyte source settings.
         Calendly response (401): {{ (response if response is mapping else {}).get('message', 'Unauthorized') }}
     forbidden:
       type: HttpResponseFilter
@@ -1006,11 +1042,11 @@ definitions:
       action: FAIL
       failure_type: config_error
       error_message: >-
-        Calendly denied access. The personal access token needs the read scope of every selected stream
-        (users:read is also required for organization-scoped streams), and it must belong to an owner or admin of the
+        Calendly denied access. The credentials need the read scope of every selected stream
+        (users:read is also required for organization-scoped streams), and they must belong to an owner or admin of the
         Calendly organization because Calendly shows organization-wide data, such as scheduled events, webhook subscriptions,
         activity logs and outgoing communications, only to them.
-        Create a new token and update it in the Airbyte source settings.
+        Re-authenticate as an owner or admin, or create a new personal access token, and update it in the Airbyte source settings.
         Calendly response (403): {{ (response if response is mapping else {}).get('message', 'Forbidden') }}{{ ' Missing scopes: ' ~ (response['required_scopes'] | join(', ')) if response is mapping and response.get('required_scopes') else '' }}
     not_found:
       type: HttpResponseFilter
@@ -1068,16 +1104,79 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_key
+      - credentials
       - start_date
     properties:
-      api_key:
-        type: string
+      credentials:
+        title: Authentication
         description: >-
-          Calendly personal access token. In Calendly, open the Profile menu, select Developer, then Personal access tokens, and create a token with the read scope of every stream you sync; the Calendly source documentation lists the scopes for each stream. Create it as an owner or admin of the Calendly organization: Calendly shows organization-wide data, such as scheduled events and webhook subscriptions, only to them.
+          Sign in to Calendly with OAuth, or use a personal access token. Authenticate as an owner or admin of the
+          Calendly organization: Calendly shows organization-wide data, such as scheduled events and webhook
+          subscriptions, only to them.
+        type: object
         order: 0
-        title: Calendly personal access token
-        airbyte_secret: true
+        oneOf:
+          - title: OAuth
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: Client ID of the Calendly OAuth application.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Client secret
+                description: Client secret of the Calendly OAuth application.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                type: string
+                title: Refresh token
+                description: OAuth refresh token. Calendly issues a new one on every token refresh.
+                airbyte_secret: true
+                order: 3
+              access_token:
+                type: string
+                title: Access token
+                description: OAuth access token, refreshed automatically before it expires.
+                airbyte_secret: true
+                airbyte_hidden: true
+                order: 4
+              token_expiry_date:
+                type: string
+                title: Access token expiry date
+                description: Expiry of the OAuth access token, set automatically.
+                format: date-time
+                airbyte_hidden: true
+                order: 5
+          - title: Personal access token
+            type: object
+            required:
+              - auth_type
+              - api_key
+            properties:
+              auth_type:
+                type: string
+                const: api_key
+                order: 0
+              api_key:
+                type: string
+                description: >-
+                  Calendly personal access token. In Calendly, open the Profile menu, select Developer, then Personal access tokens, and create a token with the read scope of every stream you sync; the Calendly source documentation lists the scopes for each stream. Create it as an owner or admin of the Calendly organization: Calendly shows organization-wide data, such as scheduled events and webhook subscriptions, only to them.
+                order: 1
+                title: Calendly personal access token
+                airbyte_secret: true
       start_date:
         type: string
         order: 1
@@ -1099,6 +1198,76 @@ spec:
         default: 0
         order: 2
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key: ["credentials", "auth_type"]
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: https://auth.calendly.com/oauth/authorize?{{client_id_param}}&response_type=code&{{redirect_uri_param}}&{{state_param}}&code_challenge_method=S256&code_challenge={{ state_value | codechallengeS256 }}
+        state:
+          min: 43
+          max: 128
+        access_token_url: https://auth.calendly.com/oauth/token
+        access_token_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Content-Type: application/x-www-form-urlencoded
+        access_token_params:
+          grant_type: authorization_code
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+          code_verifier: "{{ state_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
+          - expires_in
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config: ["credentials", "access_token"]
+          refresh_token:
+            type: string
+            path_in_connector_config: ["credentials", "refresh_token"]
+          token_expiry_date:
+            type: string
+            path_in_connector_config: ["credentials", "token_expiry_date"]
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config: ["credentials", "client_id"]
+          client_secret:
+            type: string
+            path_in_connector_config: ["credentials", "client_secret"]
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Move the top-level personal access token into credentials.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_key"]
+                value: "{{ config['api_key'] }}"
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: api_key
+            condition: "{{ config.get('api_key') and not config.get('credentials', {}).get('auth_type') }}"
 
 metadata:
   autoImportSchema:

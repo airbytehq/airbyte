@@ -65,7 +65,7 @@ FAN_OUT_STREAMS = {"event_type_memberships", "user_availability_schedules", "loc
 @pytest.mark.parametrize(
     "status,action,failure_type,message",
     [
-        (401, ResponseAction.FAIL, FailureType.config_error, "Calendly rejected the personal access token"),
+        (401, ResponseAction.FAIL, FailureType.config_error, "Calendly rejected the access token"),
         (403, ResponseAction.FAIL, FailureType.config_error, "owner or admin of the Calendly organization"),
         (404, ResponseAction.FAIL, FailureType.system_error, f"Calendly returned 404 for {URL}: Calendly response detail"),
         (429, ResponseAction.RATE_LIMITED, FailureType.transient_error, None),

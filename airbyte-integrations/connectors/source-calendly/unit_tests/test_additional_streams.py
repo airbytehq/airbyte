@@ -318,6 +318,9 @@ def test_meeting_recap_with_numeric_zoom_conference_id_matches_the_schema() -> N
 
 def test_spec_and_plan_notice_name_the_new_requirements() -> None:
     manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
-    assert "read scope of every stream you sync" in manifest["spec"]["connection_specification"]["properties"]["api_key"]["description"]
+    assert (
+        "read scope of every stream you sync"
+        in manifest["spec"]["connection_specification"]["properties"]["credentials"]["oneOf"][1]["properties"]["api_key"]["description"]
+    )
     notice = manifest["definitions"]["plan_gated_error_handler"]["response_filters"][0]["error_message"]
     assert "contacts require a paid plan" in notice

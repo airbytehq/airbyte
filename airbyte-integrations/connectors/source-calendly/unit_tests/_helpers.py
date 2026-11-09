@@ -16,11 +16,13 @@ ORGANIZATION_URI = "https://api.calendly.com/organizations/test-organization"
 USER = {"uri": "https://api.calendly.com/users/test-user", "current_organization": ORGANIZATION_URI}
 
 
-def request(path: str, params: Mapping[str, str] | None = None, body: Mapping[str, Any] | None = None) -> HttpRequest:
+def request(
+    path: str, params: Mapping[str, str] | None = None, body: Mapping[str, Any] | None = None, token: str = CONFIG["api_key"]
+) -> HttpRequest:
     return HttpRequest(
         url=f"https://api.calendly.com/{path}",
         query_params=dict(params or {}),
-        headers={"Authorization": f"Bearer {CONFIG['api_key']}"},
+        headers={"Authorization": f"Bearer {token}"},
         body=body,
     )
 
@@ -40,13 +42,15 @@ def read_stream(
     return read(get_source(config, state), config, catalog, state=state)
 
 
-def mock_user(http_mocker: HttpMocker) -> HttpRequest:
-    target = request("users/me")
+def mock_user(http_mocker: HttpMocker, token: str = CONFIG["api_key"]) -> HttpRequest:
+    target = request("users/me", token=token)
     http_mocker.get(target, resource(USER))
     return target
 
 
-def list_request(stream: str, page_token: str | None = None, min_start_time: str = "2024-01-01T00:00:00.000000Z") -> HttpRequest:
+def list_request(
+    stream: str, page_token: str | None = None, min_start_time: str = "2024-01-01T00:00:00.000000Z", token: str = CONFIG["api_key"]
+) -> HttpRequest:
     params = {"count": "100", "organization": ORGANIZATION_URI}
     if stream in {"event_types", "organization_memberships"}:
         params["sort"] = "updated_at:desc"
@@ -54,7 +58,7 @@ def list_request(stream: str, page_token: str | None = None, min_start_time: str
         params.update(sort="start_time:desc", min_start_time=min_start_time)
     if page_token is not None:
         params["page_token"] = page_token
-    return request(stream, params)
+    return request(stream, params, token=token)
 
 
 def invitees_request(event_id: str, page_token: str | None = None) -> HttpRequest:

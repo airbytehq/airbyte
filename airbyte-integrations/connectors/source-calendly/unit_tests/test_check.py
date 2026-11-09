@@ -23,5 +23,5 @@ def test_check_rejects_invalid_token() -> None:
         http.get(target, HttpResponse(body='{"title":"Unauthenticated","message":"Token revoked"}', status_code=401))
         status = get_source(CONFIG).check(logging.getLogger("airbyte"), CONFIG)
         assert status.status == Status.FAILED
-        assert "Create a new token in Calendly" in status.message
+        assert "create a new token in Calendly" in status.message
         http.assert_number_of_calls(target, 1)

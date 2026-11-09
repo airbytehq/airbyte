@@ -16,8 +16,11 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 7. **Plan-Gated Streams Skip Only Explicit Upgrade Messages** -- Outgoing communications and activity logs require Enterprise, meeting recaps a paid Notetaker plan, and Calendly documents a paid-plan error for contacts. Only the documented plan/feature messages are ignored. Missing scopes, owner/admin errors, and unknown 403s still fail.
 8. **New Incremental Streams Bound Both Requests and State** -- Communications use `created_at`, activity logs use `occurred_at`, and recaps use meeting `start_time`. All send lower and upper bounds and filter records outside the window. Recaps are re-read for three days because Calendly returns them only after processing.
 9. **Outgoing Communications Have No Documented Unique Identifier** -- The API returns email/SMS records without `uri`. Do not invent a key; the stream has no declared primary key and keeps per-partition state, so a sync does not re-read the previous sync's duration.
+10. **OAuth Is the Default and Calendly Rotates Refresh Tokens** -- Users sign in with Calendly OAuth (PKCE required); a personal access token remains the fallback, and older configs with a top-level `api_key` are migrated into `credentials`. Every refresh returns a new refresh token, so the connector must persist it and reuse one access token across streams.
 
 ## Token scopes per stream
+
+With OAuth, scopes are configured on the Calendly OAuth application, not requested in the authorization URL, so the application must have every scope below. Personal access tokens need the same scopes, selected when the token is created.
 
 The connection check and most streams read the current user (`users:read`) to find the organization; member-based streams also read `organization_memberships` (`organizations:read`). A successful check does not validate all stream scopes; missing scope names appear in the appended `required_scopes` error detail.
 
@@ -45,4 +48,4 @@ The connection check and most streams read the current user (`users:read`) to fi
 
 ## Local tests
 
-From `unit_tests/`, run `poetry install` and `poetry run pytest -q`. Tests use mocked HTTP requests and do not require a live Calendly token.
+From `unit_tests/`, run `poetry install` and `poetry run pytest -q`. Tests use mocked HTTP requests and do not require live Calendly credentials; `test_authentication.py` covers the OAuth refresh, token reuse and legacy config migration.
