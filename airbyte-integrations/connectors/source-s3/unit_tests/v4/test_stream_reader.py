@@ -8,17 +8,19 @@ import logging
 from datetime import datetime, timedelta
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
-from unittest.mock import ANY, MagicMock, Mock, patch
+from unittest.mock import ANY, MagicMock, Mock, PropertyMock, patch
 
 import pytest
+from botocore.exceptions import ClientError, EndpointConnectionError
 from botocore.stub import Stubber
 from moto import mock_sts
 from pydantic.v1 import AnyUrl
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
@@ -408,3 +410,66 @@ def test_filter_file_by_start_date(start_date: datetime, last_modified_date: dat
     )
 
     assert expected_result == reader.is_modified_after_start_date(last_modified_date)
+
+
+def _reader_for_bucket_check() -> SourceS3StreamReader:
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="acme-exports", credentials={"auth_type": "default_credentials"}, streams=[])
+    return reader
+
+
+def test_check_bucket_access_lists_one_object():
+    reader = _reader_for_bucket_check()
+    with patch.object(SourceS3StreamReader, "s3_client", new_callable=MagicMock) as s3_client:
+        s3_client.list_objects_v2 = MagicMock(return_value={"KeyCount": 0})
+
+        reader.check_bucket_access(logger)
+
+    s3_client.list_objects_v2.assert_called_once_with(Bucket="acme-exports", MaxKeys=1)
+
+
+@pytest.mark.parametrize(
+    "error, expected_message",
+    [
+        pytest.param(
+            ClientError({"Error": {"Code": "NoSuchBucket", "Message": "The specified bucket does not exist"}}, "ListObjectsV2"),
+            "The bucket acme-exports does not exist.",
+            id="no-such-bucket",
+        ),
+        pytest.param(
+            ClientError({"Error": {"Code": "AccessDenied", "Message": "Access Denied"}}, "ListObjectsV2"),
+            "Airbyte cannot list the bucket 'acme-exports' with the configured credentials: AccessDenied Access Denied",
+            id="access-denied",
+        ),
+        pytest.param(
+            ClientError({"Error": {"Code": "InvalidAccessKeyId"}}, "ListObjectsV2"),
+            "Airbyte cannot list the bucket 'acme-exports' with the configured credentials: InvalidAccessKeyId",
+            id="invalid-key-without-message",
+        ),
+        pytest.param(
+            EndpointConnectionError(endpoint_url="https://my-s3-endpoint.com"),
+            "Airbyte could not reach the bucket 'acme-exports': Could not connect to the endpoint URL: \"https://my-s3-endpoint.com\"",
+            id="unreachable-endpoint",
+        ),
+    ],
+)
+def test_check_bucket_access_raises_a_config_error(error, expected_message):
+    reader = _reader_for_bucket_check()
+    with patch.object(SourceS3StreamReader, "s3_client", new_callable=MagicMock) as s3_client:
+        s3_client.list_objects_v2 = MagicMock(side_effect=error)
+
+        with pytest.raises(CustomFileBasedException) as exc_info:
+            reader.check_bucket_access(logger)
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert exc_info.value.message == expected_message
+
+
+def test_check_bucket_access_reports_a_client_creation_failure():
+    reader = _reader_for_bucket_check()
+    with patch.object(SourceS3StreamReader, "s3_client", new_callable=PropertyMock, side_effect=RuntimeError("STS says no")):
+        with pytest.raises(CustomFileBasedException) as exc_info:
+            reader.check_bucket_access(logger)
+
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert exc_info.value.message == "Airbyte could not reach the bucket 'acme-exports': STS says no"

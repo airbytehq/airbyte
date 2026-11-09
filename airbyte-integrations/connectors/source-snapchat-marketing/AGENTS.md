@@ -4,6 +4,16 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
+## 1. Organizations and Ad Accounts are read as parents without the date filter
+
+`organizations` and `adaccounts` are client-side incremental on `updated_at`, and the CDK applies that filter to a stream even when it is read as a parent through `SubstreamPartitionRouter`. Organizations and ad accounts are rarely edited, so the filter dropped any organization or ad account last updated outside the `start_date` to `end_date` window, and every stream under it returned 0 records while the sync succeeded ([#47834](https://github.com/airbytehq/airbyte/issues/47834)). Setting `organization_ids` or `ad_account_ids` didn't help, because the filter also applies to the records those requests return.
+
+The streams under them therefore read `definitions.parent_streams.organizations` and `definitions.parent_streams.adaccounts`: copies with the same retriever and schema and no `incremental_sync`. The user-facing `organizations` and `adaccounts` streams keep the filter, so Start Date still applies to their own records. Each copy keeps its stream's `name`, because the CDK turns on the shared parent response cache by name.
+
+Known gap: `ads`, `adsquads` and `campaigns` still filter by `start_date` when read as parents of the stats streams, so an entity not edited since `start_date` gets no stats.
+
+**Why this matters:** Pointing a `ParentStreamConfig` back at `#/definitions/streams/organizations` or `#/definitions/streams/adaccounts` silently empties every stream under them for accounts whose organization or ad accounts weren't edited inside the sync window. When a fix makes hidden parents visible, existing connections pick up the new partitions from the stream's saved state, not from `start_date`, so partly affected connections need a refresh to backfill.
+
 ## Incremental Stream Considerations
 
 The Snapchat Marketing API supports date-based filtering on stats endpoints and `updated_at` ordering on entity endpoints, which the connector already uses for 16 incremental streams. The 4 remaining streams are children partitioned via `SubstreamPartitionRouter` (ad_squad_stats, ad_stats, campaign_stats, organization_stats). No FR parent streams remain.
