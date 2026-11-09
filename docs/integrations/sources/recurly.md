@@ -81,7 +81,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
-| 1.4.0 | 2026-11-09 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add account_acquisitions, account_balances, gift_cards, external_subscriptions, external_subscription_payment_phases, usage_records and items streams |
+| 1.4.0 | 2026-11-09 | [91305](https://github.com/airbytehq/airbyte/pull/91305) | Add account_acquisitions, account_balances, gift_cards, external_subscriptions, external_subscription_payment_phases, usage_records and items streams |
 | 1.3.69 | 2026-11-03 | [90721](https://github.com/airbytehq/airbyte/pull/90721) | Update dependencies |
 | 1.3.68 | 2026-10-20 | [89408](https://github.com/airbytehq/airbyte/pull/89408) | Update dependencies |
 | 1.3.67 | 2026-10-13 | [88767](https://github.com/airbytehq/airbyte/pull/88767) | Update dependencies |
