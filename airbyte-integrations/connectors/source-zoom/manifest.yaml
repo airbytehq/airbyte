@@ -78,7 +78,7 @@ definitions:
       type: "CursorPagination"
       cursor_value: "{{ response.next_page_token }}"
       stop_condition: "{{ response.next_page_token == '' }}"
-      page_size: 30
+      page_size: 300
     page_size_option:
       field_name: "page_size"
       inject_into: "request_parameter"
@@ -105,7 +105,7 @@ definitions:
           type: "CursorPagination"
           cursor_value: "{{ response.next_page_token }}"
           stop_condition: "{{ response.next_page_token == '' }}"
-          page_size: 30
+          page_size: 300
         page_size_option:
           field_name: "page_size"
           inject_into: "request_parameter"
@@ -261,7 +261,7 @@ definitions:
           type: "CursorPagination"
           cursor_value: "{{ response.next_page_token }}"
           stop_condition: "{{ response.next_page_token == '' }}"
-          page_size: 30
+          page_size: 300
         page_size_option:
           field_name: "page_size"
           inject_into: "request_parameter"
@@ -290,7 +290,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -474,7 +474,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -503,7 +503,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -1281,7 +1281,7 @@ definitions:
           type: "CursorPagination"
           cursor_value: "{{ response.next_page_token }}"
           stop_condition: "{{ response.next_page_token == '' }}"
-          page_size: 30
+          page_size: 300
         page_size_option:
           field_name: "page_size"
           inject_into: "request_parameter"
@@ -1320,7 +1320,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -1349,7 +1349,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -1652,7 +1652,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -1681,7 +1681,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -1994,7 +1994,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -2023,7 +2023,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -2273,7 +2273,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -2302,7 +2302,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -2523,7 +2523,7 @@ definitions:
           type: "CursorPagination"
           cursor_value: "{{ response.next_page_token }}"
           stop_condition: "{{ response.next_page_token == '' }}"
-          page_size: 30
+          page_size: 300
         page_size_option:
           field_name: "page_size"
           inject_into: "request_parameter"
@@ -2552,7 +2552,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -2735,7 +2735,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -2764,7 +2764,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -3346,7 +3346,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -3375,7 +3375,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -3587,7 +3587,7 @@ definitions:
           type: "CursorPagination"
           cursor_value: "{{ response.next_page_token }}"
           stop_condition: "{{ response.next_page_token == '' }}"
-          page_size: 30
+          page_size: 300
         page_size_option:
           field_name: "page_size"
           inject_into: "request_parameter"
@@ -3625,7 +3625,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -3654,7 +3654,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -3927,7 +3927,7 @@ definitions:
           type: "CursorPagination"
           cursor_value: "{{ response.next_page_token }}"
           stop_condition: "{{ response.next_page_token == '' }}"
-          page_size: 30
+          page_size: 300
         page_size_option:
           field_name: "page_size"
           inject_into: "request_parameter"
@@ -3965,7 +3965,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -3994,7 +3994,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -4293,7 +4293,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -4322,7 +4322,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -4633,7 +4633,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -4662,7 +4662,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -4899,7 +4899,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -4928,7 +4928,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -5179,7 +5179,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -5208,7 +5208,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -5430,7 +5430,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -5459,7 +5459,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -5686,7 +5686,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -5715,7 +5715,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -5971,7 +5971,7 @@ definitions:
           type: "CursorPagination"
           cursor_value: "{{ response.next_page_token }}"
           stop_condition: "{{ response.next_page_token == '' }}"
-          page_size: 30
+          page_size: 300
         page_size_option:
           field_name: "page_size"
           inject_into: "request_parameter"
@@ -6010,7 +6010,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -6039,7 +6039,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -6303,7 +6303,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -6332,7 +6332,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -6593,7 +6593,7 @@ definitions:
           type: "CursorPagination"
           cursor_value: "{{ response.next_page_token }}"
           stop_condition: "{{ response.next_page_token == '' }}"
-          page_size: 30
+          page_size: 300
         page_size_option:
           field_name: "page_size"
           inject_into: "request_parameter"
@@ -6631,7 +6631,7 @@ definitions:
                   type: "CursorPagination"
                   cursor_value: "{{ response.next_page_token }}"
                   stop_condition: "{{ response.next_page_token == '' }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: "page_size"
                   inject_into: "request_parameter"
@@ -6660,7 +6660,7 @@ definitions:
                           type: "CursorPagination"
                           cursor_value: "{{ response.next_page_token }}"
                           stop_condition: "{{ response.next_page_token == '' }}"
-                          page_size: 30
+                          page_size: 300
                         page_size_option:
                           field_name: "page_size"
                           inject_into: "request_parameter"
@@ -6934,7 +6934,7 @@ definitions:
                   type: CursorPagination
                   cursor_value: "{{ response.get('next_page_token') }}"
                   stop_condition: "{{ not response.get('next_page_token') }}"
-                  page_size: 30
+                  page_size: 300
                 page_size_option:
                   field_name: page_size
                   inject_into: request_parameter
@@ -7119,6 +7119,14 @@ definitions:
             type:
             - 'null'
             - integer
+          host_id:
+            type:
+            - 'null'
+            - string
+          dept:
+            type:
+            - 'null'
+            - string
           user_id:
             type:
             - 'null'
@@ -7154,6 +7162,48 @@ definitions:
     - uuid
     type: DeclarativeStream
     name: "report_user_meetings"
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "^/v2/report/"
+        - method: GET
+          url_path_pattern: "^/v2/past_webinars/[^/]+/absentees$"
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 20
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "^/v2/users$"
+        - method: GET
+          url_path_pattern: "^/v2/users/[^/]+/(meetings|webinars)$"
+        - method: GET
+          url_path_pattern: "^/v2/(meetings|webinars)/[^/]+/registrants$"
+        - method: GET
+          url_path_pattern: "^/v2/webinars/[^/]+/(panelists|tracking_sources)$"
+        - method: GET
+          url_path_pattern: "^/v2/past_(meetings|webinars)/[^/]+/(polls|qa)$"
+        - method: GET
+          url_path_pattern: "^/v2/chat/"
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 30
+          interval: PT1S
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
+
 streams:
 - retriever:
     requester:
@@ -7169,7 +7219,7 @@ streams:
         type: "CursorPagination"
         cursor_value: "{{ response.next_page_token }}"
         stop_condition: "{{ response.next_page_token == '' }}"
-        page_size: 30
+        page_size: 300
       page_size_option:
         field_name: "page_size"
         inject_into: "request_parameter"
@@ -7316,6 +7366,14 @@ streams:
           type:
           - 'null'
           - string
+        pic_url:
+          type:
+          - 'null'
+          - string
+        vanity_url:
+          type:
+          - 'null'
+          - string
   type: DeclarativeStream
   name: "users"
   primary_key: "id"
@@ -7370,7 +7428,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -7403,7 +7461,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -7619,6 +7677,14 @@ streams:
           - 'null'
           - string
         chat_join_url:
+          type:
+          - 'null'
+          - string
+        creation_source:
+          type:
+          - 'null'
+          - string
+        template_id:
           type:
           - 'null'
           - string
@@ -8229,7 +8295,7 @@ streams:
         type: "CursorPagination"
         cursor_value: "{{ response.next_page_token }}"
         stop_condition: "{{ response.next_page_token == '' }}"
-        page_size: 30
+        page_size: 300
       page_size_option:
         field_name: "page_size"
         inject_into: "request_parameter"
@@ -8271,7 +8337,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -8304,7 +8370,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -8628,7 +8694,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -8661,7 +8727,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -8994,7 +9060,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -9027,7 +9093,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -9296,7 +9362,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -9329,7 +9395,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -9597,7 +9663,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -9630,7 +9696,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -10194,6 +10260,14 @@ streams:
           type:
           - 'null'
           - string
+        registration_url:
+          type:
+          - 'null'
+          - string
+        transition_to_live:
+          type:
+          - 'null'
+          - boolean
   type: DeclarativeStream
   name: "webinars"
   incremental_sync:
@@ -10263,7 +10337,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -10296,7 +10370,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -10526,7 +10600,7 @@ streams:
         type: "CursorPagination"
         cursor_value: "{{ response.next_page_token }}"
         stop_condition: "{{ response.next_page_token == '' }}"
-        page_size: 30
+        page_size: 300
       page_size_option:
         field_name: "page_size"
         inject_into: "request_parameter"
@@ -10568,7 +10642,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -10601,7 +10675,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -10893,7 +10967,7 @@ streams:
         type: "CursorPagination"
         cursor_value: "{{ response.next_page_token }}"
         stop_condition: "{{ response.next_page_token == '' }}"
-        page_size: 30
+        page_size: 300
       page_size_option:
         field_name: "page_size"
         inject_into: "request_parameter"
@@ -10935,7 +11009,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -10968,7 +11042,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -11289,7 +11363,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -11322,7 +11396,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -11654,7 +11728,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -11687,7 +11761,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -11954,7 +12028,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -11987,7 +12061,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -12259,7 +12333,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -12292,7 +12366,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -12467,6 +12541,10 @@ streams:
           type:
           - 'null'
           - number
+        registrationr_count:
+          type:
+          - 'null'
+          - integer
         source_name:
           type:
           - 'null'
@@ -12535,7 +12613,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -12568,7 +12646,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -12946,7 +13024,7 @@ streams:
         type: "CursorPagination"
         cursor_value: "{{ response.next_page_token }}"
         stop_condition: "{{ response.next_page_token == '' }}"
-        page_size: 30
+        page_size: 300
       page_size_option:
         field_name: "page_size"
         inject_into: "request_parameter"
@@ -13066,6 +13144,10 @@ streams:
           type:
           - 'null'
           - string
+        groupId:
+          type:
+          - 'null'
+          - string
   type: DeclarativeStream
   name: "report_meeting_participants"
   incremental_sync:
@@ -13135,7 +13217,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -13168,7 +13250,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -13449,7 +13531,7 @@ streams:
         type: "CursorPagination"
         cursor_value: "{{ response.next_page_token }}"
         stop_condition: "{{ response.next_page_token == '' }}"
-        page_size: 30
+        page_size: 300
       page_size_option:
         field_name: "page_size"
         inject_into: "request_parameter"
@@ -13491,7 +13573,7 @@ streams:
                 type: "CursorPagination"
                 cursor_value: "{{ response.next_page_token }}"
                 stop_condition: "{{ response.next_page_token == '' }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: "page_size"
                 inject_into: "request_parameter"
@@ -13524,7 +13606,7 @@ streams:
                         type: "CursorPagination"
                         cursor_value: "{{ response.next_page_token }}"
                         stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 30
+                        page_size: 300
                       page_size_option:
                         field_name: "page_size"
                         inject_into: "request_parameter"
@@ -13885,7 +13967,7 @@ streams:
                 type: CursorPagination
                 cursor_value: "{{ response.get('next_page_token') }}"
                 stop_condition: "{{ not response.get('next_page_token') }}"
-                page_size: 30
+                page_size: 300
               page_size_option:
                 field_name: page_size
                 inject_into: request_parameter
@@ -14328,6 +14410,14 @@ spec:
         examples:
         - "2026-01-01T00:00:00Z"
         description: "UTC start date for meeting and webinar creation times. The meetings and webinars streams include only records created on or after this date, including in Full Refresh; leave it empty to sync everything Zoom still serves. The report_user_meetings, report_daily, report_meetings, and report_meeting_participants streams start from this date and are limited to the reports Zoom retains (roughly six months); report_daily starts at the beginning of the month."
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        order: 2
+        description: "Higher values can speed up syncs but use more of the Zoom account's rate limit, which is shared with other apps on the account. The default of 3 is safe for Zoom Pro."
+        default: 3
+        minimum: 2
+        maximum: 10
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:

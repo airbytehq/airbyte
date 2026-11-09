@@ -35,9 +35,33 @@ def test_no_composite_error_handler() -> None:
 
 
 URL = "https://api.calendly.com/scheduled_events/ABC/invitees"
+FAN_OUT_STREAMS = {"event_type_memberships", "user_availability_schedules", "locations"}
 
 
-@pytest.mark.parametrize("stream", ["api_user", "event_types", "groups", "organization_memberships", "scheduled_events", "event_invitees"])
+@pytest.mark.parametrize(
+    "stream",
+    [
+        "api_user",
+        "event_types",
+        "groups",
+        "organization_memberships",
+        "scheduled_events",
+        "event_invitees",
+        "teams",
+        "event_type_memberships",
+        "group_relationships",
+        "user_availability_schedules",
+        "locations",
+        "organization_invitations",
+        "webhook_subscriptions",
+        "routing_forms",
+        "routing_form_submissions",
+        "contacts",
+        "outgoing_communications",
+        "activity_log_entries",
+        "meeting_recaps",
+    ],
+)
 @pytest.mark.parametrize(
     "status,action,failure_type,message",
     [
@@ -65,6 +89,15 @@ def test_each_requester_classifies_errors(stream: str, status: int, action: Resp
     if stream == "event_invitees" and status == 404:
         assert resolution.response_action == ResponseAction.IGNORE
         assert resolution.error_message == f"Skipping invitees of a scheduled event that Calendly no longer returns (404): {URL}"
+    elif stream in FAN_OUT_STREAMS and status == 404:
+        assert resolution.response_action == ResponseAction.IGNORE
+        assert resolution.error_message == f"Skipping a member or event type that Calendly no longer returns (404): {URL}"
+    elif stream == "routing_form_submissions" and status == 404:
+        assert resolution.response_action == ResponseAction.IGNORE
+        assert resolution.error_message == "Skipping submissions of a routing form that Calendly no longer returns (404)."
+    elif stream == "group_relationships" and status == 404:
+        assert resolution.response_action == ResponseAction.IGNORE
+        assert resolution.error_message == f"Skipping relationships of a group that Calendly no longer returns (404): {URL}"
     else:
         assert resolution.response_action == action
         assert resolution.failure_type == failure_type
@@ -81,7 +114,11 @@ def test_each_requester_classifies_errors(stream: str, status: int, action: Resp
         (
             403,
             {"title": "Permission Denied", "message": "You do not have permission to access this resource."},
-            ["owner or admin of the Calendly organization", "users:read, event_types:read, groups:read, organizations:read"],
+            [
+                "owner or admin of the Calendly organization",
+                "read scope of every selected stream",
+                "scheduled events, webhook subscriptions, activity logs and outgoing communications",
+            ],
         ),
         (
             403,
@@ -106,6 +143,8 @@ def test_authentication_error_read_includes_response_and_remediation(status: int
         assert "update it in the Airbyte source settings" in error.message
         for text in expected:
             assert text in error.message
+        if body["title"] == "Permission Denied":
+            assert "users:read, event_types:read" not in error.message
         http.assert_number_of_calls(target, 1)
 
 
