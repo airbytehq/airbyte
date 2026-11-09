@@ -78,7 +78,12 @@ data:
     breakingChanges:
       1.0.0:
         message: >-
-          Version 1.0.0 fixes incremental syncs of scheduled_events and event_invitees, which stopped reading new bookings and cancellations after an upcoming event was synced, and corrects declared types in api_user, event_types, groups, organization_memberships, scheduled_events and event_invitees: datetime fields become timestamps, and position fields and event_types.duration_options items become integers. The first sync after the upgrade reads every scheduled event from your start date with its invitees again, so the cursor change needs no clear. Refresh the source schema. On S3 Data Lake and GCS Data Lake, clear these streams if they sync in an append or incremental mode, or every sync fails. On ClickHouse, clear the streams synced in Full refresh | Append or Incremental | Append, and event_types in Incremental | Append + Deduped, before the first 1.0.0 sync, or existing timestamps become empty. On Postgres and Redshift, drop views on the retyped columns first. Clearing deletes rows that Calendly no longer returns. See https://docs.airbyte.com/integrations/sources/calendly-migrations#upgrading-to-100.
+          Version 1.0.0 fixes incremental syncs of scheduled_events and event_invitees, which stopped picking up new
+          bookings and cancellations, and declares timestamp and integer types on existing fields of six streams. The
+          first sync re-reads events from your start date, so the cursor change needs no clear. Refresh the source
+          schema. Only ClickHouse and S3/GCS Data Lake need some streams cleared, and Postgres/Redshift views on
+          retyped columns must be dropped first. See
+          https://docs.airbyte.com/integrations/sources/calendly-migrations#upgrading-to-100.
         upgradeDeadline: "2026-12-01"
         deadlineAction: disable
         scopedImpact:
