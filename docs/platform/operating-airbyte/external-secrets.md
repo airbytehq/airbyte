@@ -111,7 +111,7 @@ AWS supports two authentication methods:
 
 | Method | Use Case | Security Note |
 |--------|----------|---------------|
-| **IAM Role (Recommended)** | Best for EKS deployments or when using IRSA (IAM Roles for Service Accounts) | More secure - no static credentials, uses temporary credentials |
+| **IAM Role (Recommended)** | Best when the callers already have an AWS IAM identity through your configured AWS authentication method (for example, IAM Roles for Service Accounts on EKS) | More secure - no static credentials, uses temporary credentials |
 | **Access Key** | For EC2 instances or non-Kubernetes deployments | Requires managing static credentials securely |
 
 </TabItem>
@@ -142,10 +142,39 @@ Choose one of the following authentication methods:
 
 IAM Role (Recommended)
 
-1. Create an IAM role with a trust relationship to your EKS cluster or service account
-    - This requires additional coordination with Airbyte and will enable the use of IAM authentication for some AWS-hosted sources
-2. Attach the `AirbyteSecretsManagerPolicy` (created in Step 1) to this role
-3. Note the Role ARN (e.g., `arn:aws:iam::123456789012:role/AirbyteSecretsRole`)
+With `IAM_ROLE`, two callers assume your secrets role independently: the Airbyte control plane, which saves connector credentials, and the pods that run your syncs, which read them. The trust policy controls who may assume the role. The identity policy controls what the role may do. Both must be right for both callers.
+
+1. Create an IAM role for Airbyte secrets. This is your secrets role.
+2. Attach the `AirbyteSecretsManagerPolicy` (created in Step 1) to this role.
+3. Add a trust statement for the Airbyte control plane. Before setup, obtain the approved Airbyte principal ARN and external ID from your Airbyte contact. Allow that principal and require that external ID with `sts:ExternalId`. AWS compares it as an exact string.
+4. Add a trust statement for the pods that run your syncs. When Airbyte runs your syncs, obtain the approved principal for this statement from your Airbyte contact as well. On an Enterprise Flex data plane you run yourself, trust the IAM role behind the pod's AWS identity, which comes from the AWS authentication method configured for your deployment (for example, the role linked to the data plane Kubernetes service account when you use IAM Roles for Service Accounts). Use the same `sts:ExternalId` condition: with `IAM_ROLE`, the pods send the stored external ID on every assumption, exactly as the control plane does. When the trust policy names that role ARN directly and both roles are in the same account, no separate allow in the caller's identity policy is needed, subject to boundaries, service control policies, session policies, and explicit denies. If the roles are in different accounts, or the trust policy names an account instead of a role, the caller's identity policy must also allow `sts:AssumeRole` on the secrets role ARN.
+5. Note the role ARN (for example, `arn:aws:iam::123456789012:role/AirbyteSecretsRole`) and the external ID. Role names in IAM policy ARN values are case sensitive. Copy the full role ARN exactly, including any path.
+
+Example trust policy with placeholders:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AirbyteControlPlane",
+      "Effect": "Allow",
+      "Principal": { "AWS": "<airbyte-principal-arn-from-your-airbyte-contact>" },
+      "Action": "sts:AssumeRole",
+      "Condition": { "StringEquals": { "sts:ExternalId": "<external-id-from-your-airbyte-contact>" } }
+    },
+    {
+      "Sid": "SyncWorkloads",
+      "Effect": "Allow",
+      "Principal": { "AWS": "<workload-role-arn>" },
+      "Action": "sts:AssumeRole",
+      "Condition": { "StringEquals": { "sts:ExternalId": "<external-id-from-your-airbyte-contact>" } }
+    }
+  ]
+}
+```
+
+Permissions boundaries and service control policies on either caller limit what is allowed but never grant access. For the Enterprise Flex data plane side, see [AWS Secrets Manager access with IAM](/platform/enterprise-flex/data-plane#aws-iam).
 
 IAM User with Access Keys
 
@@ -211,10 +240,13 @@ IAM Role Example:
 {
   "auth_type": "IAM_ROLE",
   "roleArn": "arn:aws:iam::123456789012:role/AirbyteSecretsRole",
+  "externalId": "<external-id-from-your-airbyte-contact>",
   "awsRegion": "us-east-1",
   "tagKey": "AirbyteManaged"
 }
 ```
+
+`externalId` is required for `IAM_ROLE`. It must equal the value in the `sts:ExternalId` condition of your trust policy exactly.
 
 Access Key Example:
 
@@ -399,7 +431,7 @@ After providing your configuration to Airbyte:
 
 **Issue:** IAM Role authentication not working
 
-**Solution:** Verify the trust relationship is configured correctly and the service account has the proper annotations
+**Solution:** Verify the trust relationship on the secrets role for both callers, the exact `sts:ExternalId` value, and the configuration that gives the pod its AWS identity (for example, the service account annotation when you use IAM Roles for Service Accounts)
 
 </TabItem>
 <TabItem value="azure" label="Azure">
@@ -444,7 +476,7 @@ After providing your configuration to Airbyte:
 ### AWS
 
 - [AWS Secrets Manager Documentation](https://docs.aws.amazon.com/secretsmanager/)
-- [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)
+- [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html), one example of an AWS authentication method for pods on EKS
 
 
 ### Azure

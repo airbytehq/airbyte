@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="170" viewBox="0 0 760 170" font-family="Helvetica, Arial, sans-serif" font-size="14">
+  <title>Control plane path: the Airbyte control plane assumes your secrets role with the external ID, then creates or updates the connector secret in AWS Secrets Manager.</title>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#333"/></marker>
+  </defs>
+  <rect x="20" y="55" width="180" height="60" rx="8" fill="#eef3ff" stroke="#3b5bdb"/>
+  <text x="110" y="80" text-anchor="middle" font-weight="bold">Airbyte control plane</text>
+  <text x="110" y="100" text-anchor="middle" fill="#555">check or save a connector</text>
+  <rect x="290" y="55" width="180" height="60" rx="8" fill="#fff4e6" stroke="#e8590c"/>
+  <text x="380" y="80" text-anchor="middle" font-weight="bold">Secrets role</text>
+  <text x="380" y="100" text-anchor="middle" fill="#555">in your AWS account</text>
+  <rect x="560" y="55" width="180" height="60" rx="8" fill="#e6fcf5" stroke="#0ca678"/>
+  <text x="650" y="80" text-anchor="middle" font-weight="bold">AWS Secrets Manager</text>
+  <text x="650" y="100" text-anchor="middle" fill="#555">connector credentials</text>
+  <line x1="200" y1="85" x2="290" y2="85" stroke="#333" stroke-width="2" marker-end="url(#a)"/>
+  <text x="245" y="40" text-anchor="middle">1. AssumeRole</text>
+  <text x="245" y="140" text-anchor="middle" fill="#555">exact external ID</text>
+  <line x1="470" y1="85" x2="560" y2="85" stroke="#333" stroke-width="2" marker-end="url(#a)"/>
+  <text x="515" y="40" text-anchor="middle">2. Create or update</text>
+  <text x="515" y="140" text-anchor="middle" fill="#555">secret</text>
+</svg>
