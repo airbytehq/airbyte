@@ -11,8 +11,8 @@ for one ad account.
 Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
 1. **Token refresh needs HTTP Basic client credentials and a Reddit User-Agent, and only the refresh sends `user_agent`** --
-   The connector trades the refresh token for short-lived access tokens at `https://www.reddit.com/api/v1/access_token`
-   and saves the new refresh token when Reddit rotates it. The configured User Agent (default
+   The connector trades the refresh token for short-lived access tokens at `https://www.reddit.com/api/v1/access_token`,
+   keeps the latest one in a hidden, masked field, and saves the new refresh token when Reddit rotates it. The configured User Agent (default
    `airbyte:source-reddit-ads:v1`) is sent only on that token request, never on the requests that read ads data.
 2. **Report parent IDs come from breakdowns, and Reddit allows at most three** -- Reddit only returns a parent ID
    in a report row when it is a breakdown, so the ad group and ad reports add the campaign as one. With the

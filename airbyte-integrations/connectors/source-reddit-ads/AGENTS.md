@@ -23,12 +23,14 @@ they never send it. The Cloud OAuth consent exchange (`advanced_auth`
 refresh token, `refresh_token_updater` writes it back to `credentials.refresh_token`. A 400
 `Bad Request` or 401 `Unauthorized` from the token endpoint is a `config_error`
 (`refresh_token_error_*`). Don't configure an access token: Reddit access tokens are short-lived
-and the connector mints them as needed.
+and the connector mints them as needed. The CDK writes each minted token and its expiry back to
+`credentials.access_token` and `credentials.token_expiry_date` (its default paths), so both are
+declared as hidden fields in each `credentials` option, the token with `airbyte_secret: true`.
 
 **Why this matters:** Don't describe `user_agent` as affecting data-request throttling, and don't
 move it into a data-request header without checking Reddit's limits first. Dropping the Basic header
 or the `refresh_token_updater` breaks every sync at the token request, or after Reddit rotates the
-refresh token.
+refresh token. Removing the hidden `access_token` declaration stores the minted token unmasked.
 
 ## 2. Report parent IDs come from breakdowns, and Reddit allows at most three
 

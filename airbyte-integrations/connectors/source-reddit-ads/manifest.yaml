@@ -1336,6 +1336,18 @@ spec:
                 description: The refresh token to renew the expired access token.
                 airbyte_secret: true
                 order: 3
+              access_token:
+                type: string
+                title: Access Token
+                description: Written back by the connector after each token refresh.
+                airbyte_secret: true
+                airbyte_hidden: true
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: Written back by the connector after each token refresh.
+                format: date-time
+                airbyte_hidden: true
             additionalProperties: true
           - type: object
             title: Use your own Reddit app
@@ -1366,6 +1378,18 @@ spec:
                 description: The refresh token to renew the expired access token.
                 airbyte_secret: true
                 order: 3
+              access_token:
+                type: string
+                title: Access Token
+                description: Written back by the connector after each token refresh.
+                airbyte_secret: true
+                airbyte_hidden: true
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: Written back by the connector after each token refresh.
+                format: date-time
+                airbyte_hidden: true
             additionalProperties: true
       start_time:
         type: string
