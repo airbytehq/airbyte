@@ -29,12 +29,10 @@ definitions:
           request_parameters:
             per_page: "1000"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -96,12 +94,10 @@ definitions:
           path: /api/v1/sending-domains
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -124,12 +120,10 @@ definitions:
           path: /api/v1/ab-test
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -152,12 +146,10 @@ definitions:
           path: /api/v1/templates
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -180,12 +172,10 @@ definitions:
           path: /api/v1/recipient-lists
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -208,12 +198,10 @@ definitions:
           path: /api/v1/subaccounts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -244,12 +232,10 @@ definitions:
           path: /api/labs/snippets
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
         record_selector:
           type: RecordSelector
           extractor:
