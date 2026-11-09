@@ -1260,14 +1260,20 @@ spec:
         description: Move the top-level personal access token into credentials.
         transformations:
           - type: ConfigAddFields
+            condition: "{{ config.get('api_key') is string and (config.get('credentials') or {}).get('auth_type') is not string }}"
             fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "api_key"]
                 value: "{{ config['api_key'] }}"
+                value_type: string
               - type: AddedFieldDefinition
                 path: ["credentials", "auth_type"]
                 value: api_key
-            condition: "{{ config.get('api_key') and not config.get('credentials', {}).get('auth_type') }}"
+                value_type: string
+          - type: ConfigRemoveFields
+            condition: "{{ (config.get('credentials') or {}).get('auth_type') is string }}"
+            field_pointers:
+              - ["api_key"]
 
 metadata:
   autoImportSchema:

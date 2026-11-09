@@ -64,13 +64,26 @@ def read_streams(stream_names: list[str], config: Mapping[str, Any]) -> Entrypoi
     return read(get_source(config), config, catalog.build())
 
 
-def test_legacy_top_level_token_is_moved_into_credentials(capsys: pytest.CaptureFixture[str]) -> None:
+@pytest.mark.parametrize(
+    "legacy_config",
+    [
+        # A digit-only token would become an integer without `value_type: string`.
+        {"api_key": "1234567890", "start_date": "2024-01-01T00:00:00Z"},
+        # A stale top-level key next to migrated credentials is dropped, not copied.
+        {"api_key": "1234567890", "credentials": {"auth_type": "api_key", "api_key": "1234567890"}, "start_date": "2024-01-01T00:00:00Z"},
+    ],
+)
+def test_legacy_top_level_token_is_moved_into_credentials(legacy_config: dict[str, Any], capsys: pytest.CaptureFixture[str]) -> None:
     with HttpMocker() as http:
-        target = mock_user(http)
-        output = read_stream("api_user", CONFIG)
+        target = mock_user(http, token="1234567890")
+        output = read_stream("api_user", legacy_config)
         assert not output.errors
         assert [record.record.data for record in output.records] == [USER]
-        assert emitted_configs(capsys)[0]["credentials"] == {"auth_type": "api_key", "api_key": "test_api_key"}
+        # The platform saves this config, so the token must not stay at the top level where the spec no longer masks it.
+        assert emitted_configs(capsys)[0] == {
+            "credentials": {"auth_type": "api_key", "api_key": "1234567890"},
+            "start_date": "2024-01-01T00:00:00Z",
+        }
         http.assert_number_of_calls(target, 1)
 
 

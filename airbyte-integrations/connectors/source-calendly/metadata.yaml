@@ -69,6 +69,11 @@ data:
       url: https://status.calendly.com/
       type: status_page
   releases:
+    unsafeDowngrades:
+      1.1.0:
+        message: >-
+          Version 1.1.0 moves the personal access token of saved configurations into `credentials`, and earlier
+          versions cannot read the migrated configuration.
     rolloutConfiguration:
       defaultRolloutMode: autopilot
       autopilotConfig:

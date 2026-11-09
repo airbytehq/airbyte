@@ -44,6 +44,8 @@ The connection check reads only the authenticated user's profile (`api_user`). A
 | `start_date` | `string` | Required. Read scheduled events starting on or after this time, and outgoing communications, activity log entries and meeting recaps from this time on. Use UTC in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2024-01-01T00:00:00Z`. This filters event start times, not when invitees booked. | |
 | `lookback_days` | `number` | Optional. Days to subtract from the latest synced event's start time for incremental `scheduled_events` reads. The connector rereads events in that window, including their invitees. Use a non-negative value and see the incremental sync limitation below. | 0 |
 
+When you create or update the source with the Airbyte API or Terraform, send the personal access token inside `credentials`, for example `{"auth_type": "api_key", "api_key": "<token>"}`; a top-level `api_key` is no longer read from the request. Sources saved before 1.1.0 move the token into `credentials` on their next check, schema refresh or sync. If you edit such a source in the Airbyte UI before that, enter the token again.
+
 ## Token scopes
 
 With OAuth, Calendly grants the scopes configured on Airbyte's Calendly OAuth application, which cover every stream below. The rest of this section applies to personal access tokens.
