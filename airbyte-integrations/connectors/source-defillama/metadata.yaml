@@ -36,3 +36,11 @@ data:
     - title: DefiLlama API documentation
       url: https://defillama.com/docs/api
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
