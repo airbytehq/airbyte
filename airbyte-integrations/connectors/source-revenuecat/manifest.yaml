@@ -34,20 +34,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
       incremental_sync:
         type: DatetimeBasedCursor
@@ -59,7 +54,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -84,20 +79,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -117,7 +107,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -140,23 +130,7 @@ definitions:
             field_path:
               - metrics
         paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: limit
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
-            stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
+          type: NoPagination
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -195,20 +169,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -228,7 +197,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -255,20 +224,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           - type: SubstreamPartitionRouter
@@ -295,7 +259,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       transformations:
         - type: AddFields
           fields:
@@ -328,20 +292,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           - type: SubstreamPartitionRouter
@@ -368,7 +327,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       transformations:
         - type: AddFields
           fields:
@@ -401,20 +360,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           - type: SubstreamPartitionRouter
@@ -441,7 +395,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       transformations:
         - type: AddFields
           fields:
@@ -479,20 +433,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           - type: SubstreamPartitionRouter
@@ -519,7 +468,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       transformations:
         - type: AddFields
           fields:
@@ -557,20 +506,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           - type: SubstreamPartitionRouter
@@ -597,7 +541,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       transformations:
         - type: AddFields
           fields:
@@ -633,20 +577,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -666,7 +605,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -694,20 +633,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           - type: SubstreamPartitionRouter
@@ -734,7 +668,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       transformations:
         - type: AddFields
           fields:
@@ -770,20 +704,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -803,7 +732,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -830,20 +759,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           - type: SubstreamPartitionRouter
@@ -870,7 +794,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       transformations:
         - type: AddFields
           fields:
@@ -909,20 +833,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           - type: SubstreamPartitionRouter
@@ -949,7 +868,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       transformations:
         - type: AddFields
           fields:
@@ -995,20 +914,15 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: starting_after
+            type: RequestPath
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 20
-            cursor_value: >-
-              {{ response.get("next_page",
-              "").split("starting_after=")[-1].split("&")[0] if
-              "starting_after=" in response.get("next_page", "") else "" }}
+            page_size: 100
+            cursor_value: "{{ response.get('next_page') }}"
             stop_condition: "{{ not response.get(\"next_page\", \"\") }}"
         partition_router:
           type: SubstreamPartitionRouter
@@ -1028,7 +942,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        is_data_feed: true
+        is_client_side_incremental: true
       transformations:
         - type: AddFields
           fields:
@@ -1232,6 +1146,14 @@ schemas:
         type:
           - string
           - "null"
+      icon_url:
+        type:
+          - string
+          - "null"
+      icon_url_large:
+        type:
+          - string
+          - "null"
     required:
       - id
       - created_at
@@ -1275,6 +1197,30 @@ schemas:
           - object
           - "null"
         properties: {}
+      custom_url_scheme:
+        type:
+          - string
+          - "null"
+      app_store:
+        type:
+          - object
+          - "null"
+      mac_app_store:
+        type:
+          - object
+          - "null"
+      stripe:
+        type:
+          - object
+          - "null"
+      rc_billing:
+        type:
+          - object
+          - "null"
+      paddle:
+        type:
+          - object
+          - "null"
     required:
       - id
       - created_at
@@ -1313,6 +1259,15 @@ schemas:
         type:
           - number
           - "null"
+      last_updated_at:
+        type:
+          - integer
+          - "null"
+      last_updated_at_iso8601:
+        type:
+          - string
+          - "null"
+        format: date-time
     required:
       - id
   customers:
@@ -1327,7 +1282,9 @@ schemas:
       id:
         type: string
       last_seen_at:
-        type: number
+        type:
+          - number
+          - "null"
       object:
         type:
           - string
@@ -1336,9 +1293,28 @@ schemas:
         type:
           - string
           - "null"
+      last_seen_app_version:
+        type:
+          - string
+          - "null"
+      last_seen_country:
+        type:
+          - string
+          - "null"
+      last_seen_platform:
+        type:
+          - string
+          - "null"
+      last_seen_platform_version:
+        type:
+          - string
+          - "null"
+      experiment:
+        type:
+          - object
+          - "null"
     required:
       - id
-      - last_seen_at
   customers_subscriptions:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1355,7 +1331,9 @@ schemas:
       original_customer_id:
         type: string
       product_id:
-        type: string
+        type:
+          - string
+          - "null"
       purchased_at:
         type: integer
       starts_at:
@@ -1363,7 +1341,9 @@ schemas:
       current_period_starts_at:
         type: integer
       current_period_ends_at:
-        type: integer
+        type:
+          - integer
+          - "null"
       gives_access:
         type: boolean
       pending_payment:
@@ -1386,13 +1366,19 @@ schemas:
           proceeds:
             type: number
       presented_offering_id:
-        type: string
+        type:
+          - string
+          - "null"
       store_subscription_identifier:
         type: integer
       pending_changes:
-        type: object
+        type:
+          - object
+          - "null"
       management_url:
-        type: string
+        type:
+          - string
+          - "null"
       entitlements:
         type: object
         properties:
@@ -1420,7 +1406,9 @@ schemas:
                 created_at:
                   type: integer
                 products:
-                  type: object
+                  type:
+                    - object
+                    - "null"
                   properties:
                     object:
                       type: string
@@ -1442,7 +1430,9 @@ schemas:
                           store_identifier:
                             type: string
                           subscription:
-                            type: object
+                            type:
+                              - object
+                              - "null"
                             properties:
                               duration:
                                 type:
@@ -1457,7 +1447,9 @@ schemas:
                                   - string
                                   - "null"
                           one_time:
-                            type: object
+                            type:
+                              - object
+                              - "null"
                             properties:
                               is_consumable:
                                 type:
@@ -1470,13 +1462,31 @@ schemas:
                           app:
                             type: object
                           display_name:
-                            type: string
+                            type:
+                              - string
+                              - "null"
+                          state:
+                            type:
+                              - string
+                              - "null"
+                          indicative_price:
+                            type:
+                              - object
+                              - "null"
                     next_page:
-                      type: string
+                      type:
+                        - string
+                        - "null"
                     url:
                       type: string
+                state:
+                  type:
+                    - string
+                    - "null"
           next_page:
-            type: string
+            type:
+              - string
+              - "null"
           url:
             type: string
       environment:
@@ -1488,7 +1498,25 @@ schemas:
       ownership:
         type: string
       country:
-        type: string
+        type:
+          - string
+          - "null"
+      redemption:
+        type:
+          - object
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      ends_at:
+        type:
+          - integer
+          - "null"
+      product_change:
+        type:
+          - object
+          - "null"
     additionalProperties: true
   customers_purchases:
     type: object
@@ -1526,7 +1554,9 @@ schemas:
       status:
         type: string
       presented_offering_id:
-        type: string
+        type:
+          - string
+          - "null"
       entitlements:
         type: object
         properties:
@@ -1554,7 +1584,9 @@ schemas:
                 created_at:
                   type: integer
                 products:
-                  type: object
+                  type:
+                    - object
+                    - "null"
                   properties:
                     object:
                       type: string
@@ -1576,7 +1608,9 @@ schemas:
                           store_identifier:
                             type: string
                           subscription:
-                            type: object
+                            type:
+                              - object
+                              - "null"
                             properties:
                               duration:
                                 type:
@@ -1591,7 +1625,9 @@ schemas:
                                   - string
                                   - "null"
                           one_time:
-                            type: object
+                            type:
+                              - object
+                              - "null"
                             properties:
                               is_consumable:
                                 type:
@@ -1604,13 +1640,31 @@ schemas:
                           app:
                             type: object
                           display_name:
-                            type: string
+                            type:
+                              - string
+                              - "null"
+                          state:
+                            type:
+                              - string
+                              - "null"
+                          indicative_price:
+                            type:
+                              - object
+                              - "null"
                     next_page:
-                      type: string
+                      type:
+                        - string
+                        - "null"
                     url:
                       type: string
+                state:
+                  type:
+                    - string
+                    - "null"
           next_page:
-            type: string
+            type:
+              - string
+              - "null"
           url:
             type: string
       environment:
@@ -1622,7 +1676,17 @@ schemas:
       ownership:
         type: string
       country:
-        type: string
+        type:
+          - string
+          - "null"
+      redemption:
+        type:
+          - object
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
     additionalProperties: true
   customers_active_entitlements:
     type: object
@@ -1635,7 +1699,17 @@ schemas:
       entitlement_id:
         type: string
       expires_at:
-        type: integer
+        type:
+          - integer
+          - "null"
+      project_id:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
     additionalProperties: true
   customers_aliases:
     type: object
@@ -1649,6 +1723,14 @@ schemas:
         type: string
       created_at:
         type: integer
+      project_id:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
     additionalProperties: true
   customers_invoices:
     type: object
@@ -1685,9 +1767,13 @@ schemas:
             product_identifier:
               type: string
             product_display_name:
-              type: string
+              type:
+                - string
+                - "null"
             product_duration:
-              type: string
+              type:
+                - string
+                - "null"
             quantity:
               type: integer
             unit_amount:
@@ -1706,10 +1792,22 @@ schemas:
       issued_at:
         type: integer
       paid_at:
-        type: integer
+        type:
+          - integer
+          - "null"
       invoice_url:
-        type: string
+        type:
+          - string
+          - "null"
         format: uri
+      project_id:
+        type:
+          - string
+          - "null"
+      customer_id:
+        type:
+          - string
+          - "null"
     additionalProperties: true
   entitlements:
     type: object
@@ -1733,6 +1831,10 @@ schemas:
           - string
           - "null"
       project_id:
+        type:
+          - string
+          - "null"
+      state:
         type:
           - string
           - "null"
@@ -1779,6 +1881,18 @@ schemas:
           - object
           - "null"
         properties: {}
+      state:
+        type:
+          - string
+          - "null"
+      one_time:
+        type:
+          - object
+          - "null"
+      indicative_price:
+        type:
+          - object
+          - "null"
     required:
       - id
       - entitlement_id
@@ -1812,6 +1926,18 @@ schemas:
         type:
           - string
           - "null"
+      state:
+        type:
+          - string
+          - "null"
+      paywall_id:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
     required:
       - id
       - created_at
@@ -1843,6 +1969,10 @@ schemas:
       project_id:
         type:
           - string
+          - "null"
+      position:
+        type:
+          - integer
           - "null"
     required:
       - id
@@ -1900,6 +2030,18 @@ schemas:
               - object
               - "null"
             properties: {}
+          state:
+            type:
+              - string
+              - "null"
+          one_time:
+            type:
+              - object
+              - "null"
+          indicative_price:
+            type:
+              - object
+              - "null"
       project_id:
         type:
           - string
@@ -1946,6 +2088,18 @@ schemas:
           - object
           - "null"
         properties: {}
+      state:
+        type:
+          - string
+          - "null"
+      one_time:
+        type:
+          - object
+          - "null"
+      indicative_price:
+        type:
+          - object
+          - "null"
     required:
       - id
       - created_at

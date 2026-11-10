@@ -13,33 +13,90 @@ data:
       enabled: false
       packageName: airbyte-source-revenuecat
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.45.0@sha256:a4947a37ef760ff501856dbeec22830826c1d214f0e530abfa9831e57f019809
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0
   connectorSubtype: api
   connectorType: source
   definitionId: d8b3b5d6-7b64-49f7-9e73-73a1da277cf2
-  dockerImageTag: 0.1.54
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-revenuecat
+  maxSecondsBetweenMessages: 3600
   githubIssueLabel: source-revenuecat
   icon: icon.svg
   license: ELv2
   name: RevenueCat
   releaseDate: 2024-09-23
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+  suggestedStreams:
+    streams:
+      - customers
+      - customers_subscriptions
+      - products
+      - entitlements
+      - offerings
+      - metrics_overview
+      - projects
+      - apps
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/revenuecat
   tags:
     - language:manifest-only
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
   ab_internal:
     ql: 100
     sl: 100
   externalDocumentationUrls:
-    - title: RevenueCat API reference
-      url: https://www.revenuecat.com/docs/api-v1
+    - title: RevenueCat REST API v2 reference
+      url: https://www.revenuecat.com/docs/api-v2
       type: api_reference
+    - title: RevenueCat REST API v2 OpenAPI specification (pagination, rate limits, errors)
+      url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2.yaml
+      type: openapi_spec
+    - title: RevenueCat REST API v2 OpenAPI specification (Projects)
+      url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2-project.yaml
+      type: openapi_spec
+    - title: RevenueCat REST API v2 OpenAPI specification (Apps)
+      url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2-app.yaml
+      type: openapi_spec
+    - title: RevenueCat REST API v2 OpenAPI specification (Customers)
+      url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2-customer.yaml
+      type: openapi_spec
+    - title: RevenueCat REST API v2 OpenAPI specification (Customer subscriptions, purchases and entitlements)
+      url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2-customer-resources.yaml
+      type: openapi_spec
+    - title: RevenueCat REST API v2 OpenAPI specification (Invoices)
+      url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2-invoice.yaml
+      type: openapi_spec
+    - title: RevenueCat REST API v2 OpenAPI specification (Entitlements)
+      url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2-entitlement.yaml
+      type: openapi_spec
+    - title: RevenueCat REST API v2 OpenAPI specification (Offerings)
+      url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2-offering.yaml
+      type: openapi_spec
+    - title: RevenueCat REST API v2 OpenAPI specification (Packages)
+      url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2-package.yaml
+      type: openapi_spec
+    - title: RevenueCat REST API v2 OpenAPI specification (Products)
+      url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2-product.yaml
+      type: openapi_spec
+    - title: RevenueCat REST API v2 OpenAPI specification (Charts and metrics)
+      url: https://www.revenuecat.com/docs/redocusaurus/openapi-v2-charts-and-metrics.yaml
+      type: openapi_spec
     - title: RevenueCat authentication
-      url: https://www.revenuecat.com/docs/authentication
+      url: https://www.revenuecat.com/docs/welcome/authentication
       type: authentication_guide
+    - title: RevenueCat API v2 rate limits
+      url: https://www.revenuecat.com/docs/api-v2#tag/Rate-Limit
+      type: rate_limits
+    - title: RevenueCat changelog
+      url: https://www.revenuecat.com/changelog
+      type: api_release_history
     - title: RevenueCat Status
       url: https://status.revenuecat.com/
       type: status_page

@@ -26,21 +26,21 @@ To get started;
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| projects | id | No pagination | ✅ |  ✅  |
-| apps | id | No pagination | ✅ |  ✅  |
+| projects | id | DefaultPaginator | ✅ |  ✅  |
+| apps | id | DefaultPaginator | ✅ |  ✅  |
 | metrics_overview | id | No pagination | ✅ |  ❌  |
-| customers | id | No pagination | ✅ |  ✅  |
-| customers_subscriptions | id | No pagination | ✅ |  ✅  |
-| customers_purchases | id | No pagination | ✅ |  ✅  |
-| customers_active_entitlements | entitlement_id | No pagination | ✅ |  ✅  |
-| customers_aliases | id | No pagination | ✅ |  ✅  |
-| customers_invoices | id | No pagination | ✅ |  ✅  |
-| entitlements | id | No pagination | ✅ |  ✅  |
-| entitlements_products | id.entitlement_id | No pagination | ✅ |  ✅  |
-| offerings | id | No pagination | ✅ |  ✅  |
-| offerings_packages | id | No pagination | ✅ |  ✅  |
-| offerings_packages_products | id.package_id | No pagination | ✅ |  ✅  |
-| products | id | No pagination | ✅ |  ✅  |
+| customers | id | DefaultPaginator | ✅ |  ✅  |
+| customers_subscriptions | id | DefaultPaginator | ✅ |  ✅  |
+| customers_purchases | id | DefaultPaginator | ✅ |  ✅  |
+| customers_active_entitlements | entitlement_id | DefaultPaginator | ✅ |  ✅  |
+| customers_aliases | id | DefaultPaginator | ✅ |  ✅  |
+| customers_invoices | id | DefaultPaginator | ✅ |  ✅  |
+| entitlements | id | DefaultPaginator | ✅ |  ✅  |
+| entitlements_products | id.entitlement_id | DefaultPaginator | ✅ |  ✅  |
+| offerings | id | DefaultPaginator | ✅ |  ✅  |
+| offerings_packages | id | DefaultPaginator | ✅ |  ✅  |
+| offerings_packages_products | id.package_id | DefaultPaginator | ✅ |  ✅  |
+| products | id | DefaultPaginator | ✅ |  ✅  |
 
 ## IP allow list
 
@@ -53,6 +53,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.2.0 | 2026-11-10 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Fix pagination looping on anonymous customer IDs, read 100 records per page, stop incremental syncs from skipping records on unsorted endpoints, and declare missing and nullable schema fields |
 | 0.1.54 | 2026-11-03 | [90741](https://github.com/airbytehq/airbyte/pull/90741) | Update dependencies |
 | 0.1.53 | 2026-10-20 | [89401](https://github.com/airbytehq/airbyte/pull/89401) | Update dependencies |
 | 0.1.52 | 2026-10-13 | [88790](https://github.com/airbytehq/airbyte/pull/88790) | Update dependencies |
