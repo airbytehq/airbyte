@@ -5,11 +5,10 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.transformations.transformation import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 
 
 @dataclass
@@ -56,9 +55,9 @@ class SubscriptionUsageTransformation(RecordTransformation):
 
 
 @dataclass
-class SubscriptionUsagePartitionRouter(StreamSlicer):
-    plans_stream: Stream
-    subscriptions_stream: Stream
+class SubscriptionUsagePartitionRouter(SinglePartitionRouter):
+    plans_stream: AbstractStream
+    subscriptions_stream: AbstractStream
     config: Config
 
     def stream_slices(self) -> Iterable[StreamSlice]:
@@ -77,7 +76,7 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
         if self.config.get("subscription_usage_grouping_key"):
             metric_ids_by_plan_id = {}
 
-            for plan in plans_stream.read_records(sync_mode=SyncMode.full_refresh):
+            for plan in (record.data for partition in plans_stream.generate_partitions() for record in partition.read()):
                 # if a plan_id filter is specified, skip any plan that doesn't match
                 if self.config.get("plan_id") and plan["id"] != self.config.get("plan_id"):
                     continue
@@ -85,7 +84,7 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
                 prices = plan.get("prices", [])
                 metric_ids_by_plan_id[plan["id"]] = [(price.get("billable_metric") or {}).get("id") for price in prices]
 
-        for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
+        for subscription in (record.data for partition in subscriptions_stream.generate_partitions() for record in partition.read()):
             subscription_id = subscription["id"]
             subscription_plan_id = subscription["plan_id"]
 
@@ -106,12 +105,12 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
                 if metric_ids is not None:
                     for metric_id in metric_ids:
                         # self.logger.warning("stream_slices is about to yield the following slice: %s", slice)
-                        yield {**slice, "billable_metric_id": metric_id}
+                        yield StreamSlice(partition={**slice, "billable_metric_id": metric_id}, cursor_slice={})
                         slice_yielded = True
             else:
                 # self.logger.warning("stream_slices is about to yield the following slice: %s", slice)
-                yield slice
+                yield StreamSlice(partition=slice, cursor_slice={})
                 slice_yielded = True
         if not slice_yielded:
             # yield an empty slice to checkpoint state later
-            yield {}
+            yield StreamSlice(partition={}, cursor_slice={})

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-orb"
+version = "2.1.24"
+description = "Unit tests for Orb."
+authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11,<3.13"
+airbyte-cdk = "7.47.0"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.9.3"
+pytest = "^8.0.0"
+pytest-mock = "^3.6.1"
+freezegun = "^1.5.1"
+ruff = "^0.9.0"
+
+[tool.pytest.ini_options]
+testpaths = ["mock_server"]
+filterwarnings = ["ignore:This class is experimental*"]
