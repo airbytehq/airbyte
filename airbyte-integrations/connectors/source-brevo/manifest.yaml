@@ -165,6 +165,11 @@ definitions:
               partition_field: folderId
               stream:
                 $ref: "#/definitions/streams/contacts_folders"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [folderId]
+              value: "{{ stream_partition.folderId }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -308,7 +313,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
+            page_size: 500
             inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
@@ -336,6 +341,11 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [listId]
+              value: "{{ stream_partition.listId }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -772,7 +782,8 @@ definitions:
         cursor_field: updatedAt
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%s"
+          - "%s"
+        datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -844,7 +855,8 @@ definitions:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%dT%H:%M:%S.%f%z"
-        datetime_format: "%s"
+          - "%s"
+        datetime_format: "%ms"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -1039,10 +1051,11 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 50
+            page_size: 100
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
+        is_client_side_incremental: true
         cursor_field: modifiedAt
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -1051,14 +1064,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          field_name: startDate
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: endDate
-          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1110,10 +1115,11 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 500
+            page_size: 1000
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
+        is_client_side_incremental: true
         cursor_field: modifiedAt
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -1122,14 +1128,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          field_name: startDate
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: endDate
-          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1138,6 +1136,386 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/smsCampaigns"
+    inbound_email_events:
+      type: DeclarativeStream
+      name: inbound_email_events
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: inbound/events
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - events
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/inbound_email_events'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+          - '%Y-%m-%dT%H:%M:%S%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
+        step: P30D
+        cursor_granularity: PT1S
+    transactional_email_events:
+      type: DeclarativeStream
+      name: transactional_email_events
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: smtp/statistics/events
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - events
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/transactional_email_events'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+          - '%Y-%m-%dT%H:%M:%S%z'
+        datetime_format: '%Y-%m-%d'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
+        step: P1D
+        cursor_granularity: P1D
+    processes:
+      type: DeclarativeStream
+      name: processes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: processes
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - processes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/processes'
+    products:
+      type: DeclarativeStream
+      name: products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: products
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - products
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/products'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+          - '%Y-%m-%dT%H:%M:%S%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedSince
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: categories
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - categories
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/categories'
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedAt
+        cursor_datetime_formats:
+          - '%Y-%m-%dT%H:%M:%S.%f%z'
+          - '%Y-%m-%dT%H:%M:%S%z'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedSince
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    email_templates:
+      type: DeclarativeStream
+      name: email_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: smtp/templates
+          http_method: GET
+          request_parameters:
+            sort: asc
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - templates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/email_templates'
   base_requester:
     type: HttpRequester
     url_base: https://api.brevo.com/v3/
@@ -1173,6 +1551,13 @@ streams:
   - $ref: "#/definitions/streams/organization_invited_users"
   - $ref: "#/definitions/streams/emailCampaigns"
   - $ref: "#/definitions/streams/smsCampaigns"
+
+  - $ref: "#/definitions/streams/inbound_email_events"
+  - $ref: "#/definitions/streams/transactional_email_events"
+  - $ref: "#/definitions/streams/processes"
+  - $ref: "#/definitions/streams/products"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/email_templates"
 
 spec:
   type: Spec
@@ -1391,6 +1776,20 @@ schemas:
     $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
+      listUnsubscribed:
+        type:
+          - array
+          - "null"
+        items:
+          type: integer
+      whatsappBlacklisted:
+        type:
+          - boolean
+          - "null"
+      consentGroups:
+        type:
+          - array
+          - "null"
       attributes:
         type:
           - object
@@ -2124,6 +2523,12 @@ schemas:
     $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
+      multiCategoryOptions:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
       type:
         type:
           - string
@@ -2145,6 +2550,10 @@ schemas:
             - object
             - "null"
           properties:
+            valueStr:
+              type:
+                - string
+                - "null"
             label:
               type:
                 - string
@@ -2166,6 +2575,10 @@ schemas:
     $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
+      folderId:
+        type:
+          - integer
+          - "null"
       id:
         type: number
       name:
@@ -2237,6 +2650,24 @@ schemas:
     $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
+      listId:
+        type:
+          - integer
+          - "null"
+      listUnsubscribed:
+        type:
+          - array
+          - "null"
+        items:
+          type: integer
+      whatsappBlacklisted:
+        type:
+          - boolean
+          - "null"
+      consentGroups:
+        type:
+          - array
+          - "null"
       attributes:
         type:
           - object
@@ -3003,6 +3434,21 @@ schemas:
       id:
         type: number
       ips:
+        items:
+          type: object
+          properties:
+            domain:
+              type:
+                - string
+                - "null"
+            ip:
+              type:
+                - string
+                - "null"
+            weight:
+              type:
+                - integer
+                - "null"
         type:
           - array
           - "null"
@@ -3251,6 +3697,10 @@ schemas:
     $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
+      isValueReadonly:
+        type:
+          - boolean
+          - "null"
       attributeOptions:
         type:
           - array
@@ -3768,6 +4218,10 @@ schemas:
     $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
+      ip:
+        type:
+          - string
+          - "null"
       authenticated:
         type:
           - boolean
@@ -3814,6 +4268,22 @@ schemas:
     $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
+      auth:
+        type:
+          - object
+          - "null"
+      batched:
+        type:
+          - boolean
+          - "null"
+      headers:
+        type:
+          - array
+          - "null"
+      domain:
+        type:
+          - string
+          - "null"
       type:
         type:
           - string
@@ -3851,6 +4321,10 @@ schemas:
     $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
+      user_id:
+        type:
+          - integer
+          - "null"
       address:
         type:
           - object
@@ -4214,6 +4688,14 @@ schemas:
                 - object
                 - "null"
               properties:
+                appleMppOpens:
+                  type:
+                    - integer
+                    - "null"
+                estimatedViews:
+                  type:
+                    - integer
+                    - "null"
                 clickers:
                   type:
                     - number
@@ -5014,6 +5496,8 @@ schemas:
           - "null"
         properties:
           exclusionLists:
+            items:
+              type: integer
             type:
               - array
               - "null"
@@ -5081,3 +5565,324 @@ schemas:
     required:
       - id
       - modifiedAt
+  inbound_email_events:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - 'null'
+      recipient:
+        type:
+          - string
+          - 'null'
+      sender:
+        type:
+          - string
+          - 'null'
+      uuid:
+        type:
+          - string
+          - 'null'
+  transactional_email_events:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - 'null'
+      email:
+        type:
+          - string
+          - 'null'
+      event:
+        type:
+          - string
+          - 'null'
+      from:
+        type:
+          - string
+          - 'null'
+      ip:
+        type:
+          - string
+          - 'null'
+      link:
+        type:
+          - string
+          - 'null'
+      messageId:
+        type:
+          - string
+          - 'null'
+      reason:
+        type:
+          - string
+          - 'null'
+      subject:
+        type:
+          - string
+          - 'null'
+      tag:
+        type:
+          - string
+          - 'null'
+      templateId:
+        type:
+          - integer
+          - 'null'
+  processes:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - integer
+          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      status:
+        type:
+          - string
+          - 'null'
+      info:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          import:
+            type:
+              - object
+              - 'null'
+            additionalProperties: true
+            properties:
+              invalid_emails:
+                type:
+                  - string
+                  - 'null'
+              duplicate_contact_id:
+                type:
+                  - string
+                  - 'null'
+              duplicate_ext_id:
+                type:
+                  - string
+                  - 'null'
+              duplicate_email_id:
+                type:
+                  - string
+                  - 'null'
+              duplicate_phone_id:
+                type:
+                  - string
+                  - 'null'
+              duplicate_whatsapp_id:
+                type:
+                  - string
+                  - 'null'
+              duplicate_landline_number_id:
+                type:
+                  - string
+                  - 'null'
+      export_url:
+        type:
+          - string
+          - 'null'
+  products:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      brand:
+        type:
+          - string
+          - 'null'
+      categories:
+        type:
+          - array
+          - 'null'
+        items:
+          type:
+            - string
+            - 'null'
+      createdAt:
+        type:
+          - string
+          - 'null'
+      description:
+        type:
+          - string
+          - 'null'
+      id:
+        type:
+          - string
+          - 'null'
+      imageUrl:
+        type:
+          - string
+          - 'null'
+      isDeleted:
+        type:
+          - boolean
+          - 'null'
+      metaInfo:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+      modifiedAt:
+        type:
+          - string
+          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      parentId:
+        type:
+          - string
+          - 'null'
+      price:
+        type:
+          - number
+          - 'null'
+      alternativePrice:
+        type:
+          - number
+          - 'null'
+      s3Original:
+        type:
+          - string
+          - 'null'
+      s3ThumbAnalytics:
+        type:
+          - string
+          - 'null'
+      s3ThumbEditor:
+        type:
+          - string
+          - 'null'
+      sku:
+        type:
+          - string
+          - 'null'
+      stock:
+        type:
+          - number
+          - 'null'
+      url:
+        type:
+          - string
+          - 'null'
+  categories:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - 'null'
+      id:
+        type:
+          - string
+          - 'null'
+      isDeleted:
+        type:
+          - boolean
+          - 'null'
+      modifiedAt:
+        type:
+          - string
+          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      url:
+        type:
+          - string
+          - 'null'
+  email_templates:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - 'null'
+      doiTemplate:
+        type:
+          - boolean
+          - 'null'
+      htmlContent:
+        type:
+          - string
+          - 'null'
+      id:
+        type:
+          - integer
+          - 'null'
+      isActive:
+        type:
+          - boolean
+          - 'null'
+      modifiedAt:
+        type:
+          - string
+          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      replyTo:
+        type:
+          - string
+          - 'null'
+      sender:
+        type:
+          - object
+          - 'null'
+        additionalProperties: true
+        properties:
+          email:
+            type:
+              - string
+              - 'null'
+          id:
+            type:
+              - string
+              - 'null'
+          name:
+            type:
+              - string
+              - 'null'
+      subject:
+        type:
+          - string
+          - 'null'
+      tag:
+        type:
+          - string
+          - 'null'
+      testSent:
+        type:
+          - boolean
+          - 'null'
+      toField:
+        type:
+          - string
+          - 'null'
+      customTemplateId:
+        type:
+          - string
+          - 'null'

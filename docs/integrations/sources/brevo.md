@@ -49,6 +49,7 @@ The connector supports the following [sync modes](https://docs.airbyte.com/platf
 | Stream | Primary key | Supports full refresh | Supports incremental |
 |--------|-------------|-----------------------|----------------------|
 | `account` | `organization_id` | Yes | No |
+| `categories` | `id` | Yes | Yes |
 | `companies` | `id` | Yes | Yes |
 | `companies_attributes` | | Yes | No |
 | `contacts` | `id` | Yes | Yes |
@@ -67,18 +68,25 @@ The connector supports the following [sync modes](https://docs.airbyte.com/platf
 | `crm_tasktypes` | `id` | Yes | No |
 | `domains` | `id` | Yes | No |
 | `emailCampaigns` | `id` | Yes | Yes |
+| `email_templates` | `id` | Yes | No |
+| `inbound_email_events` | `uuid` | Yes | Yes |
 | `organization_invited_users` | `email` | Yes | No |
+| `processes` | `id` | Yes | No |
+| `products` | `id` | Yes | Yes |
 | `senders` | `id` | Yes | No |
 | `smsCampaigns` | `id` | Yes | Yes |
+| `transactional_email_events` | | Yes | Yes |
 | `webhooks` | `id` | Yes | No |
 
-Incremental streams pass the cursor value to Brevo as a `modifiedSince` query parameter so that only records modified on or after that timestamp are returned.
+Incremental streams use `modifiedSince`, CRM `dateFrom`/`dateTo` filters, or event `startDate`/`endDate` windows. Email and SMS campaigns filter on `modifiedAt` client-side rather than using Brevo's sent-date filters.
 
 ## Performance considerations
 
 Brevo enforces per-endpoint rate limits that vary by account tier. On the general tier available to all accounts, endpoints under `/v3/contacts/…` allow 10 requests per second, while most other endpoints this connector uses (CRM, campaigns, senders, domains, webhooks, account, organization) share a limit of 100 requests per hour. See Brevo's [rate limits documentation](https://developers.brevo.com/docs/api-limits) for the full per-tier breakdown.
 
 When Brevo returns `429 Too Many Requests`, the connector retries with exponential backoff. If you run other integrations against the same API key, consider creating a dedicated key for Airbyte to avoid contention.
+
+Transactional email events and email templates use `/v3/smtp/` endpoints, which have a quota of 300 requests per hour on the general tier.
 
 ## IP allow list
 
@@ -91,6 +99,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.3.0 | 2026-11-10 | [TBD] | Add foundational fixes, six parity streams, and mock-server coverage. |
 | 0.2.54 | 2026-11-10 | [91355](https://github.com/airbytehq/airbyte/pull/91355) | Update dependencies |
 | 0.2.53 | 2026-11-04 | [90940](https://github.com/airbytehq/airbyte/pull/90940) | Simplify error handling while preserving retry and rate-limit behavior. |
 | 0.2.52 | 2026-11-03 | [90462](https://github.com/airbytehq/airbyte/pull/90462) | Update dependencies |
