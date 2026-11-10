@@ -50,6 +50,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /campaigns/data_series
           http_method: GET
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -69,9 +71,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/campaigns"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -84,9 +84,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -179,6 +176,7 @@ definitions:
           path: /canvas/data_series
           http_method: GET
           request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
             include_variant_breakdown: "true"
             include_step_breakdown: "true"
         record_selector:
@@ -201,9 +199,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/canvases"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -216,9 +212,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P14D
@@ -308,6 +301,7 @@ definitions:
           path: /events/data_series
           http_method: GET
           request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
             unit: day
         record_selector:
           type: RecordSelector
@@ -328,9 +322,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/events"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -343,9 +335,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -369,6 +358,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /kpi/new_users/data_series
           http_method: GET
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -376,9 +367,7 @@ definitions:
             field_path:
               - data
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -391,9 +380,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -411,6 +397,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /kpi/dau/data_series
           http_method: GET
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -418,9 +406,7 @@ definitions:
             field_path:
               - data
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -433,9 +419,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -453,6 +436,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /kpi/uninstalls/data_series
           http_method: GET
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -460,9 +445,7 @@ definitions:
             field_path:
               - data
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -475,9 +458,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -527,6 +507,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /feed/data_series
           http_method: GET
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -546,9 +528,7 @@ definitions:
               stream:
                 $ref: "#/definitions/streams/cards"
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -561,9 +541,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
@@ -615,9 +592,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         incremental_sync:
-          type: CustomIncrementalSync
-          class_name: >-
-            source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+          type: DatetimeBasedCursor
           cursor_field: time
           start_datetime:
             type: MinMaxDatetime
@@ -631,9 +606,6 @@ definitions:
             type: RequestOption
             field_name: ending_at
             inject_into: request_parameter
-          step_option:
-            field_name: length
-            inject_into: request_parameter
           datetime_format: "%Y-%m-%d"
           step: P100D
           cursor_granularity: P1D
@@ -641,6 +613,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /segments/data_series
           http_method: GET
+          request_parameters:
+            length: "{{ [1, [100, (str_to_datetime(stream_interval.end_time) - str_to_datetime(stream_interval.start_time)).days + 1] | min] | max }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -661,9 +635,7 @@ definitions:
                 $ref: "#/definitions/streams/segments"
       name: segments_analytics
       incremental_sync:
-        type: CustomIncrementalSync
-        class_name: >-
-          source_declarative_manifest.components.DatetimeIncrementalSyncComponent
+        type: DatetimeBasedCursor
         cursor_field: time
         start_datetime:
           type: MinMaxDatetime
@@ -676,9 +648,6 @@ definitions:
         end_time_option:
           type: RequestOption
           field_name: ending_at
-          inject_into: request_parameter
-        step_option:
-          field_name: length
           inject_into: request_parameter
         datetime_format: "%Y-%m-%d"
         step: P100D
