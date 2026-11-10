@@ -6,7 +6,14 @@ import jsonschema
 import pytest
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteStateMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Type,
+)
 
 
 class MockLogger:
@@ -293,3 +300,61 @@ def test_read_users_resumes_from_checkpoint():
 
     records = [row.record.data for row in iterator if row.type is Type.RECORD]
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
+
+
+def read_always_updated_users(count, records_per_slice, state):
+    config = {"count": count, "seed": 42, "parallelism": 4, "records_per_slice": records_per_slice, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    return list(SourceFaker().read(logger, config, catalog, state))
+
+
+@pytest.mark.parametrize("records_per_slice", [1000, 100])
+def test_users_consecutive_always_updated_reads(records_per_slice):
+    first = read_always_updated_users(1000, records_per_slice, {})
+    assert [message.record.data["id"] for message in first if message.type is Type.RECORD] == list(range(1, 1001))
+    final_state = [message.state for message in first if message.type is Type.STATE][-1]
+
+    second = read_always_updated_users(1000, records_per_slice, [final_state])
+
+    assert [message.record.data["id"] for message in second if message.type is Type.RECORD] == list(range(1, 1001))
+
+
+@pytest.mark.parametrize("records_per_slice", [1000, 100])
+@pytest.mark.parametrize("offset", [1000, 1100, 400])
+def test_users_always_updated_stored_offset(records_per_slice, offset):
+    state = AirbyteStateMessageSerializer.load(
+        {
+            "type": "STREAM",
+            "stream": {
+                "stream_descriptor": {"name": "users"},
+                "stream_state": {"seed": 42, "updated_at": "2026-11-01T00:00:00+00:00", "loop_offset": offset},
+            },
+        }
+    )
+
+    messages = read_always_updated_users(1000, records_per_slice, [state])
+
+    start = offset + 1 if offset < 1000 else 1
+    assert [message.record.data["id"] for message in messages if message.type is Type.RECORD] == list(range(start, 1001))
+
+
+@pytest.mark.parametrize("offset", [0, 100])
+def test_users_always_updated_empty(offset):
+    state = AirbyteStateMessageSerializer.load(
+        {
+            "type": "STREAM",
+            "stream": {
+                "stream_descriptor": {"name": "users"},
+                "stream_state": {"loop_offset": offset},
+            },
+        }
+    )
+
+    messages = read_always_updated_users(0, 100, [state])
+
+    assert not [message for message in messages if message.type is Type.RECORD]
