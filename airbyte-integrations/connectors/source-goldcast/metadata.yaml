@@ -44,6 +44,13 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["event_members"]
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   releaseDate: 2024-07-04
   releaseStage: alpha
   supportLevel: community
