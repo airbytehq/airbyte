@@ -1,5 +1,14 @@
 # Airbyte Cloud release notes
 
+## November 6, 2026
+
+Connections
+
+- You can again copy a source or destination's configuration using **Copy JSON** in its setup or settings header. The copy includes your unsaved edits and masks passwords and other secret fields.
+- If your Standard or Plus plan has a sync-frequency limit, that limit now also applies when you start a sync manually: one hour for Standard and 15 minutes for Plus, with a five-minute grace period. The wait is measured from the start of your last successful sync, so failed or cancelled syncs do not start a new wait.
+- By default, your sync jobs now allow up to 10 failed attempts that each moved some data, down from 20. This reduces repeated retries before a persistently failing sync is marked as failed.
+- Your syncs no longer get stuck showing **Running** when a connector reports a very large number of errors. Airbyte keeps a limited set of errors in the sync summary and indicates when additional errors are available in the logs.
+
 ## November 4, 2026
 
 Connections
