@@ -603,12 +603,12 @@ spec:
               client_id:
                 type: string
                 title: Client ID
-                description: The OAuth 2.0 client ID from your Google Cloud project.
+                description: The client ID of the Google OAuth app. Filled in automatically on Airbyte Cloud.
                 airbyte_secret: true
               client_secret:
                 type: string
                 title: Client Secret
-                description: The OAuth 2.0 client secret from your Google Cloud project.
+                description: The client secret of the Google OAuth app. Filled in automatically on Airbyte Cloud.
                 airbyte_secret: true
               refresh_token:
                 type: string
@@ -717,7 +717,7 @@ spec:
         description: Move flat OAuth credentials under `credentials` as the custom-app option
         transformations:
           - type: ConfigAddFields
-            condition: "{{ 'client_refresh_token_2' in config }}"
+            condition: "{{ 'client_refresh_token_2' in config and 'refresh_token' not in config.get('credentials', {}) }}"
             fields:
               - type: AddedFieldDefinition
                 path:

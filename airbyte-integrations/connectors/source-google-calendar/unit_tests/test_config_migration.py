@@ -58,6 +58,24 @@ def test_nested_config_is_not_migrated(capsys, auth_type):
     assert "CONTROL" not in capsys.readouterr().out
 
 
+@pytest.mark.parametrize("auth_type", ["manual", "oauth2.0"])
+def test_existing_credentials_are_kept_when_flat_keys_remain(capsys, auth_type):
+    # A partial update through the public API merges a new `credentials` block into a flat config
+    # that has not been migrated yet, so both shapes can be present at once.
+    credentials = {"auth_type": auth_type, "client_id": "new-id", "client_secret": "new-secret", "refresh_token": "new-refresh"}
+    config = {**LEGACY_CONFIG, "credentials": dict(credentials)}
+
+    source = get_source(config)
+
+    assert source._config["credentials"] == credentials
+    for key in ("client_id", "client_secret", "client_refresh_token_2"):
+        assert key not in source._config
+
+    control_messages = [json.loads(line) for line in capsys.readouterr().out.splitlines() if '"CONTROL"' in line]
+    assert len(control_messages) == 1
+    assert control_messages[0]["control"]["connectorConfig"]["config"]["credentials"] == credentials
+
+
 def test_migrated_credentials_reach_the_token_endpoint(requests_mock):
     token_request = requests_mock.post(_TOKEN_URL, json={"access_token": "at", "expires_in": 3600})
     requests_mock.get(_CALENDAR_LIST_URL, json={"items": []})
