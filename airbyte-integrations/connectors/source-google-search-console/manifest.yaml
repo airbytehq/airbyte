@@ -23,13 +23,11 @@ spec:
         items:
           type: string
         title: Website URL Property
-        description: Enter each Search Console property exactly. Domain properties use
-          sc-domain:example.com; URL-prefix properties use the full URL, including protocol
-          and trailing slash, e.g. https://www.example.com/.
+        description: The URLs of the website property attached to your GSC account.
           Learn more about properties <a href="https://support.google.com/webmasters/answer/34592?hl=en">here</a>.
         examples:
-        - sc-domain:example2.com
         - https://example1.com/
+        - sc-domain:example2.com
         order: 0
       start_date:
         type: string
@@ -323,22 +321,6 @@ spec:
                 - query
 
 definitions:
-  sites_error_handler:
-    type: DefaultErrorHandler
-    response_filters:
-      - type: HttpResponseFilter
-        action: FAIL
-        http_codes:
-          - 404
-        error_message: "Configured site URL is not a verified Search Console property in this account."
-        failure_type: config_error
-      - type: HttpResponseFilter
-        action: FAIL
-        http_codes:
-          - 403
-        error_message: "Configured site URL is not accessible with the account's Search Console permissions."
-        failure_type: config_error
-
   search_analytics_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -414,9 +396,7 @@ definitions:
           endDate: "{{ stream_interval.get('end_time') }}"
           dimensions: "{{ parameters['dimensions'] }}"
           type: "{{ stream_partition.get('search_type') }}"
-          # Google does not support byProperty for discover or googleNews search types:
-          # https://developers.google.com/webmaster-tools/v1/searchanalytics/query
-          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') or (parameters.get('aggregationType') == 'byProperty' and stream_partition.get('search_type') in ['discover', 'googleNews']) else parameters.get('aggregationType') }}"
+          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
         error_handler:
           $ref: "#/definitions/search_analytics_error_handler"
@@ -487,8 +467,39 @@ definitions:
           - path:
               - search_type
             value: "{{ stream_partition['search_type'] }}"
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['keys'][0] }}"
+          - path:
+              - country
+            value: "{{ record['keys'][1] }}"
+          - path:
+              - device
+            value: "{{ record['keys'][2] }}"
+          - path:
+              - page
+            value: "{{ record['keys'][3] }}"
+          - path:
+              - query
+            value: "{{ record['keys'][4] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
+      # The purpose of the following transformation is to
+      # cast the query value as a string. The GSC API allows
+      # users to make queries with a wide array of datatypes resulting
+      # in occasional non-string values. This transformation ensures
+      # the Airbyte Entrypoint can serialize these non-string values.
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - query
+            value: "{{ record['query'] }}"
+            value_type: string
+        condition: "{{ record.get('query', False) }}"
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
@@ -535,11 +546,9 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
-            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
-            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -583,7 +592,6 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
-            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -631,11 +639,9 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
-            value_type: string
           - path:
               - device
             value: "{{ record['keys'][1] }}"
-            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -679,11 +685,9 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
-            value_type: string
           - path:
               - page
             value: "{{ record['keys'][1] }}"
-            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -723,8 +727,30 @@ definitions:
           - path:
               - search_type
             value: "{{ stream_partition['search_type'] }}"
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['keys'][0] }}"
+          - path:
+              - query
+            value: "{{ record['keys'][1] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
+      # The purpose of the following transformation is to
+      # cast the query value as a string. The GSC API allows
+      # users to make queries with a wide array of datatypes resulting
+      # in occasional non-string values. This transformation ensures
+      # the Airbyte Entrypoint can serialize these non-string values.
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - query
+            value: "{{ record['query'] }}"
+            value_type: string
+        condition: "{{ record.get('query', False) }}"
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
@@ -766,19 +792,15 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
-            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
-            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
-            value_type: string
           - path:
               - page
             value: "{{ record['keys'][3] }}"
-            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -824,15 +846,12 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
-            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
-            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
-            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -878,15 +897,12 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
-            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
-            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
-            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -920,8 +936,6 @@ definitions:
         path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}"
         http_method: GET
         authenticator: "#/definitions/selective_authenticator"
-        error_handler:
-          $ref: "#/definitions/sites_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -947,8 +961,6 @@ definitions:
         path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}/sitemaps"
         http_method: GET
         authenticator: "#/definitions/selective_authenticator"
-        error_handler:
-          $ref: "#/definitions/sites_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1032,7 +1044,6 @@ definitions:
           - path:
               - searchAppearance
             value: "{{ record['keys'][0] }}"
-            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
@@ -1062,9 +1073,7 @@ definitions:
           endDate: "{{ stream_interval.get('end_time') }}"
           dimensions: "{{ parameters.get('dimensions') }}"
           type: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
-          # Google does not support byProperty for discover or googleNews search types:
-          # https://developers.google.com/webmaster-tools/v1/searchanalytics/query
-          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') or (parameters.get('aggregationType') == 'byProperty' and stream_partition.get('parent_slice', {}).get('search_type') in ['discover', 'googleNews']) else parameters.get('aggregationType') }}"
+          aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
           # The Google Search Console API spec requires `filters` to be an array of filter
           # objects. The single-dict form was silently tolerated by the API, but the array
@@ -1149,8 +1158,26 @@ definitions:
           - path:
               - search_appearance
             value: "{{ stream_partition.get('search_appearance') }}"
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['keys'][0] }}"
+          - path:
+              - country
+            value: "{{ record['keys'][1] }}"
+          - path:
+              - device
+            value: "{{ record['keys'][2] }}"
+          - path:
+              - query
+            value: "{{ record['keys'][3] }}"
+          - path:
+              - page
+            value: "{{ record['keys'][4] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
@@ -1189,8 +1216,23 @@ definitions:
           - path:
               - search_appearance
             value: "{{ stream_partition.get('search_appearance') }}"
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.CustomReportExtractDimensionsFromKeys
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['keys'][0] }}"
+          - path:
+              - country
+            value: "{{ record['keys'][1] }}"
+          - path:
+              - device
+            value: "{{ record['keys'][2] }}"
+          - path:
+              - query
+            value: "{{ record['keys'][3] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - keys
       - type: CustomTransformation
         class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
@@ -1233,20 +1275,15 @@ definitions:
           - path:
               - date
             value: "{{ record['keys'][0] }}"
-            value_type: string
           - path:
               - country
             value: "{{ record['keys'][1] }}"
-            value_type: string
           - path:
               - device
             value: "{{ record['keys'][2] }}"
-            value_type: string
           - path:
               - query
-            type: AddedFieldDefinition
             value: "{{ record['keys'][3] }}"
-            value_type: string
       - type: RemoveFields
         field_pointers:
           - - keys
