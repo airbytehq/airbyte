@@ -776,7 +776,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       start_datetime: "2010-01-01T00:00:00Z"
-      end_datetime: "9999-12-31T00:00:00Z"
+      end_datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
       global_substream_cursor: true
     retriever:
       $ref: "#/definitions/base_stream/retriever"
