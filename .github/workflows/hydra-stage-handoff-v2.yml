@@ -24,6 +24,8 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #      blockers array.
 #   4. Switch on next_action and dispatch the matching slash-command workflow
 #      via curl. No Devin session is launched for the decision itself.
+#      fix_ci and rework fix message the PR's original fix session (or start
+#      one on the same branch), with the same dry-run and idempotency key.
 #   5. Idempotency (HYD-372): each dispatch first records a hidden
 #      `hydra_handoff_v2` marker comment keyed on (pr, head_sha, next_action)
 #      and skips when that key is already on the PR, so repeat wakes on the
@@ -40,9 +42,7 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #
 # This workflow does not yet handle:
 #   - `escalate`: template-fire path (HYD-382).
-#   - `fix_ci`:   thin-LLM CI-relatedness classifier (Phase 3).
-# Both are logged and exited; the daily sweep and author/human handle them
-# meanwhile.
+# Escalations are logged; the daily sweep and author/human handle them meanwhile.
 
 on:
   # Dispatcher-emitted completion signals. The slash-command workflows pivoted
@@ -337,6 +337,21 @@ jobs:
           # The head hydra assessed, so the idempotency key matches the decision.
           HEAD_SHA=$(jq -r --arg ref "airbytehq/airbyte#$PR_NUMBER" \
             'first(.prs[]? | select(.ref == $ref) | .facts.head_sha) // ""' <<<"$OUT")
+          PR_STATE=$(jq --arg ref "airbytehq/airbyte#$PR_NUMBER" 'first(.prs[]? | select(.ref == $ref)) // {}' <<<"$OUT")
+          echo "author_kind=$(jq -r '.facts.author_kind // ""' <<<"$PR_STATE")" | tee -a "$GITHUB_OUTPUT"
+          echo "fix_run=$(jq -r '.named_by_fix_run // ""' <<<"$PR_STATE")" | tee -a "$GITHUB_OUTPUT"
+          echo "issue_url=$(jq -r '.issues[0].url // ""' <<<"$OUT")" | tee -a "$GITHUB_OUTPUT"
+          DELIMITER="hydra_$(openssl rand -hex 16)"
+          {
+            echo "failing_checks<<$DELIMITER"
+            jq -r '.facts.ci_failing[]? | "\(.name): \(.url)"' <<<"$PR_STATE"
+            echo "$DELIMITER"
+            echo "stage_findings<<$DELIMITER"
+            jq -r --argjson pr "$PR_STATE" '.runs as $runs | $pr.pr_stages[]? |
+              .latest_with_outcome as $id | $runs[]? | select(.id == $id) |
+              select(.outcome != "PROVEN" and .outcome != "PASS") | "\(.kind) \(.outcome): \(.url)"' <<<"$OUT"
+            echo "$DELIMITER"
+          } | tee -a "$GITHUB_OUTPUT"
           echo "next_action=$NEXT_ACTION" | tee -a "$GITHUB_OUTPUT"
           echo "head_sha=$HEAD_SHA" | tee -a "$GITHUB_OUTPUT"
           echo "reason=$REASON" >> "$GITHUB_OUTPUT"
@@ -361,6 +376,7 @@ jobs:
         run: |
           set -euo pipefail
 
+          cat > "$RUNNER_TEMP/hydra-claim.sh" <<'HYDRA_CLAIM'
           # Sets CLAIMED=true when this run may dispatch WORKFLOW. The marker
           # is posted before the dispatch, and the handoff job is serialised
           # per PR, so a queued wake sees it and skips. Only [bot] comments
@@ -396,6 +412,8 @@ jobs:
             echo "idempotency=$RESULT" | tee -a "$GITHUB_OUTPUT"
             CLAIMED=true
           }
+          HYDRA_CLAIM
+          source "$RUNNER_TEMP/hydra-claim.sh"
 
           # When the request never reached GitHub (curl 6/7: DNS, connect) or
           # GitHub rejected it (22: HTTP error), the marker is deleted so the
@@ -473,6 +491,10 @@ jobs:
               dispatch_airbyte "ai-resolve-conflicts-command.yml"
               ;;
             fix|triage)
+              if [[ "$NEXT_ACTION" == "fix" && "$TARGET" == "airbytehq/airbyte#$PR_NUMBER" ]]; then
+                echo "route=fix_session" | tee -a "$GITHUB_OUTPUT"
+                exit 0
+              fi
               # The oncall workflows only take oncall issues; the group's issue
               # can live elsewhere (e.g. airbyte-internal-issues).
               if [[ ! "$TARGET" =~ ^airbytehq/oncall#([0-9]+)$ ]]; then
@@ -482,11 +504,7 @@ jobs:
               dispatch_oncall "ai-$NEXT_ACTION-command.yml" "${BASH_REMATCH[1]}"
               ;;
             fix_ci)
-              # TODO (Phase 3): thin-LLM relatedness classifier reads the
-              # failing checks and decides to dispatch /ai-prove-fix anyway
-              # (unrelated) or exit (related, author/human fixes). Until then,
-              # log and exit — the daily sweep's §2.5.5 path still covers it.
-              echo "::warning::fix_ci next_action — no automatic handling yet (Phase 3). Blockers: $BLOCKERS"
+              echo "route=fix_session" | tee -a "$GITHUB_OUTPUT"
               ;;
             escalate)
               # TODO (HYD-382): template-fire escalation via MCP with
@@ -508,6 +526,176 @@ jobs:
               ;;
           esac
 
+      - name: Route to fix session
+        id: fix-session
+        if: steps.dispatch.outputs.route == 'fix_session'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          DEVIN_AI_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
+          DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr }}
+          NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
+          HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
+          FORCE: ${{ github.event.inputs.force }}
+          AUTHOR_KIND: ${{ steps.assess.outputs.author_kind }}
+          FIX_RUN: ${{ steps.assess.outputs.fix_run }}
+          FAILING_CHECKS: ${{ steps.assess.outputs.failing_checks }}
+          ISSUE_URL: ${{ steps.assess.outputs.issue_url }}
+          STAGE_FINDINGS: ${{ steps.assess.outputs.stage_findings }}
+          REASON: ${{ steps.assess.outputs.reason }}
+          DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+        run: |
+          set -eEuo pipefail
+          result() { echo "fix_session_result=$*" | tee -a "$GITHUB_OUTPUT"; }
+          escalate() { echo "::warning::$*"; result "escalate: $*"; }
+          trap 'result failed' ERR
+          source "$RUNNER_TEMP/hydra-claim.sh"
+          MARKER=hydra_review_fix_requested
+          TITLE="Hands-Free review fix: PR #$PR_NUMBER"
+          [[ "$NEXT_ACTION" == "fix_ci" ]] && MARKER=hydra_ci_fix_requested && TITLE="Hands-Free CI fix: PR #$PR_NUMBER"
+          if [[ "$AUTHOR_KIND" != "devin" ]]; then
+            if [[ "$NEXT_ACTION" == "fix_ci" ]]; then
+              echo "::notice::not a Devin PR; author fixes CI"
+              result "no_action: not a Devin PR; author fixes CI"
+            else
+              escalate "not a Devin PR; author must rework it"
+            fi
+            exit 0
+          fi
+          COMMENTS=$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" | jq 'add')
+          KEY="<!-- hydra_handoff_v2: pr=$PR_NUMBER; head_sha=$HEAD_SHA; next_action=$NEXT_ACTION -->"
+          if [[ "$FORCE" != "true" ]] && jq -e --arg key "$KEY" '
+            any(.[]; (.user.login | endswith("[bot]")) and (.body | contains($key)))' <<<"$COMMENTS" >/dev/null; then
+            echo "idempotency=skipped" | tee -a "$GITHUB_OUTPUT"
+            result "no_action: already routed at this head"
+            exit 0
+          fi
+          if [[ "$NEXT_ACTION" == "fix_ci" ]] && jq -e --arg sha "$HEAD_SHA" '
+            any(.[]; ((.user.login | endswith("[bot]")) or .user.login == "devin-ai-integration") and
+              (.body | contains("<!-- hydra_ci_not_pr_caused; head_sha: " + $sha + " -->")))' <<<"$COMMENTS" >/dev/null; then
+            echo "::notice::fix session said CI failure is not caused by this PR"
+            result "no_action: CI failure is not PR-caused"
+            exit 0
+          fi
+          MARKERS=$(jq --arg marker "$MARKER" '[.[] | select(.user.login | endswith("[bot]")) |
+            select(.body | contains("<!-- " + $marker + ";"))] | sort_by(.created_at)' <<<"$COMMENTS")
+          SESSION=$(jq -r 'last.body // "" | (capture("session: (?<id>[^; >]+)")? | .id) // ""' <<<"$MARKERS")
+          SESSION=${SESSION:-$FIX_RUN}
+          SESSION=${SESSION#devin:}
+          SESSION=${SESSION#devin-}
+          API="https://api.devin.ai/v3/organizations/$DEVIN_ORG_ID/sessions"
+          RESPONSE="$RUNNER_TEMP/fix-session-response"
+          HEADERS="$RUNNER_TEMP/fix-session-headers"
+          request() {
+            local METHOD="$1" URL="$2" DATA="${3:-}" RC=0 DELAY RETRY_AFTER ATTEMPT
+            if [[ -z "${DEVIN_AI_API_KEY:-}" ]]; then HTTP=401; return 0; fi
+            for ATTEMPT in 0 1 2 3 4; do
+              RC=0
+              HTTP=$(curl -sS --connect-timeout 30 --max-time 120 -X "$METHOD" \
+                -H "Authorization: Bearer $DEVIN_AI_API_KEY" -H 'Content-Type: application/json' \
+                ${DATA:+--data-binary "$DATA"} -D "$HEADERS" -o "$RESPONSE" -w '%{http_code}' "$URL") || RC=$?
+              [[ "$RC" == 0 ]] || { HTTP=000; return 0; }
+              [[ "$HTTP" == 429 && "$ATTEMPT" -lt 4 ]] || return 0
+              DELAY=$((60 * (2 ** ATTEMPT)))
+              RETRY_AFTER=$(awk 'tolower($1) == "retry-after:" {gsub("\r", "", $2); print $2}' "$HEADERS" | tail -1)
+              if [[ "$RETRY_AFTER" =~ ^[0-9]+$ ]] && (( RETRY_AFTER > DELAY )); then DELAY=$RETRY_AFTER; fi
+              echo "::notice::Devin API rate limited; retrying same request"
+              sleep "$((DELAY + RANDOM % 31))"
+            done
+          }
+          MESSAGEABLE=false
+          if [[ -n "$SESSION" ]]; then
+            request GET "$API/devin-$SESSION"
+            if [[ "$HTTP" == 2* ]]; then
+              STATUS=$(jq -r '.status // ""' "$RESPONSE")
+              if [[ "$STATUS" =~ ^(new|claimed|running|resuming)$ ]]; then
+                echo "::notice::fix session still working"
+                result "no_action: fix session still working"
+                exit 0
+              fi
+              if jq -e '.origin != "api" and .parent_session_id == null and .service_user_id == null' "$RESPONSE" >/dev/null; then
+                escalate "human-started session $SESSION; contact the person named Requested by on the PR"
+                exit 0
+              fi
+              MESSAGEABLE=true
+            elif [[ "$HTTP" == 429 ]]; then
+              escalate "session lookup capacity exhausted (HTTP 429)"
+              exit 1
+            fi
+          fi
+          if jq -e --arg sha "$HEAD_SHA" 'any(.[]; .body | contains("head_sha: " + $sha + ";"))' <<<"$MARKERS" >/dev/null; then
+            escalate "fix already requested for current HEAD"
+            exit 0
+          fi
+          if [[ $(jq length <<<"$MARKERS") -ge 2 ]]; then
+            escalate "two fix requests already made"
+            exit 0
+          fi
+          PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefName,url)
+          PR_URL=$(jq -r '.url' <<<"$PR_JSON")
+          BRANCH=$(jq -r '.headRefName' <<<"$PR_JSON")
+          if [[ "$NEXT_ACTION" == "fix_ci" ]]; then
+            PROMPT="Hands-Free triage: CI is red on $PR_URL (branch \`$BRANCH\`) at $HEAD_SHA. Failing required checks: $FAILING_CHECKS. They look caused by this PR's change. Oncall issue: ${ISSUE_URL:-unknown}.
+          Fix the failing required checks on the same branch, push, and wait for the required checks to finish. Do not open a new PR. Do not change anything that is not needed to fix these checks.
+          If the red check isn't caused by this PR's change (flaky test, credentials, infra), push nothing and post a PR comment explaining why, starting with <!-- hydra_ci_not_pr_caused; head_sha: $HEAD_SHA -->."
+          else
+            PROMPT="Hands-Free triage: hydra assessed $REASON on $PR_URL (branch \`$BRANCH\`) at $HEAD_SHA. Failing stage runs: $STAGE_FINDINGS. Findings to address: the failing gates and findings in the latest Fix Validation Evidence or AI review comment on the PR at this head. Oncall issue: ${ISSUE_URL:-unknown}.
+          Check out the existing branch, make the change these findings call for, push to the same branch, and wait for the required checks to finish. Do not open a new PR. Do not change anything that is not needed for these findings."
+          fi
+          create_prompt() {
+            local OLD_SESSION_URL=unknown
+            [[ -n "$SESSION" ]] && OLD_SESSION_URL="https://app.devin.ai/sessions/$SESSION"
+            if [[ "$NEXT_ACTION" == "fix_ci" ]]; then
+              PROMPT="Hands-Free triage: CI is red on $PR_URL (repo airbytehq/airbyte, branch \`$BRANCH\`) at $HEAD_SHA. Failing required checks: $FAILING_CHECKS. They look caused by this PR's change. The session that worked on this PR (${OLD_SESSION_URL}) could not be reached. Oncall issue: ${ISSUE_URL:-unknown}.
+          Check out the existing branch, fix the failing required checks, push to the same branch, and wait for the required checks to finish. Do not open a new PR. Do not change anything that is not needed to fix these checks.
+          If the red check isn't caused by this PR's change (flaky test, credentials, infra), push nothing and post a PR comment explaining why, starting with <!-- hydra_ci_not_pr_caused; head_sha: $HEAD_SHA -->."
+            fi
+          }
+          claim_dispatch "fix session"
+          if [[ "$CLAIMED" != true ]]; then result "no_action: idempotency skipped"; exit 0; fi
+          ACTION=message
+          if [[ "$DRY_RUN" == true ]]; then
+            if [[ "$MESSAGEABLE" == true ]]; then
+              echo "::notice::WOULD message session $SESSION"
+              result would_message
+            else
+              create_prompt
+              echo "::notice::WOULD create session"
+              result would_create
+              ACTION=new_session
+              SESSION='<new-session-id>'
+            fi
+            printf '%s\n' "$PROMPT"
+            echo "::notice::WOULD post marker <!-- $MARKER; head_sha: $HEAD_SHA; session: $SESSION; action: $ACTION -->"
+            exit 0
+          fi
+          if [[ "$MESSAGEABLE" == true ]]; then
+            request POST "$API/devin-$SESSION/messages" "$(jq -n --arg message "$PROMPT" '{message: $message}')"
+            case "$HTTP" in
+              2*) ;;
+              429) escalate "message capacity exhausted (HTTP 429)"; echo "::error::Fix message rate limit exhausted"; exit 1 ;;
+              5*|000) escalate "message outcome uncertain (HTTP $HTTP); keeping claim"; echo "::error::Fix message outcome uncertain"; exit 1 ;;
+              *) MESSAGEABLE=false ;;
+            esac
+          fi
+          if [[ "$MESSAGEABLE" != true ]]; then
+            create_prompt
+            request POST "$API" "$(jq -n --arg prompt "$PROMPT" --arg title "$TITLE" '{prompt: $prompt, title: $title}')"
+            SESSION=$(jq -r '.session_id // ""' "$RESPONSE" 2>/dev/null || true)
+            if [[ "$HTTP" != 2* || -z "$SESSION" ]]; then
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/comments/$MARKER_ID" --silent || echo "::warning::Could not delete claim"
+              escalate "create failed (HTTP $HTTP)"
+              echo "::error::Fix session creation failed"
+              exit 1
+            fi
+            SESSION=${SESSION#devin-}
+            ACTION=new_session
+          fi
+          BODY="<!-- $MARKER; head_sha: $HEAD_SHA; session: $SESSION; action: $ACTION -->
+          Hands-Free asked a fix session (https://app.devin.ai/sessions/$SESSION) to fix $PR_URL at \`${HEAD_SHA:0:7}\`."
+          gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$BODY" --silent
+          if [[ "$ACTION" == message ]]; then result messaged; else result created; fi
+
       - name: Resolve Variables
         id: resolve-vars
         if: ${{ !cancelled() && steps.eligibility.outputs.eligible == 'true' }}
@@ -522,15 +710,18 @@ jobs:
           DRY_RUN: ${{ steps.mode.outputs.dry_run }}
           IDEMPOTENCY: ${{ steps.dispatch.outputs.idempotency }}
           DISPATCH_OUTCOME: ${{ steps.dispatch.outcome }}
+          FIX_SESSION_RESULT: ${{ steps.fix-session.outputs.fix_session_result }}
+          FIX_IDEMPOTENCY: ${{ steps.fix-session.outputs.idempotency }}
         run: |
           set -euo pipefail
           NOTIFY=$(jq -nr 'env | .NEXT_ACTION as $action |
             (["prove", "review", "ready", "resolve_conflicts", "fix", "triage", "fix_ci", "escalate"] | index($action) != null)
-            and (.IDEMPOTENCY != "skipped")')
+            and (.IDEMPOTENCY != "skipped" and .FIX_IDEMPOTENCY != "skipped")')
           echo "notify=$NOTIFY" | tee -a "$GITHUB_OUTPUT"
           PAYLOAD_FILE="$RUNNER_TEMP/handoff-slack-payload.json"
           jq -n 'env |
-            (if .DISPATCH_OUTCOME != "success" then "failed (step outcome: \(.DISPATCH_OUTCOME))"
+            (if .FIX_SESSION_RESULT != "" then .FIX_SESSION_RESULT
+             elif .DISPATCH_OUTCOME != "success" then "failed (step outcome: \(.DISPATCH_OUTCOME))"
              elif .NEXT_ACTION == "fix_ci" or .NEXT_ACTION == "escalate" then "not handled (\(.NEXT_ACTION))"
              elif ((["prove", "review", "ready", "resolve_conflicts"] | index(env.NEXT_ACTION) != null)
                    and .TARGET != "airbytehq/airbyte#\(.PR_NUMBER)")
@@ -574,6 +765,7 @@ jobs:
           HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
           IDEMPOTENCY: ${{ steps.dispatch.outputs.idempotency }}
           IDEMPOTENCY_KEY: ${{ steps.dispatch.outputs.idempotency_key }}
+          FIX_SESSION_RESULT: ${{ steps.fix-session.outputs.fix_session_result }}
           DRY_RUN: ${{ steps.mode.outputs.dry_run }}
           PR_NUMBER: ${{ needs.gate.outputs.pr }}
         run: |
@@ -588,5 +780,6 @@ jobs:
             [[ -n "${HEAD_SHA:-}" ]] && echo "- Head SHA: \`${HEAD_SHA}\`"
             [[ -n "${IDEMPOTENCY:-}" ]] && echo "- Idempotency: ${IDEMPOTENCY} (\`${IDEMPOTENCY_KEY}\`)"
             echo "- Dry run: ${DRY_RUN:-unknown}"
+            [[ -n "${FIX_SESSION_RESULT:-}" ]] && echo "- Fix session: ${FIX_SESSION_RESULT}"
             true
           } | tee -a "$GITHUB_STEP_SUMMARY"
