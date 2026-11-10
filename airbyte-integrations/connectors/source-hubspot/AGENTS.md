@@ -27,7 +27,7 @@ APIs.
   section 2.
 - CRM search pagination uses `hs_object_id` keyset paging with `after` always set to 0. See
   `CONTRIBUTING.md` section 3.
-- Contacts and custom objects use `StateDelegatingStream` to select full-refresh or incremental
+- Contacts, deals, and custom objects use `StateDelegatingStream` to select full-refresh or incremental
   implementations. See `CONTRIBUTING.md` section 4.
 - Many streams use character-based property chunking (15,000 char limit). See `CONTRIBUTING.md` section 5.
 - Authentication retries on 401 to handle mid-sync token expiration. See `CONTRIBUTING.md` section 8.
@@ -98,10 +98,10 @@ leaves the filtered result set while the sync is running.
 
 ---
 
-## 4. StateDelegatingStream for Contacts and Custom Objects
+## 4. StateDelegatingStream for Contacts, Deals, and Custom Objects
 
 Custom HubSpot objects use `DynamicDeclarativeStream` with `StateDelegatingStream`, and the built-in
-`contacts` stream also uses `StateDelegatingStream` to select between two stream implementations
+`contacts` and `deals` streams also use `StateDelegatingStream` to select between two stream implementations
 based on whether incoming stream state exists:
 
 - **No state (full refresh):** Uses `GET /crm/v3/objects/{entity}` with property chunking and
@@ -109,10 +109,12 @@ based on whether incoming stream state exists:
 - **Has state (incremental):** Uses `POST /crm/v3/objects/{entity}/search` with the CRM search
   pagination strategy and date range filters.
 
-For contacts, the full-refresh stream fetches properties from `/crm/v3/properties/contact`, chunks
-the list endpoint's property requests, and uses the same association extraction and field
-transformations as the search stream. With state, contacts uses the CRM Search endpoint and its
-`lastmodifieddate` filters. The web analytics contacts parent also uses the search stream definition.
+For contacts and deals, the full-refresh streams fetch properties from `/crm/v3/properties/{entity}`,
+chunk the list endpoint's property requests, and use the same association extraction and field
+transformations as the search streams. With state, contacts and deals use the CRM Search endpoint with
+`lastmodifieddate` and `hs_lastmodifieddate` filters, respectively. Their web analytics parents also use
+the search stream definitions. Reading the list endpoint without state avoids losing records modified
+after the search date slices were generated.
 
 For custom objects, the split exists because HubSpot's CRM Search API requires filter parameters that
 depend on knowing a cursor position (i.e., state). On first sync with no state, the list endpoint
@@ -121,8 +123,8 @@ incremental syncs because it supports `lastmodifieddate` filters, avoiding full 
 
 **Why this matters:** These are independent stream implementations that happen to share a name. They
 have different requesters, paginators, and record selectors, so a fix applied to one sub-stream will
-not carry over to the other. Verify both full-refresh and incremental paths when changing either
-contacts or custom-object behavior.
+not carry over to the other. Verify both full-refresh and incremental paths when changing
+contacts, deals, or custom-object behavior.
 
 ---
 

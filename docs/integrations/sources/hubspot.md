@@ -518,6 +518,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.14.2 | 2026-11-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix `deals` silently missing records in Full Refresh: read `deals` from the list endpoint when there is no state. |
 | 6.14.1 | 2026-11-04 | [90854](https://github.com/airbytehq/airbyte/pull/90854) | Fix `contacts` silently missing records: CRM Search now pages by record ID, and Full Refresh reads `contacts` from the list endpoint. |
 | 6.14.0 | 2026-11-04 | [88970](https://github.com/airbytehq/airbyte/pull/88970) | Add `listings` stream |
 | 6.13.3 | 2026-11-03 | [90251](https://github.com/airbytehq/airbyte/pull/90251) | Migrate `deal_pipelines` to Pipelines API 2026-09 ahead of the V1 sunset. Columns, primary key and cursor are unchanged; stages gain `writePermissions`. See [Notes on the `deal_pipelines` stream](#notes-on-the-deal_pipelines-stream) |
