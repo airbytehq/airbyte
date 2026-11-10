@@ -7,7 +7,7 @@ This page contains the setup guide and reference information for the Facebook Pa
 To set up the Facebook Pages source connector, you need a Facebook app, a long-lived Page access token, and the ID of the Page you want to sync.
 
 :::note
-This connector calls v24.0 of the Facebook Graph API.
+This connector calls v26.0 of the Facebook Graph API.
 :::
 
 Meta only returns Page Insights data for Pages with 100 or more likes. The connector checks the connection by reading the `page_insights` stream, and an empty response still passes, so a Page with fewer than 100 likes can be set up and will sync its non-insights streams, such as `page` and `post`, but its insights streams return no records until it reaches 100 likes.
@@ -75,10 +75,10 @@ The `video_insights`, `reel_insights`, `comment`, and `rating` streams were adde
 
 | Stream | Graph API endpoint | Notes |
 | :--- | :--- | :--- |
-| `page` | [`/{page-id}`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview) | One record describing the Page. Airbyte requests only the fields you select in the connection's **Schema** tab. |
-| `post` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) | One record per post. Paginated, so **Page Size** applies. Airbyte requests only the fields you select. Supports incremental sync on `created_time`. |
-| `page_insights` | [`/{page-id}/insights`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) | One record per metric and period, not per day. Metrics and period are configurable. Supports incremental sync on `end_time`, with **Start Date** to backfill. |
-| `post_insights` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) with an `insights.metric(...)` field selection | Post-level [insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights), one record per metric and period. Paginated, so **Page Size** applies. Metrics are configurable. |
+| `page` | [`/{page-id}`](https://developers.facebook.com/docs/graph-api/reference/v26.0/page/#overview) | One record describing the Page. Airbyte requests only the fields you select in the connection's **Schema** tab. |
+| `post` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v26.0/page/feed) | One record per post. Paginated, so **Page Size** applies. Airbyte requests only the fields you select. Supports incremental sync on `created_time`. |
+| `page_insights` | [`/{page-id}/insights`](https://developers.facebook.com/docs/graph-api/reference/v26.0/page/insights) | One record per metric and period, not per day. Metrics and period are configurable. Supports incremental sync on `end_time`, with **Start Date** to backfill. |
+| `post_insights` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v26.0/page/feed) with an `insights.metric(...)` field selection | Post-level [insights](https://developers.facebook.com/docs/graph-api/reference/v26.0/insights), one record per metric and period. Paginated, so **Page Size** applies. Metrics are configurable. |
 | `video_insights` | [`/{page-id}/videos`](https://developers.facebook.com/docs/graph-api/reference/page/videos/) with a `video_insights.metric(...)` field selection | Lifetime [video insights](https://developers.facebook.com/docs/graph-api/reference/video/video_insights/) per Page video, one record per metric. Paginated, so **Page Size** applies. Metrics are configurable. |
 | `reel_insights` | [`/{page-id}/video_reels`](https://developers.facebook.com/docs/video-api/guides/reels-publishing/) with a `video_insights.metric(...)` field selection | Lifetime [Reels insights](https://developers.facebook.com/docs/graph-api/reference/video/video_insights/#reels-metrics) per Page reel, such as `blue_reels_play_count`, one record per metric. Paginated, so **Page Size** applies. Metrics are configurable. |
 | `comment` | [`/{post-id}/comments`](https://developers.facebook.com/docs/graph-api/reference/post/comments/) for each post in `/{page-id}/feed` | One record per comment, including replies, with the parent `post_id` added. This makes one request per post, so a Page with many posts uses many API calls. Needs `pages_read_user_content`. |
@@ -101,7 +101,7 @@ All insights streams inherit Meta's own limits on Page Insights: data is availab
 
 ## Reference
 
-This connector uses the [Meta Graph API](https://developers.facebook.com/docs/graph-api/) with the `https://graph.facebook.com/v24.0` endpoint.
+This connector uses the [Meta Graph API](https://developers.facebook.com/docs/graph-api/) with the `https://graph.facebook.com/v26.0` endpoint.
 Airbyte requests the selected Page and Post fields from the connector catalog, and requests the insights metrics you configure, or the defaults listed in [Insights metrics and period](#insights-metrics-and-period).
 
 For programmatic configuration, use these parameter names:
@@ -155,7 +155,7 @@ If the error keeps recurring, reduce the size of each response:
 
 ### `page` stream fails for New Pages Experience Pages
 
-Meta [deprecated](https://developers.facebook.com/docs/graph-api/changelog/version26.0) the legacy Page fields `current_location`, `genre`, `network`, `parking`, and `start_info` for Pages on the New Pages Experience. On Graph API v26.0 and later, requesting these fields returns an error, and Meta plans to apply the deprecation to all API versions, including the v24.0 version this connector calls. Meta also doesn't make the `live_videos` edge available for New Pages Experience Pages.
+Meta [deprecated](https://developers.facebook.com/docs/graph-api/changelog/version26.0) the legacy Page fields `current_location`, `genre`, `network`, `parking`, and `start_info` for Pages on the New Pages Experience. On Graph API v26.0 and later, which the connector calls starting from version 3.3.0, requesting these fields returns an error, and Meta plans to apply the deprecation to all API versions. Meta also doesn't make the `live_videos` edge available for New Pages Experience Pages.
 
 On versions earlier than 3.0.0, the connector requests these fields, so the entire `page` stream fails for a New Pages Experience Page. The sync fails with either the `Request contains invalid/deprecated field.` error or the [`Facebook API request contains invalid Page fields, metrics, or permissions`](#facebook-api-request-contains-invalid-page-fields-metrics-or-permissions-error) error followed by a Facebook message that starts with `(#10) To use live-video-api`. Upgrade to version 3.0.0 or later, which no longer requests these fields. Then refresh the source schema and update any downstream models that reference the removed columns. See the [migration guide](/integrations/sources/facebook-pages-migrations#upgrading-to-300) for the full list of removed columns.
 
@@ -223,6 +223,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.0   | 2026-11-09 | [90129](https://github.com/airbytehq/airbyte/pull/90129)       | Move from Graph API v24.0 to v26.0.                                                                                                                                    |
 | 3.2.0   | 2026-11-09 | [90124](https://github.com/airbytehq/airbyte/pull/90124)       | Add an optional incremental sync mode and a `start_date` setting to the `page_insights` stream, which reads a `since` and `until` date range in 90-day windows.        |
 | 3.1.0   | 2026-11-09 | [90123](https://github.com/airbytehq/airbyte/pull/90123)       | Configurable insights metrics and period, new video, Reels, comment and rating streams, incremental posts                                                              |
 | 3.0.2   | 2026-11-09 | [90130](https://github.com/airbytehq/airbyte/pull/90130)       | Exchange the Page access token once per sync instead of before every request, and resolve the schema's date-time paths once per stream instead of per record           |

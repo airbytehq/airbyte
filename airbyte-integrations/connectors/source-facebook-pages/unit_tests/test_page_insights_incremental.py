@@ -17,7 +17,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 CONFIG = {"page_id": "1", "access_token": "token"}
 ACCESS_TOKEN_URL = "https://graph.facebook.com/1?fields=access_token&access_token=token"
-INSIGHTS_URL = "https://graph.facebook.com/v24.0/1/insights"
+INSIGHTS_URL = "https://graph.facebook.com/v26.0/1/insights"
 METRIC = {
     "id": "1/insights/page_post_engagements/day",
     "name": "page_post_engagements",
