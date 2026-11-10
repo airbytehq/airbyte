@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 807cabe0-9c76-4132-8863-60f669dea534
-  dockerImageTag: 0.0.43
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-awin-advertiser
   githubIssueLabel: source-awin-advertiser
   icon: icon.svg
@@ -25,6 +25,14 @@ data:
   name: AWIN Advertiser
   releaseDate: 2025-04-29
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/awin-advertiser
   tags:
@@ -33,7 +41,22 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  maxSecondsBetweenMessages: 3600
+  suggestedStreams:
+    streams:
+      - transactions
+      - campaign_performance
+      - publisher_performance
   externalDocumentationUrls:
-    - title: API documentation
-      url: https://wiki.awin.com/index.php/Advertiser_API
+    - title: Advertiser API reference
+      url: https://help.awin.com/apidocs/for-advertisers
+      type: api_reference
+    - title: API authentication
+      url: https://help.awin.com/apidocs/api-authentication
+      type: authentication_guide
+    - title: Rate limits
+      url: https://help.awin.com/apidocs/introduction-to-awins-apis
+      type: rate_limits
+    - title: Response codes
+      url: https://help.awin.com/apidocs/response-codes
       type: api_reference

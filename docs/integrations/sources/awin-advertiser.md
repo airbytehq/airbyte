@@ -1,6 +1,6 @@
 # AWIN Advertiser
 Website: https://www.awin.com/
-Documentation: https://developer.awin.com/apidocs/for-advertisers
+Documentation: https://help.awin.com/apidocs/for-advertisers
 
 ## Configuration
 
@@ -11,12 +11,21 @@ Documentation: https://developer.awin.com/apidocs/for-advertisers
 | `step_increment` | `string` | Step Increment. The time window size for each API request in ISO8601 duration format. For the campaign performance stream, Awin API explicitly limits the period between startDate and endDate to 400 days maximum.  | P400D |
 | `lookback_days` | `integer` | Lookback Days. Number of days to look back on each sync to catch any updates to existing records. |  |
 | `start_date` | `string` | Start Date. Start date for data replication in YYYY-MM-DD format |  |
+| `regions` | `array<string>` | Creative Performance Regions. Awin regions to request for the `creative_performance` stream. The Awin creative report requires a region, so the stream reads one report per selected region and returns no records when none are selected. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | campaign_performance | date.publisherId.campaign | No pagination | ✅ |  ✅  |
 | transactions | id | No pagination | ✅ |  ✅  |
+| publisher_performance | date.publisherId.region.currency | No pagination | ✅ |  ✅  |
+| creative_performance | date.region.creativeId.publisherId | No pagination | ✅ |  ✅  |
+| publishers | id | No pagination | ✅ |  ❌  |
+| accounts | accountId | No pagination | ✅ |  ❌  |
+
+The `transactions` stream requests basket products, so records include `basketProducts` when Awin returns product-level tracking data. Each transaction also has an `is_deleted` field, which is `true` when `commissionStatus` is `deleted`.
+
+The `publisher_performance` and `creative_performance` streams request one day at a time and add the report day as the `date` field.
 
 ## IP allow list
 
@@ -29,6 +38,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-11-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add `publisher_performance`, `creative_performance`, `publishers` and `accounts` streams, add basket products and an `is_deleted` field to `transactions` |
 | 0.0.43 | 2026-11-10 | [91364](https://github.com/airbytehq/airbyte/pull/91364) | Update dependencies |
 | 0.0.42 | 2026-11-03 | [90448](https://github.com/airbytehq/airbyte/pull/90448) | Update dependencies |
 | 0.0.41 | 2026-10-27 | [89797](https://github.com/airbytehq/airbyte/pull/89797) | Update dependencies |
