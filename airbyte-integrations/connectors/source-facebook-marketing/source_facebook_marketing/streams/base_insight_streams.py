@@ -420,7 +420,8 @@ class AdsInsights(FBMarketingIncrementalStream):
                 break
             self._completed_slices[account_id].remove(ts_start)
             if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
+                cursor_value = self._cursor_values.get(account_id)
+                self._cursor_values[account_id] = max(cursor_value, ts_start) if cursor_value else ts_start
             else:
                 self._cursor_values = {account_id: ts_start}
 
