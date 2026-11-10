@@ -41,7 +41,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------- |
-| 0.2.27 | 2026-11-09 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Upgrade to `source-declarative-manifest` base image `7.47.0` |
+| 0.2.27 | 2026-11-09 | [91430](https://github.com/airbytehq/airbyte/pull/91430) | Upgrade to `source-declarative-manifest` base image `7.47.0` |
 | 0.2.26 | 2026-10-07 | [88325](https://github.com/airbytehq/airbyte/pull/88325) | Fix dead Secoda API documentation links; migrate acceptance-test-config.yml to the `acceptance_tests` layout so CI tests can run |
 | 0.2.25 | 2025-05-10 | [60140](https://github.com/airbytehq/airbyte/pull/60140) | Update dependencies |
 | 0.2.24 | 2025-05-04 | [59624](https://github.com/airbytehq/airbyte/pull/59624) | Update dependencies |
