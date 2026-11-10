@@ -350,9 +350,9 @@ def test_deals_full_refresh_emits_deal_modified_after_sync_start(requests_mock, 
     config["start_date"] = "2022-03-09T14:42:00Z"
     output = read_from_stream(config, "deals", SyncMode.full_refresh)
 
-    assert [record.record.data["id"] for record in output.records] == ["123"], (
-        f"Deal modified at {modified_ms} was lost; CRM Search slice upper bounds: {search_bounds}"
-    )
+    assert [record.record.data["id"] for record in output.records] == [
+        "123"
+    ], f"Deal modified at {modified_ms} was lost; CRM Search slice upper bounds: {search_bounds}"
     assert output.records[0].record.data["updatedAt"] == modified_at
     assert not search_bounds
 
