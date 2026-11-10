@@ -175,7 +175,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 1.6.13 | 2026-11-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Skip requests that Snapchat answers with 403 instead of failing the sync, as before 1.0.0; fail on a 403 for the organizations with a configuration error |
+| 1.6.13 | 2026-11-10 | [91837](https://github.com/airbytehq/airbyte/pull/91837) | Skip requests that Snapchat answers with 403 instead of failing the sync, as before 1.0.0; fail on a 403 for the organizations with a configuration error |
 | 1.6.12 | 2026-11-10 | [91723](https://github.com/airbytehq/airbyte/pull/91723) | Update dependencies |
 | 1.6.11 | 2026-11-05 | [89027](https://github.com/airbytehq/airbyte/pull/89027) | Read every organization and ad account as a parent, so Start Date and End Date no longer empty the streams under them |
 | 1.6.10 | 2026-11-04 | [90345](https://github.com/airbytehq/airbyte/pull/90345) | Simplify error handler configuration with no change in behavior |
