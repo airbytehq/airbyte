@@ -147,7 +147,7 @@ definitions:
                 parent_key: id
                 partition_field: organization_id
                 stream:
-                  $ref: "#/definitions/streams/organizations"
+                  $ref: "#/definitions/parent_streams/organizations"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -215,7 +215,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -283,7 +283,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -351,7 +351,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -419,7 +419,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -487,7 +487,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -555,7 +555,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -633,7 +633,7 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P1W
@@ -745,7 +745,7 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P1M
@@ -854,7 +854,7 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       transformations:
         - type: AddFields
           fields:
@@ -4930,6 +4930,29 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/campaigns_stats_lifetime"
+  # Parent-only copies of organizations and adaccounts, without incremental_sync. The client-side
+  # start_date/end_date filter would otherwise drop an organization or ad account last updated outside the
+  # sync window, along with every stream under it. The two streams themselves keep the filter.
+  # Keep each name equal to its stream's: the CDK shares the parent response cache by name.
+  parent_streams:
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        $ref: "#/definitions/streams/organizations/retriever"
+      schema_loader:
+        $ref: "#/definitions/streams/organizations/schema_loader"
+    adaccounts:
+      type: DeclarativeStream
+      name: adaccounts
+      primary_key:
+        - id
+      retriever:
+        $ref: "#/definitions/streams/adaccounts/retriever"
+      schema_loader:
+        $ref: "#/definitions/streams/adaccounts/schema_loader"
   base_requester:
     type: HttpRequester
     url_base: https://adsapi.snapchat.com/v1/

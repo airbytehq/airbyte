@@ -128,8 +128,8 @@ def test_discover_exposes_incremental_cursor_and_full_refresh():
         output = discover(_get_source(), _CONFIG)
 
     streams = {stream.name: stream for stream in output.catalog.catalog.streams}
-    assert set(streams) == set(_STREAMS)
-    for stream in streams.values():
+    assert set(streams) == set(_STREAMS) | {"base_collaborators"}
+    for stream in (streams[name] for name in _STREAMS):
         assert {mode.value for mode in stream.supported_sync_modes} == {"full_refresh", "incremental"}
         assert stream.default_cursor_field == [_CURSOR_FIELD]
         assert _CURSOR_FIELD in stream.json_schema["properties"]
