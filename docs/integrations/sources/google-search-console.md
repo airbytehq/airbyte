@@ -272,6 +272,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.21 | 2026-11-10 | [89240](https://github.com/airbytehq/airbyte/pull/89240) | Update dependencies |
 | 2.1.20 | 2026-11-05 | [91063](https://github.com/airbytehq/airbyte/pull/91063) | Clarify Website URL Property formats for Domain and URL-prefix properties |
 | 2.1.19 | 2026-11-05 | [91068](https://github.com/airbytehq/airbyte/pull/91068) | Emit dimension values exactly as Google returns them, including quoted and numeric-looking queries |
 | 2.1.18 | 2026-10-22 | [89665](https://github.com/airbytehq/airbyte/pull/89665) | Fix 400 errors on the search_analytics_site_report_by_site stream by using aggregationType auto for Google News and Discover search types; keep numeric-looking search queries as strings in keyword streams |

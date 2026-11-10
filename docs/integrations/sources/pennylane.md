@@ -32,6 +32,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
 | 0.4.0 | 2026-11-09 | [91541](https://github.com/airbytehq/airbyte/pull/91541) | Fix streams stopping after the first page when Pennylane caps the page size, and add missing `customer_invoices` and `customers` fields |
+| 0.3.53 | 2026-11-10 | [91670](https://github.com/airbytehq/airbyte/pull/91670) | Update dependencies |
 | 0.3.52 | 2026-11-03 | [90689](https://github.com/airbytehq/airbyte/pull/90689) | Update dependencies |
 | 0.3.51 | 2026-10-27 | [90031](https://github.com/airbytehq/airbyte/pull/90031) | Update dependencies |
 | 0.3.50 | 2026-10-20 | [89272](https://github.com/airbytehq/airbyte/pull/89272) | Update dependencies |
