@@ -23,9 +23,9 @@ definitions:
           path: supplier_invoices
           http_method: GET
           request_parameters:
+            # Outer quotes keep the value a JSON string rather than a parsed list.
             filter: >-
-              '[{"field": "updated_at", "operator": "gteq", "value":  "{{
-              stream_interval.start_time }}" }]'
+              '[{"field": "updated_at", "operator": "gteq", "value": "{{ stream_interval.start_time }}"}]'
         record_selector:
           type: RecordSelector
           extractor:
@@ -43,9 +43,10 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-            start_from_page: 1
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('current_page', 0) + 1 }}"
+            stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -76,9 +77,9 @@ definitions:
           path: suppliers
           http_method: GET
           request_parameters:
+            # Outer quotes keep the value a JSON string rather than a parsed list.
             filter: >-
-              '[{"field": "updated_at", "operator": "gteq", "value":  "{{
-              stream_interval.start_time }}" }]'
+              '[{"field": "updated_at", "operator": "gteq", "value": "{{ stream_interval.start_time }}"}]'
         record_selector:
           type: RecordSelector
           extractor:
@@ -96,9 +97,10 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 100
-            start_from_page: 1
+            cursor_value: "{{ response.get('current_page', 0) + 1 }}"
+            stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -145,9 +147,10 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-            start_from_page: 1
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('current_page', 0) + 1 }}"
+            stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -164,9 +167,9 @@ definitions:
           path: customers
           http_method: GET
           request_parameters:
+            # Outer quotes keep the value a JSON string rather than a parsed list.
             filter: >-
-              '[{"field": "updated_at", "operator": "gteq", "value":  "{{
-              stream_interval.start_time }}" }]'
+              '[{"field": "updated_at", "operator": "gteq", "value": "{{ stream_interval.start_time }}"}]'
         record_selector:
           type: RecordSelector
           extractor:
@@ -184,9 +187,10 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 100
-            start_from_page: 1
+            cursor_value: "{{ response.get('current_page', 0) + 1 }}"
+            stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -217,9 +221,9 @@ definitions:
           path: customer_invoices
           http_method: GET
           request_parameters:
+            # Outer quotes keep the value a JSON string rather than a parsed list.
             filter: >-
-              '[{"field": "updated_at", "operator": "gteq", "value":  "{{
-              stream_interval.start_time }}" }]'
+              '[{"field": "updated_at", "operator": "gteq", "value": "{{ stream_interval.start_time }}"}]'
         record_selector:
           type: RecordSelector
           extractor:
@@ -237,9 +241,10 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-            start_from_page: 1
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('current_page', 0) + 1 }}"
+            stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -270,9 +275,9 @@ definitions:
           path: products
           http_method: GET
           request_parameters:
+            # Outer quotes keep the value a JSON string rather than a parsed list.
             filter: >-
-              '[{"field": "updated_at", "operator": "gteq", "value":  "{{
-              stream_interval.start_time }}" }]'
+              '[{"field": "updated_at", "operator": "gteq", "value": "{{ stream_interval.start_time }}"}]'
         record_selector:
           type: RecordSelector
           extractor:
@@ -290,9 +295,10 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 100
-            start_from_page: 1
+            cursor_value: "{{ response.get('current_page', 0) + 1 }}"
+            stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -339,9 +345,10 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-            start_from_page: 1
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('current_page', 0) + 1 }}"
+            stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -358,9 +365,9 @@ definitions:
           path: categories
           http_method: GET
           request_parameters:
+            # Outer quotes keep the value a JSON string rather than a parsed list.
             filter: >-
-              '[{"field": "updated_at", "operator": "gteq", "value":  "{{
-              stream_interval.start_time }}" }]'
+              '[{"field": "updated_at", "operator": "gteq", "value": "{{ stream_interval.start_time }}"}]'
         record_selector:
           type: RecordSelector
           extractor:
@@ -378,9 +385,10 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
+            type: CursorPagination
             page_size: 100
-            start_from_page: 1
+            cursor_value: "{{ response.get('current_page', 0) + 1 }}"
+            stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -411,9 +419,9 @@ definitions:
           path: customer_estimates
           http_method: GET
           request_parameters:
+            # Outer quotes keep the value a JSON string rather than a parsed list.
             filter: >-
-              '[{"field": "updated_at", "operator": "gteq", "value":  "{{
-              stream_interval.start_time }}" }]'
+              '[{"field": "updated_at", "operator": "gteq", "value": "{{ stream_interval.start_time }}"}]'
         record_selector:
           type: RecordSelector
           extractor:
@@ -431,9 +439,10 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-            start_from_page: 1
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('current_page', 0) + 1 }}"
+            stop_condition: "{{ response.get('current_page', 0) >= response.get('total_pages', 0) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1049,6 +1058,18 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      billing_iban:
+        type:
+          - string
+          - "null"
+      gender:
+        type:
+          - string
+          - "null"
+      notes:
+        type:
+          - string
+          - "null"
       billing_address:
         type:
           - object
@@ -1188,6 +1209,45 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      billing_subscription:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          v2_id:
+            type:
+              - integer
+              - "null"
+      imputation_dates:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        properties:
+          start_date:
+            type:
+              - string
+              - "null"
+            format: date
+          end_date:
+            type:
+              - string
+              - "null"
+            format: date
+      is_estimate:
+        type:
+          - boolean
+          - "null"
+      transactions_reference:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
       amount:
         type:
           - string
