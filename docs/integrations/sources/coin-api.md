@@ -57,7 +57,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                                                     |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
-| 0.3.24 | 2026-11-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update dependencies: upgrade to source-declarative-manifest 7.47.0 |
+| 0.3.24 | 2026-11-09 | [91321](https://github.com/airbytehq/airbyte/pull/91321) | Update dependencies: upgrade to source-declarative-manifest 7.47.0 |
 | 0.3.23 | 2026-10-07 | [88275](https://github.com/airbytehq/airbyte/pull/88275) | Default `environment` to `production`; mark discontinued CoinAPI sandbox as deprecated |
 | 0.3.22 | 2025-05-24 | [60417](https://github.com/airbytehq/airbyte/pull/60417) | Update dependencies |
 | 0.3.21 | 2025-05-10 | [60004](https://github.com/airbytehq/airbyte/pull/60004) | Update dependencies |
