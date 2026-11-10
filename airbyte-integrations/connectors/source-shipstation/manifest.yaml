@@ -563,6 +563,8 @@ definitions:
       primary_key:
         - carrierCode
         - code
+        - domestic
+        - international
       transformations:
         - type: AddFields
           fields:

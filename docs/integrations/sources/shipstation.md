@@ -34,7 +34,7 @@ Copy your key and secret and paste them into the respective fields.
 |-------------|-------------|------------|---------------------|----------------------|
 | carriers | shippingProviderId | No pagination | ✅ |  ❌  |
 | carrier_packages | carrierCode.code | No pagination | ✅ |  ❌  |
-| carrier_services | carrierCode.code | No pagination | ✅ |  ❌  |
+| carrier_services | carrierCode.code.domestic.international | No pagination | ✅ |  ❌  |
 | customers | customerId | DefaultPaginator | ✅ |  ❌  |
 | fulfillments | fulfillmentId | DefaultPaginator | ✅ |  ✅  |
 | orders | orderId | DefaultPaginator | ✅ |  ✅  |

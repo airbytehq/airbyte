@@ -45,3 +45,9 @@ def discover_schema(stream_name: str) -> Mapping[str, Any]:
     output = discover(get_source(config=CONFIG), config=CONFIG)
     streams = {stream.name: stream for stream in output.catalog.catalog.streams}
     return streams[stream_name].json_schema
+
+
+def discover_primary_key(stream_name: str) -> List[str]:
+    output = discover(get_source(config=CONFIG), config=CONFIG)
+    streams = {stream.name: stream for stream in output.catalog.catalog.streams}
+    return [path[0] for path in streams[stream_name].source_defined_primary_key]

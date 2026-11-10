@@ -4,7 +4,7 @@ import pytest
 
 from airbyte_cdk.test.mock_http import HttpMocker
 
-from .helpers import json_response, read_stream, request
+from .helpers import discover_primary_key, json_response, read_stream, request
 
 
 @pytest.mark.parametrize(
@@ -75,3 +75,31 @@ def test_requests_each_carrier_code_once_when_several_carrier_accounts_share_it(
         assert output.errors == []
         http_mocker.assert_number_of_calls(fedex_request, 1)
         http_mocker.assert_number_of_calls(ups_request, 1)
+
+
+def test_carrier_services_key_distinguishes_domestic_and_international_variants_of_a_service_code() -> None:
+    primary_key = discover_primary_key("carrier_services")
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request("carriers"), json_response([{"shippingProviderId": 1, "code": "ups"}]))
+        http_mocker.get(
+            request("carriers/listservices", {"carrierCode": "ups"}),
+            json_response(
+                [
+                    {"carrierCode": "ups", "code": "ups_standard", "name": "UPS Standard", "domestic": True, "international": False},
+                    {
+                        "carrierCode": "ups",
+                        "code": "ups_standard",
+                        "name": "UPS Standard International",
+                        "domestic": False,
+                        "international": True,
+                    },
+                ]
+            ),
+        )
+
+        output = read_stream("carrier_services")
+
+        keys = [tuple(r.record.data[field] for field in primary_key) for r in output.records]
+        assert len(keys) == 2
+        assert len(set(keys)) == 2
+        assert output.errors == []
