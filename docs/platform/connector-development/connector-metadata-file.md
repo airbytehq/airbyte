@@ -112,7 +112,7 @@ their associated breaking changes. Each entry must contain the following paramet
 - `message`: A description of the breaking change, written in a user-friendly format. This message should briefly describe
   - What the breaking change is, and which users it effects (e.g. all users of the source, or only those using a certain stream)
   - Why the change is better for the user (fixed a bug, something got faster, etc)
-  - What the user should do to fix the issue (e.g. a full reset, run a SQL query in the destinaton, etc)
+  - What the user should do to fix the issue (e.g. a full reset, run a SQL query in the destination, etc)
 - `upgradeDeadline`: (`YYYY-MM-DD`) The date by which the user should upgrade to the new version.
 
 When considering what the `upgradeDeadline` should be, target the amount of time which would be reasonable for the user to make the required changes described in the `message` and upgrade giude. If the required changes are _simple_ (e.g. "do a full reset"), 2 weeks is recommended. Note that you do _not_ want to link the duration of `upgradeDeadline` to an upstream API's deprecation date. While it is true that the older version of a connector will continue to work for that period of time, it means that users who are pinned to the older version of the connector will not benefit from future updates and fixes.

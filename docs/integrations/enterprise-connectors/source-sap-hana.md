@@ -90,7 +90,7 @@ To use CDC:
 - **Database permissions**: Your SAP HANA user must have permissions to:
   - Read from trigger tables in the `_ab_cdc` schema
   - Access source tables for initial discovery
-- **Trigger table setup**: Trigger tables can be created manually or programatically by an administrator of the SAP HANA instance. The setup requires:
+- **Trigger table setup**: Trigger tables can be created manually or programmatically by an administrator of the SAP HANA instance. The setup requires:
   - Create the `_ab_cdc` schema
   - Create trigger tables with the naming convention `_ab_trigger_{source_schema}_{source_table}`
   - Set up INSERT, UPDATE, and DELETE triggers on source tables to populate trigger tables

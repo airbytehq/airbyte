@@ -65,7 +65,7 @@ Required properties are 'Queue URL', 'AWS Region' and 'Delete Messages After Rea
   - Minimum of 1, maximum of 10
   - Default: 10
 - Max Wait Time (INTEGER)
-  - The max amount of time (in seconds) to poll for messages before commiting a batch (or timing
+  - The max amount of time (in seconds) to poll for messages before committing a batch (or timing
     out) unless we fill a batch (as per `Max Batch Size`)
   - Minimum of 1, maximum of 20
   - Default: 20

@@ -40,7 +40,7 @@ This Source is capable of syncing the following Streams:
 
 1. Sign in at `app.glassfrog.com`.
 2. Go to `Profile & Settings`.
-3. In the API tab, enter the label for your new API key (e.g. `Airbyte`) and clik on the button `Create new API Key`.
+3. In the API tab, enter the label for your new API key (e.g. `Airbyte`) and click on the button `Create new API Key`.
 4. Use the created secret key to configure your source!
 
 ## IP allow list

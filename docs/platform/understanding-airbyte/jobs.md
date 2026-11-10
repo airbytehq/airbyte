@@ -133,7 +133,7 @@ Workloads is an Airbyte-internal job abstraction decoupling the number of runnin
 
 Dumb workers now communicate with the Workload API Server to create a Workload instead of directly starting jobs.
 
-The **Workload API Server** places the job in a queue. The **Launcher** picks up the job and launches the resources needed to run the job e.g. Kuberenetes pods. It throttles job creation based on available resources, minimising deadlock situations.
+The **Workload API Server** places the job in a queue. The **Launcher** picks up the job and launches the resources needed to run the job e.g. Kubernetes pods. It throttles job creation based on available resources, minimising deadlock situations.
 
 With this set up, Airbyte now supports:
 

@@ -17,7 +17,7 @@ This Source is capable of syncing the following core resources, each of which ha
 
 As a caveat, the Credits Ledger Entries must read all Customers for an incremental sync, but will only incrementally return new ledger entries for each customers.
 
-Similarily, the Subscription Usage stream must read all Subscriptions for an incremental sync (and all Plans if using the optional `subscription_usage_grouping_key`), but will only incrementally return new usage entries for each subscription.
+Similarly, the Subscription Usage stream must read all Subscriptions for an incremental sync (and all Plans if using the optional `subscription_usage_grouping_key`), but will only incrementally return new usage entries for each subscription.
 
 ### Note on Incremental Syncs
 

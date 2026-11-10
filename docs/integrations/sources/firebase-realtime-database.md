@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Firebase Realtime Database source supports Full Refresh sync. As the database data is stored as JSON objects and there are no records or tables, you can sync only one stream which you specifed as a JSON node path on your database at a time.
+The Firebase Realtime Database source supports Full Refresh sync. As the database data is stored as JSON objects and there are no records or tables, you can sync only one stream which you specified as a JSON node path on your database at a time.
 
 ### Resulting schema
 
