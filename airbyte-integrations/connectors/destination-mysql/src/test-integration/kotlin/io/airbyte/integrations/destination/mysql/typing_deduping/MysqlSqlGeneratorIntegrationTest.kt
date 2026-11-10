@@ -19,7 +19,6 @@ import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.Jdbc
 import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.executeTypeAndDedupe
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.integrations.destination.mysql.MySQLDestination
 import io.airbyte.integrations.destination.mysql.MySQLNameTransformer
@@ -148,12 +147,8 @@ class MysqlSqlGeneratorIntegrationTest :
             ),
         )
 
-        executeTypeAndDedupe(
-            generator,
-            destinationHandler,
-            incrementalAppendStream,
-            Optional.empty(),
-            "",
+        destinationHandler.execute(
+            generator.updateTable(incrementalAppendStream, "", Optional.empty(), false),
         )
 
         val actualFinalRecords = dumpFinalTableRecords(streamId, "")
