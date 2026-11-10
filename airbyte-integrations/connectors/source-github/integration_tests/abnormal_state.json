@@ -150,6 +150,28 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
+        "use_global_cursor": true,
+        "state": { "pull_request_updated_at": "2121-12-31T23:59:59Z" },
+        "parent_state": {
+          "pull_requests": {
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": { "repository": "airbytehq/integration-test" },
+                "cursor": { "updated_at": "2121-12-31T23:59:59Z" }
+              }
+            ],
+            "state": { "updated_at": "2121-12-31T23:59:59Z" }
+          }
+        }
+      },
+      "stream_descriptor": { "name": "pull_request_commits" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
         "airbytehq/integration-test": { "updated_at": "2121-06-29T02:04:57Z" }
       },
       "stream_descriptor": { "name": "pull_request_stats" }
