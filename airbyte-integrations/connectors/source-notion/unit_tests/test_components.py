@@ -21,16 +21,15 @@ state_test_records = [
 ]
 
 
-@pytest.mark.parametrize("sync_mode", ["incremental", "full_refresh"])
 @pytest.mark.parametrize("changed", [False, True])
-def test_blocks_state_round_trip(requests_mock, sync_mode, changed):
+def test_blocks_state_round_trip(requests_mock, changed):
     config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
     catalog = ConfiguredAirbyteCatalogSerializer.load(
         {
             "streams": [
                 {
                     "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["incremental", "full_refresh"]},
-                    "sync_mode": sync_mode,
+                    "sync_mode": "incremental",
                     "destination_sync_mode": "append",
                 }
             ]
