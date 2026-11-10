@@ -6,6 +6,10 @@ import pathlib
 from typing import Any, List, Mapping
 from unittest.mock import Mock
 
+# The pinned airbyte-cdk imports pandas lazily, on the first bulk download, instead of at module load. Importing
+# pandas for the first time while freezegun has frozen time hangs in the `_strptime` module initialisation, so import
+# it here, before any test freezes time.
+import pandas  # noqa: F401
 import pytest
 from config_builder import ConfigBuilder
 from source_salesforce.api import Salesforce
