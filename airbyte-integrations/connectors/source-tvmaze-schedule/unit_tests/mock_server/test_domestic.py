@@ -4,6 +4,7 @@ import json
 
 import pytest
 from conftest import read_stream
+from jsonschema import Draft7Validator
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -43,4 +44,31 @@ def test_resume(http_mocker: HttpMocker) -> None:
     assert output.errors == []
     assert [record.record.data for record in output.records] == records
     assert output.most_recent_state.stream_state.airdate == "2024-01-02"
+    http_mocker.assert_number_of_calls(request, 1)
+
+
+def test_records_match_discovered_schema(http_mocker: HttpMocker, discovered_schemas: dict[str, dict]) -> None:
+    record = {
+        "id": 1,
+        "name": "Domestic episode",
+        "airdate": "2024-01-01",
+        "show": {
+            "id": 10,
+            "name": "Domestic show",
+            "dvdCountry": None,
+            "network": {"officialSite": "https://example.com"},
+            "webChannel": None,
+        },
+    }
+    request = HttpRequest("https://api.tvmaze.com/schedule", query_params={"date": "2024-01-01", "country": "GB"})
+    http_mocker.get(request, HttpResponse(json.dumps([record])))
+
+    output = read_stream("domestic", SyncMode.full_refresh, end="2024-01-01")
+
+    assert output.errors == []
+    assert [message.record.data for message in output.records] == [record]
+    schema = discovered_schemas["domestic"]
+    for message in output.records:
+        assert list(Draft7Validator(schema).iter_errors(message.record.data)) == []
+    Draft7Validator.check_schema(schema)
     http_mocker.assert_number_of_calls(request, 1)

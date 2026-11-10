@@ -10,7 +10,7 @@ from freezegun import freeze_time
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -46,6 +46,14 @@ def frozen_time_and_cache() -> Iterator[None]:
             path.unlink()
     with freeze_time("2024-01-02T12:00:00Z"):
         yield
+
+
+@pytest.fixture
+def discovered_schemas() -> dict[str, dict]:
+    config = {"start_date": "2024-01-01", "domestic_schedule_country_code": "GB"}
+    output = discover(get_source(config, CatalogBuilder().build()), config=config)
+    assert output.errors == []
+    return {stream.name: stream.json_schema for stream in output.catalog.catalog.streams}
 
 
 @pytest.fixture
