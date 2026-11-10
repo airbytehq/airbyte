@@ -5,10 +5,9 @@
 from dataclasses import dataclass
 from typing import Iterable
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 
 
 @dataclass
@@ -23,7 +22,7 @@ class OrderIdsPartitionRouter(SubstreamPartitionRouter):
         for board_id in board_ids:
             yield StreamSlice(partition={"id": board_id}, cursor_slice={})
 
-    def read_all_boards(self, stream_boards: Stream, stream_organizations: Stream):
+    def read_all_boards(self, stream_boards: AbstractStream, stream_organizations: AbstractStream) -> Iterable[str]:
         """
         Method to get id of each board in the boards stream,
         get ids of boards associated with each organization in the organizations stream
@@ -31,13 +30,15 @@ class OrderIdsPartitionRouter(SubstreamPartitionRouter):
         """
         board_ids = set()
 
-        for record in stream_boards.read_records(sync_mode=SyncMode.full_refresh):
-            if record["id"] not in board_ids:
-                board_ids.add(record["id"])
-                yield record["id"]
+        for partition in stream_boards.generate_partitions():
+            for record in partition.read():
+                if record["id"] not in board_ids:
+                    board_ids.add(record["id"])
+                    yield record["id"]
 
-        for record in stream_organizations.read_records(sync_mode=SyncMode.full_refresh):
-            for board_id in record["idBoards"]:
-                if board_id not in board_ids:
-                    board_ids.add(board_id)
-                    yield board_id
+        for partition in stream_organizations.generate_partitions():
+            for record in partition.read():
+                for board_id in record["idBoards"]:
+                    if board_id not in board_ids:
+                        board_ids.add(board_id)
+                        yield board_id
