@@ -294,6 +294,44 @@ def test_expired_refresh_token_tells_the_user_to_re_authenticate(config):
     assert "Refresh token is invalid or expired" in status.message
 
 
+@pytest.mark.parametrize(
+    "deprecated_job_create_response",
+    [
+        pytest.param({"json": {"id": "job-a1", "reportTypeId": "channel_annotations_a1"}}, id="created-but-never-listed"),
+        pytest.param(
+            {"status_code": 400, "json": {"error": {"code": 400, "message": "Invalid report type.", "status": "INVALID_ARGUMENT"}}},
+            id="rejected-as-invalid-argument",
+        ),
+    ],
+)
+def test_check_on_a_new_channel_creates_and_reads_a_supported_report_job(config, deprecated_job_create_response):
+    """YouTube no longer supports `channel_annotations_a1`: `check` must not depend on it.
+
+    The channel has no reporting jobs yet, so `check` creates a job for its check stream, lists
+    jobs again and reads the first report file.
+    """
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        listings = iter([{}, {"jobs": [{"id": _JOB_ID, "reportTypeId": _STREAM}]}])
+        mocker.get(f"{_API}/jobs", json=lambda request, context: next(listings, {}))
+
+        def create_job(request, context):
+            if request.json()["reportTypeId"] == _STREAM:
+                return {"id": _JOB_ID, "reportTypeId": _STREAM}
+            context.status_code = deprecated_job_create_response.get("status_code", 200)
+            return deprecated_job_create_response["json"]
+
+        create = mocker.post(f"{_API}/jobs", json=create_job)
+        mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-01T00:00:00Z")]})
+        mocker.get(_download_url("r1"), text="date,channel_id,views\n20261001,channel-1,3\n")
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+        create_bodies = [request.json() for request in create.request_history]
+
+    assert status.status == Status.SUCCEEDED, status.message
+    assert create_bodies == [{"name": "Airbyte reporting job", "reportTypeId": _STREAM}]
+
+
 @pytest.mark.parametrize("stream", _EMPTY_STREAMS)
 def test_empty_stream_with_header_only_report_reads_cleanly(config, stream):
     """These streams have no rows for the CI channel; a header-only report file yields no records and no error."""
