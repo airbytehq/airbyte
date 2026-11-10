@@ -8,6 +8,7 @@ import pytest
 import yaml
 from freezegun import freeze_time
 from unit_tests.conftest import _YAML_FILE_PATH, get_source
+from unit_tests.conftest import sleep_moves_clock as _sleep_moves_clock
 
 from airbyte_cdk.models import FailureType, Status, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -28,18 +29,6 @@ _CONTACTS_EPOCH = 1388534400
 def no_sleep(monkeypatch: pytest.MonkeyPatch) -> list[float]:
     sleeps = []
     monkeypatch.setattr("time.sleep", lambda seconds=0, *_args, **_kwargs: sleeps.append(seconds))
-    return sleeps
-
-
-def _sleep_moves_clock(clock, monkeypatch: pytest.MonkeyPatch) -> list[float]:
-    """Make time.sleep move the frozen clock (at least 1 ms, as real time would) and record each wait."""
-    sleeps = []
-
-    def _sleep(seconds=0, *_args, **_kwargs):
-        sleeps.append(seconds)
-        clock.tick(max(seconds, 0.001))
-
-    monkeypatch.setattr("time.sleep", _sleep)
     return sleeps
 
 
