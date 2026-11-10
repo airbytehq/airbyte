@@ -255,6 +255,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 6.2.10 | 2026-11-10 | [91628](https://github.com/airbytehq/airbyte/pull/91628) | Update dependencies |
 | 6.2.9 | 2026-10-30 | [90258](https://github.com/airbytehq/airbyte/pull/90258) | Explain authentication and missing scopes in connection checks |
 | 6.2.8 | 2026-11-03 | [89292](https://github.com/airbytehq/airbyte/pull/89292) | Update dependencies |
 | 6.2.7 | 2026-11-02 | [90379](https://github.com/airbytehq/airbyte/pull/90379) | Restore the creatives stream's DNS retry diagnostic while preserving rate-limit and server-error handling. |
