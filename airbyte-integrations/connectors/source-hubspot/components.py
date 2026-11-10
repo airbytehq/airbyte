@@ -51,6 +51,29 @@ logger = logging.getLogger("airbyte")
 _PRIVATE_APP_CREDENTIALS = "Private App Credentials"
 
 
+class HubspotCustomObjectExtractor(DpathExtractor):
+    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[Any, Any]]:
+        records = super().extract_records(response)
+        if self.config.get("enable_meeting_links", False):
+            records = list(records)
+            names = {record.get("name") for record in records}
+            if "meeting_links" in names and not self.config.get("prefix_colliding_custom_objects", False):
+                raise AirbyteTracedException(
+                    message="The custom object meeting_links conflicts with the enabled meeting_links stream. "
+                    "Enable prefix_colliding_custom_objects and refresh the catalog to rename the custom stream to "
+                    "custom_object_meeting_links, or disable enable_meeting_links to retain the existing custom stream name.",
+                    failure_type=FailureType.config_error,
+                )
+            if {"meeting_links", "custom_object_meeting_links"} <= names:
+                raise AirbyteTracedException(
+                    message="Prefixing the custom object meeting_links would conflict with the existing "
+                    "custom_object_meeting_links custom object. Rename one of these custom objects in HubSpot "
+                    "and review the refreshed catalog, or disable enable_meeting_links to retain the existing names.",
+                    failure_type=FailureType.config_error,
+                )
+        yield from records
+
+
 class HubspotErrorHandler(DefaultErrorHandler):
     """
     Custom error handler that differentiates 401 handling based on authentication type.

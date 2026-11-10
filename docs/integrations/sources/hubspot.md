@@ -93,6 +93,7 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 | `list_memberships`          | `crm.lists.read`                                                                                             |
 | `line_items`                | `e-commerce`                                                                                                 |
 | `listings`                  | `crm.objects.listings.read`                                                                                  |
+| `meeting_links`             | `scheduler.meetings.meeting-link.read`, only when enabled and selected                                         |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
 | `contacts_property_history` | `crm.objects.contacts.read`                                                                                  |
@@ -173,6 +174,16 @@ The legacy `tickets` and `e-commerce` scopes are deprecated and might not be ava
 9. Click **Set up source** and wait for the tests to complete.
 
 <FieldAnchor field="enable_experimental_streams">
+
+### Meeting links
+
+To sync scheduling pages, grant `scheduler.meetings.meeting-link.read` to your Private App or Service Key, or reauthorize your OAuth connection with that optional scope. Enable **Enable meeting links**, refresh the source catalog, and select `meeting_links`. Existing credentials and selected streams do not require this permission. Airbyte Cloud OAuth app registration of the scope must be available before Cloud connections can select this stream.
+
+The stream reads `GET /scheduler/2026-09/meetings/meeting-links` with cursor pagination. It returns personal, group, and round-robin scheduling links visible to the authenticated account. The primary key is the string `id`. `organizerUserId` and `userIdsOfLinkMembers` identify HubSpot users, and `createdAt` and `updatedAt` are ISO timestamps. All exposed fields accept nulls. The stream supports Full Refresh only, regardless of `start_date`, because this endpoint has no modification-time filter. It does not enumerate CRM objects or enrich records through extra API calls.
+
+The setting defaults to false and leaves existing catalogs unchanged. If you already have a custom object named `meeting_links`, enabling it requires **Prefix colliding custom objects**. That setting exposes the custom stream as `custom_object_meeting_links`. Refresh the catalog and decide whether to reset or retain the old destination data before selecting the renamed custom stream. With prefixing disabled, the connector reports the collision instead of returning duplicate stream names. If `custom_object_meeting_links` is also an existing custom object, rename one of the conflicting objects before enabling this stream. Leave meeting links disabled to keep the existing custom names.
+
+Existing streams need no reset after upgrading. Before downgrading to a version without this stream, deselect `meeting_links`.
 
 ### Experimental streams
 
@@ -298,6 +309,7 @@ The HubSpot source connector supports the following streams:
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 - [Listings](https://developers.hubspot.com/docs/api-reference/latest/crm/objects/listings/guide) \(Incremental\)
 - [Marketing Emails](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3-v3/marketing-emails/get-marketing-v3-emails-) \(Incremental\)
+- [Meeting Links](https://developers.hubspot.com/docs/api-reference/scheduler-meetings-v3/guide) \(Full Refresh, opt-in\)
 - [Owners](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental\)
 - [Owners Archived](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental)
 - [Users](https://developers.hubspot.com/docs/api-reference/settings-user-provisioning-v3/users/get-settings-v3-users-) \(Full-Refresh\)
@@ -518,6 +530,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.15.0 | 2026-11-10 | | Add the opt-in full-refresh `meeting_links` stream with scheduler read permissions and explicit custom object collision handling. Fixes #56360. |
 | 6.14.0 | 2026-11-04 | [88970](https://github.com/airbytehq/airbyte/pull/88970) | Add `listings` stream |
 | 6.13.3 | 2026-11-03 | [90251](https://github.com/airbytehq/airbyte/pull/90251) | Migrate `deal_pipelines` to Pipelines API 2026-09 ahead of the V1 sunset. Columns, primary key and cursor are unchanged; stages gain `writePermissions`. See [Notes on the `deal_pipelines` stream](#notes-on-the-deal_pipelines-stream) |
 | 6.13.2 | 2026-11-03 | [88157](https://github.com/airbytehq/airbyte/pull/88157) | Fix custom object association streams with a `contacts` `from_object`: use the `lastmodifieddate` parent cursor, as the standard association streams do, instead of `hs_lastmodifieddate`, which contacts do not have and which made the stream emit no records. Document association streams as Full Refresh. |

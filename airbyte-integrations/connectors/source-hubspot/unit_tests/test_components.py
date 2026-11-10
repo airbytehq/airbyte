@@ -1011,6 +1011,7 @@ def test_hubspot_error_handler_401_by_auth_type(
     response = Mock(spec=requests.Response)
     response.status_code = status_code
     response.ok = status_code == 200
+    response.url = "https://api.hubapi.com/scheduler/2026-09/meetings/meeting-links"
     response.headers = {}
     response.json.return_value = {}
 
