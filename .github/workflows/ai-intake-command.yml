@@ -1,6 +1,6 @@
 # Starts the `!oss_contribution_intake` Devin playbook (airbytehq/ai-skills) on community issues and PRs.
 #
-# Two triggers: an hourly sweep over open community items with no `intake/*` label (off until the
+# Two triggers: a sweep every 4 hours over open community items with no `intake/*` label (off until the
 # INTAKE_SWEEP_ENABLED repo variable is "true"), and `/ai-intake` from a maintainer on one item.
 #
 # The intake agent holds write credentials, so it never reads a community item live. For each item,
@@ -20,14 +20,14 @@
 #
 # Runs are dry runs (the playbook writes nothing) unless `dry-run=false` is passed or the
 # INTAKE_DRY_RUN repo variable is "false". The sweep only runs live: a dry run labels nothing, so
-# a dry sweep would start sessions on the same items every hour. Dry-run by dispatch instead.
+# a dry sweep would start sessions on the same items every run. Dry-run by dispatch instead.
 # No PR code is checked out or run.
 
 name: AI Intake Command
 
 on:
   schedule:
-    - cron: "23 * * * *"
+    - cron: "23 */4 * * *"
   workflow_dispatch:
     inputs:
       number:
@@ -282,7 +282,7 @@ jobs:
         run: gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label ai-intake-screen-error
 
       # Before the session, not after: if labeling fails no session starts, and if the session start fails
-      # the label still stops the sweep from starting one every hour. Retry by removing it and running /ai-intake.
+      # the label still stops the sweep from starting one every run. Retry by removing it and running /ai-intake.
       - name: Mark the item as started
         id: started
         if: steps.screen.outputs.flagged == 'false' && steps.screen.outputs.skipped != 'true' && needs.select.outputs.dry-run == 'false'
