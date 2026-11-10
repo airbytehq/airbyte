@@ -1,0 +1,7 @@
+{
+  "api_key": "gk_live_<sandbox key: reviews:read companies:read>",
+  "company_uuids": [
+    "<Grades Demo Dental company uuid>"
+  ],
+  "stats_start_date": "2026-10-01"
+}

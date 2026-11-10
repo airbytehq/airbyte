@@ -1,0 +1,46 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests. `airbyte-cdk connector test` runs them in-process.
+# secrets/config.json: a read-only Grades.com API key (scopes reviews:read, companies:read) limited to the sandbox
+# business "Grades Demo Dental", provided by Grades.com (support@grades.com); shape in integration_tests/sample_config.json.
+connector_image: airbyte/source-grades:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        empty_streams:
+          - name: review_replies
+            bypass_reason: "The sandbox business has no replies on review sites."
+          - name: ai_reputation_history
+            bypass_reason: "AI Reputation checks are not run for the sandbox business (paid model calls)."
+          - name: ai_reputation_probes
+            bypass_reason: "AI Reputation checks are not run for the sandbox business (paid model calls)."
+          - name: radar_mentions
+            bypass_reason: "Review radar scans are not run for the sandbox business (paid search calls)."
+          - name: review_flags
+            bypass_reason: "The sandbox business has no flagged reviews."
+          - name: review_requests
+            bypass_reason: "The sandbox business sends no review requests (fictional customers)."
+          - name: review_request_contacts
+            bypass_reason: "The sandbox business has no review-request contacts (fictional customers)."
+          - name: review_request_opt_outs
+            bypass_reason: "The sandbox business has no opt-outs."
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
