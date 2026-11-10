@@ -86,14 +86,14 @@ The Salesforce Platform license doesn't provide access to Leads, Opportunities, 
    - Click **Edit** and select the object permissions required for your write modes under **Object Permissions**:
      - **Create** for insert
      - **Edit** for update
-     - **Create** and **Edit** for upsert. The target object must also have an external ID field for matching records.
+     - **Create** and **Edit** for upsert. The target object must also have an external ID field for matching records. Upsert can't match on Salesforce's standard `Id` field.
      - **Delete** for delete
    - Grant **Read** on **Contact**, even if Contact isn't a target object. The connection check retrieves the Contact schema.
    - Grant edit access to the fields you map.
    - Click `Save`
    - Continue to add permissions for any objects you want Airbyte to have access to.
 
-Enable the **API Enabled** system permission for the user. Write modes the user doesn't have permission to use don't appear in Airbyte's mapping screen.
+In the permission set's **System Permissions** section, enable **API Enabled**. Write modes the user doesn't have permission to use aren't selectable in Airbyte's mapping screen.
 
 #### 3. Assign the permission set to the new user
 
@@ -115,7 +115,7 @@ Log into the email you used in the preceding steps and verify your new Salesforc
 
 #### For Airbyte Cloud
 
-Airbyte supplies the Salesforce OAuth app. You don't need to create your own app or enter a client ID or client secret. Syncs run as the Salesforce user who authenticates the destination.
+Airbyte always uses its own Salesforce OAuth app and ignores any client ID or client secret you supply. Contact [Airbyte support](https://support.airbyte.com) if you need to use your own app. Syncs run as the Salesforce user who authenticates the destination.
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account
 2. Click **Destinations** and then click **+ New destination**
@@ -159,6 +159,7 @@ The connector uses OAuth 2.0 authentication through Airbyte's Salesforce app. Ma
 
 ### Authentication issues
 
+- **Uninstalled App Blocked**: Ask your Salesforce administrator to install Airbyte's app in your org and grant the integration user access. Salesforce restricts authorization of uninstalled apps; the **Approve Uninstalled Connected Apps** permission is intended only for highly trusted users. See [Salesforce's connected app authorization guidance](https://help.salesforce.com/s/articleView?id=005228838&language=en_US&type=1).
 - **Refresh Token Expired**: Re-authenticate through the Airbyte UI to generate a new refresh token
 - **Sandbox vs Production**: Ensure the "Is Sandbox" setting matches your Salesforce environment. Changing this setting requires redoing authentication.
 
@@ -180,7 +181,7 @@ The connector uses OAuth 2.0 authentication through Airbyte's Salesforce app. Ma
 
 ## Reference
 
-Airbyte manages the client ID and client secret. Authenticate through the Airbyte UI rather than supplying credentials from your own Salesforce app. The following example shows the sandbox setting and optional S3 configuration:
+Set up and authenticate this destination in the Airbyte UI. The public API's `initiateOAuth` endpoint supports sources, not destinations, so you can't complete Salesforce destination authentication through the public API or Terraform. The connector specification requires `client_id`, `client_secret`, `refresh_token`, and `auth_type`, which the UI authentication flow supplies. The following JSON illustrates only the sandbox setting and optional S3 configuration; it isn't a complete configuration or a payload you can send to the API or Terraform:
 
 ```json
 {
