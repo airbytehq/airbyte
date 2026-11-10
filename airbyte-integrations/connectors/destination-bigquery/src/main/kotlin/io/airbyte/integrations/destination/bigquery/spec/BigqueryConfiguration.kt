@@ -34,6 +34,7 @@ data object BatchedStandardInsertConfiguration : LoadingMethodConfiguration
 data class GcsStagingConfiguration(
     val gcsClientConfig: GcsClientConfiguration,
     val filePostProcessing: GcsFilePostProcessing,
+    val fileFormat: GcsStagingFileFormat = GcsStagingFileFormat.CSV_GZIP,
 ) : LoadingMethodConfiguration
 
 @Singleton
@@ -46,6 +47,7 @@ class BigqueryConfigurationFactory :
                     GcsStagingConfiguration(
                         GcsClientConfiguration(loadingMethod, pojo.datasetLocation.gcsRegion),
                         loadingMethod.filePostProcessing ?: GcsFilePostProcessing.DELETE,
+                        loadingMethod.stagingFileFormat ?: GcsStagingFileFormat.CSV_GZIP,
                     )
                 is BatchedStandardInsertSpecification,
                 null -> BatchedStandardInsertConfiguration

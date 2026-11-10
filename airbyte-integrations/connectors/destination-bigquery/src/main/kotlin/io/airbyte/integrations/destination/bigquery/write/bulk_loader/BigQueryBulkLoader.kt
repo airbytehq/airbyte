@@ -57,24 +57,7 @@ class BigQueryBulkLoader(
     override suspend fun load(remoteObject: GcsBlob) {
         val gcsUri = "gs://${remoteObject.storageConfig.gcsBucketName}/${remoteObject.key}"
 
-        val csvOptions =
-            CsvOptions.newBuilder()
-                .setSkipLeadingRows(1)
-                // safe for long JSON strings
-                .setAllowQuotedNewLines(true)
-                .setAllowJaggedRows(true)
-                // Accept e.g. null characters in strings
-                .setPreserveAsciiControlCharacters(true)
-                .build()
-
-        val configuration =
-            LoadJobConfiguration.builder(tableId, gcsUri)
-                .setFormatOptions(csvOptions)
-                .setSchema(schema)
-                .setWriteDisposition(JobInfo.WriteDisposition.WRITE_APPEND)
-                .setJobTimeoutMs(600000L) // 10 min timeout
-                .setNullMarker(BigQueryConsts.NULL_MARKER)
-                .build()
+        val configuration = loadJobConfiguration(tableId, gcsUri, schema)
 
         val jobId =
             JobId.newBuilder()
@@ -88,7 +71,7 @@ class BigQueryBulkLoader(
             BigQueryUtils.waitForJobFinish(loadJob)
         } catch (e: Exception) {
             throw RuntimeException(
-                "Failed to load CSV data from $gcsUri to table ${tableId.toPrettyString()}",
+                "Failed to load data from $gcsUri to table ${tableId.toPrettyString()}",
                 e,
             )
         }
@@ -118,6 +101,41 @@ class BigQueryBulkLoader(
 
     override fun close() {
         /* Do nothing */
+    }
+
+    companion object {
+        /** The load job for one staged object, by the object's format. */
+        fun loadJobConfiguration(
+            tableId: TableId,
+            gcsUri: String,
+            schema: Schema,
+        ): LoadJobConfiguration {
+            if (gcsUri.endsWith(".avro")) {
+                // Avro files carry their schema; BigQuery matches it to the table's columns.
+                return LoadJobConfiguration.builder(tableId, gcsUri)
+                    .setFormatOptions(FormatOptions.avro())
+                    .setUseAvroLogicalTypes(true)
+                    .setWriteDisposition(JobInfo.WriteDisposition.WRITE_APPEND)
+                    .setJobTimeoutMs(600000L) // 10 min timeout
+                    .build()
+            }
+            val csvOptions =
+                CsvOptions.newBuilder()
+                    .setSkipLeadingRows(1)
+                    // safe for long JSON strings
+                    .setAllowQuotedNewLines(true)
+                    .setAllowJaggedRows(true)
+                    // Accept e.g. null characters in strings
+                    .setPreserveAsciiControlCharacters(true)
+                    .build()
+            return LoadJobConfiguration.builder(tableId, gcsUri)
+                .setFormatOptions(csvOptions)
+                .setSchema(schema)
+                .setWriteDisposition(JobInfo.WriteDisposition.WRITE_APPEND)
+                .setJobTimeoutMs(600000L) // 10 min timeout
+                .setNullMarker(BigQueryConsts.NULL_MARKER)
+                .build()
+        }
     }
 }
 

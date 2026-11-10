@@ -33,6 +33,7 @@ import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBu
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploaderStep
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBulkLoadConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryConfiguredForBulkLoad
+import io.airbyte.integrations.destination.bigquery.write.bulk_loader.stagesAvroFiles
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadDatabaseInitialStatusGatherer
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
@@ -59,7 +60,17 @@ class BigqueryBeansFactory {
 
     @Singleton
     @Requires(condition = BigqueryConfiguredForBulkLoad::class)
-    fun getBulkLoadConfig(config: BigqueryConfiguration) = BigqueryBulkLoadConfiguration(config)
+    fun getBulkLoadConfig(
+        config: BigqueryConfiguration,
+        archive: BigqueryS3Copy,
+    ): BigqueryBulkLoadConfiguration {
+        if (config.stagesAvroFiles && !config.stagesAvroFiles(archive)) {
+            logger.warn {
+                "Staging gzipped CSV instead of Avro: the Fusion load-input archive is enabled."
+            }
+        }
+        return BigqueryBulkLoadConfiguration(config, config.stagesAvroFiles(archive))
+    }
 
     @Singleton
     @Named("bigQueryOneShotStep")

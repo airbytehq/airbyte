@@ -55,5 +55,7 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-bigquery:2.73.0'
 
     integrationTestImplementation 'com.google.cloud:google-cloud-bigquery'
+    // AllAirbyteTypes, shared by the staging format tests.
+    integrationTestImplementation sourceSets.test.output
     testImplementation "io.mockk:mockk:1.14.11"
 }
