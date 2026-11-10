@@ -19,12 +19,13 @@ ddb_backend_ip() {
 ddb_aws() {
   local backend_ip
   backend_ip="$(ddb_backend_ip)"
+  local endpoint="http://${backend_ip}:8000" # ignore-https-check
   docker run --rm \
     -e AWS_ACCESS_KEY_ID=dummy \
     -e AWS_SECRET_ACCESS_KEY=dummy \
     -e AWS_DEFAULT_REGION=us-east-1 \
     "$AWS_CLI_IMAGE" \
-    --endpoint-url "http://${backend_ip}:8000" \
+    --endpoint-url "$endpoint" \
     dynamodb "$@"
 }
 

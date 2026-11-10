@@ -93,7 +93,7 @@ Airbyte implements SCIM 2.0 with the core `User` and `Group` schemas.
 
 ### Supported user attributes
 
-Airbyte uses a strict allowlist for SCIM user attributes. If your IdP sends an attribute outside this list, Airbyte rejects the entire request with HTTP `400` and `scimType: invalidValue`. The `schemas` array must contain exactly the core User schema. Schema extensions, such as the enterprise user extension, cause the entire request to fail.
+Airbyte uses a strict allowlist for SCIM user attributes. If your IdP sends an attribute outside this list, Airbyte rejects the entire request with HTTP `400` and `scimType: invalidValue`. The `schemas` array must include the core User schema, `urn:ietf:params:scim:schemas:core:2.0:User`. It can also declare the enterprise user extension, `urn:ietf:params:scim:schemas:extension:enterprise:2.0:User`, but Airbyte doesn't accept enterprise user extension attributes such as `department`, `employeeNumber`, or `manager`. Any other schema in the `schemas` array causes the entire request to fail.
 
 - `userName`, `externalId`, and `active`.
 - `emails`: `value`, `type`, `primary`, and `display`.

@@ -1,49 +1,33 @@
 /**
- * Docusaurus plugin that discovers agent connector directories at build time
- * and exposes their slugs via global plugin data.
+ * Docusaurus plugin that exposes the data replication connectors that have an
+ * agent connector equivalent, so connector pages and connector lists can mark them.
  *
- * The `AgentConnectorRegistry` React component reads this data with
- * `usePluginData("agent-connectors-plugin")`, and the `docsHeaderDecoration`
- * remark plugin calls `discoverAgentConnectorSlugs` directly — no JSON file is
- * written to disk and no prebuild script is required. Docusaurus/Rspack invalidates the build
- * when `loadContent` re-runs (e.g. on restart or when watched files change).
+ * `ConnectorRegistry` reads this with `usePluginData("agent-connectors-plugin")`,
+ * and the `docsHeaderDecoration` remark plugin calls `isAgentConnector` directly.
  */
-const fs = require("fs");
-const path = require("path");
+const agentConnectors = require("../data/agent_connectors.json");
 
-const CONNECTORS_DIR = path.resolve(
-  __dirname,
-  "../../../docs/ai-agents/connectors",
-);
-
-function discoverAgentConnectorSlugs() {
-  try {
-    return fs
-      .readdirSync(CONNECTORS_DIR, { withFileTypes: true })
-      .filter((d) => d.isDirectory())
-      .map((d) => d.name)
-      .sort();
-  } catch (error) {
-    console.warn(
-      "Could not read agent connectors directory:",
-      error.message,
-    );
-    return [];
-  }
+function isAgentConnector(dockerRepository) {
+  const match = /^airbyte\/(source|destination)-(.+)$/.exec(
+    dockerRepository ?? "",
+  );
+  if (!match) return false;
+  const [, connectorType, slug] = match;
+  const slugs =
+    connectorType === "destination"
+      ? agentConnectors.destinations
+      : agentConnectors.sources;
+  return slugs.includes(slug);
 }
 
 function agentConnectorsPlugin(_context, _options) {
   return {
     name: "agent-connectors-plugin",
-    async loadContent() {
-      return discoverAgentConnectorSlugs();
-    },
-    async contentLoaded({ content, actions }) {
-      const { setGlobalData } = actions;
-      setGlobalData({ slugs: content });
+    async contentLoaded({ actions }) {
+      actions.setGlobalData(agentConnectors);
     },
   };
 }
 
 module.exports = agentConnectorsPlugin;
-module.exports.discoverAgentConnectorSlugs = discoverAgentConnectorSlugs;
+module.exports.isAgentConnector = isAgentConnector;

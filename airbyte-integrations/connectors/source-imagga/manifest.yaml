@@ -232,17 +232,15 @@ definitions:
             config['img_for_detection'] }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: SUCCESS
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      You have reached your concurrent request limits for your
-                      subscription
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: SUCCESS
+                http_codes:
+                  - 403
+                error_message: >-
+                  You have reached your concurrent request limits for your
+                  subscription
         record_selector:
           type: RecordSelector
           extractor:

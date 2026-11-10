@@ -23,6 +23,7 @@ import org.bson.types.Binary
 import org.bson.types.Decimal128
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.testcontainers.containers.MongoDBContainer
@@ -38,6 +39,10 @@ class MongoDbSourceVersionMatrixTest {
     @ParameterizedTest(name = "{0}")
     @ValueSource(strings = ["mongo:4.4", "mongo:5.0", "mongo:6.0", "mongo:8.0"])
     fun testSnapshotAndChangeStreamOnEveryVersion(image: String) {
+        Assumptions.assumeFalse(
+            image == "mongo:8.0" && hostKernelAtLeast(6, 19),
+            "mongo:8.0 refuses to start on Linux kernel 6.19+ (SERVER-121912)",
+        )
         val preImagesSupported: Boolean = image.substringAfter(':').toDouble() >= 6.0
         val container: MongoDBContainer =
             MongoDbReadTestSupport.replicaSet(image).also { it.start() }
@@ -156,5 +161,12 @@ class MongoDbSourceVersionMatrixTest {
         val UUID: java.util.UUID = java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174000")
         val UUID_BASE64: String =
             java.util.Base64.getEncoder().encodeToString(BsonBinary(UUID).data)
+
+        /** Containers share the host kernel, so `os.version` is the kernel MongoDB sees. */
+        fun hostKernelAtLeast(major: Int, minor: Int): Boolean {
+            val (hostMajor: Int, hostMinor: Int) =
+                System.getProperty("os.version").split('.', '-').take(2).map { it.toInt() }
+            return hostMajor > major || (hostMajor == major && hostMinor >= minor)
+        }
     }
 }
