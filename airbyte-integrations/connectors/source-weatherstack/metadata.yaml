@@ -39,7 +39,8 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
-    - suite: unitTests
+    - suite:
+        unitTests
         # Disabling acceptance tests for now
         # No / Low airbyte cloud usage
         # - suite: acceptanceTests
