@@ -78,7 +78,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- |:----------------------------------------|
-| 0.2.36 | 2026-11-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade base image to `source-declarative-manifest:7.47.0` |
+| 0.2.36 | 2026-11-09 | [91374](https://github.com/airbytehq/airbyte/pull/91374) | Upgrade base image to `source-declarative-manifest:7.47.0` |
 | 0.2.35 | 2026-09-15 | [78701](https://github.com/airbytehq/airbyte/pull/78701) | Update dependencies |
 | 0.2.34 | 2025-08-23 | [65292](https://github.com/airbytehq/airbyte/pull/65292) | Update dependencies |
 | 0.2.33 | 2025-08-09 | [64786](https://github.com/airbytehq/airbyte/pull/64786) | Update dependencies |
