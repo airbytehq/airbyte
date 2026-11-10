@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -240,6 +240,56 @@ class TwilioMessageMediaStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioGlobalCursorStateMigration(StateMigration):
+    """
+    Collapse per-partition state into the global cursor shape used with `global_substream_cursor: true`.
+
+    Per-partition cursors only advance when a partition emits records, so an account partition can keep a
+    stale cursor (eg the start date) and override the recent global cursor, re-reading old history every sync.
+    The global value is the existing `state` key, or the latest partition cursor when it is missing.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2022-01-01 00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-15 10:00:00Z" },
+        "lookback_window": 0,
+        "parent_state": {}
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": { "date_sent": "2022-11-15 10:00:00Z" },
+        "lookback_window": 0,
+        "parent_state": {}
+      }
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        global_cursor = stream_state.get("state") or self._latest_partition_cursor(stream_state.get("states", []))
+        migrated_state: dict[str, Any] = {"use_global_cursor": True}
+        if global_cursor:
+            migrated_state["state"] = copy.deepcopy(global_cursor)
+        for key in ("lookback_window", "parent_state"):
+            if key in stream_state:
+                migrated_state[key] = copy.deepcopy(stream_state[key])
+        return migrated_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and ("states" in stream_state or "state" in stream_state) and not stream_state.get("use_global_cursor")
+
+    @staticmethod
+    def _latest_partition_cursor(states: list[Mapping[str, Any]]) -> Mapping[str, Any]:
+        cursors = [state["cursor"] for state in states if len(state.get("cursor") or {}) == 1]
+        return max(cursors, key=lambda cursor: ab_datetime_parse(next(iter(cursor.values()))), default={})
 
 
 _CONFERENCE_STATUSES = ("init", "in-progress", "completed")

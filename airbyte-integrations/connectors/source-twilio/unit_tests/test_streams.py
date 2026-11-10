@@ -1003,3 +1003,142 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+MESSAGES_ACCOUNTS_JSON = {
+    "accounts": [
+        {"sid": "AC123", "subresource_uris": {"messages": "/2010-04-01/Accounts/AC123/Messages.json"}},
+        {"sid": "AC999", "subresource_uris": {"messages": "/2010-04-01/Accounts/AC999/Messages.json"}},
+    ]
+}
+MESSAGES_BY_ACCOUNT = {
+    "AC123": [
+        {"sid": "SM_NEW", "date_sent": "Wed, 16 Nov 2022 08:00:00 +0000"},
+        {"sid": "SM_OLD", "date_sent": "Wed, 01 Jun 2022 08:00:00 +0000"},
+    ],
+    "AC999": [],
+}
+
+
+def _messages_partition(account_sid, with_parent_slice=True):
+    partition = {"subresource_uri": f"/2010-04-01/Accounts/{account_sid}/Messages.json"}
+    if with_parent_slice:
+        partition["parent_slice"] = {}
+    return partition
+
+
+def _register_messages_api(requests_mock):
+    """Serve messages filtered by the DateSent window, as the Twilio API does."""
+    requests_mock.get(f"{BASE}/Accounts.json", json=MESSAGES_ACCOUNTS_JSON)
+    windows = []
+    windows_lock = Lock()
+
+    def _callback(request, context):
+        account_sid = urlparse(request.url).path.split("/")[3]
+        query = parse_qs(urlparse(request.url).query)
+        lower, upper = query["DateSent>"][0], query["DateSent<"][0]
+        with windows_lock:
+            windows.append((account_sid, lower, upper))
+        lower_dt = datetime.strptime(lower, "%Y-%m-%d %H:%M:%SZ")
+        upper_dt = datetime.strptime(upper, "%Y-%m-%d %H:%M:%SZ")
+        return {
+            "messages": [
+                message
+                for message in MESSAGES_BY_ACCOUNT[account_sid]
+                if lower_dt <= datetime.strptime(message["date_sent"], "%a, %d %b %Y %H:%M:%S %z").replace(tzinfo=None) <= upper_dt
+            ]
+        }
+
+    for account_sid in MESSAGES_BY_ACCOUNT:
+        requests_mock.get(f"{BASE}/Accounts/{account_sid}/Messages.json", json=_callback)
+    return windows
+
+
+class TestMessagesGlobalCursor:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "persisted_state,expected_lower_bound",
+        [
+            pytest.param(
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {"partition": _messages_partition("AC123"), "cursor": {"date_sent": "2022-01-01 00:00:00Z"}},
+                        {"partition": _messages_partition("AC999"), "cursor": {"date_sent": "2022-01-01 00:00:00Z"}},
+                    ],
+                    "state": {"date_sent": "2022-11-15 10:00:00Z"},
+                    "lookback_window": 0,
+                    "parent_state": {},
+                },
+                "2022-11-15 10:00:00Z",
+                id="stale_partitions_with_recent_global_cursor",
+            ),
+            pytest.param(
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {"partition": _messages_partition("AC123"), "cursor": {"date_sent": "2022-01-01 00:00:00Z"}},
+                    ],
+                    "state": {"date_sent": "2022-11-15 10:00:00Z"},
+                    "lookback_window": 3600,
+                    "parent_state": {},
+                },
+                "2022-11-15 09:00:00Z",
+                id="stale_partition_with_runtime_lookback",
+            ),
+            pytest.param(
+                {
+                    "states": [
+                        {
+                            "partition": _messages_partition("AC123", with_parent_slice=False),
+                            "cursor": {"date_sent": "2022-11-15T10:00:00Z"},
+                        },
+                        {
+                            "partition": _messages_partition("AC999", with_parent_slice=False),
+                            "cursor": {"date_sent": "2022-01-01T00:00:00Z"},
+                        },
+                    ]
+                },
+                "2022-11-15 10:00:00Z",
+                id="legacy_partitions_without_global_cursor",
+            ),
+        ],
+    )
+    def test_incremental_read_resumes_every_account_from_global_cursor(self, persisted_state, expected_lower_bound, requests_mock):
+        windows = _register_messages_api(requests_mock)
+        state = StateBuilder().with_stream_state("messages", persisted_state).build()
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2021-01-01T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+        assert sorted(windows) == [
+            ("AC123", expected_lower_bound, "2022-11-16 12:03:11Z"),
+            ("AC999", expected_lower_bound, "2022-11-16 12:03:11Z"),
+        ]
+        assert [record.record.data["sid"] for record in output.records] == ["SM_NEW"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert "states" not in final_state
+        assert final_state["state"] == {"date_sent": "2022-11-16 08:00:00Z"}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_second_incremental_read_resumes_from_emitted_global_cursor(self, requests_mock):
+        windows = _register_messages_api(requests_mock)
+        config = {**TEST_CONFIG, "start_date": "2022-11-01T00:00:00Z"}
+
+        first = read_from_stream(config, "messages", SyncMode.incremental)
+        assert [record.record.data["sid"] for record in first.records] == ["SM_NEW"]
+        first_state = first.most_recent_state.stream_state.__dict__
+        assert first_state["use_global_cursor"] is True
+        assert first_state["state"] == {"date_sent": "2022-11-16 08:00:00Z"}
+
+        windows.clear()
+        second_state = StateBuilder().with_stream_state("messages", first_state).build()
+        second = read_from_stream(config, "messages", SyncMode.incremental, second_state)
+
+        # The idle AC999 account resumes from the global cursor instead of the start date.
+        assert sorted(windows) == [
+            ("AC123", "2022-11-16 08:00:00Z", "2022-11-16 12:03:11Z"),
+            ("AC999", "2022-11-16 08:00:00Z", "2022-11-16 12:03:11Z"),
+        ]
+        # Twilio's DateSent> filter is inclusive, so the record at the cursor is re-emitted once.
+        assert [record.record.data["sid"] for record in second.records] == ["SM_NEW"]
