@@ -56,6 +56,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject    |
 | :------ | :--------- | :------------------------------------------------------- | :--------- |
+| 0.2.28 | 2026-11-09 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Update base image to source-declarative-manifest 7.47.0 and add mock server tests |
 | 0.2.27 | 2026-10-13 | [79021](https://github.com/airbytehq/airbyte/pull/79021) | Update dependencies |
 | 0.2.26 | 2026-10-07 | [88260](https://github.com/airbytehq/airbyte/pull/88260) | Fix `country` filter never being sent, point `web` stream at `/schedule/web`, include `end_date` (default: today) in the synced range, and make `future` a single full-refresh request instead of one full-schedule download per day |
 | 0.2.25 | 2025-05-25 | [60539](https://github.com/airbytehq/airbyte/pull/60539) | Update dependencies |
