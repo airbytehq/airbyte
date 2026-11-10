@@ -71,7 +71,7 @@ If you use Airbyte Cloud and you enabled IP restriction on your tyntec account, 
 
 | Version | Date       | Pull Request                                             | Subject                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------ |
-| 0.3.1 | 2026-11-09 | [PRNUMBER](https://github.com/airbytehq/airbyte/pull/PRNUMBER) | Upgrade base image to `source-declarative-manifest:7.47.0` |
+| 0.3.1 | 2026-11-09 | [91463](https://github.com/airbytehq/airbyte/pull/91463) | Upgrade base image to `source-declarative-manifest:7.47.0` |
 | 0.3.0 | 2026-10-09 | [88337](https://github.com/airbytehq/airbyte/pull/88337) | Remove the `contacts`, `phones` and `registrations` streams (tyntec BYON endpoints return 404) and use the `sms` stream for the connection check |
 | 0.2.25 | 2026-06-02 | [79035](https://github.com/airbytehq/airbyte/pull/79035) | Update dependencies |
 | 0.2.24 | 2025-05-24 | [60738](https://github.com/airbytehq/airbyte/pull/60738) | Update dependencies |
