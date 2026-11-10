@@ -72,6 +72,35 @@ def _order_jsonl_without_order_created_at(order_jsonl: str, keep_key_as_null: bo
     return json.dumps(order)
 
 
+@pytest.mark.parametrize(
+    "order_updated_at, expected_ids",
+    [
+        pytest.param("2026-09-11T06:00:00Z", [1001], id="updated_after_state"),
+        pytest.param("2026-09-11T05:49:43Z", [1001], id="updated_equal_to_state"),
+        pytest.param("2026-09-11T04:00:00Z", [], id="updated_before_state"),
+        pytest.param(None, [], id="null_order_updated_at"),
+        pytest.param("", [], id="missing_order_updated_at"),
+    ],
+)
+def test_transactions_graphql_emits_updated_refund(
+    requests_mock, bulk_job_completed_response, auth_config, order_updated_at, expected_ids
+) -> None:
+    state = {"created_at": "2026-09-11T05:49:43+00:00"}
+    order = json.loads(_order_jsonl(1, "2026-09-11T04:00:00Z", 1001, "2026-09-11T05:07:00Z"))
+    if order_updated_at != "":
+        order["order_updated_at"] = order_updated_at
+    order["transactions"][0].update(kind="REFUND", status="SUCCESS")
+
+    stream, records = _read_transactions(requests_mock, bulk_job_completed_response, auth_config, [json.dumps(order)], state["created_at"])
+
+    assert [record["id"] for record in records] == expected_ids
+    for record in records:
+        assert record["status"] == "SUCCESS"
+        assert "order_created_at" not in record
+        assert "order_updated_at" not in record
+        assert stream.get_updated_state(state, record) == state
+
+
 def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, jsonl_lines: List[str], state_value: str):
     stream = TransactionsGraphql(auth_config)
     test_result_url = bulk_job_completed_response.get("data").get("node").get("url")
