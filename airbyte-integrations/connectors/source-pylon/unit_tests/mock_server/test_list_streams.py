@@ -144,3 +144,9 @@ def test_new_stream_permission_denied_is_config_error(stream: str) -> None:
         mocker.assert_number_of_calls(request, 1)
     assert output.records == []
     assert any(message.trace.error.failure_type == FailureType.config_error for message in output.errors)
+    if stream == "audit_logs":
+        expected = (
+            "Pylon returned 403 for Audit Logs. This stream requires an API token with the Admin role, "
+            "and your Pylon plan must include audit log access. Use an Admin-role token, or deselect the Audit Logs stream."
+        )
+        assert any(message.trace.error.message == expected for message in output.errors)

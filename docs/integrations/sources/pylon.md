@@ -76,7 +76,7 @@ The Pylon source connector supports the following streams:
 
 ### Stream notes
 
-- **Audit Logs** re-reads the organization's full audit history on every sync. **Start Date** does not apply, so sync volume grows over time. **Full Refresh | Append** duplicates rows on each sync; use **Full Refresh | Overwrite** or **Full Refresh | Overwrite + Deduped** instead.
+- **Audit Logs** requires an Admin-role API token and a Pylon plan that includes audit log access. A 403 on this stream fails the sync; deselect it if the token isn't Admin. Enterprise organizations get the full audit history on every sync; other plans get a rolling window of the last 30 days. **Start Date** does not apply. Use **Full Refresh | Append**, de-duplicating on `id` downstream, to keep history beyond 30 days. Append re-writes the window's events on each sync. Overwrite modes keep only the current window (30 days on non-Enterprise plans).
 - **Issues** is the only incremental stream. It uses `updated_at` as its cursor field and the `POST /issues/search` endpoint, so incremental syncs capture all issue modifications, not just newly created issues. The connector chooses 30-day query windows; this is not a documented Pylon search API limit. Inclusive bounds overlap at window edges to avoid subsecond gaps. The final query can extend up to one second beyond the cursor interval's end, and its bounds remain fixed across pages.
 - **Issue Messages** and **Issue Threads** are full-refresh child streams of Issues. On every sync, they re-read all messages or threads for each issue updated since **Start Date**, independently of the Issues stream's saved incremental cursor. They do not filter on the message or thread timestamp, so child records can predate **Start Date**. Both streams include `issue_id`, which you can join to Issues on `id`.
 - **Knowledge Base Articles** is a full-refresh child stream of Knowledge Bases. It includes `knowledge_base_id`, which you can join to Knowledge Bases on `id`.
@@ -124,7 +124,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.1.0 | 2026-11-10 | [91827](https://github.com/airbytehq/airbyte/pull/91827) | Add Audit Logs, Macro Groups, Surveys, and Training Data streams. |
+| 0.1.0 | 2026-11-10 | [91827](https://github.com/airbytehq/airbyte/pull/91827) | Add Audit Logs, Macro Groups, Surveys, and Training Data streams, with an Admin-role error message for Audit Logs. |
 | 0.0.32 | 2026-11-10 | [91678](https://github.com/airbytehq/airbyte/pull/91678) | Update dependencies |
 | 0.0.31 | 2026-11-06 | [91022](https://github.com/airbytehq/airbyte/pull/91022) | Add EU region support, documented fields, deactivated users, inclusive issue windows, parent IDs on child streams, actionable errors, request budgets, and configurable concurrency. |
 | 0.0.30 | 2026-11-03 | [90398](https://github.com/airbytehq/airbyte/pull/90398) | Simplify error handling while preserving retry and rate-limit behavior. |

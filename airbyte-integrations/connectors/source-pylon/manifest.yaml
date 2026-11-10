@@ -208,7 +208,7 @@ definitions:
           path: audit-logs
           http_method: GET
           error_handler:
-            $ref: "#/definitions/error_handler"
+            $ref: "#/definitions/audit_logs_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -836,6 +836,24 @@ definitions:
         action: RETRY
         http_codes: [500, 502, 503, 504]
         error_message: The Pylon API is temporarily unavailable.
+
+  audit_logs_error_handler:
+    $ref: "#/definitions/error_handler"
+    response_filters:
+      - $ref: "#/definitions/error_handler/response_filters/0"
+      - $ref: "#/definitions/error_handler/response_filters/1"
+      - $ref: "#/definitions/error_handler/response_filters/2"
+      - $ref: "#/definitions/error_handler/response_filters/3"
+      - $ref: "#/definitions/error_handler/response_filters/4"
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes: [403]
+        error_message: >-
+          Pylon returned 403 for Audit Logs. This stream requires an API token with the Admin role,
+          and your Pylon plan must include audit log access. Use an Admin-role token, or deselect the Audit Logs stream.
+      - $ref: "#/definitions/error_handler/response_filters/6"
+      - $ref: "#/definitions/error_handler/response_filters/7"
 
   issue_threads_error_handler:
     $ref: "#/definitions/error_handler"
