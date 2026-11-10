@@ -64,6 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.27 | 2026-11-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to source-declarative-manifest 7.47.0 and add mock server tests |
 | 0.2.26 | 2026-10-20 | [78918](https://github.com/airbytehq/airbyte/pull/78918) | Update dependencies |
 | 0.2.25 | 2025-05-24 | [60487](https://github.com/airbytehq/airbyte/pull/60487) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [60099](https://github.com/airbytehq/airbyte/pull/60099) | Update dependencies |
