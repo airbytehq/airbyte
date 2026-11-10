@@ -30,7 +30,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
-  dockerImageTag: 1.7.2
+  dockerImageTag: 1.8.0
   dockerRepository: airbyte/source-asana
   githubIssueLabel: source-asana
   icon: asana.svg
@@ -39,6 +39,28 @@ data:
   releaseDate: 2021-05-25
   releaseStage: beta
   supportLevel: community
+  suggestedStreams:
+    streams:
+      - projects
+      - sections_compact
+      - sections
+      - tasks
+      - stories_compact
+      - stories
+      - workspaces
+      - tags
+      - users
+      - teams
+      - team_memberships
+      - attachments_compact
+      - attachments
+      - portfolios_compact
+      - portfolios
+      - portfolios_memberships
+      - custom_fields
+      - organization_exports
+      - events
+      - portfolio_items
   documentationUrl: https://docs.airbyte.com/integrations/sources/asana
   tags:
     - language:python

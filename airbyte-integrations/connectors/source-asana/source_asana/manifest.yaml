@@ -1,6 +1,394 @@
 version: "0.78.6"
 
 definitions:
+  goals_schema:
+    type: object
+    additionalProperties: true
+    properties:
+      gid:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      notes:
+        type:
+          - "null"
+          - string
+      html_notes:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      privacy_setting:
+        type:
+          - "null"
+          - string
+      default_access_level:
+        type:
+          - "null"
+          - string
+      start_on:
+        type:
+          - "null"
+          - string
+        format: date
+      due_on:
+        type:
+          - "null"
+          - string
+        format: date
+      is_workspace_level:
+        type:
+          - "null"
+          - boolean
+      liked:
+        type:
+          - "null"
+          - boolean
+      num_likes:
+        type:
+          - "null"
+          - integer
+      workspace_gid:
+        type:
+          - "null"
+          - string
+      owner:
+        $ref: "#/definitions/goal_reference_schema"
+      workspace:
+        $ref: "#/definitions/goal_reference_schema"
+      team:
+        $ref: "#/definitions/goal_reference_schema"
+      time_period:
+        $ref: "#/definitions/time_period_reference_schema"
+      metric:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_subtype:
+            type:
+              - "null"
+              - string
+          precision:
+            type:
+              - "null"
+              - integer
+          unit:
+            type:
+              - "null"
+              - string
+          currency_code:
+            type:
+              - "null"
+              - string
+          initial_number_value:
+            type:
+              - "null"
+              - number
+          target_number_value:
+            type:
+              - "null"
+              - number
+          current_number_value:
+            type:
+              - "null"
+              - number
+          current_display_value:
+            type:
+              - "null"
+              - string
+          progress_source:
+            type:
+              - "null"
+              - string
+          is_custom_weight:
+            type:
+              - "null"
+              - boolean
+          can_manage:
+            type:
+              - "null"
+              - boolean
+      current_status_update:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          resource_subtype:
+            type:
+              - "null"
+              - string
+  time_periods_schema:
+    type: object
+    additionalProperties: true
+    properties:
+      gid:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      start_on:
+        type:
+          - "null"
+          - string
+        format: date
+      end_on:
+        type:
+          - "null"
+          - string
+        format: date
+      period:
+        type:
+          - "null"
+          - string
+      display_name:
+        type:
+          - "null"
+          - string
+      workspace_gid:
+        type:
+          - "null"
+          - string
+      parent:
+        $ref: "#/definitions/time_period_reference_schema"
+  goal_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 401
+        failure_type: config_error
+        error_message: Asana authentication failed. Verify or reauthorize the token in the source configuration.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 402
+          - 403
+        failure_type: config_error
+        error_message:
+          'Asana goal streams require access to each workspace and the required paid entitlement. For scoped
+          OAuth apps, grant goals:read and time_periods:read. Verify permissions or disable enable_goal_streams. Asana
+          error: {{ (response.get("errors") or [{}])[0].get("message", "Access denied") }}'
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 400
+          - 404
+          - 412
+          - 451
+        failure_type: config_error
+        error_message:
+          'Asana could not read the goal streams or their workspace. Verify workspace access and API availability.
+          Asana error: {{ (response.get("errors") or [{}])[0].get("message", "Request failed") }}'
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: Asana rate limit exceeded. Retrying with backoff.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 500
+          - 502
+          - 503
+          - 504
+        error_message: Temporary Asana server error. Retrying with backoff.
+  goal_requester:
+    type: HttpRequester
+    url_base: https://app.asana.com/api/1.0/
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/selective_authenticator"
+    error_handler:
+      $ref: "#/definitions/goal_error_handler"
+  goal_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: offset
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: '{{ (response.get("next_page") or {}).get("offset") }}'
+      stop_condition: '{{ not (response.get("next_page") or {}).get("offset") }}'
+  goal_workspaces_stream:
+    $ref: "#/definitions/workspaces_stream"
+    name: goal_workspaces
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/goal_requester"
+        path: /workspaces
+        use_cache: true
+        request_parameters:
+          opt_fields: gid,resource_type,name,email_domains,is_organization
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/goal_paginator"
+  goal_workspaces_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream:
+          $ref: "#/definitions/goal_workspaces_stream"
+        parent_key: gid
+        partition_field: workspace_gid
+  goals_stream:
+    type: DeclarativeStream
+    name: goals
+    primary_key: gid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/goal_requester"
+        path: /goals
+        request_parameters:
+          workspace: "{{ stream_slice['workspace_gid'] }}"
+          opt_fields: gid,resource_type,name,notes,html_notes,start_on,due_on,is_workspace_level,status,liked,num_likes,privacy_setting,default_access_level,workspace.gid,workspace.name,owner.gid,owner.name,team.gid,team.name,time_period.gid,time_period.resource_type,time_period.start_on,time_period.end_on,time_period.period,time_period.display_name,metric.gid,metric.resource_type,metric.resource_subtype,metric.precision,metric.unit,metric.currency_code,metric.initial_number_value,metric.target_number_value,metric.current_number_value,metric.current_display_value,metric.progress_source,metric.is_custom_weight,metric.can_manage,current_status_update.gid,current_status_update.resource_type,current_status_update.resource_subtype,current_status_update.title
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/goal_paginator"
+      partition_router:
+        $ref: "#/definitions/goal_workspaces_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/goals_schema"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - workspace_gid
+            value: "{{ stream_slice['workspace_gid'] }}"
+            value_type: string
+  time_periods_stream:
+    type: DeclarativeStream
+    name: time_periods
+    primary_key: gid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/goal_requester"
+        path: /time_periods
+        request_parameters:
+          workspace: "{{ stream_slice['workspace_gid'] }}"
+          opt_fields: gid,resource_type,start_on,end_on,period,display_name,parent.gid,parent.resource_type,parent.start_on,parent.end_on,parent.period,parent.display_name
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/goal_paginator"
+      partition_router:
+        $ref: "#/definitions/goal_workspaces_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/time_periods_schema"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - workspace_gid
+            value: "{{ stream_slice['workspace_gid'] }}"
+            value_type: string
+  goal_reference_schema:
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      gid:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+  time_period_reference_schema:
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      gid:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      start_on:
+        type:
+          - "null"
+          - string
+        format: date
+      end_on:
+        type:
+          - "null"
+          - string
+        format: date
+      period:
+        type:
+          - "null"
+          - string
+      display_name:
+        type:
+          - "null"
+          - string
+
   selector:
     type: RecordSelector
     extractor:
@@ -2569,6 +2957,11 @@ definitions:
                   - string
 
 streams:
+  - type: ConditionalStreams
+    condition: "{{ config.get('enable_goal_streams', false) }}"
+    streams:
+      - "#/definitions/goals_stream"
+      - "#/definitions/time_periods_stream"
   - "#/definitions/projects_stream"
   - "#/definitions/sections_compact_stream"
   - "#/definitions/sections_stream"
@@ -2604,6 +2997,14 @@ spec:
     type: object
     additionalProperties: true
     properties:
+      enable_goal_streams:
+        title: Enable goals and time periods
+        description: >-
+          Expose the full-refresh goals and time_periods streams. Requires the appropriate
+          Asana entitlement and workspace access. Scoped OAuth apps need goals:read and
+          time_periods:read. Refresh the catalog and select the streams after enabling.
+        type: boolean
+        default: false
       credentials:
         title: Authentication mechanism
         description: Choose how to authenticate to Github
