@@ -15,6 +15,7 @@ from dateutil.relativedelta import relativedelta
 from pendulum.parsing.exceptions import ParserError
 from requests import JSONDecodeError, codes, exceptions  # type: ignore[import]
 
+from airbyte_cdk import BearerAuthenticator
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import (
@@ -38,11 +39,20 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .api import (
+    AUTH_TYPE_CLIENT,
+    AUTH_TYPE_CLIENT_CREDENTIALS,
+    PARENT_SALESFORCE_OBJECTS,
+    UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS,
+    UNSUPPORTED_FILTERING_STREAMS,
+    Salesforce,
+    SalesforceTokenProvider,
+)
+from .exceptions import MISSING_CLIENT_CREDENTIALS_MESSAGE, MISSING_DOMAIN_URL_MESSAGE, MISSING_REFRESH_TOKEN_MESSAGE
 from .streams import (
     DEFAULT_LOOKBACK_SECONDS,
     BulkIncrementalSalesforceStream,
@@ -99,19 +109,52 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         self._job_tracker = JobTracker(limit=100)
 
     def _get_sf_object(self, config: MutableMapping[str, Any]) -> Salesforce:
+        self._validate_auth_config(config)
+        auth_type = config.get("auth_type") or AUTH_TYPE_CLIENT
+        logger.info(f"Authenticating with Salesforce using the {auth_type} method.")
         sf = Salesforce(**config)
         # Persist on every rotation, not just this first login: under Refresh Token Rotation the
         # connector also re-logs-in mid-sync (proactive refresh and on INVALID_SESSION_ID), and each
         # of those rotates the single-use refresh token too. Registering before login() covers the
         # initial rotation as well.
-        sf.set_refresh_token_observer(lambda new_refresh_token: self._persist_rotated_refresh_token(new_refresh_token, config))
+        if not sf.uses_client_credentials:
+            sf.set_refresh_token_observer(lambda new_refresh_token: self._persist_rotated_refresh_token(new_refresh_token, config))
         sf.login()
         return sf
+
+    @staticmethod
+    def _validate_auth_config(config: Mapping[str, Any]) -> None:
+        auth_type = config.get("auth_type") or AUTH_TYPE_CLIENT
+        if auth_type == AUTH_TYPE_CLIENT:
+            if not config.get("refresh_token"):
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    internal_message="The Client authentication method requires a refresh token.",
+                    message=MISSING_REFRESH_TOKEN_MESSAGE,
+                )
+        elif auth_type == AUTH_TYPE_CLIENT_CREDENTIALS:
+            domain_url = config.get("domain_url")
+            if not domain_url or not domain_url.strip():
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    internal_message="The ClientCredentials authentication method requires a My Domain URL.",
+                    message=MISSING_DOMAIN_URL_MESSAGE,
+                )
+            client_id = config.get("client_id")
+            client_secret = config.get("client_secret")
+            if any(not value or not value.strip() or value == "******" for value in (client_id, client_secret)):
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    internal_message="The ClientCredentials authentication method requires an External Client App client ID and secret.",
+                    message=MISSING_CLIENT_CREDENTIALS_MESSAGE,
+                )
 
     def _persist_rotated_refresh_token(self, new_refresh_token: str, config: MutableMapping[str, Any]) -> None:
         if not new_refresh_token or new_refresh_token == config.get("refresh_token"):
             return
         config["refresh_token"] = new_refresh_token
+        # A rotated token is as live as the configured one, so it must be masked too if a later token request is logged
+        add_to_secrets(new_refresh_token)
         message = create_connector_config_control_message(config)
         # Emit the CONNECTOR_CONFIG control message straight to stdout so the platform persists the
         # rotated token immediately (under RTR the previous token is already invalid, and check/discover
@@ -253,7 +296,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         sf_object: Salesforce,
     ) -> List[Stream]:
         """Generates a list of stream by their names. It can be used for different tests too"""
-        authenticator = TokenAuthenticator(sf_object.access_token)
+        # Reads the current token on every request and retry, so REST streams see any refresh
+        authenticator = BearerAuthenticator(
+            token_provider=SalesforceTokenProvider(sf_object, proactive_refresh=False), config={}, parameters={}
+        )
         schemas = sf_object.generate_schemas(stream_objects)
         default_args = [sf_object, authenticator, config]
         streams = []

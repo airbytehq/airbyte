@@ -169,6 +169,43 @@ class TestSourceFacebookMarketing:
         config = ConnectorConfig.parse_obj(config)
         assert fb_marketing.get_custom_insights_streams(api, config)
 
+    @pytest.mark.parametrize(
+        "breakdowns",
+        [
+            pytest.param(["publisher_platform", "device_platform", "age", "gender", "country"], id="configured-order"),
+            pytest.param(["country", "gender", "age", "device_platform", "publisher_platform"], id="reverse-order"),
+        ],
+    )
+    def test_get_custom_insights_streams_preserves_breakdowns_order(self, api, config, fb_marketing, breakdowns):
+        config["custom_insights"] = [
+            {
+                "name": "ordered",
+                "fields": ["ad_id", "account_id", "spend"],
+                "breakdowns": [*breakdowns, breakdowns[0]],
+                "action_breakdowns": ["action_type", "action_destination", "action_type"],
+            },
+        ]
+        streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+        stream = streams[0]
+
+        assert stream.breakdowns == breakdowns
+        assert stream.action_breakdowns == ["action_type", "action_destination"]
+        assert stream.primary_key == ["date_start", "account_id", "ad_id", *breakdowns]
+        assert stream.fields() == ["ad_id", "account_id", "spend"]
+
+    def test_get_custom_insights_streams_preserves_fields_order(self, api, config, fb_marketing):
+        config["custom_insights"] = [
+            {
+                "name": "ordered_fields",
+                "fields": ["ad_id", "account_id", "spend", "ad_id"],
+                "breakdowns": [],
+                "action_breakdowns": [],
+            },
+        ]
+        streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+
+        assert streams[0].fields() == ["ad_id", "account_id", "spend"]
+
     def test_get_custom_insights_streams_with_time_increment_period(self, api, config, fb_marketing):
         config["custom_insights"] = [
             {

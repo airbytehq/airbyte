@@ -115,9 +115,29 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 4.3.20 | 2026-10-09 | Mark `api_key` as `airbyte_secret` |
+| Version | Date | Subject |
+| ------------------ | ------------ | ---------------- |
+| 4.3.22 | 2026-10-20 | Update dependencies |
+| 4.3.21 | 2026-10-13 | Update dependencies |
+| 4.3.20 | 2026-10-12 | Mark `api_key` as `airbyte_secret` |
+| 4.3.19 | 2026-10-06 | Update dependencies |
+| 4.3.18 | 2026-09-29 | Update dependencies |
+| 4.3.17 | 2026-09-22 | Update dependencies |
+| 4.3.16 | 2026-09-15 | Update dependencies |
+| 4.3.15 | 2026-09-08 | Update dependencies |
+| 4.3.14 | 2026-08-18 | Update dependencies |
+| 4.3.13 | 2026-08-11 | Update dependencies |
+| 4.3.12 | 2026-08-04 | Update dependencies |
+| 4.3.11 | 2026-07-28 | Update dependencies |
+| 4.3.10 | 2026-07-21 | Update dependencies |
+| 4.3.9 | 2026-07-14 | Update dependencies |
+| 4.3.8 | 2026-06-30 | Update dependencies |
+| 4.3.7 | 2026-06-23 | Update dependencies |
+| 4.3.6 | 2026-06-16 | Update dependencies |
+| 4.3.5 | 2026-06-09 | Update dependencies |
+| 4.3.4 | 2026-06-02 | Update dependencies |
+| 4.3.3 | 2026-04-28 | Update dependencies |
+| 4.3.2 | 2026-04-21 | Update dependencies |
 | 4.3.1 | 2025-11-30 | Fix travel insurance products record selector path |
 | 4.3.0 | 2025-09-30 | Improve 404 err handling for units pricing, drop unneeded parent streams, rename units pricing parent streams |
 | 4.2.0 | 2025-07-20 | Improved reservations & reservations_v2 scroll index handling; add folios_transactions stream |

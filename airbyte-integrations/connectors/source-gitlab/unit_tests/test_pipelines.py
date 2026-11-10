@@ -566,6 +566,36 @@ def test_jobs_are_read_for_child_pipelines(requests_mock):
     ]
 
 
+def test_jobs_request_includes_retried_job_attempts(requests_mock):
+    # GitLab omits earlier attempts of retried jobs from /pipelines/:id/jobs unless include_retried=true.
+    requests_mock.get(
+        "/api/v4/projects/11/pipelines/100/jobs",
+        json=[
+            {"id": 3, "name": "lint", "status": "success", "pipeline": {"id": 100}},
+            {"id": 2, "name": "lint", "status": "failed", "pipeline": {"id": 100}},
+        ],
+        additional_matcher=lambda request: parse_qs(urlparse(request.url).query).get("include_retried") == ["true"],
+    )
+    for project_id, pipeline_id in [(11, 101), (22, 200), (22, 201)]:
+        requests_mock.get(f"/api/v4/projects/{project_id}/pipelines/{pipeline_id}/jobs", json=[])
+
+    records = _read_records(requests_mock, "jobs")
+
+    assert sorted((record["id"], record["name"], record["status"]) for record in records) == [
+        (2, "lint", "failed"),
+        (3, "lint", "success"),
+    ]
+    jobs_requests = sorted(
+        (urlparse(request.url).path, parse_qs(urlparse(request.url).query))
+        for request in requests_mock.request_history
+        if urlparse(request.url).path.endswith("/jobs")
+    )
+    assert jobs_requests == [
+        (f"/api/v4/projects/{project_id}/pipelines/{pipeline_id}/jobs", {"per_page": ["50"], "include_retried": ["true"]})
+        for project_id, pipeline_id in [(11, 100), (11, 101), (22, 200), (22, 201)]
+    ]
+
+
 def test_pipeline_trigger_jobs_stream(requests_mock):
     bridge = {
         "id": 7,
@@ -595,3 +625,6 @@ def test_pipeline_trigger_jobs_stream(requests_mock):
             "downstream_pipeline_id": 101,
         }
     ]
+    for request in requests_mock.request_history:
+        if urlparse(request.url).path.endswith("/bridges"):
+            assert parse_qs(urlparse(request.url).query) == {"per_page": ["50"]}
