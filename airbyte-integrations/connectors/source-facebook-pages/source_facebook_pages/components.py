@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from dataclasses import InitVar, dataclass
 from http import HTTPStatus
 from typing import Any, Mapping, MutableMapping, Optional, Union
@@ -16,6 +17,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 
 
 @dataclass
@@ -27,11 +29,15 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
     def __post_init__(self, parameters: Mapping[str, Any]):
         self._page_id = InterpolatedString.create(self.page_id, parameters=parameters).eval(self.config)
         self._access_token = InterpolatedString.create(self.access_token, parameters=parameters).eval(self.config)
+        self._page_access_token: Optional[str] = None
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         """Attach the page access token to params to authenticate on the HTTP request"""
-        page_access_token = self.generate_page_access_token()
-        request.prepare_url(url=request.url, params={"access_token": page_access_token})
+        # The exchanged Page token is valid for the whole sync, so exchange it once
+        # instead of before every Graph API request.
+        if self._page_access_token is None:
+            self._page_access_token = self.generate_page_access_token()
+        request.prepare_url(url=request.url, params={"access_token": self._page_access_token})
         return request
 
     def generate_page_access_token(self) -> str:
@@ -64,6 +70,9 @@ class CustomFieldTransformation(RecordTransformation):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.name = parameters.get("name")
+        # The schema never changes during a sync, so resolve the date-time paths once
+        # rather than re-reading the schema file for every record.
+        self._date_time_paths = self._get_date_time_dpath_from_schema()
 
     def _get_schema_root_properties(self):
         schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
@@ -83,8 +92,7 @@ class CustomFieldTransformation(RecordTransformation):
         """
         Transform 'date-time' items to RFC3339 format
         """
-        date_time_paths = self._get_date_time_dpath_from_schema()
-        for path in date_time_paths:
+        for path in self._date_time_paths:
             if "*" not in path:
                 if field_value := dpath.util.get(record, path, default=None):
                     dpath.util.set(record, path, pendulum.parse(field_value).to_rfc3339_string())
@@ -102,3 +110,48 @@ class CustomFieldTransformation(RecordTransformation):
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
         return self._date_time_to_rfc3339(record)
+
+
+@dataclass
+class MetaUsageBackoffStrategy(BackoffStrategy):
+    """
+    When Meta throttles a request it reports how long until access returns in the
+    X-Business-Use-Case-Usage header (`estimated_time_to_regain_access`, in minutes).
+    Wait that long instead of guessing with exponential backoff; return None when the
+    header is absent so the next strategy in the list decides.
+    https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
+    """
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    # The DefaultErrorHandler gives every request 10 minutes of retries in total (`max_time`, not
+    # configurable from the manifest), so a longer wait would only be cut short.
+    max_wait_seconds: int = 600
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        pass
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        if not isinstance(response_or_exception, requests.Response):
+            return None
+        try:
+            usage = json.loads(response_or_exception.headers.get("X-Business-Use-Case-Usage", ""))
+        except ValueError:
+            return None
+        if not isinstance(usage, dict):
+            return None
+        minutes = max(
+            (
+                entry.get("estimated_time_to_regain_access") or 0
+                for entries in usage.values()
+                if isinstance(entries, list)
+                for entry in entries
+                if isinstance(entry, dict)
+            ),
+            default=0,
+        )
+        return min(minutes * 60, self.max_wait_seconds) if minutes > 0 else None
