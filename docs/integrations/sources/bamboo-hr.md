@@ -56,7 +56,7 @@ The BambooHR source connector supports the following [sync modes](https://docs.a
 | `employees` | [Get employee](https://documentation.bamboohr.com/reference/get-employee) | None | Yes | Requests each employee from `employees_directory_stream` with the fields listed in **employee_fields**. Every sync reads all employees. |
 | `meta_fields_stream` | [Get a list of fields](https://documentation.bamboohr.com/reference/list-fields) | None | No | Lists the fields available in your BambooHR account. Use it to find field names for **custom_reports_fields** and **employee_fields**. |
 | `time_off_requests_stream` | [Get time off requests](https://documentation.bamboohr.com/reference/list-time-off-requests-v1) | None | Yes | Cursor field: `created`. Each incremental sync re-reads the previous 60 days to capture updated requests. |
-| `timesheet_entries` | [Get timesheet entries](https://documentation.bamboohr.com/reference/list-timesheet-entries) | `id` | Yes | Cursor field: `start`. Requires BambooHR Time Tracking. |
+| `timesheet_entries` | [Get timesheet entries](https://documentation.bamboohr.com/reference/list-timesheet-entries) | `id` | Yes | Cursor field: `start`. |
 
 ## Limitations and troubleshooting
 
