@@ -100,6 +100,6 @@ is not asked day by day.
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.1.0 | 2026-11-10 | [TBD](https://github.com/airbytehq/airbyte/pulls) | Initial release: 16 streams (businesses, reviews, replies, stats, review agent, AI Reputation, review radar, review requests) |
+| 0.1.0 | 2026-11-10 | [91638](https://github.com/airbytehq/airbyte/pull/91638) | Initial release: 16 streams (businesses, reviews, replies, stats, review agent, AI Reputation, review radar, review requests) |
 
 </details>
