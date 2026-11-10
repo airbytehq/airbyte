@@ -46,7 +46,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date       |PR| Subject        |
 |------------------|------------|---|----------------|
-| 0.1.2 | 2026-11-09 |[PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER)| Upgrade base image to source-declarative-manifest 7.47.0 |
+| 0.1.2 | 2026-11-09 |[91328](https://github.com/airbytehq/airbyte/pull/91328)| Upgrade base image to source-declarative-manifest 7.47.0 |
 | 0.1.0 | 2024-10-11 |[46729](https://github.com/airbytehq/airbyte/pull/46729)| Remove unwanted optional config parameters |
 | 0.0.1 | 2024-09-29 |[46249](https://github.com/airbytehq/airbyte/pull/46249)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
