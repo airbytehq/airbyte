@@ -18,9 +18,8 @@
 # posted on the item: they only go into the private oncall ticket. The screen is a filter against
 # untargeted injections, not a security boundary.
 #
-# Runs are dry runs (the playbook writes nothing) unless `dry-run=false` is passed or the
-# INTAKE_DRY_RUN repo variable is "false". The sweep only runs live: a dry run labels nothing, so
-# a dry sweep would start sessions on the same items every run. Dry-run by dispatch instead.
+# Runs are live unless `dry-run=true` is passed (the playbook then writes nothing). The sweep always
+# runs live: a dry run labels nothing, so a dry sweep would start sessions on the same items every run.
 # No PR code is checked out or run.
 
 name: AI Intake Command
@@ -35,7 +34,7 @@ on:
         required: false
         type: string
       dry-run:
-        description: "true: the playbook writes nothing. Empty: the INTAKE_DRY_RUN repo variable decides (default true)."
+        description: "true: the playbook writes nothing. Default false."
         required: false
         type: string
       override:
@@ -115,7 +114,6 @@ jobs:
           INPUT_COMMENT_ID: ${{ inputs.comment-id }}
           INPUT_DRY_RUN: ${{ inputs.dry-run }}
           INPUT_OVERRIDE: ${{ inputs.override }}
-          DEFAULT_DRY_RUN: ${{ vars.INTAKE_DRY_RUN != 'false' }}
         run: |
           set -euo pipefail
 
@@ -131,17 +129,14 @@ jobs:
             exit 1
           fi
 
-          dry_run="${INPUT_DRY_RUN:-$DEFAULT_DRY_RUN}"
+          dry_run="${INPUT_DRY_RUN:-false}"
           if [[ "$dry_run" != "true" && "$dry_run" != "false" ]]; then
             echo "::error::dry-run must be true or false, got '$dry_run'."
             exit 1
           fi
 
           stale="[]"
-          if [[ "$EVENT_NAME" == "schedule" && "$dry_run" == "true" ]]; then
-            echo "::notice::Sweep skipped: it only runs live (INTAKE_DRY_RUN=false). Use /ai-intake or a dispatch for dry runs."
-            numbers="[]"
-          elif [[ "$EVENT_NAME" == "schedule" ]]; then
+          if [[ "$EVENT_NAME" == "schedule" ]]; then
             selected=$(.github/scripts/intake_snapshot.uv select --since "$SWEEP_SINCE" --limit "$SWEEP_LIMIT")
             numbers=$(jq -c .numbers <<<"$selected")
             stale=$(jq -c .stale <<<"$selected")
