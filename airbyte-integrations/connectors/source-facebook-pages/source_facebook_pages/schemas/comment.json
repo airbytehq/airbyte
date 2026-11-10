@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "post_id": {
+      "type": ["null", "string"]
+    },
+    "message": {
+      "type": ["null", "string"]
+    },
+    "created_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "from": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "like_count": {
+      "type": ["null", "integer"]
+    },
+    "comment_count": {
+      "type": ["null", "integer"]
+    },
+    "parent": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "is_hidden": {
+      "type": ["null", "boolean"]
+    },
+    "is_private": {
+      "type": ["null", "boolean"]
+    },
+    "can_comment": {
+      "type": ["null", "boolean"]
+    },
+    "user_likes": {
+      "type": ["null", "boolean"]
+    },
+    "permalink_url": {
+      "type": ["null", "string"]
+    },
+    "attachment": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    }
+  }
+}
