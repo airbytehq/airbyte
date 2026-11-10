@@ -254,7 +254,16 @@ Data related to [marketing attribution](https://www.shopify.com/au/blog/marketin
 
 ## IP allow list
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+Airbyte's Shopify app accepts Admin API requests only from the IP addresses below. If you authenticate with **OAuth2.0**, the connector works only when it runs in Airbyte Cloud or Airbyte Agents. To run the connector anywhere else, such as Airbyte Open Source, authenticate with **API Password** and your own [custom app](#create-a-custom-app).
+
+If your organization restricts access to specific IPs, add these addresses to your allow list. They're the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) plus the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist).
+
+| Product        | Cloud provider | Region       | IP addresses                                                                                                                    |
+| :------------- | :------------- | :----------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| Airbyte Cloud  | GCP            | us-west3     | 34.106.109.131, 34.106.196.165, 34.106.60.246, 34.106.229.69, 34.106.127.139, 34.106.218.58, 34.106.115.240, 34.106.225.141 |
+| Airbyte Cloud  | GCP            | us-central1  | 34.33.7.0/29                                                                                                                    |
+| Airbyte Cloud  | AWS            | eu-west-3    | 13.37.4.46, 13.37.142.60, 35.181.124.238                                                                                        |
+| Airbyte Agents | AWS            | us-west-2    | 44.226.44.242, 35.163.106.179, 44.227.212.246                                                                                   |
 
 ## Data type map
 
