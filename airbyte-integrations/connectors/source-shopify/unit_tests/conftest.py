@@ -228,6 +228,56 @@ def bulk_successful_response_with_errors():
 
 
 @pytest.fixture
+def bulk_response_with_auth_error():
+    return {
+        "data": {
+            "bulkOperationRunQuery": {
+                "userErrors": [],
+            },
+        },
+        "errors": "[API] Invalid API key or access token (unrecognized login or wrong password)",
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 10,
+                "actualQueryCost": 10,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 990,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
+def bulk_response_with_auth_error_in_user_errors():
+    return {
+        "data": {
+            "bulkOperationRunQuery": {
+                "userErrors": [
+                    {
+                        "message": "Invalid API key or access token",
+                        "code": "INVALID",
+                    },
+                ],
+            },
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 10,
+                "actualQueryCost": 10,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 990,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
 def bulk_successful_response_with_no_id():
     return {
         "data": {
