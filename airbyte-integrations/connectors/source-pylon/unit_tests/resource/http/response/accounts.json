@@ -1,0 +1,28 @@
+{
+  "associated_account_ids": [],
+  "channels": [],
+  "created_at": "2026-01-10T12:00:00Z",
+  "crm_settings": {
+    "details": []
+  },
+  "custom_fields": {},
+  "domain": "synthetic-domain",
+  "domains": [],
+  "external_ids": [],
+  "id": "synthetic-id",
+  "is_disabled": false,
+  "latest_customer_activity_time": "2026-01-10T12:00:00Z",
+  "latest_vendor_activity_time": "2026-01-10T12:00:00Z",
+  "logo_url": "https://example.test/synthetic",
+  "name": "synthetic-name",
+  "owner": {
+    "email": "synthetic@example.test",
+    "id": "synthetic-id"
+  },
+  "parent_account_id": "synthetic-parent_account_id",
+  "primary_domain": "synthetic-primary_domain",
+  "subaccount_ids": [],
+  "tags": [],
+  "type": "synthetic-type",
+  "updated_at": "2026-01-10T12:00:00Z"
+}
