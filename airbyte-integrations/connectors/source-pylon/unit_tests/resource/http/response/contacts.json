@@ -1,0 +1,18 @@
+{
+  "account": {
+    "external_ids": [],
+    "id": "synthetic-id"
+  },
+  "avatar_url": "https://example.test/synthetic",
+  "custom_fields": {},
+  "email": "synthetic@example.test",
+  "emails": [],
+  "external_ids": [],
+  "id": "synthetic-id",
+  "integration_user_ids": [],
+  "name": "synthetic-name",
+  "phone_numbers": [],
+  "portal_role": "synthetic-portal_role",
+  "portal_role_id": "synthetic-portal_role_id",
+  "primary_phone_number": "synthetic-primary_phone_number"
+}
