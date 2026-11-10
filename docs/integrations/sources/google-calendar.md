@@ -18,7 +18,7 @@ This page contains the setup guide and reference information for the [Google Cal
 
 ### Step 1: Obtain Google credentials
 
-On Airbyte Cloud, choose **Authenticate via Google (OAuth)** in Step 2 to sign in using Airbyte's OAuth app; you do not need to create your own project. That flow requests these six scopes: `calendar.calendarlist.readonly`, `calendar.calendars.readonly`, `calendar.events.readonly`, `calendar.settings.readonly`, `calendar.freebusy`, and `calendar.acls.readonly` (each prefixed with `https://www.googleapis.com/auth/`).
+On Airbyte Cloud, choose **Authenticate via Google (OAuth)** in Step 2 to sign in using Airbyte's OAuth app; you do not need to create your own project. That flow requests these six scopes: `calendar.calendarlist.readonly`, `calendar.calendars.readonly`, `calendar.events.readonly`, `calendar.settings.readonly`, `calendar.freebusy`, and `calendar.acls.readonly` (each prefixed with `https://www.googleapis.com/auth/`). Google lists each permission separately on its consent screen: allow all of them. A stream whose permission was left unchecked fails with a missing-scope error until you re-authenticate and allow it.
 
 For Airbyte Open Source, or to use **Authenticate with custom app (client ID / secret)** on Cloud, obtain a **Client ID**, **Client Secret**, and **Refresh Token** from your own Google Cloud project:
 
@@ -63,7 +63,7 @@ For Airbyte Open Source, or to use **Authenticate with custom app (client ID / s
 
 <!-- /env:oss -->
 
-For configuration files, `credentials` is required and contains `auth_type` (`oauth2.0` or `manual`), `client_id`, `client_secret`, and `refresh_token`. The field paths are `credentials.client_id`, `credentials.client_secret`, and `credentials.refresh_token`; the OAuth flow fills these fields for the Google option. Custom-app refresh tokens can use the six granular scopes listed above instead of `calendar.readonly` plus `calendar.acls.readonly`; the ACL scope is needed only for `acl`. Existing flat `client_id`/`client_secret`/`client_refresh_token_2` configurations migrate automatically to `credentials` with `auth_type: manual`. The optional fields remain `calendarid`, `start_date`, and `num_workers` (default 3, range 1–10).
+For configuration files, `credentials` is required and contains `auth_type` (`oauth2.0` or `manual`), `client_id`, `client_secret`, and `refresh_token`. The field paths are `credentials.client_id`, `credentials.client_secret`, and `credentials.refresh_token`; the OAuth flow fills these fields for the Google option. Custom-app refresh tokens can use the six granular scopes listed above instead of `calendar.readonly` plus `calendar.acls.readonly`; the ACL scope is needed only for `acl`. Saved flat `client_id`/`client_secret`/`client_refresh_token_2` configurations are rewritten to `credentials` with `auth_type: manual` on their first run on version 1.1.0 or later. The rewrite happens inside the connector, so a new configuration sent through the API, Terraform, or a configuration file must use the `credentials` fields. Downgrading a connection below 1.1.0 after that first run requires restoring the flat fields by hand. The optional fields remain `calendarid`, `start_date`, and `num_workers` (default 3, range 1–10).
 
 <HideInUI>
 
@@ -115,6 +115,7 @@ Expand to see details about Google Calendar connector limitations and troublesho
 ### Troubleshooting
 
 - If syncs start failing with a rejected refresh token (`invalid_grant`) about a week after setup, the OAuth app's consent screen is probably an **External** app in **Testing**, whose refresh tokens expire after 7 days. Set its publishing status to **In production**, generate a new refresh token, and paste it into **Refresh token**.
+- If a sync fails because the refresh token is missing a Google Calendar OAuth scope, a permission was left unchecked on Google's consent screen, or the refresh token was issued without one of the scopes in Step 1. Re-authenticate and allow every requested permission, or generate a new refresh token with the required scopes.
 - Check out common troubleshooting issues for the Google Calendar source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
@@ -150,7 +151,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 1.1.0 | 2026-11-10 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative Google OAuth with granular read-only scopes and a custom-app authentication option; automatically migrate legacy flat credentials. |
+| 1.1.0 | 2026-11-10 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative Google OAuth with granular read-only scopes and a custom-app authentication option; automatically migrate saved flat credentials (downgrading below 1.1.0 then needs them restored by hand); report a missing OAuth scope as a configuration error. |
 | 1.0.1 | 2026-11-10 | [91570](https://github.com/airbytehq/airbyte/pull/91570) | Update dependencies |
 | 1.0.0 | 2026-11-06 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, read `events`/`acl`/`freebusy` from every calendar when `calendarid` is empty, change the `events` primary key to `[calendar_id, id]`, return calendar resources from `calendars`, change the `colors` primary key to `kind`, and type date and date-time fields (breaking, see the [migration guide](/integrations/sources/google-calendar-migrations)) |
 | 0.1.4 | 2026-11-03 | [90589](https://github.com/airbytehq/airbyte/pull/90589) | Update dependencies |

@@ -322,6 +322,7 @@ definitions:
               - $ref: "#/definitions/error_filters/unauthorized"
               - $ref: "#/definitions/error_filters/rate_limited"
               - $ref: "#/definitions/error_filters/quota_exhausted"
+              - $ref: "#/definitions/error_filters/insufficient_scope"
               - type: HttpResponseFilter
                 http_codes:
                   - 403
@@ -484,6 +485,15 @@ definitions:
       action: FAIL
       failure_type: transient_error
       error_message: "The Google Calendar API quota for this project or user is exhausted. The sync will succeed once the quota resets; no configuration change is needed."
+    insufficient_scope:
+      type: HttpResponseFilter
+      # Google lets the user grant each requested scope separately, so a token can lack the one a stream
+      # needs. Such requests answer 403 insufficientPermissions / ACCESS_TOKEN_SCOPE_INSUFFICIENT; match
+      # them before the plain-403 filters, whose access/API-disabled messages would misstate the cause.
+      predicate: "{{ response.get('error', {}).get('code') in (403, '403') and ('insufficientPermissions' in response.get('error', {}) | string or 'ACCESS_TOKEN_SCOPE_INSUFFICIENT' in response.get('error', {}) | string) }}"
+      action: FAIL
+      failure_type: config_error
+      error_message: "The refresh token is missing a Google Calendar OAuth scope this stream needs. Re-authenticate and allow every requested permission, or generate a new refresh token with the required scopes, or deselect the stream."
     too_many_requests:
       type: HttpResponseFilter
       http_codes:
@@ -519,6 +529,7 @@ definitions:
             - $ref: "#/definitions/error_filters/unauthorized"
             - $ref: "#/definitions/error_filters/rate_limited"
             - $ref: "#/definitions/error_filters/quota_exhausted"
+            - $ref: "#/definitions/error_filters/insufficient_scope"
             - type: HttpResponseFilter
               http_codes:
                 - 403
@@ -717,7 +728,9 @@ spec:
         description: Move flat OAuth credentials under `credentials` as the custom-app option
         transformations:
           - type: ConfigAddFields
-            condition: "{{ 'client_refresh_token_2' in config and 'refresh_token' not in config.get('credentials', {}) }}"
+            # Evaluated once per field; refresh_token is written last, so the guard holds for all four.
+            # A non-object `credentials` (e.g. null) is left for spec validation to reject.
+            condition: "{{ 'client_id' in config and 'client_secret' in config and 'client_refresh_token_2' in config and ('credentials' not in config or config['credentials'] is mapping) and 'refresh_token' not in (config.get('credentials') or {}) }}"
             fields:
               - type: AddedFieldDefinition
                 path:
@@ -729,18 +742,22 @@ spec:
                   - credentials
                   - client_id
                 value: "{{ config['client_id'] }}"
+                value_type: string
               - type: AddedFieldDefinition
                 path:
                   - credentials
                   - client_secret
                 value: "{{ config['client_secret'] }}"
+                value_type: string
               - type: AddedFieldDefinition
                 path:
                   - credentials
                   - refresh_token
                 value: "{{ config['client_refresh_token_2'] }}"
+                value_type: string
           - type: ConfigRemoveFields
-            condition: "{{ 'credentials' in config }}"
+            # Drop the flat keys only once `credentials` can authenticate on its own.
+            condition: "{{ config.get('credentials') is mapping and 'refresh_token' in config['credentials'] }}"
             field_pointers:
               - - client_id
               - - client_secret

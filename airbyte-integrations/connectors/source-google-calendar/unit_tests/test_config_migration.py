@@ -3,13 +3,18 @@
 #
 
 import json
+import logging
+from typing import Any, List, Mapping
 
 import pytest
 from conftest import get_source
 
 from airbyte_cdk.models import SyncMode, Type
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 LEGACY_CONFIG = {
@@ -24,25 +29,43 @@ MIGRATED_CREDENTIALS = {
     "client_secret": "legacy-secret",
     "refresh_token": "legacy-refresh",
 }
+FLAT_KEYS = ("client_id", "client_secret", "client_refresh_token_2")
 
 _TOKEN_URL = "https://oauth2.googleapis.com/token"
 _CALENDAR_LIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList"
+
+
+def _control_messages(capsys) -> List[Mapping[str, Any]]:
+    return [json.loads(line) for line in capsys.readouterr().out.splitlines() if '"CONTROL"' in line]
+
+
+def _assert_valid_against_spec(source) -> None:
+    check_config_against_spec_or_exit(source._config, source.spec(logging.getLogger("test")))
 
 
 def test_legacy_flat_config_is_migrated_to_custom_app_option(capsys):
     source = get_source(LEGACY_CONFIG)
 
     assert source._config["credentials"] == MIGRATED_CREDENTIALS
-    for key in ("client_id", "client_secret", "client_refresh_token_2"):
+    for key in FLAT_KEYS:
         assert key not in source._config
     assert source._config["calendarid"] == "primary"
+    _assert_valid_against_spec(source)
 
-    control_messages = [json.loads(line) for line in capsys.readouterr().out.splitlines() if '"CONTROL"' in line]
+    control_messages = _control_messages(capsys)
     assert len(control_messages) == 1
     assert control_messages[0]["type"] == Type.CONTROL.value
     emitted_config = control_messages[0]["control"]["connectorConfig"]["config"]
     assert emitted_config["credentials"] == MIGRATED_CREDENTIALS
     assert "client_refresh_token_2" not in emitted_config
+
+
+def test_legacy_values_stay_strings():
+    # Without value_type the CDK would literal-eval these into int, bool, and float.
+    source = get_source({"client_id": "123456", "client_secret": "True", "client_refresh_token_2": "1e5"})
+
+    assert source._config["credentials"] == {"auth_type": "manual", "client_id": "123456", "client_secret": "True", "refresh_token": "1e5"}
+    _assert_valid_against_spec(source)
 
 
 @pytest.mark.parametrize("auth_type", ["manual", "oauth2.0"])
@@ -55,7 +78,8 @@ def test_nested_config_is_not_migrated(capsys, auth_type):
     source = get_source(config)
 
     assert source._config == config
-    assert "CONTROL" not in capsys.readouterr().out
+    assert _control_messages(capsys) == []
+    _assert_valid_against_spec(source)
 
 
 @pytest.mark.parametrize("auth_type", ["manual", "oauth2.0"])
@@ -68,26 +92,64 @@ def test_existing_credentials_are_kept_when_flat_keys_remain(capsys, auth_type):
     source = get_source(config)
 
     assert source._config["credentials"] == credentials
-    for key in ("client_id", "client_secret", "client_refresh_token_2"):
+    for key in FLAT_KEYS:
         assert key not in source._config
 
-    control_messages = [json.loads(line) for line in capsys.readouterr().out.splitlines() if '"CONTROL"' in line]
+    control_messages = _control_messages(capsys)
     assert len(control_messages) == 1
     assert control_messages[0]["control"]["connectorConfig"]["config"]["credentials"] == credentials
 
 
-def test_migrated_credentials_reach_the_token_endpoint(requests_mock):
-    token_request = requests_mock.post(_TOKEN_URL, json={"access_token": "at", "expires_in": 3600})
-    requests_mock.get(_CALENDAR_LIST_URL, json={"items": []})
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param({k: v for k, v in LEGACY_CONFIG.items() if k != "client_id"}, id="flat_without_client_id"),
+        pytest.param({**LEGACY_CONFIG, "credentials": None}, id="credentials_null"),
+    ],
+)
+def test_incomplete_config_is_left_for_spec_validation(capsys, config):
+    # Nothing is migrated or removed, so no stored value is lost, and spec validation reports the problem.
+    source = get_source(dict(config))
+
+    assert source._config == config
+    assert _control_messages(capsys) == []
+    with pytest.raises(AirbyteTracedException):
+        _assert_valid_against_spec(source)
+
+
+@pytest.mark.parametrize(
+    "config, client_id, client_secret, refresh_token",
+    [
+        pytest.param(LEGACY_CONFIG, "legacy-id.apps.googleusercontent.com", "legacy-secret", "legacy-refresh", id="legacy_flat"),
+        pytest.param(
+            {"credentials": {"auth_type": "oauth2.0", "client_id": "app-id", "client_secret": "app-secret", "refresh_token": "oauth-rt"}},
+            "app-id",
+            "app-secret",
+            "oauth-rt",
+            id="nested_oauth",
+        ),
+        pytest.param(
+            {"credentials": {"auth_type": "manual", "client_id": "own-id", "client_secret": "own-secret", "refresh_token": "own-rt"}},
+            "own-id",
+            "own-secret",
+            "own-rt",
+            id="nested_manual",
+        ),
+    ],
+)
+def test_credentials_reach_the_token_endpoint(config, client_id, client_secret, refresh_token):
     catalog = CatalogBuilder().with_stream("calendarlist", SyncMode.full_refresh).build()
+    with HttpMocker() as http_mocker:
+        token_request = HttpRequest(
+            _TOKEN_URL,
+            body=f"grant_type=refresh_token&client_id={client_id}&client_secret={client_secret}&refresh_token={refresh_token}",
+        )
+        http_mocker.post(token_request, HttpResponse(json.dumps({"access_token": "at", "expires_in": 3600})))
+        calendar_list_request = HttpRequest(_CALENDAR_LIST_URL, headers={"Authorization": "Bearer at"})
+        http_mocker.get(calendar_list_request, HttpResponse(json.dumps({"items": [{"id": "primary"}]})))
 
-    output = read(get_source(dict(LEGACY_CONFIG)), LEGACY_CONFIG, catalog)
+        output = read(get_source(dict(config)), dict(config), catalog)
 
-    assert output.errors == []
-    assert token_request.called
-    body = token_request.last_request.text
-    assert "refresh_token=legacy-refresh" in body
-    assert "client_id=legacy-id.apps.googleusercontent.com" in body
-    assert "grant_type=refresh_token" in body
-    calendar_request = next(r for r in requests_mock.request_history if r.url.startswith(_CALENDAR_LIST_URL))
-    assert calendar_request.headers["Authorization"] == "Bearer at"
+        assert output.errors == []
+        assert [r.record.data["id"] for r in output.records] == ["primary"]
+        http_mocker.assert_number_of_calls(token_request, 1)
