@@ -37,3 +37,11 @@ data:
     - title: Pingdom API documentation
       url: https://docs.pingdom.com/api/
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
