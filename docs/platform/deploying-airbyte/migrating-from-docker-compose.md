@@ -6,7 +6,7 @@ products: oss-community
 
 :::warning
 
-Migration from Docker Compose is no longer supported. The `--migrate` flag has been deprecated and removed from `abctl`.
+Migration from Docker Compose is no longer supported. The `abctl local install --migrate` flag has been deprecated and removed from `abctl` (running it fails with `unknown flag --migrate`). Do not use `--migrate`; start from a fresh `abctl` install instead.
 
 :::
 
