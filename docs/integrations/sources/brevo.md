@@ -99,7 +99,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
-| 0.3.0 | 2026-11-10 | [TBD] | Add foundational fixes, six parity streams, and mock-server coverage. |
+| 0.3.0 | 2026-11-10 | [91551](https://github.com/airbytehq/airbyte/pull/91551) | Add foundational fixes, six parity streams, and mock-server coverage. |
 | 0.2.54 | 2026-11-10 | [91355](https://github.com/airbytehq/airbyte/pull/91355) | Update dependencies |
 | 0.2.53 | 2026-11-04 | [90940](https://github.com/airbytehq/airbyte/pull/90940) | Simplify error handling while preserving retry and rate-limit behavior. |
 | 0.2.52 | 2026-11-03 | [90462](https://github.com/airbytehq/airbyte/pull/90462) | Update dependencies |
