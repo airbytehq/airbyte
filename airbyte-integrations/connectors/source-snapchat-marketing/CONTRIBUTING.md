@@ -2,6 +2,12 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
+## Unique behaviors (summary)
+
+Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
+
+1. **Organizations and Ad Accounts are read as parents without the date filter** -- the streams under them see every organization and ad account, even ones Start Date leaves out of those two streams, because the filter used to empty every stream under them.
+
 ## Incremental Stream Considerations
 
 The Snapchat Marketing API supports date-based filtering on stats endpoints and `updated_at` ordering on entity endpoints, which the connector already uses for 16 incremental streams. The 4 remaining streams are children partitioned via `SubstreamPartitionRouter` (ad_squad_stats, ad_stats, campaign_stats, organization_stats). No FR parent streams remain.
