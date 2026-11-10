@@ -1,4 +1,4 @@
-version: "7.28.3"
+version: "7.47.0.post8.dev42627167644"
 type: DeclarativeSource
 
 definitions:
@@ -17,58 +17,125 @@ definitions:
     type: HttpRequester
     url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
     authenticator:
-      type: RateLimitedMultipleTokenAuthenticator
-      # Token precedence: legacy root-level `access_token` first, then
-      # `credentials.access_token`, then `credentials.personal_access_token` — the
-      # legacy `get_access_token` accepted all three, so the authenticator does too.
-      tokens: "{{ config.get('access_token', config.get('credentials', {}).get('access_token', config.get('credentials', {}).get('personal_access_token', ''))) }}"
-      token_delimiter: ","
-      auth_method: "token"
-      header: "Authorization"
-      # `is not none`, not a `.get` default or `or 120`: a null value renders "PTNoneM" and fails every
-      # command, and `check`'s small override must not read as absent.
-      max_wait_time: "PT{{ config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120 }}M"
-      quota_status_source:
-        type: QuotaStatusSource
-        url: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}/rate_limit"
-        request_headers:
-          Accept: "application/vnd.github+json"
-          X-GitHub-Api-Version: "2022-11-28"
-        # GHES with rate limiting disabled answers `GET /rate_limit` with 404: seed that token as untracked instead of
-        # failing every command. 404 only: untracked lasts the whole sync, so no transient status (5xx, 429), and never
-        # 401/403 (a revoked token would look untracked). See AGENTS.md "Authenticator quota pools".
-        unavailable_status_codes: [404]
-      quotas:
-        - type: TokenQuota
-          name: rest
-          remaining_path: ["resources", "core", "remaining"]
-          reset_path: ["resources", "core", "reset"]
-          limit_path: ["resources", "core", "limit"]
-          # Reconcile the pool from every response's headers, not only the initial /rate_limit seeding.
-          # See AGENTS.md "Authenticator quota pools".
-          remaining_header: "X-RateLimit-Remaining"
-          reset_header: "X-RateLimit-Reset"
-          limit_header: "X-RateLimit-Limit"
-          # No `exhaustion_status_codes` on purpose: GitHub's 403 also means secondary limit or missing scope.
-          # Primary exhaustion arrives as `X-RateLimit-Remaining: 0`, which the header reconciliation picks up.
-          # See AGENTS.md "Authenticator quota pools".
-        - type: TokenQuota
-          name: graphql
-          remaining_path: ["resources", "graphql", "remaining"]
-          reset_path: ["resources", "graphql", "reset"]
-          limit_path: ["resources", "graphql", "limit"]
-          # /graphql answers with the same header names, scoped to the separate GraphQL
-          # point budget, so the pool reconciles the same way as `rest`.
-          remaining_header: "X-RateLimit-Remaining"
-          reset_header: "X-RateLimit-Reset"
-          limit_header: "X-RateLimit-Limit"
-          matchers:
-            - type: HttpRequestRegexMatcher
-              url_path_pattern: "/graphql"
+      # One instance per branch, shared by every stream (see AGENTS.md "Authentication").
+      # `credentials.option_title` is defaulted by `ConfigNormalization` for configs that predate it.
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["credentials", "option_title"]
+      authenticators:
+        OAuth Credentials: "#/definitions/token_authenticator"
+        PAT Credentials: "#/definitions/token_authenticator"
+        GitHub App Credentials: "#/definitions/github_app_authenticator"
     request_headers:
       User-Agent: "PostmanRuntime/7.28.0"
     error_handler:
       $ref: "#/definitions/strict_access_error_handler"
+
+  # Quota tracking shared by both authenticators. A static token and a GitHub App installation
+  # token draw on the same REST and GraphQL budgets, reported by the same `/rate_limit` endpoint.
+  rate_limited_authenticator_base:
+    type: RateLimitedMultipleTokenAuthenticator
+    # `is not none`, not a `.get` default or `or 120`: a null value renders "PTNoneM" and fails every
+    # command, and `check`'s small override must not read as absent.
+    max_wait_time: "PT{{ config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120 }}M"
+    quota_status_source:
+      type: QuotaStatusSource
+      url: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}/rate_limit"
+      request_headers:
+        Accept: "application/vnd.github+json"
+        X-GitHub-Api-Version: "2022-11-28"
+      # GHES with rate limiting disabled answers `GET /rate_limit` with 404: seed that token as untracked instead of
+      # failing every command. 404 only: untracked lasts the whole sync, so no transient status (5xx, 429), and never
+      # 401/403 (a revoked token would look untracked). See AGENTS.md "Authenticator quota pools".
+      unavailable_status_codes: [404]
+    quotas:
+      - type: TokenQuota
+        name: rest
+        remaining_path: ["resources", "core", "remaining"]
+        reset_path: ["resources", "core", "reset"]
+        limit_path: ["resources", "core", "limit"]
+        # Reconcile the pool from every response's headers, not only the initial /rate_limit seeding.
+        # See AGENTS.md "Authenticator quota pools".
+        remaining_header: "X-RateLimit-Remaining"
+        reset_header: "X-RateLimit-Reset"
+        limit_header: "X-RateLimit-Limit"
+        # No `exhaustion_status_codes` on purpose: GitHub's 403 also means secondary limit or missing scope.
+        # Primary exhaustion arrives as `X-RateLimit-Remaining: 0`, which the header reconciliation picks up.
+        # See AGENTS.md "Authenticator quota pools".
+      - type: TokenQuota
+        name: graphql
+        remaining_path: ["resources", "graphql", "remaining"]
+        reset_path: ["resources", "graphql", "reset"]
+        limit_path: ["resources", "graphql", "limit"]
+        # /graphql answers with the same header names, scoped to the separate GraphQL
+        # point budget, so the pool reconciles the same way as `rest`.
+        remaining_header: "X-RateLimit-Remaining"
+        reset_header: "X-RateLimit-Reset"
+        limit_header: "X-RateLimit-Limit"
+        matchers:
+          - type: HttpRequestRegexMatcher
+            url_path_pattern: "/graphql"
+
+  token_authenticator:
+    $ref: "#/definitions/rate_limited_authenticator_base"
+    # Token precedence: legacy root-level `access_token` first, then
+    # `credentials.access_token`, then `credentials.personal_access_token` — the
+    # legacy `get_access_token` accepted all three, so the authenticator does too.
+    # Placeholder for GitHub App configs, which have no static token. `SelectiveAuthenticator` builds every
+    # branch, not only the selected one, and the CDK fails a token authenticator with an empty token list at
+    # construction (long-standing CDK behavior), so without it every GitHub App command would fail. This branch
+    # is never selected for a GitHub App config, so nothing is signed with the placeholder.
+    # Drop it once the CDK reports empty tokens on first use instead of at construction.
+    tokens: "{{ 'unused-github-app-config' if config.get('credentials', {}).get('option_title') == 'GitHub App Credentials' else config.get('access_token', config.get('credentials', {}).get('access_token', config.get('credentials', {}).get('personal_access_token', ''))) }}"
+    token_delimiter: ","
+    auth_method: "token"
+    header: "Authorization"
+
+  # Rotates between GitHub App installations. Each installation logs in on first use with a JWT
+  # signed by its app's private key and gets a one-hour installation token, refreshed after 55 minutes.
+  # Quota is tracked per installation id, so a refreshed token keeps its counters.
+  github_app_authenticator:
+    $ref: "#/definitions/rate_limited_authenticator_base"
+    credentials:
+      type: CredentialSet
+      items: "{{ config['credentials']['installations'] }}"
+      key: "{{ config['credential']['installation_id'] }}"
+      authenticator:
+        type: SessionTokenAuthenticator
+        login_requester:
+          type: HttpRequester
+          url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
+          path: "/app/installations/{{ config['credential']['installation_id'] }}/access_tokens"
+          http_method: POST
+          request_headers:
+            Accept: "application/vnd.github+json"
+            X-GitHub-Api-Version: "2022-11-28"
+          authenticator:
+            type: JwtAuthenticator
+            secret_key: "{{ config['credential']['private_key'] }}"
+            algorithm: RS256
+            # GitHub rejects an app JWT that expires more than 10 minutes after it was issued, and
+            # recommends issuing it 60 seconds in the past to allow for clock drift.
+            token_duration: 540
+            iat_backdate_seconds: 60
+            header_prefix: Bearer
+            jwt_payload:
+              iss: "{{ config['credential']['app_id'] }}"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes: [401, 403, 404]
+                action: FAIL
+                failure_type: config_error
+                error_message: >-
+                  GitHub could not issue an installation access token for a GitHub App installation.
+                  Check that the App ID, private key and installation ID belong to the same GitHub App and that
+                  the app is still installed.
+        session_token_path: ["token"]
+        # Installation tokens last one hour; refresh with a margin.
+        expiration_duration: PT55M
+        request_authentication:
+          type: Bearer
 
   # Requester for the repo-scoped child streams (`repos/{repository}/...`). Same transport
   # as `requester_base`, but an inaccessible or empty single repository is skipped instead
@@ -130,8 +197,8 @@ definitions:
     action: FAIL
     failure_type: config_error
     error_message: >-
-      GitHub authentication failed (HTTP 401). Please verify your Personal Access Token or OAuth
-      credentials are valid and not expired.
+      GitHub authentication failed (HTTP 401). Please verify your Personal Access Token, OAuth
+      or GitHub App credentials are valid and not expired.
 
   retry_after_rate_limit_filter:
     type: HttpResponseFilter
@@ -20118,6 +20185,46 @@ spec:
                 title: Personal Access Tokens
                 description: Log into GitHub and then generate a <a href="https://github.com/settings/tokens">personal access token</a>. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with ","
                 airbyte_secret: true
+          - type: object
+            title: GitHub App
+            required:
+              - installations
+            properties:
+              option_title:
+                type: string
+                const: GitHub App Credentials
+                order: 0
+              installations:
+                type: array
+                title: GitHub App Installations
+                description: One or more GitHub App installations to authenticate as. Each installation must belong to a different GitHub App installed on the same organization or account, and must have access to all the configured repositories. Each installation has its own rate limit, so the connector rotates between them like multiple personal access tokens. A GitHub App can be installed only once per organization or account, so to sync several organizations with one app, create one connection per organization.
+                minItems: 1
+                order: 1
+                items:
+                  type: object
+                  required:
+                    - app_id
+                    - installation_id
+                    - private_key
+                  properties:
+                    app_id:
+                      type: string
+                      title: App ID
+                      description: The GitHub App's App ID or Client ID, shown on the app's settings page.
+                      order: 0
+                    installation_id:
+                      type: string
+                      title: Installation ID
+                      description: The ID of the app's installation on the organization or account, the number at the end of the installation's settings URL.
+                      pattern: ^[0-9]+$
+                      order: 1
+                    private_key:
+                      type: string
+                      title: Private Key
+                      description: The app's private key, the full contents of the downloaded .pem file.
+                      airbyte_secret: true
+                      multiline: true
+                      order: 2
       repository:
         type: string
         examples:
@@ -20276,3 +20383,10 @@ spec:
         validation_strategy:
           type: CustomValidationStrategy
           class_name: source_declarative_manifest.components.ApiUrlValidationStrategy
+      # A GitHub App has one installation per account, so a repeated App ID means installations on
+      # different owners, whose private repositories the other installation cannot read.
+      - type: DpathValidator
+        field_path: ["credentials", "installations"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.GitHubAppInstallationsValidationStrategy

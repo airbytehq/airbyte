@@ -7,7 +7,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 )
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 
-from .utils import make_source
+from .utils import make_source, normalized_config
 
 
 _CONFIG = {
@@ -28,7 +28,7 @@ def _build_router(definition_name: str, config: dict):
     return factory.create_component(
         model_type=UnionPartitionRouterModel,
         component_definition=definition,
-        config=config,
+        config=normalized_config(config),
         stream_name="test_stream",
     )
 
