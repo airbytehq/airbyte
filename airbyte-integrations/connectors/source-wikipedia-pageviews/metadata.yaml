@@ -51,4 +51,12 @@ data:
     - title: Wikimedia Pageviews API
       url: https://wikitech.wikimedia.org/wiki/Analytics/AQS/Pageviews
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
