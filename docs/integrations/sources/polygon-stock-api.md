@@ -57,6 +57,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.53 | 2026-11-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Surface a clear config error when the start date is outside the Polygon plan's data timeframe. |
 | 0.2.52 | 2026-06-02 | [78869](https://github.com/airbytehq/airbyte/pull/78869) | Update dependencies |
 | 0.2.51 | 2026-04-28 | [77385](https://github.com/airbytehq/airbyte/pull/77385) | Update dependencies |
 | 0.2.50 | 2026-04-21 | [76718](https://github.com/airbytehq/airbyte/pull/76718) | Update dependencies |

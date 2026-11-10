@@ -5,6 +5,18 @@ check:
   stream_names:
     - stock_api
 definitions:
+  plan_timeframe_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        predicate: >-
+          {{ response is mapping and response.get('status') == 'NOT_AUTHORIZED'
+          and response.get('message') is string
+          and "plan doesn't include this data timeframe" in response.get('message') }}
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Polygon rejected the requested date range because your Polygon plan does not include data that old. Set Start Date to a date within your plan's history window, or upgrade your Polygon plan.
   streams:
     stock_api:
       type: DeclarativeStream
@@ -13,6 +25,8 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
+          error_handler:
+            $ref: "#/definitions/plan_timeframe_error_handler"
           url_base: https://api.polygon.io
           authenticator:
             type: ApiKeyAuthenticator
@@ -90,6 +104,8 @@ definitions:
           additionalProperties: true
   base_requester:
     type: HttpRequester
+    error_handler:
+      $ref: "#/definitions/plan_timeframe_error_handler"
     url_base: https://api.polygon.io
     authenticator:
       type: ApiKeyAuthenticator
@@ -105,6 +121,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
+        error_handler:
+          $ref: "#/definitions/plan_timeframe_error_handler"
         url_base: https://api.polygon.io
         authenticator:
           type: ApiKeyAuthenticator
