@@ -13,7 +13,7 @@ The connector uses the [Salesforce Bulk API v62.0](https://developer.salesforce.
 
 - **Data Activation Support**: Sync enriched customer data, lead scores, and product usage metrics from your warehouse to Salesforce
 - **Bulk API Integration**: Uses Salesforce Bulk API v62.0 for high-performance data loading with 100MB batch processing
-- **Rejected Records**: Failed records are automatically captured and stored in S3 for analysis and reprocessing
+- **Rejected Records**: Optionally store rejected records in S3 for analysis and reprocessing. Without object storage, Airbyte doesn't retain rejected record payloads.
 - **OAuth 2.0 Authentication**: Secure authentication with support for both sandbox and production environments
 - **CSV Format Processing**: Data is processed in CSV format for optimal compatibility with Salesforce Bulk API
 
@@ -21,9 +21,12 @@ The connector uses the [Salesforce Bulk API v62.0](https://developer.salesforce.
 
 - A [Salesforce account](https://login.salesforce.com/) with one of the following subscriptions:
     - Enterprise Edition
+    - Unlimited Edition
+    - Performance Edition
+    - Developer Edition
     - Professional Edition with API access purchased as an add-on
-- Airbyte version 1.8 or later, or Airbyte Cloud
-- A Salesforce developer application with OAuth 2.0 credentials (Client ID and Client Secret)
+- An Airbyte Pro or Enterprise Flex plan
+- The **API Enabled** system permission for the Salesforce user who authenticates the destination
 - Recommended: a dedicated Salesforce user with appropriate object permissions
 
 ### S3 prerequisites for rejected records
@@ -53,25 +56,7 @@ If you're using an S3 bucket to store rejected records, you also need the follow
 
 ## Setup guide
 
-### Step 1: Create a Salesforce connected app
-
-Before setting up the Airbyte connector, you need to create a Connected App in Salesforce to obtain OAuth 2.0 credentials.
-
-1. Log in to your Salesforce org as an administrator
-2. Navigate to **Setup** > **App Manager**
-3. Click **New Connected App**
-4. Fill in the basic information:
-   - **Connected App Name**: "Airbyte Data Sync" (or your preferred name)
-   - **API Name**: Auto-populates
-   - **Contact Email**: Your email address
-5. Enable OAuth Settings:
-   - Check **Enable OAuth Settings**
-   - **Callback URL**: `https://cloud.airbyte.com/auth/callback` (for Airbyte Cloud) or `https://your-airbyte-domain.com/auth/callback` (for self-managed Airbyte)
-   - **Selected OAuth Scopes**: Add "Full access (full)" and "Perform requests on your behalf at any time (refresh_token, offline_access)"
-6. Click **Save** and then **Continue**
-7. Note the **Consumer Key** (Client ID) and **Consumer Secret** (Client Secret) for later use
-
-### Step 2: Create a dedicated Salesforce user (optional but recommended)
+### Step 1: Create a dedicated Salesforce user (optional but recommended)
 
 Follow the instructions below to create a profile and assign custom permission sets to grant the new user the write access needed for data you want to access with Airbyte.
 
@@ -87,6 +72,8 @@ Follow the instructions below to create a profile and assign custom permission s
       - Decide whether to generate a new password and notify the user.
       - Select `save`
 
+The Salesforce Platform license doesn't provide access to Leads, Opportunities, or Campaigns. To write to these objects, assign a full Salesforce license instead.
+
 #### 2. Create a new permission set
 
 - Using the left navigation bar, select **Users** > **Permission Sets**
@@ -96,13 +83,21 @@ Follow the instructions below to create a profile and assign custom permission s
 - Now that you see the permission set is created, define the permissions via Object Settings.
    - Click "Object Settings."
    - Select the `Object Name` for each object you want the user to have write access to (e.g., Accounts, Contacts, Opportunities).
-   - Select "Edit" and check all the object permissions under "Object Permissions"
+   - Click **Edit** and select the object permissions required for your write modes under **Object Permissions**:
+     - **Create** for insert
+     - **Edit** for update
+     - **Create** and **Edit** for upsert. The target object must also have an external ID field for matching records.
+     - **Delete** for delete
+   - Grant **Read** on **Contact**, even if Contact isn't a target object. The connection check retrieves the Contact schema.
+   - Grant edit access to the fields you map.
    - Click `Save`
    - Continue to add permissions for any objects you want Airbyte to have access to.
 
+Enable the **API Enabled** system permission for the user. Write modes the user doesn't have permission to use don't appear in Airbyte's mapping screen.
+
 #### 3. Assign the permission set to the new user
 
-- From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
+- From the Permission Sets page, click **Manage Assignments** next to the permission set you just created.
 - Click "Add Assignments."
 - Find and select the user you created in Step 1.
 - Click `Assign`
@@ -111,14 +106,16 @@ Log into the email you used in the preceding steps and verify your new Salesforc
 
 :::info
 **Profile vs. Permission Set**: remember that the user's profile provides their baseline permissions. The permission set adds or restricts permissions on top of that.
-**Object-Level vs. Field-Level Security**: this guide focuses on object-level read-only access. While setting up your permission set, you can stick with object-level security or define more granular controls by scrolling down within each object settings page to select read access for only needed fields.
+**Object-Level vs. Field-Level Security**: grant the object permissions required for your write modes and edit access to the fields you map.
 :::
 
-### Step 3: Set up the Salesforce connector in Airbyte
+### Step 2: Set up the Salesforce connector in Airbyte
 
 <!-- env:cloud -->
 
 #### For Airbyte Cloud
+
+Airbyte supplies the Salesforce OAuth app. You don't need to create your own app or enter a client ID or client secret. Syncs run as the Salesforce user who authenticates the destination.
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account
 2. Click **Destinations** and then click **+ New destination**
@@ -126,33 +123,14 @@ Log into the email you used in the preceding steps and verify your new Salesforc
 4. Enter a name for the Salesforce connector
 5. Configure authentication:
    - **Is Sandbox**: First, toggle this setting based on your Salesforce environment (sandbox or production). **Note**: Changing this setting requires redoing authentication.
-   - **Client ID**: Enter the Consumer Key from your Connected App
-   - **Client Secret**: Enter the Consumer Secret from your Connected App
-   - **Refresh Token**: Click **Authenticate your account** to generate this automatically
+   - Click **Authenticate your account** and log in to Salesforce as the integration user.
 6. Click **Set up destination** and wait for the connection test to complete
 
 <!-- /env:cloud -->
 
-<!-- env:oss -->
-
-#### For Self-Managed Airbyte
-
-1. Navigate to your Airbyte instance (for example, `http://localhost:8000`)
-2. Click **Destinations** and then click **+ New destination**
-3. Select **Salesforce** from the destination type dropdown
-4. Enter a name for the Salesforce connector
-5. Configure authentication:
-   - **Is Sandbox**: First, set to `true` if connecting to a Salesforce sandbox, `false` for production. **Note**: Changing this setting requires redoing authentication.
-   - **Client ID**: Enter the Consumer Key from your Connected App
-   - **Client Secret**: Enter the Consumer Secret from your Connected App
-   - **Refresh Token**: You'll need to obtain this through the OAuth flow using your callback URL
-6. Click **Set up destination** and wait for the connection test to complete
-
-<!-- /env:oss -->
-
 ## Configuration
 
-The connector uses OAuth 2.0 authentication with your Salesforce Connected App credentials. Make sure to set the **Is Sandbox** option correctly before authenticating, as this determines which Salesforce environment you connect to.
+The connector uses OAuth 2.0 authentication through Airbyte's Salesforce app. Make sure to set the **Is Sandbox** option correctly before authenticating, as this determines which Salesforce environment you connect to.
 
 ## Supported sync modes
 
@@ -174,14 +152,13 @@ The connector uses OAuth 2.0 authentication with your Salesforce Connected App c
 
 ### Error handling
 
-- Failed records are automatically captured for troubleshooting
+- If you configure object storage, rejected record payloads are saved for troubleshooting.
 - Monitor sync status through the Airbyte UI for detailed error information
 
 ## Troubleshooting
 
 ### Authentication issues
 
-- **Invalid Client Credentials**: Verify your Connected App's Consumer Key and Consumer Secret
 - **Refresh Token Expired**: Re-authenticate through the Airbyte UI to generate a new refresh token
 - **Sandbox vs Production**: Ensure the "Is Sandbox" setting matches your Salesforce environment. Changing this setting requires redoing authentication.
 
@@ -203,13 +180,10 @@ The connector uses OAuth 2.0 authentication with your Salesforce Connected App c
 
 ## Reference
 
-For programmatic configuration, use these parameter names:
+Airbyte manages the client ID and client secret. Authenticate through the Airbyte UI rather than supplying credentials from your own Salesforce app. The following example shows the sandbox setting and optional S3 configuration:
 
 ```json
 {
-  "client_id": "your_consumer_key",
-  "client_secret": "your_consumer_secret", 
-  "refresh_token": "your_refresh_token",
   "is_sandbox": false,
   "object_storage_config": {
     "storage_type": "S3",
@@ -226,7 +200,6 @@ For programmatic configuration, use these parameter names:
 
 - [Data Activation Overview](/platform/move-data/elt-data-activation)
 - [Salesforce Bulk API Documentation](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm)
-- [Salesforce Connected Apps](https://help.salesforce.com/s/articleView?id=sf.connected_app_create.htm)
 - [Rejected Records](/platform/move-data/rejected-records)
 
 ## Changelog
@@ -234,7 +207,10 @@ For programmatic configuration, use these parameter names:
 <details>
   <summary>Expand to review</summary>
 
-The connector is still incubating, this section only exists to satisfy Airbyte's QA checks.
+| Version | Date | Pull request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.0.8 | 2025-09-26 | [240](https://github.com/airbytehq/airbyte-enterprise/pull/240) | Pin Salesforce connector dependencies. |
+| 0.0.7 | 2025-09-15 | [226](https://github.com/airbytehq/airbyte-enterprise/pull/226) | Use a declarative specification. |
 
 - 0.0.6
 
