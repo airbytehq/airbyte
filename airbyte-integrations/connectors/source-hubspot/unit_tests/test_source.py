@@ -202,6 +202,7 @@ def test_custom_object_prefixed_stream_reads_from_fully_qualified_entity(request
 
 def test_custom_objects_never_collide_with_any_builtin_stream(requests_mock, config):
     config["enable_experimental_streams"] = True
+    config["enable_meeting_links"] = True
     config["prefix_colliding_custom_objects"] = True
     schemas_url = "https://api.hubapi.com/crm/v3/schemas"
     requests_mock.get(schemas_url, json={}, status_code=200)

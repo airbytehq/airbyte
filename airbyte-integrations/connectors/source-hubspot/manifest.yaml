@@ -30,7 +30,7 @@ definitions:
   # Opt-in via `prefix_colliding_custom_objects` so existing connections keep their stream names.
   # Keep this list in sync with `streams`; guarded by `test_custom_objects_never_collide_with_any_builtin_stream`.
   custom_object_stream_name: >-
-    {{ 'custom_object_' ~ components_values.name if config.get('prefix_colliding_custom_objects', false) and components_values.name in [
+    {{ 'custom_object_' ~ components_values.name if config.get('prefix_colliding_custom_objects', false) and components_values.name in ([
       'campaigns', 'companies', 'companies_property_history', 'contact_lists', 'contacts',
       'list_memberships', 'contacts_property_history', 'deal_pipelines', 'deal_splits', 'deals_archived',
       'deals_property_history', 'deals', 'email_events', 'email_subscriptions', 'engagements',
@@ -42,7 +42,7 @@ definitions:
       'engagements_calls_web_analytics', 'engagements_emails_web_analytics',
       'engagements_meetings_web_analytics', 'engagements_notes_web_analytics', 'engagements_tasks_web_analytics',
       'goals_web_analytics', 'line_items_web_analytics', 'products_web_analytics'
-    ] else components_values.name }}
+    ] + (['meeting_links'] if config.get('enable_meeting_links', false) else [])) else components_values.name }}
 
   base_requester:
     type: HttpRequester
@@ -1410,6 +1410,30 @@ definitions:
         fields:
           - path: ["updatedAt"]
             value: "{{ record.get('updatedAt') or record['createdAt'] }}"
+
+  meeting_links_stream:
+    type: DeclarativeStream
+    name: meeting_links
+    primary_key: [id]
+    $parameters:
+      name: meeting_links
+      required_scopes: scheduler.meetings.meeting-link.read
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /scheduler/2026-09/meetings/meeting-links
+      record_selector:
+        $ref: "#/definitions/base_selector"
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+        pagination_strategy:
+          $ref: "#/definitions/cursor_paginator/pagination_strategy"
+          cursor_value: "{{ ((response.get('paging') or {}).get('next') or {}).get('after') }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/meeting_links"
 
   workflows_stream:
     type: DeclarativeStream
@@ -2890,6 +2914,10 @@ streams:
   - "#/definitions/properties_stream"
   - "#/definitions/account_details_stream"
   - type: ConditionalStreams
+    condition: "{{ config.get('enable_meeting_links', false) }}"
+    streams:
+      - "#/definitions/meeting_links_stream"
+  - type: ConditionalStreams
     condition: "{{ config.get('enable_experimental_streams', false) }}"
     streams:
       - "#/definitions/contacts_web_analytics_stream"
@@ -3029,7 +3057,8 @@ dynamic_streams:
         record_selector:
           type: RecordSelector
           extractor:
-            type: DpathExtractor
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.HubspotCustomObjectExtractor
             field_path:
               - results
       components_mapping:
@@ -3313,6 +3342,15 @@ spec:
                   if you need help finding this token.
                 type: string
                 airbyte_secret: true
+      enable_meeting_links:
+        title: Enable meeting links
+        description: >-
+          Expose the full-refresh meeting_links stream. Requires scheduler.meetings.meeting-link.read.
+          Reauthorize OAuth or add the scope to your Private App before selecting this stream.
+          If a custom object is named meeting_links, enable prefix_colliding_custom_objects
+          and review the renamed custom stream after refreshing the catalog.
+        type: boolean
+        default: false
       enable_experimental_streams:
         title: Enable experimental streams
         description: If enabled then experimental streams become available for sync.
@@ -3495,6 +3533,7 @@ spec:
           - scope: "crm.objects.contacts.read"
           - scope: "oauth"
         optional_scopes:
+          - scope: "scheduler.meetings.meeting-link.read"
           - scope: "content"
           - scope: "automation"
           - scope: "e-commerce"
@@ -3592,6 +3631,36 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  meeting_links:
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: ["null", string]
+      organizerUserId:
+        type: ["null", string]
+      name:
+        type: ["null", string]
+      link:
+        type: ["null", string]
+      slug:
+        type: ["null", string]
+      type:
+        type: ["null", string]
+      defaultLink:
+        type: ["null", boolean]
+      userIdsOfLinkMembers:
+        type: ["null", array]
+        items:
+          type: string
+      paymentLinkId:
+        type: ["null", string]
+      createdAt:
+        type: ["null", string]
+        format: date-time
+      updatedAt:
+        type: ["null", string]
+        format: date-time
   web_analytics:
     $schema: http://json-schema.org/draft-07/schema#
     type:
