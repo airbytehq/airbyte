@@ -70,7 +70,7 @@ If you prefer to use OAuth for authentication with **Airbyte Open Source**, you 
 3. Find and select the **Google Sheets API**.
 4. Click **ENABLE**.
 
-If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
+If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, give your service account access to your spreadsheet by selecting it in Google Drive, clicking **Share**, and adding the service account's email address (the `client_email` value in your JSON key) with **Viewer** permission. See [Google's sharing instructions](https://support.google.com/drive/answer/7166529) for details.
 
 <!-- /env:oss -->
 
@@ -317,6 +317,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.13.1 | 2026-11-10 | [91589](https://github.com/airbytehq/airbyte/pull/91589) | Update dependencies |
 | 0.13.0 | 2026-10-30 | [90237](https://github.com/airbytehq/airbyte/pull/90237) | Declare the sections of the stepped setup form (Connect spreadsheet, Review & set up) in the spec; the CDK's section-aware CHECK runs the declared check for the first section |
 | 0.12.47 | 2026-10-30 | [90255](https://github.com/airbytehq/airbyte/pull/90255) | Validate spreadsheet links and explain authentication, API enablement, and access failures in connection checks |
 | 0.12.46 | 2026-11-03 | [90596](https://github.com/airbytehq/airbyte/pull/90596) | Update dependencies |
