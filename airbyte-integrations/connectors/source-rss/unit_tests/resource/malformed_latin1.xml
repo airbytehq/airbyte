@@ -1,0 +1,6 @@
+
+
+  <?xml version="1.0"?>
+<rss version="2.0"><channel><title>Broken</title>
+<item><title>Tom &amp; Jerry &nbsp;&copy; 2026 </title><link>https://example.com/a?x=1&y=2</link><description>Café &mdash; bare & ampersand</description><guid>broken-1</guid><pubDate>Mon, 09 Nov 2026 10:00:00 GMT</pubDate></item>
+</channel></rss>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:media="http://search.yahoo.com/mrss/"
+  xmlns:slash="http://purl.org/rss/1.0/modules/slash/">
+  <channel>
+    <title>Example News</title>
+    <link>https://example.com/</link>
+    <description>Example feed</description>
+    <pubDate>Mon, 09 Nov 2026 12:00:00 GMT</pubDate>
+    <item>
+      <title>Newest story</title>
+      <media:title>Media title must not be used</media:title>
+      <link>/news/newest</link>
+      <description><![CDATA[<p>Newest <b>story</b></p>]]></description>
+      <author>editor@example.com (Jane Editor)</author>
+      <category>World</category>
+      <category>Politics</category>
+      <comments>https://example.com/news/newest#comments</comments>
+      <slash:comments>12</slash:comments>
+      <enclosure url="https://example.com/audio/newest.mp3" length="1234" type="audio/mpeg"/>
+      <guid isPermaLink="false">story-3</guid>
+      <pubDate>Mon, 09 Nov 2026 11:30:00 -0500</pubDate>
+    </item>
+    <item>
+      <title>Namespaced story</title>
+      <link>https://example.com/news/namespaced</link>
+      <content:encoded><![CDATA[<p>Full content</p>]]></content:encoded>
+      <dc:creator>John Writer</dc:creator>
+      <dc:subject>Science</dc:subject>
+      <guid>https://example.com/news/namespaced</guid>
+      <dc:date>2026-11-09T09:15:00Z</dc:date>
+    </item>
+    <item>
+      <title>Oldest story</title>
+      <description></description>
+      <author></author>
+      <guid>https://example.com/news/oldest</guid>
+      <pubDate>Sun, 08 Nov 2026 22:00:00 EST</pubDate>
+    </item>
+  </channel>
+</rss>

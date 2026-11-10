@@ -1,15 +1,21 @@
-version: "0.78.5"
+version: 7.45.0
+
+type: DeclarativeSource
 
 definitions:
   selector:
     type: RecordSelector
     extractor:
-      class_name: source_rss.components.CustomExtractor
+      type: CustomRecordExtractor
+      class_name: source_declarative_manifest.components.CustomExtractor
+    record_filter:
+      type: RecordFilter
+      condition: "{{ record.get('published') is not none and record['published'] >= stream_interval['start_time'] }}"
 
   requester:
     type: HttpRequester
-    url_base: "{{ config['url'] }}"
-    http_method: "GET"
+    url: "{{ config['url'] }}"
+    http_method: GET
     authenticator:
       type: NoAuth
 
@@ -17,27 +23,20 @@ definitions:
     type: SimpleRetriever
     record_selector:
       $ref: "#/definitions/selector"
-      record_filter:
-        condition: "{{ record['published'] >= stream_interval['start_time'] }}"
     paginator:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
 
-  base_stream:
+  items_stream:
     type: DeclarativeStream
+    name: items
     retriever:
       $ref: "#/definitions/retriever"
-
-  items_stream:
-    $ref: "#/definitions/base_stream"
-    name: "items"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/definitions/items_schema"
-    $parameters:
-      path: "/"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: published
@@ -96,12 +95,12 @@ definitions:
         format: date-time
 
 streams:
-  - "#/definitions/items_stream"
+  - $ref: "#/definitions/items_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "items"
+    - items
 
 spec:
   type: Spec

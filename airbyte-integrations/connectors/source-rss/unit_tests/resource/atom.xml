@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xml:base="https://example.net/blog/">
+  <title>Atom Example</title>
+  <id>urn:uuid:feed</id>
+  <updated>2026-11-09T12:00:00Z</updated>
+  <entry>
+    <title>Updated only entry</title>
+    <link rel="alternate" type="text/html" href="posts/updated-only"/>
+    <link rel="enclosure" type="audio/mpeg" href="https://example.net/audio/ep2.mp3"/>
+    <id>urn:uuid:entry-2</id>
+    <updated>2026-11-09T10:00:00Z</updated>
+    <media:group><media:description>Media description</media:description></media:group>
+    <author><name>Bob</name><email>bob@example.net</email></author>
+    <category term="news" label="News"/>
+  </entry>
+  <entry>
+    <title type="html">First &amp;lt;post&amp;gt;</title>
+    <link href="https://example.net/blog/posts/first"/>
+    <id>urn:uuid:entry-1</id>
+    <published>2026-11-09T01:00:00-08:00</published>
+    <updated>2026-11-09T09:00:00Z</updated>
+    <summary>First summary</summary>
+    <author><name>Carol</name></author>
+  </entry>
+</feed>
