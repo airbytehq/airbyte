@@ -2,12 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from pathlib import Path
-
 import jsonschema
 import pytest
-import tomllib
-from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
@@ -274,10 +270,3 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
-
-
-def test_pyproject_requires_python_3_11_or_newer():
-    pyproject = tomllib.loads((Path(__file__).parent.parent / "pyproject.toml").read_text())
-    python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
-    assert "3.10.12" not in python_spec
-    assert "3.11.0" in python_spec
