@@ -71,6 +71,7 @@ The Asana source connector supports these streams:
 | [`attachments_compact`](https://developers.asana.com/reference/attachments) | Compact attachment records for synced projects and tasks. |
 | [`custom_fields`](https://developers.asana.com/reference/custom-fields) | Custom field definitions in each accessible workspace. |
 | [`events`](https://developers.asana.com/reference/events) | Events for synced projects and tasks. |
+| [`goals`](https://developers.asana.com/reference/getgoals) | Goals visible to the authenticated user in each workspace, with owners, time periods, status, and metric values. Opt-in. |
 | [`organization_exports`](https://developers.asana.com/reference/organization-exports) | Organization export requests for the export IDs you provide in the source configuration. |
 | [`portfolio_items`](https://developers.asana.com/reference/getitemsforportfolio) | Projects and portfolios contained in each synced portfolio. |
 | [`portfolios`](https://developers.asana.com/reference/portfolios) | Portfolio details for synced portfolios. |
@@ -85,8 +86,19 @@ The Asana source connector supports these streams:
 | [`tasks`](https://developers.asana.com/reference/tasks) | Tasks in synced projects. |
 | [`team_memberships`](https://developers.asana.com/reference/team-memberships) | Team membership records for synced teams. |
 | [`teams`](https://developers.asana.com/reference/teams) | Teams in each accessible organization workspace. |
+| [`time_periods`](https://developers.asana.com/reference/gettimeperiods) | Fiscal time periods and their parent periods in each workspace. Opt-in. |
 | [`users`](https://developers.asana.com/reference/users) | Users in each accessible workspace. |
 | [`workspaces`](https://developers.asana.com/reference/workspaces) | Workspaces the authenticated user can access. |
+
+### Goals and time periods
+
+Enable **Enable goals and time periods**, refresh the source catalog, and select `goals`, `time_periods`, or both. The setting defaults to false, so existing catalogs and selected streams retain their behavior. Your Asana account must have the required paid entitlement and access to the workspaces you want to read. PAT authentication and legacy OAuth apps using the `default` scope continue to work. For an app using granular OAuth scopes, grant `goals:read` and `time_periods:read`, plus permission to enumerate workspaces. Reauthorize if those permissions change. The connection check still uses Projects, so a successful check does not prove Goals entitlement.
+
+Both streams use Full Refresh with the string `gid` as their primary key. They enumerate accessible workspaces and request lists directly from `/goals` and `/time_periods`, with page sizes of 100 and independent offset cursors per workspace. Explicit `opt_fields` request the data in each schema without a detail request per goal. Each record includes `workspace_gid` for the workspace used in the request. `goals.time_period.gid` joins to `time_periods.gid`, and `time_periods.parent.gid` identifies the enclosing fiscal period. Date fields such as `start_on`, `due_on`, and `end_on` are dates, not sync cursors. Optional attributes and nested relationships accept nulls.
+
+The Goals list requests all goals the API exposes for each workspace without a team, time-period, or status filter. Closed goals returned by Asana are retained. Private goals remain limited by the authenticated user's visibility. The connector does not traverse supporting-goal relationships or fetch additional subgoal detail, and cannot retrieve goals the workspace list does not expose. Metrics include initial, target, and current number values, precision, unit, currency, and progress source. Status updates and supporting project or task membership are separate resources and are not included.
+
+Missing permissions, entitlement failures, and inaccessible workspaces produce an error for these streams. They do not silently become empty successful reads. Asana rate limits and transient server failures retry with bounded backoff. Empty lists succeed. Existing streams need no reset after upgrading. Deselect `goals` and `time_periods` before downgrading to a version without them.
 
 ## Data type map
 
@@ -161,6 +173,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.9.0 | 2026-11-10 | | Add opt-in full-refresh `goals` and `time_periods` streams with explicit fields, workspace pagination, and entitlement errors. Refs #11061. |
 | 1.7.2 | 2026-05-22 | [78331](https://github.com/airbytehq/airbyte/pull/78331) | Add default OAuth scope to consent URL |
 | 1.7.1 | 2026-05-18 | [78159](https://github.com/airbytehq/airbyte/pull/78159) | Remove explicit OAuth scopes from connector input specification |
 | 1.7.0 | 2026-05-15 | [77577](https://github.com/airbytehq/airbyte/pull/77577) | Add OAuth 2.0 support |
