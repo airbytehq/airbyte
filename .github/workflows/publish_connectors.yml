@@ -259,19 +259,16 @@ jobs:
           check-latest: true
           update-environment: true
 
-      - name: Install and configure Poetry
-        # v1
-        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
-        with:
-          # There are a few uses of `poetry run --directory` in various scripts.
-          # If we upgrade to 2.x, those need to be switched to `--project`.
-          version: 1.8.5
-
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
         with:
           # We pass a token with dedicated GH rate limit
           github-token: ${{ steps.get-app-token.outputs.token }}
+
+      - name: Install Poetry
+        # There are a few uses of `poetry run --directory` in various scripts.
+        # If we upgrade to 2.x, those need to be switched to `--project`.
+        run: uv tool install poetry==1.8.5
 
       - name: Install Poe and Ops CLI
         run: |
