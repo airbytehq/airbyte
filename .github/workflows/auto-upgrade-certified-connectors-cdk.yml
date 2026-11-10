@@ -1,8 +1,9 @@
 name: Auto Upgrade CDK for Certified Connectors
 on:
   schedule:
-    # Run at 16:37 UTC on the first of every month
-    - cron: "37 16 1 * *"
+    # Run at 00:07 UTC on the first of every month.
+    # Offset from :00 because GitHub delays/drops scheduled runs during the top-of-the-hour load spike.
+    - cron: "7 0 1 * *"
   workflow_dispatch:
   workflow_call:
     inputs:

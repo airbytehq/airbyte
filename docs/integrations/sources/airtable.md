@@ -95,6 +95,10 @@ Incremental sync compares Airtable's `LAST_MODIFIED_TIME()` with the cursor, fal
 
 This source syncs all tables from your Airtable bases using the Metadata API. If you rename or add a column to an existing table, refresh the source schema in Airbyte to update the catalog.
 
+### Base collaborators
+
+The `base_collaborators` stream lists the people added directly to each base, one record per person per base, with `base_id`, `base_name`, `userId`, `email`, `permissionLevel`, `createdTime`, and `grantedByUserId`. It reads Airtable's [Get base collaborators](https://airtable.com/developers/web/api/get-base-collaborators) endpoint with the `schema.bases:read` scope the connector already uses. Workspace members who weren't added to the base directly, and groups, aren't included. Records contain collaborator email addresses.
+
 ### Performance considerations
 
 Airtable enforces the following [rate limits](https://airtable.com/developers/web/api/rate-limits):
@@ -161,6 +165,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.8.0 | 2026-11-04 | [90312](https://github.com/airbytehq/airbyte/pull/90312) | Add base_collaborators stream |
 | 4.7.0 | 2026-10-15 | [89000](https://github.com/airbytehq/airbyte/pull/89000) | Add incremental sync support for table streams |
 | 4.6.43 | 2026-10-13 | [88520](https://github.com/airbytehq/airbyte/pull/88520) | Update dependencies |
 | 4.6.42 | 2026-10-06 | [87744](https://github.com/airbytehq/airbyte/pull/87744) | Update dependencies |

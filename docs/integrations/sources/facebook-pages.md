@@ -10,7 +10,7 @@ To set up the Facebook Pages source connector, you need a Facebook app, a long-l
 This connector calls v24.0 of the Facebook Graph API.
 :::
 
-Meta only returns Page Insights data for Pages with 100 or more likes, and the connector checks the connection by reading the `page_insights` stream. If your Page has fewer than 100 likes, expect the connection check and both insights streams to return no data or fail.
+Meta only returns Page Insights data for Pages with 100 or more likes. The connector checks the connection by reading the `page_insights` stream, and an empty response still passes, so a Page with fewer than 100 likes can be set up and will sync `page` and `post`, but its insights streams return no records until it reaches 100 likes.
 
 ## Setup guide
 
@@ -59,22 +59,37 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (`post` and `page_insights` streams only)
+
+The `post` stream is full refresh by default. If you switch it to Incremental, the connector keeps the newest `created_time` it has seen and asks Facebook only for posts created after it on the next sync, which cuts the amount of data read on every sync after the first. The first incremental sync reads the full post history, and a full refresh always does. Because the filter uses the post's creation time, edits, reactions and comment counts on posts the connector has already synced are not refreshed in incremental mode, so use full refresh if you need those to stay current.
+
+The `page_insights` stream is full refresh by default, which asks Facebook for its default trailing window only. If you switch it to Incremental, the connector keeps the newest `end_time` it has seen and asks Facebook only for the days after it on the next sync. Set **Start Date** to backfill history, which the connector reads in 90-day windows because Facebook returns at most 90 days per request and keeps about two years of history. **Start Date** applies in both modes, so a full refresh with it set also reads from that date in 90-day windows. The newest point Facebook returns belongs to a day that is usually still in progress, so each incremental sync re-reads the last two days before the saved `end_time`, and you can expect those days to appear again in your destination. Each record is one metric and period for one window, so if your destination deduplicates on the primary key, use Incremental - Append rather than a deduplicated mode, or windows overwrite each other. If you leave **Start Date** empty, the first incremental sync reads Facebook's default window and the next syncs continue from there, so a connection paused for more than 90 days may need a reset or a **Start Date** before it can catch up.
 
 ## Supported Streams
 
 | Stream | Graph API endpoint | Notes |
 | :--- | :--- | :--- |
 | `page` | [`/{page-id}`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview) | One record describing the Page. Airbyte requests only the fields you select in the connection's **Schema** tab. |
-| `post` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) | One record per post. Paginated, so **Page Size** applies. Airbyte requests only the fields you select. |
-| `page_insights` | [`/{page-id}/insights`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) | One record per metric and period, not per day. Requests a fixed set of metrics. |
-| `post_insights` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) with an `insights.metric(...)` field selection | Post-level [insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights), one record per metric and period. Paginated, so **Page Size** applies. Requests a fixed set of metrics. |
+| `post` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) | One record per post. Paginated, so **Page Size** applies. Airbyte requests only the fields you select. Supports incremental sync on `created_time`. |
+| `page_insights` | [`/{page-id}/insights`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) | One record per metric and period, not per day. Metrics and period are configurable. Supports incremental sync on `end_time`, with **Start Date** to backfill. |
+| `post_insights` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) with an `insights.metric(...)` field selection | Post-level [insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights), one record per metric and period. Paginated, so **Page Size** applies. Metrics are configurable. |
+| `video_insights` | [`/{page-id}/videos`](https://developers.facebook.com/docs/graph-api/reference/page/videos/) with a `video_insights.metric(...)` field selection | Lifetime [video insights](https://developers.facebook.com/docs/graph-api/reference/video/video_insights/) per Page video, one record per metric. Paginated, so **Page Size** applies. Metrics are configurable. |
+| `reel_insights` | [`/{page-id}/video_reels`](https://developers.facebook.com/docs/video-api/guides/reels-publishing/) with a `video_insights.metric(...)` field selection | Lifetime [Reels insights](https://developers.facebook.com/docs/graph-api/reference/video/video_insights/#reels-metrics) per Page reel, such as `blue_reels_play_count`, one record per metric. Paginated, so **Page Size** applies. Metrics are configurable. |
+| `comment` | [`/{post-id}/comments`](https://developers.facebook.com/docs/graph-api/reference/post/comments/) for each post in `/{page-id}/feed` | One record per comment, including replies, with the parent `post_id` added. This makes one request per post, so a Page with many posts uses many API calls. Needs `pages_read_user_content`. |
+| `rating` | [`/{page-id}/ratings`](https://developers.facebook.com/docs/graph-api/reference/page/ratings/) | One record per recommendation or review. Recommendations have no ID of their own, so this stream has no primary key. Needs `pages_read_user_content`. |
 
-You can't choose which insights metrics to sync. The connector requests these:
+You can choose which metrics each insights stream requests with the **Page Insights Metrics**, **Post Insights Metrics**, **Video Insights Metrics**, and **Reel Insights Metrics** settings. If you leave a setting empty, the connector requests these defaults:
 
 - `page_insights`: `page_total_actions`, `page_post_engagements`, `page_fan_adds_by_paid_non_paid_unique`, `page_media_view`, `page_total_media_view_unique`
 - `post_insights`: `post_media_view`, `post_total_media_view_unique`, `post_clicks`, `post_clicks_by_type`, `post_reactions_by_type_total`
+- `video_insights`: `total_video_views`, `total_video_complete_views`, `total_video_avg_time_watched`, `total_video_view_total_time`, `total_video_reactions_by_type_total`
+- `reel_insights`: `blue_reels_play_count`, `fb_reels_total_plays`, `fb_reels_replay_count`, `post_video_avg_time_watched`, `post_video_view_time`, `post_video_likes_by_reaction_type`, `post_video_social_actions`
 
-Both insights streams inherit Meta's own limits on Page Insights: data is available only for Pages with 100 or more likes, most metrics refresh once every 24 hours, and Meta retains at most two years of history.
+By default, Facebook returns every period it supports for each `page_insights` metric, usually `day`, `week` and `days_28`, so each metric produces about three records per request. If you only need one, set **Page Insights Period** to that period and the stream requests only it.
+
+A setting replaces the defaults instead of adding to them, so include every metric you want. Facebook rejects the whole request when any one metric is misspelled or deprecated, so if a sync fails with the "must be a valid insights metric" error after you change a setting, check that list first. Each extra metric also adds to the response size and to your Graph API usage.
+
+All insights streams inherit Meta's own limits on Page Insights: data is available only for Pages with 100 or more likes, most metrics refresh once every 24 hours, and Meta retains at most two years of history.
 
 ## Reference
 
@@ -166,6 +181,8 @@ Starting from version 2.0.4, the `product_catalogs` field is no longer synced in
 
 Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting, follow the instructions in the Setup Guide above to generate a Long-Lived Page Token.
 
+When Meta throttles a request, it reports how long until access returns in the `X-Business-Use-Case-Usage` response header, and the connector waits that long, up to 10 minutes, before retrying instead of retrying on a fixed schedule. Each extra stream and metric you enable adds to that usage, and the `comment` stream in particular makes one request per post.
+
 The Graph API can report rate limits with HTTP 400 and an error code such as `4`, `17`, `32`, `613`, or `80001`. Starting from version 2.1.3, the connector recognizes these codes, and any error Meta marks as transient, and retries the request with backoff instead of failing immediately. Retries are limited, so if your Page stays throttled long enough to exhaust them, the sync still fails with a transient error and succeeds on a later attempt once the quota resets.
 
 See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for the full list of codes and for information on requesting a quota upgrade.
@@ -181,7 +198,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.1 | 2026-11-03 | [90914](https://github.com/airbytehq/airbyte/pull/90914) | Require Python 3.11 for future CDK compatibility. |
+| 3.2.0   | 2026-11-09 | [90124](https://github.com/airbytehq/airbyte/pull/90124)       | Add an optional incremental sync mode and a `start_date` setting to the `page_insights` stream, which reads a `since` and `until` date range in 90-day windows.        |
+| 3.1.0   | 2026-10-27 | [90123](https://github.com/airbytehq/airbyte/pull/90123)       | Configurable insights metrics and period, new video, Reels, comment and rating streams, incremental posts                                                              |
+| 3.0.2   | 2026-11-04 | [90130](https://github.com/airbytehq/airbyte/pull/90130)       | Exchange the Page access token once per sync instead of before every request, and resolve the schema's date-time paths once per stream instead of per record           |
+| 3.0.1   | 2026-11-03 | [90914](https://github.com/airbytehq/airbyte/pull/90914)       | Require Python 3.11 for future CDK compatibility.                                                                                                                      |
 | 3.0.0 | 2026-10-13 | [85780](https://github.com/airbytehq/airbyte/pull/85780) | Remove the Meta-deprecated legacy Page fields `current_location`, `genre`, `network`, `parking`, and `start_info`, and the `live_videos` edge, from the `page` stream. Remove `current_location`, `genre`, and `network` from nested page objects in the `page` and `post` streams. |
 | 2.1.4 | 2026-09-22 | [86489](https://github.com/airbytehq/airbyte/pull/86489) | Retry Facebook's "Please reduce the amount of data you're asking for" error again instead of failing the sync as a configuration error. |
 | 2.1.3 | 2026-09-08 | [78077](https://github.com/airbytehq/airbyte/pull/78077) | Fail fast on deterministic Facebook API bad request errors as config errors, surface the Facebook error message, and keep retrying rate-limit and transient errors. |

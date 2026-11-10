@@ -65,7 +65,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated": 1577836800 },
+      "stream_state": { "updated": "4070908800" },
       "stream_descriptor": { "name": "customers" }
     }
   },
@@ -282,7 +282,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated": 1720010734 },
+      "stream_state": { "updated": "4070908800" },
       "stream_descriptor": { "name": "payment_methods" }
     }
   },
@@ -296,7 +296,12 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "created": 1646998902 },
+      "stream_state": {
+        "use_global_cursor": true,
+        "state": { "created": "4070908800" },
+        "lookback_window": 5,
+        "parent_state": { "customers": { "updated": "4070908800" } }
+      },
       "stream_descriptor": { "name": "customer_balance_transactions" }
     }
   },
