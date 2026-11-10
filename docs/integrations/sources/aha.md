@@ -12,7 +12,7 @@ This page contains the setup guide and reference information for the [Aha!](http
 
 ### Step 1: Generate an Aha! API key
 
-Generate an API key in Aha! as described in the [Aha! authentication documentation](https://www.aha.io/api#authentication). The connector sends this key as a bearer token, so it can only read data that the user who created the key has access to.
+Generate an API key in Aha! as described in the [Aha! authentication documentation](https://www.aha.io/api#authentication).
 
 ### Step 2: Set up the connector in Airbyte
 
