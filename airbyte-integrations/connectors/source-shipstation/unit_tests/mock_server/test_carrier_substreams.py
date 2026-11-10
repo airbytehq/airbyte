@@ -43,3 +43,35 @@ def test_reads_one_request_per_parent_carrier_and_keys_records_by_carrier(stream
         assert output.errors == []
         http_mocker.assert_number_of_calls(fedex_request, 1)
         http_mocker.assert_number_of_calls(ups_request, 1)
+
+
+@pytest.mark.parametrize(
+    "stream_name, path",
+    [("carrier_packages", "carriers/listpackages"), ("carrier_services", "carriers/listservices")],
+)
+def test_requests_each_carrier_code_once_when_several_carrier_accounts_share_it(stream_name: str, path: str) -> None:
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            request("carriers"),
+            json_response(
+                [
+                    {"shippingProviderId": 1, "code": "fedex"},
+                    {"shippingProviderId": 2, "code": "fedex"},
+                    {"shippingProviderId": 3, "code": "ups"},
+                ]
+            ),
+        )
+        fedex_request = request(path, {"carrierCode": "fedex"})
+        ups_request = request(path, {"carrierCode": "ups"})
+        http_mocker.get(fedex_request, json_response([{"carrierCode": "fedex", "code": "fedex_ground", "name": "FedEx Ground"}]))
+        http_mocker.get(ups_request, json_response([{"carrierCode": "ups", "code": "ups_ground", "name": "UPS Ground"}]))
+
+        output = read_stream(stream_name)
+
+        assert sorted((r.record.data["carrierCode"], r.record.data["code"]) for r in output.records) == [
+            ("fedex", "fedex_ground"),
+            ("ups", "ups_ground"),
+        ]
+        assert output.errors == []
+        http_mocker.assert_number_of_calls(fedex_request, 1)
+        http_mocker.assert_number_of_calls(ups_request, 1)

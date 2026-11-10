@@ -496,20 +496,24 @@ definitions:
               - type: WaitTimeFromHeader
                 header: X-Rate-Limit-Reset
           request_parameters:
-            carrierCode: "{{ stream_partition.carrier_code }}"
+            carrierCode: "{{ stream_partition.carrier_code[0] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: code
-              partition_field: carrier_code
-              stream:
-                $ref: "#/definitions/streams/carriers"
+          type: GroupingPartitionRouter
+          group_size: 1
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: code
+                partition_field: carrier_code
+                stream:
+                  $ref: "#/definitions/streams/carriers"
       primary_key:
         - carrierCode
         - code
@@ -518,7 +522,7 @@ definitions:
           fields:
             - path:
                 - carrierCode
-              value: "{{ record.get('carrierCode') or stream_partition.carrier_code }}"
+              value: "{{ record.get('carrierCode') or stream_partition.carrier_code[0] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -538,20 +542,24 @@ definitions:
               - type: WaitTimeFromHeader
                 header: X-Rate-Limit-Reset
           request_parameters:
-            carrierCode: "{{ stream_partition.carrier_code }}"
+            carrierCode: "{{ stream_partition.carrier_code[0] }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: code
-              partition_field: carrier_code
-              stream:
-                $ref: "#/definitions/streams/carriers"
+          type: GroupingPartitionRouter
+          group_size: 1
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: code
+                partition_field: carrier_code
+                stream:
+                  $ref: "#/definitions/streams/carriers"
       primary_key:
         - carrierCode
         - code
@@ -560,7 +568,7 @@ definitions:
           fields:
             - path:
                 - carrierCode
-              value: "{{ record.get('carrierCode') or stream_partition.carrier_code }}"
+              value: "{{ record.get('carrierCode') or stream_partition.carrier_code[0] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
