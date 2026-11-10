@@ -72,10 +72,10 @@ class BigQueryReadApiPermissionProbeTest {
             BigQueryReadClient.create(
                 BigQueryReadSettings.newBuilder()
                     .setTransportChannelProvider(
-                        FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel))
+                        FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel)),
                     )
                     .setCredentialsProvider(NoCredentialsProvider.create())
-                    .build()
+                    .build(),
             )
     }
 
@@ -101,7 +101,7 @@ class BigQueryReadApiPermissionProbeTest {
         Assertions.assertEquals("projects/jobs", request.parent)
         Assertions.assertEquals(
             "projects/data/datasets/ds/tables/events",
-            request.readSession.table
+            request.readSession.table,
         )
         Assertions.assertEquals(listOf("id"), request.readSession.readOptions.selectedFieldsList)
         Assertions.assertEquals(1, request.maxStreamCount)
@@ -143,7 +143,7 @@ class BigQueryReadApiPermissionProbeTest {
     fun testMissingRoleWithoutAParsableKeyStillReadsWell() {
         fake.createStatus =
             Status.PERMISSION_DENIED.withDescription(
-                "the user does not have 'bigquery.readsessions.create' permission"
+                "the user does not have 'bigquery.readsessions.create' permission",
             )
 
         val outcome: Outcome = probe(config(credentialsJson = "not json")).probe(table, "id")
@@ -153,7 +153,7 @@ class BigQueryReadApiPermissionProbeTest {
         Assertions.assertTrue(
             denied.message.startsWith(
                 "The service account is not allowed to use the BigQuery Storage Read API in " +
-                    "project 'jobs'. Grant it the BigQuery Read Session User role"
+                    "project 'jobs'. Grant it the BigQuery Read Session User role",
             ),
             denied.message,
         )
@@ -163,7 +163,7 @@ class BigQueryReadApiPermissionProbeTest {
     fun testDeniedOnReadRowsIsAMissingRoleToo() {
         fake.readRowsStatus =
             Status.PERMISSION_DENIED.withDescription(
-                "the user does not have 'bigquery.readsessions.getData' permission"
+                "the user does not have 'bigquery.readsessions.getData' permission",
             )
 
         val outcome: Outcome = probe().probe(table, "id")
@@ -172,11 +172,11 @@ class BigQueryReadApiPermissionProbeTest {
             Assertions.assertInstanceOf(Outcome.Denied::class.java, outcome)
         Assertions.assertTrue(
             denied.message.contains("Grant it the BigQuery Read Session User role"),
-            denied.message
+            denied.message,
         )
         Assertions.assertTrue(
             denied.message.endsWith(
-                "BigQuery said: the user does not have 'bigquery.readsessions.getData' permission"
+                "BigQuery said: the user does not have 'bigquery.readsessions.getData' permission",
             ),
             denied.message,
         )
@@ -216,13 +216,13 @@ class BigQueryReadApiPermissionProbeTest {
         Assertions.assertTrue(
             denied.message.startsWith(
                 "BigQuery denied the service account sa@jobs.iam.gserviceaccount.com the use of " +
-                    "the Storage Read API in project 'jobs'. Check its roles on that project"
+                    "the Storage Read API in project 'jobs'. Check its roles on that project",
             ),
             denied.message,
         )
         Assertions.assertTrue(
             denied.message.endsWith("BigQuery said: Access Denied: Table x:y.z"),
-            denied.message
+            denied.message,
         )
     }
 
@@ -238,13 +238,13 @@ class BigQueryReadApiPermissionProbeTest {
             inconclusive.message.startsWith(
                 "Could not verify that the service account sa@jobs.iam.gserviceaccount.com may " +
                     "use the BigQuery Storage Read API in project 'jobs': the probe on " +
-                    "data.ds.events failed: "
+                    "data.ds.events failed: ",
             ),
             inconclusive.message,
         )
         Assertions.assertTrue(
             inconclusive.message.contains("read_session.table malformed"),
-            inconclusive.message
+            inconclusive.message,
         )
     }
 
@@ -259,7 +259,7 @@ class BigQueryReadApiPermissionProbeTest {
             .thenReturn(
                 QueryJobConfiguration.newBuilder(BigQueryReadApiPermissionProbe.PROBE_QUERY)
                     .setDestinationTable(anonymous)
-                    .build()
+                    .build(),
             )
 
         val outcome: Outcome = probe(bigquery = { bigquery }).probe(null, null)
@@ -269,7 +269,7 @@ class BigQueryReadApiPermissionProbeTest {
         Assertions.assertEquals("projects/jobs", request.parent)
         Assertions.assertEquals(
             "projects/jobs/datasets/_anon/tables/anon123",
-            request.readSession.table
+            request.readSession.table,
         )
         Assertions.assertEquals(
             listOf(BigQueryReadApiPermissionProbe.PROBE_COLUMN),
@@ -314,7 +314,7 @@ class BigQueryReadApiPermissionProbeTest {
                 ReadSession.newBuilder()
                     .setName(SESSION)
                     .addStreams(ReadStream.newBuilder().setName("$SESSION/streams/0"))
-                    .build()
+                    .build(),
             )
             responseObserver.onCompleted()
         }

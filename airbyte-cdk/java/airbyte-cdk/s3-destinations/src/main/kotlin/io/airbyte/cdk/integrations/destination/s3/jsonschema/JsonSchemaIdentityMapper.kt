@@ -12,7 +12,7 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
     private fun makeType(
         typeName: String,
         format: String? = null,
-        airbyteType: String? = null
+        airbyteType: String? = null,
     ): ObjectNode {
         val newSchema = MoreMappers.initMapper().createObjectNode()
         newSchema.put("type", typeName)

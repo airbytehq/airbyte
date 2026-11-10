@@ -178,20 +178,19 @@ class JsonSchemaToAirbyteType(
 
     private fun unionFromCombinedTypes(
         options: List<JsonNode>,
-        parentSchema: ObjectNode
+        parentSchema: ObjectNode,
     ): AirbyteType {
         // Denormalize the properties across each type (the converter only checks what matters
         // per type).
-        val unionOptions =
-            options.mapNotNull {
-                if (it.isTextual) {
-                    val schema = parentSchema.deepCopy()
-                    schema.put("type", it.textValue())
-                    convertInner(schema)
-                } else {
-                    convertInner(it)
-                }
+        val unionOptions = options.mapNotNull {
+            if (it.isTextual) {
+                val schema = parentSchema.deepCopy()
+                schema.put("type", it.textValue())
+                convertInner(schema)
+            } else {
+                convertInner(it)
             }
+        }
         if (unionOptions.isEmpty()) {
             return UnknownType(parentSchema)
         }

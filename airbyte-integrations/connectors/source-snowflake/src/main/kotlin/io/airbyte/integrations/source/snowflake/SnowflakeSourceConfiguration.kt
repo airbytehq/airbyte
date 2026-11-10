@@ -28,7 +28,7 @@ data class SnowflakeSourceConfiguration(
         SshConnectionOptions(
             kotlin.time.Duration.ZERO,
             kotlin.time.Duration.ZERO,
-            kotlin.time.Duration.ZERO
+            kotlin.time.Duration.ZERO,
         ),
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
@@ -74,8 +74,9 @@ class SnowflakeSourceConfigurationFactory :
          */
         internal fun normalizeHost(raw: String): String {
             var host: String = raw.trim()
-            val scheme: String? =
-                SCHEMES_THE_DRIVER_TOLERATES.firstOrNull { host.startsWith(it, ignoreCase = true) }
+            val scheme: String? = SCHEMES_THE_DRIVER_TOLERATES.firstOrNull {
+                host.startsWith(it, ignoreCase = true)
+            }
             if (scheme != null) {
                 host = host.substring(scheme.length)
             }
@@ -109,7 +110,7 @@ class SnowflakeSourceConfigurationFactory :
             }
             else ->
                 throw ConfigErrorException(
-                    "Unsupported credentials type: ${credentials?.javaClass?.name}"
+                    "Unsupported credentials type: ${credentials?.javaClass?.name}",
                 )
         }
 

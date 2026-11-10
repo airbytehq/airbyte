@@ -15,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 
-@SuppressFBWarnings(value = ["BC_IMPOSSIBLE_CAST"])
 class RunningSizeEstimateTest {
     private val SIZE_10MB = (10 * 1024 * 1024).toLong()
     private val SIZE_20MB = (20 * 1024 * 1024).toLong()
@@ -27,7 +26,7 @@ class RunningSizeEstimateTest {
     @BeforeEach
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-        justification = "compiler-generated lateinit null check after the assignment"
+        justification = "compiler-generated lateinit null check after the assignment",
     )
     internal fun setup() {
         flusher = Mockito.mock(DestinationFlushFunction::class.java)

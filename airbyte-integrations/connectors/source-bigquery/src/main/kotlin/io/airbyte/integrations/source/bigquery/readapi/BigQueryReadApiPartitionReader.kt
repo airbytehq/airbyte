@@ -121,12 +121,12 @@ class BigQueryReadApiPartitionReader(
                             table.progress.session.arrowSchema
                                 ?: throw IllegalStateException(
                                     "The first ReadRows response of ${work.name} carries no Arrow " +
-                                        "schema and the session was created by another process."
+                                        "schema and the session was created by another process.",
                                 )
                         }
                     val schema: Schema =
                         MessageSerializer.deserializeSchema(
-                            ReadChannel(ByteArrayReadableSeekableByteChannel(schemaBytes))
+                            ReadChannel(ByteArrayReadableSeekableByteChannel(schemaBytes)),
                         )
                     val created: VectorSchemaRoot = VectorSchemaRoot.create(schema, allocator)
                     root = created
@@ -139,8 +139,8 @@ class BigQueryReadApiPartitionReader(
                         MessageSerializer.deserializeRecordBatch(
                             ReadChannel(
                                 ByteArrayReadableSeekableByteChannel(
-                                    response.arrowRecordBatch.serializedRecordBatch.toByteArray()
-                                )
+                                    response.arrowRecordBatch.serializedRecordBatch.toByteArray(),
+                                ),
                             ),
                             allocator,
                         )
@@ -212,7 +212,7 @@ class BigQueryReadApiPartitionReader(
             // gax still takes threeten durations here.
             val idle: org.threeten.bp.Duration =
                 org.threeten.bp.Duration.ofSeconds(
-                    constants.readRowsIdleTimeoutSeconds.coerceAtLeast(1L)
+                    constants.readRowsIdleTimeoutSeconds.coerceAtLeast(1L),
                 )
             return GrpcCallContext.createDefault()
                 .withStreamIdleTimeout(idle)

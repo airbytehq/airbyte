@@ -56,7 +56,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
                 selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>(),
                 config = mockk<PostgresSourceConfiguration>(),
                 handler = mockk<CatalogValidationFailureHandler>(),
-                connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>()
+                connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>(),
             )
     }
 
@@ -286,7 +286,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
             assertEquals(
                 bounds[i].second,
                 bounds[i + 1].first,
-                "Partition $i upper bound should match partition ${i + 1} lower bound"
+                "Partition $i upper bound should match partition ${i + 1} lower bound",
             )
         }
 

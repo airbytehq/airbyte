@@ -58,7 +58,7 @@ class DynamoDbStreamStateValueTest {
             )
         Assertions.assertEquals(
             Jsons.readTree(
-                """{"cursor_field":["updated_at"],"cursor":"2024-05-02T00:00:00Z","cursor_record_count":1}"""
+                """{"cursor_field":["updated_at"],"cursor":"2024-05-02T00:00:00Z","cursor_record_count":1}""",
             ),
             state.toOpaqueStateValue(),
         )
@@ -83,7 +83,7 @@ class DynamoDbStreamStateValueTest {
         Assertions.assertEquals(
             Jsons.readTree(
                 """{"cursor_field":["v"],"cursor":"100",
-                    "scan":{"exclusive_start_key":{"pk":{"S":"a"},"sk":{"N":"1.5"}},"max_cursor":"250","max_cursor_record_count":2}}"""
+                    "scan":{"exclusive_start_key":{"pk":{"S":"a"},"sk":{"N":"1.5"}},"max_cursor":"250","max_cursor_record_count":2}}""",
             ),
             json,
         )
@@ -124,7 +124,7 @@ class DynamoDbStreamStateValueTest {
                     "scan":{"total_segments":3,"segments":[
                       {"segment":0,"exclusive_start_key":{"pk":{"S":"a"},"sk":{"N":"7"}},"max_cursor":"250","max_cursor_record_count":1},
                       {"segment":1,"complete":true,"max_cursor":"300","max_cursor_record_count":2},
-                      {"segment":2}]}}"""
+                      {"segment":2}]}}""",
             ),
             json,
         )
@@ -141,7 +141,7 @@ class DynamoDbStreamStateValueTest {
         val json =
             Jsons.readTree(
                 """{"cursor_field":["v"],"cursor":"100",
-                    "scan":{"exclusive_start_key":{"id":{"S":"a"}},"max_cursor":"250","max_cursor_record_count":2}}"""
+                    "scan":{"exclusive_start_key":{"id":{"S":"a"}},"max_cursor":"250","max_cursor_record_count":2}}""",
             )
         val parsed: DynamoDbStreamStateValue = DynamoDbStreamStateValue.parse(streamID, json)!!
         val parsedScan = parsed.scan!!
@@ -154,7 +154,7 @@ class DynamoDbStreamStateValueTest {
                     null,
                     "250",
                     2L,
-                )
+                ),
             ),
             parsedScan.segmentProgress(),
         )

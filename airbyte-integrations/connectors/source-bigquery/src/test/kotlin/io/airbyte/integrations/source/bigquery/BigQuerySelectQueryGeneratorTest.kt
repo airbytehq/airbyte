@@ -44,7 +44,7 @@ class BigQuerySelectQueryGeneratorTest {
                         Where(Greater(day, Jsons.textNode("2021-10-20"))),
                         OrderBy(day),
                     )
-                    .optimize()
+                    .optimize(),
             )
         Assertions.assertEquals(
             "SELECT `id`, CAST(`day` AS STRING) AS `day`, CAST(`local_ts` AS STRING) AS `local_ts`, " +
@@ -54,11 +54,11 @@ class BigQuerySelectQueryGeneratorTest {
         )
         val max: SelectQuery =
             generator.generate(
-                SelectQuerySpec(SelectColumnMaxValue(tod), From("orders", "sales")).optimize()
+                SelectQuerySpec(SelectColumnMaxValue(tod), From("orders", "sales")).optimize(),
             )
         Assertions.assertEquals(
             "SELECT CAST(MAX(`tod`) AS STRING) FROM `my-project`.`sales`.`orders`",
-            max.sql
+            max.sql,
         )
     }
 
@@ -67,13 +67,13 @@ class BigQuerySelectQueryGeneratorTest {
         val address =
             EmittedField(
                 "address",
-                BigQueryStructFieldType(listOf(EmittedField("city", StringFieldType)))
+                BigQueryStructFieldType(listOf(EmittedField("city", StringFieldType))),
             )
         val tags = EmittedField("tags", BigQueryArrayFieldType(StringFieldType))
         val query: SelectQuery =
             generator.generate(
                 SelectQuerySpec(SelectColumns(id, address, tags), From("orders", "sales"))
-                    .optimize()
+                    .optimize(),
             )
         Assertions.assertEquals(
             "SELECT `id`, TO_JSON_STRING(`address`) AS `address`, TO_JSON_STRING(`tags`) AS `tags` FROM `my-project`.`sales`.`orders`",
@@ -86,11 +86,11 @@ class BigQuerySelectQueryGeneratorTest {
         val query: SelectQuery =
             generator.generate(
                 SelectQuerySpec(SelectColumns(id, name), From("orders", "sales"), limit = Limit(0))
-                    .optimize()
+                    .optimize(),
             )
         Assertions.assertEquals(
             "SELECT `id`, `name` FROM `my-project`.`sales`.`orders` LIMIT 0",
-            query.sql
+            query.sql,
         )
         Assertions.assertEquals(emptyList<SelectQuery.Binding>(), query.bindings)
         Assertions.assertEquals(listOf(id, name), query.columns)
@@ -105,7 +105,7 @@ class BigQuerySelectQueryGeneratorTest {
                     From("orders", "sales"),
                     orderBy = OrderBy(id),
                     limit = Limit(1000),
-                )
+                ),
             )
         Assertions.assertEquals(
             "SELECT `id` FROM `my-project`.`sales`.`orders` ORDER BY `id` LIMIT 1000",
@@ -125,11 +125,11 @@ class BigQuerySelectQueryGeneratorTest {
                         And(
                             Greater(id, Jsons.numberNode(10)),
                             LesserOrEqual(updatedAt, Jsons.textNode("2026-01-01T00:00:00Z")),
-                        )
+                        ),
                     ),
                     OrderBy(id),
                     Limit(10),
-                )
+                ),
             )
         Assertions.assertEquals(
             "SELECT `id`, `updated_at` FROM `my-project`.`sales`.`orders` WHERE (`id` > ?) AND (`updated_at` <= CAST(? AS TIMESTAMP)) ORDER BY `id` LIMIT 10",
@@ -175,11 +175,11 @@ class BigQuerySelectQueryGeneratorTest {
                             GreaterOrEqual(ts, Jsons.textNode("2024-12-31T17:18:19.000005Z")),
                             LesserOrEqual(
                                 big,
-                                Jsons.numberNode(BigDecimal("3300000000000000000000000000000"))
+                                Jsons.numberNode(BigDecimal("3300000000000000000000000000000")),
                             ),
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         Assertions.assertEquals(
             "SELECT `id` FROM `my-project`.`ds`.`users` WHERE " +
@@ -196,7 +196,7 @@ class BigQuerySelectQueryGeneratorTest {
                 SelectQuery.Binding(Jsons.textNode("2024-12-31T17:18:19.000005Z"), StringFieldType),
                 SelectQuery.Binding(
                     Jsons.textNode("3300000000000000000000000000000"),
-                    StringFieldType
+                    StringFieldType,
                 ),
             ),
             query.bindings,
@@ -207,11 +207,11 @@ class BigQuerySelectQueryGeneratorTest {
     fun testMaxCursorValue() {
         val query: SelectQuery =
             generator.generate(
-                SelectQuerySpec(SelectColumnMaxValue(updatedAt), From("orders", "sales"))
+                SelectQuerySpec(SelectColumnMaxValue(updatedAt), From("orders", "sales")),
             )
         Assertions.assertEquals(
             "SELECT MAX(`updated_at`) FROM `my-project`.`sales`.`orders`",
-            query.sql
+            query.sql,
         )
     }
 
@@ -222,7 +222,7 @@ class BigQuerySelectQueryGeneratorTest {
                 SelectQuerySpec(
                     SelectColumns(id, name),
                     FromSample("orders", "sales", sampleRateInvPow2 = 8, sampleSize = 1024),
-                )
+                ),
             )
         Assertions.assertEquals(
             "SELECT `id`, `name` FROM (SELECT * FROM `my-project`.`sales`.`orders` TABLESAMPLE SYSTEM (0.39062500 PERCENT) LIMIT 1024)",
@@ -239,7 +239,7 @@ class BigQuerySelectQueryGeneratorTest {
                         sampleSize = 1024,
                         where = Where(Greater(id, Jsons.numberNode(5))),
                     ),
-                )
+                ),
             )
         Assertions.assertEquals(
             "SELECT `id` FROM (SELECT * FROM `my-project`.`sales`.`orders` WHERE `id` > ? LIMIT 1024)",

@@ -26,7 +26,7 @@ class BigqueryCopyStreamLoaderTest {
             9L,
             9L,
             12345L,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
     private val catalog = DestinationCatalog(listOf(stream))
     private val delegate =

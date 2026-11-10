@@ -16,13 +16,13 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue
  *
  * Two JSON shapes are used:
  * - **record values** ([toRecordValue]): the plain JSON the connector emits in RECORD messages,
- * following the legacy connector's `DynamodbAttributeSerializer` (`S` string, `N` number, `B`
- * base64 string, sets and lists as arrays, `M` as an object, `BOOL`, `NULL`). One deliberate
- * difference: an `N` value that does not fit a `long` is emitted as an exact decimal, where the
- * legacy connector converted it to a lossy `double`;
+ *   following the legacy connector's `DynamodbAttributeSerializer` (`S` string, `N` number, `B`
+ *   base64 string, sets and lists as arrays, `M` as an object, `BOOL`, `NULL`). One deliberate
+ *   difference: an `N` value that does not fit a `long` is emitted as an exact decimal, where the
+ *   legacy connector converted it to a lossy `double`;
  * - **DynamoDB JSON** ([toDynamoDbJson], [fromDynamoDbJson]): the typed wire format (`{"S": "x"}`,
- * `{"N": "1"}`, `{"B": "<base64>"}`, ...), which round-trips a value exactly and is used for the
- * key attributes saved in the stream state (`ExclusiveStartKey`).
+ *   `{"N": "1"}`, `{"B": "<base64>"}`, ...), which round-trips a value exactly and is used for the
+ *   key attributes saved in the stream state (`ExclusiveStartKey`).
  */
 object DynamoDbJson {
 

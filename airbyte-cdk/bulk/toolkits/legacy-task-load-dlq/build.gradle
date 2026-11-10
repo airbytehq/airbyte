@@ -17,6 +17,9 @@ dependencies {
     testFixturesApi(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage")))
 
     integrationTestImplementation testFixtures(project)
+    // KSP 2 does not apply the `ksp` configuration to this compilation (KSP 1 did).
+    kspIntegrationTest platform("io.micronaut:micronaut-core-bom:$micronautVersion")
+    kspIntegrationTest 'io.micronaut:micronaut-inject-kotlin'
 }
 
 configurations {

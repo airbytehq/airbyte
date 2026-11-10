@@ -31,7 +31,7 @@ object Jsons : ObjectMapper() {
         configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true)
         configure(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES, false)
         factory.setStreamReadConstraints(
-            StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build()
+            StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build(),
         )
     }
 }

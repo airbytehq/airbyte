@@ -23,7 +23,7 @@ class GlueTableIdGenerator(private val databaseName: String?) : TableIdGenerator
     override fun toTableIdentifier(stream: DestinationStream.Descriptor): TableIdentifier {
         val namespace =
             Transformations.toAlphanumericAndUnderscore(
-                (stream.namespace ?: databaseName)!!.lowercase()
+                (stream.namespace ?: databaseName)!!.lowercase(),
             )
         val name = Transformations.toAlphanumericAndUnderscore(stream.name.lowercase())
         return tableIdOf(namespace, name)
@@ -39,25 +39,25 @@ class TableIdGeneratorFactory(private val s3DataLakeConfiguration: S3DataLakeCon
                 GlueTableIdGenerator(
                     (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
                             as GlueCatalogConfiguration)
-                        .databaseName
+                        .databaseName,
                 )
             is NessieCatalogConfiguration ->
                 SimpleTableIdGenerator(
                     (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
                             as NessieCatalogConfiguration)
-                        .namespace
+                        .namespace,
                 )
             is RestCatalogConfiguration ->
                 SimpleTableIdGenerator(
                     (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
                             as RestCatalogConfiguration)
-                        .namespace
+                        .namespace,
                 )
             is PolarisCatalogConfiguration ->
                 SimpleTableIdGenerator(
                     (s3DataLakeConfiguration.icebergCatalogConfiguration.catalogConfiguration
                             as PolarisCatalogConfiguration)
-                        .namespace
+                        .namespace,
                 )
         }
 }

@@ -47,7 +47,7 @@ class BigqueryDirectLoadSqlGenerator(
     ): Sql {
         fun columnsAndTypes(
             stream: DestinationStream,
-            columnNameMapping: ColumnNameMapping
+            columnNameMapping: ColumnNameMapping,
         ): String =
             stream.schema
                 .asColumns()
@@ -89,21 +89,22 @@ class BigqueryDirectLoadSqlGenerator(
                 )
                 PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
                 CLUSTER BY $clusterConfig;
-                """.trimIndent()
+                """
+                    .trimIndent(),
             )
         return Sql.separately(dropTableStatement + createTableStatement)
     }
 
     override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql {
         throw NotImplementedError(
-            "This method is implemented using a native bigquery API call in BigqueryDirectLoadSqlTableOperations"
+            "This method is implemented using a native bigquery API call in BigqueryDirectLoadSqlTableOperations",
         )
     }
 
     override fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ): Sql {
         val columnNames =
             columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",") { "`$it`" }
@@ -125,7 +126,8 @@ class BigqueryDirectLoadSqlGenerator(
                 _airbyte_generation_id,
                 $columnNames
             FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
-            """.trimIndent()
+            """
+                .trimIndent(),
         )
     }
 
@@ -133,7 +135,7 @@ class BigqueryDirectLoadSqlGenerator(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ): Sql {
 
         val importType = stream.importType as Dedupe
@@ -163,14 +165,15 @@ class BigqueryDirectLoadSqlGenerator(
             val cursor = "`$cursorColumnName`"
             // Build a condition for "new_record is more recent than target_table":
             cursorComparison = // First, compare the cursors.
-            ("""
+                ("""
              (
                target_table.$cursor < new_record.$cursor
                OR (target_table.$cursor = new_record.$cursor AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)
                OR (target_table.$cursor IS NULL AND new_record.$cursor IS NULL AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)
                OR (target_table.$cursor IS NULL AND new_record.$cursor IS NOT NULL)
              )
-             """.trimIndent())
+             """
+                    .trimIndent())
         } else {
             // If there's no cursor, then we just take the most-recently-emitted record
             cursorComparison =
@@ -229,7 +232,8 @@ class BigqueryDirectLoadSqlGenerator(
                  new_record._airbyte_extracted_at,
                  new_record._airbyte_generation_id
                );
-               """.trimIndent()
+               """
+                .trimIndent(),
         )
     }
 
@@ -270,7 +274,7 @@ class BigqueryDirectLoadSqlGenerator(
                 "`$columnName` DESC NULLS LAST,"
             } else {
                 throw UnsupportedOperationException(
-                    "Only top-level cursors are supported, got ${importType.cursor}"
+                    "Only top-level cursors are supported, got ${importType.cursor}",
                 )
             }
 
@@ -292,7 +296,8 @@ class BigqueryDirectLoadSqlGenerator(
                SELECT $columnList _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_generation_id
                FROM numbered_rows
                WHERE row_number = 1
-               """.trimIndent()
+               """
+            .trimIndent()
     }
 
     companion object {
@@ -325,7 +330,7 @@ class BigqueryDirectLoadSqlGenerator(
 
         fun clusteringColumns(
             stream: DestinationStream,
-            columnNameMapping: ColumnNameMapping
+            columnNameMapping: ColumnNameMapping,
         ): List<String> {
             val clusterColumns: MutableList<String> = ArrayList()
             if (stream.importType is Dedupe) {
@@ -339,7 +344,7 @@ class BigqueryDirectLoadSqlGenerator(
                     val bigqueryType = toDialectType(pkFieldType.type)
                     if (bigqueryType == StandardSQLTypeName.JSON) {
                         throw ConfigErrorException(
-                            "Stream ${stream.mappedDescriptor.toPrettyString()}: Primary key contains non-clusterable JSON-typed column $pk"
+                            "Stream ${stream.mappedDescriptor.toPrettyString()}: Primary key contains non-clusterable JSON-typed column $pk",
                         )
                     }
                     clusterColumns.add(columnNameMapping[pkName]!!)

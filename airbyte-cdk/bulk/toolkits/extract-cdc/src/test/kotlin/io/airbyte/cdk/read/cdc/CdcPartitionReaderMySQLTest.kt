@@ -39,6 +39,7 @@ class CdcPartitionReaderMySQLTest :
 
     companion object {
         const val DOCKER_IMAGE_NAME = "mysql:8.0"
+
         init {
             TestContainerFactory.register(DOCKER_IMAGE_NAME, ::MySQLContainer)
         }
@@ -138,13 +139,12 @@ class CdcPartitionReaderMySQLTest :
                 .withStreams(streams)
                 .buildMap()
 
-        private fun currentPosition(): Position =
-            container.withStatement { statement: Statement ->
-                statement.executeQuery("SHOW MASTER STATUS").use {
-                    it.next()
-                    Position(it.getString("File"), it.getLong("Position"))
-                }
+        private fun currentPosition(): Position = container.withStatement { statement: Statement ->
+            statement.executeQuery("SHOW MASTER STATUS").use {
+                it.next()
+                Position(it.getString("File"), it.getLong("Position"))
             }
+        }
     }
 
     inner class TestCdcPartitionReaderDbzOps : AbstractCdcPartitionReaderDbzOps<Position>() {

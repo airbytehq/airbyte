@@ -34,7 +34,7 @@ class DefaultTyperDeduperTest {
     private data class MockState(
         val needsSoftReset: Boolean,
         val softResetMigrationCompleted: Boolean,
-        val nonSoftResetMigrationCompleted: Boolean
+        val nonSoftResetMigrationCompleted: Boolean,
     ) : MinimumDestinationState {
         override fun needsSoftReset(): Boolean = needsSoftReset
 
@@ -43,7 +43,7 @@ class DefaultTyperDeduperTest {
             return MockState(
                 needsSoftReset,
                 this.softResetMigrationCompleted,
-                this.nonSoftResetMigrationCompleted
+                this.nonSoftResetMigrationCompleted,
             )
                 as T
         }
@@ -65,12 +65,12 @@ class DefaultTyperDeduperTest {
             override fun migrateIfNecessary(
                 destinationHandler: DestinationHandler<MockState>,
                 stream: StreamConfig,
-                state: DestinationInitialStatus<MockState>
+                state: DestinationInitialStatus<MockState>,
             ): Migration.MigrationResult<MockState> {
                 destinationHandler.execute(of("MIGRATE " + stream.id.rawTableId("")))
                 return Migration.MigrationResult(
                     MockState(true, true, state.destinationState.nonSoftResetMigrationCompleted),
-                    false
+                    false,
                 )
             }
         }
@@ -80,15 +80,15 @@ class DefaultTyperDeduperTest {
             override fun migrateIfNecessary(
                 destinationHandler: DestinationHandler<MockState>,
                 stream: StreamConfig,
-                state: DestinationInitialStatus<MockState>
+                state: DestinationInitialStatus<MockState>,
             ): Migration.MigrationResult<MockState> {
                 return Migration.MigrationResult(
                     MockState(
                         state.destinationState.needsSoftReset,
                         state.destinationState.softResetMigrationCompleted,
-                        true
+                        true,
                     ),
-                    false
+                    false,
                 )
             }
         }
@@ -101,7 +101,7 @@ class DefaultTyperDeduperTest {
                 "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
                 "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             ],
-        justification = "compiler-generated lateinit null check after the assignment"
+        justification = "compiler-generated lateinit null check after the assignment",
     )
     @BeforeEach
     @Throws(Exception::class)
@@ -131,18 +131,18 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.empty()
-                        )
+                            maxProcessedTimestamp = Optional.empty(),
+                        ),
                     )
                 Mockito.`when`(initialState.initialTempRawTableStatus)
                     .thenReturn(
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.empty()
-                        )
+                            maxProcessedTimestamp = Optional.empty(),
+                        ),
                     )
-            }
+            },
         )
 
         val updatedStates: MutableMap<StreamId, MockState> = HashMap()
@@ -155,7 +155,7 @@ class DefaultTyperDeduperTest {
 
         parsedCatalog =
             ParsedCatalog(
-                listOf(OVERWRITE_STREAM_CONFIG, APPEND_STREAM_CONFIG, DEDUPE_STREAM_CONFIG)
+                listOf(OVERWRITE_STREAM_CONFIG, APPEND_STREAM_CONFIG, DEDUPE_STREAM_CONFIG),
             )
 
         typerDeduper =
@@ -164,7 +164,7 @@ class DefaultTyperDeduperTest {
                 destinationHandler,
                 parsedCatalog,
                 migrator,
-                emptyList()
+                emptyList(),
             )
     }
 
@@ -175,7 +175,7 @@ class DefaultTyperDeduperTest {
         initialStates.forEach(
             Consumer { initialState: DestinationInitialStatus<MockState> ->
                 Mockito.`when`(initialState.isFinalTablePresent).thenReturn(false)
-            }
+            },
         )
 
         typerDeduper.prepareSchemasAndRunMigrations()
@@ -185,8 +185,8 @@ class DefaultTyperDeduperTest {
                     "CREATE SCHEMA airbyte_internal",
                     "CREATE SCHEMA overwrite_ns",
                     "CREATE SCHEMA append_ns",
-                    "CREATE SCHEMA dedup_ns"
-                )
+                    "CREATE SCHEMA dedup_ns",
+                ),
             )
         Mockito.verify(destinationHandler).commitDestinationStates(updatedStates)
         Mockito.clearInvocations(destinationHandler)
@@ -216,7 +216,7 @@ class DefaultTyperDeduperTest {
                 OVERWRITE_STREAM_CONFIG.id.asStreamDescriptor() to success,
                 APPEND_STREAM_CONFIG.id.asStreamDescriptor() to success,
                 DEDUPE_STREAM_CONFIG.id.asStreamDescriptor() to success,
-            )
+            ),
         )
         Mockito.verify(destinationHandler, Mockito.never()).execute(any())
     }
@@ -233,7 +233,7 @@ class DefaultTyperDeduperTest {
                 Mockito.`when`(initialState.isFinalTablePresent).thenReturn(true)
                 Mockito.`when`(initialState.isFinalTableEmpty).thenReturn(true)
                 Mockito.`when`(initialState.isSchemaMismatch).thenReturn(true)
-            }
+            },
         )
 
         typerDeduper.prepareSchemasAndRunMigrations()
@@ -243,8 +243,8 @@ class DefaultTyperDeduperTest {
                     "CREATE SCHEMA airbyte_internal",
                     "CREATE SCHEMA overwrite_ns",
                     "CREATE SCHEMA append_ns",
-                    "CREATE SCHEMA dedup_ns"
-                )
+                    "CREATE SCHEMA dedup_ns",
+                ),
             )
         Mockito.verify(destinationHandler).commitDestinationStates(updatedStates)
         Mockito.clearInvocations(destinationHandler)
@@ -259,8 +259,8 @@ class DefaultTyperDeduperTest {
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset"
-                )
+                    "OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset",
+                ),
             )
         Mockito.verify(destinationHandler)
             .execute(of("PREPARE dedup_ns.dedup_stream FOR SOFT RESET"))
@@ -268,7 +268,9 @@ class DefaultTyperDeduperTest {
             .execute(of("UPDATE TABLE dedup_ns.dedup_stream_ab_soft_reset WITHOUT SAFER CASTING"))
         Mockito.verify(destinationHandler)
             .execute(
-                of("OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset")
+                of(
+                    "OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset",
+                ),
             )
         Mockito.verify(destinationHandler).commitDestinationStates(updatedStates)
         Mockito.verifyNoMoreInteractions(*Mockito.ignoreStubs(destinationHandler))
@@ -277,7 +279,7 @@ class DefaultTyperDeduperTest {
         typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream")
         Mockito.verify(destinationHandler)
             .execute(
-                of("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING")
+                of("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING"),
             )
         typerDeduper.typeAndDedupe("append_ns", "append_stream")
         Mockito.verify(destinationHandler)
@@ -293,13 +295,13 @@ class DefaultTyperDeduperTest {
                 OVERWRITE_STREAM_CONFIG.id.asStreamDescriptor() to success,
                 APPEND_STREAM_CONFIG.id.asStreamDescriptor() to success,
                 DEDUPE_STREAM_CONFIG.id.asStreamDescriptor() to success,
-            )
+            ),
         )
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp"
-                )
+                    "OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp",
+                ),
             )
         Mockito.verifyNoMoreInteractions(*Mockito.ignoreStubs(destinationHandler))
     }
@@ -316,7 +318,7 @@ class DefaultTyperDeduperTest {
                 Mockito.`when`(initialState.isFinalTablePresent).thenReturn(true)
                 Mockito.`when`(initialState.isFinalTableEmpty).thenReturn(true)
                 Mockito.`when`(initialState.isSchemaMismatch).thenReturn(false)
-            }
+            },
         )
 
         typerDeduper.prepareSchemasAndRunMigrations()
@@ -326,8 +328,8 @@ class DefaultTyperDeduperTest {
                     "CREATE SCHEMA airbyte_internal",
                     "CREATE SCHEMA overwrite_ns",
                     "CREATE SCHEMA append_ns",
-                    "CREATE SCHEMA dedup_ns"
-                )
+                    "CREATE SCHEMA dedup_ns",
+                ),
             )
         Mockito.clearInvocations(destinationHandler)
 
@@ -353,10 +355,10 @@ class DefaultTyperDeduperTest {
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp =
-                                Optional.of(Instant.parse("2023-01-01T12:34:56Z"))
-                        )
+                                Optional.of(Instant.parse("2023-01-01T12:34:56Z")),
+                        ),
                     )
-            }
+            },
         )
 
         typerDeduper.prepareSchemasAndRunMigrations()
@@ -366,8 +368,8 @@ class DefaultTyperDeduperTest {
                     "CREATE SCHEMA airbyte_internal",
                     "CREATE SCHEMA overwrite_ns",
                     "CREATE SCHEMA append_ns",
-                    "CREATE SCHEMA dedup_ns"
-                )
+                    "CREATE SCHEMA dedup_ns",
+                ),
             )
         Mockito.verify(destinationHandler).commitDestinationStates(updatedStates)
         Mockito.clearInvocations(destinationHandler)
@@ -385,8 +387,8 @@ class DefaultTyperDeduperTest {
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset"
-                )
+                    "OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset",
+                ),
             )
         Mockito.verify(destinationHandler)
             .execute(of("PREPARE dedup_ns.dedup_stream FOR SOFT RESET"))
@@ -394,7 +396,9 @@ class DefaultTyperDeduperTest {
             .execute(of("UPDATE TABLE dedup_ns.dedup_stream_ab_soft_reset WITHOUT SAFER CASTING"))
         Mockito.verify(destinationHandler)
             .execute(
-                of("OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset")
+                of(
+                    "OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset",
+                ),
             )
         Mockito.verify(destinationHandler).commitDestinationStates(updatedStates)
         Mockito.verifyNoMoreInteractions(*Mockito.ignoreStubs(destinationHandler))
@@ -405,22 +409,22 @@ class DefaultTyperDeduperTest {
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z"
-                )
+                    "UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z",
+                ),
             )
         typerDeduper.typeAndDedupe("append_ns", "append_stream")
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z"
-                )
+                    "UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z",
+                ),
             )
         typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream")
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z"
-                )
+                    "UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z",
+                ),
             )
         Mockito.verifyNoMoreInteractions(*Mockito.ignoreStubs(destinationHandler))
         Mockito.clearInvocations(destinationHandler)
@@ -430,13 +434,13 @@ class DefaultTyperDeduperTest {
                 OVERWRITE_STREAM_CONFIG.id.asStreamDescriptor() to success,
                 APPEND_STREAM_CONFIG.id.asStreamDescriptor() to success,
                 DEDUPE_STREAM_CONFIG.id.asStreamDescriptor() to success,
-            )
+            ),
         )
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp"
-                )
+                    "OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp",
+                ),
             )
         Mockito.verifyNoMoreInteractions(*Mockito.ignoreStubs(destinationHandler))
     }
@@ -458,10 +462,10 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.now())
-                        )
+                            maxProcessedTimestamp = Optional.of(Instant.now()),
+                        ),
                     )
-            }
+            },
         )
 
         typerDeduper.prepareSchemasAndRunMigrations()
@@ -471,8 +475,8 @@ class DefaultTyperDeduperTest {
                     "CREATE SCHEMA airbyte_internal",
                     "CREATE SCHEMA overwrite_ns",
                     "CREATE SCHEMA append_ns",
-                    "CREATE SCHEMA dedup_ns"
-                )
+                    "CREATE SCHEMA dedup_ns",
+                ),
             )
         Mockito.verify(destinationHandler).commitDestinationStates(updatedStates)
         Mockito.clearInvocations(destinationHandler)
@@ -508,7 +512,7 @@ class DefaultTyperDeduperTest {
                 OVERWRITE_STREAM_CONFIG.id.asStreamDescriptor() to success,
                 APPEND_STREAM_CONFIG.id.asStreamDescriptor() to success,
                 DEDUPE_STREAM_CONFIG.id.asStreamDescriptor() to success,
-            )
+            ),
         )
 
         Mockito.verifyNoInteractions(*Mockito.ignoreStubs(destinationHandler))
@@ -528,18 +532,18 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = false,
-                            maxProcessedTimestamp = Optional.empty()
-                        )
+                            maxProcessedTimestamp = Optional.empty(),
+                        ),
                     )
                 Mockito.`when`(initialState.initialTempRawTableStatus)
                     .thenReturn(
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = false,
-                            maxProcessedTimestamp = Optional.empty()
-                        )
+                            maxProcessedTimestamp = Optional.empty(),
+                        ),
                     )
-            }
+            },
         )
 
         typerDeduper.prepareSchemasAndRunMigrations()
@@ -591,8 +595,8 @@ class DefaultTyperDeduperTest {
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp =
-                                Optional.of(Instant.parse("2023-01-23T12:34:56Z"))
-                        )
+                                Optional.of(Instant.parse("2023-01-23T12:34:56Z")),
+                        ),
                     )
                 Mockito.`when`(initialState.initialTempRawTableStatus)
                     .thenReturn(
@@ -600,10 +604,10 @@ class DefaultTyperDeduperTest {
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp =
-                                Optional.of(Instant.parse("2023-01-23T12:34:56Z"))
-                        )
+                                Optional.of(Instant.parse("2023-01-23T12:34:56Z")),
+                        ),
                     )
-            }
+            },
         )
 
         typerDeduper.prepareSchemasAndRunMigrations()
@@ -634,20 +638,20 @@ class DefaultTyperDeduperTest {
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z"
-                )
+                    "UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z",
+                ),
             )
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z"
-                )
+                    "UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z",
+                ),
             )
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z"
-                )
+                    "UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z",
+                ),
             )
     }
 
@@ -665,7 +669,7 @@ class DefaultTyperDeduperTest {
                 destinationHandler,
                 parsedCatalog,
                 migrator,
-                listOf(MIGRATION_REQUIRING_SOFT_RESET)
+                listOf(MIGRATION_REQUIRING_SOFT_RESET),
             )
 
         this.typerDeduper = typerDeduper
@@ -680,12 +684,12 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         true,
                         false,
@@ -699,12 +703,12 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         true,
                         false,
@@ -718,20 +722,20 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         true,
                         false,
                         MockState(false, false, true),
                         finalTableGenerationId = null,
                         finalTempTableGenerationId = null,
-                    )
-                )
+                    ),
+                ),
             )
 
         typerDeduper.prepareSchemasAndRunMigrations()
@@ -753,8 +757,8 @@ class DefaultTyperDeduperTest {
                     "CREATE SCHEMA airbyte_internal",
                     "CREATE SCHEMA overwrite_ns",
                     "CREATE SCHEMA append_ns",
-                    "CREATE SCHEMA dedup_ns"
-                )
+                    "CREATE SCHEMA dedup_ns",
+                ),
             )
         Mockito.verifyNoMoreInteractions(destinationHandler)
         Mockito.clearInvocations(destinationHandler)
@@ -769,8 +773,8 @@ class DefaultTyperDeduperTest {
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset"
-                )
+                    "OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset",
+                ),
             )
 
         Mockito.verify(destinationHandler)
@@ -779,7 +783,9 @@ class DefaultTyperDeduperTest {
             .execute(of("UPDATE TABLE dedup_ns.dedup_stream_ab_soft_reset WITHOUT SAFER CASTING"))
         Mockito.verify(destinationHandler)
             .execute(
-                of("OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset")
+                of(
+                    "OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset",
+                ),
             )
 
         // The overwrite stream just gets a new table entirely, instead of a soft reset.
@@ -812,7 +818,7 @@ class DefaultTyperDeduperTest {
                 destinationHandler,
                 parsedCatalog,
                 migrator,
-                listOf(MIGRATION_REQUIRING_SOFT_RESET, MIGRATION_NOT_REQUIRING_SOFT_RESET)
+                listOf(MIGRATION_REQUIRING_SOFT_RESET, MIGRATION_NOT_REQUIRING_SOFT_RESET),
             )
         this.typerDeduper = typerDeduper
 
@@ -825,12 +831,12 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         false,
                         false,
@@ -844,12 +850,12 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         false,
                         false,
@@ -863,20 +869,20 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         false,
                         false,
                         MockState(false, false, false),
                         finalTableGenerationId = null,
                         finalTempTableGenerationId = null,
-                    )
-                )
+                    ),
+                ),
             )
 
         typerDeduper.prepareSchemasAndRunMigrations()
@@ -898,8 +904,8 @@ class DefaultTyperDeduperTest {
                     "CREATE SCHEMA airbyte_internal",
                     "CREATE SCHEMA overwrite_ns",
                     "CREATE SCHEMA append_ns",
-                    "CREATE SCHEMA dedup_ns"
-                )
+                    "CREATE SCHEMA dedup_ns",
+                ),
             )
         Mockito.verifyNoMoreInteractions(destinationHandler)
         Mockito.clearInvocations(destinationHandler)
@@ -914,8 +920,8 @@ class DefaultTyperDeduperTest {
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset"
-                )
+                    "OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset",
+                ),
             )
 
         Mockito.verify(destinationHandler)
@@ -924,7 +930,9 @@ class DefaultTyperDeduperTest {
             .execute(of("UPDATE TABLE dedup_ns.dedup_stream_ab_soft_reset WITHOUT SAFER CASTING"))
         Mockito.verify(destinationHandler)
             .execute(
-                of("OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset")
+                of(
+                    "OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset",
+                ),
             )
 
         // The overwrite stream just gets a new table
@@ -961,12 +969,12 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         false,
                         false,
@@ -980,12 +988,12 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         false,
                         false,
@@ -999,20 +1007,20 @@ class DefaultTyperDeduperTest {
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         InitialRawTableStatus(
                             rawTableExists = true,
                             hasUnprocessedRecords = true,
-                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42)),
                         ),
                         false,
                         false,
                         MockState(true, false, false),
                         finalTableGenerationId = null,
                         finalTempTableGenerationId = null,
-                    )
-                )
+                    ),
+                ),
             )
 
         typerDeduper.prepareSchemasAndRunMigrations()
@@ -1034,8 +1042,8 @@ class DefaultTyperDeduperTest {
                     "CREATE SCHEMA airbyte_internal",
                     "CREATE SCHEMA overwrite_ns",
                     "CREATE SCHEMA append_ns",
-                    "CREATE SCHEMA dedup_ns"
-                )
+                    "CREATE SCHEMA dedup_ns",
+                ),
             )
         Mockito.verifyNoMoreInteractions(destinationHandler)
         Mockito.clearInvocations(destinationHandler)
@@ -1050,8 +1058,8 @@ class DefaultTyperDeduperTest {
         Mockito.verify(destinationHandler)
             .execute(
                 of(
-                    "OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset"
-                )
+                    "OVERWRITE TABLE append_ns.append_stream FROM append_ns.append_stream_ab_soft_reset",
+                ),
             )
 
         Mockito.verify(destinationHandler)
@@ -1060,7 +1068,9 @@ class DefaultTyperDeduperTest {
             .execute(of("UPDATE TABLE dedup_ns.dedup_stream_ab_soft_reset WITHOUT SAFER CASTING"))
         Mockito.verify(destinationHandler)
             .execute(
-                of("OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset")
+                of(
+                    "OVERWRITE TABLE dedup_ns.dedup_stream FROM dedup_ns.dedup_stream_ab_soft_reset",
+                ),
             )
 
         // The overwrite stream just gets a new table entirely, instead of a soft reset.
@@ -1089,7 +1099,7 @@ class DefaultTyperDeduperTest {
                     "airbyte_internal",
                     "overwrite_stream",
                     "overwrite_ns",
-                    "overwrite_stream"
+                    "overwrite_stream",
                 ),
                 ImportType.APPEND,
                 mock(),
@@ -1107,7 +1117,7 @@ class DefaultTyperDeduperTest {
                     "airbyte_internal",
                     "append_stream",
                     "append_ns",
-                    "append_stream"
+                    "append_stream",
                 ),
                 ImportType.APPEND,
                 mock(),
@@ -1125,7 +1135,7 @@ class DefaultTyperDeduperTest {
                     "airbyte_internal",
                     "dedup_stream",
                     "dedup_ns",
-                    "dedup_stream"
+                    "dedup_stream",
                 ),
                 ImportType.DEDUPE,
                 mock(),

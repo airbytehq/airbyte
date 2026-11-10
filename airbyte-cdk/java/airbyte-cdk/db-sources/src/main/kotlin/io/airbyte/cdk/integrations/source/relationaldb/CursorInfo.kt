@@ -12,13 +12,13 @@ class CursorInfo(
     val cursorField: String?,
     var cursor: String?,
     var cursorRecordCount: Long,
-    var cutoffTime: String? = null
+    var cutoffTime: String? = null,
 ) {
     constructor(
         originalCursorField: String?,
         originalCursor: String?,
         cursorField: String?,
-        cursor: String?
+        cursor: String?,
     ) : this(originalCursorField, originalCursor, 0L, cursorField, cursor, 0L)
 
     fun setCursor(cursor: String?): CursorInfo {
@@ -54,7 +54,7 @@ class CursorInfo(
             originalCursorRecordCount,
             cursorField,
             cursor,
-            cursorRecordCount
+            cursorRecordCount,
         )
     }
 

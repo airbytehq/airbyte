@@ -24,16 +24,20 @@ class TableOperationsClientTest {
             columnNameMapping: ColumnNameMapping,
             replace: Boolean,
         ) = Unit
+
         override suspend fun dropTable(tableName: TableName) = Unit
+
         override suspend fun overwriteTable(
             sourceTableName: TableName,
             targetTableName: TableName,
         ) = Unit
+
         override suspend fun copyTable(
             columnNameMapping: ColumnNameMapping,
             sourceTableName: TableName,
             targetTableName: TableName,
         ) = Unit
+
         override suspend fun upsertTable(
             stream: DestinationStream,
             columnNameMapping: ColumnNameMapping,

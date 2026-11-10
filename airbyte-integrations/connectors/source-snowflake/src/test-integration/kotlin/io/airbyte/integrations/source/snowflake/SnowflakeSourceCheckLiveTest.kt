@@ -29,7 +29,7 @@ class SnowflakeSourceCheckLiveTest : AbstractSnowflakeLiveTest() {
         val spec = spec().apply { warehouse = "NOSUCHWAREHOUSE$schema" }
         SyncsTestFixture.testCheck(
             spec,
-            expectedFailure = "warehouse does not exist or not authorized"
+            expectedFailure = "warehouse does not exist or not authorized",
         )
     }
 
@@ -38,7 +38,7 @@ class SnowflakeSourceCheckLiveTest : AbstractSnowflakeLiveTest() {
         val spec = spec().apply { database = "NOSUCHDATABASE$schema" }
         SyncsTestFixture.testCheck(
             spec,
-            expectedFailure = "database does not exist or not authorized"
+            expectedFailure = "database does not exist or not authorized",
         )
     }
 }

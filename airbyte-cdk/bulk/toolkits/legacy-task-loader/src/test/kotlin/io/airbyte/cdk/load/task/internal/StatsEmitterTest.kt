@@ -37,7 +37,9 @@ private class RecordingOutputConsumer(clock: Clock = Clock.fixed(Instant.EPOCH, 
     override fun accept(airbyteMessage: AirbyteMessage) {
         _messages += airbyteMessage
     }
+
     override fun close() = Unit
+
     override fun withLockFlush() = Unit
 }
 

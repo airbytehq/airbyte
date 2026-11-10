@@ -46,7 +46,7 @@ class SnowflakeSourceFullRefreshLiveTest : AbstractSnowflakeLiveTest() {
         assertEquals("12345678.91", r["C_NUMBER_10_2"].decimalValue().toPlainString())
         assertEquals(
             "1234567890123456789012345678.1234567890",
-            r["C_NUMERIC"].decimalValue().toPlainString()
+            r["C_NUMERIC"].decimalValue().toPlainString(),
         )
         assertEquals(1.5, r["C_FLOAT"].asDouble())
         assertEquals("héllo wörld 日本語 🎉", r["C_VARCHAR"].asText())
@@ -120,7 +120,7 @@ class SnowflakeSourceFullRefreshLiveTest : AbstractSnowflakeLiveTest() {
             read(
                 spec(),
                 configured(catalog, listOf("PK_TABLE")),
-                listOf(streamState("PK_TABLE", schema, completeState.toString()))
+                listOf(streamState("PK_TABLE", schema, completeState.toString())),
             )
         out.assertNoErrors()
         assertEquals(0, out.recordsOf("PK_TABLE").size)
@@ -132,7 +132,7 @@ class SnowflakeSourceFullRefreshLiveTest : AbstractSnowflakeLiveTest() {
         val out =
             read(
                 spec(concurrency = 8, checkpointSeconds = 1),
-                configured(catalog, listOf("SPLIT_100K"))
+                configured(catalog, listOf("SPLIT_100K")),
             )
         out.assertNoErrors()
         val allIds = ids(out.recordsOf("SPLIT_100K"))

@@ -27,7 +27,7 @@ class S3DataLakeWriter(
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val catalog: DestinationCatalog,
     private val tableIdGenerator: TableIdGenerator,
-    private val streamStateStore: StreamStateStore<S3DataLakeStreamState>
+    private val streamStateStore: StreamStateStore<S3DataLakeStreamState>,
 ) : DestinationWriter {
     override suspend fun setup() {
         super.setup()
@@ -35,7 +35,7 @@ class S3DataLakeWriter(
             mutableMapOf()
         val conflictingStreams:
             MutableList<
-                Triple<DestinationStream.Descriptor, DestinationStream.Descriptor, TableIdentifier>
+                Triple<DestinationStream.Descriptor, DestinationStream.Descriptor, TableIdentifier>,
             > =
             mutableListOf()
         catalog.streams.forEach { incomingStream ->
@@ -56,7 +56,7 @@ class S3DataLakeWriter(
                         val s1Desc = s1.toPrettyString()
                         val s2Desc = s2.toPrettyString()
                         "$s1Desc - $s2Desc (both writing to $tableId)"
-                    }
+                    },
             )
         }
     }

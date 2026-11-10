@@ -73,7 +73,7 @@ class SnowflakeInsertBuffer(
             csvFilePath = csvFile.toPath()
             csvWriter =
                 csvWriterBuilder.build(
-                    CompressionOutputStream(outputStream = csvFile.outputStream(), level = 5)
+                    CompressionOutputStream(outputStream = csvFile.outputStream(), level = 5),
                 )
         }
 
@@ -128,8 +128,7 @@ class SnowflakeInsertBuffer(
                 csvFilePath = null
                 recordCount = 0
             }
-        }
-            ?: logger.warn { "CSV file path is not set: nothing to upload to staging." }
+        } ?: logger.warn { "CSV file path is not set: nothing to upload to staging." }
     }
 
     private fun putAndCopy(filePath: Path) {
@@ -138,7 +137,7 @@ class SnowflakeInsertBuffer(
         snowflakeClient.copyFromStage(
             tableName,
             filePath.fileName.toString(),
-            columnManager.getTableColumnNames(columnSchema)
+            columnManager.getTableColumnNames(columnSchema),
         )
     }
 
@@ -151,7 +150,7 @@ class SnowflakeInsertBuffer(
     private fun writeToCsvFile(record: Map<String, AirbyteValue>) {
         csvWriter?.let {
             it.writeRecord(
-                snowflakeRecordFormatter.format(record, columnSchema).map { col -> col.toString() }
+                snowflakeRecordFormatter.format(record, columnSchema).map { col -> col.toString() },
             )
             recordCount++
             if ((recordCount % flushLimit) == 0) {

@@ -47,7 +47,7 @@ class BigQueryFieldTypesTest {
         verify(rs, never()).getBoolean(1)
         Assertions.assertEquals(
             Jsons.booleanNode(true),
-            BigQueryBooleanFieldType.jsonEncoder.encode(true)
+            BigQueryBooleanFieldType.jsonEncoder.encode(true),
         )
     }
 
@@ -68,15 +68,15 @@ class BigQueryFieldTypesTest {
         verify(rs, never()).getLong(1)
         Assertions.assertEquals(
             Jsons.numberNode(42L),
-            BigQueryLongFieldType.jsonEncoder.encode(42L)
+            BigQueryLongFieldType.jsonEncoder.encode(42L),
         )
         Assertions.assertEquals(
             42L,
-            BigQueryLongFieldType.jsonDecoder.decode(Jsons.numberNode(42L))
+            BigQueryLongFieldType.jsonDecoder.decode(Jsons.numberNode(42L)),
         )
         Assertions.assertEquals(
             LeafAirbyteSchemaType.INTEGER,
-            BigQueryLongFieldType.airbyteSchemaType
+            BigQueryLongFieldType.airbyteSchemaType,
         )
     }
 
@@ -97,11 +97,11 @@ class BigQueryFieldTypesTest {
         verify(rs, never()).getDouble(1)
         Assertions.assertEquals(
             Jsons.numberNode(0.25),
-            BigQueryDoubleFieldType.jsonEncoder.encode(0.25)
+            BigQueryDoubleFieldType.jsonEncoder.encode(0.25),
         )
         Assertions.assertEquals(
             LeafAirbyteSchemaType.NUMBER,
-            BigQueryDoubleFieldType.airbyteSchemaType
+            BigQueryDoubleFieldType.airbyteSchemaType,
         )
     }
 
@@ -129,7 +129,7 @@ class BigQueryFieldTypesTest {
             Assertions.assertEquals(
                 fieldType,
                 BigQueryFieldTypes.fromField(field("c", bqType)),
-                bqType.name
+                bqType.name,
             )
         }
     }
@@ -141,19 +141,19 @@ class BigQueryFieldTypesTest {
         Assertions.assertEquals(BigDecimalFieldType, BigQueryFieldTypes.fromTypeName("NUMERIC"))
         Assertions.assertEquals(
             BigQueryBigNumericFieldType,
-            BigQueryFieldTypes.fromTypeName("BIGNUMERIC")
+            BigQueryFieldTypes.fromTypeName("BIGNUMERIC"),
         )
         Assertions.assertEquals(
             OffsetDateTimeFieldType,
-            BigQueryFieldTypes.fromTypeName("TIMESTAMP")
+            BigQueryFieldTypes.fromTypeName("TIMESTAMP"),
         )
         Assertions.assertEquals(
             BigQueryDateTimeFieldType,
-            BigQueryFieldTypes.fromTypeName("DATETIME")
+            BigQueryFieldTypes.fromTypeName("DATETIME"),
         )
         Assertions.assertEquals(
             BigQueryStructFieldType(null),
-            BigQueryFieldTypes.fromTypeName("STRUCT")
+            BigQueryFieldTypes.fromTypeName("STRUCT"),
         )
         Assertions.assertEquals(
             BigQueryArrayFieldType(PokemonFieldType),
@@ -170,7 +170,7 @@ class BigQueryFieldTypesTest {
         Assertions.assertEquals(BigQueryArrayFieldType(StringFieldType), type)
         Assertions.assertEquals(
             ArrayAirbyteSchemaType(LeafAirbyteSchemaType.STRING),
-            type.airbyteSchemaType
+            type.airbyteSchemaType,
         )
         Assertions.assertEquals(
             Jsons.readTree("""{"type":"array","items":{"type":"string"}}"""),
@@ -190,7 +190,7 @@ class BigQueryFieldTypesTest {
                 repeated(
                     "items",
                     StandardSQLTypeName.STRUCT,
-                    field("f", StandardSQLTypeName.FLOAT64)
+                    field("f", StandardSQLTypeName.FLOAT64),
                 ),
             )
         val type: FieldType = BigQueryFieldTypes.fromField(struct)
@@ -202,17 +202,17 @@ class BigQueryFieldTypesTest {
                     EmittedField("n", BigQueryLongFieldType),
                     EmittedField(
                         "inner",
-                        BigQueryStructFieldType(listOf(EmittedField("t", BigQueryTimeFieldType)))
+                        BigQueryStructFieldType(listOf(EmittedField("t", BigQueryTimeFieldType))),
                     ),
                     EmittedField(
                         "items",
                         BigQueryArrayFieldType(
                             BigQueryStructFieldType(
-                                listOf(EmittedField("f", BigQueryDoubleFieldType))
-                            )
+                                listOf(EmittedField("f", BigQueryDoubleFieldType)),
+                            ),
                         ),
                     ),
-                )
+                ),
             ),
             type,
         )
@@ -225,13 +225,13 @@ class BigQueryFieldTypesTest {
   "inner":{"type":"object","properties":{"t":{"type":"string","format":"time","airbyte_type":"time_without_timezone"}}},
   "items":{"type":"array","items":{"type":"object","properties":{"f":{"type":"number"}}}}
 }}
-"""
+""",
             ),
             BigQueryFieldTypes.jsonSchema(type),
         )
         val repeatedStruct: FieldType =
             BigQueryFieldTypes.fromField(
-                repeated("rs", StandardSQLTypeName.STRUCT, field("x", StandardSQLTypeName.BOOL))
+                repeated("rs", StandardSQLTypeName.STRUCT, field("x", StandardSQLTypeName.BOOL)),
             )
         Assertions.assertEquals(
             ArrayAirbyteSchemaType(LeafAirbyteSchemaType.JSONB),

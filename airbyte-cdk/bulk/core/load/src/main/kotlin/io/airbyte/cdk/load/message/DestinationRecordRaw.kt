@@ -73,7 +73,7 @@ data class DestinationRecordRaw(
                 )
                 ?.let { enrichedValue.abValue = it }
                 ?: enrichedValue.nullify(
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
                 )
 
             declaredFields[fieldName] = enrichedValue

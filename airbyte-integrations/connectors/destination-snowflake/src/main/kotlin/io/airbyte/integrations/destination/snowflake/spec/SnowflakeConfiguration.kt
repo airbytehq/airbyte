@@ -45,7 +45,7 @@ data class ProgrammaticAccessTokenAuthConfiguration(
 class SnowflakeConfigurationFactory :
     DestinationConfigurationFactory<SnowflakeSpecification, SnowflakeConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: SnowflakeSpecification
+        pojo: SnowflakeSpecification,
     ): SnowflakeConfiguration {
         val authTypeConfig =
             when (pojo.credentials) {
@@ -55,7 +55,7 @@ class SnowflakeConfigurationFactory :
                     val keyPairAuthSpec = pojo.credentials as KeyPairAuthSpecification
                     KeyPairAuthConfiguration(
                         keyPairAuthSpec.privateKey,
-                        keyPairAuthSpec.privateKeyPassword
+                        keyPairAuthSpec.privateKeyPassword,
                     )
                 }
                 is UsernamePasswordAuthSpecification -> {
@@ -86,7 +86,8 @@ class SnowflakeConfigurationFactory :
             authType = authTypeConfig,
             cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
-            internalTableSchema = pojo.internalTableSchema?.takeUnless(String::isBlank)
+            internalTableSchema =
+                pojo.internalTableSchema?.takeUnless(String::isBlank)
                     ?: DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
             trimSpace = pojo.trimSpace ?: true,
             jdbcUrlParams = pojo.jdbcUrlParams,

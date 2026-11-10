@@ -25,7 +25,7 @@ import jakarta.inject.Singleton
 @JsonSchemaTitle("BigQuery Source Spec")
 @JsonSchemaInject(
     json =
-        """{"groups":[{"id":"connection","title":"Connection"},{"id":"advanced","title":"Advanced"}]}"""
+        """{"groups":[{"id":"connection","title":"Connection"},{"id":"advanced","title":"Advanced"}]}""",
 )
 @JsonPropertyOrder(
     value =
@@ -36,7 +36,7 @@ import jakarta.inject.Singleton
             "job_project_id",
             "max_db_connections",
             "use_storage_read_api",
-        ]
+        ],
 )
 @Singleton
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
@@ -45,7 +45,7 @@ class BigQuerySourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("project_id")
     @JsonSchemaTitle("Project ID")
     @JsonSchemaDescription(
-        "The GCP project ID for the project containing the BigQuery datasets to read from. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>."
+        "The GCP project ID for the project containing the BigQuery datasets to read from. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>.",
     )
     @JsonSchemaInject(json = """{"group":"connection","order":0}""")
     lateinit var projectId: String
@@ -56,7 +56,7 @@ class BigQuerySourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("dataset_id")
     @JsonSchemaTitle("Dataset ID")
     @JsonSchemaDescription(
-        "The BigQuery dataset to read tables and views from. Leave empty to discover every dataset of the project; setting it makes schema discovery much faster on projects with many datasets. Read more <a href=\"https://cloud.google.com/bigquery/docs/datasets-intro\">here</a>."
+        "The BigQuery dataset to read tables and views from. Leave empty to discover every dataset of the project; setting it makes schema discovery much faster on projects with many datasets. Read more <a href=\"https://cloud.google.com/bigquery/docs/datasets-intro\">here</a>.",
     )
     @JsonSchemaInject(json = """{"group":"connection","order":1}""")
     var datasetId: String? = null
@@ -64,10 +64,10 @@ class BigQuerySourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("credentials_json")
     @JsonSchemaTitle("Service Account Key JSON")
     @JsonSchemaDescription(
-        "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">docs</a> if you need help generating this key."
+        "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#service-account-key\">docs</a> if you need help generating this key.",
     )
     @JsonSchemaInject(
-        json = """{"group":"connection","order":2,"airbyte_secret":true,"always_show":true}"""
+        json = """{"group":"connection","order":2,"airbyte_secret":true,"always_show":true}""",
     )
     lateinit var credentialsJson: String
 
@@ -78,7 +78,7 @@ class BigQuerySourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("job_project_id")
     @JsonSchemaTitle("Job Execution Project ID")
     @JsonSchemaDescription(
-        "Optional. The GCP project ID where BigQuery query jobs are run. When set, the queries of a sync run against this project's quota and billing instead of the data project's. This isolates the concurrent query quota between workloads (e.g. data extraction vs. analytics) and allows reading from a project in which the service account only has data access. The service account must have the BigQuery Job User role on this project. If not set, jobs run in the data project (Project ID above)."
+        "Optional. The GCP project ID where BigQuery query jobs are run. When set, the queries of a sync run against this project's quota and billing instead of the data project's. This isolates the concurrent query quota between workloads (e.g. data extraction vs. analytics) and allows reading from a project in which the service account only has data access. The service account must have the BigQuery Job User role on this project. If not set, jobs run in the data project (Project ID above).",
     )
     @JsonSchemaInject(json = """{"group":"advanced","order":3}""")
     var jobProjectId: String? = null
@@ -86,7 +86,7 @@ class BigQuerySourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("max_db_connections")
     @JsonSchemaTitle("Max Concurrent Queries to Database")
     @JsonSchemaDescription(
-        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
+        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance.",
     )
     @JsonSchemaInject(json = """{"group":"advanced","order":4,"always_show":true,"minimum":1}""")
     var maxDbConnections: Int? = null
@@ -94,7 +94,7 @@ class BigQuerySourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("use_storage_read_api")
     @JsonSchemaTitle("Use the BigQuery Storage Read API")
     @JsonSchemaDescription(
-        "Read tables through the BigQuery Storage Read API for high throughput (on by default). Requires the BigQuery Read Session User role (bigquery.readsessions.create, bigquery.readsessions.getData) on the project that runs the jobs; Storage Read API usage is billed separately from query bytes. The connection test fails when the role is missing; a sync that loses it later falls back to the standard query API, which is much slower on large tables. Read more <a href=\"https://cloud.google.com/bigquery/docs/reference/storage\">here</a>."
+        "Read tables through the BigQuery Storage Read API for high throughput (on by default). Requires the BigQuery Read Session User role (bigquery.readsessions.create, bigquery.readsessions.getData) on the project that runs the jobs; Storage Read API usage is billed separately from query bytes. The connection test fails when the role is missing; a sync that loses it later falls back to the standard query API, which is much slower on large tables. Read more <a href=\"https://cloud.google.com/bigquery/docs/reference/storage\">here</a>.",
     )
     @JsonSchemaInject(json = """{"group":"advanced","order":5,"default":true}""")
     var useStorageReadApi: Boolean? = null

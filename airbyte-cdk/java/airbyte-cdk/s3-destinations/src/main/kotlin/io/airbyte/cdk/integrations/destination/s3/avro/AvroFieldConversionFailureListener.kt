@@ -22,7 +22,7 @@ class AvroFieldConversionFailureListener : FieldConversionFailureListener() {
         schema: Schema,
         value: Any,
         path: String,
-        exception: Exception
+        exception: Exception,
     ): Any? {
 
         pushPostProcessingAction { record ->
@@ -33,7 +33,7 @@ class AvroFieldConversionFailureListener : FieldConversionFailureListener() {
                     .set(
                         "reason",
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
-                            .value()!!
+                            .value()!!,
                     )
                     .build()
             val meta = record.get("_airbyte_meta") as GenericData.Record

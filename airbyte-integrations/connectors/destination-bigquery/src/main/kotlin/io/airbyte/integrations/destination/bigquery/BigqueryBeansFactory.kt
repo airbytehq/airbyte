@@ -202,7 +202,9 @@ class BigqueryBeansFactory {
             } else {
                 // The JSON credential can either be a raw JSON object, or a serialized JSON object.
                 GoogleCredentials.fromStream(
-                    ByteArrayInputStream(config.credentialsJson.toByteArray(StandardCharsets.UTF_8))
+                    ByteArrayInputStream(
+                        config.credentialsJson.toByteArray(StandardCharsets.UTF_8),
+                    ),
                 )
             }
         return BigQueryOptions.newBuilder()
@@ -221,7 +223,7 @@ class BigqueryBeansFactory {
                     .setMaxRpcTimeoutDuration(java.time.Duration.ofMillis(50_000L))
                     .setMaxAttempts(15)
                     .setRetryDelayMultiplier(1.5)
-                    .build()
+                    .build(),
             )
             .build()
             .service

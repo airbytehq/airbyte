@@ -28,7 +28,7 @@ class SnowflakeSourceCloudHostCheckTest {
                 "https://app.snowflake.com/org/acct",
                 "user@acct.snowflakecomputing.com",
                 "acct.snowflakecomputing.com:8443",
-            ]
+            ],
     )
     fun testUnusableHostOnCloudIsRejectedBeforeConnecting(host: String) {
         val output: BufferingOutputConsumer =
@@ -37,7 +37,7 @@ class SnowflakeSourceCloudHostCheckTest {
                     config(host),
                     null,
                     null,
-                    FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT
+                    FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT,
                 )
                 .run()
         val status: AirbyteConnectionStatus = output.statuses().single()
@@ -51,7 +51,7 @@ class SnowflakeSourceCloudHostCheckTest {
             output.traces().single { it.type == AirbyteTraceMessage.Type.ERROR }.error
         Assertions.assertEquals(
             AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
-            error.failureType
+            error.failureType,
         )
         Assertions.assertEquals(SnowflakeSourceMetadataQuerier.HOST_SYNTAX_MESSAGE, error.message)
     }
@@ -62,7 +62,7 @@ class SnowflakeSourceCloudHostCheckTest {
             [
                 "https://acct.snowflakecomputing.com",
                 "acct.snowflakecomputing.com:443",
-            ]
+            ],
     )
     fun testTolerableHostOnCloudReachesTheDriver(host: String) {
         val output: BufferingOutputConsumer =
@@ -71,7 +71,7 @@ class SnowflakeSourceCloudHostCheckTest {
                     config(host),
                     null,
                     null,
-                    FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT
+                    FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT,
                 )
                 .run()
         assertFailedAtTheDriver(output)
@@ -104,7 +104,7 @@ class SnowflakeSourceCloudHostCheckTest {
                 // A token writes no key file to the working directory, unlike key pair auth.
                 credentials =
                     ProgrammaticAccessTokenCredentialsSpecification(
-                        programmaticAccessToken = "not-a-real-token"
+                        programmaticAccessToken = "not-a-real-token",
                     )
             }
     }

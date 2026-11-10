@@ -56,7 +56,7 @@ class NativeRecordProtobufEncoderTest {
         val asDecoderType: Any
             get() =
                 when (value) {
-                    is Short, -> value.toLong().toBigInteger()
+                    is Short -> value.toLong().toBigInteger()
                     is Int -> value.toBigInteger()
                     is Long -> value.toBigInteger()
                     is Float -> value.toDouble().toBigDecimal()
@@ -83,7 +83,7 @@ class NativeRecordProtobufEncoderTest {
             object : FieldType {
                 override val airbyteSchemaType = airbyteSchemaType
                 override val jsonEncoder = jsonEncoder
-            }
+            },
         )
 
     val testCases =
@@ -96,96 +96,96 @@ class NativeRecordProtobufEncoderTest {
             TestCase(
                 value = 123,
                 jsonEncoder = IntCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER,
             ),
             TestCase(
                 value = "text value",
                 jsonEncoder = TextCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.STRING
+                airbyteSchemaType = LeafAirbyteSchemaType.STRING,
             ),
             TestCase(
                 value = true,
                 jsonEncoder = BooleanCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.BOOLEAN
+                airbyteSchemaType = LeafAirbyteSchemaType.BOOLEAN,
             ),
             TestCase(
                 value =
                     OffsetDateTime.parse(
-                        OffsetDateTime.now().format(OffsetDateTimeCodec.formatter)
+                        OffsetDateTime.now().format(OffsetDateTimeCodec.formatter),
                     ),
                 jsonEncoder = OffsetDateTimeCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
             ),
             TestCase(
                 value = 123.456f,
                 jsonEncoder = FloatCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER,
             ),
             TestCase(
                 value = ByteBuffer.wrap("hello".toByteArray()),
                 jsonEncoder = BinaryCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.BINARY
+                airbyteSchemaType = LeafAirbyteSchemaType.BINARY,
             ),
             TestCase(
                 value = BigDecimal.valueOf(1234.567),
                 jsonEncoder = BigDecimalCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER,
             ),
             TestCase(
                 value = BigDecimal.valueOf(987),
                 jsonEncoder = BigDecimalIntegerCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER,
             ),
             TestCase(
                 value = 12.toShort(),
                 jsonEncoder = ShortCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER,
             ),
             TestCase(
                 value = 123.toByte(),
                 jsonEncoder = ByteCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER,
             ),
             TestCase(
                 value = 12345.678,
                 jsonEncoder = DoubleCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER,
             ),
             TestCase(
                 value = ByteBuffer.wrap("{\"hello\":1234}".toByteArray()),
                 jsonEncoder = JsonBytesCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.JSONB
+                airbyteSchemaType = LeafAirbyteSchemaType.JSONB,
             ),
             TestCase(
                 value = "{\"hello\":1234}",
                 jsonEncoder = JsonStringCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.JSONB
+                airbyteSchemaType = LeafAirbyteSchemaType.JSONB,
             ),
             TestCase(
                 value = URI("http://www.example.com").toURL(),
                 jsonEncoder = UrlCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.STRING
+                airbyteSchemaType = LeafAirbyteSchemaType.STRING,
             ),
             TestCase(
                 value = LocalDate.now(),
                 jsonEncoder = LocalDateCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.DATE
+                airbyteSchemaType = LeafAirbyteSchemaType.DATE,
             ),
             TestCase(
                 value = LocalTime.parse(LocalTime.now().format(LocalTimeCodec.formatter)),
                 jsonEncoder = LocalTimeCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
             ),
             TestCase(
                 value =
                     LocalDateTime.parse(LocalDateTime.now().format(LocalDateTimeCodec.formatter)),
                 jsonEncoder = LocalDateTimeCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
             ),
             TestCase(
                 value = OffsetTime.parse(OffsetTime.now().format(OffsetTimeCodec.formatter)),
                 jsonEncoder = OffsetTimeCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
             ),
         )
 

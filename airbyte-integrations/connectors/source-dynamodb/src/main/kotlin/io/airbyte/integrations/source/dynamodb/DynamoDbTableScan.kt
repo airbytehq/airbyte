@@ -130,7 +130,7 @@ class DynamoDbTableScan(
                     // segment (or the saved one, when nothing newer was found).
                     val merged: SegmentCursor =
                         cursor.merge(
-                            segments.map { SegmentCursor(it.maxCursor, it.maxCursorRecordCount) }
+                            segments.map { SegmentCursor(it.maxCursor, it.maxCursorRecordCount) },
                         )
                     DynamoDbStreamStateValue(
                         cursorField = listOf(cursor.field),

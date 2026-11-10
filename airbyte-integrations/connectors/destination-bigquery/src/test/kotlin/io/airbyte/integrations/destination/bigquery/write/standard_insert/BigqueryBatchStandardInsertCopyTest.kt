@@ -101,7 +101,7 @@ class BigqueryBatchStandardInsertCopyTest {
     @ParameterizedTest
     @EnumSource(StreamingOutcome::class)
     fun `real streaming service and loader gate success on both uploads`(
-        outcome: StreamingOutcome
+        outcome: StreamingOutcome,
     ) = runBlocking {
         val fixture = Fixture()
         every { fixture.statistics.outputRows } returns 1L
@@ -116,7 +116,7 @@ class BigqueryBatchStandardInsertCopyTest {
             CompletableFuture.completedFuture(PutObjectResponse.builder().build())
         every { client.createMultipartUpload(any<CreateMultipartUploadRequest>()) } returns
             CompletableFuture.completedFuture(
-                CreateMultipartUploadResponse.builder().uploadId("upload").build()
+                CreateMultipartUploadResponse.builder().uploadId("upload").build(),
             )
         every { client.abortMultipartUpload(any<AbortMultipartUploadRequest>()) } returns
             CompletableFuture.completedFuture(AbortMultipartUploadResponse.builder().build())
@@ -154,11 +154,11 @@ class BigqueryBatchStandardInsertCopyTest {
                                     UploadPartResponse.builder()
                                         .eTag("part-$number")
                                         .checksumCRC32("checksum-$number")
-                                        .build()
+                                        .build(),
                                 )
                                 partStarted.countDown()
                             }
-                        }
+                        },
                     )
                 response
             }
@@ -242,11 +242,11 @@ class BigqueryBatchStandardInsertCopyTest {
                             )
                             if (outcome == StreamingOutcome.S3_FAILURE)
                                 completion.completeExceptionally(
-                                    IOException("S3 rejected completion")
+                                    IOException("S3 rejected completion"),
                                 )
                             else
                                 completion.complete(
-                                    CompleteMultipartUploadResponse.builder().build()
+                                    CompleteMultipartUploadResponse.builder().build(),
                                 )
                         }
                         val result = withTimeout(10000) { finishing.await() }
@@ -612,7 +612,7 @@ class BigqueryBatchStandardInsertCopyTest {
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
     fun `close after partial accept without archive never commits BigQuery load`(
-        streaming: Boolean
+        streaming: Boolean,
     ) = runTest {
         val fixture = Fixture()
         val loader = fixture.disabledLoader()
@@ -650,7 +650,7 @@ class BigqueryBatchStandardInsertCopyTest {
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
     fun `write failure without archive propagates without committing BigQuery load`(
-        inFinish: Boolean
+        inFinish: Boolean,
     ) = runTest {
         val fixture = Fixture()
         val failure = IOException("write failed")
@@ -678,13 +678,13 @@ class BigqueryBatchStandardInsertCopyTest {
         val cancellation = CancellationException("sync cancelled")
         var thrown: Throwable? = null
         launch {
-                coroutineContext.cancel(cancellation)
-                try {
-                    loader.accept(fixture.record())
-                } catch (t: Throwable) {
-                    thrown = t
-                }
+            coroutineContext.cancel(cancellation)
+            try {
+                loader.accept(fixture.record())
+            } catch (t: Throwable) {
+                thrown = t
             }
+        }
             .join()
         assertSame(cancellation, thrown)
         assertEquals(1, fixture.batch.closes)
@@ -701,13 +701,13 @@ class BigqueryBatchStandardInsertCopyTest {
         val cancellation = CancellationException("sync cancelled")
         var thrown: Throwable? = null
         launch {
-                coroutineContext.cancel(cancellation)
-                try {
-                    loader.finish()
-                } catch (t: Throwable) {
-                    thrown = t
-                }
+            coroutineContext.cancel(cancellation)
+            try {
+                loader.finish()
+            } catch (t: Throwable) {
+                thrown = t
             }
+        }
             .join()
         assertSame(cancellation, thrown)
         loader.close()
@@ -775,8 +775,8 @@ class BigqueryBatchStandardInsertCopyTest {
                     TableCatalogByDescriptor(
                         mapOf(
                             fixture.stream.mappedDescriptor to
-                                TableNameInfo(TableNames(null, tableName), fixture.mapping)
-                        )
+                                TableNameInfo(TableNames(null, tableName), fixture.mapping),
+                        ),
                     ),
                     null,
                     state,
@@ -914,14 +914,14 @@ class BigqueryBatchStandardInsertCopyTest {
                             .setEmittedAtMs(1234)
                             .addData(
                                 AirbyteValueProtobufEncoder()
-                                    .encode(value, LeafAirbyteSchemaType.STRING)
+                                    .encode(value, LeafAirbyteSchemaType.STRING),
                             )
                             .build()
                     DestinationRecordProtobufSource(
                         io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
                             .newBuilder()
                             .setRecord(record)
-                            .build()
+                            .build(),
                     )
                 } else {
                     DestinationRecordJsonSource(
@@ -929,8 +929,8 @@ class BigqueryBatchStandardInsertCopyTest {
                             .withRecord(
                                 AirbyteRecordMessage()
                                     .withEmittedAt(1234)
-                                    .withData(Jsons.valueToTree(mapOf("value" to value)))
-                            )
+                                    .withData(Jsons.valueToTree(mapOf("value" to value))),
+                            ),
                     )
                 }
             return DestinationRecordRaw(

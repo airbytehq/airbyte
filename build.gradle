@@ -1,14 +1,17 @@
 import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.SpotBugsTask
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id 'base'
     id 'com.github.spotbugs' version '6.5.13'
-    id 'org.jetbrains.kotlin.jvm' version '2.0.0'
-    id 'com.google.devtools.ksp' version '2.0.0-1.0.24'
+    id 'org.jetbrains.kotlin.jvm' version '2.4.21'
+    // Not 2.3.12+: it changed effectiveJavaModifiers and breaks micronaut-inject-kotlin < 5.3.
+    id 'com.google.devtools.ksp' version '2.3.10'
 }
 
 allprojects {
@@ -73,37 +76,25 @@ allprojects {
         dependsOn tasks.matching { it.name == 'generate' }
     }
 
-    compileKotlin {
+    // Applies to every Kotlin compile task, including the integrationTest* source sets
+    // that connectors add on top of main/test/testFixtures.
+    tasks.withType(KotlinCompile).configureEach {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_21
-            languageVersion = KotlinVersion.KOTLIN_1_9
-            allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
+            languageVersion = KotlinVersion.KOTLIN_2_4
+            apiVersion = KotlinVersion.KOTLIN_2_4
+            // Same binary shape as the former -Xjvm-default=all free argument.
+            jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
+            freeCompilerArgs = getKotlinCompilerArgs()
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
         }
     }
-    compileTestKotlin {
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_21
-            languageVersion = KotlinVersion.KOTLIN_1_9
-            allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
-        }
-        dependsOn {
-            tasks.matching { it.name == 'generate' }
-        }
-    }
-    compileTestFixturesKotlin {
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_21
-            languageVersion = KotlinVersion.KOTLIN_1_9
-            allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
-        }
-        dependsOn {
-            tasks.matching { it.name == 'generate' }
+    // -Werror stays scoped to the source sets that were already held to it.
+    ['compileKotlin', 'compileTestKotlin', 'compileTestFixturesKotlin'].each { taskName ->
+        tasks.named(taskName) {
+            compilerOptions.allWarningsAsErrors = isInCi()
         }
     }
 

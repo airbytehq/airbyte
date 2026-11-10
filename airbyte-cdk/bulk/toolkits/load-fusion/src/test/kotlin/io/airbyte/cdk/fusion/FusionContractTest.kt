@@ -30,7 +30,7 @@ class FusionContractTest {
             "stream": {"json_schema": {"type": "object", "description": "preserved", "properties": {"id": {"type": "string"}}}},
             "primary_key": [["parent", "id"]],
             "cursor_field": ["updated_at"]
-        }"""
+        }""",
             )
         val descriptor = FusionSchema.fromConfiguredStream(configured)
         assertEquals(configured["stream"]["json_schema"], descriptor["source_schema"])
@@ -39,8 +39,8 @@ class FusionContractTest {
         val defaults =
             FusionSchema.fromConfiguredStream(
                 mapper.readTree(
-                    """{"stream":{"json_schema":{}},"primary_key":null,"cursor_field":null}"""
-                )
+                    """{"stream":{"json_schema":{}},"primary_key":null,"cursor_field":null}""",
+                ),
             )
         assertEquals(emptyList<Any>(), defaults["primary_key"])
         assertEquals(emptyList<Any>(), defaults["cursor"])
@@ -55,15 +55,15 @@ class FusionContractTest {
         assertNull(FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_ENABLED" to "FALSE")))
         assertNull(FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_ENABLED" to "yes")))
         assertNotNull(
-            FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_ENABLED" to "TRUE"))
+            FusionConfiguration.fromEnvironment(env + ("AIRBYTE_FUSION_ENABLED" to "TRUE")),
         )
         assertNull(
             FusionConfiguration.fromEnvironment(
                 mapOf(
                     "AIRBYTE_S3_COPY_ENABLED" to "true",
                     "AIRBYTE_S3_COPY_BUCKET" to "archive",
-                )
-            )
+                ),
+            ),
         )
     }
 
@@ -92,7 +92,7 @@ class FusionContractTest {
                         "AWS_ASSUME_ROLE_ACCESS_KEY_ID" to "key",
                         "AWS_ASSUME_ROLE_SECRET_ACCESS_KEY" to "secret",
                         "AWS_ASSUME_ROLE_EXTERNAL_ID" to "external",
-                    )
+                    ),
             )!!
         assertEquals("key", injected.accessKeyId)
         assertEquals("secret", injected.secretAccessKey)
@@ -131,15 +131,14 @@ class FusionContractTest {
                 ".." to "%2E%2E",
                 "a~b" to "a%7Eb",
             )
-        val paths =
-            namespaces.map { (namespace, encoded) ->
-                val path = FusionPaths.run(config, namespace, "orders", id, 42)
-                assertEquals(
-                    "fusion/organizations/$id/workspaces/$id/sources/$id/connections/$id/destinations/$id/syncs/streams/$encoded/orders/runs/$id/42/",
-                    path,
-                )
-                path
-            }
+        val paths = namespaces.map { (namespace, encoded) ->
+            val path = FusionPaths.run(config, namespace, "orders", id, 42)
+            assertEquals(
+                "fusion/organizations/$id/workspaces/$id/sources/$id/connections/$id/destinations/$id/syncs/streams/$encoded/orders/runs/$id/42/",
+                path,
+            )
+            path
+        }
         assertEquals(namespaces.size, paths.toSet().size)
     }
 
@@ -198,12 +197,12 @@ class FusionContractTest {
         assertEquals(mapOf("job_id" to 8L), metadata.streamComplete(8))
         assertEquals(
             mapOf("job_id" to 8L, "min_generation_id" to 0L),
-            metadata.streamComplete(8, 0)
+            metadata.streamComplete(8, 0),
         )
         assertEquals(mapOf("job_id" to 8L), metadata.streamComplete(8, -1))
         assertEquals(
             mapOf("job_id" to 8L, "min_generation_id" to 7L),
-            metadata.streamComplete(8, 7)
+            metadata.streamComplete(8, 7),
         )
         assertThrows(IllegalArgumentException::class.java) {
             metadata.schema(descriptor - "source_schema", "hash", 7, 8)

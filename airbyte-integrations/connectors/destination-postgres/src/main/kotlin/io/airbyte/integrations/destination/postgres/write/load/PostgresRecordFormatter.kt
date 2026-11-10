@@ -18,7 +18,7 @@ internal val RAW_META_COLUMNS =
         Meta.COLUMN_NAME_AB_EXTRACTED_AT,
         Meta.COLUMN_NAME_AB_META,
         Meta.COLUMN_NAME_AB_RAW_ID,
-        Meta.COLUMN_NAME_AB_GENERATION_ID
+        Meta.COLUMN_NAME_AB_GENERATION_ID,
     )
 
 interface PostgresRecordFormatter {
@@ -36,14 +36,13 @@ private fun AirbyteValue?.toPostgresCsvValue(): Any =
 class PostgresSchemaRecordFormatter(
     private val columns: List<String>,
 ) : PostgresRecordFormatter {
-    override fun format(record: Map<String, AirbyteValue>): List<Any> =
-        columns.map { columnName ->
-            if (record.containsKey(columnName)) {
-                record[columnName].toPostgresCsvValue()
-            } else {
-                ""
-            }
+    override fun format(record: Map<String, AirbyteValue>): List<Any> = columns.map { columnName ->
+        if (record.containsKey(columnName)) {
+            record[columnName].toPostgresCsvValue()
+        } else {
+            ""
         }
+    }
 }
 
 class PostgresRawRecordFormatter(
@@ -57,8 +56,9 @@ class PostgresRawRecordFormatter(
         val outputRecord = mutableListOf<Any>()
 
         // Do not output null values in the JSON raw output
-        val filteredRecord =
-            record.filter { (k, v) -> v !is NullValue && !RAW_META_COLUMNS.contains(k) }
+        val filteredRecord = record.filter { (k, v) ->
+            v !is NullValue && !RAW_META_COLUMNS.contains(k)
+        }
         val jsonData = Jsons.writeValueAsString(filteredRecord)
 
         // Iterate through columns in the exact order they appear in the table

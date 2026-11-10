@@ -27,7 +27,7 @@ class ReservingDeserializingInputFlow(
     val log = KotlinLogging.logger {}
 
     override suspend fun collect(
-        collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>
+        collector: FlowCollector<Pair<Long, Reserved<DestinationMessage>>>,
     ) {
         log.info {
             "Reserved ${memoryManager.totalCapacityBytes/1024/1024}mb memory for input processing"

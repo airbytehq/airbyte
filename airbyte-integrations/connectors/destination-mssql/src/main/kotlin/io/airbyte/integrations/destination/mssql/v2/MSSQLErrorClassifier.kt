@@ -31,13 +31,13 @@ object MSSQLErrorClassifier {
                 messages.any { it.contains("permission was denied", ignoreCase = true) } ->
                 throw ConfigErrorException(
                     "Database user lacks permission on the destination table.",
-                    e
+                    e,
                 )
             codes.any { it in STRING_TRUNCATION_ERROR_CODES } ||
                 messages.any { it.contains("would be truncated", ignoreCase = true) } ->
                 throw ConfigErrorException(
                     "Record value exceeds the length of a destination table column.",
-                    e
+                    e,
                 )
             else -> throw e
         }

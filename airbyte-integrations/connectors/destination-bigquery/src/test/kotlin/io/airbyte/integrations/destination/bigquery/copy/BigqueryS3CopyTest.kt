@@ -98,7 +98,7 @@ class BigqueryS3CopyTest {
             BigqueryS3CopyFactory.createForOperation("write", env) {
                 captured = it
                 archive
-            }
+            },
         )
         val configuration = captured!!
         assertEquals("platform-bucket", configuration.bucket)
@@ -109,8 +109,10 @@ class BigqueryS3CopyTest {
             DisabledBigqueryS3Copy,
             BigqueryS3CopyFactory.createForOperation(
                 "write",
-                env + ("AIRBYTE_FUSION_ENABLED" to "false")
-            ) { error("Disabled writes must not construct an uploader") }
+                env + ("AIRBYTE_FUSION_ENABLED" to "false"),
+            ) {
+                error("Disabled writes must not construct an uploader")
+            },
         )
     }
 
@@ -361,14 +363,14 @@ class BigqueryS3CopyTest {
             assertEquals(1L, Files.list(directory).use { it.count() })
             assertTrue(
                 runCatching {
-                        archive.copyCompletedGcsObject(
-                            fixture.storage(gzip("header\r\n")),
-                            fixture.blob,
-                            context,
-                            0,
-                        )
-                    }
-                    .isFailure
+                    archive.copyCompletedGcsObject(
+                        fixture.storage(gzip("header\r\n")),
+                        fixture.blob,
+                        context,
+                        0,
+                    )
+                }
+                    .isFailure,
             )
             assertEquals(1L, Files.list(directory).use { it.count() })
         }
@@ -404,14 +406,14 @@ class BigqueryS3CopyTest {
                 }
                 assertTrue(
                     runCatching {
-                            archive.copyCompletedGcsObject(
-                                fixture.storage(gzip("header\r\n")),
-                                fixture.blob,
-                                context,
-                                0,
-                            )
-                        }
-                        .isFailure
+                        archive.copyCompletedGcsObject(
+                            fixture.storage(gzip("header\r\n")),
+                            fixture.blob,
+                            context,
+                            0,
+                        )
+                    }
+                        .isFailure,
                 )
                 assertEquals(1L, Files.list(directory).use { it.count() })
                 assertThrows(IllegalStateException::class.java) { archive.context(fixture.stream) }

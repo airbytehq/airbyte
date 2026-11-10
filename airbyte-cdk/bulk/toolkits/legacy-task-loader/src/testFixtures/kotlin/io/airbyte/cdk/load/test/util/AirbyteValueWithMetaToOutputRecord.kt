@@ -29,7 +29,7 @@ class AirbyteValueWithMetaToOutputRecord {
                             is TimestampWithTimezoneValue -> v.value.toEpochSecond()
                             else -> throw IllegalArgumentException("Invalid extractedAt value: $v")
                         }
-                    }
+                    },
                 ),
             loadedAt = null,
             data = value.values[Meta.COLUMN_NAME_DATA] as ObjectValue,
@@ -47,16 +47,16 @@ class AirbyteValueWithMetaToOutputRecord {
                                         ((it as ObjectValue).values["field"] as StringValue).value,
                                     change =
                                         AirbyteRecordMessageMetaChange.Change.fromValue(
-                                            (it.values["change"] as StringValue).value
+                                            (it.values["change"] as StringValue).value,
                                         ),
                                     reason =
                                         AirbyteRecordMessageMetaChange.Reason.fromValue(
-                                            (it.values["reason"] as StringValue).value
-                                        )
+                                            (it.values["reason"] as StringValue).value,
+                                        ),
                                 )
                             }
-                            .toMutableList()
-                )
+                            .toMutableList(),
+                ),
         )
     }
 }

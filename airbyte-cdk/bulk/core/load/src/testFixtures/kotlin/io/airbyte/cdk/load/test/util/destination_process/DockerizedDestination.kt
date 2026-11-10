@@ -228,7 +228,7 @@ class DockerizedDestination(
                         "-e",
                         "WORKER_JOB_ID=0",
                         imageTag,
-                        command
+                        command,
                     ))
                 .toMutableList()
 
@@ -314,84 +314,79 @@ class DockerizedDestination(
 
     override suspend fun run() {
         coroutineScope {
-                launch {
-                    // Consume stdout. These should all be properly-formatted messages.
-                    // Annoyingly, the process's stdout is called "inputStream".
-                    val destinationStdout = Scanner(process.inputStream, Charsets.UTF_8)
-                    val unconnectedSockets =
-                        (0 until NUM_SOCKETS).map { makeSocketPath(it) }.toMutableSet()
-                    while (destinationStdout.hasNextLine()) {
-                        val line = destinationStdout.nextLine()
-                        val message =
-                            try {
-                                line.deserializeToClass(AirbyteMessage::class.java)
-                            } catch (e: Exception) {
-                                // If a destination logs non-json output, just echo it
-                                getMdcScope().use { logger.info { line } }
-                                continue
-                            }
-                        if (message.type == AirbyteMessage.Type.LOG) {
-                            // Don't capture logs, just echo them directly to our own stdout
-                            val connectedSockets =
-                                unconnectedSockets.filter {
-                                    message.log.message.contains(
-                                        "Socket file $it connected for reading"
-                                    )
-                                }
-                            connectedSockets.forEach {
-                                // This is a hack to detect when the destination is ready to accept
-                                // messages.
-                                // We should probably find a better way to do this.
-                                unconnectedSockets.remove(it)
-                                if (unconnectedSockets.isEmpty()) {
-                                    logger.info { "All sockets connected, unblocking writes." }
-                                    destinationAwaitingSocketConnection.complete(Unit)
-                                }
-                            }
-
-                            val combinedMessage =
-                                message.log.message +
-                                    (if (message.log.stackTrace != null)
-                                        (System.lineSeparator() +
-                                            "Stack Trace: " +
-                                            message.log.stackTrace)
-                                    else "")
-                            getMdcScope().use {
-                                when (message.log.level) {
-                                    null, // this should be impossible, treat it as error
-                                    AirbyteLogMessage.Level
-                                        .FATAL, // klogger doesn't have a fatal level
-                                    AirbyteLogMessage.Level.ERROR ->
-                                        logger.error { combinedMessage }
-                                    AirbyteLogMessage.Level.WARN -> logger.warn { combinedMessage }
-                                    AirbyteLogMessage.Level.INFO -> logger.info { combinedMessage }
-                                    AirbyteLogMessage.Level.DEBUG ->
-                                        logger.debug { combinedMessage }
-                                    AirbyteLogMessage.Level.TRACE ->
-                                        logger.trace { combinedMessage }
-                                }
-                            }
-                        } else {
-                            destinationOutput.accept(message)
+            launch {
+                // Consume stdout. These should all be properly-formatted messages.
+                // Annoyingly, the process's stdout is called "inputStream".
+                val destinationStdout = Scanner(process.inputStream, Charsets.UTF_8)
+                val unconnectedSockets =
+                    (0 until NUM_SOCKETS).map { makeSocketPath(it) }.toMutableSet()
+                while (destinationStdout.hasNextLine()) {
+                    val line = destinationStdout.nextLine()
+                    val message =
+                        try {
+                            line.deserializeToClass(AirbyteMessage::class.java)
+                        } catch (e: Exception) {
+                            // If a destination logs non-json output, just echo it
+                            getMdcScope().use { logger.info { line } }
+                            continue
                         }
-                        // Explicit yield to avoid blocking
+                    if (message.type == AirbyteMessage.Type.LOG) {
+                        // Don't capture logs, just echo them directly to our own stdout
+                        val connectedSockets = unconnectedSockets.filter {
+                            message.log.message.contains(
+                                "Socket file $it connected for reading",
+                            )
+                        }
+                        connectedSockets.forEach {
+                            // This is a hack to detect when the destination is ready to accept
+                            // messages.
+                            // We should probably find a better way to do this.
+                            unconnectedSockets.remove(it)
+                            if (unconnectedSockets.isEmpty()) {
+                                logger.info { "All sockets connected, unblocking writes." }
+                                destinationAwaitingSocketConnection.complete(Unit)
+                            }
+                        }
+
+                        val combinedMessage =
+                            message.log.message +
+                                (if (message.log.stackTrace != null)
+                                    (System.lineSeparator() +
+                                        "Stack Trace: " +
+                                        message.log.stackTrace)
+                                else "")
+                        getMdcScope().use {
+                            when (message.log.level) {
+                                null, // this should be impossible, treat it as error
+                                AirbyteLogMessage.Level.FATAL, // klogger doesn't have a fatal level
+                                AirbyteLogMessage.Level.ERROR -> logger.error { combinedMessage }
+                                AirbyteLogMessage.Level.WARN -> logger.warn { combinedMessage }
+                                AirbyteLogMessage.Level.INFO -> logger.info { combinedMessage }
+                                AirbyteLogMessage.Level.DEBUG -> logger.debug { combinedMessage }
+                                AirbyteLogMessage.Level.TRACE -> logger.trace { combinedMessage }
+                            }
+                        }
+                    } else {
+                        destinationOutput.accept(message)
+                    }
+                    // Explicit yield to avoid blocking
+                    yield()
+                }
+                stdoutDrained.complete(Unit)
+            }
+            launch {
+                // Consume stderr. Connectors shouldn't really use this,
+                // and whatever this stream contains, it's almost certainly not valid messages.
+                // Dump it straight to our own stderr.
+                getMdcScope().use {
+                    process.errorReader().lineSequence().forEach {
+                        logger.error { it }
                         yield()
                     }
-                    stdoutDrained.complete(Unit)
                 }
-                launch {
-                    // Consume stderr. Connectors shouldn't really use this,
-                    // and whatever this stream contains, it's almost certainly not valid messages.
-                    // Dump it straight to our own stderr.
-                    getMdcScope().use {
-                        process.errorReader().lineSequence().forEach {
-                            logger.error { it }
-                            yield()
-                        }
-                    }
-                    stderrDrained.complete(Unit)
-                }
+                stderrDrained.complete(Unit)
             }
+        }
             .invokeOnCompletion { cause ->
                 if (cause != null) {
                     if (process.isAlive) {
@@ -405,7 +400,7 @@ class DockerizedDestination(
     override suspend fun sendMessage(
         message: InputMessage,
         broadcast: Boolean,
-        useSingleSocket: Boolean
+        useSingleSocket: Boolean,
     ) {
         awaitReadyForSendingMessages()
         val dataChannels =
@@ -416,7 +411,7 @@ class DockerizedDestination(
                 arrayOf(destinationDataChannels[0])
             } else {
                 arrayOf(
-                    destinationDataChannels[dataChannelIndex.rotate(destinationDataChannels.size)]
+                    destinationDataChannels[dataChannelIndex.rotate(destinationDataChannels.size)],
                 )
             }
         dataChannels.forEach { message.writeProtocolMessage(dataChannelFormat, it) }

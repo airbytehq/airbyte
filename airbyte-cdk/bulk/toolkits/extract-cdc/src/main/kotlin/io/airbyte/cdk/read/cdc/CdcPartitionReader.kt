@@ -56,7 +56,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
     val startingOffset: DebeziumOffset,
     val startingSchemaHistory: DebeziumSchemaHistory?,
     val isInputStateSynthetic: Boolean,
-    val feedBootstrap: GlobalFeedBootstrap
+    val feedBootstrap: GlobalFeedBootstrap,
 ) : UnlimitedTimePartitionReader {
     private val log = KotlinLogging.logger {}
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
@@ -92,7 +92,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
         fun innerAcquireResources(
-            resourcesType: List<ResourceType>
+            resourcesType: List<ResourceType>,
         ): Map<ResourceType, AcquiredResource>? {
             val resources: Map<ResourceType, Resource.Acquired>? =
                 resourceAcquirer.tryAcquire(resourcesType)
@@ -101,6 +101,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
                     it.key to
                         object : AcquiredResource {
                             override val resource: Resource.Acquired = it.value
+
                             override fun close() {
                                 resource.close()
                             }
@@ -132,7 +133,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
                     .get()
                     .filter { it.value.resource != null }
                     .map { it.key to it.value.resource!! }
-                    .toMap()
+                    .toMap(),
             )
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
@@ -148,7 +149,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-        justification = "compiler-generated lateinit null check after the assignment"
+        justification = "compiler-generated lateinit null check after the assignment",
     )
     override suspend fun run() {
         stateFilesAccessor.writeOffset(startingOffset)
@@ -211,8 +212,8 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
                         null,
                         TransientErrorException(
                             "A CDC record write failed while the Debezium engine was shutting down.",
-                            e
-                        )
+                            e,
+                        ),
                     )
                     break
                 }
@@ -250,7 +251,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
             throw ConfigErrorException(
                 "Watchdog timeout during initial snapshot. " +
                     "Please increase 'Initial Waiting Time' in the source configuration page. " +
-                    "Visit our Best Practices guide for more details: https://docs.airbyte.com/platform/understanding-airbyte/cdc-best-practices"
+                    "Visit our Best Practices guide for more details: https://docs.airbyte.com/platform/understanding-airbyte/cdc-best-practices",
             )
         }
         val offset: DebeziumOffset = stateFilesAccessor.readUpdatedOffset(startingOffset)
@@ -267,7 +268,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
             when (feedBootstrap.dataChannelMedium) {
                 SOCKET -> partitionId
                 STDIO -> null
-            }
+            },
         )
     }
 
@@ -362,8 +363,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
             val streamId = findStreamIdByRecord(event.key, event.value)
             val stream: Stream =
                 feedBootstrap.feeds.filter { it is Stream }.find { (it as Stream).id == streamId }
-                    as? Stream
-                    ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
+                    as? Stream ?: return EventType.RECORD_DISCARDED_BY_STREAM_ID
             val deserializedRecord: DeserializedRecord =
                 readerOps.deserializeRecord(event.key, event.value, stream)
                     ?: return EventType.RECORD_DISCARDED_BY_DESERIALIZE
@@ -386,7 +386,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
                         .trySend {
                             recordAcceptor.invoke(
                                 deserializedRecord.data,
-                                deserializedRecord.changes
+                                deserializedRecord.changes,
                             )
                             updateCounters(event, EventType.RECORD_EMITTED)
                         }
@@ -400,7 +400,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
         private fun findStreamIdByRecord(
             key: DebeziumRecordKey,
-            value: DebeziumRecordValue
+            value: DebeziumRecordValue,
         ): StreamIdentifier? {
             val name: String = readerOps.findStreamName(key, value) ?: return null
             val namespace: String? = readerOps.findStreamNamespace(key, value)
@@ -550,16 +550,16 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
     enum class CloseReason(val message: String) {
         HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION(
-            "heartbeat or tombstone indicates that WAL consumption has reached the target position"
+            "heartbeat or tombstone indicates that WAL consumption has reached the target position",
         ),
         RECORD_REACHED_TARGET_POSITION(
-            "record indicates that WAL consumption has reached the target position"
+            "record indicates that WAL consumption has reached the target position",
         ),
         HEARTBEAT_NOT_PROGRESSING(
-            "heartbeat position has not progressed for an extended period, indicating database is idle"
+            "heartbeat position has not progressed for an extended period, indicating database is idle",
         ),
         WATCHDOG_TIMEOUT(
-            "no events received from Debezium within the configured timeout period, indicating database is idle or connection is stuck"
+            "no events received from Debezium within the configured timeout period, indicating database is idle or connection is stuck",
         ),
     }
 }

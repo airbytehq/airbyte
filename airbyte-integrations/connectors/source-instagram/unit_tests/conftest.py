@@ -73,7 +73,7 @@ def mock_fb_account_response(account_id, some_config, requests_mock):
     account = {"id": "test_id", "instagram_business_account": {"id": "test_id"}}
     requests_mock.register_uri(
         "GET",
-        f"{GRAPH_URL}/act_{account_id}/" f"?access_token={some_config['access_token']}&fields=instagram_business_account",
+        f"{GRAPH_URL}/act_{account_id}/?access_token={some_config['access_token']}&fields=instagram_business_account",
         json=account,
     )
     return {

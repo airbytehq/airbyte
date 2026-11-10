@@ -62,7 +62,7 @@ class DestSingleStateLifecycleManager : DestStateLifecycleManager {
     override fun markPendingAsCommitted(stream: AirbyteStreamNameNamespacePair) {
         // We declare supportsPerStreamFlush as false, so this method should never be called.
         throw IllegalStateException(
-            "Committing a single stream state is not supported for this state type."
+            "Committing a single stream state is not supported for this state type.",
         )
     }
 
@@ -77,7 +77,7 @@ class DestSingleStateLifecycleManager : DestStateLifecycleManager {
     companion object {
         private fun stateMessageToQueue(stateMessage: AirbyteMessage?): Queue<AirbyteMessage> {
             return LinkedList(
-                if (stateMessage == null) emptyList<AirbyteMessage>() else listOf(stateMessage)
+                if (stateMessage == null) emptyList<AirbyteMessage>() else listOf(stateMessage),
             )
         }
     }

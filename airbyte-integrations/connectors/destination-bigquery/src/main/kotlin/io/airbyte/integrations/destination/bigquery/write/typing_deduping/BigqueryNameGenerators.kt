@@ -27,7 +27,7 @@ class BigqueryRawTableNameGenerator(val config: BigqueryConfiguration) : RawTabl
                 TypingDedupingUtil.concatenateRawTableName(
                     streamDescriptor.namespace ?: config.datasetId,
                     streamDescriptor.name,
-                )
+                ),
             ),
         )
 }

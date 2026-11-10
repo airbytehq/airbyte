@@ -34,7 +34,7 @@ internal class DefaultAirbyteStreamFactoryTest {
     @BeforeEach
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-        justification = "compiler-generated lateinit null check after the assignment"
+        justification = "compiler-generated lateinit null check after the assignment",
     )
     fun setup() {
         protocolPredicate = Mockito.mock(AirbyteProtocolPredicate::class.java)
@@ -116,7 +116,7 @@ internal class DefaultAirbyteStreamFactoryTest {
                     logger,
                     MdcScope.Builder(),
                     Optional.of(RuntimeException::class.java),
-                    1L
+                    1L,
                 )
                 .create(bufferedReader)
 
@@ -146,7 +146,7 @@ internal class DefaultAirbyteStreamFactoryTest {
                 protocolPredicate,
                 logger,
                 MdcScope.Builder(),
-                Optional.empty()
+                Optional.empty(),
             )
             .create(bufferedReader)
             .toList()
