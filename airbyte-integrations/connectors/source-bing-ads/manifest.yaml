@@ -2613,6 +2613,31 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  # Azure Blob returns 403 AuthenticationFailed when the pre-signed (SAS) download URL has expired.
+  download_url_expired_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        http_codes:
+          - 403
+        error_message: "The Bing Ads download link for stream '{{ parameters.get('name') }}' expired before the file could be downloaded. The sync will retry."
+
+  # SAS download URLs expire ~10 minutes after the job completes, and downloads can start much later when many
+  # streams sync concurrently. Re-send the completed polling request right before downloading to get a fresh URL.
+  download_target_repoll_requester:
+    type: HttpRequester
+    url_base: "{{ polling_response['request'].url }}"
+    http_method: POST
+    authenticator: "#/definitions/authenticator"
+    request_headers:
+      Content-Type: application/json
+      DeveloperToken: "{{ config['developer_token'] }}"
+      CustomerId: "'{{ polling_response['request'].headers['CustomerId'] }}'"
+      CustomerAccountId: "'{{ polling_response['request'].headers['CustomerAccountId'] }}'"
+    request_body_json: "{{ polling_response['request'].body.decode('utf-8') }}"
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2654,12 +2679,16 @@ definitions:
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       request_body_json:
         ReportRequestId: "'{{ creation_response['ReportRequestId'] }}'"
+    download_target_requester:
+      $ref: "#/definitions/download_target_repoll_requester"
     download_requester:
       type: CustomRequester
       class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/download_url_expired_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2722,10 +2751,14 @@ definitions:
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       request_body_json:
         RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
+    download_target_requester:
+      $ref: "#/definitions/download_target_repoll_requester"
     download_requester:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        $ref: "#/definitions/download_url_expired_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
@@ -6296,6 +6329,10 @@ dynamic_streams:
           value: "{{components_values['parameters']}}"
         - type: ComponentMappingDefinition
           create_or_update: true
+          field_path: ["$parameters", "name"]
+          value: "{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
           field_path: ["primary_key"]
           value: "{{components_values['primary_key']}}"
         - type: ComponentMappingDefinition
@@ -6382,6 +6419,10 @@ dynamic_streams:
           value: "{{components_values['name']}}"
         - type: ComponentMappingDefinition
           create_or_update: true
+          field_path: ["$parameters", "name"]
+          value: "{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
           field_path: ["$parameters", "DownloadEntities"]
           value: "{{components_values['DownloadEntities']}}"
         - type: ComponentMappingDefinition
@@ -6427,6 +6468,10 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: ["name"]
+          value: "{{ camel_case_to_snake_case(components_values['name']) if not components_values.get('disable_custom_report_names_camel_to_snake_conversion', false) else components_values['name'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["$parameters", "name"]
           value: "{{ camel_case_to_snake_case(components_values['name']) if not components_values.get('disable_custom_report_names_camel_to_snake_conversion', false) else components_values['name'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true

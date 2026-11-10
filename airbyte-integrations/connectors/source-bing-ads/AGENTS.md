@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Download URLs Expire Before Downloads Start
+
+Report and bulk jobs return pre-signed Azure Blob (SAS) download URLs that expire about 10 minutes after the job completes. When many streams sync concurrently, a completed job can wait longer than that before its file is downloaded. Both async retrievers use `download_target_repoll_requester` to re-send the completed polling request right before downloading so the download uses a fresh URL. A 403 from the download URL itself is classified as a `transient_error` naming the stream, rather than the CDK's default permission `config_error`.
+
+**Why this matters:** The URL extracted when the job completes can be stale by the time it is used. The CDK does not pass `creation_response` to the download requester, so request IDs are only available to the download step through `polling_response`.
