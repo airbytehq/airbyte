@@ -22,7 +22,6 @@
     "language": { "type": "string" },
     "academic_degree": { "type": "string" },
     "nationality": { "type": "string" },
-    "occupation": { "type": "string" },
     "height": { "type": "string" },
     "blood_type": { "type": "string" },
     "weight": { "type": "integer" },
