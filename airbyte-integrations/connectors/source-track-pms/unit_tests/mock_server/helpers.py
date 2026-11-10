@@ -4,10 +4,10 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
@@ -36,11 +36,18 @@ def mock_reservations(http_mocker: HttpMocker, records: list[dict]) -> None:
     )
 
 
-def read_stream(name: str) -> EntrypointOutput:
-    catalog = CatalogBuilder().with_stream(name, SyncMode.full_refresh).build()
+def _source(catalog: ConfiguredAirbyteCatalog | None = None) -> YamlDeclarativeSource:
     local_manifest = Path(__file__).parents[2] / "manifest.yaml"
     ci_manifest = Path("/airbyte/integration_code/source_declarative_manifest/manifest.yaml")
-    source = YamlDeclarativeSource(
+    return YamlDeclarativeSource(
         path_to_yaml=str(ci_manifest if ci_manifest.exists() else local_manifest), catalog=catalog, config=CONFIG, state=[]
     )
-    return read(source, CONFIG, catalog, state=[])
+
+
+def read_stream(name: str) -> EntrypointOutput:
+    catalog = CatalogBuilder().with_stream(name, SyncMode.full_refresh).build()
+    return read(_source(catalog), CONFIG, catalog, state=[])
+
+
+def discovered_primary_keys() -> dict[str, list[list[str]] | None]:
+    return {stream.name: stream.source_defined_primary_key for stream in discover(_source(), CONFIG).catalog.catalog.streams}

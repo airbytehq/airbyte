@@ -1869,7 +1869,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - _embedded
-              - booking-fees
+              - fees
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -2867,6 +2867,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: pms/reservations
           http_method: GET
+          use_cache: false
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -7125,12 +7126,6 @@ definitions:
       username: "{{ config[\"api_key\"] }}"
 
 streams:
-  - $ref: "#/definitions/streams/housekeeping_zones"
-  - $ref: "#/definitions/streams/reservations_booking_fees"
-  - $ref: "#/definitions/streams/reservations_fees"
-  - $ref: "#/definitions/streams/reservations_logs"
-  - $ref: "#/definitions/streams/reservations_notes"
-  - $ref: "#/definitions/streams/reservations_tags"
   - $ref: "#/definitions/streams/accounting_accounts"
   - $ref: "#/definitions/streams/accounting_bills"
   - $ref: "#/definitions/streams/accounting_charges"
@@ -7164,6 +7159,7 @@ streams:
   - $ref: "#/definitions/streams/housekeeping_clean_types"
   - $ref: "#/definitions/streams/housekeeping_task_list"
   - $ref: "#/definitions/streams/housekeeping_work_orders"
+  - $ref: "#/definitions/streams/housekeeping_zones"
   - $ref: "#/definitions/streams/lodging_types"
   - $ref: "#/definitions/streams/maintenance_problems"
   - $ref: "#/definitions/streams/maintenance_work_orders"
@@ -7179,10 +7175,15 @@ streams:
   - $ref: "#/definitions/streams/quotes"
   - $ref: "#/definitions/streams/rate_types"
   - $ref: "#/definitions/streams/reservations"
+  - $ref: "#/definitions/streams/reservations_booking_fees"
   - $ref: "#/definitions/streams/reservations_cancellation_policies"
   - $ref: "#/definitions/streams/reservations_cancellation_reasons"
   - $ref: "#/definitions/streams/reservations_discount_reasons"
+  - $ref: "#/definitions/streams/reservations_fees"
   - $ref: "#/definitions/streams/reservations_guarantee_policies"
+  - $ref: "#/definitions/streams/reservations_logs"
+  - $ref: "#/definitions/streams/reservations_notes"
+  - $ref: "#/definitions/streams/reservations_tags"
   - $ref: "#/definitions/streams/reservations_types"
   - $ref: "#/definitions/streams/reservations_v2"
   - $ref: "#/definitions/streams/reviews"
@@ -7199,13 +7200,13 @@ streams:
   - $ref: "#/definitions/streams/units_bed_types"
   - $ref: "#/definitions/streams/units_blocks"
   - $ref: "#/definitions/streams/units_channel"
-  - $ref: "#/definitions/streams/units_daily_pricing_v2"
   - $ref: "#/definitions/streams/units_daily_pricing_parent"
+  - $ref: "#/definitions/streams/units_daily_pricing_v2"
   - $ref: "#/definitions/streams/units_taxes"
   - $ref: "#/definitions/streams/units_taxes_parent"
   - $ref: "#/definitions/streams/units_types"
-  - $ref: "#/definitions/streams/units_types_daily_pricing_v2"
   - $ref: "#/definitions/streams/units_types_daily_pricing_parent"
+  - $ref: "#/definitions/streams/units_types_daily_pricing_v2"
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/users_pii_redacted"
 
@@ -7867,7 +7868,7 @@ schemas:
     type: object
     properties:
       id:
-        type: string
+        type: number
       name:
         type:
           - string
@@ -7933,6 +7934,52 @@ schemas:
         type:
           - string
           - 'null'
+      dateRangeType:
+        type:
+          - string
+          - 'null'
+      dateGroup:
+        type:
+          - object
+          - 'null'
+      dateGroupId:
+        type:
+          - object
+          - 'null'
+      nodeIds:
+        type:
+          - array
+          - 'null'
+      typeIds:
+        type:
+          - array
+          - 'null'
+      unitIds:
+        type:
+          - object
+          - 'null'
+      unitTypeIds:
+        type:
+          - object
+          - 'null'
+      createdAt:
+        type:
+          - string
+          - 'null'
+      createdBy:
+        type:
+          - string
+          - 'null'
+      updatedAt:
+        type:
+          - string
+          - 'null'
+      updatedBy:
+        type:
+          - string
+          - 'null'
+      _embedded:
+        $ref: "#/schemas/booking_fees/properties/_embedded"
       reservation_id:
         type: number
     additionalProperties: true
