@@ -54,4 +54,12 @@ data:
     - title: Klarna authentication
       url: https://docs.klarna.com/api/authentication/
       type: authentication_guide
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
