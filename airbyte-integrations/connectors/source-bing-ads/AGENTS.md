@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Expired File Download URLs Are Transient Errors
+
+Bing Ads bulk and report download URLs expire shortly after they are issued ([bulk documentation](https://learn.microsoft.com/en-us/advertising/bulk-service/getbulkdownloadstatus?view=bingads-13), [report documentation](https://learn.microsoft.com/en-us/advertising/reporting-service/reportrequeststatus?view=bingads-13)). Azure reports expiry as an XML 403 with `Signature not valid in the specified time frame`. Both download requesters use `BingAdsDownloadErrorHandler` to classify that specific detail as `transient_error`, without retrying the same stale URL inside the HTTP client. Other 403s retain the CDK's default classification.
+
+**Why this matters:** `AuthenticationFailed` alone can also mean an invalid signature, so matching the header alone would misclassify unrelated errors as expiry. The handler checks the status before reading the body: declarative `HttpResponseFilter.error_message_contains` reads successful response bodies too, exhausting `response.raw` before the streaming ZIP/GZip decoders can read it. Combining `http_codes: [403]` with a body filter does not help because the CDK combines those conditions with OR.
