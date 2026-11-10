@@ -78,9 +78,22 @@ The following streams are available:
 - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—Daily account-level metrics such as `follower_count`, `reach`, and `online_followers`. This is the only incremental stream; it uses the `date` field as its cursor.
 - [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—Demographic breakdowns of followers by city, country, and age/gender.
 - [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)—All media objects (photos, videos, reels, carousel albums) published by each account. For carousel albums, the connector fetches detailed information for each child media item.
+- [Comments](https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-media/comments/). Top-level comments on each account's media, with Full Refresh and explicit opt-in. See [Comments](#comments) for setup and limitations.
 - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Per-media engagement metrics. The specific metrics requested vary by media type (Reels, Video, Carousel Album, or Image).
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)—Currently published stories. The Instagram API only returns stories that are live at the time of the sync; expired stories are not available.
 - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Engagement metrics for currently published stories.
+
+### Comments
+
+To sync top-level comments, generate or reauthorize a token with `instagram_manage_comments` in addition to `instagram_basic`, `pages_show_list`, and `pages_read_engagement`. If the user's Page role was granted through Business Manager, Meta also requires either `ads_read` or `ads_management`. Enable **Enable comments**, refresh the source catalog, and select `comments`. The setting defaults to false and comments is excluded from suggested streams. Existing selected streams and tokens keep their current permission requirements. In Airbyte Cloud, the OAuth app must be approved to grant the comments permission before this stream can be used.
+
+The stream reads `GET /{media_id}/comments` using Graph API v23.0 and follows each edge's cursor pagination while a next page exists, requesting up to 50 comments per page. The primary key is the string `id`. Records include `text`, `timestamp`, and the nullable `username`, `from`, `hidden`, and `like_count` fields when Meta returns them. Parent fields `media_id`, `business_account_id`, and `page_id` identify the post and account. Redacted author information remains absent or null.
+
+Comments uses Full Refresh. It enumerates all media visible to each authorized professional account, including posts older than **Start Date**, so a new comment on an old post is included. Parent enumeration adds an ID-only media scan for each account. It does not repeat the per-child carousel enrichment used by the Media stream. Responses can be cached within a sync, though concurrently selected streams may request the first account page independently.
+
+Replies are excluded. Reading an embedded replies field would only return its first page, so the stream does not request it. Deleted comments disappear from future source reads, but Full Refresh with Append does not remove earlier destination rows. Use a destination refresh or overwrite operation when you need deleted records removed.
+
+Permission errors and deleted or inaccessible parent media fail with an actionable error, rather than reporting a complete empty result. A genuinely empty comments edge succeeds. Refresh tokens when they expire. Existing streams need no reset after upgrading. Deselect `comments` before downgrading to a connector version without this stream.
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -119,6 +132,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.0 | 2026-11-10 | | Add the opt-in full-refresh `comments` stream with parent IDs, cursor pagination, and lightweight media enumeration. Refs #61481. |
 | 4.2.51 | 2026-11-10 | [91590](https://github.com/airbytehq/airbyte/pull/91590) | Update dependencies |
 | 4.2.50 | 2026-11-03 | [90622](https://github.com/airbytehq/airbyte/pull/90622) | Update dependencies |
 | 4.2.49 | 2026-10-27 | [89921](https://github.com/airbytehq/airbyte/pull/89921) | Update dependencies |

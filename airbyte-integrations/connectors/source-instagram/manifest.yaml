@@ -8,7 +8,176 @@ check:
     - Api
 
 definitions:
+  comments_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes: [429]
+        predicate: "{{ response.get('error', {}).get('code') in [4, 17, 32, 613, 80002, 80004] }}"
+        error_message: Instagram comments API rate limit reached. Retrying with backoff.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes: [500, 502, 503, 504]
+        predicate: "{{ response.get('error', {}).get('is_transient', false) }}"
+        error_message: Temporary Instagram comments API error. Retrying with backoff.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes: [401, 403]
+        predicate: "{{ response.get('error', {}).get('code') in [10, 190, 200] }}"
+        failure_type: config_error
+        error_message: >-
+          Instagram comments access denied. Reauthorize with instagram_manage_comments,
+          instagram_basic, pages_show_list and pages_read_engagement, and ensure the token
+          can access each professional account and its media. An expired token must be replaced.
+          Page roles granted through Business Manager also require ads_read or ads_management.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes: [400, 404]
+        failure_type: config_error
+        error_message: >-
+          Instagram comments could not read an account or media. It may have been deleted,
+          become inaccessible, or require additional permissions. Verify account access and
+          instagram_manage_comments before retrying. Graph API error: {{ response.get('error', {}).get('message', '') }}
+  comments_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: after
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: "{{ ((response.get('paging') or {}).get('cursors') or {}).get('after') }}"
+      stop_condition: "{{ not (response.get('paging') or {}).get('next') }}"
   streams:
+    CommentsAccounts:
+      $ref: "#/definitions/streams/Api"
+      name: comments_accounts
+      retriever:
+        $ref: "#/definitions/streams/Api/retriever"
+        requester:
+          $ref: "#/definitions/streams/Api/retriever/requester"
+          use_cache: true
+          error_handler:
+            $ref: "#/definitions/comments_error_handler"
+        record_selector:
+          $ref: "#/definitions/streams/Api/retriever/record_selector"
+          transform_before_filtering: false
+          record_filter:
+            type: RecordFilter
+            condition: "{{ (record.get('instagram_business_account') or {}).get('id') }}"
+        paginator:
+          $ref: "#/definitions/comments_paginator"
+    # Parent enumeration needs only IDs, without Media's per-child carousel HTTP calls.
+    CommentsMedia:
+      type: DeclarativeStream
+      name: comments_media
+      primary_key: [id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: "https://graph.facebook.com/v23.0/{{ stream_partition.account.business_account_id }}/media"
+          http_method: GET
+          use_cache: true
+          request_parameters:
+            fields: id
+          error_handler:
+            $ref: "#/definitions/comments_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+        paginator:
+          $ref: "#/definitions/comments_paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: account
+              partition_field: account
+              stream:
+                $ref: "#/definitions/streams/CommentsAccounts"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [comment_parent]
+              value: >-
+                {{ {'media_id': record['id'],
+                'business_account_id': stream_partition.account.business_account_id,
+                'page_id': stream_partition.account.page_id} }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+    Comments:
+      type: DeclarativeStream
+      name: comments
+      primary_key: [id]
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: "https://graph.facebook.com/v23.0/{{ stream_partition.comment_parent.media_id }}/comments"
+          http_method: GET
+          request_parameters:
+            fields: id,text,timestamp,username,from,hidden,like_count
+          error_handler:
+            $ref: "#/definitions/comments_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: [data]
+        paginator:
+          $ref: "#/definitions/comments_paginator"
+          pagination_strategy:
+            $ref: "#/definitions/comments_paginator/pagination_strategy"
+            page_size: 50
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: comment_parent
+              partition_field: comment_parent
+              stream:
+                $ref: "#/definitions/streams/CommentsMedia"
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [media_id]
+              value: "{{ stream_partition.comment_parent.media_id }}"
+              value_type: string
+            - path: [business_account_id]
+              value: "{{ stream_partition.comment_parent.business_account_id }}"
+              value_type: string
+            - path: [page_id]
+              value: "{{ stream_partition.comment_parent.page_id }}"
+              value_type: string
+            - path: [timestamp]
+              value: >-
+                {{ (format_datetime(record['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')[:-2] + ':' +
+                format_datetime(record['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')[-2:])
+                if record.get('timestamp') else none }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Comments"
     Media:
       type: DeclarativeStream
       name: media
@@ -726,6 +895,10 @@ definitions:
       api_token: '{{ config["access_token"] }}'
 
 streams:
+  - type: ConditionalStreams
+    condition: "{{ config.get('enable_comments', false) }}"
+    streams:
+      - $ref: "#/definitions/streams/Comments"
   - $ref: "#/definitions/streams/Media"
   - $ref: "#/definitions/streams/MediaInsights"
   - $ref: "#/definitions/streams/Users"
@@ -786,6 +959,14 @@ spec:
     title: Source Instagram
     type: object
     properties:
+      enable_comments:
+        title: Enable comments
+        description: >-
+          Expose the full-refresh comments stream. Requires instagram_manage_comments in
+          addition to the existing account permissions. Reauthorize the access token, refresh
+          the catalog and select comments. Replies are not included. Start Date does not limit comments.
+        type: boolean
+        default: false
       start_date:
         title: Start Date
         description: >-
@@ -805,7 +986,8 @@ spec:
           instagram_manage_insights, pages_show_list, pages_read_engagement,
           Instagram Public Content Access</b> permissions. See the <a
           href="https://docs.airbyte.com/integrations/sources/instagram/#step-1-set-up-instagram">docs</a>
-          for more information
+          for more information. To enable comments, also grant instagram_manage_comments.
+          Page roles granted through Business Manager also require ads_read or ads_management.
         airbyte_secret: true
         type: string
       client_id:
@@ -864,6 +1046,37 @@ spec:
               - client_secret
 
 schemas:
+  Comments:
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: ["null", string]
+      text:
+        type: ["null", string]
+      timestamp:
+        type: ["null", string]
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      username:
+        type: ["null", string]
+      from:
+        type: ["null", object]
+        properties:
+          id:
+            type: ["null", string]
+          username:
+            type: ["null", string]
+      hidden:
+        type: ["null", boolean]
+      like_count:
+        type: ["null", integer]
+      media_id:
+        type: ["null", string]
+      business_account_id:
+        type: ["null", string]
+      page_id:
+        type: ["null", string]
   Media:
     type: object
     $schema: http://json-schema.org/schema#
