@@ -1,7 +1,9 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import base64
+import copy
 import json
+import time
 from urllib.parse import parse_qs
 
 import jwt
@@ -72,6 +74,30 @@ def test_oauth_refresh() -> None:
             http.assert_number_of_calls(request, 1)
 
 
+@pytest.mark.parametrize("returned,saved_token", [("rotated", "rotated"), (None, "refresh")])
+def test_oauth_refresh_token_is_saved(returned: str | None, saved_token: str, capsys: pytest.CaptureFixture) -> None:
+    # Okta apps with refresh token rotation return a new refresh token on every refresh and revoke the old one after
+    # the grace period, so the connector must save it. Apps with persistent tokens keep the token they already have.
+    settings = config({"auth_type": "oauth2.0", "client_id": "client", "client_secret": "secret", "refresh_token": "refresh"})
+    token_body = {"access_token": "access", "expires_in": 3600}
+    if returned:
+        token_body["refresh_token"] = returned
+    with HttpMocker() as http:
+        token_request = HttpRequest(TOKEN_URL, body="grant_type=refresh_token&refresh_token=refresh")
+        http.post(token_request, HttpResponse(json.dumps(token_body), 200))
+        page(http, "Bearer access")
+        page(http, "Bearer access", second=True)
+        output = read_stream(settings)
+        assert [m.record.data["id"] for m in output.records] == ["first", "second"]
+        http.assert_number_of_calls(token_request, 1)
+    controls = [json.loads(line) for line in capsys.readouterr().out.splitlines() if line.startswith('{"type":"CONTROL"')]
+    assert controls
+    saved = controls[-1]["control"]["connectorConfig"]["config"]["credentials"]
+    assert saved["refresh_token"] == saved_token
+    assert saved["access_token"] == "access"
+    assert saved["token_expiry_date"]
+
+
 @pytest.mark.parametrize("escaped", [False, True])
 def test_private_key(escaped: bool) -> None:
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -116,6 +142,32 @@ def test_private_key(escaped: bool) -> None:
             http.assert_number_of_calls(request, 1)
 
 
+def test_private_key_rejection_is_config_error() -> None:
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    pem = key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()).decode()
+    settings = config(
+        {
+            "auth_type": "oauth2.0_private_key",
+            "client_id": "client",
+            "key_id": "key-id",
+            "scope": "okta.users.read",
+            "private_key": pem,
+        }
+    )
+    with HttpMocker() as http:
+        http._mocker.post(
+            TOKEN_URL,
+            status_code=400,
+            json={"error": "invalid_scope", "error_description": "The following scopes are not allowed: [okta.users.read]"},
+        )
+        catalog = CatalogBuilder().with_stream("custom_roles", SyncMode.full_refresh).build()
+        output = read(get_source(settings), config=settings, catalog=catalog, expecting_exception=True)
+        assert output.records == []
+        stream_errors = [m.trace.error for m in output.errors if m.trace.error.stream_descriptor]
+        assert [error.failure_type.value for error in stream_errors] == ["config_error"]
+        assert "invalid_scope" in stream_errors[0].message
+
+
 @pytest.mark.parametrize("domain", ["example", "12345"])
 def test_legacy_config(domain: str, capsys: pytest.CaptureFixture) -> None:
     settings = {"base_url": f"https://{domain}.okta.com", "token": "legacy", "start_date": START}
@@ -131,6 +183,20 @@ def test_legacy_config(domain: str, capsys: pytest.CaptureFixture) -> None:
         migrated = controls[-1]["control"]["connectorConfig"]["config"]
         assert migrated["domain"] == domain
         assert migrated["credentials"] == {"auth_type": "api_token", "api_token": "legacy"}
+
+
+def test_current_config_with_legacy_fields_is_not_migrated(tmp_path, capsys: pytest.CaptureFixture) -> None:
+    # 0.3.28's migration kept `base_url` and `token`, so configs it migrated still carry both.
+    current = {
+        "domain": "current",
+        "base_url": "https://legacy.okta.com",
+        "token": "legacy",
+        "start_date": START,
+        "credentials": {"auth_type": "oauth2.0", "client_id": "client", "client_secret": "secret", "refresh_token": "refresh"},
+    }
+    expected = copy.deepcopy(current)
+    assert get_source(current).configure(current, str(tmp_path)) == expected
+    assert not [line for line in capsys.readouterr().out.splitlines() if line.startswith('{"type":"CONTROL"')]
 
 
 @pytest.mark.parametrize("stream,cursor", [("users", "lastUpdated"), ("logs", "published")])
@@ -173,14 +239,32 @@ def test_logs_invalid_since_is_ignored() -> None:
         assert any("Invalid since parameter" in log.log.message for log in output.logs)
 
 
-@pytest.mark.parametrize("error", ["invalid_grant", "invalid_client"])
-def test_oauth_rejection_is_config_error(error: str) -> None:
+@pytest.mark.parametrize(
+    "status,error", [(400, "invalid_grant"), (401, "invalid_client"), (400, "unauthorized_client"), (403, "access_denied")]
+)
+def test_oauth_rejection_is_config_error(status: int, error: str) -> None:
     settings = config({"auth_type": "oauth2.0", "client_id": "client", "client_secret": "secret", "refresh_token": "refresh"})
     with HttpMocker() as http:
         token_request = HttpRequest(TOKEN_URL, body="grant_type=refresh_token&refresh_token=refresh")
-        http.post(token_request, HttpResponse(json.dumps({"error": error}), 400))
+        http.post(token_request, HttpResponse(json.dumps({"error": error}), status))
         catalog = CatalogBuilder().with_stream("custom_roles", SyncMode.full_refresh).build()
         output = read(get_source(settings), config=settings, catalog=catalog, expecting_exception=True)
         assert output.records == []
-        assert any(message.trace.error.failure_type.value == "config_error" for message in output.errors)
+        # The CDK's closing "Concurrent read failure" trace is always config_error, so check the stream's own trace.
+        stream_errors = [m.trace.error.failure_type.value for m in output.errors if m.trace.error.stream_descriptor]
+        assert stream_errors == ["config_error"]
         http.assert_number_of_calls(token_request, 1)
+
+
+@pytest.mark.parametrize("status,reset_in,expected_wait", [(429, 130, 131), (500, None, 61)])
+def test_retry_waits_for_rate_limit_reset(status: int, reset_in: int | None, expected_wait: int, monkeypatch: pytest.MonkeyPatch) -> None:
+    waits: list[float] = []
+    monkeypatch.setattr("airbyte_cdk.sources.streams.http.rate_limiting.time.sleep", waits.append)
+    headers = {"X-Rate-Limit-Reset": str(int(time.time()) + reset_in)} if reset_in else {}
+    with HttpMocker() as http:
+        request = HttpRequest(f"{BASE}/api/v1/iam/roles", query_params={"limit": "200"}, headers={"Authorization": "SSWS test-token"})
+        http.get(request, [HttpResponse("{}", status, headers=headers), HttpResponse('{"roles": [{"id": "one"}]}', 200)])
+        output = read_stream(config())
+        assert [m.record.data["id"] for m in output.records] == ["one"]
+        http.assert_number_of_calls(request, 2)
+    assert waits and abs(max(waits) - expected_wait) <= 2

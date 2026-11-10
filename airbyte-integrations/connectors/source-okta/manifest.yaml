@@ -19,9 +19,18 @@ definitions:
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
     refresh_request_headers:
       Authorization: "Basic {{ (config['credentials']['client_id'] ~ ':' ~ config['credentials']['client_secret']) | base64encode }}"
-    refresh_token_error_status_codes: [400, 401]
+    refresh_token_error_status_codes: [400, 401, 403]
     refresh_token_error_key: error
-    refresh_token_error_values: [invalid_grant, invalid_client]
+    refresh_token_error_values: [invalid_grant, invalid_client, unauthorized_client, access_denied]
+    refresh_token_error_messages:
+      invalid_client: "Okta rejected the Client ID or Client Secret. Check both values against your Okta app and update this source."
+      unauthorized_client: "Your Okta app is not allowed to use the Refresh Token grant. Enable the Refresh Token grant type on the app, then re-authenticate this source."
+      access_denied: "Okta refused the token request from this network. Add the Airbyte IP addresses to the network zones your Okta app allows."
+    refresh_token_updater:
+      refresh_token_name: refresh_token
+      access_token_config_path: ["credentials", "access_token"]
+      refresh_token_config_path: ["credentials", "refresh_token"]
+      token_expiry_date_config_path: ["credentials", "token_expiry_date"]
 
   oauth_private_key_authenticator:
     type: SessionTokenAuthenticator
@@ -29,6 +38,14 @@ definitions:
       type: HttpRequester
       url: "https://{{ config['domain'] }}.okta.com/oauth2/v1/token"
       http_method: POST
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: config_error
+            predicate: "{{ response.error in ['invalid_scope', 'invalid_client', 'unauthorized_client', 'invalid_dpop_proof', 'access_denied'] }}"
+            error_message: "Okta rejected the token request for the private key app ({{ response.error }}): {{ response.error_description }} Check the app's Client ID, Key ID, private key, granted scopes, and DPoP setting."
       authenticator:
         type: JwtAuthenticator
         secret_key: '{{ config[''credentials''][''private_key''] | replace(''\\n'', ''\n'') }}'
@@ -1919,6 +1936,22 @@ spec:
                 title: Refresh Token
                 description: Refresh Token to obtain new Access Token, when it's expired.
                 airbyte_secret: true
+              access_token:
+                type: string
+                title: Access Token
+                description: >-
+                  The access token that Okta returns when the connector refreshes
+                  your OAuth credentials. Leave this field out; the connector fills it in.
+                airbyte_secret: true
+                airbyte_hidden: true
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: >-
+                  The date and time when the current access token expires. Leave this
+                  field out; the connector fills it in.
+                format: date-time
+                airbyte_hidden: true
           - type: object
             title: OAuth 2.0 with private key
             required:
