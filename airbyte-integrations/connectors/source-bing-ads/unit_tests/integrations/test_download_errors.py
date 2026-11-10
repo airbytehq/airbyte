@@ -11,7 +11,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 
 DOWNLOAD_URL = "https://bingadsappsstorageprod.blob.core.windows.net/test/download"
 EXPIRED_SIGNATURE = "Signature not valid in the specified time frame"
-PERMISSION_MESSAGE = "HTTP Status Code: 403. Error: Forbidden. You don't have permission to access this resource."
+PERMISSION_MESSAGE = "Forbidden. You don't have permission to access this resource."
 
 
 @pytest.fixture
@@ -79,4 +79,7 @@ def test_expired_download_is_transient(download_read, stream_name: str, headers:
 )
 def test_other_download_403_keeps_permission_error(download_read, stream_name: str, body: str, headers: dict[str, str]) -> None:
     errors = download_read(stream_name, body, headers)
-    assert [(error.failure_type, error.message) for error in errors] == [(FailureType.config_error, PERMISSION_MESSAGE)]
+    # CDK versions differ in whether they include the HTTP status prefix.
+    assert [(error.failure_type, error.message.removeprefix("HTTP Status Code: 403. Error: ")) for error in errors] == [
+        (FailureType.config_error, PERMISSION_MESSAGE)
+    ]
