@@ -61,7 +61,9 @@ def _mock_bulk_submit(http_mocker: HttpMocker) -> None:
 def _mock_bulk_job(http_mocker: HttpMocker) -> HttpRequest:
     _mock_bulk_submit(http_mocker)
     http_mocker.post(
-        RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk").with_body('{"RequestId": "TestDownloadRequestId"}').build(),
+        RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk")
+        .with_body('{"RequestId": "TestDownloadRequestId"}')
+        .build(),
         HttpResponse(json.dumps(find_template(resource="bulk_status", execution_folder=__file__)), 200),
     )
     return RequestBuilder(resource="path/to/bulk/resultquery/url", api="bulk").build()
@@ -69,11 +71,15 @@ def _mock_bulk_job(http_mocker: HttpMocker) -> HttpRequest:
 
 def _mock_report_job(http_mocker: HttpMocker) -> HttpRequest:
     http_mocker.post(
-        RequestBuilder(resource="GenerateReport/Submit", api="reporting").with_body(ACCOUNT_IMPRESSION_PERFORMANCE_REPORT_HOURLY_SUBMIT_BODY).build(),
+        RequestBuilder(resource="GenerateReport/Submit", api="reporting")
+        .with_body(ACCOUNT_IMPRESSION_PERFORMANCE_REPORT_HOURLY_SUBMIT_BODY)
+        .build(),
         HttpResponse(json.dumps(find_template(resource="generate_report", execution_folder=__file__)), 200),
     )
     http_mocker.post(
-        RequestBuilder(resource="GenerateReport/Poll", api="reporting").with_body(b'{"ReportRequestId": "thisisthereport_requestid"}').build(),
+        RequestBuilder(resource="GenerateReport/Poll", api="reporting")
+        .with_body(b'{"ReportRequestId": "thisisthereport_requestid"}')
+        .build(),
         HttpResponse(json.dumps(find_template(resource="generate_report_poll", execution_folder=__file__)), 200),
     )
     return RequestBuilder(resource="").build_report_url()
@@ -106,7 +112,6 @@ def test_expired_download_url_fails_as_transient_error_naming_the_stream(stream_
         http_mocker.assert_number_of_calls(download_request, 1)
 
 
-
 def _mock_bulk_job_with_stale_then_fresh_url(http_mocker: HttpMocker) -> HttpRequest:
     _mock_bulk_submit(http_mocker)
     status_query_request = (
@@ -127,11 +132,15 @@ def _mock_bulk_job_with_stale_then_fresh_url(http_mocker: HttpMocker) -> HttpReq
 
 def _mock_report_job_with_stale_then_fresh_url(http_mocker: HttpMocker) -> HttpRequest:
     http_mocker.post(
-        RequestBuilder(resource="GenerateReport/Submit", api="reporting").with_body(ACCOUNT_IMPRESSION_PERFORMANCE_REPORT_HOURLY_SUBMIT_BODY).build(),
+        RequestBuilder(resource="GenerateReport/Submit", api="reporting")
+        .with_body(ACCOUNT_IMPRESSION_PERFORMANCE_REPORT_HOURLY_SUBMIT_BODY)
+        .build(),
         HttpResponse(json.dumps(find_template(resource="generate_report", execution_folder=__file__)), 200),
     )
     poll_request = (
-        RequestBuilder(resource="GenerateReport/Poll", api="reporting").with_body(b'{"ReportRequestId": "thisisthereport_requestid"}').build()
+        RequestBuilder(resource="GenerateReport/Poll", api="reporting")
+        .with_body(b'{"ReportRequestId": "thisisthereport_requestid"}')
+        .build()
     )
     http_mocker.post(
         poll_request,
