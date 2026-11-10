@@ -1,32 +1,70 @@
-version: 0.65.0
+version: 7.47.0
 type: DeclarativeSource
 
 definitions:
-  custom_oauth_authenticator:
-    type: CustomAuthenticator
-    class_name: source_okta.components.CustomOauth2Authenticator
+  api_token_authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "SSWS {{ config['credentials']['api_token'] }}"
+    inject_into:
+      type: RequestOption
+      inject_into: header
+      field_name: Authorization
+
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: "https://{{ config['domain'] }}.okta.com/oauth2/v1/token"
+    grant_type: refresh_token
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
-    refresh_request_body: {}
-    token_refresh_endpoint: "https://{{ config['domain'] }}.okta.com/oauth2/v1/token"
-    grant_type: refresh_token
+    refresh_request_headers:
+      Authorization: "Basic {{ (config['credentials']['client_id'] ~ ':' ~ config['credentials']['client_secret']) | base64encode }}"
+    refresh_token_error_status_codes: [400, 401]
+    refresh_token_error_key: error
+    refresh_token_error_values: [invalid_grant, invalid_client]
 
-  custom_oauth_private_key_authenticator:
-    type: CustomAuthenticator
-    class_name: source_okta.components.CustomOauth2PrivateKeyAuthenticator
-
-  custom_bearer_authenticator:
-    type: CustomAuthenticator
-    class_name: source_okta.components.CustomBearerAuthenticator
+  oauth_private_key_authenticator:
+    type: SessionTokenAuthenticator
+    login_requester:
+      type: HttpRequester
+      url: "https://{{ config['domain'] }}.okta.com/oauth2/v1/token"
+      http_method: POST
+      authenticator:
+        type: JwtAuthenticator
+        secret_key: '{{ config[''credentials''][''private_key''] | replace(''\\n'', ''\n'') }}'
+        algorithm: RS256
+        token_duration: 300
+        jwt_headers:
+          kid: "{{ config['credentials']['key_id'] }}"
+        jwt_payload:
+          iss: "{{ config['credentials']['client_id'] }}"
+          sub: "{{ config['credentials']['client_id'] }}"
+          aud: "https://{{ config['domain'] }}.okta.com/oauth2/v1/token"
+        additional_jwt_payload:
+          jti: "{{ generate_uuid() }}"
+        request_option:
+          type: RequestOption
+          inject_into: body_data
+          field_name: client_assertion
+      request_body:
+        type: RequestBodyUrlEncodedForm
+        value:
+          grant_type: client_credentials
+          client_id: "{{ config['credentials']['client_id'] }}"
+          client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+          scope: "{{ config['credentials']['scope'] }}"
+    session_token_path: ["access_token"]
+    expiration_duration: PT50M
+    request_authentication:
+      type: Bearer
 
   selective_authenticator:
     type: SelectiveAuthenticator
     authenticator_selection_path: ["credentials", "auth_type"]
     authenticators:
-      oauth2.0: "#/definitions/custom_oauth_authenticator"
-      oauth2.0_private_key: "#/definitions/custom_oauth_private_key_authenticator"
-      api_token: "#/definitions/custom_bearer_authenticator"
+      oauth2.0: "#/definitions/oauth_authenticator"
+      oauth2.0_private_key: "#/definitions/oauth_private_key_authenticator"
+      api_token: "#/definitions/api_token_authenticator"
 
   paginator:
     type: DefaultPaginator
@@ -1817,6 +1855,33 @@ streams:
               - "null"
 
 spec:
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Derive `domain` from the legacy `base_url` (https://<domain>.okta.com).
+        transformations:
+          - type: ConfigAddFields
+            condition: "{{ 'domain' not in config and config.get('base_url') }}"
+            fields:
+              - type: AddedFieldDefinition
+                path: ["domain"]
+                value: "{{ (config.get('base_url') or '').split('https://')[-1].split('.')[0] }}"
+                value_type: string
+      - type: ConfigMigration
+        description: Move the legacy top-level `token` into `credentials` as an API token.
+        transformations:
+          - type: ConfigAddFields
+            condition: "{{ config.get('token') and not config.get('credentials', {}).get('auth_type') }}"
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_token"]
+                value: "{{ config['token'] }}"
+                value_type: string
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: api_token
+                value_type: string
   documentation_url: https://docs.airbyte.com/integrations/sources/okta
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
