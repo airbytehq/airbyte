@@ -51,9 +51,17 @@ definitions:
           action: FAIL
           http_codes:
             - 400
+          predicate: "{{ 'upper limit on the number of results returned for this query' in response.get('errors', [{}])[0].get('message', '') }}"
           failure_type: system_error
           error_message: >-
-            Request returned HTTP 400: {{ response.get('errors', [{}])[0].get('message', 'Bad request.') }}
+            Asana task query exceeded the API result limit.
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 400
+          failure_type: system_error
+          error_message: >-
+            Asana API request failed with HTTP 400.
         - type: HttpResponseFilter
           action: RETRY
           http_codes:
