@@ -17,15 +17,16 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 
 logger = logging.getLogger("airbyte")
 
-ATOM_NS = "http://www.w3.org/2005/Atom"
-ATOM_03_NS = "http://purl.org/atom/ns#"
-RSS_10_NS = "http://purl.org/rss/1.0/"
-RSS_090_NS = "http://my.netscape.com/rdf/simple/0.9/"
-RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-DC_NS = "http://purl.org/dc/elements/1.1/"
-CONTENT_NS = "http://purl.org/rss/1.0/modules/content/"
-MEDIA_NS = "http://search.yahoo.com/mrss/"
-XML_BASE_ATTRIBUTE = "{http://www.w3.org/XML/1998/namespace}base"
+ATOM_NS = "http://www.w3.org/2005/Atom"  # ignore-https-check
+ATOM_03_NS = "http://purl.org/atom/ns#"  # ignore-https-check
+RSS_10_NS = "http://purl.org/rss/1.0/"  # ignore-https-check
+RSS_090_NS = "http://my.netscape.com/rdf/simple/0.9/"  # ignore-https-check
+RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"  # ignore-https-check
+DC_NS = "http://purl.org/dc/elements/1.1/"  # ignore-https-check
+CONTENT_NS = "http://purl.org/rss/1.0/modules/content/"  # ignore-https-check
+MEDIA_NS = "http://search.yahoo.com/mrss/"  # ignore-https-check
+XML_BASE_ATTRIBUTE = "{http://www.w3.org/XML/1998/namespace}base"  # ignore-https-check
+_ABSOLUTE_URL_PREFIXES = ("http://", "https://")  # ignore-https-check
 
 _XML_ENTITIES = {"amp", "lt", "gt", "quot", "apos"}
 _CDATA_SECTION = re.compile(r"(<!\[CDATA\[.*?\]\]>)", re.DOTALL)
@@ -212,7 +213,7 @@ def _rss_item_to_record(item: ET.Element, namespace: str, base_url: str) -> Muta
     guid = _first(item, (namespace, "guid"))
     if link is not None:
         record["link"] = _resolve(item_base_url, _text(link))
-    elif guid is not None and guid.get("isPermaLink", "true").lower() != "false" and _text(guid).startswith(("http://", "https://")):
+    elif guid is not None and guid.get("isPermaLink", "true").lower() != "false" and _text(guid).startswith(_ABSOLUTE_URL_PREFIXES):
         record["link"] = _text(guid)
 
     _set(record, "description", _first(item, (namespace, "description"), (CONTENT_NS, "encoded")), _markup)
