@@ -506,6 +506,24 @@ test!
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take
 feedback on preferred mappings.
 
+### User-defined alias types
+
+SQL Server lets you create alias types based on a built-in type, for example `CREATE TYPE alias_timestamp FROM datetime`. The connector doesn't map alias types by name. Instead, it uses the JDBC type that the SQL Server driver reports for the column, which comes from the alias's base type.
+
+The connector maps aliases over the following base types the same way as the base type itself, including in CDC syncs:
+
+| Alias base type | JDBC type   | Resulting Type |
+| :-------------- | :---------- | :------------- |
+| `date`          | `DATE`      | date           |
+| `time`          | `TIME`      | time           |
+| `datetime`      | `TIMESTAMP` | timestamp      |
+| `datetime2`     | `TIMESTAMP` | timestamp      |
+| `smalldatetime` | `TIMESTAMP` | timestamp      |
+
+Aliases over base types not listed above may cause mapping issues, because their JDBC type may not map the same way as the built-in type.
+
+We recommend using built-in SQL Server types instead of alias types for columns you sync with Airbyte.
+
 ## Upgrading to version 4.3.0 and above
 
 Version 4.3.0 introduces a migration from the legacy CDK to the new CDK architecture. This migration includes:
@@ -582,6 +600,7 @@ Cloud without an [SSH tunnel](#connection-to-mssql-via-an-ssh-tunnel); Airbyte C
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                 |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.5       | 2026-11-09 | [89073](https://github.com/airbytehq/airbyte/pull/89073)                                                          | Fix CDC sync failure for columns using user-defined alias types over date, time, datetime, datetime2, or smalldatetime.                                 |
 | 5.1.4       | 2026-11-02 | [73349](https://github.com/airbytehq/airbyte/pull/73349)                                                          | Escape spaces and `$` in Debezium message keys, and quote schema names in the Debezium schema include list.                                             |
 | 5.1.3       | 2026-10-21 | [89634](https://github.com/airbytehq/airbyte/pull/89634)                                                          | Upgrade to Bulk CDK 1.2.3: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; Kafka 4.1.2, Jetty 12.0.40, plexus-utils 3.6.2. |
 | 5.1.2       | 2026-10-19 | [85353](https://github.com/airbytehq/airbyte/pull/85353)                                                          | Cold-start a stream when its saved state is an empty object or an unrecognized legacy format instead of skipping it.                                    |
