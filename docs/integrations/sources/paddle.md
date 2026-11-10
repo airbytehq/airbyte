@@ -1,16 +1,51 @@
 # Paddle
-Website: https://www.paddle.com/
-API Reference: https://developer.paddle.com/api-reference/overview
+
+This page contains the setup guide and reference information for the [Paddle](https://www.paddle.com/) source connector. The connector uses the [Paddle Billing API](https://developer.paddle.com/api-reference/overview) to sync customers, catalog, subscription, transaction, and event data.
+
+## Prerequisites
+
+- A Paddle Billing account. The connector calls the Paddle Billing API and doesn't support Paddle Classic.
+- A Paddle API key for the environment you want to sync from. Sandbox and live accounts have separate API keys, and a key only works with the environment it was created in.
+
+## Set up Paddle
+
+### Create an API key
+
+1. In the Paddle dashboard, go to **Developer tools** > **Authentication**.
+2. Create a new API key. If Paddle prompts you to choose permissions, grant read access to every entity you want to sync, such as customers, addresses, businesses, discounts, prices, products, events, reports, subscriptions, transactions, and adjustments. Requests that lack a required permission fail with a `403` error.
+3. Copy the key and store it securely. Paddle shows the full key only once.
+
+For more information, see [Paddle's authentication documentation](https://developer.paddle.com/api-reference/about/authentication).
+
+### Set up the connector in Airbyte
+
+1. In Airbyte, create a new source and select **Paddle**.
+2. Enter your **API Key**.
+3. Select the **Environment**:
+   - `api` for your live Paddle account (`https://api.paddle.com`). This is the default.
+   - `sandbox-api` for your Paddle sandbox account (`https://sandbox-api.paddle.com`).
+4. Enter a **Start date** in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2024-01-01T00:00:00Z`. The connector only replicates records with an `updated_at` value (or `occurred_at` for the `events` stream) on or after this date. The `event_types` and `ip_addresses` streams ignore this setting.
+5. Click **Set up source**.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. Your Paddle API key. You can generate it by navigating to Paddle &gt; Developer tools &gt; Authentication &gt; Generate API key. Treat this key like a password and keep it secure. |  |
-| `environment` | `string` | Environment. The environment for the Paddle API, either &#39;sandbox&#39; or &#39;live&#39;. | api |
-| `start_date` | `string` | Start date.  |  |
+| `environment` | `string` | Environment. The Paddle API environment: `api` for live or `sandbox-api` for sandbox. | api |
+| `start_date` | `string` | Start date. The date-time, in the format `YYYY-MM-DDTHH:MM:SSZ`, from which to replicate data. |  |
+
+## Supported sync modes
+
+The Paddle source connector supports the following sync modes:
+
+- Full Refresh - Overwrite
+- Full Refresh - Append
+- Incremental Sync - Append
+- Incremental Sync - Append + Deduped
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | adjustments | id | DefaultPaginator | ✅ |  ✅  |
@@ -26,6 +61,14 @@ API Reference: https://developer.paddle.com/api-reference/overview
 | ip_addresses | uuid | DefaultPaginator | ✅ |  ❌  |
 | subscriptions | id | DefaultPaginator | ✅ |  ✅  |
 | transactions | id | DefaultPaginator | ✅ |  ✅  |
+
+Incremental streams use `updated_at` as the cursor, except `events`, which uses `occurred_at`. The connector doesn't send date filters to the Paddle API. It reads every page of each stream and filters records by the cursor value after it receives them, so incremental syncs make the same number of API requests as full refresh syncs.
+
+The `customer_addresses` and `businesses` streams are child streams of `customers`. The connector requests addresses and businesses separately for each customer, so syncs of these streams take longer for accounts with many customers.
+
+## Limitations and rate limits
+
+Paddle limits most API requests to 240 requests per minute per IP address. For details, see [Paddle's rate limiting documentation](https://developer.paddle.com/api-reference/about/rate-limiting). When the API returns a rate limit or server error, the connector waits 62 seconds and retries, up to 5 times per request.
 
 ## IP allow list
 
@@ -77,23 +120,23 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.2.3 | 2025-09-09 | [65806](https://github.com/airbytehq/airbyte/pull/65806) | Update dependencies |
 | 0.2.2 | 2025-08-23 | [65194](https://github.com/airbytehq/airbyte/pull/65194) | Update dependencies |
 | 0.2.1 | 2025-08-09 | [64749](https://github.com/airbytehq/airbyte/pull/64749) | Update dependencies |
-| 0.2.0 | 2025-07-10 | [62891](https://github.com/airbytehq/airbyte/pull/62891) | Remove `custom_data` property constraints and add it to `customers` stream |
+| 0.2.0 | 2025-08-05 | [62891](https://github.com/airbytehq/airbyte/pull/62891) | Remove `custom_data` property constraints and add it to `customers` stream |
 | 0.1.5 | 2025-08-02 | [64300](https://github.com/airbytehq/airbyte/pull/64300) | Update dependencies |
 | 0.1.4 | 2025-07-26 | [63842](https://github.com/airbytehq/airbyte/pull/63842) | Update dependencies |
 | 0.1.3 | 2025-07-19 | [63388](https://github.com/airbytehq/airbyte/pull/63388) | Update dependencies |
 | 0.1.2 | 2025-07-12 | [63195](https://github.com/airbytehq/airbyte/pull/63195) | Update dependencies |
 | 0.1.1 | 2025-07-05 | [62566](https://github.com/airbytehq/airbyte/pull/62566) | Update dependencies |
-| 0.1.0 | 2025-07-01 | [62479](https://github.com/airbytehq/airbyte/pull/62479) | Add adjustments stream |
+| 0.1.0 | 2025-07-02 | [62479](https://github.com/airbytehq/airbyte/pull/62479) | Add adjustments stream |
 | 0.0.11 | 2025-07-01 | [62461](https://github.com/airbytehq/airbyte/pull/62461) | Add constant retry backoff per Paddle API Docs |
 | 0.0.10 | 2025-06-28 | [62318](https://github.com/airbytehq/airbyte/pull/62318) | Update dependencies |
 | 0.0.9 | 2025-06-21 | [61917](https://github.com/airbytehq/airbyte/pull/61917) | Update dependencies |
-| 0.0.8 | 2025-06-14 | [60485](https://github.com/airbytehq/airbyte/pull/60485) | Update dependencies |
-| 0.0.7 | 2025-05-10 | [60059](https://github.com/airbytehq/airbyte/pull/60059) | Update dependencies |
+| 0.0.8 | 2025-06-16 | [60485](https://github.com/airbytehq/airbyte/pull/60485) | Update dependencies |
+| 0.0.7 | 2025-05-11 | [60059](https://github.com/airbytehq/airbyte/pull/60059) | Update dependencies |
 | 0.0.6 | 2025-05-04 | [59518](https://github.com/airbytehq/airbyte/pull/59518) | Update dependencies |
 | 0.0.5 | 2025-04-27 | [59085](https://github.com/airbytehq/airbyte/pull/59085) | Update dependencies |
-| 0.0.4 | 2025-04-19 | [58515](https://github.com/airbytehq/airbyte/pull/58515) | Update dependencies |
-| 0.0.3 | 2025-04-12 | [57847](https://github.com/airbytehq/airbyte/pull/57847) | Update dependencies |
-| 0.0.2 | 2025-04-05 | [57338](https://github.com/airbytehq/airbyte/pull/57338) | Update dependencies |
+| 0.0.4 | 2025-04-20 | [58515](https://github.com/airbytehq/airbyte/pull/58515) | Update dependencies |
+| 0.0.3 | 2025-04-13 | [57847](https://github.com/airbytehq/airbyte/pull/57847) | Update dependencies |
+| 0.0.2 | 2025-04-06 | [57338](https://github.com/airbytehq/airbyte/pull/57338) | Update dependencies |
 | 0.0.1 | 2025-04-04 | [57003](https://github.com/airbytehq/airbyte/pull/57003) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
