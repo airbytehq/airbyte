@@ -15,6 +15,9 @@ acceptance_tests:
           disable_for_version: "0.4.1"
       - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
+          disable_for_version: "0.4.2"
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
           disable_for_version: "1.0.0"
   connection:
     tests:

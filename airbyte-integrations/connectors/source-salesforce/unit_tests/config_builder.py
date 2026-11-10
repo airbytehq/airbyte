@@ -39,6 +39,14 @@ class ConfigBuilder:
         self._config["client_secret"] = client_secret
         return self
 
+    def auth_type(self, auth_type: str) -> "ConfigBuilder":
+        self._config["auth_type"] = auth_type
+        return self
+
+    def domain_url(self, domain_url: str) -> "ConfigBuilder":
+        self._config["domain_url"] = domain_url
+        return self
+
     def refresh_token(self, refresh_token: str) -> "ConfigBuilder":
         self._config["refresh_token"] = refresh_token
         return self
