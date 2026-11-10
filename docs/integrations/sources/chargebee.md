@@ -117,7 +117,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.11.2 | 2026-11-06 | [76150](https://github.com/airbytehq/airbyte/pull/76150) | Improve subscription_with_scheduled_changes stream performance by filtering parent subscriptions with has_scheduled_changes parameter |
+| 0.11.3 | 2026-11-10 | [76150](https://github.com/airbytehq/airbyte/pull/76150) | Improve subscription_with_scheduled_changes stream performance by filtering parent subscriptions with has_scheduled_changes parameter |
+| 0.11.2 | 2026-11-10 | [91456](https://github.com/airbytehq/airbyte/pull/91456) | Update dependencies |
 | 0.11.1 | 2026-11-03 | [90509](https://github.com/airbytehq/airbyte/pull/90509) | Update dependencies |
 | 0.11.0 | 2026-10-30 | [89003](https://github.com/airbytehq/airbyte/pull/89003) | Add incremental sync support to the `attached_item` stream |
 | 0.10.53 | 2026-10-27 | [89839](https://github.com/airbytehq/airbyte/pull/89839) | Update dependencies |

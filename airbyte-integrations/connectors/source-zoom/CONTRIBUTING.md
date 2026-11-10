@@ -54,6 +54,10 @@ Each Airbyte Zoom source applies its own rate-limit budget, but multiple Zoom so
 
 The manifest does not set `ratelimit_remaining_header` or `ratelimit_reset_header`: Zoom's `x-ratelimit-remaining` reports the daily Heavy count, not the one-second moving-window balance, so it must not be applied to that budget. The daily cap is not modeled as a `P1D` moving window because exhausting that budget would stall a sync for hours; the connector relies on Zoom's `Retry-After` response instead. `WaitTimeFromHeader` honors short `Retry-After` values and fails the stream for a wait of 600 seconds or longer; if the header is missing, the CDK uses exponential backoff. `unit_tests/test_error_handling.py` covers these cases.
 
+## Keyless report streams
+
+`meeting_poll_results`, `webinar_poll_results`, and `webinar_qna_results` expose respondent `email` and `name` as nullable fields and nest repeated question/answer details without a stable answer ID. Poll IDs identify polls rather than individual responses. Because respondent fields can be absent and question/answer text can repeat, no deterministic key exists, so these streams are intentionally keyless.
+
 ## Licence-gated streams
 
 Webinar and report-webinar streams require the Zoom Webinars add-on. `zoom_events` requires a Webinars Plus or Zoom Events license. The test account lacks data for these licensed streams, so `acceptance-test-config.yml` lists them as empty and bypassed in `basic_read`; each is covered by a mock-server test in `unit_tests/integration/`:
