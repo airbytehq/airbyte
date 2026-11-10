@@ -71,6 +71,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.2.17 | 2026-11-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to source-declarative-manifest 7.47.0 (airbyte-cdk 7) |
 | 0.2.16 | 2026-10-13 | [78587](https://github.com/airbytehq/airbyte/pull/78587) | Update dependencies |
 | 0.2.15 | 2026-10-07 | [88236](https://github.com/airbytehq/airbyte/pull/88236) | Fix connector crashing on `quote` stream extractor; surface Alpha Vantage error/rate-limit responses; throttle requests to the free-tier limit |
 | 0.2.14 | 2025-05-24 | [60731](https://github.com/airbytehq/airbyte/pull/60731) | Update dependencies |
