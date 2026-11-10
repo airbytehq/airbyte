@@ -60,7 +60,12 @@ If you prefer to use OAuth for authentication with **Airbyte Open Source**, you 
 3. Find and select the **Google Drive API**.
 4. Click **ENABLE**.
 
-If your folder is viewable by anyone with its link, no further action is needed. If not, give your service account access to your folder. Check out [this video](https://youtu.be/GyomEw5a2NQ) for how to do this.
+If your folder is viewable by anyone with its link, no further action is needed. If not, give your service account access to your folder:
+
+1. Open the Google Drive folder in a browser.
+2. Click **Share**.
+3. Paste the service account's `client_email` from its JSON key (for example `my-sa@my-project.iam.gserviceaccount.com`).
+4. Grant at least **Viewer** access, then click **Share** / **Send**.
 
 <!-- /env:oss -->
 
