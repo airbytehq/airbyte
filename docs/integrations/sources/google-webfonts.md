@@ -72,7 +72,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------|
-| 0.2.26 | 2026-11-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to `source-declarative-manifest` base image 7.47.0 |
+| 0.2.26 | 2026-11-09 | [91380](https://github.com/airbytehq/airbyte/pull/91380) | Upgrade to `source-declarative-manifest` base image 7.47.0 |
 | 0.2.25 | 2026-10-13 | [78752](https://github.com/airbytehq/airbyte/pull/78752) | Update dependencies |
 | 0.2.24 | 2026-10-07 | [88266](https://github.com/airbytehq/airbyte/pull/88266) | Fix `fonts` stream schema to describe the actual font records instead of the API response envelope |
 | 0.2.23 | 2025-05-24 | [60589](https://github.com/airbytehq/airbyte/pull/60589) | Update dependencies |
