@@ -336,6 +336,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.0.7 | 2026-11-10 | [91749](https://github.com/airbytehq/airbyte/pull/91749) | Update dependencies |
 | 7.0.6 | 2026-11-03 | [90261](https://github.com/airbytehq/airbyte/pull/90261) | Make interrupted `customer_balance_transactions` backfills resumable; fail on 400/403 for that stream instead of silently skipping customers |
 | 7.0.5 | 2026-11-01 | [90396](https://github.com/airbytehq/airbyte/pull/90396) | Simplify HTTP error handling configuration with no change to which errors are skipped or fail the sync |
 | 7.0.4 | 2026-11-03 | [90764](https://github.com/airbytehq/airbyte/pull/90764) | Update dependencies |
