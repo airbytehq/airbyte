@@ -41,6 +41,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| 0.2.16 | 2026-11-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade to source-declarative-manifest 7.47.0 |
 | 0.2.15 | 2026-10-13 | [78828](https://github.com/airbytehq/airbyte/pull/78828) | Update dependencies |
 | 0.2.14 | 2026-10-09 | [88414](https://github.com/airbytehq/airbyte/pull/88414) | Mark `api_key` as `airbyte_secret` |
 | 0.2.13 | 2025-05-24 | [60716](https://github.com/airbytehq/airbyte/pull/60716) | Update dependencies |
