@@ -31,6 +31,8 @@ acceptance_tests:
             bypass_reason: "This stream is not available on our current account, it requires a business/enterprise account"
           - name: portfolios_memberships
             bypass_reason: "This stream is not available on our current account, it requires a business/enterprise account"
+          - name: portfolio_items
+            bypass_reason: "This stream is not available on our current account, it requires a business/enterprise account"
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
