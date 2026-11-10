@@ -56,6 +56,7 @@ The Pylon source connector supports the following streams:
 
 - [Accounts](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/accounts)
 - [Activity Types](https://docs.usepylon.com/pylon-docs/developer/api/api-reference)
+- [Audit Logs](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/audit-logs)
 - [Contacts](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/contacts)
 - [Custom Fields](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/custom-fields)
 - [Issues](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/issues) (Incremental)
@@ -65,6 +66,9 @@ The Pylon source connector supports the following streams:
 - [Knowledge Bases](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/knowledge-base)
   - [Knowledge Base Articles](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/knowledge-base)
 - [Tags](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/tags)
+- [Macro Groups](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/macros)
+- [Surveys](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/surveys)
+- [Training Data](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/training-data)
 - [Teams](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/teams)
 - [Ticket Forms](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/ticket-forms)
 - [User Roles](https://docs.usepylon.com/pylon-docs/developer/api/api-reference/user-roles)
@@ -119,6 +123,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.1.0 | 2026-11-10 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add Audit Logs, Macro Groups, Surveys, and Training Data streams. |
 | 0.0.32 | 2026-11-10 | [91678](https://github.com/airbytehq/airbyte/pull/91678) | Update dependencies |
 | 0.0.31 | 2026-11-06 | [91022](https://github.com/airbytehq/airbyte/pull/91022) | Add EU region support, documented fields, deactivated users, inclusive issue windows, parent IDs on child streams, actionable errors, request budgets, and configurable concurrency. |
 | 0.0.30 | 2026-11-03 | [90398](https://github.com/airbytehq/airbyte/pull/90398) | Simplify error handling while preserving retry and rate-limit behavior. |

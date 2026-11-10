@@ -19,6 +19,7 @@ START = "2026-01-01T00:00:00Z"
 NOW = "2026-01-15T00:00:00Z"
 CONFIG = {"api_token": TOKEN, "start_date": START}
 LIST_STREAMS = (
+    "audit_logs",
     "accounts",
     "contacts",
     "tags",
@@ -31,6 +32,7 @@ LIST_STREAMS = (
     "activity_types",
     "issue_statuses",
 )
+UNPAGINATED_STREAMS = ("macro_groups", "surveys", "training_data")
 
 
 def fixture_record(stream):
@@ -51,6 +53,18 @@ def search_request(start=START, end="2026-01-15T00:00:01Z", cursor=None, base=BA
     if cursor:
         body["cursor"] = cursor
     return HttpRequest(f"{base}/issues/search", body=body, headers={"Authorization": f"Bearer {TOKEN}"})
+
+
+def unpaginated_request(path: str, base: str = BASE) -> HttpRequest:
+    return HttpRequest(f"{base}/{path.lstrip('/')}", query_params={}, headers={"Authorization": f"Bearer {TOKEN}"})
+
+
+def unpaginated_page(records: list[dict]) -> HttpResponse:
+    return HttpResponse(json.dumps({"data": records}))
+
+
+def last_page(records: list[dict]) -> HttpResponse:
+    return unpaginated_page(records)
 
 
 def page(records, next_cursor=None):

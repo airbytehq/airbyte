@@ -6,10 +6,24 @@ import pytest
 from conftest import get_source
 from freezegun import freeze_time
 
-from airbyte_cdk.models import Status
+from airbyte_cdk.models import FailureType, Status
 from airbyte_cdk.test.entrypoint_wrapper import discover
 from airbyte_cdk.test.mock_http import HttpMocker
-from mock_server.helpers import CONFIG, LIST_STREAMS, NOW, check, fixture_record, list_request, page, run
+from mock_server.helpers import (
+    CONFIG,
+    LIST_STREAMS,
+    NOW,
+    UNPAGINATED_STREAMS,
+    check,
+    error,
+    fixture_record,
+    last_page,
+    list_request,
+    page,
+    run,
+    unpaginated_page,
+    unpaginated_request,
+)
 
 
 def stream_requests(stream, cursor=None):
@@ -67,7 +81,7 @@ def test_check_and_discover():
         mocker.assert_number_of_calls(request, 1)
     assert output.connection_status_messages[0].connectionStatus.status == Status.SUCCEEDED
     catalog = discover(get_source(CONFIG), CONFIG).catalog.catalog
-    assert {stream.name for stream in catalog.streams} == set(LIST_STREAMS) | {
+    assert {stream.name for stream in catalog.streams} == set(LIST_STREAMS + UNPAGINATED_STREAMS) | {
         "issues",
         "issue_messages",
         "issue_threads",
@@ -86,3 +100,47 @@ def test_users_includes_deactivated_users() -> None:
         mocker.assert_number_of_calls(request, 1)
     assert output.errors == []
     assert [message.record.data for message in output.records] == [active, deactivated]
+
+
+@pytest.mark.parametrize("stream", UNPAGINATED_STREAMS)
+@pytest.mark.parametrize("empty", [False, True])
+@freeze_time(NOW)
+def test_unpaginated_streams_send_no_query_parameters(stream: str, empty: bool) -> None:
+    records = [] if empty else [fixture_record(stream)]
+    request = unpaginated_request(stream.replace("_", "-"))
+    with HttpMocker() as mocker:
+        mocker.get(request, unpaginated_page(records))
+        output = run(stream)
+        mocker.assert_number_of_calls(request, 1)
+        assert dict(mocker._mocker.request_history[0].qs) == {}
+    assert output.errors == []
+    assert [message.record.data for message in output.records] == records
+
+
+@pytest.mark.parametrize("empty", [False, True])
+@freeze_time(NOW)
+def test_audit_logs_missing_pagination_stops_cleanly(empty: bool) -> None:
+    first = fixture_record("audit_logs")
+    second = {**first, "id": "synthetic-second"}
+    final = [] if empty else [{**first, "id": "synthetic-final"}]
+    requests = [list_request("audit-logs", cursor) for cursor in (None, "second", "final")]
+    with HttpMocker() as mocker:
+        for request, response in zip(requests, [page([first], "second"), page([second], "final"), last_page(final)]):
+            mocker.get(request, response)
+        output = run("audit_logs")
+        for request in requests:
+            mocker.assert_number_of_calls(request, 1)
+    assert output.errors == []
+    assert [message.record.data for message in output.records] == [first, second, *final]
+
+
+@pytest.mark.parametrize("stream", ("audit_logs", *UNPAGINATED_STREAMS))
+@freeze_time(NOW)
+def test_new_stream_permission_denied_is_config_error(stream: str) -> None:
+    request = list_request("audit-logs") if stream == "audit_logs" else unpaginated_request(stream.replace("_", "-"))
+    with HttpMocker() as mocker:
+        mocker.get(request, error(403, "permission_denied"))
+        output = run(stream, expecting_exception=True)
+        mocker.assert_number_of_calls(request, 1)
+    assert output.records == []
+    assert any(message.trace.error.failure_type == FailureType.config_error for message in output.errors)
