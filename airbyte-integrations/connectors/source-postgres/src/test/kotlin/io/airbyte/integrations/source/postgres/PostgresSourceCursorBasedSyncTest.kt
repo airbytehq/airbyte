@@ -32,43 +32,48 @@ class PostgresSourceCursorBasedSyncTest : CursorBasedSyncTest() {
                 "smallint",
                 mapOf("1" to "1"),
                 mapOf("2" to "2"),
-                mapOf("3" to "3", "4" to "4")
-            )
+                mapOf("3" to "3", "4" to "4"),
+            ),
         )
         add(
             testCase(
                 "integer",
                 mapOf("10" to "10"),
                 mapOf("20" to "20"),
-                mapOf("30" to "30", "40" to "40")
-            )
+                mapOf("30" to "30", "40" to "40"),
+            ),
         )
         add(
             testCase(
                 "bigint",
                 mapOf("100" to "100"),
                 mapOf("200" to "200"),
-                mapOf("300" to "300", "400" to "400")
-            )
+                mapOf("300" to "300", "400" to "400"),
+            ),
         )
         add(
             testCase(
                 "real",
                 mapOf("1.5" to "1.5"),
                 mapOf("2.5" to "2.5"),
-                mapOf("3.5" to "3.5", "4.5" to "4.5")
-            )
+                mapOf("3.5" to "3.5", "4.5" to "4.5"),
+            ),
         )
         add(
             testCase(
                 "double precision",
                 mapOf("1.5" to "1.5"),
                 mapOf("2.5" to "2.5"),
-                mapOf("3.5" to "3.5", "4.5" to "4.5")
-            )
+                mapOf("3.5" to "3.5", "4.5" to "4.5"),
+            ),
         )
         add(
-            testCase("numeric", mapOf("1" to "1"), mapOf("2" to "2"), mapOf("3" to "3", "4" to "4"))
+            testCase(
+                "numeric",
+                mapOf("1" to "1"),
+                mapOf("2" to "2"),
+                mapOf("3" to "3", "4" to "4"),
+            ),
         )
 
         // String types
@@ -77,16 +82,16 @@ class PostgresSourceCursorBasedSyncTest : CursorBasedSyncTest() {
                 "text",
                 mapOf("'apple'" to "\"apple\""),
                 mapOf("'banana'" to "\"banana\""),
-                mapOf("'cherry'" to "\"cherry\"", "'date'" to "\"date\"")
-            )
+                mapOf("'cherry'" to "\"cherry\"", "'date'" to "\"date\""),
+            ),
         )
         add(
             testCase(
                 "character varying(100)",
                 mapOf("'apple'" to "\"apple\""),
                 mapOf("'banana'" to "\"banana\""),
-                mapOf("'cherry'" to "\"cherry\"", "'date'" to "\"date\"")
-            )
+                mapOf("'cherry'" to "\"cherry\"", "'date'" to "\"date\""),
+            ),
         )
 
         // Date/time types
@@ -97,9 +102,9 @@ class PostgresSourceCursorBasedSyncTest : CursorBasedSyncTest() {
                 mapOf("'2021-01-01'::date" to "\"2021-01-01\""),
                 mapOf(
                     "'2022-01-01'::date" to "\"2022-01-01\"",
-                    "'2023-01-01'::date" to "\"2023-01-01\""
-                )
-            )
+                    "'2023-01-01'::date" to "\"2023-01-01\"",
+                ),
+            ),
         )
         add(
             testCase(
@@ -108,9 +113,9 @@ class PostgresSourceCursorBasedSyncTest : CursorBasedSyncTest() {
                 mapOf("'02:00:00.123456'::time" to "\"02:00:00.123456\""),
                 mapOf(
                     "'03:00:00.123456'::time" to "\"03:00:00.123456\"",
-                    "'04:00:00.123456'::time" to "\"04:00:00.123456\""
-                )
-            )
+                    "'04:00:00.123456'::time" to "\"04:00:00.123456\"",
+                ),
+            ),
         )
         add(
             testCase(
@@ -119,9 +124,9 @@ class PostgresSourceCursorBasedSyncTest : CursorBasedSyncTest() {
                 mapOf("'02:00:00.123456+00'::timetz" to "\"02:00:00.123456Z\""),
                 mapOf(
                     "'03:00:00.123456+00'::timetz" to "\"03:00:00.123456Z\"",
-                    "'04:00:00.123456+00'::timetz" to "\"04:00:00.123456Z\""
-                )
-            )
+                    "'04:00:00.123456+00'::timetz" to "\"04:00:00.123456Z\"",
+                ),
+            ),
         )
         add(
             testCase(
@@ -130,9 +135,9 @@ class PostgresSourceCursorBasedSyncTest : CursorBasedSyncTest() {
                 mapOf("'2021-01-01 00:00:00'::timestamp" to "\"2021-01-01T00:00:00.000000\""),
                 mapOf(
                     "'2022-01-01 00:00:00'::timestamp" to "\"2022-01-01T00:00:00.000000\"",
-                    "'2023-01-01 00:00:00'::timestamp" to "\"2023-01-01T00:00:00.000000\""
-                )
-            )
+                    "'2023-01-01 00:00:00'::timestamp" to "\"2023-01-01T00:00:00.000000\"",
+                ),
+            ),
         )
         add(
             testCase(
@@ -141,9 +146,9 @@ class PostgresSourceCursorBasedSyncTest : CursorBasedSyncTest() {
                 mapOf("'2021-01-01 00:00:00'::timestamptz" to "\"2021-01-01T00:00:00.000000Z\""),
                 mapOf(
                     "'2022-01-01 00:00:00'::timestamptz" to "\"2022-01-01T00:00:00.000000Z\"",
-                    "'2023-01-01 00:00:00'::timestamptz" to "\"2023-01-01T00:00:00.000000Z\""
-                )
-            )
+                    "'2023-01-01 00:00:00'::timestamptz" to "\"2023-01-01T00:00:00.000000Z\"",
+                ),
+            ),
         )
     }
 
@@ -155,8 +160,9 @@ class PostgresSourceCursorBasedSyncTest : CursorBasedSyncTest() {
                     CREATE TABLE "$schema"."${it.tableName}"
                     ("id" BIGSERIAL PRIMARY KEY,
                     "$CURSOR_FIELD" ${it.sqlType})
-                    """.trimIndent()
-                }
+                    """
+                        .trimIndent()
+                },
             )
 
     private fun testCase(
@@ -198,7 +204,7 @@ class PostgresSourceCursorBasedSyncTest : CursorBasedSyncTest() {
                 checkpointTargetIntervalSeconds = 60
                 maxDbConnections = 1
                 setIncrementalConfigurationSpecificationValue(
-                    StandardReplicationMethodConfigurationSpecification
+                    StandardReplicationMethodConfigurationSpecification,
                 )
             }
 

@@ -32,13 +32,17 @@ abstract class S3BaseDestinationAcceptanceTest() :
     protected val secretFilePath: String = "secrets/config.json"
     override val imageName: String
         get() = "airbyte/destination-s3:dev"
+
     protected var configJson: JsonNode? = null
 
     override fun getConfig(): JsonNode = configJson!!
+
     protected open val baseConfigJson: JsonNode
         get() = Jsons.deserialize(IOs.readFile(Path.of(secretFilePath)))
+
     protected abstract val formatConfig: JsonNode?
         get
+
     protected var s3DestinationConfig: S3DestinationConfig = Mockito.mock()
     protected var s3Client: AmazonS3? = null
     protected var s3nameTransformer: NamingConventionTransformer = Mockito.mock()
@@ -56,7 +60,7 @@ abstract class S3BaseDestinationAcceptanceTest() :
      */
     override fun setup(
         testEnv: DestinationAcceptanceTest.TestDestinationEnv,
-        TEST_SCHEMAS: HashSet<String>
+        TEST_SCHEMAS: HashSet<String>,
     ) {
         val baseConfigJson = baseConfigJson
         // Set a random s3 bucket path for each integration test
@@ -74,7 +78,7 @@ abstract class S3BaseDestinationAcceptanceTest() :
             S3DestinationConfig.getS3DestinationConfig(
                 configJson,
                 storageProvider(),
-                getConnectorEnv()
+                getConnectorEnv(),
             )
         LOGGER.info {
             "${"Test full path: {}/{}"} ${s3DestinationConfig.bucketName} ${s3DestinationConfig.bucketPath}"

@@ -56,6 +56,9 @@ on:
         description: "Ref (Ignored)"
         required: false
 
+env:
+  SENTRY_ENVIRONMENT: gitops-prod
+
 permissions:
   contents: read
   issues: write

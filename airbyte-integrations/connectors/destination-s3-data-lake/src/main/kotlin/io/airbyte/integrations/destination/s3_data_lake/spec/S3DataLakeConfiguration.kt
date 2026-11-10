@@ -72,7 +72,7 @@ class S3DataLakeConfigurationFactory :
     DestinationConfigurationFactory<S3DataLakeSpecification, S3DataLakeConfiguration> {
 
     override fun makeWithoutExceptionHandling(
-        pojo: S3DataLakeSpecification
+        pojo: S3DataLakeSpecification,
     ): S3DataLakeConfiguration {
         return S3DataLakeConfiguration(
             awsAccessKeyConfiguration = pojo.toAWSAccessKeyConfiguration(),

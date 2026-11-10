@@ -90,6 +90,8 @@ ClickHouse
 
 # Companies, products, and jargon
 
+Gradle
+Micronaut
 Glue
 [Gg]raph[Qq][Ll]
 \bDocker(?:'s)?\b
@@ -125,6 +127,8 @@ skills.sh
 
 # API and technical terms
 
+[Tt]oolchain
+KDoc
 CLI
 CLIs
 UUIDs

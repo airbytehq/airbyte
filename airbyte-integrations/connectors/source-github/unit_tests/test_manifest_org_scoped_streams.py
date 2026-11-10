@@ -17,7 +17,6 @@ record, `Organizations` did not — its `parse_response` yielded the API payload
 import logging
 
 import pytest
-from source_github.source import SourceGithub
 
 from airbyte_cdk.models import (
     AirbyteStream,
@@ -27,6 +26,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
+from .utils import make_source, resolve_repositories_and_organizations
 
 
 # (stream name, path under orgs/{organization}, whether the legacy transform injected `organization`)
@@ -58,7 +59,7 @@ def _catalog(*stream_names):
 
 def _read(config, stream_name):
     catalog = _catalog(stream_name)
-    source = SourceGithub(config=dict(config), catalog=catalog, state=[])
+    source = make_source(config=dict(config), catalog=catalog, state=[])
     messages, error = [], None
     try:
         for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, []):
@@ -132,8 +133,8 @@ def test_organization_injection_matches_legacy(stream_name, path, injects_organi
 def test_stream_primary_key_matches_legacy(stream_name, path, injects_organization):
     """All three declared `id`; changing it would re-key existing destinations."""
     config = _config("airbytehq/airbyte")
-    source = SourceGithub(config=config)
-    manifest_streams = {stream.name: stream for stream in super(SourceGithub, source).streams(config=config)}
+    source = make_source(config=config)
+    manifest_streams = {stream.name: stream for stream in source.streams(config=config)}
 
     assert manifest_streams[stream_name]._primary_key == ["id"]
 
@@ -183,7 +184,7 @@ def test_only_payload_confirmed_organizations_are_sliced(stream_name, path, inje
 
     Two owners the config-derived router would have handed over and the Python classes never saw:
     `octocat`, a personal account whose `orgs/{login}/repos` 404s, and `bigorg`, a real
-    organization whose only repository fails the wildcard. `SourceGithub` filters its own
+    organization whose only repository fails the wildcard. the legacy source filtered its own
     enumeration down to the owners of resolved repositories, so slicing on the wider list would
     make `teams` disagree with the still-Python `team_members` inside one sync.
     """
@@ -207,8 +208,8 @@ def test_only_payload_confirmed_organizations_are_sliced(stream_name, path, inje
     assert f"/orgs/octocat{path}" not in requested
     assert f"/orgs/bigorg{path}" not in requested
 
-    source = SourceGithub(config=dict(config))
-    assert source._resolve_repositories_and_organizations(config)[0] == ["airbytehq"]
+    source = make_source(config=dict(config))
+    assert resolve_repositories_and_organizations(source, config)[0] == ["airbytehq"]
 
 
 def test_teams_listing_is_read_once_for_both_teams_and_team_members(rate_limit_mock_response, requests_mock):
@@ -226,7 +227,7 @@ def test_teams_listing_is_read_once_for_both_teams_and_team_members(rate_limit_m
     requests_mock.get("https://api.github.com/orgs/airbytehq/teams/core/members", json=[{"id": 9, "login": "octo"}])
 
     catalog = _catalog("teams", "team_members")
-    source = SourceGithub(config=dict(config), catalog=catalog, state=[])
+    source = make_source(config=dict(config), catalog=catalog, state=[])
     records = [
         message.record for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, []) if message.type == Type.RECORD
     ]

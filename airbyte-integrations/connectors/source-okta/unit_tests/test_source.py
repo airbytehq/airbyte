@@ -56,10 +56,11 @@ class TestAuthentication:
         oauth_kwargs["token_refresh_endpoint"] = f"{api_url}/oauth2/v1/token"
         oauth_authentication_instance = CustomOauth2Authenticator(config=oauth_config, **oauth_kwargs, parameters=None)
         assert isinstance(oauth_authentication_instance, CustomOauth2Authenticator)
-        source_okta = SourceOkta()
+        source_okta = SourceOkta(config=oauth_config)
         streams = source_okta.streams(config=oauth_config)
-        for i, _ in enumerate(streams):
-            assert _.__class__.__name__ == "DeclarativeStream"
+        assert streams
+        for stream in streams:
+            assert stream.__class__.__name__ == "DefaultStream"
 
     def test_oauth2_refresh_token_ok(self, requests_mock, oauth_config, api_url):
         oauth_kwargs = {key: value for key, value in oauth_config.get("credentials").items() if key != "auth_type"}

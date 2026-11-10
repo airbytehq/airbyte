@@ -16,6 +16,8 @@ These limitations only apply to those using the Standard plan. Upgrading to a hi
 
 - Single sign-on (SSO) isn't available. If your Standard organization already uses SSO, you keep it as long as you remain a paying customer.
 
+- Role-based access control (RBAC), user groups, and SCIM provisioning aren't available. Every user is a workspace admin or an organization admin, and you can't change their roles. See [Manage users and permissions](/platform/access-management/manage-users).
+
 ## Plus plan limitations
 
 These limitations only apply to those using the Plus plan. If you upgrade to Pro or Enterprise Flex, Airbyte removes these limitations.
@@ -24,7 +26,7 @@ These limitations only apply to those using the Plus plan. If you upgrade to Pro
 
 - Scheduled or cron syncs can run at most every 15 minutes.
 
-- SSO is available, but SCIM provisioning and role-based access control aren't.
+- SSO is available, but SCIM provisioning, user groups, and role-based access control aren't. Every user is a workspace admin or an organization admin. See [Manage users and permissions](/platform/access-management/manage-users).
 
 ## Cloud limitations for all plans
 
@@ -40,7 +42,7 @@ These limitations only apply to those using the Plus plan. If you upgrade to Pro
 
 Organizations on capacity-based plans (Pro, Enterprise Flex) have a contracted number of data workers. When all data workers are in use, additional syncs are queued until capacity becomes available. This is not a hard limit on the number of connections or syncs you can create, but a limit on concurrent sync execution.
 
-You can enable on-demand capacity for critical connections so they run even when committed capacity is exhausted. See [Monitor data worker usage](./manage-data-workers.md) for details.
+You can enable on-demand capacity for critical connections so they run even when committed capacity is exhausted. See [Manage and monitor data workers](./manage-data-workers.md) for details.
 
 \*\* The effective maximum size of the record may vary based per destination. Some destinations may
 fail to sync if a record cannot be stored, but Destinations which support

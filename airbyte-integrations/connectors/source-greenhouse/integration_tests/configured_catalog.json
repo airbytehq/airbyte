@@ -468,6 +468,20 @@
     },
     {
       "stream": {
+        "name": "candidate_attribute_types",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "candidate_educations",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -664,6 +678,20 @@
     },
     {
       "stream": {
+        "name": "job_notes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "job_owners",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -693,6 +721,76 @@
     {
       "stream": {
         "name": "user_emails",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "scorecard_question_answers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "scorecard_question_options",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "scorecard_question_answer_options",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "job_post_locations",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "job_candidate_attributes",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

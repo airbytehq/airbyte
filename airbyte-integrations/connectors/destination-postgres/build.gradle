@@ -33,7 +33,7 @@ application {
 def hikariCpVersion = "7.0.2"
 def junitVersion = "5.13.4"
 def junitPlatformVersion = "1.13.4"
-def postgresqlVersion = "42.7.2"
+def postgresqlVersion = "42.7.14"
 def testContainersVersion = "1.21.4"
 
 dependencies {
@@ -46,7 +46,7 @@ dependencies {
     // Provides PostgresSslConnectionUtils for SSL connection setup
     implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres"))
 
-    testImplementation("io.mockk:mockk:1.14.5")
+    testImplementation("io.mockk:mockk:1.14.11")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-engine:$junitPlatformVersion")

@@ -67,11 +67,13 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 10. (Optional) For **Streams with API Data Retention Validation**, select the streams whose cursor age the connector checks against Stripe's 30-day [Events API retention limit](https://stripe.com/docs/api/events). If a selected stream's cursor is older than 30 days, the connector runs a full refresh for that stream instead of an incremental sync that would miss older changes. By default, no streams are selected, so the connector never overrides a stream's configured sync mode based on cursor age. For advice on which streams benefit from this check, see [Cursor age validation and automatic full refresh](#cursor-age-validation-and-automatic-full-refresh).
 
-11. (Optional) For **Number of Concurrent Threads**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
+11. (Optional) For **Accounts start date**, enter the UTC date and time from which the `Accounts` stream reads connected accounts, in the format `YYYY-MM-DDTHH:mm:ssZ`. The default, `2010-01-01T00:00:00Z`, reads every connected account; a later date leaves out the accounts created before it, on full refreshes too. `Persons` reads its accounts from the `Accounts` stream, so the persons of those accounts are left out as well.
 
-12. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second for test and sandbox API keys and 100 calls per second for live API keys. This value cannot exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
+12. (Optional) For **Number of Concurrent Threads**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
 
-13. Click **Set up source** and wait for the tests to complete.
+13. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second for test and sandbox API keys and 100 calls per second for live API keys. This value cannot exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
+
+14. Click **Set up source** and wait for the tests to complete.
 
 <!-- markdownlint-enable MD029 -->
 <HideInUI>
@@ -153,7 +155,9 @@ The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https:
 
 ### Stripe API version
 
-This connector uses Stripe API version `2022-11-15`. Stripe returns data shaped according to this version regardless of the version configured in your Stripe dashboard. For details on Stripe API versioning, see [Stripe API upgrades](https://docs.stripe.com/upgrades).
+This connector sends Stripe API version `2022-11-15` with every request. Objects read directly from Stripe endpoints, which is what full refresh syncs and the first sync of each stream do, are shaped according to this version regardless of the version configured in your Stripe dashboard.
+
+Incremental syncs of streams that read from the Events API work differently. Stripe renders each event's `data.object` at your account's default API version as of the time the event was created, and the version the connector requests doesn't change it. Records synced incrementally from events can therefore differ from full refresh records. For example, fields added or removed in later API versions can be missing or `null`. For details, see [Stripe API upgrades](https://docs.stripe.com/upgrades) and [Versioning](https://docs.stripe.com/api/versioning).
 
 ## Limitations & Troubleshooting
 
@@ -166,7 +170,9 @@ Expand to see details about Stripe connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The Stripe connector should not run into Stripe API limitations under normal usage. See Stripe [Rate limits](https://stripe.com/docs/rate-limits) documentation. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Stripe connector automatically manages API rate limits, including retries and backoff for HTTP 429 responses. Stripe enforces a limit of [25 requests per second for sandbox keys and 100 requests per second for live keys](https://stripe.com/docs/rate-limits). The connector respects these limits and adjusts its request rate accordingly.
+
+If you experience rate limiting, you can reduce the **Number of concurrent threads** setting in the connector configuration. The default is 10 for live keys and 4 for sandbox keys. You can also configure a **Max number of API calls per second** to set a stricter limit. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see rate limit issues that are not automatically retried successfully.
 
 :::warning
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
@@ -183,7 +189,6 @@ For high-usage streams like `Charges`, `Invoice Items`, `Invoice Line Items`, `I
 
 You can customize which streams have cursor age validation by modifying the **Streams with API Data Retention Validation** list in your connection settings. The full list of streams eligible for cursor age validation is:
 
-- `Accounts`
 - `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
@@ -219,6 +224,8 @@ You can customize which streams have cursor age validation by modifying the **St
 - `Transactions`
 - `Transfers`
 
+`Accounts` still appears in the **Streams with API Data Retention Validation** setting so that saved configurations stay valid, but selecting it has no effect. Since version 7.1.0 the `Accounts` stream doesn't read the Events API, so there is no 30-day retention limit to check for it.
+
 :::warning
 **Important**: If a stream is removed from the validation list and its cursor becomes stale (older than 30 days), the connector will continue using the Events API for incremental sync, which only returns the last 30 days of data. This may result in missed updates for records older than 30 days. Only remove streams from the validation list if you are confident that a stale cursor is acceptable for your use case.
 :::
@@ -228,6 +235,7 @@ You can customize which streams have cursor age validation by modifying the **St
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
 
+- `Accounts` (cursor field is `updated`, set from `created`)
 - `Balance Transactions`
 - `Customer Balance Transactions`
 - `Events`
@@ -247,7 +255,6 @@ For records the connector rebuilds from the Events API, `updated` comes from the
 
 :::
 
-- `Accounts`
 - `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
@@ -286,6 +293,31 @@ For records the connector rebuilds from the Events API, `updated` comes from the
 - `Transactions`
 - `Transfers`
 
+#### Connected accounts only sync when they are created
+
+The `Accounts` stream lists the connected accounts of a Stripe Connect platform. Incremental syncs read `/v1/accounts` filtered by `created`, so a new connected account arrives on the next sync, but a change to an existing connected account (for example its `charges_enabled` or `requirements` fields) isn't picked up. Stripe files `account.updated` events in the connected account's own event feed rather than the platform's, so the connector can't use the Events API to detect those changes. Refresh the `Accounts` stream when you need current details for existing connected accounts. The `Persons` stream has the same limitation: its incremental syncs read only `person.*` events, and [Stripe's Connect webhooks page](https://docs.stripe.com/connect/webhooks) lists `person.created`, `person.updated` and `person.deleted` among the events delivered for connected accounts, so new and changed persons might not arrive until you refresh the stream, and it reads its parent accounts through the same `created` windows from the **Accounts start date** as the `Accounts` stream.
+
+Since version 7.1.0:
+
+- A full refresh reads `/v1/accounts` in 30-day `created` windows from the **Accounts start date** (January 2010 by default) to now, and reads up to **Number of Concurrent Threads** windows at the same time. Stripe allows 50 in-progress requests per live-mode account, shared by all streams (see [Stripe's rate limits](https://docs.stripe.com/rate-limits)), so values above about 25 gain little and can trigger rate-limit retries.
+- A full refresh saves its bookmark only when the whole read completes, so a failed attempt starts again from the first window on retry rather than resuming.
+- After a full read the stream's bookmark is stored in the same form `Bank Accounts` uses since 7.0.3; earlier connector versions read it without error.
+- Stripe doesn't return `created` for Standard connected accounts; their `updated` value is the sync time, as in earlier versions.
+- The `Persons` stream reads its parent accounts one window after another, so it gains no speed from this change.
+- The first incremental sync after upgrading continues from the stream's saved bookmark minus the **Lookback Window**. The bookmark is normally the time of your last full read, so new connected accounts arrive from there, but changes to existing connected accounts are not picked up. Run a refresh of the `Accounts` stream once after upgrading if you need every connected account, or if those changes matter.
+
+#### Invoice line item IDs that don't start with `il_`
+
+Stripe accounts whose default API version is older than `2019-12-03` receive invoice line items in events with legacy IDs such as `ii_...`, `item_...`, `sub_...`, `su_...`, or `sli_...`. Before version 7.0.0, incremental syncs of `invoice_line_items` could write these legacy IDs, while full refresh syncs wrote the current `il_...` IDs for the same line items. A `sub_...` or `su_...` ID is the subscription's ID, so it repeats across renewal invoices, and a deduplicated destination kept only the most recent of those lines.
+
+From version 7.0.0, incremental syncs write `il_...` IDs. Rows written by earlier versions aren't removed automatically, so until you clean them up, affected line items can appear twice: once under the legacy ID and once under the `il_...` ID. To check whether you're affected, run a query like this against your destination:
+
+```sql
+SELECT COUNT(*) FROM <your_schema>.invoice_line_items WHERE SUBSTR(id, 1, 3) <> 'il_';
+```
+
+If the count is greater than zero, upgrade to 7.0.0 or later, then [refresh the `invoice_line_items` stream and remove records](/platform/operator-guides/refreshes). Refreshing and removing records deletes this stream's existing data in your destination, including rows that Stripe can't send again. The refreshed stream is rebuilt from the Invoices endpoints rather than from the 30-day Events API window, but only for invoices created on or after your configured start date. It doesn't recreate line items of invoices created before your start date, rows that recorded deleted draft invoices (`is_deleted` is `true`), or, in an Incremental | Append destination, earlier versions of each line item. Back up the `invoice_line_items` table before you refresh if you need any of these rows or the legacy IDs. Refreshing and retaining records doesn't remove the legacy rows, because they have a different primary key. For details, see the [7.0.0 migration guide](/integrations/sources/stripe-migrations#upgrading-to-700).
+
 ### Incremental deletes
 
 The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
@@ -320,6 +352,18 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.1.0       | 2026-11-03 | [90436](https://github.com/airbytehq/airbyte/pull/90436)     | Read `accounts` from `/v1/accounts` by `created`: incremental syncs pick up new connected accounts, full refreshes read parallel 30-day windows                                                                               |
+| 7.0.7 | 2026-11-10 | [91749](https://github.com/airbytehq/airbyte/pull/91749) | Update dependencies |
+| 7.0.6 | 2026-11-03 | [90261](https://github.com/airbytehq/airbyte/pull/90261) | Make interrupted `customer_balance_transactions` backfills resumable; fail on 400/403 for that stream instead of silently skipping customers |
+| 7.0.5 | 2026-11-01 | [90396](https://github.com/airbytehq/airbyte/pull/90396) | Simplify HTTP error handling configuration with no change to which errors are skipped or fail the sync |
+| 7.0.4 | 2026-11-03 | [90764](https://github.com/airbytehq/airbyte/pull/90764) | Update dependencies |
+| 7.0.3 | 2026-10-20 | [89581](https://github.com/airbytehq/airbyte/pull/89581) | Read `bank_accounts` full refreshes from 30-day `customers` slices instead of one partition per customer, and fail on HTTP 400 instead of silently skipping a slice |
+| 7.0.2 | 2026-10-20 | [89447](https://github.com/airbytehq/airbyte/pull/89447) | Update dependencies |
+| 7.0.1 | 2026-10-13 | [88397](https://github.com/airbytehq/airbyte/pull/88397) | Opt in to TCP keepalive and request timeouts (30 s connect, 80 s read) so dropped connections fail and retry instead of hanging |
+| 7.0.0 | 2026-10-13 | [87765](https://github.com/airbytehq/airbyte/pull/87765) | Use Stripe's current `il_` line item IDs for `invoice_line_items` on incremental syncs. See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-700). |
+| 6.0.23 | 2026-10-13 | [88809](https://github.com/airbytehq/airbyte/pull/88809) | Update dependencies |
+| 6.0.22 | 2026-10-06 | [88070](https://github.com/airbytehq/airbyte/pull/88070) | Update dependencies |
+| 6.0.21 | 2026-09-29 | [87375](https://github.com/airbytehq/airbyte/pull/87375) | Update dependencies |
 | 6.0.20 | 2026-09-22 | [86838](https://github.com/airbytehq/airbyte/pull/86838) | Update dependencies |
 | 6.0.19 | 2026-09-21 | [85087](https://github.com/airbytehq/airbyte/pull/85087) | Fix truncated `invoice_line_items` on incremental syncs: fetch the complete line item list from `invoices/{id}/lines` when the event payload embeds only the first page. Existing destination data for invoices with more than 10 line items requires a Full Refresh to repair. |
 | 6.0.18 | 2026-09-15 | [86254](https://github.com/airbytehq/airbyte/pull/86254) | Update dependencies |

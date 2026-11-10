@@ -27,7 +27,7 @@ class AzureBlobStorageSpecification :
 
     @get:JsonSchemaTitle("Azure Blob Storage Endpoint Domain Name")
     @get:JsonPropertyDescription(
-        "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example."
+        "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
     )
     @get:JsonProperty("azure_blob_storage_endpoint_domain_name")
     val azureBlobStorageEndpointDomainName: String? = "blob.core.windows.net"
@@ -48,7 +48,7 @@ class AzureBlobStorageSpecification :
 
     @get:JsonSchemaTitle("Azure Blob Storage Target Blob Size (MB)")
     @get:JsonPropertyDescription(
-        "The amount of megabytes after which the connector should spill the records in a new blob object. Make sure to configure size greater than individual records. Enter 0 if not applicable."
+        "The amount of megabytes after which the connector should spill the records in a new blob object. Make sure to configure size greater than individual records. Enter 0 if not applicable.",
     )
     @get:JsonProperty("azure_blob_storage_spill_size")
     @JsonSchemaInject(json = """{"default": 500}""")

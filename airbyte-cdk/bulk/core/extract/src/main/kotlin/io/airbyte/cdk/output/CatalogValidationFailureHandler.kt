@@ -98,6 +98,7 @@ data class ResetStream(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message = "Resetting stream '$streamID'."
+
     override fun asErrorTrace(): AirbyteErrorTraceMessage? = null
 }
 

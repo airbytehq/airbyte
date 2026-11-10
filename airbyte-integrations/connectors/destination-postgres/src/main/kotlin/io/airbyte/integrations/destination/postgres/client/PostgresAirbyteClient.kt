@@ -36,7 +36,7 @@ private val log = KotlinLogging.logger {}
 @SuppressFBWarnings(
     value = ["SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"],
     justification =
-        "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement."
+        "There is little chance of SQL injection. There is also little need for statement reuse. The basic statement is more readable than the prepared statement.",
 )
 class PostgresAirbyteClient(
     private val dataSource: DataSource,
@@ -50,7 +50,7 @@ class PostgresAirbyteClient(
      * `AIRBYTE_DESTINATION_POSTGRES_META_COLUMN_REPAIR=true`.
      */
     @Value("\${airbyte.destination.postgres.meta-column-repair:false}")
-    private val metaColumnRepairEnabled: Boolean = false,
+    private val metaColumnRepairEnabled: Boolean,
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     companion object {
@@ -100,8 +100,10 @@ class PostgresAirbyteClient(
                 SELECT 1 FROM information_schema.schemata
                 WHERE schema_name = '$namespace'
             )
-            """
-        ) { rs -> rs.next() && rs.getBoolean(1) }
+            """,
+        ) { rs ->
+            rs.next() && rs.getBoolean(1)
+        }
     }
 
     override suspend fun tableExists(table: TableName): Boolean {
@@ -112,8 +114,10 @@ class PostgresAirbyteClient(
                 WHERE table_schema = '${table.namespace}'
                 AND table_name = '${table.name}'
             )
-            """
-        ) { rs -> rs.next() && rs.getBoolean(1) }
+            """,
+        ) { rs ->
+            rs.next() && rs.getBoolean(1)
+        }
     }
 
     override suspend fun createNamespace(namespace: String) {
@@ -139,7 +143,7 @@ class PostgresAirbyteClient(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        replace: Boolean
+        replace: Boolean,
     ) {
         val (createTableSql, createIndexesSql) =
             sqlGenerator.createTable(stream, tableName, replace)
@@ -169,7 +173,7 @@ class PostgresAirbyteClient(
     override suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         val metaColumnNames = columnManager.getMetaColumnNames()
         val targetColumnNames =
@@ -179,7 +183,7 @@ class PostgresAirbyteClient(
                 metaColumnNames + columnNameMapping.values
             }
         execute(
-            sqlGenerator.copyTable(targetColumnNames.toList(), sourceTableName, targetTableName)
+            sqlGenerator.copyTable(targetColumnNames.toList(), sourceTableName, targetTableName),
         )
     }
 
@@ -187,7 +191,7 @@ class PostgresAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         execute(sqlGenerator.upsertTable(stream, sourceTableName, targetTableName))
     }
@@ -204,7 +208,7 @@ class PostgresAirbyteClient(
      */
     private fun repairMissingMetaColumns(
         tableName: TableName,
-        columnsInDb: Map<String, ColumnType>
+        columnsInDb: Map<String, ColumnType>,
     ) {
         val missingMetaColumns =
             columnManager.getMetaColumns().filterKeys { metaColumn ->
@@ -223,7 +227,7 @@ class PostgresAirbyteClient(
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ) {
         var columnsInDb = getColumnsFromDb(tableName)
         if (metaColumnRepairEnabled) {
@@ -256,7 +260,7 @@ class PostgresAirbyteClient(
                 recreateCursorIndex =
                     !isRawTablesMode && shouldRecreateCursorIndex(stream, tableName),
                 cursorColumnName = stream.tableSchema.getCursor().firstOrNull(),
-            )
+            ),
         )
     }
 
@@ -278,7 +282,7 @@ class PostgresAirbyteClient(
 
     override fun computeSchema(
         stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ): TableSchema {
         return TableSchema(stream.tableSchema.columnSchema.finalSchema)
     }
@@ -288,7 +292,7 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedColumns: TableColumns,
-        columnChangeset: ColumnChangeset
+        columnChangeset: ColumnChangeset,
     ) {
         if (
             columnChangeset.columnsToAdd.isNotEmpty() ||
@@ -307,7 +311,7 @@ class PostgresAirbyteClient(
                     primaryKeyColumnNames = emptyList(),
                     recreateCursorIndex = false,
                     cursorColumnName = null,
-                )
+                ),
             )
         }
     }
@@ -442,7 +446,7 @@ class PostgresAirbyteClient(
 
     internal fun generateSchemaChanges(
         columnsInDb: Map<String, ColumnType>,
-        columnsInStream: Map<String, ColumnType>
+        columnsInStream: Map<String, ColumnType>,
     ): Triple<Map<String, ColumnType>, Map<String, ColumnType>, Map<String, ColumnTypeChange>> {
         val addedColumns = columnsInStream.filterKeys { it !in columnsInDb.keys }
         val deletedColumns = columnsInDb.filterKeys { it !in columnsInStream.keys }

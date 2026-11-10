@@ -4,7 +4,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Harvest v3 stream behavior
 
-This connector uses Greenhouse Harvest v3 with a single OAuth Authorization Code authentication branch. The `OAuthAuthenticator` uses the `refresh_token` grant, HTTP Basic authentication, `expires_at` with `token_expiry_date_format`, and `refresh_token_updater` to persist each rotated refresh token. The `advanced_auth` predicate must remain `[credentials, auth_type]` with `predicate_value: Client`. The `credentials` `oneOf` shape is deliberately retained so a `ClientCredentials` branch can be added additively in a follow-up. Connections idle longer than the approximately 24-hour refresh-token lifetime require manual reauthentication. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade so `applications` backfills once on the new `updated_at` cursor.
+This connector uses Greenhouse Harvest v3 with a `SelectiveAuthenticator` that chooses between two OAuth branches using `[credentials, auth_type]`. The `Client` branch uses the Authorization Code `refresh_token` grant, HTTP Basic authentication, `expires_at` with `token_expiry_date_format`, and `refresh_token_updater` to persist each rotated refresh token. The `ClientCredentials` branch uses the `client_credentials` grant for customer-created custom integrations, has no rotating refresh token or `refresh_token_updater`, and may include the optional Site Admin `sub`. These grants are not interchangeable per Greenhouse application type: partner OAuth apps reject `client_credentials`, while custom integrations reject `authorization_code`. The `advanced_auth` predicate must remain `[credentials, auth_type]` with `predicate_value: Client`. Connections using the `Client` branch idle longer than the 14-day refresh-token lifetime documented on Greenhouse's partner OAuth page require manual reauthentication. Because every refresh replaces the refresh token, a sync killed between the refresh and the platform saving the new token's `CONTROL` message also strands the connection with `invalid_grant`; the connector cannot close that gap. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade so `applications` backfills once on the new `updated_at` cursor.
 All streams use the v3 cursor paginator with a first-page `per_page` value of 500 (the v3 maximum; the server default is 100).
 
 v3 invariants a future edit must not break:
@@ -26,7 +26,7 @@ v3 invariants a future edit must not break:
 Harvest v3 exposes no deletion endpoint, no `include_deleted` parameter, and no `deleted_at` field, so hard deletes leave no trace and are invisible to this connector. The canonical pattern here is a **deletion flag on the primary stream**, and any new stream should follow it rather than invent a second mechanism:
 
 - `job_posts.active` - v3 excludes inactive posts by default, so the stream uses a `ListPartitionRouter` over `active=true|false` to read both.
-- `active` on `custom_fields`, `custom_field_options` (and its `degrees`/`disciplines`/`schools` views), `demographics_question_sets`, `demographics_questions`, `demographics_answer_options`, and `prospect_pools` - v3 returns both states by default, so the flag arrives without a request parameter.
+- `active` on `custom_fields`, `custom_field_options` (and its `degrees`/`disciplines`/`schools` views), `demographics_question_sets`, `demographics_questions`, `demographics_answer_options`, `prospect_pools`, `scorecard_question_options`, and `job_candidate_attributes` - v3 returns both states by default, so the flag arrives without a request parameter.
 - `users.deactivated` - deactivated users are still listed.
 
 Webhook-based deletion capture is out of scope.
@@ -42,6 +42,10 @@ curl --request GET \
 ```
 
 That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operator and value, and it is the shape every cursor-field date filter here uses (`submitted_at` for `eeoc`). Do not rewrite it into repeated parameters, `updated_at[gte]`-style brackets, or a lower bound alone because the reference text does not mention it; build the request in the docs page first and match what it produces.
+
+`lte|T` leaves out a record whose returned `updated_at` equals `T` exactly, while `gte|T` includes it. Both operators are inclusive; the cause is precision. Greenhouse stores `updated_at` in microseconds but returns it truncated to milliseconds, so a record shown as `.717Z` is stored as, say, `.717318` and compares greater than `T`. Measured on 2026-10-01 across 76 records on `job_notes` and the five 1.5.0 streams: `gt|T` includes every record, `lte|T` excludes every record, `lte|T+999us` includes every record, and bisection recovered the stored microseconds. At the stored value itself, `lte` includes the record and `lt` excludes it.
+
+This needs no compensation in the manifest and none is present. Because `gte` is inclusive, a record sitting exactly on a slice boundary is read by the next slice, and on the next sync by the state cursor's own lower bound. Do not widen `lte` to "fix" it: that would re-read the boundary record in both slices instead.
 
 | Stream | Relationship | Cursor field | Request filter | Status |
 |---|---|---|---|---|
@@ -82,6 +86,7 @@ That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operato
 | application_stages | top-level | updated_at | updated_at | incremental |
 | applied_candidate_tags | top-level | updated_at | updated_at | incremental |
 | attachments | top-level | updated_at | updated_at | incremental |
+| candidate_attribute_types | top-level | updated_at | updated_at | incremental |
 | candidate_educations | top-level | updated_at | updated_at | incremental |
 | candidate_employments | top-level | updated_at | updated_at | incremental |
 | prospect_details | top-level | updated_at | updated_at | incremental |
@@ -93,9 +98,15 @@ That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operato
 | job_interviews | top-level | updated_at | updated_at | incremental |
 | scorecard_candidate_attributes | top-level | updated_at | updated_at | incremental |
 | scorecard_questions | top-level | updated_at | updated_at | incremental |
+| scorecard_question_answers | top-level | updated_at | updated_at | incremental |
+| scorecard_question_options | top-level | updated_at | updated_at | incremental |
+| scorecard_question_answer_options | top-level | updated_at | updated_at | incremental |
 | approver_groups | top-level | updated_at | updated_at | incremental |
 | approvers | top-level | updated_at | updated_at | incremental |
 | job_hiring_managers | top-level | updated_at | updated_at | incremental |
+| job_notes | top-level | updated_at | updated_at | incremental |
 | job_owners | top-level | updated_at | updated_at | incremental |
+| job_post_locations | top-level | updated_at | updated_at | incremental |
+| job_candidate_attributes | top-level | updated_at | updated_at | incremental |
 | prospect_pool_stages | top-level | updated_at | updated_at | incremental |
 | user_emails | top-level | updated_at | updated_at | incremental |

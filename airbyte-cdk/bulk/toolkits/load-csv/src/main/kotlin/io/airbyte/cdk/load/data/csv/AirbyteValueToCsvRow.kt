@@ -41,6 +41,5 @@ fun AirbyteValue?.toCsvValue(): Any {
             is TimeWithTimezoneValue -> it.value
             is TimeWithoutTimezoneValue -> it.value
         }
-    }
-        ?: ""
+    } ?: ""
 }

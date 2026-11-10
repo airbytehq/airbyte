@@ -46,10 +46,11 @@ interface DestinationChecker<C : DestinationConfiguration> {
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     fun check(config: C)
+
     fun cleanup(config: C) {}
 }
 
@@ -81,12 +82,12 @@ class DestinationCheckerSync<C : DestinationConfiguration>(
                         System.currentTimeMillis(),
                     )
                     .asProtocolMessage()
-                    .serializeToString()
+                    .serializeToString(),
             )
             pipe.println(
                 DestinationRecordStreamComplete(mockStream, System.currentTimeMillis())
                     .asProtocolMessage()
-                    .serializeToString()
+                    .serializeToString(),
             )
             pipe.close()
         }

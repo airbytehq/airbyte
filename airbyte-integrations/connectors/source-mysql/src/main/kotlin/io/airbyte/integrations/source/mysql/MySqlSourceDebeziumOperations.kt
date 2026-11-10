@@ -152,14 +152,14 @@ class MySqlSourceDebeziumOperations(
         resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
             FieldValueEncoder(
                 transactionOffsetDateTime,
-                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>,
             )
 
         resultRow[CommonMetaField.CDC_DELETED_AT.id] =
             FieldValueEncoder(
                 if (isDelete) transactionOffsetDateTime else null,
                 (if (isDelete) CommonMetaField.CDC_DELETED_AT.type.jsonEncoder else NullCodec)
-                    as JsonEncoder<Any>
+                    as JsonEncoder<Any>,
             )
 
         // Set _ab_cdc_log_file and _ab_cdc_log_pos meta-field values.
@@ -168,20 +168,20 @@ class MySqlSourceDebeziumOperations(
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
             FieldValueEncoder(
                 position.fileName,
-                MySqlSourceCdcMetaFields.CDC_LOG_FILE.type.jsonEncoder as JsonEncoder<Any>
+                MySqlSourceCdcMetaFields.CDC_LOG_FILE.type.jsonEncoder as JsonEncoder<Any>,
             )
 
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
             FieldValueEncoder(
                 position.position.toDouble(),
-                MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
+                MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>,
             )
 
         // Set the _ab_cdc_cursor meta-field value.
         resultRow[MySqlSourceCdcMetaFields.CDC_CURSOR.id] =
             FieldValueEncoder(
                 position.cursorValue,
-                MySqlSourceCdcMetaFields.CDC_CURSOR.type.jsonEncoder as JsonEncoder<Any>
+                MySqlSourceCdcMetaFields.CDC_CURSOR.type.jsonEncoder as JsonEncoder<Any>,
             )
 
         // Return a DeserializedRecord instance.
@@ -203,7 +203,7 @@ class MySqlSourceDebeziumOperations(
             } catch (e: Exception) {
                 log.error(e) { "Error deserializing incumbent state value." }
                 return AbortDebeziumWarmStartState(
-                    "Error deserializing incumbent state value: ${e.message}"
+                    "Error deserializing incumbent state value: ${e.message}",
                 )
             }
         return validate(debeziumState)
@@ -220,7 +220,7 @@ class MySqlSourceDebeziumOperations(
         val (_: MySqlSourceCdcPosition, gtidSet: String?) = queryPositionAndGtids()
         if (gtidSet.isNullOrEmpty() && !savedStateOffset.gtidSet.isNullOrEmpty()) {
             return abortCdcSync(
-                "Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled"
+                "Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled",
             )
         }
 
@@ -228,7 +228,7 @@ class MySqlSourceDebeziumOperations(
         val availableGtidSet = MySqlGtidSet(gtidSet)
         if (!savedGtidSet.isContainedWithin(availableGtidSet)) {
             return abortCdcSync(
-                "Connector last known GTIDs are $savedGtidSet, but MySQL server only has $availableGtidSet"
+                "Connector last known GTIDs are $savedGtidSet, but MySQL server only has $availableGtidSet",
             )
         }
 
@@ -239,7 +239,7 @@ class MySqlSourceDebeziumOperations(
             val purgedGtidSet = queryPurgedIds()
             if (!purgedGtidSet.isEmpty && !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
                 return abortCdcSync(
-                    "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
+                    "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet",
                 )
             }
         }
@@ -252,7 +252,7 @@ class MySqlSourceDebeziumOperations(
             val found = existingLogFiles.contains(savedStateOffset.position.fileName)
             if (!found) {
                 return abortCdcSync(
-                    "Connector last known binlog file ${savedStateOffset.position.fileName} is not found in the server. Server has $existingLogFiles"
+                    "Connector last known binlog file ${savedStateOffset.position.fileName} is not found in the server. Server has $existingLogFiles",
                 )
             }
         }
@@ -265,11 +265,11 @@ class MySqlSourceDebeziumOperations(
                 AbortDebeziumWarmStartState(
                     "Saved offset no longer present on the server, please reset the connection, " +
                         "and then increase binlog retention and/or increase sync frequency. " +
-                        "$reason."
+                        "$reason.",
                 )
             InvalidCdcCursorPositionBehavior.RESET_SYNC ->
                 ResetDebeziumWarmStartState(
-                    "Saved offset no longer present on the server. $reason."
+                    "Saved offset no longer present on the server. $reason.",
                 )
         }
 
@@ -284,7 +284,7 @@ class MySqlSourceDebeziumOperations(
     enum class CdcStateValidateResult {
         VALID,
         INVALID_ABORT,
-        INVALID_RESET
+        INVALID_RESET,
     }
 
     override fun position(offset: DebeziumOffset): MySqlSourceCdcPosition =
@@ -343,7 +343,7 @@ class MySqlSourceDebeziumOperations(
 
     private fun parseBinaryLogStatus(
         stmt: Statement,
-        query: String
+        query: String,
     ): Pair<MySqlSourceCdcPosition, String?> {
         stmt.executeQuery(query).use { rs: ResultSet ->
             if (!rs.next()) throw ConfigErrorException("No results for query: {{$query}}")
@@ -352,11 +352,13 @@ class MySqlSourceDebeziumOperations(
             val gtids = EmittedField("Executed_Gtid_Set", StringFieldType)
             val mySqlSourceCdcPosition =
                 MySqlSourceCdcPosition(
-                    fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
+                    fileName =
+                        rs.getString(file.id)?.takeUnless { rs.wasNull() }
                             ?: throw ConfigErrorException(
                                 "No value for ${file.id} in: {{$query}}",
                             ),
-                    position = rs.getLong(pos.id).takeUnless { rs.wasNull() || it <= 0 }
+                    position =
+                        rs.getLong(pos.id).takeUnless { rs.wasNull() || it <= 0 }
                             ?: throw ConfigErrorException(
                                 "No value for ${pos.id} in: {{$query}}",
                             ),
@@ -415,7 +417,7 @@ class MySqlSourceDebeziumOperations(
 
     override fun serializeState(
         offset: DebeziumOffset,
-        schemaHistory: DebeziumSchemaHistory?
+        schemaHistory: DebeziumSchemaHistory?,
     ): OpaqueStateValue {
         val stateNode: ObjectNode = Jsons.objectNode()
         // Serialize offset.
@@ -535,14 +537,14 @@ class MySqlSourceDebeziumOperations(
             java.util.Map.of(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, false.toString())
 
         internal fun deserializeStateUnvalidated(
-            opaqueStateValue: OpaqueStateValue
+            opaqueStateValue: OpaqueStateValue,
         ): UnvalidatedDeserializedState {
             val stateNode: ObjectNode = opaqueStateValue[STATE] as ObjectNode
             // Deserialize offset.
             val offsetNode: ObjectNode = stateNode[MYSQL_CDC_OFFSET] as ObjectNode
             val offsetMap: Map<JsonNode, JsonNode> =
                 offsetNode
-                    .fields()
+                    .properties()
                     .asSequence()
                     .map { (k, v) -> Jsons.readTree(k) to Jsons.readTree(v.textValue()) }
                     .toMap()

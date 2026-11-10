@@ -591,23 +591,21 @@ definitions:
             Accept: application/json
             Intercom-Version: "2.11"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: CustomErrorHandler
-                class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 404
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 401
-                    action: FAIL
-                    failure_type: config_error
-                    error_message: >-
-                      Failed to perform request. Error: Permission Scope Error.
-                      Please validate you have "Read conversations" permission here: https://app.intercom.com/a/apps/_/developer-hub
+            type: CustomErrorHandler
+            class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+              - type: HttpResponseFilter
+                http_codes:
+                  - 401
+                action: FAIL
+                failure_type: config_error
+                error_message: >-
+                  Failed to perform request. Error: Permission Scope Error.
+                  Please validate you have "Read conversations" permission here: https://app.intercom.com/a/apps/_/developer-hub
         record_selector:
           type: RecordSelector
           extractor:

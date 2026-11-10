@@ -10,6 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.models import ExpectedOutcome
 from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
@@ -38,11 +39,27 @@ _INVALID_URN_TYPE_BODY = json.dumps(
         "code": "INVALID_URN_TYPE",
     }
 )
-# What the Posts API returns when the path key is not a URN at all
-# (e.g. the literal `None` produced by an explicitly null content.reference).
-_MALFORMED_URN_BODY = json.dumps(
+# What the Posts API really returns for a Message Ads InMail reference: a UGC validation
+# error whose `message` is generic and whose offending URN appears only under
+# `errorDetails.inputErrors[].description`. Captured verbatim from api.linkedin.com/rest.
+_UGC_VALIDATIONS_FAILED_BODY = json.dumps(
     {
-        "message": "Invalid URN in path key 'postsId': 'None' is not a valid URN",
+        "code": "UGC_VALIDATIONS_FAILED",
+        "errorDetailType": "com.linkedin.common.error.BadRequest",
+        "message": "Validations failed on the UGC entity. Please see errorDetails for more information.",
+        "errorDetails": {"inputErrors": [{"description": "urn:li:adInMailContent:2825243 is not a valid urn type"}]},
+        "status": 400,
+    }
+)
+# Synthetic (not captured from the API): a UGC validation failure on a genuine post, whose
+# errorDetails name the share URN rather than an InMail URN. It must fail the stream rather
+# than be skipped.
+_UGC_VALIDATIONS_FAILED_POST_URN_BODY = json.dumps(
+    {
+        "code": "UGC_VALIDATIONS_FAILED",
+        "errorDetailType": "com.linkedin.common.error.BadRequest",
+        "message": "Validations failed on the UGC entity. Please see errorDetails for more information.",
+        "errorDetails": {"inputErrors": [{"description": "urn:li:share:1000001 has an unsupported lifecycleState"}]},
         "status": 400,
     }
 )
@@ -298,13 +315,99 @@ class TestVideosStream(TestCase):
         assert not output.errors
 
     @HttpMocker()
+    def test_ugc_validations_failed_inmail_reference_is_skipped_without_failing_the_sync(self, http_mocker: HttpMocker):
+        """
+        Given: Two creatives, one referencing Message Ads InMail content that the Posts API rejects
+               with the 400 UGC_VALIDATIONS_FAILED body LinkedIn actually returns (generic `message`,
+               the offending URN named only inside `errorDetails`) and one a live video post
+        When: Running a full refresh sync
+        Then: The InMail reference is skipped and the other creative's video still syncs
+
+        Regression test: a skip predicate that only inspects `response.message` never matches this
+        body, so a single Message Ads creative used to fail the whole videos sync with 0 records.
+        """
+        config = ConfigBuilder().build()
+
+        http_mocker.get(
+            _accounts_request(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+        http_mocker.get(
+            _creatives_request(111111111),
+            LinkedInAdsPaginatedResponseBuilder.single_page(
+                [
+                    _create_creative_record(2001, 111111111, "urn:li:adInMailContent:2825243"),
+                    _create_creative_record(2002, 111111111, "urn:li:share:1000002"),
+                ]
+            ),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:adInMailContent:2825243").build(),
+            HttpResponse(body=_UGC_VALIDATIONS_FAILED_BODY, status_code=400),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000002").build(),
+            _single_object_response(_create_post_record("urn:li:share:1000002", "urn:li:video:CCC333")),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.video_endpoint("urn:li:video:CCC333").build(),
+            _single_object_response(_create_video_record("CCC333")),
+        )
+
+        output = read(
+            get_source(config=config),
+            config=config,
+            catalog=CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
+        )
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "urn:li:video:CCC333"
+        assert not output.errors
+
+    @HttpMocker()
+    def test_ugc_validations_failed_naming_a_post_urn_fails_the_stream(self, http_mocker: HttpMocker):
+        """
+        Given: A creative referencing a genuine post that the Posts API rejects with a 400
+               UGC_VALIDATIONS_FAILED body whose errorDetails name that share URN
+        When: Running a full refresh sync
+        Then: The stream fails instead of silently skipping the post
+        """
+        config = ConfigBuilder().build()
+
+        http_mocker.get(
+            _accounts_request(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+        http_mocker.get(
+            _creatives_request(111111111),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(2001, 111111111, "urn:li:share:1000001")]),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000001").build(),
+            HttpResponse(body=_UGC_VALIDATIONS_FAILED_POST_URN_BODY, status_code=400),
+        )
+
+        output = read(
+            get_source(config=config),
+            config=config,
+            catalog=CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
+            expected_outcome=ExpectedOutcome.EXPECT_EXCEPTION,
+        )
+
+        assert len(output.records) == 0
+        assert output.errors
+
+    @HttpMocker()
     def test_null_creative_reference_is_skipped_without_failing_the_sync(self, http_mocker: HttpMocker):
         """
-        Given: Two creatives, one carrying an explicitly null content.reference (the partition
-               is still emitted and requests the literal path posts/None, which LinkedIn
-               rejects with 400) and one referencing a live video post
+        Given: Two creatives, one carrying an explicitly null content.reference and one
+               referencing a live video post
         When: Running a full refresh sync
-        Then: The null reference is skipped and the other creative's video still syncs
+        Then: The null reference is dropped before the post lookup and the other creative's
+              video still syncs
+
+        No posts/None request is mocked, so the test fails if the stream sends one: LinkedIn
+        rejects it with 400 "Key parameter value 'None' is invalid", which no skip filter matches.
         """
         config = ConfigBuilder().build()
 
@@ -323,10 +426,6 @@ class TestVideosStream(TestCase):
                     _create_creative_record(2002, 111111111, "urn:li:share:1000002"),
                 ]
             ),
-        )
-        http_mocker.get(
-            LinkedInAdsRequestBuilder.posts_endpoint("None").build(),
-            HttpResponse(body=_MALFORMED_URN_BODY, status_code=400),
         )
         http_mocker.get(
             LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000002").build(),
