@@ -169,6 +169,22 @@ class TestSourceFacebookMarketing:
         config = ConnectorConfig.parse_obj(config)
         assert fb_marketing.get_custom_insights_streams(api, config)
 
+    @pytest.mark.parametrize("include_incrementality", [True, False])
+    def test_custom_insights_inherit_include_incrementality(self, config, fb_marketing, include_incrementality):
+        config["include_incrementality"] = include_incrementality
+        config["custom_insights"] = [
+            {
+                "name": "incrementality",
+                "fields": ["account_id", "spend"],
+                "breakdowns": [],
+                "action_breakdowns": ["action_type"],
+            }
+        ]
+
+        stream = fb_marketing.streams(config)[-1]
+
+        assert ("incrementality" in stream.request_params()["action_attribution_windows"]) is include_incrementality
+
     @pytest.mark.parametrize(
         "breakdowns",
         [
