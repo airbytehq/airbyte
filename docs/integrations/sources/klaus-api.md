@@ -38,7 +38,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.2.14 | 2026-11-09 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Update to source-declarative-manifest base image 7.47.0 (airbyte-cdk 7.x) |
+| 0.2.14 | 2026-11-09 | [91394](https://github.com/airbytehq/airbyte/pull/91394) | Update to source-declarative-manifest base image 7.47.0 (airbyte-cdk 7.x) |
 | 0.2.13 | 2025-05-24 | [60703](https://github.com/airbytehq/airbyte/pull/60703) | Update dependencies |
 | 0.2.12 | 2025-05-10 | [59813](https://github.com/airbytehq/airbyte/pull/59813) | Update dependencies |
 | 0.2.11 | 2025-05-03 | [58824](https://github.com/airbytehq/airbyte/pull/58824) | Update dependencies |
