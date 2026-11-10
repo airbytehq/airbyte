@@ -57,7 +57,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------- |
-| 0.2.26 | 2026-11-09 | [PR_NUM](https://github.com/airbytehq/airbyte/pull/PR_NUM) | Upgrade to source-declarative-manifest 7.47.0 base image |
+| 0.2.26 | 2026-11-09 | [91375](https://github.com/airbytehq/airbyte/pull/91375) | Upgrade to source-declarative-manifest 7.47.0 base image |
 | 0.2.25 | 2026-10-07 | [88209](https://github.com/airbytehq/airbyte/pull/88209) | Send catalog Content-Type as a header and clarify self-hosted authentication setup |
 | 0.2.24 | 2025-05-24 | [60358](https://github.com/airbytehq/airbyte/pull/60358) | Update dependencies |
 | 0.2.23 | 2025-05-10 | [59965](https://github.com/airbytehq/airbyte/pull/59965) | Update dependencies |
