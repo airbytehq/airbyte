@@ -40,6 +40,16 @@ definitions:
                     factor: 2
                 response_filters:
                   - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 400
+                    error_message_contains: deprecated v1 user token
+                    failure_type: config_error
+                    error_message: >-
+                      OneSignal rejected the User Auth Key because it uses a
+                      deprecated v1 format. Generate an Organization API key in
+                      OneSignal and enter it in the User Auth Key field.
+                  - type: HttpResponseFilter
                     action: RATE_LIMITED
                     http_codes:
                       - 429
