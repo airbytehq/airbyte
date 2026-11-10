@@ -70,7 +70,12 @@ If you prefer to use OAuth for authentication with **Airbyte Open Source**, you 
 3. Find and select the **Google Sheets API**.
 4. Click **ENABLE**.
 
-If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
+If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, give your service account access to your spreadsheet:
+
+1. Open the spreadsheet in Google Sheets.
+2. Click **Share**.
+3. Paste the service account's `client_email` from its JSON key.
+4. Grant at least **Viewer** access, then click **Share** / **Send**.
 
 <!-- /env:oss -->
 
