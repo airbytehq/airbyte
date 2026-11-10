@@ -228,9 +228,7 @@ class TestIncrementalTwilioStream:
 
         output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
 
-        assert [parse_qs(urlparse(request.url).query)["DateSent>"][0] for request in messages.request_history] == [
-            "2022-11-14 00:00:00Z"
-        ]
+        assert [parse_qs(urlparse(request.url).query)["DateSent>"][0] for request in messages.request_history] == ["2022-11-14 00:00:00Z"]
         final_state = output.most_recent_state.stream_state.__dict__
         assert final_state["use_global_cursor"] is True
         assert final_state["state"] == {"date_sent": "2022-11-14 00:00:00Z"}
