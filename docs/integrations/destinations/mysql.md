@@ -117,6 +117,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 1.1.3 | 2026-11-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix string values longer than 512 characters being written as NULL to the final table during typing and deduping. |
 | 1.1.2 | 2026-10-26 | [89768](https://github.com/airbytehq/airbyte/pull/89768) | Upgrade MySQL Connector/J 8.0.22 to 9.6.0 and pin `connectionTimeZone=LOCAL` so typing no longer skips records on servers west of UTC (MySQL and MySQL Strict Encrypt destinations). |
 | 1.1.1 | 2025-08-04 | [63736](https://github.com/airbytehq/airbyte/pull/63736) | Use MySQL/MariaDB compatible timestamp format |
 | 1.1.0 | 2025-03-25 | [50861](https://github.com/airbytehq/airbyte/pull/50861) | add support for mariadb |

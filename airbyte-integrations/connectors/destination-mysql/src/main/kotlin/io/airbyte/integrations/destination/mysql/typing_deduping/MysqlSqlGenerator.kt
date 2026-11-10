@@ -107,15 +107,12 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
 
                 var extractedValue: Field<*> = extractColumnAsJson(column.key)
                 if (!(isStruct || isArray || (type === AirbyteProtocolType.UNKNOWN))) {
-                    // Primitive types need to use JSON_VALUE to (a) strip quotes from strings, and
+                    // Primitive types need to (a) strip quotes from strings, and
                     // (b) cast json null to sql null.
-                    extractedValue =
-                        DSL.function(
-                            "JSON_VALUE",
-                            String::class.java,
-                            extractedValue,
-                            DSL.`val`("$"),
-                        )
+                    // We deliberately avoid JSON_VALUE here: without a RETURNING clause MySQL
+                    // returns VARCHAR(512) with an implicit NULL ON ERROR, which silently turns
+                    // every string longer than 512 characters into NULL.
+                    extractedValue = unquoteScalar(extractedValue)
                 }
                 if (isStruct) {
                     return@map DSL.case_()
@@ -414,6 +411,20 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
             field(name(JavaBaseConstants.COLUMN_NAME_DATA)),
             jsonPath(column),
         )
+    }
+
+    /**
+     * Turns a JSON scalar into its unquoted text form without a length limit. JSON null, a
+     * missing key and non-scalar values (objects, arrays) become SQL NULL, as they did with
+     * JSON_VALUE. Works on MySQL and MariaDB.
+     */
+    private fun unquoteScalar(json: Field<*>): Field<String> {
+        return DSL.case_()
+            .`when`(
+                jsonTypeof(json).`in`("NULL", "OBJECT", "ARRAY"),
+                DSL.inline(null as String?),
+            )
+            .else_(DSL.function("JSON_UNQUOTE", SQLDataType.LONGVARCHAR, json))
     }
 
     private fun jsonTypeof(field: Field<*>): Field<String> {

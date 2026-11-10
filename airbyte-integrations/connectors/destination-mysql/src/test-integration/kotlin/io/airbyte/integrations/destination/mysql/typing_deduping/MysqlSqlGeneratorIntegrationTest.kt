@@ -16,8 +16,10 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest
+import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.executeTypeAndDedupe
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.integrations.destination.mysql.MySQLDestination
 import io.airbyte.integrations.destination.mysql.MySQLNameTransformer
@@ -25,6 +27,7 @@ import io.airbyte.integrations.destination.mysql.MysqlTestDatabase
 import io.airbyte.integrations.destination.mysql.MysqlTestSourceOperations
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlSqlGenerator.Companion.TIMESTAMP_FORMATTER
 import java.time.OffsetDateTime
+import java.util.Optional
 import org.jooq.DataType
 import org.jooq.Field
 import org.jooq.SQLDialect
@@ -113,6 +116,52 @@ class MysqlSqlGeneratorIntegrationTest :
         val initialStatus = initialStatuses.first()
         Assertions.assertTrue(initialStatus.isFinalTablePresent)
         Assertions.assertFalse(initialStatus.isSchemaMismatch)
+    }
+
+    /**
+     * Strings longer than 512 characters used to become NULL in the final table, because
+     * JSON_VALUE without a RETURNING clause returns VARCHAR(512) with an implicit NULL ON ERROR.
+     */
+    @Test
+    @Throws(Exception::class)
+    fun longStringIsNotNulled() {
+        val longString = "x".repeat(2000)
+        createRawTable(streamId)
+        createFinalTable(incrementalAppendStream, "")
+        insertRawTableRecords(
+            streamId,
+            listOf(
+                Jsons.deserialize(
+                    """
+                    {
+                      "_airbyte_raw_id": "6a2f9d3e-0d4b-4c6e-9a8e-6d1f3c2b1a01",
+                      "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                      "_airbyte_data": {
+                        "id1": 1,
+                        "id2": 100,
+                        "string": "$longString"
+                      }
+                    }
+                    """
+                        .trimIndent(),
+                ),
+            ),
+        )
+
+        executeTypeAndDedupe(
+            generator,
+            destinationHandler,
+            incrementalAppendStream,
+            Optional.empty(),
+            "",
+        )
+
+        val actualFinalRecords = dumpFinalTableRecords(streamId, "")
+        Assertions.assertEquals(1, actualFinalRecords.size)
+        Assertions.assertEquals(
+            longString,
+            actualFinalRecords[0][generator.buildColumnId("string").name].asText(),
+        )
     }
 
     override fun toJsonValue(valueAsString: String?): Field<*> {
