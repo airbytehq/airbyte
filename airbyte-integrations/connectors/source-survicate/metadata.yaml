@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5770c58b-3288-4fa0-a968-bb8a6607fae1
-  dockerImageTag: 0.0.71
+  dockerImageTag: 0.0.72
   dockerRepository: airbyte/source-survicate
   githubIssueLabel: source-survicate
   icon: icon.svg
@@ -37,3 +37,11 @@ data:
     - title: Survicate API documentation
       url: https://developers.survicate.com/
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true

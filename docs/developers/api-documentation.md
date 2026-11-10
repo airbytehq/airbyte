@@ -243,3 +243,10 @@ Find Airbyte's full API documentation at [reference.airbyte.com](https://referen
 Airbyte has deprecated the configuration API and no longer supports it. The Configuration API is an internal API designed for communication between different Airbyte components, not for managing an Airbyte deployment.
 
 Use the Configuration API at your own risk. Airbyte engineers may modify it without warning.
+
+If you still call the Configuration API directly, be aware of the following behavior:
+
+- Provide every required field explicitly. Don't rely on Airbyte to fill in missing values. For example, requests to create a source or a destination must include a `name`. Airbyte rejects these requests if `name` is missing, instead of naming the connector `default`.
+- Access tokens from users and applications don't grant access to operations that Airbyte's internal components perform, such as saving sync attempt progress or discovered schemas. Airbyte rejects these requests, even if the user is an instance admin.
+
+To manage an Airbyte deployment programmatically, use the [Airbyte API](https://reference.airbyte.com/reference/getting-started) instead.

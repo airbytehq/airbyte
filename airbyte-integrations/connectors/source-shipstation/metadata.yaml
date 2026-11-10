@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c5a0d24d-5587-4425-ab28-b8b3fe741c78
-  dockerImageTag: 0.2.52
+  dockerImageTag: 0.2.53
   dockerRepository: airbyte/source-shipstation
   githubIssueLabel: source-shipstation
   icon: icon.svg
@@ -43,3 +43,11 @@ data:
     - title: ShipStation rate limits
       url: https://www.shipstation.com/docs/api/requirements/#rate-limits
       type: rate_limits
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true

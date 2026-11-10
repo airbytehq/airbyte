@@ -191,7 +191,8 @@ The connector reports these Ramp errors as configuration errors, so Airbyte does
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------------- | -------------- | ---------------- |
-| 1.2.0 | 2026-11-03 | [88128](https://github.com/airbytehq/airbyte/pull/88128) | Add OAuth authentication; existing client-credentials configs are migrated automatically |
+| 1.2.0 | 2026-11-10 | [88128](https://github.com/airbytehq/airbyte/pull/88128) | Add OAuth authentication; existing client-credentials configs are migrated automatically |
+| 1.1.4 | 2026-11-10 | [91686](https://github.com/airbytehq/airbyte/pull/91686) | Update dependencies |
 | 1.1.3 | 2026-11-03 | [90728](https://github.com/airbytehq/airbyte/pull/90728) | Update dependencies |
 | 1.1.2 | 2026-10-27 | [90047](https://github.com/airbytehq/airbyte/pull/90047) | Update dependencies |
 | 1.1.1 | 2026-10-20 | [89387](https://github.com/airbytehq/airbyte/pull/89387) | Update dependencies |

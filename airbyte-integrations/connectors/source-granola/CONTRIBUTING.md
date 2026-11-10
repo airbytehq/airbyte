@@ -33,16 +33,16 @@ The Granola API has no way to return deleted notes on the stream that lists them
 
 ## Incremental Stream Considerations
 
-The Granola API connector has 3 streams: `notes` (incremental with `updated_at` cursor), `detailed_notes` and `note_transcripts` (children of notes via `SubstreamPartitionRouter`). No FR parent streams remain.
+The Granola API connector has 3 streams: `notes` (incremental with `updated_at` cursor), `detailed_notes` (an incremental child of `notes`), and `note_transcripts` (a deferred full-refresh child of `notes`). No FR parent streams remain.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | notes | medium | top-level parent | updated_at | updated_at | incremental | |
-| detailed_notes | medium | child | none | none | deferred_child | |
-| note_transcripts | medium | child | none | none | deferred_child | |
+| detailed_notes | medium | child | updated_at | parent `notes.updated_at` | incremental (`incremental_dependency` + `global_substream_cursor`) | |
+| note_transcripts | medium | child | none | none | deferred_child | No primary key or segment ID; Append repeats segments. |
 
-The `notes` cursor is `updated_at` with a single slice: the API exposes `updated_after` but no `updated_before`, so there is no `step` or end bound. A note edited after a sync is re-emitted on the next incremental sync. The child streams have no `incremental_dependency`, so the parent is fully re-read from `start_date` on every sync; they already picked up edited notes before 1.0.0. The bound stays second-granular (`%Y-%m-%dT%H:%M:%SZ`) because Granola has treated date-only bounds as excluding the named day, and `cursor_datetime_formats` retains `%Y-%m-%d` so date-only state from earlier versions still parses. `lookback_window: PT1S` re-requests the stored cursor's second, because `updated_after` is exclusive and a whole-second value excludes that entire second.
+The `notes` cursor is `updated_at` with a single slice: the API exposes `updated_after` but no `updated_before`, so there is no `step` or end bound. A note edited after a sync is re-emitted on the next incremental sync. `detailed_notes` now uses `incremental_dependency` and `global_substream_cursor` to read only parent notes updated since the saved cursor; `note_transcripts` still re-reads its parent from `start_date` because transcript segments have no primary key or ID, so incremental Append would duplicate them. The bound stays second-granular (`%Y-%m-%dT%H:%M:%SZ`) because Granola has treated date-only bounds as excluding the named day, and `cursor_datetime_formats` retains `%Y-%m-%d` so date-only state from earlier versions still parses. `lookback_window: PT1S` re-requests the stored cursor's second, because `updated_after` is exclusive and a whole-second value excludes that entire second.
 
 ### Future incremental stream candidates
 
-- **Child streams (2 streams):** `detailed_notes`, `note_transcripts` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.
+- **Child stream (1 stream):** `note_transcripts` — partitioned via `SubstreamPartitionRouter`. It has no primary key or segment ID, so incremental Append would duplicate transcript segments.
