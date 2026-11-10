@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfiguration
 import io.airbyte.cdk.load.command.aws.AWSArnRoleConfigurationProvider
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
+import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfiguration
@@ -28,6 +30,20 @@ sealed interface ObjectStorageConfig {
 
 class DisabledObjectStorageConfig : ObjectStorageConfig {
     override val type: String = "None"
+}
+
+class AzureBlobObjectStorageConfig<T : OutputStream>(
+    override val azureBlobStorageClientConfiguration: AzureBlobStorageClientConfiguration,
+    override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
+    override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
+    override val objectStoragePathConfiguration: ObjectStoragePathConfiguration,
+) :
+    ObjectStorageConfig,
+    AzureBlobStorageClientConfigurationProvider,
+    ObjectStorageCompressionConfigurationProvider<T>,
+    ObjectStorageFormatConfigurationProvider,
+    ObjectStoragePathConfigurationProvider {
+    override val type: String = "AzureBlob"
 }
 
 class S3ObjectStorageConfig<T : OutputStream>(
@@ -52,6 +68,22 @@ fun ObjectStorageSpec?.toObjectStorageConfig(): ObjectStorageConfig =
     when (this) {
         null -> DisabledObjectStorageConfig()
         is DisabledObjectStorageSpec -> DisabledObjectStorageConfig()
+        is AzureBlobObjectStorageSpec ->
+            AzureBlobObjectStorageConfig(
+                azureBlobStorageClientConfiguration =
+                    toAzureBlobStorageClientConfiguration()
+                        .copy(
+                            endpointDomainName = azureBlobStorageEndpointDomainName,
+                        ),
+                objectStorageCompressionConfiguration = toCompressionConfiguration(),
+                objectStorageFormatConfiguration = toObjectStorageFormatConfiguration(),
+                objectStoragePathConfiguration =
+                    ObjectStoragePathConfiguration(
+                        prefix = bucketPath,
+                        pathPattern = normalizePathFormat(pathFormat),
+                        fileNamePattern = fileNameFormat,
+                    ),
+            )
         is S3ObjectStorageSpec ->
             S3ObjectStorageConfig(
                 awsAccessKeyConfiguration = toAWSAccessKeyConfiguration(),

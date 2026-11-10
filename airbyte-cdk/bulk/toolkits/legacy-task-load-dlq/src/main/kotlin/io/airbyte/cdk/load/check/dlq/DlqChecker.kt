@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.check.dlq
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.command.dlq.AzureBlobObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.S3ObjectStorageConfig
@@ -47,6 +48,7 @@ class DlqChecker(private val objectStorageClientProvider: BeanProvider<ObjectSto
         when (objectStorageConfig) {
             is DisabledObjectStorageConfig -> {}
             is S3ObjectStorageConfig<*> -> writeTestBlob(objectStorageConfig)
+            is AzureBlobObjectStorageConfig<*> -> writeTestBlob(objectStorageConfig)
         }
     }
 

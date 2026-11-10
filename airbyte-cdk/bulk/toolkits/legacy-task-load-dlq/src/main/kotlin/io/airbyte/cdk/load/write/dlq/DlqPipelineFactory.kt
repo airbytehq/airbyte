@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.write.dlq
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.command.dlq.AzureBlobObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
 import io.airbyte.cdk.load.command.dlq.S3ObjectStorageConfig
@@ -30,6 +31,8 @@ import io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.condition.Condition
+import io.micronaut.context.condition.ConditionContext
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.OutputStream
@@ -137,7 +140,7 @@ class DlqPipelineFactoryFactory {
      * whether we should return the ObjectLoader pipeline steps as DLQ Steps.
      */
     @Singleton
-    @Requires(bean = ObjectStorageConfig::class, beanProperty = "type", notEquals = "None")
+    @Requires(bean = DlqStorageSelection::class, beanProperty = "type", notEquals = "None")
     @Named("dlqPipelineSteps")
     fun <K : WithStream, T : RemoteObject<*>> dlqPipelineSteps(
         @Named("dlqRecordFormatterStep") formatterStep: ObjectLoaderPartFormatterStep,
@@ -151,22 +154,28 @@ class DlqPipelineFactoryFactory {
         )
 
     @Singleton
-    @Requires(bean = ObjectStorageConfig::class, beanProperty = "type", value = "None")
+    @Requires(bean = DlqStorageSelection::class, beanProperty = "type", value = "None")
     @Named("dlqPipelineSteps")
     fun dlqPipelineSteps(): List<LoadPipelineStep> {
         return emptyList()
     }
 
-    /** Add a Singleton to extract the `ObjectStorageConfig` from the `DestinationConfiguration`. */
     @Singleton
-    fun objectStorageConfig(destinationConfig: DestinationConfiguration): ObjectStorageConfig =
-        (destinationConfig as? ObjectStorageConfigProvider)?.objectStorageConfig
-            ?: throw IllegalArgumentException(
-                "Unable to extract an ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider",
-            )
+    fun dlqStorageSelection(destinationConfig: DestinationConfiguration): DlqStorageSelection =
+        DlqStorageSelection(
+            (destinationConfig as? ObjectStorageConfigProvider)?.objectStorageConfig
+                ?: throw IllegalArgumentException(
+                    "Unable to extract an ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider",
+                ),
+        )
+
+    @Singleton
+    fun objectStorageConfig(selection: DlqStorageSelection): ObjectStorageConfig = selection.config
 
     /** Singleton to extract the different object storage related config providers for S3 */
     @Singleton
+    @Requires(bean = DlqStorageSelection::class, beanProperty = "type", value = "S3")
+    @Requires(condition = S3DlqStorageCondition::class)
     fun s3ObjectStorageConfig(
         destinationConfig: DestinationConfiguration,
     ): S3ObjectStorageConfig<*> =
@@ -175,4 +184,27 @@ class DlqPipelineFactoryFactory {
             ?: throw IllegalArgumentException(
                 "Unable to extract an S3ObjectStorageConfig from the DestinationConfiguration. Does it implement ObjectStorageConfigProvider",
             )
+
+    @Singleton
+    @Requires(bean = DlqStorageSelection::class, beanProperty = "type", value = "AzureBlob")
+    @Requires(condition = AzureBlobDlqStorageCondition::class)
+    fun azureBlobObjectStorageConfig(config: ObjectStorageConfig): AzureBlobObjectStorageConfig<*> =
+        config as AzureBlobObjectStorageConfig<*>
+}
+
+// Conditions cannot depend on ObjectStorageConfig: the conditional beans also implement that type.
+class DlqStorageSelection(val config: ObjectStorageConfig) {
+    val type: String = config.type
+}
+
+// Bean-property checks run at instantiation; client selection needs these providers filtered
+// earlier.
+class S3DlqStorageCondition : Condition {
+    override fun matches(context: ConditionContext<*>): Boolean =
+        context.beanContext.getBean(DlqStorageSelection::class.java).type == "S3"
+}
+
+class AzureBlobDlqStorageCondition : Condition {
+    override fun matches(context: ConditionContext<*>): Boolean =
+        context.beanContext.getBean(DlqStorageSelection::class.java).type == "AzureBlob"
 }
