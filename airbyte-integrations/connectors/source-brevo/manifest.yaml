@@ -783,7 +783,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%s"
-        datetime_format: "%ms"
+          - "%ms"
+        datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -856,7 +857,8 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%s"
-        datetime_format: "%ms"
+          - "%ms"
+        datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"

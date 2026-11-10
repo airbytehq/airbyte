@@ -100,9 +100,14 @@ def test_campaigns_filter_modified_at_without_sent_date_parameters(name: str, si
 
 
 @pytest.mark.parametrize("name", ["crm_tasks", "crm_notes"])
+@pytest.mark.parametrize(
+    "cursor,date_from",
+    [(None, "1699920000"), ("1700000000", "1700000000"), ("1700000000000", "1700000000")],
+    ids=["cold", "seconds-state", "milliseconds-state"],
+)
 @freeze_time(NOW)
-def test_crm_accepts_seconds_state_and_sends_milliseconds(name: str) -> None:
-    state = StateBuilder().with_stream_state(name, {"updatedAt": "1700000000"}).build()
+def test_crm_sends_seconds_and_accepts_legacy_state(name: str, cursor: str | None, date_from: str) -> None:
+    state = StateBuilder().with_stream_state(name, {"updatedAt": cursor}).build() if cursor else None
     with HttpMocker() as mocker:
         request = mock_page(
             mocker,
@@ -112,12 +117,12 @@ def test_crm_accepts_seconds_state_and_sends_milliseconds(name: str) -> None:
             limit=50,
             offset=0,
             sort="asc",
-            dateFrom="1700000000000",
-            dateTo="1700006399000",
+            dateFrom=date_from,
+            dateTo="1700006399",
         )
         output = run_read(name, SyncMode.incremental, state)
         assert [r.record.data["id"] for r in output.records] == ["new"]
-        assert output.most_recent_state.stream_state.__dict__ == {"updatedAt": "1700002800000"}
+        assert output.most_recent_state.stream_state.__dict__ == {"updatedAt": "1700002800"}
         assert_calls(mocker, [request])
 
 
