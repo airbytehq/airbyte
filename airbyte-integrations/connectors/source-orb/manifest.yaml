@@ -1430,6 +1430,8 @@ definitions:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: timeframe_start
+      step: P30D
+      cursor_granularity: PT0.000001S
       lookback_window: P{{ config.get('lookback_window_days', 0) }}D
       cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -2126,6 +2128,8 @@ streams:
   incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: timeframe_start
+    step: P30D
+    cursor_granularity: PT0.000001S
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     cursor_datetime_formats:
     - "%Y-%m-%dT%H:%M:%S.%f%z"

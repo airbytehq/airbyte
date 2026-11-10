@@ -69,7 +69,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                               |
 |---------|------------| -------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.24 | 2026-11-09 | [91425](https://github.com/airbytehq/airbyte/pull/91425) | Upgrade to source-declarative-manifest 7.47.0 and migrate the subscription usage partition router to the CDK 7 stream interface |
+| 2.1.24 | 2026-11-09 | [91425](https://github.com/airbytehq/airbyte/pull/91425) | Upgrade to source-declarative-manifest 7.47.0, fix the subscription usage partition router for the CDK 7 stream interface, and split subscription usage requests into 30-day windows to respect Orb's one-year timeframe limit |
 | 2.1.23 | 2026-10-27 | [78910](https://github.com/airbytehq/airbyte/pull/78910) | Update dependencies |
 | 2.1.22 | 2025-05-24 | [60516](https://github.com/airbytehq/airbyte/pull/60516) | Update dependencies |
 | 2.1.21 | 2025-05-10 | [60083](https://github.com/airbytehq/airbyte/pull/60083) | Update dependencies |
