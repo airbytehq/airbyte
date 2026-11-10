@@ -414,9 +414,9 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
     }
 
     /**
-     * Turns a JSON scalar into its unquoted text form without a length limit. JSON null, a
-     * missing key and non-scalar values (objects, arrays) become SQL NULL, as they did with
-     * JSON_VALUE. Works on MySQL and MariaDB.
+     * Turns a JSON scalar into its unquoted text form without a length limit. JSON null, a missing
+     * key and non-scalar values (objects, arrays) become SQL NULL, as they did with JSON_VALUE.
+     * Works on MySQL and MariaDB.
      */
     private fun unquoteScalar(json: Field<*>): Field<String> {
         return DSL.case_()

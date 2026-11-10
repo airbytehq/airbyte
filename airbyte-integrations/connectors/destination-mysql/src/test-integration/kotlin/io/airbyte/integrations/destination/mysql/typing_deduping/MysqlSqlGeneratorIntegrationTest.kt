@@ -119,8 +119,8 @@ class MysqlSqlGeneratorIntegrationTest :
     }
 
     /**
-     * Strings longer than 512 characters used to become NULL in the final table, because
-     * JSON_VALUE without a RETURNING clause returns VARCHAR(512) with an implicit NULL ON ERROR.
+     * Strings longer than 512 characters used to become NULL in the final table, because JSON_VALUE
+     * without a RETURNING clause returns VARCHAR(512) with an implicit NULL ON ERROR.
      */
     @Test
     @Throws(Exception::class)
