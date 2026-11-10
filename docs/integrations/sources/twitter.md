@@ -46,7 +46,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
-| 0.3.12 | 2026-11-09 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Upgrade source-declarative-manifest base image to 7.47.0 |
+| 0.3.12 | 2026-11-09 | [91441](https://github.com/airbytehq/airbyte/pull/91441) | Upgrade source-declarative-manifest base image to 7.47.0 |
 | 0.3.11 | 2025-05-10 | [60003](https://github.com/airbytehq/airbyte/pull/60003) | Update dependencies |
 | 0.3.10 | 2025-05-04 | [59620](https://github.com/airbytehq/airbyte/pull/59620) | Update dependencies |
 | 0.3.9 | 2025-04-27 | [58398](https://github.com/airbytehq/airbyte/pull/58398) | Update dependencies |
