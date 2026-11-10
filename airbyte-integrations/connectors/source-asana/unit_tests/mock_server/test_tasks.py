@@ -27,3 +27,15 @@ def test_child_reads_share_workspace_cache() -> None:
         assert {(r.record.stream, r.record.data["gid"]) for r in output.records} == {("tasks", "task-1"), ("tags", "1")}
         assert len(output.records) == 2
         http.assert_number_of_calls(parents["workspaces"], 1)
+
+
+def test_child_reads_share_project_and_task_cache() -> None:
+    with HttpMocker() as http:
+        parents = mock_parents(http, exclude="stories")
+        http.get(request("stories"), response())
+        output = read_streams("tasks", "stories")
+        assert not output.errors
+        assert {(r.record.stream, r.record.data["gid"]) for r in output.records} == {("tasks", "1"), ("stories", "1")}
+        assert len(output.records) == 2
+        http.assert_number_of_calls(parents["projects"], 1)
+        http.assert_number_of_calls(parents["tasks"], 1)

@@ -2,6 +2,7 @@
 
 import pytest
 
+from airbyte_cdk.models import Level
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from unit_tests.mock_server.helpers import read_streams, request
 
@@ -14,5 +15,5 @@ def test_ignored_errors_emit_no_records_or_error_logs(status: int) -> None:
         output = read_streams("workspaces")
         assert not output.errors
         assert output.records == []
-        assert not any(log.log.level == "ERROR" for log in output.logs)
+        assert not any(log.log.level == Level.ERROR for log in output.logs)
         http.assert_number_of_calls(target, 1)

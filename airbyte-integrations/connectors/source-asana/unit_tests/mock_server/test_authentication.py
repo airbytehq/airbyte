@@ -29,6 +29,7 @@ OAUTH = {
         ({"access_token": "stale", "credentials": PAT}, "pat-token", True),
         ({"access_token": "stale", "credentials": OAUTH}, "oauth-token", True),
         ({"access_token": "legacy-token", "credentials": {"personal_access_token": "legacy-token"}}, "legacy-token", True),
+        ({"access_token": "1206938133417909"}, "1206938133417909", True),
     ],
 )
 def test_check_authentication(config: dict, token: str, migrates: bool, tmp_path, capsys) -> None:

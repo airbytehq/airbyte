@@ -23,4 +23,4 @@ scalars and scalar arrays use the property name; objects and arrays of objects u
 For tasks, use bare `custom_fields`, `hearts.user.gid`, `likes.user.gid`, and
 `memberships.(project|section).gid`. For users, use bare `photo`.
 Requester references merge shallowly, so every stream's requester override must include its complete request parameter map.
-When changing schemas, update the fields and the behavioral drift guard in `unit_tests/mock_server/`.
+When changing schemas, update the stream's `opt_fields` and `unit_tests/opt_fields_1.7.2.json`; `test_opt_fields_match_schema` fails until both match the schema.

@@ -121,8 +121,8 @@ definitions:
         $ref: "#/definitions/requester"
         use_cache: true
         request_parameters:
-          opt_fields: "gid,resource_type,name,archived,color,created_at,current_status.gid,custom_field_settings.gid,default_view,due_date,due_on,html_notes,is_template,members.gid,modified_at,notes,public,start_on,workspace.gid,custom_fields.gid,followers.gid,icon,owner.gid,permalink_url,team.gid"
           workspace: "{{ stream_slice['workspace_gid'] }}"
+          opt_fields: "gid,resource_type,name,archived,color,created_at,current_status.gid,custom_field_settings.gid,default_view,due_date,due_on,html_notes,is_template,members.gid,modified_at,notes,public,start_on,workspace.gid,custom_fields.gid,followers.gid,icon,owner.gid,permalink_url,team.gid"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
     $parameters:
@@ -194,8 +194,8 @@ definitions:
         $ref: "#/definitions/requester"
         use_cache: true
         request_parameters:
-          opt_fields: "gid,resource_type,name,approval_status,completed,completed_at,completed_by.gid,created_at,dependencies.gid,dependents.gid,due_at,due_on,external.gid,hearted,hearts.user.gid,html_notes,is_rendered_as_separator,liked,likes.user.gid,memberships.(project|section).gid,modified_at,notes,num_hearts,num_likes,num_subtasks,actual_time_minutes,resource_subtype,start_on,assignee.gid,custom_fields,followers.gid,parent.gid,permalink_url,projects.gid,tags.gid,workspace.gid"
           project: "{{ stream_slice.project_id }}"
+          opt_fields: "gid,resource_type,name,approval_status,completed,completed_at,completed_by.gid,created_at,dependencies.gid,dependents.gid,due_at,due_on,external.gid,hearted,hearts.user.gid,html_notes,is_rendered_as_separator,liked,likes.user.gid,memberships.(project|section).gid,modified_at,notes,num_hearts,num_likes,num_subtasks,actual_time_minutes,resource_subtype,start_on,assignee.gid,custom_fields,followers.gid,parent.gid,permalink_url,projects.gid,tags.gid,workspace.gid"
       partition_router:
         $ref: "#/definitions/projects_partition_router"
 
@@ -288,8 +288,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          opt_fields: "gid,resource_type,color,followers.gid,name,permalink_url,workspace.gid"
           workspace: "{{ stream_slice.workspace_gid }}"
+          opt_fields: "gid,resource_type,color,followers.gid,name,permalink_url,workspace.gid"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
 
@@ -304,9 +304,10 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
+        use_cache: true
         request_parameters:
-          opt_fields: "gid,resource_type,name,email,photo,workspaces.gid"
           workspace: "{{ stream_slice.workspace_gid }}"
+          opt_fields: "gid,resource_type,name,email,photo,workspaces.gid"
       partition_router:
         $ref: "#/definitions/workspaces_partition_router"
     $parameters:
@@ -370,8 +371,8 @@ definitions:
         $ref: "#/definitions/requester"
         use_cache: true
         request_parameters:
-          opt_fields: "gid,resource_type,name,resource_subtype"
           parent: "{{ stream_slice.parent_gid }}"
+          opt_fields: "gid,resource_type,name,resource_subtype"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -420,10 +421,11 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
+        use_cache: true
         request_parameters:
-          opt_fields: "gid,resource_type,name"
           owner: "{{ stream_slice['users_gid'] }}"
           workspace: "{{ stream_slice['workspace_gid'] }}"
+          opt_fields: "gid,resource_type,name"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -475,8 +477,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          opt_fields: "gid,resource_type,portfolio.gid,user.gid"
           portfolio: "{{ stream_slice['portfolios_gid'] }}"
+          opt_fields: "gid,resource_type,portfolio.gid,user.gid"
       partition_router:
         $ref: "#/definitions/portfolios_compact_partition_router"
 
@@ -535,8 +537,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          opt_fields: "user.gid,resource.gid,type,action,parent.gid,created_at,change.gid"
           resource: "{{ stream_slice.parent_gid }}"
+          opt_fields: "user.gid,resource.gid,type,action,parent.gid,created_at,change.gid"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -2660,6 +2662,7 @@ spec:
               - type: AddedFieldDefinition
                 path: ["credentials", "personal_access_token"]
                 value: "{{ config['access_token'] }}"
+                value_type: string
           - type: ConfigAddFields
             condition: "{{ 'access_token' in config and config['credentials'] == {'personal_access_token': config['access_token']} }}"
             fields:
@@ -2667,7 +2670,7 @@ spec:
                 path: ["credentials", "option_title"]
                 value: "PAT Credentials"
           - type: ConfigRemoveFields
-            condition: "{{ 'access_token' in config and 'credentials' in config }}"
+            condition: "{{ 'access_token' in config and 'option_title' in (config['credentials'] or {}) }}"
             field_pointers:
               - ["access_token"]
   documentation_url: https://docs.airbyte.com/integrations/sources/asana
