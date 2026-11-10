@@ -79,20 +79,11 @@ definitions:
           request_parameters:
             "showBasketProducts\t": "True"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
-                response_filters:
-                  - type: HttpResponseFilter
-                    error_message: Rate limits hit
-                    http_codes:
-                      - 429
-                    action: RATE_LIMITED
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
+            max_retries: 3
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
         record_selector:
           type: RecordSelector
           extractor:
