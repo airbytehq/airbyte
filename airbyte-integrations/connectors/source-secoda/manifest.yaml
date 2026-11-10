@@ -22,14 +22,12 @@ definitions:
           path: /table/tables/
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 500
-                    action: FAIL
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 500
+                action: FAIL
         record_selector:
           type: RecordSelector
           extractor:
@@ -112,14 +110,12 @@ definitions:
           path: /dictionary/terms/
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 500
-                    action: FAIL
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 500
+                action: FAIL
         record_selector:
           type: RecordSelector
           extractor:
@@ -184,14 +180,12 @@ definitions:
           path: /collection/collections/
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 500
-                    action: FAIL
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 500
+                action: FAIL
         record_selector:
           type: RecordSelector
           extractor:
@@ -264,14 +258,12 @@ streams:
         path: /table/tables/
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 500
-                  action: FAIL
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 500
+              action: FAIL
       record_selector:
         type: RecordSelector
         extractor:
@@ -353,14 +345,12 @@ streams:
         path: /dictionary/terms/
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 500
-                  action: FAIL
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 500
+              action: FAIL
       record_selector:
         type: RecordSelector
         extractor:
@@ -424,14 +414,12 @@ streams:
         path: /collection/collections/
         http_method: GET
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  http_codes:
-                    - 500
-                  action: FAIL
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes:
+                - 500
+              action: FAIL
       record_selector:
         type: RecordSelector
         extractor:
