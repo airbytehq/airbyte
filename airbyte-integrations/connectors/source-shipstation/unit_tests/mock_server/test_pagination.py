@@ -32,6 +32,7 @@ def test_full_page_requests_next_page_and_short_page_stops(
     stream_name: str, field_path: str, primary_key: str, cursor_field: str, query_params: Dict[str, str]
 ) -> None:
     with HttpMocker() as http_mocker:
+
         def page_records(first_id: int, count: int):
             records = [{primary_key: record_id} for record_id in range(first_id, first_id + count)]
             if cursor_field:

@@ -61,7 +61,9 @@ _FULFILLMENT = {
         ("fulfillments", {"sortBy": "CreateDate", "sortDir": "ASC", "createDateStart": START_DATE_PARAM}, _FULFILLMENT),
     ],
 )
-def test_vendor_documented_fields_are_emitted_declared_and_valid(stream_name: str, query_params: Dict[str, str], record: Dict[str, Any]) -> None:
+def test_vendor_documented_fields_are_emitted_declared_and_valid(
+    stream_name: str, query_params: Dict[str, str], record: Dict[str, Any]
+) -> None:
     with HttpMocker() as http_mocker:
         http_mocker.get(
             request(stream_name, {**query_params, "page": "1", "pageSize": str(PAGE_SIZE)}),

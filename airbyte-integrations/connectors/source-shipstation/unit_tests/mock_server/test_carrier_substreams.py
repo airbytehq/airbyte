@@ -29,7 +29,9 @@ def test_reads_one_request_per_parent_carrier_and_keys_records_by_carrier(stream
             ),
         )
         # Records without carrierCode get it from the parent carrier so the [carrierCode, code] key stays populated.
-        http_mocker.get(ups_request, json_response([{"code": "ups_ground", "name": "UPS Ground", "domestic": True, "international": False}]))
+        http_mocker.get(
+            ups_request, json_response([{"code": "ups_ground", "name": "UPS Ground", "domestic": True, "international": False}])
+        )
 
         output = read_stream(stream_name)
 

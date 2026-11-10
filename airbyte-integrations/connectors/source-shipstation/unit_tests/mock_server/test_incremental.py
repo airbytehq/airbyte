@@ -13,7 +13,13 @@ from .helpers import PAGE_SIZE, START_DATE_PARAM, json_response, read_stream, re
 
 _INCREMENTAL_STREAMS = [
     ("orders", "orderId", "modifyDate", "modifyDateStart", {"sortBy": "ModifyDate", "sortDir": "ASC"}),
-    ("shipments", "shipmentId", "createDate", "createDateStart", {"sortBy": "CreateDate", "sortDir": "ASC", "includeShipmentItems": "true"}),
+    (
+        "shipments",
+        "shipmentId",
+        "createDate",
+        "createDateStart",
+        {"sortBy": "CreateDate", "sortDir": "ASC", "includeShipmentItems": "true"},
+    ),
     ("fulfillments", "fulfillmentId", "createDate", "createDateStart", {"sortBy": "CreateDate", "sortDir": "ASC"}),
 ]
 
