@@ -74,10 +74,12 @@ class SalesforceErrorHandler(ErrorHandler):
         stream_name: str = "<unknown stream>",
         sobject_options: Optional[Mapping[str, Any]] = None,
         token_provider: Optional[SalesforceTokenProvider] = None,
+        login_error_messages: Optional[Mapping[str, str]] = None,
     ) -> None:
         self._stream_name = stream_name
         self._sobject_options: Mapping[str, Any] = sobject_options or {}
         self._token_provider = token_provider
+        self._login_error_messages = AUTHENTICATION_ERROR_MESSAGE_MAPPING if login_error_messages is None else login_error_messages
 
     @property
     def max_retries(self) -> Optional[int]:
@@ -114,7 +116,7 @@ class SalesforceErrorHandler(ErrorHandler):
                             return ErrorResolution(
                                 ResponseAction.FAIL,
                                 FailureType.config_error,
-                                AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                                self._token_provider.authentication_error_message,
                             )
                     return ErrorResolution(
                         ResponseAction.RETRY,
@@ -138,10 +140,11 @@ class SalesforceErrorHandler(ErrorHandler):
                     AUTHENTICATION_ERROR_MESSAGE_MAPPING["API_DISABLED_FOR_ORG"],
                 )
             if self._is_login_request(response):
+                mapped_message = self._login_error_messages.get((error_message or "").lower())
                 return ErrorResolution(
                     ResponseAction.FAIL,
                     FailureType.config_error,
-                    self._login_error_message(error_code, error_message),
+                    mapped_message or self._unmapped_login_error_message(response, error_code, error_message),
                 )
 
             if error_code == "INVALID_FIELD" and error_message != _BULK_COMPOUND_DATA_ERROR_MESSAGE:
@@ -198,6 +201,11 @@ class SalesforceErrorHandler(ErrorHandler):
         if error_code == "invalid_grant" or "authentication failure" in description or "expired access/refresh token" in description:
             return AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"]
         return "Salesforce login failed. Re-authenticate the source and check the Connected App credentials and is_sandbox setting."
+
+    def _unmapped_login_error_message(self, response: requests.Response, error_code: Optional[str], error_message: str) -> str:
+        if self._login_error_messages is AUTHENTICATION_ERROR_MESSAGE_MAPPING:
+            return self._login_error_message(error_code, error_message)
+        return f"An error occurred: {response.content.decode()}"
 
     def _handle_invalid_field(self, error_message: str) -> ErrorResolution:
         """`INVALID_FIELD` means the org can no longer resolve a field the query asks for: the field was

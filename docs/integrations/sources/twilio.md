@@ -172,7 +172,8 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.2.0 | 2026-11-09 | [90969](https://github.com/airbytehq/airbyte/pull/90969) | Add `subaccounts` stream |
+| 1.2.0 | 2026-11-10 | [90969](https://github.com/airbytehq/airbyte/pull/90969) | Add `subaccounts` stream |
+| 1.1.10 | 2026-11-10 | [91752](https://github.com/airbytehq/airbyte/pull/91752) | Update dependencies |
 | 1.1.9 | 2026-11-03 | [90752](https://github.com/airbytehq/airbyte/pull/90752) | Update dependencies |
 | 1.1.8 | 2026-10-27 | [90064](https://github.com/airbytehq/airbyte/pull/90064) | Update dependencies |
 | 1.1.7 | 2026-10-20 | [89453](https://github.com/airbytehq/airbyte/pull/89453) | Update dependencies |
