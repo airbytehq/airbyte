@@ -8,6 +8,13 @@ check:
     - accounts
 
 definitions:
+  missing_feature_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        predicate: "{{ response.get('error', {}).get('type') == 'missing_feature' }}"
+        action: IGNORE
+        error_message: "Skipping feature-gated Recurly stream because this site lacks the required feature: {{ response.get('error', {}).get('message', '') }}"
   streams:
     accounts:
       type: DeclarativeStream
@@ -1228,6 +1235,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: /acquisitions
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
           http_method: GET
           request_parameters:
             sort: updated_at
@@ -1295,6 +1304,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: /accounts/{{ stream_partition['account_id'] }}/balance
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
           http_method: GET
           request_headers:
             Accept: application/vnd.recurly.v2021-02-25
@@ -1333,6 +1344,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: /gift_cards
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
           http_method: GET
           request_headers:
             Accept: application/vnd.recurly.v2021-02-25
@@ -1367,6 +1380,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: /external_subscriptions
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
           http_method: GET
           request_parameters:
             sort: updated_at
@@ -1403,6 +1418,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: /external_subscriptions/{{ stream_partition['external_subscription_id'] }}/external_payment_phases
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
           http_method: GET
           request_parameters:
             sort: updated_at
@@ -1458,6 +1475,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: subscriptions
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
           http_method: GET
           request_parameters:
             sort: updated_at
@@ -1502,6 +1521,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: /subscriptions/{{ stream_slice.extra_fields['subscription_id'] }}/add_ons/{{ stream_partition['add_on_id'] }}/usage
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
           http_method: GET
           request_parameters:
             billing_status: all
@@ -1563,6 +1584,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: /items
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
           http_method: GET
           request_parameters:
             sort: updated_at

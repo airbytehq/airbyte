@@ -41,6 +41,8 @@ The `account_acquisitions` and `items` streams support Full Refresh and Incremen
 
 The `gift_cards`, `external_subscriptions` (and their payment phases), `usage_records`, and `items` streams require the corresponding Recurly site features: gift cards, external subscriptions, usage-based billing, and the item catalog, respectively. The item catalog also requires Credit Invoices. Enable the relevant features on your Recurly site before syncing these streams.
 
+Feature-gated streams added in version 1.4.0 are skipped with a log message when Recurly reports that the site lacks the required feature (`missing_feature`), allowing the sync to succeed.
+
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ### Features
