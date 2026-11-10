@@ -60,6 +60,6 @@ acceptance_tests:
           future_state_path: integration_tests/abnormal_state.json
   spec:
     tests:
-      - spec_path: source_recharge/spec.json
+      - spec_path: integration_tests/spec.json
 connector_image: airbyte/source-recharge:dev
 test_strictness_level: high

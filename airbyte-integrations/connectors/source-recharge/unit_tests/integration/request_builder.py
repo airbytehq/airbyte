@@ -31,6 +31,14 @@ class RequestBuilder:
         self._query_params["limit"] = limit
         return self
 
+    def with_updated_at_range(self, start: str, end: str) -> RequestBuilder:
+        self._query_params.update(updated_at_min=start, updated_at_max=end, sort_by="updated_at-asc")
+        return self
+
+    def with_page(self, page: int) -> RequestBuilder:
+        self._query_params["page"] = page
+        return self
+
     def with_updated_at_min(self, value: str) -> RequestBuilder:
         self._query_params["updated_at_min"] = dt.datetime.strptime(value, DATE_TIME_FORMAT).strftime(DATE_TIME_FORMAT)
         self._query_params["sort_by"] = "updated_at-asc"

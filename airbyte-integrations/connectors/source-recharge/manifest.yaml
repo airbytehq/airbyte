@@ -1,0 +1,2919 @@
+version: 7.46.0
+definitions:
+  selector:
+    description: Base records selector for Full Refresh streams
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+      - '{{ parameters.get(''data_path'')}}'
+    schema_normalization: Default
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: '{{ config[''access_token''] }}'
+    inject_into:
+      type: RequestOption
+      inject_into: header
+      field_name: X-Recharge-Access-Token
+  paginator_deprecated_api:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    page_size_option:
+      inject_into: request_parameter
+      field_name: limit
+      type: RequestOption
+    pagination_strategy:
+      type: PageIncrement
+      start_from_page: 1
+      page_size: 250
+      inject_on_first_request: false
+  paginator_modern_api:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    page_size_option:
+      inject_into: request_parameter
+      type: RequestOption
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 250
+      cursor_value: '{{ response.get("next_cursor", {}) }}'
+      stop_condition: '{{ not response.get("next_cursor", {}) }}'
+  requester_base:
+    description: Default Base Requester for Full Refresh streams
+    type: HttpRequester
+    url_base: https://api.rechargeapps.com/
+    path: '{{ parameters[''name''] }}'
+    http_method: GET
+    authenticator:
+      $ref: '#/definitions/authenticator'
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 10
+      response_filters:
+      - http_codes:
+        - 429
+        action: RETRY
+  requester_deprecated_api:
+    $ref: '#/definitions/requester_base'
+    request_headers:
+      x-recharge-version: 2021-01
+  requester_modern_api:
+    $ref: '#/definitions/requester_base'
+    request_headers:
+      x-recharge-version: 2021-11
+  retriever_api_deprecated:
+    description: Default Retriever for Deprecated API `2021-01` Full Refresh streams.
+    record_selector:
+      $ref: '#/definitions/selector'
+    requester:
+      $ref: '#/definitions/requester_deprecated_api'
+    paginator:
+      $ref: '#/definitions/paginator_deprecated_api'
+  retriever_api_modern:
+    description: Default Retriever for Modern API `2021-11` Full Refresh streams.
+    record_selector:
+      $ref: '#/definitions/selector'
+    requester:
+      $ref: '#/definitions/requester_modern_api'
+    paginator:
+      $ref: '#/definitions/paginator_modern_api'
+    ignore_stream_slicer_parameters_on_paginated_requests: true
+  retriever_metafields:
+    $ref: '#/definitions/retriever_api_modern'
+    partition_router:
+      type: ListPartitionRouter
+      cursor_field: owner_resource
+      values:
+      - address
+      - order
+      - charge
+      - customer
+      - store
+      - subscription
+      request_option:
+        inject_into: request_parameter
+        type: RequestOption
+        field_name: owner_resource
+  base_stream:
+    primary_key: id
+  base_deprecated_api_stream:
+    $ref: '#/definitions/base_stream'
+    retriever:
+      $ref: '#/definitions/retriever_api_deprecated'
+  base_modern_api_stream:
+    $ref: '#/definitions/base_stream'
+    retriever:
+      $ref: '#/definitions/retriever_api_modern'
+  base_incremental_stream:
+    $ref: '#/definitions/base_modern_api_stream'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S'
+      datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+      lookback_window: P{{ config.get('lookback_window_days', 0) }}D
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        type: RequestOption
+        field_name: updated_at_min
+        inject_into: request_parameter
+    retriever:
+      $ref: '#/definitions/retriever_api_modern'
+      requester:
+        $ref: '#/definitions/requester_modern_api'
+        request_parameters:
+          sort_by: '{{ ''updated_at-asc'' if not next_page_token else '''' }}'
+  base_incremental_events_stream:
+    $ref: '#/definitions/base_modern_api_stream'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S'
+      datetime_format: '%Y-%m-%dT%H:%M:%S%z'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        min_datetime: '{{ day_delta(-7, ''%Y-%m-%dT%H:%M:%SZ'') }}'
+      start_time_option:
+        type: RequestOption
+        field_name: created_at_min
+        inject_into: request_parameter
+  collections_stream:
+    description: 'Collections Stream: https://developer.rechargepayments.com/2021-11/collections/collections_list'
+    $ref: '#/definitions/base_modern_api_stream'
+    $parameters:
+      name: collections
+      data_path: collections
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/collections'
+  metafields_stream:
+    description: 'Metafields Stream: https://developer.rechargepayments.com/2021-11/metafields'
+    $ref: '#/definitions/base_modern_api_stream'
+    retriever:
+      $ref: '#/definitions/retriever_metafields'
+    $parameters:
+      name: metafields
+      data_path: metafields
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/metafields'
+  plans_stream:
+    description: 'Plans Stream: https://developer.rechargepayments.com/2021-11/plans/plans_list'
+    $ref: '#/definitions/base_modern_api_stream'
+    $parameters:
+      name: plans
+      data_path: plans
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/plans'
+  shop_stream:
+    description: 'Shop Stream: https://developer.rechargepayments.com/v1-shopify?python#shop Shop endpoint is not available
+      in 2021-11 API version'
+    $ref: '#/definitions/base_deprecated_api_stream'
+    retriever:
+      $ref: '#/definitions/retriever_api_deprecated'
+      paginator:
+        type: NoPagination
+      record_selector:
+        $ref: '#/definitions/selector'
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+    - id
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - id
+        value_type: integer
+        value: '{{ record.shop.get(''id'') or record.store.get(''id'') }}'
+    $parameters:
+      name: shop
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/shop'
+  payment_methods_stream:
+    description: 'Payment Methods Stream: https://developer.rechargepayments.com/2021-11/payment_methods/payment_methods_list'
+    $ref: '#/definitions/base_modern_api_stream'
+    $parameters:
+      name: payment_methods
+      data_path: payment_methods
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/payment_methods'
+  addresses_stream:
+    description: 'Addresses Stream: https://developer.rechargepayments.com/2021-11/addresses/list_addresses'
+    $ref: '#/definitions/base_incremental_stream'
+    $parameters:
+      name: addresses
+      data_path: addresses
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/addresses'
+  charges_stream:
+    description: 'Charges Stream: https://developer.rechargepayments.com/2021-11/charges/charge_list'
+    $ref: '#/definitions/base_incremental_stream'
+    $parameters:
+      name: charges
+      data_path: charges
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/charges'
+  customers_stream:
+    description: 'Customers Stream: https://developer.rechargepayments.com/2021-11/customers/customers_list'
+    $ref: '#/definitions/base_incremental_stream'
+    $parameters:
+      name: customers
+      data_path: customers
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/customers'
+  discounts_stream:
+    description: 'Discounts Stream: https://developer.rechargepayments.com/2021-11/discounts/discounts_list'
+    $ref: '#/definitions/base_incremental_stream'
+    $parameters:
+      name: discounts
+      data_path: discounts
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/discounts'
+  onetimes_stream:
+    description: 'Onetimes Stream: https://developer.rechargepayments.com/2021-11/onetimes/onetimes_list'
+    $ref: '#/definitions/base_incremental_stream'
+    $parameters:
+      name: onetimes
+      data_path: onetimes
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/onetimes'
+  subscriptions_stream:
+    $ref: '#/definitions/base_incremental_stream'
+    $parameters:
+      name: subscriptions
+      data_path: subscriptions
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/subscriptions'
+  events_stream:
+    description: 'Events Stream: https://developer.rechargepayments.com/2021-11/events/events_list'
+    $ref: '#/definitions/base_incremental_events_stream'
+    $parameters:
+      name: events
+      data_path: events
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/events'
+  bundle_selections_stream:
+    description: 'Bundle Selections Stream: https://developer.rechargepayments.com/2021-11/bundle_selections/bundle_selection_list'
+    $ref: '#/definitions/base_incremental_stream'
+    $parameters:
+      name: bundle_selections
+      data_path: bundle_selections
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/bundle_selections'
+  credit_adjustments_stream:
+    description: 'Credit Adjustments Stream: https://developer.rechargepayments.com/2021-11/credits/credit_adjustment_list'
+    $ref: '#/definitions/base_incremental_stream'
+    $parameters:
+      name: credit_adjustments
+      data_path: credit_adjustments
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/credit_adjustments'
+  orders_deprecated:
+    type: DeclarativeStream
+    $ref: '#/definitions/base_stream'
+    $parameters:
+      name: orders
+      data_path: orders
+    retriever:
+      $ref: '#/definitions/retriever_api_deprecated'
+      requester:
+        $ref: '#/definitions/requester_deprecated_api'
+        request_parameters:
+          sort_by: updated_at-asc
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: '%Y-%m-%d %H:%M:%S'
+      cursor_datetime_formats:
+      - '%Y-%m-%d %H:%M:%S'
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P30D
+      cursor_granularity: PT1S
+      start_time_option:
+        type: RequestOption
+        field_name: updated_at_min
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: updated_at_max
+        inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/orders'
+  orders_modern:
+    type: DeclarativeStream
+    $ref: '#/definitions/base_stream'
+    $parameters:
+      name: orders
+      data_path: orders
+    retriever:
+      $ref: '#/definitions/retriever_api_modern'
+      requester:
+        $ref: '#/definitions/requester_modern_api'
+        request_parameters:
+          sort_by: '{{ ''updated_at-asc'' if not next_page_token else '''' }}'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: '%Y-%m-%d %H:%M:%S'
+      cursor_datetime_formats:
+      - '%Y-%m-%d %H:%M:%S'
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      step: P30D
+      cursor_granularity: PT1S
+      start_time_option:
+        type: RequestOption
+        field_name: updated_at_min
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: updated_at_max
+        inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: '#/schemas/orders'
+streams:
+- '#/definitions/addresses_stream'
+- '#/definitions/charges_stream'
+- '#/definitions/collections_stream'
+- '#/definitions/customers_stream'
+- '#/definitions/discounts_stream'
+- '#/definitions/metafields_stream'
+- '#/definitions/onetimes_stream'
+- '#/definitions/plans_stream'
+- '#/definitions/shop_stream'
+- '#/definitions/subscriptions_stream'
+- '#/definitions/events_stream'
+- '#/definitions/bundle_selections_stream'
+- '#/definitions/credit_adjustments_stream'
+- '#/definitions/payment_methods_stream'
+- type: ConditionalStreams
+  condition: '{{ config.get(''use_orders_deprecated_api'', false) }}'
+  streams:
+  - $ref: '#/definitions/orders_deprecated'
+    type: DeclarativeStream
+- type: ConditionalStreams
+  condition: '{{ not config.get(''use_orders_deprecated_api'', false) }}'
+  streams:
+  - $ref: '#/definitions/orders_modern'
+    type: DeclarativeStream
+check:
+  type: CheckStream
+  stream_names:
+  - shop
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/recharge
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Recharge Spec
+    type: object
+    required:
+    - start_date
+    - access_token
+    additionalProperties: true
+    properties:
+      start_date:
+        type: string
+        title: Start Date
+        description: The date from which you'd like to replicate data for Recharge API, in the format YYYY-MM-DDT00:00:00Z.
+          Any data before this date will not be replicated.
+        examples:
+        - '2021-05-14T00:00:00Z'
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        format: date-time
+      access_token:
+        type: string
+        title: Access Token
+        description: The value of the Access Token generated. See the <a href="https://docs.airbyte.com/integrations/sources/recharge">docs</a>
+          for more information.
+        airbyte_secret: true
+      use_orders_deprecated_api:
+        type: boolean
+        title: Use `Orders` Deprecated API
+        description: Define whether or not the `Orders` stream should use the deprecated `2021-01` API version, or use `2021-11`,
+          otherwise.
+        default: true
+      lookback_window_days:
+        type: integer
+        title: Lookback Window (in days)
+        description: Specifies how many days of historical data should be reloaded each time the recharge connector runs.
+        default: 0
+schemas:
+  addresses:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      address1:
+        type:
+        - 'null'
+        - string
+      address2:
+        type:
+        - 'null'
+        - string
+      cart_note:
+        type:
+        - 'null'
+        - string
+      city:
+        type:
+        - 'null'
+        - string
+      company:
+        type:
+        - 'null'
+        - string
+      country:
+        type:
+        - 'null'
+        - string
+      customer_id:
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      discount_id:
+        type:
+        - 'null'
+        - integer
+      first_name:
+        type:
+        - 'null'
+        - string
+      last_name:
+        type:
+        - 'null'
+        - string
+      note_attributes:
+        type:
+        - 'null'
+        - array
+      phone:
+        type:
+        - 'null'
+        - string
+      province:
+        type:
+        - 'null'
+        - string
+      shipping_lines_override:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            code:
+              type:
+              - 'null'
+              - string
+            price:
+              type:
+              - 'null'
+              - string
+            title:
+              type:
+              - 'null'
+              - string
+      shipping_lines_conserved:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            code:
+              type:
+              - 'null'
+              - string
+            price:
+              type:
+              - 'null'
+              - string
+            title:
+              type:
+              - 'null'
+              - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      zip:
+        type:
+        - 'null'
+        - string
+      country_code:
+        type:
+        - 'null'
+        - string
+      discounts:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+              - 'null'
+              - integer
+      order_attributes:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+              - 'null'
+              - string
+      order_note:
+        type:
+        - 'null'
+        - string
+      payment_method_id:
+        type:
+        - 'null'
+        - integer
+      presentment_currency:
+        type:
+        - 'null'
+        - string
+  bundle_selections:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+        - integer
+      bundle_variant:
+        type:
+        - integer
+      purchase_item_id:
+        type:
+        - integer
+      created_at:
+        type:
+        - string
+        format: date-time
+      external_product_id:
+        type:
+        - string
+      external_variant_id:
+        type:
+        - string
+      items:
+        type:
+        - array
+        items:
+          type:
+          - object
+          properties:
+            id:
+              type:
+              - integer
+            collection_id:
+              type:
+              - string
+            collection_source:
+              type:
+              - string
+            created_at:
+              type:
+              - string
+              format: date-time
+            external_product_id:
+              type:
+              - string
+            external_variant_id:
+              type:
+              - string
+            price:
+              type:
+              - string
+            quantity:
+              type:
+              - integer
+            updated_at:
+              type:
+              - string
+              format: date-time
+      updated_at:
+        type:
+        - string
+        format: date-time
+  charges:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      address_id:
+        type:
+        - 'null'
+        - integer
+      analytics_data:
+        type:
+        - 'null'
+        - object
+      billing_address:
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          address1:
+            type:
+            - 'null'
+            - string
+          address2:
+            type:
+            - 'null'
+            - string
+          cart_note:
+            type:
+            - 'null'
+            - string
+          city:
+            type:
+            - 'null'
+            - string
+          company:
+            type:
+            - 'null'
+            - string
+          country:
+            type:
+            - 'null'
+            - string
+          country_code:
+            type:
+            - 'null'
+            - string
+          customer_id:
+            type:
+            - 'null'
+            - integer
+          created_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          discount_id:
+            type:
+            - 'null'
+            - integer
+          first_name:
+            type:
+            - 'null'
+            - string
+          last_name:
+            type:
+            - 'null'
+            - string
+          note_attributes:
+            type:
+            - 'null'
+            - array
+          phone:
+            type:
+            - 'null'
+            - string
+          province:
+            type:
+            - 'null'
+            - string
+          shipping_lines_override:
+            type:
+            - 'null'
+            - array
+          updated_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          zip:
+            type:
+            - 'null'
+            - string
+      charge_attempts:
+        type:
+        - 'null'
+        - integer
+      currency:
+        type:
+        - 'null'
+        - string
+      customer:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          email:
+            type:
+            - 'null'
+            - string
+          external_customer_id:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              ecommerce:
+                type:
+                - 'null'
+                - string
+          hash:
+            type:
+            - 'null'
+            - string
+          id:
+            type:
+            - 'null'
+            - integer
+      discounts:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+              - 'null'
+              - integer
+            code:
+              type:
+              - 'null'
+              - string
+            value:
+              type:
+              - 'null'
+              - integer
+            value_type:
+              type:
+              - 'null'
+              - string
+      external_order_id:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          ecommerce:
+            type:
+            - 'null'
+            - string
+      external_transaction_id:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          payment_processor:
+            type:
+            - 'null'
+            - string
+      external_variant_id_not_found:
+        type:
+        - 'null'
+        - boolean
+      external_variant_not_found:
+        type:
+        - 'null'
+        - boolean
+      has_uncommitted_changes:
+        type:
+        - 'null'
+        - boolean
+      last_charge_attempt:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      merged_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      order_attributes:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            value:
+              type:
+              - 'null'
+              - string
+      orders_count:
+        type:
+        - 'null'
+        - integer
+      payment_processor:
+        type:
+        - 'null'
+        - string
+      total_duties:
+        type:
+        - 'null'
+        - string
+      total_weight_grams:
+        type:
+        - 'null'
+        - integer
+      taxable:
+        type:
+        - 'null'
+        - boolean
+      taxes_included:
+        type:
+        - 'null'
+        - boolean
+      client_details:
+        type:
+        - 'null'
+        - object
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      customer_hash:
+        type:
+        - 'null'
+        - string
+      customer_id:
+        type:
+        - 'null'
+        - integer
+      discount_codes:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+      email:
+        type:
+        - 'null'
+        - string
+      error:
+        type:
+        - 'null'
+        - string
+      error_type:
+        type:
+        - 'null'
+        - string
+      first_name:
+        type:
+        - 'null'
+        - string
+      last_name:
+        type:
+        - 'null'
+        - string
+      last_charge_attempt_date:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      line_items:
+        type:
+        - 'null'
+        - array
+      has_uncommited_changes:
+        type:
+        - 'null'
+        - boolean
+      note:
+        type:
+        - 'null'
+        - string
+      note_attributes:
+        type:
+        - 'null'
+        - array
+      number_times_tried:
+        type:
+        - 'null'
+        - integer
+      processed_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      processor_name:
+        type:
+        - 'null'
+        - string
+      retry_date:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      scheduled_at:
+        type:
+        - 'null'
+        - string
+      shipments_count:
+        type:
+        - 'null'
+        - integer
+      shipping_address:
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          address1:
+            type:
+            - 'null'
+            - string
+          address2:
+            type:
+            - 'null'
+            - string
+          cart_note:
+            type:
+            - 'null'
+            - string
+          city:
+            type:
+            - 'null'
+            - string
+          company:
+            type:
+            - 'null'
+            - string
+          country:
+            type:
+            - 'null'
+            - string
+          country_code:
+            type:
+            - 'null'
+            - string
+          customer_id:
+            type:
+            - 'null'
+            - integer
+          created_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          discount_id:
+            type:
+            - 'null'
+            - integer
+          first_name:
+            type:
+            - 'null'
+            - string
+          last_name:
+            type:
+            - 'null'
+            - string
+          note_attributes:
+            type:
+            - 'null'
+            - array
+          phone:
+            type:
+            - 'null'
+            - string
+          province:
+            type:
+            - 'null'
+            - string
+          shipping_lines_override:
+            type:
+            - 'null'
+            - array
+          updated_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          zip:
+            type:
+            - 'null'
+            - string
+      shipping_lines:
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+      shopify_order_id:
+        type:
+        - 'null'
+        - string
+      shopify_variant_id_not_found:
+        type:
+        - 'null'
+        - string
+      status:
+        type:
+        - 'null'
+        - string
+      subtotal_price:
+        type:
+        - 'null'
+        - string
+      tags:
+        type:
+        - 'null'
+        - string
+      tax_lines:
+        type:
+        - 'null'
+        - string
+      total_discounts:
+        type:
+        - 'null'
+        - string
+      total_line_items_price:
+        type:
+        - 'null'
+        - string
+      total_price:
+        type:
+        - 'null'
+        - string
+      total_refunds:
+        type:
+        - 'null'
+        - string
+      total_tax:
+        type:
+        - 'null'
+        - string
+      total_weight:
+        type:
+        - 'null'
+        - integer
+      transaction_id:
+        type:
+        - 'null'
+        - string
+      type:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  collections:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        type:
+        - 'null'
+        - string
+      description:
+        type:
+        - 'null'
+        - string
+      title:
+        type:
+        - 'null'
+        - string
+      type:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      sort_order:
+        type:
+        - 'null'
+        - string
+  credit_adjustments:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      credit_account_id:
+        type:
+        - 'null'
+        - integer
+      amount:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      currency_code:
+        type:
+        - 'null'
+        - string
+      ending_balance:
+        type:
+        - 'null'
+        - string
+      note:
+        type:
+        - 'null'
+        - string
+      type:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  customers:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      accepts_marketing:
+        type:
+        - 'null'
+        - integer
+      analytics_data:
+        type:
+        - 'null'
+        - object
+      billing_address1:
+        type:
+        - 'null'
+        - string
+      billing_address2:
+        type:
+        - 'null'
+        - string
+      billing_city:
+        type:
+        - 'null'
+        - string
+      billing_company:
+        type:
+        - 'null'
+        - string
+      billing_country:
+        type:
+        - 'null'
+        - string
+      billing_first_name:
+        type:
+        - 'null'
+        - string
+      billing_last_name:
+        type:
+        - 'null'
+        - string
+      billing_phone:
+        type:
+        - 'null'
+        - string
+      billing_province:
+        type:
+        - 'null'
+        - string
+      billing_zip:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      email:
+        type:
+        - 'null'
+        - string
+      first_charge_processed_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      first_name:
+        type:
+        - 'null'
+        - string
+      has_card_error_in_dunning:
+        type:
+        - 'null'
+        - boolean
+      has_valid_payment_method:
+        type:
+        - 'null'
+        - boolean
+      hash:
+        type:
+        - 'null'
+        - string
+      last_name:
+        type:
+        - 'null'
+        - string
+      number_active_subscriptions:
+        type:
+        - 'null'
+        - integer
+      number_subscriptions:
+        type:
+        - 'null'
+        - integer
+      processor_type:
+        type:
+        - 'null'
+        - string
+      reason_payment_method_not_valid:
+        type:
+        - 'null'
+        - string
+      shopify_customer_id:
+        type:
+        - 'null'
+        - string
+      status:
+        type:
+        - 'null'
+        - string
+      stripe_customer_token:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      apply_credit_to_next_recurring_charge:
+        type:
+        - 'null'
+        - boolean
+      apply_credit_to_next_checkout_charge:
+        type:
+        - 'null'
+        - boolean
+      external_customer_id:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          ecommerce:
+            type:
+            - 'null'
+            - string
+      has_payment_method_in_dunning:
+        type:
+        - 'null'
+        - boolean
+      phone:
+        type:
+        - 'null'
+        - string
+      subscriptions_active_count:
+        type:
+        - 'null'
+        - integer
+      subscriptions_total_count:
+        type:
+        - 'null'
+        - integer
+      tax_exempt:
+        type:
+        - 'null'
+        - boolean
+  discounts:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      applies_to:
+        type:
+        - 'null'
+        - string
+      applies_to_id:
+        type:
+        - 'null'
+        - integer
+      applies_to_product_type:
+        type:
+        - 'null'
+        - string
+      applies_to_resource:
+        type:
+        - 'null'
+        - string
+      channel_settings:
+        type:
+        - 'null'
+        - object
+        properties:
+          api:
+            type: object
+            properties:
+              can_apply:
+                type: boolean
+          checkout_page:
+            type: object
+            properties:
+              can_apply:
+                type: boolean
+          customer_portal:
+            type: object
+            properties:
+              can_apply:
+                type: boolean
+          merchant_portal:
+            type: object
+            properties:
+              can_apply:
+                type: boolean
+      code:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      discount_type:
+        type:
+        - 'null'
+        - string
+      duration:
+        type:
+        - 'null'
+        - string
+      duration_usage_limit:
+        type:
+        - 'null'
+        - integer
+      ends_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      external_discount_id:
+        type:
+        - 'null'
+        - string
+      external_discount_source:
+        type:
+        - 'null'
+        - string
+      first_time_customer_restriction:
+        type:
+        - 'null'
+        - string
+      once_per_customer:
+        type:
+        - 'null'
+        - boolean
+      prerequisite_subtotal_min:
+        type:
+        - 'null'
+        - number
+      starts_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      status:
+        type:
+        - 'null'
+        - string
+      times_used:
+        type:
+        - 'null'
+        - number
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      usage_limit:
+        type:
+        - 'null'
+        - number
+      value:
+        type:
+        - 'null'
+        - number
+  events:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      customer_id:
+        type:
+        - 'null'
+        - integer
+      object_id:
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      custom_attributes:
+        type:
+        - 'null'
+        - array
+      description:
+        type:
+        - 'null'
+        - string
+      object_type:
+        type:
+        - 'null'
+        - string
+      source:
+        type:
+        - 'null'
+        - object
+        properties:
+          account_id:
+            type:
+            - 'null'
+            - integer
+          api_token_id:
+            type:
+            - 'null'
+            - integer
+          account_email:
+            type:
+            - 'null'
+            - string
+          api_token_name:
+            type:
+            - 'null'
+            - string
+          origin:
+            type:
+            - 'null'
+            - string
+          user_type:
+            type:
+            - 'null'
+            - string
+      updated_attributes:
+        type:
+        - 'null'
+        - array
+      verb:
+        type:
+        - 'null'
+        - string
+  metafields:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      description:
+        type:
+        - 'null'
+        - string
+      key:
+        type:
+        - 'null'
+        - string
+      namespace:
+        type:
+        - 'null'
+        - string
+      owner_id:
+        type:
+        - 'null'
+        - string
+      owner_resource:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      value:
+        type:
+        - 'null'
+        - string
+      value_type:
+        type:
+        - 'null'
+        - string
+  onetimes:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      address_id:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      customer_id:
+        type:
+        - 'null'
+        - string
+      next_charge_scheduled_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      price:
+        type:
+        - 'null'
+        - string
+      product_title:
+        type:
+        - 'null'
+        - string
+      properties:
+        type:
+        - 'null'
+        - array
+      quantity:
+        type:
+        - 'null'
+        - integer
+      recharge_product_id:
+        type:
+        - 'null'
+        - integer
+      shopify_product_id:
+        type:
+        - 'null'
+        - integer
+      shopify_variant_id:
+        type:
+        - 'null'
+        - integer
+      sku:
+        type:
+        - 'null'
+        - string
+      status:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      variant_title:
+        type:
+        - 'null'
+        - string
+  orders:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      accepts_marketing:
+        type:
+        - 'null'
+        - boolean
+      send_email_welcome:
+        type:
+        - 'null'
+        - boolean
+      verified_email:
+        type:
+        - 'null'
+        - boolean
+      phone:
+        type:
+        - 'null'
+        - string
+      address_id:
+        type:
+        - 'null'
+        - integer
+      address_is_active:
+        type:
+        - 'null'
+        - integer
+      billing_address:
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          address1:
+            type:
+            - 'null'
+            - string
+          address2:
+            type:
+            - 'null'
+            - string
+          cart_note:
+            type:
+            - 'null'
+            - string
+          city:
+            type:
+            - 'null'
+            - string
+          company:
+            type:
+            - 'null'
+            - string
+          country:
+            type:
+            - 'null'
+            - string
+          country_code:
+            type:
+            - 'null'
+            - string
+          customer_id:
+            type:
+            - 'null'
+            - integer
+          created_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          discount_id:
+            type:
+            - 'null'
+            - integer
+          first_name:
+            type:
+            - 'null'
+            - string
+          last_name:
+            type:
+            - 'null'
+            - string
+          note_attributes:
+            type:
+            - 'null'
+            - array
+          phone:
+            type:
+            - 'null'
+            - string
+          province:
+            type:
+            - 'null'
+            - string
+          shipping_lines_override:
+            type:
+            - 'null'
+            - array
+          updated_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          zip:
+            type:
+            - 'null'
+            - string
+      browser_ip:
+        type:
+        - 'null'
+        - string
+      charge:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          external_transaction_id:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              payment_processor:
+                type:
+                - 'null'
+                - string
+          payment_processor_name:
+            type:
+            - 'null'
+            - string
+          status:
+            type:
+            - 'null'
+            - string
+      client_details:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          browser_ip:
+            type:
+            - 'null'
+            - string
+          user_agent:
+            type:
+            - 'null'
+            - string
+      discounts:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      error:
+        type:
+        - 'null'
+        - string
+      external_cart_token:
+        type:
+        - 'null'
+        - string
+      external_order_id:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          ecommerce:
+            type:
+            - 'null'
+            - string
+      external_order_name:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          ecommerce:
+            type:
+            - 'null'
+            - string
+      external_order_number:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          ecommerce:
+            type:
+            - 'null'
+            - string
+      order_attributes:
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - string
+      taxable:
+        type:
+        - 'null'
+        - boolean
+      total_duties:
+        type:
+        - 'null'
+        - string
+      total_weight_grams:
+        type:
+        - 'null'
+        - integer
+      charge_id:
+        type:
+        - 'null'
+        - integer
+      charge_status:
+        type:
+        - 'null'
+        - string
+      currency:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      customer:
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          accepts_marketing:
+            type:
+            - 'null'
+            - boolean
+          send_email_welcome:
+            type:
+            - 'null'
+            - boolean
+          verified_email:
+            type:
+            - 'null'
+            - boolean
+          phone:
+            type:
+            - 'null'
+            - string
+          external_customer_id:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              ecommerce:
+                type:
+                - 'null'
+                - string
+          billing_address1:
+            type:
+            - 'null'
+            - string
+          billing_address2:
+            type:
+            - 'null'
+            - string
+          billing_city:
+            type:
+            - 'null'
+            - string
+          billing_company:
+            type:
+            - 'null'
+            - string
+          billing_country:
+            type:
+            - 'null'
+            - string
+          billing_first_name:
+            type:
+            - 'null'
+            - string
+          billing_last_name:
+            type:
+            - 'null'
+            - string
+          billing_phone:
+            type:
+            - 'null'
+            - string
+          billing_province:
+            type:
+            - 'null'
+            - string
+          billing_zip:
+            type:
+            - 'null'
+            - string
+          created_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          email:
+            type:
+            - 'null'
+            - string
+          first_charge_processed_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          first_name:
+            type:
+            - 'null'
+            - string
+          has_card_error_in_dunning:
+            type:
+            - 'null'
+            - boolean
+          has_valid_payment_method:
+            type:
+            - 'null'
+            - boolean
+          hash:
+            type:
+            - 'null'
+            - string
+          last_name:
+            type:
+            - 'null'
+            - string
+          number_active_subscriptions:
+            type:
+            - 'null'
+            - integer
+          number_subscriptions:
+            type:
+            - 'null'
+            - integer
+          processor_type:
+            type:
+            - 'null'
+            - string
+          reason_payment_method_not_valid:
+            type:
+            - 'null'
+            - string
+          shopify_customer_id:
+            type:
+            - 'null'
+            - string
+          status:
+            type:
+            - 'null'
+            - string
+          updated_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+      customer_id:
+        type:
+        - 'null'
+        - integer
+      discount_codes:
+        type:
+        - 'null'
+        - array
+      email:
+        type:
+        - 'null'
+        - string
+      first_name:
+        type:
+        - 'null'
+        - string
+      hash:
+        type:
+        - 'null'
+        - string
+      is_prepaid:
+        type:
+        - 'null'
+        - integer
+      last_name:
+        type:
+        - 'null'
+        - string
+      line_items:
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+          properties:
+            external_inventory_policy:
+              type:
+              - 'null'
+              - string
+            external_product_id:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                ecommerce:
+                  type:
+                  - 'null'
+                  - string
+            external_variant_id:
+              type:
+              - 'null'
+              - object
+              additionalProperties: true
+              properties:
+                ecommerce:
+                  type:
+                  - 'null'
+                  - string
+            grams:
+              type:
+              - 'null'
+              - number
+            handle:
+              type:
+              - 'null'
+              - string
+            purchase_item_id:
+              type:
+              - 'null'
+              - integer
+            purchase_item_type:
+              type:
+              - 'null'
+              - string
+            tax_due:
+              type:
+              - 'null'
+              - string
+            taxable_amount:
+              type:
+              - 'null'
+              - string
+            taxable:
+              type:
+              - 'null'
+              - boolean
+            total_price:
+              type:
+              - 'null'
+              - string
+            unit_price:
+              type:
+              - 'null'
+              - string
+            unit_price_includes_tax:
+              type:
+              - 'null'
+              - boolean
+            original_price:
+              type:
+              - 'null'
+              - number
+            product_title:
+              type:
+              - 'null'
+              - string
+            tax_lines:
+              type:
+              - 'null'
+              - array
+              items:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+                properties:
+                  price:
+                    type:
+                    - 'null'
+                    - string
+                  rate:
+                    type:
+                    - 'null'
+                    - string
+                  title:
+                    type:
+                    - 'null'
+                    - string
+            images:
+              type:
+              - 'null'
+              - object
+            price:
+              type:
+              - 'null'
+              - number
+            properties:
+              type:
+              - 'null'
+              - array
+            quantity:
+              type:
+              - 'null'
+              - integer
+            shopify_product_id:
+              type:
+              - 'null'
+              - string
+            shopify_variant_id:
+              type:
+              - 'null'
+              - string
+            sku:
+              type:
+              - 'null'
+              - string
+            subscription_id:
+              type:
+              - 'null'
+              - integer
+            title:
+              type:
+              - 'null'
+              - string
+            variant_title:
+              type:
+              - 'null'
+              - string
+      note:
+        type:
+        - 'null'
+        - string
+      note_attributes:
+        type:
+        - 'null'
+        - array
+      payment_processor:
+        type:
+        - 'null'
+        - string
+      processed_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      redacted:
+        type:
+        - 'null'
+        - boolean
+      scheduled_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      shipped_date:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      shipping_address:
+        type:
+        - 'null'
+        - object
+        properties:
+          id:
+            type:
+            - 'null'
+            - integer
+          address1:
+            type:
+            - 'null'
+            - string
+          address2:
+            type:
+            - 'null'
+            - string
+          cart_note:
+            type:
+            - 'null'
+            - string
+          city:
+            type:
+            - 'null'
+            - string
+          company:
+            type:
+            - 'null'
+            - string
+          country:
+            type:
+            - 'null'
+            - string
+          country_code:
+            type:
+            - 'null'
+            - string
+          customer_id:
+            type:
+            - 'null'
+            - integer
+          created_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          discount_id:
+            type:
+            - 'null'
+            - integer
+          first_name:
+            type:
+            - 'null'
+            - string
+          last_name:
+            type:
+            - 'null'
+            - string
+          note_attributes:
+            type:
+            - 'null'
+            - array
+          phone:
+            type:
+            - 'null'
+            - string
+          province:
+            type:
+            - 'null'
+            - string
+          shipping_lines_override:
+            type:
+            - 'null'
+            - array
+          updated_at:
+            type:
+            - 'null'
+            - string
+            format: date-time
+          zip:
+            type:
+            - 'null'
+            - string
+      shipping_lines:
+        type:
+        - 'null'
+        - array
+      shopify_cart_token:
+        type:
+        - 'null'
+        - string
+      shopify_customer_id:
+        type:
+        - 'null'
+        - string
+      shopify_order_id:
+        type:
+        - 'null'
+        - string
+      shopify_order_number:
+        type:
+        - 'null'
+        - integer
+      status:
+        type:
+        - 'null'
+        - string
+      subtotal_price:
+        type:
+        - 'null'
+        - number
+      tags:
+        type:
+        - 'null'
+        - string
+      tax_lines:
+        type:
+        - 'null'
+        - array
+      transaction_id:
+        type:
+        - 'null'
+        - string
+      total_discounts:
+        type:
+        - 'null'
+        - number
+      total_line_items_price:
+        type:
+        - 'null'
+        - number
+      total_price:
+        type:
+        - 'null'
+        - number
+      total_refunds:
+        type:
+        - 'null'
+        - string
+      total_tax:
+        type:
+        - 'null'
+        - string
+      total_weight:
+        type:
+        - 'null'
+        - integer
+      type:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      shipping_date:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      shopify_id:
+        type:
+        - 'null'
+        - string
+  payment_methods:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type: object
+    properties:
+      billing_address:
+        properties:
+          address1:
+            type:
+            - 'null'
+            - string
+          address2:
+            type:
+            - 'null'
+            - string
+          city:
+            type:
+            - 'null'
+            - string
+          company:
+            type:
+            - 'null'
+            - string
+          country:
+            type:
+            - 'null'
+            - string
+          country_code:
+            type:
+            - 'null'
+            - string
+          first_name:
+            type:
+            - 'null'
+            - string
+          last_name:
+            type:
+            - 'null'
+            - string
+          phone:
+            type:
+            - 'null'
+            - string
+          province:
+            type:
+            - 'null'
+            - string
+          zip:
+            type:
+            - 'null'
+            - string
+        type:
+        - 'null'
+        - object
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      customer_id:
+        type:
+        - 'null'
+        - number
+      default:
+        type:
+        - 'null'
+        - boolean
+      id:
+        type: number
+      include:
+        type:
+        - 'null'
+        - object
+      payment_details:
+        properties:
+          brand:
+            type:
+            - 'null'
+            - string
+          exp_month:
+            type:
+            - 'null'
+            - number
+          exp_year:
+            type:
+            - 'null'
+            - number
+          last4:
+            type:
+            - 'null'
+            - string
+      payment_type:
+        type:
+        - 'null'
+        - string
+      processor_customer_token:
+        type:
+        - 'null'
+        - string
+      processor_name:
+        type:
+        - 'null'
+        - string
+      processor_payment_method_token:
+        type:
+        - 'null'
+        - string
+      status:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  plans:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      channel_settings:
+        type:
+        - 'null'
+        - object
+        properties:
+          api:
+            type:
+            - 'null'
+            - object
+            properties:
+              display:
+                type:
+                - 'null'
+                - boolean
+          checkout_page:
+            type:
+            - 'null'
+            - object
+            properties:
+              display:
+                type:
+                - 'null'
+                - boolean
+          customer_portal:
+            type:
+            - 'null'
+            - object
+            properties:
+              display:
+                type:
+                - 'null'
+                - boolean
+          merchant_portal:
+            type:
+            - 'null'
+            - object
+            properties:
+              display:
+                type:
+                - 'null'
+                - boolean
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      deleted_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      discount_amount:
+        type:
+        - 'null'
+        - integer
+      discount_type:
+        type:
+        - 'null'
+        - string
+      external_product_id:
+        type:
+        - 'null'
+        - object
+        properties:
+          ecommerce:
+            type:
+            - 'null'
+            - string
+      sort_order:
+        type:
+        - 'null'
+        - integer
+      subscription_preferences:
+        type:
+        - 'null'
+        - object
+        properties:
+          charge_interval_frequency:
+            type:
+            - 'null'
+            - integer
+          cutoff_day_of_month:
+            type:
+            - 'null'
+            - integer
+          cutoff_day_of_week:
+            type:
+            - 'null'
+            - integer
+          expire_after_specific_number_of_charges:
+            type:
+            - 'null'
+            - integer
+          interval_unit:
+            type:
+            - 'null'
+            - string
+          order_day_of_month:
+            type:
+            - 'null'
+            - integer
+          order_day_of_week:
+            type:
+            - 'null'
+            - integer
+          order_interval_frequency:
+            type:
+            - 'null'
+            - integer
+      title:
+        type:
+        - 'null'
+        - string
+      type:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+  shop:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      shop:
+        type:
+        - 'null'
+        - object
+      store:
+        type:
+        - 'null'
+        - object
+      id:
+        type:
+        - 'null'
+        - integer
+  subscriptions:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      id:
+        type:
+        - 'null'
+        - integer
+      address_id:
+        type:
+        - 'null'
+        - integer
+      analytics_data:
+        type:
+        - 'null'
+        - object
+      cancellation_reason:
+        type:
+        - 'null'
+        - string
+      cancellation_reason_comments:
+        type:
+        - 'null'
+        - string
+      cancelled_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      charge_interval_frequency:
+        type:
+        - 'null'
+        - string
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      commit_update:
+        type:
+        - 'null'
+        - boolean
+      customer_id:
+        type:
+        - 'null'
+        - integer
+      email:
+        type:
+        - 'null'
+        - string
+      expire_after_specific_number_of_charges:
+        type:
+        - 'null'
+        - integer
+      external_product_id:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          ecommerce:
+            type:
+            - 'null'
+            - string
+      external_variant_id:
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          ecommerce:
+            type:
+            - 'null'
+            - string
+      presentment_currency:
+        type:
+        - 'null'
+        - string
+      has_queued_charges:
+        type:
+        - 'null'
+        - integer
+      is_prepaid:
+        type:
+        - 'null'
+        - boolean
+      is_skippable:
+        type:
+        - 'null'
+        - boolean
+      is_swappable:
+        type:
+        - 'null'
+        - boolean
+      max_retries_reached:
+        type:
+        - 'null'
+        - integer
+      next_charge_scheduled_at:
+        type:
+        - 'null'
+        - string
+      order_day_of_month:
+        type:
+        - 'null'
+        - integer
+      order_day_of_week:
+        type:
+        - 'null'
+        - integer
+      order_interval_frequency:
+        type:
+        - 'null'
+        - string
+      order_interval_unit:
+        type:
+        - 'null'
+        - string
+      price:
+        type:
+        - 'null'
+        - number
+      product_title:
+        type:
+        - 'null'
+        - string
+      properties:
+        type:
+        - 'null'
+        - array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            value:
+              type:
+              - 'null'
+              - string
+      quantity:
+        type:
+        - 'null'
+        - integer
+      recharge_product_id:
+        type:
+        - 'null'
+        - integer
+      shopify_product_id:
+        type:
+        - 'null'
+        - integer
+      shopify_variant_id:
+        type:
+        - 'null'
+        - integer
+      sku:
+        type:
+        - 'null'
+        - string
+      sku_override:
+        type:
+        - 'null'
+        - boolean
+      status:
+        type:
+        - 'null'
+        - string
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      variant_title:
+        type:
+        - 'null'
+        - string
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+  - type: MovingWindowCallRatePolicy
+    rates:
+    - limit: 2
+      interval: PT1S
+    matchers: []
+  status_codes_for_ratelimit_hit:
+  - 429
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 2

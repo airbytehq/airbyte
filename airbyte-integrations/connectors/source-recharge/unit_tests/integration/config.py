@@ -5,15 +5,14 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any, MutableMapping
-
-import pendulum
 
 
 START_DATE = "2023-01-01T00:00:00Z"
 ACCESS_TOKEN = "test_access_token"
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
-NOW = pendulum.now(tz="utc")
+NOW = datetime.now(timezone.utc)
 
 
 class ConfigBuilder:
