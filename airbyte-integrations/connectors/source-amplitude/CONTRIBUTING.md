@@ -16,4 +16,6 @@ Amplitude's Export API rejects an Events export with HTTP 400 when it exceeds 4G
 
 ## Incremental Stream Considerations
 
+Date-restricted responses for the three date-windowed streams fail with a retention-specific config error before the generic HTTP 403 permission handler.
+
 The connector is manifest-only: every stream is declared in `manifest.yaml`, and `components.py` holds only custom extractors and a datetime transformation. Incremental streams (`events`, `average_session_length`, `active_users`) use `DatetimeBasedCursor`.
