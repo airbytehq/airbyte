@@ -32,7 +32,7 @@ class HubSpotSpecificationExtenderTest {
         assertEquals("{{ state_value }}", oauth["access_token_params"]["code_verifier"]?.asText())
         val state = oauth["state"]
         assertTrue(state != null && state["min"].asInt() >= 43)
-        assertTrue(state != null && state["max"].asInt() <= 128)
+        assertTrue(state["max"].asInt() <= 128)
         assertTrue(state["min"].asInt() <= state["max"].asInt())
     }
 }
