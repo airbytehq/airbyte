@@ -18,7 +18,7 @@
     <link href="https://example.net/blog/posts/first"/>
     <id>urn:uuid:entry-1</id>
     <published>2026-11-09T01:00:00-08:00</published>
-    <updated>2026-11-09T09:00:00Z</updated>
+    <updated>2026-11-09T11:00:00Z</updated>
     <summary>First summary</summary>
     <author><name>Carol</name></author>
   </entry>

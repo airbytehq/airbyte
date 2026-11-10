@@ -10,7 +10,7 @@ definitions:
       class_name: source_declarative_manifest.components.CustomExtractor
     record_filter:
       type: RecordFilter
-      condition: "{{ record.get('published') is not none and record['published'] >= stream_interval['start_time'] }}"
+      condition: "{{ record.get('published') is not none }}"
 
   requester:
     type: HttpRequester
@@ -41,6 +41,7 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: published
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      is_client_side_incremental: true
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ (now_utc() - duration('PT23H')).strftime('%Y-%m-%dT%H:%M:%S%z') }}"

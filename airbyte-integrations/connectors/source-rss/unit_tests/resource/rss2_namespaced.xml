@@ -13,7 +13,7 @@
       <title>Newest story</title>
       <media:title>Media title must not be used</media:title>
       <link>/news/newest</link>
-      <description><![CDATA[<p>Newest <b>story</b></p>]]></description>
+      <description><![CDATA[<p>Newest <b>story</b> from <a href="https://example.com/?a=1&b=2">AT&T</a></p>]]></description>
       <author>editor@example.com (Jane Editor)</author>
       <category>World</category>
       <category>Politics</category>
