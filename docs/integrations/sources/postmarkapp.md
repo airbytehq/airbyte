@@ -62,7 +62,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.11 | 2026-11-09 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Upgrade to `source-declarative-manifest` 7.47.0 and fix offset pagination so every stream starts at the first record and stops on a short page |
+| 0.2.11 | 2026-11-09 | [91434](https://github.com/airbytehq/airbyte/pull/91434) | Upgrade to `source-declarative-manifest` 7.47.0 and fix offset pagination so every stream starts at the first record and stops on a short page |
 | 0.2.10 | 2025-02-15 | [53947](https://github.com/airbytehq/airbyte/pull/53947) | Update dependencies |
 | 0.2.9 | 2025-02-08 | [53462](https://github.com/airbytehq/airbyte/pull/53462) | Update dependencies |
 | 0.2.8 | 2025-02-01 | [52967](https://github.com/airbytehq/airbyte/pull/52967) | Update dependencies |
