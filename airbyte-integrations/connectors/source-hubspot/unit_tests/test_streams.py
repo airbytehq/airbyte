@@ -295,6 +295,53 @@ def test_contacts_incremental_with_state_uses_search_endpoint(requests_mock, con
     )
 
 
+def _contact(contact_id, updated_at):
+    return {
+        "id": contact_id,
+        "createdAt": "2022-03-01T00:00:00.000Z",
+        "updatedAt": updated_at,
+        "archived": False,
+        "properties": {"hs_object_id": contact_id, "lastmodifieddate": updated_at},
+    }
+
+
+def _to_ms(timestamp):
+    return int(datetime.datetime.fromisoformat(timestamp.replace("Z", "+00:00")).timestamp() * 1000)
+
+
+def _mock_contacts_metadata(requests_mock):
+    mock_dynamic_schema_requests_with_skip(requests_mock, ["contact"])
+    mock_v3_properties(requests_mock, "contact", [{"name": "hs_object_id", "type": "number"}])
+    requests_mock.get(
+        "https://api.hubapi.com/properties/v2/contact/properties",
+        json=[{"name": "hs_object_id", "type": "number"}],
+    )
+    for association in ("contacts", "companies"):
+        requests_mock.post(f"https://api.hubapi.com/crm/v4/associations/contact/{association}/batch/read", json={"results": []})
+
+
+def _filtered_contact_search(contacts, on_request=None):
+    """Answer CRM Search like HubSpot does: apply the request's `lastmodifieddate` and `hs_object_id` filters."""
+
+    def search_response(request, context):
+        if on_request:
+            on_request()
+        bounds = {(f["propertyName"], f["operator"]): int(f["value"]) for f in request.json()["filters"]}
+        results = [
+            record
+            for record in contacts
+            if bounds[("lastmodifieddate", "GTE")] <= _to_ms(record["updatedAt"]) <= bounds[("lastmodifieddate", "LTE")]
+            and int(record["id"]) >= bounds[("hs_object_id", "GTE")]
+        ]
+        return json.dumps({"results": results, "total": len(results)})
+
+    return search_response
+
+
+SYNC_START = "2022-03-10T14:00:00.000Z"
+SCAN_END = "2022-03-10T14:10:00.000Z"
+
+
 @pytest.mark.parametrize(
     "lookback_minutes, edited_contact_recovered",
     [(0, False), (10, True)],
@@ -308,53 +355,30 @@ def test_contacts_first_sync_state_overshoot_is_covered_by_lookback_window(
     incremental search skips it unless `lookback_window` covers the length of the first sync. The docs recommend that
     setting; this test pins both the loss and the mitigation.
     """
-    mock_dynamic_schema_requests_with_skip(requests_mock, ["contact"])
-    mock_v3_properties(requests_mock, "contact", [{"name": "hs_object_id", "type": "number"}])
-    requests_mock.get(
-        "https://api.hubapi.com/properties/v2/contact/properties",
-        json=[{"name": "hs_object_id", "type": "number"}],
-    )
-    for association in ("contacts", "companies"):
-        requests_mock.post(f"https://api.hubapi.com/crm/v4/associations/contact/{association}/batch/read", json={"results": []})
-
-    def contact(contact_id, updated_at):
-        return {
-            "id": contact_id,
-            "createdAt": "2022-03-01T00:00:00.000Z",
-            "updatedAt": updated_at,
-            "archived": False,
-            "properties": {"hs_object_id": contact_id, "lastmodifieddate": updated_at},
-        }
-
-    # Sync 1 starts at 14:00 with no state. Contact 1 is read early, before it is edited at 14:03.
-    # Contact 2 is edited at 14:08, before the scan reaches it, so it is read with that newer timestamp.
-    requests_mock.get(
-        "https://api.hubapi.com/crm/v3/objects/contact",
-        json={"results": [contact("1", "2022-03-03T00:00:00.000Z"), contact("2", "2022-03-10T14:08:00.000Z")], "paging": {}},
-    )
+    _mock_contacts_metadata(requests_mock)
     config["start_date"] = "2022-03-01T00:00:00Z"
     config["lookback_window"] = lookback_minutes
-    with freezegun.freeze_time("2022-03-10T14:10:00Z"):
+
+    # Sync 1 starts at 14:00 with no state, and the scan takes until 14:10. Contact 1 is read before its 14:03 edit;
+    # contact 2 is edited at 14:08, before the scan reaches it, so it is read with that newer timestamp.
+    with freezegun.freeze_time(SYNC_START) as clock:
+
+        def list_response(request, context):
+            clock.move_to(SCAN_END)
+            return json.dumps(
+                {"results": [_contact("1", "2022-03-03T00:00:00.000Z"), _contact("2", "2022-03-10T14:08:00.000Z")], "paging": {}}
+            )
+
+        requests_mock.get("https://api.hubapi.com/crm/v3/objects/contact", text=list_response)
         first_sync = read_from_stream(config, "contacts", SyncMode.incremental)
+
+    assert {record.record.data["id"] for record in first_sync.records} == {"1", "2"}
     first_sync_state = first_sync.state_messages[-1].state.stream.stream_state.__dict__
-    assert first_sync_state["updatedAt"] > "2022-03-10T14:00:00", "list path should save a cursor past the sync start"
+    assert _to_ms(first_sync_state["updatedAt"]) > _to_ms(SYNC_START), "the list path should save a cursor past the sync start"
 
-    # Sync 2 uses CRM Search; the mock applies the request's lastmodifieddate and hs_object_id filters.
-    contacts_now = [contact("1", "2022-03-10T14:03:00.000Z"), contact("2", "2022-03-10T14:08:00.000Z")]
-
-    def search_response(request, context):
-        bounds = {(f["propertyName"], f["operator"]): int(f["value"]) for f in request.json()["filters"]}
-        results = []
-        for record in contacts_now:
-            modified_ms = int(datetime.datetime.fromisoformat(record["updatedAt"].replace("Z", "+00:00")).timestamp() * 1000)
-            if (
-                bounds[("lastmodifieddate", "GTE")] <= modified_ms <= bounds[("lastmodifieddate", "LTE")]
-                and int(record["id"]) >= bounds[("hs_object_id", "GTE")]
-            ):
-                results.append(record)
-        return json.dumps({"results": results, "total": len(results)})
-
-    requests_mock.post("https://api.hubapi.com/crm/v3/objects/contact/search", text=search_response)
+    # Sync 2 uses CRM Search and starts from the saved cursor, minus the lookback window.
+    contacts_now = [_contact("1", "2022-03-10T14:03:00.000Z"), _contact("2", "2022-03-10T14:08:00.000Z")]
+    requests_mock.post("https://api.hubapi.com/crm/v3/objects/contact/search", text=_filtered_contact_search(contacts_now))
     state = StateBuilder().with_stream_state("contacts", first_sync_state).build()
     with freezegun.freeze_time("2022-03-10T15:00:00Z"):
         second_sync = read_from_stream(config, "contacts", SyncMode.incremental, state)
@@ -362,6 +386,28 @@ def test_contacts_first_sync_state_overshoot_is_covered_by_lookback_window(
     second_sync_ids = {record.record.data["id"] for record in second_sync.records}
     assert ("1" in second_sync_ids) is edited_contact_recovered
     assert "2" in second_sync_ids
+
+
+def test_contacts_search_path_state_stays_at_or_before_sync_start(requests_mock, config):
+    """With state, contacts uses CRM Search, whose `lastmodifieddate` upper bound is the sync start. A contact edited
+    during the scan is left for the next sync instead of moving the cursor past earlier edits, so the overshoot above
+    is specific to the no-state list path.
+    """
+    _mock_contacts_metadata(requests_mock)
+    config["start_date"] = "2022-03-01T00:00:00Z"
+    contacts_now = [_contact("1", "2022-03-03T00:00:00.000Z"), _contact("2", "2022-03-10T14:08:00.000Z")]
+
+    with freezegun.freeze_time(SYNC_START) as clock:
+        requests_mock.post(
+            "https://api.hubapi.com/crm/v3/objects/contact/search",
+            text=_filtered_contact_search(contacts_now, on_request=lambda: clock.move_to(SCAN_END)),
+        )
+        state = StateBuilder().with_stream_state("contacts", {"updatedAt": "2022-03-02T00:00:00.000Z"}).build()
+        output = read_from_stream(config, "contacts", SyncMode.incremental, state)
+
+    assert {record.record.data["id"] for record in output.records} == {"1"}
+    saved_state = output.state_messages[-1].state.stream.stream_state.__dict__
+    assert _to_ms(saved_state["updatedAt"]) <= _to_ms(SYNC_START)
 
 
 def test_deal_pipelines_read_uses_2026_09_response_shape(requests_mock, config):
