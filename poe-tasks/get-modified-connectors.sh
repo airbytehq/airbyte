@@ -16,6 +16,15 @@ JVM_TOOLCHAIN=false
 ALL_JVM=false
 REQUIRE_VERSION_BUMP=false
 
+# Not added by --jvm-toolchain because their integration-test environments are broken:
+# HubSpot test credentials lack required scopes, the Yellowbrick test host no longer
+# resolves, and the Teradata test database refuses connections. They still run when modified.
+JVM_TOOLCHAIN_EXCLUDED_CONNECTORS=(
+  destination-hubspot
+  destination-teradata
+  destination-yellowbrick
+)
+
 # parse flags
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -258,6 +267,10 @@ if $LOCAL_CDK || $JVM_TOOLCHAIN || $ALL_JVM; then
     fi
 
     if $JVM_TOOLCHAIN; then
+      if [[ " ${JVM_TOOLCHAIN_EXCLUDED_CONNECTORS[*]} " == *" $connector_name "* ]]; then
+        echo "Skipping $connector_name: excluded from the JVM toolchain matrix" >&2
+        continue
+      fi
       # Bulk CDK connectors are all Kotlin; legacy-CDK connectors only if they have Kotlin sources.
       if $is_bulk || find "$connector_dir/src" -name '*.kt' -print -quit 2>/dev/null | grep -q .; then
         connectors+=("$connector_name")
