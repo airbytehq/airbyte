@@ -6,6 +6,7 @@ from typing import Any, Iterable, Mapping, Optional
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 
 
 # maximum block hierarchy recursive request depth
@@ -23,9 +24,12 @@ class BlocksRetriever(SimpleRetriever):
 
     """
 
+    cursor: Optional[Cursor] = None
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
+        self._filter_records = bool(self.cursor and self.cursor.state.get("state"))
 
     def read_records(
         self,
@@ -50,4 +54,5 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            yield stream_data
+            if not self._filter_records or self.cursor.should_be_synced(stream_data):
+                yield stream_data
