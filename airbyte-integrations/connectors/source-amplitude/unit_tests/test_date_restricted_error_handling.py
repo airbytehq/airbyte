@@ -70,9 +70,7 @@ _GENERIC_MESSAGE = "Access denied due to lack of permission or invalid API/Secre
 @freeze_time("2025-11-01T00:00:00Z")
 def test_403_reports_retention_or_permission_error(stream: str, path: str, params: dict, body: dict, expected_message: str) -> None:
     catalog = CatalogBuilder().with_stream(stream, SyncMode.incremental).build()
-    source = YamlDeclarativeSource(
-        config=_CONFIG, catalog=catalog, state=None, path_to_yaml=str(_CONNECTOR_DIR / "manifest.yaml")
-    )
+    source = YamlDeclarativeSource(config=_CONFIG, catalog=catalog, state=None, path_to_yaml=str(_CONNECTOR_DIR / "manifest.yaml"))
     with HttpMocker() as http_mocker:
         request = HttpRequest(url=f"https://amplitude.com/api{path}", query_params=params)
         http_mocker.get(request, HttpResponse(json.dumps(body), status_code=403))
