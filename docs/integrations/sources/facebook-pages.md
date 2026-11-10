@@ -223,7 +223,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.1 | 2026-11-10 | [0](https://github.com/airbytehq/airbyte/pull/0) | Classify missing pages_read_engagement permission as a config error and lower the default page size to 50 |
+| 3.3.1 | 2026-11-10 | [91893](https://github.com/airbytehq/airbyte/pull/91893) | Classify missing pages_read_engagement permission as a config error and lower the default page size to 50 |
 | 3.3.0   | 2026-11-10 | [90129](https://github.com/airbytehq/airbyte/pull/90129)       | Move from Graph API v24.0 to v26.0.                                                                                                                                    |
 | 3.2.0   | 2026-11-09 | [90124](https://github.com/airbytehq/airbyte/pull/90124)       | Add an optional incremental sync mode and a `start_date` setting to the `page_insights` stream, which reads a `since` and `until` date range in 90-day windows.        |
 | 3.1.0   | 2026-11-09 | [90123](https://github.com/airbytehq/airbyte/pull/90123)       | Configurable insights metrics and period, new video, Reels, comment and rating streams, incremental posts                                                              |
