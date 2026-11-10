@@ -99,32 +99,45 @@ class TestOrganizations(TestCase):
         )
 
     @HttpMocker()
-    def test_read_records_with_error_403_retry(self, http_mocker: HttpMocker) -> None:
-        """Test that 403 errors trigger RETRY behavior with custom error message from manifest."""
+    def test_read_records_with_error_403_raises_config_error(self, http_mocker: HttpMocker) -> None:
+        """Every other stream hangs off the organizations, so a 403 on them fails the sync instead of returning nothing."""
         http_mocker.post(
             OAuthRequestBuilder.oauth_endpoint().build(),
             oauth_response(),
         )
-        # First request returns 403, then succeeds on retry
         http_mocker.get(
             RequestBuilder.organizations_endpoint("me").build(),
-            [
-                error_response(HTTPStatus.FORBIDDEN),
-                organizations_response(organization_id=ORGANIZATION_ID),
-            ],
+            error_response(HTTPStatus.FORBIDDEN),
         )
 
-        output = _read(config_builder=config())
-        assert len(output.records) == 1
-        assert output.records[0].record.data["id"] == ORGANIZATION_ID
+        output = _read(config_builder=config(), expecting_exception=True)
 
-        # Verify custom error message from manifest is logged
-        log_messages = [log.log.message for log in output.logs]
-        expected_error_prefix = "Got permission error when accessing URL. Skipping"
+        assert not output.records
         assert any(
-            expected_error_prefix in msg for msg in log_messages
-        ), f"Expected custom 403 error message '{expected_error_prefix}' in logs"
-        assert any(_STREAM_NAME in msg for msg in log_messages), f"Expected stream name '{_STREAM_NAME}' in log messages"
+            error.trace.error.failure_type == FailureType.config_error and "does not have permission" in error.trace.error.message
+            for error in output.errors
+        )
+
+    @HttpMocker()
+    def test_read_records_with_configured_organization_403_raises_config_error(self, http_mocker: HttpMocker) -> None:
+        http_mocker.post(
+            OAuthRequestBuilder.oauth_endpoint().build(),
+            oauth_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.organizations_endpoint(ORGANIZATION_ID).build(),
+            error_response(HTTPStatus.FORBIDDEN),
+        )
+
+        output = _read(config_builder=config().with_organization_ids([ORGANIZATION_ID]), expecting_exception=True)
+
+        assert not output.records
+        assert any(
+            error.trace.error.failure_type == FailureType.config_error
+            and "Organization IDs" in error.trace.error.message
+            and ORGANIZATION_ID in error.trace.error.message
+            for error in output.errors
+        )
 
     @HttpMocker()
     def test_start_date_still_filters_organizations_stream(self, http_mocker: HttpMocker) -> None:

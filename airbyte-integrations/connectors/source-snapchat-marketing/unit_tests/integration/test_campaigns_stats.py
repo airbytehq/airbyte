@@ -98,27 +98,22 @@ class TestCampaignsStatsHourly(TestCase):
         assert record.get("id") == CAMPAIGN_ID, f"Expected id={CAMPAIGN_ID}, got {record.get('id')}"
 
     @HttpMocker()
-    def test_read_records_with_error_403_retry(self, http_mocker: HttpMocker) -> None:
-        """Test that 403 errors trigger RETRY behavior with custom error message from manifest."""
+    def test_read_records_with_error_403_is_skipped(self, http_mocker: HttpMocker) -> None:
+        """A 403 means the user cannot read this partition: it is logged and skipped instead of failing the sync."""
         _setup_parent_mocks(http_mocker)
-        # First request returns 403, then succeeds on retry
+        # The authenticated user cannot read this partition
         http_mocker.get(
             RequestBuilder.campaigns_stats_endpoint(CAMPAIGN_ID).with_any_query_params().build(),
-            [
-                error_response(HTTPStatus.FORBIDDEN),
-                stats_timeseries_response(entity_id=CAMPAIGN_ID, granularity="HOUR"),
-            ],
+            error_response(HTTPStatus.FORBIDDEN),
         )
 
         output = _read(config_builder=config(), stream_name="campaigns_stats_hourly")
-        assert len(output.records) == 5  # 5 weekly time slices
 
-        # Verify custom error message from manifest is logged
-        log_messages = [log.log.message for log in output.logs]
-        expected_error_prefix = "Got permission error when accessing URL. Skipping"
+        assert not output.records
+        assert not output.errors
         assert any(
-            expected_error_prefix in msg for msg in log_messages
-        ), f"Expected custom 403 error message '{expected_error_prefix}' in logs"
+            "403 Forbidden" in log.log.message and "request_id" in log.log.message for log in output.logs
+        ), "Expected the skipped 403 request to be logged"
 
 
 class TestCampaignsStatsDaily(TestCase):
