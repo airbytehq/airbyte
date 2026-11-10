@@ -57,6 +57,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Performance considerations
 
+The `account_balances` stream makes one API request per account. On large sites, it can take a long time and consume a substantial portion of Recurly's API rate limit. Enable this stream only when you need account balances.
+
 The Recurly connector should not run into Recurly API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
