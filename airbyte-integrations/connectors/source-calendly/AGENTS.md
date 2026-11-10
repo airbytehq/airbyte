@@ -2,7 +2,7 @@
 
 ## 1. Authentication Failures Stop the Sync, but Deleted Parent Events Do Not
 
-Calendly personal access tokens created since March 2026 require explicit [authorization scopes](https://developer.calendly.com/docs/authentication/scopes). Keep one `DefaultErrorHandler` per requester and no `CompositeErrorHandler`: the shared handler classifies errors consistently, the invitee and routing-form-submission requesters override only the missing-parent 404, the fan-out requesters skip a stale member or event type (section 6), and the four plan-gated streams (contacts, outgoing communications, activity logs, meeting recaps) override only explicit upgrade/feature messages (section 7). Authentication messages tell the user how to fix the token and end with Calendly's response `message`. Keep the per-stream scope table in CONTRIBUTING.md synchronized with the connector docs.
+Calendly personal access tokens created since March 2026 require explicit [authorization scopes](https://developer.calendly.com/docs/authentication/scopes). Keep one `DefaultErrorHandler` per requester and no `CompositeErrorHandler`: the shared handler classifies errors consistently, the invitee, group-relationship and routing-form-submission requesters override only the missing-parent 404, the fan-out requesters skip a stale member or event type (section 6), and the five plan-gated streams (routing forms, contacts, outgoing communications, activity logs, meeting recaps) override only explicit upgrade/feature messages (section 7). Authentication messages tell the user how to fix the token and end with Calendly's response `message`. Keep the per-stream scope table in CONTRIBUTING.md synchronized with the connector docs.
 
 | HTTP status | Base requester action / failure type | Invitee requester action / failure type | Meaning and response |
 | --- | --- | --- | --- |
@@ -50,7 +50,9 @@ The connection check reads `api_user` through `GET /users/me`, which requires `u
 
 **Why this matters:** Switching the check back to a list stream creates unnecessary access requirements during setup. A successful check must not be presented as validation of all read scopes; missing stream-specific scopes still fail with an actionable 403 during a sync.
 
-## 6. Organization-Member and Event-Type Fan-Out Streams
+## 6. Organization-Member, Event-Type and Group Fan-Out Streams
+
+`group_relationships` partitions on `groups` using `uri` and sends only `group` and `count=100`, plus `page_token` on later pages. Never send `organization` to this endpoint, even alongside `group`. No groups means no relationship requests. Its `group_relationships_error_handler` skips only a deleted group's 404 with an INFO notice naming `request_url`; 401 and every 403 still fail through the shared filters, including "You do not have permission to access this resource.". Shared backoff and server-error retries remain unchanged.
 
 `user_availability_schedules` and `locations` partition on `organization_memberships` using `user/uri`, issuing one request per organization member; `event_type_memberships` partitions on `event_types` using `uri`. These three use `fan_out_error_handler`: a 404 (member or event type deleted mid-sync) and a 403 "This user is not in your organization" (member removed mid-sync) are skipped with an INFO log that names only the endpoint (CDK 7.45.0 strips the query string from `request_url`), while every other 403 still fails through the shared filter. Calendly documents the not-in-organization body for users outside the organization; if a live probe shows it for other members of a non-admin token, those members are skipped rather than failing the sync. The member-left filter matches only the message: CDK 7.45.0 ORs `http_codes` with `error_message_contains`, so adding `http_codes: [403]` would ignore every 403.
 
@@ -60,11 +62,12 @@ The connection check reads `api_user` through `GET /users/me`, which requires `u
 
 ## 7. Plan-Gated Streams Skip Only Explicit Upgrade Messages
 
-Outgoing communications and activity logs require Enterprise, meeting recaps require a paid plan with Notetaker features, and Calendly documents paid-plan and feature errors for contacts. Their stream-level `plan_gated_error_handler` inherits the shared backoff and puts a message-only IGNORE predicate before the shared filters. In CDK 7.45.0, `http_codes`, `predicate` and `error_message_contains` are ORed: never add `http_codes: [403]` to the plan filter, or all permission failures will be ignored.
+Routing forms require Teams, outgoing communications and activity logs require Enterprise, meeting recaps require a paid plan with Notetaker features, and Calendly documents paid-plan and feature errors for contacts. Their stream-level `plan_gated_error_handler` inherits the shared backoff and puts a message-only IGNORE predicate before the shared filters. When forms are unavailable, `routing_form_submissions` gets no parent partitions and completes empty without requesting submissions. In CDK 7.45.0, `http_codes`, `predicate` and `error_message_contains` are ORed: never add `http_codes: [403]` to the plan filter, or all permission failures will be ignored.
 
-The predicate strips a trailing period, because Calendly documents the paid-plan message both with and without it, and matches only these messages from the [OpenAPI specification](https://developer.calendly.com/openapi/calendly-api.yaml):
+The predicate strips a trailing period, because Calendly documents the paid-plan message both with and without it, and matches only these messages from the [OpenAPI specification](https://developer.calendly.com/openapi/calendly-api.yaml) or live responses:
 
 - `Please upgrade your Calendly account to Enterprise`
+- `Please upgrade your Calendly account to Teams` (observed live for `GET /routing_forms`)
 - `Please upgrade to a paid Calendly account`
 - `Meeting recap access is not available. Required features are not enabled for your account`
 - `Contact creation is not available. Required features are not enabled for your account` (documented for `GET /contacts`)
