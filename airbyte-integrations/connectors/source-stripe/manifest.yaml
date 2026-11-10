@@ -1168,6 +1168,12 @@ definitions:
         $ref: "#/definitions/base_retriever"
         $parameters:
           path: customers/{{ stream_partition.customer_id }}/balance_transactions
+        requester:
+          $ref: "#/definitions/base_requester"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - $ref: "#/definitions/ignore_404_filter"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1175,7 +1181,55 @@ definitions:
               parent_key: id
               partition_field: customer_id
               stream:
-                $ref: "#/definitions/streams/customers"
+                $ref: "#/definitions/events_based_stream"
+                $parameters:
+                  name: cbt_customer_events
+                retriever:
+                  $ref: "#/definitions/events_objects_retriever"
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: events
+                    # must not IGNORE 400/403: an ignored events response would miss a customer update or delete
+                    error_handler:
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - $ref: "#/definitions/ignore_404_filter"
+                  $parameters:
+                    request_parameters:
+                      types[]: '{{["customer.updated", "customer.deleted"]}}'
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $ref: "#/schemas/customers"
+                incremental_sync:
+                  $ref: "#/definitions/events_read_slice_cursor"
+                  lookback_window: P0D
+              incremental_dependency: true
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/entity_stream"
+                $parameters:
+                  name: customers
+                retriever:
+                  $ref: "#/definitions/base_retriever"
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    # must not IGNORE 400/403: an ignored window or page would let the low-water mark move past unread customers
+                    error_handler:
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - $ref: "#/definitions/ignore_404_filter"
+                  $parameters:
+                    path: customers
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $ref: "#/schemas/customers"
+                incremental_sync:
+                  $ref: "#/definitions/entity_with_slice_cursor"
+                  step: P7D
               incremental_dependency: true
       # This stream is not truly incremental on the child level.
       # We're configuring it this way to support incremental syncs on the parent only,
@@ -1184,6 +1238,9 @@ definitions:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
         global_substream_cursor: true
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.CustomerBalanceTransactionsEventsParentStateMigration
       transformations:
         - type: RemoveFields
           field_pointers:

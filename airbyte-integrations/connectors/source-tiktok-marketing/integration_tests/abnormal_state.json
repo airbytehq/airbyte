@@ -13,7 +13,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -34,7 +34,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -55,7 +55,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -76,7 +76,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "modify_time": "2222-01-01 01:01:01"
+              "modify_time": "2222-01-01 01:01:01Z"
             }
           },
           {
@@ -85,7 +85,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "modify_time": "2222-01-01 01:01:01"
+              "modify_time": "2222-01-01 01:01:01Z"
             }
           }
         ]
@@ -106,7 +106,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -127,7 +127,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -148,7 +148,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "modify_time": "2222-01-01 01:01:01"
+              "modify_time": "2222-01-01 01:01:01Z"
             }
           },
           {
@@ -157,7 +157,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "modify_time": "2222-01-01 01:01:01"
+              "modify_time": "2222-01-01 01:01:01Z"
             }
           }
         ]
@@ -178,7 +178,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -199,7 +199,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -220,7 +220,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -241,7 +241,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -262,7 +262,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "modify_time": "2222-01-01 01:01:01"
+              "modify_time": "2222-01-01 01:01:01Z"
             }
           },
           {
@@ -271,7 +271,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "modify_time": "2222-01-01 01:01:01"
+              "modify_time": "2222-01-01 01:01:01Z"
             }
           }
         ]
@@ -292,7 +292,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "modify_time": "2222-01-01T01:01:01Z"
+              "modify_time": "2222-01-01 01:01:01Z"
             }
           },
           {
@@ -301,7 +301,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "modify_time": "2222-01-01T01:01:01Z"
+              "modify_time": "2222-01-01 01:01:01Z"
             }
           }
         ]
@@ -322,7 +322,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "modify_time": "2222-01-01T01:01:01Z"
+              "modify_time": "2222-01-01 01:01:01Z"
             }
           },
           {
@@ -331,7 +331,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "modify_time": "2222-01-01T01:01:01Z"
+              "modify_time": "2222-01-01 01:01:01Z"
             }
           }
         ]
@@ -352,7 +352,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -373,7 +373,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -394,7 +394,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -415,7 +415,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -436,7 +436,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -457,7 +457,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -478,7 +478,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
@@ -499,7 +499,49 @@
               "parent_slice": {}
             },
             "cursor": {
-              "stat_time_day": "2222-01-01 00:00:00"
+              "stat_time_day": "2222-01-01"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ads_reports_by_country_daily"
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "advertiser_id": "7002238017842757633",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "stat_time_day": "2222-01-01"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ad_groups_reports_by_country_daily"
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "advertiser_id": "7002238017842757633",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "stat_time_day": "2222-01-01"
             }
           }
         ]
