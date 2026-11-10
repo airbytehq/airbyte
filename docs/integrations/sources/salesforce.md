@@ -344,13 +344,13 @@ Objects that can't use the Bulk API, such as objects with compound `address` fie
 
 Starting in version 2.10.3, REST streams use the current access token on every request and retry, so they pick up a refresh made by any stream. If a REST request gets an `INVALID_SESSION_ID` response, the connector refreshes the token and retries the same page. Salesforce ties query results to the user rather than the session, so the retried `nextRecordsUrl` continues where the stream stopped. If Salesforce rejects the refresh, the sync fails immediately with an error asking you to re-authenticate.
 
-### Syncs that stop producing output after a token refresh
+### Syncs that stop producing output
 
-Before version 2.10.2, the connector sent its OAuth token and object describe requests without a timeout. If Salesforce accepted the connection but never responded, the sync stopped producing output without logging an error, typically right after a `Refreshing Salesforce OAuth token` log message. Every stream waits on the token refresh, so one stalled request froze the whole sync until it was cancelled.
+A sync can stop producing output without logging an error if Salesforce accepts a connection but stops sending data, or if the network connection drops silently. Before version 2.10.2, the connector sent its OAuth token and object describe requests without a timeout, so a stalled request froze the whole sync, typically right after a `Refreshing Salesforce OAuth token` log message. Every stream waits on the token refresh. Before version 2.11.1, REST stream queries and Bulk API job requests also had no timeout, so a stalled data request kept the sync running until it was cancelled. Airbyte doesn't start another sync for that connection while the stalled one is running.
 
-Starting in version 2.10.2, these requests time out if the connection takes longer than 30 seconds to establish or if no data arrives for 120 seconds. The connector retries timed-out requests. If a mid-sync token refresh still fails, the connector keeps using the current access token and tries the refresh again about 5 minutes later.
+Starting in version 2.11.1, every request the connector sends to Salesforce, including OAuth token, describe, REST query, and Bulk API job requests, times out if the connection takes longer than 30 seconds to establish or if no data arrives for 180 seconds. The 180-second read timeout is longer than the 2 minutes Salesforce allows a SOQL query to run. The connector also enables TCP keepalive on its connections so it detects dropped connections. The connector retries timed-out requests, and fails the sync with an error if the retries also time out, so the next scheduled sync can run. If a mid-sync token refresh fails, the connector keeps using the current access token and tries the refresh again about 5 minutes later.
 
-If your syncs stall after a token refresh log message, verify that the connector is running version 2.10.2 or later.
+If your syncs stall without logging an error, verify that the connector is running version 2.11.1 or later.
 
 ### Refresh Token Rotation (RTR)
 
