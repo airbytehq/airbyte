@@ -95,6 +95,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.10.0 | 2026-11-10 | TBD | Expand declared fields and improve timesheet and time-off incremental sync reliability. |
 | 0.9.3 | 2025-05-24 | [60660](https://github.com/airbytehq/airbyte/pull/60660) | Update dependencies |
 | 0.9.2 | 2025-05-10 | [59340](https://github.com/airbytehq/airbyte/pull/59340) | Update dependencies |
 | 0.9.1 | 2025-04-26 | [58243](https://github.com/airbytehq/airbyte/pull/58243) | Update dependencies |
