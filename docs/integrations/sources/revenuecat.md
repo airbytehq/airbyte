@@ -54,6 +54,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
 | 0.2.0 | 2026-11-10 | [91549](https://github.com/airbytehq/airbyte/pull/91549) | Fix pagination looping on anonymous customer IDs, read 100 records per page, stop incremental syncs from skipping records on unsorted endpoints, and declare missing and nullable schema fields |
+| 0.1.55 | 2026-11-10 | [91719](https://github.com/airbytehq/airbyte/pull/91719) | Update dependencies |
 | 0.1.54 | 2026-11-03 | [90741](https://github.com/airbytehq/airbyte/pull/90741) | Update dependencies |
 | 0.1.53 | 2026-10-20 | [89401](https://github.com/airbytehq/airbyte/pull/89401) | Update dependencies |
 | 0.1.52 | 2026-10-13 | [88790](https://github.com/airbytehq/airbyte/pull/88790) | Update dependencies |
