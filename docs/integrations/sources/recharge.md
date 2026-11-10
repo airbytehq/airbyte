@@ -167,7 +167,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.0 | 2026-11-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrated to manifest-only; fixed `orders` on the 2021-01 API skipping pages across date slices and skipping the record at the saved cursor (refresh `orders` to recover previously skipped orders). |
+| 3.1.0 | 2026-11-10 | [91334](https://github.com/airbytehq/airbyte/pull/91334) | Migrated to manifest-only; fixed `orders` on the 2021-01 API skipping pages across date slices and skipping the record at the saved cursor (refresh `orders` to recover previously skipped orders). |
 | 3.0.12 | 2026-09-17 | [86358](https://github.com/airbytehq/airbyte/pull/86358) | Fix `events` stream's `created_at_min` not clamped to the API's 7-day window, crashing the entire sync |
 | 3.0.11 | 2025-10-21 | [68391](https://github.com/airbytehq/airbyte/pull/68391) | Update dependencies |
 | 3.0.10 | 2025-10-14 | [67927](https://github.com/airbytehq/airbyte/pull/67927) | Update dependencies |
