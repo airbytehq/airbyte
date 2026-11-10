@@ -255,5 +255,23 @@
       },
       "stream_descriptor": { "name": "workflow_run_attempts" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "projects_v2" },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "repository": "airbytehq/integration-test" },
+            "cursor": { "updated_at": "2121-09-25T18:35:45Z" }
+          }
+        ],
+        "state": { "updated_at": "2121-09-25T18:35:45Z" },
+        "lookback_window": 1,
+        "parent_state": {}
+      }
+    }
   }
 ]
