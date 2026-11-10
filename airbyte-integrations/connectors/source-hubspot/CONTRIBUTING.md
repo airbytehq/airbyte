@@ -122,6 +122,17 @@ have different requesters, paginators, and record selectors, so a fix applied to
 not carry over to the other. Verify both full-refresh and incremental paths when changing either
 contacts or custom-object behavior.
 
+**State after a no-state read can be later than the sync start.** The no-state sub-stream filters
+client-side with no end bound and saves the newest `updatedAt` it emitted (the CDK does not cap it
+at the slice end). A record that is read early and then edited before the scan finishes ends up below
+that saved cursor, so the next incremental CRM Search skips the edit. This affects the first
+incremental sync of a new connection and any sync after a reset or refresh; full refresh does not read
+state and is unaffected. Do not "fix" this with an `end_datetime` on the no-state sub-stream: the
+client-side filter would then drop records edited mid-sync, which is the full-refresh loss the list
+endpoint avoids. Until the saved cursor is capped at the sync start, users should set `lookback_window`
+to at least the duration of a no-state sync. `test_contacts_first_sync_state_overshoot_is_covered_by_lookback_window`
+covers both the loss and the mitigation.
+
 When `prefix_colliding_custom_objects` is enabled, custom objects whose name matches a built-in stream are exposed as `custom_object_<name>`. It is opt-in because, with the flag off, a colliding custom object replaces the built-in stream at read time (the CDK resolves streams by name and dynamic streams come last), and some existing connections depend on that. When adding a built-in stream, update the built-in name list in `definitions.custom_object_stream_name` in `manifest.yaml`; `test_custom_objects_never_collide_with_any_builtin_stream` guards it.
 
 ---
