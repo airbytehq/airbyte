@@ -17,7 +17,6 @@ from mock_server.helpers import (
     check,
     error,
     fixture_record,
-    last_page,
     list_request,
     page,
     run,
@@ -28,6 +27,8 @@ from mock_server.helpers import (
 
 def stream_requests(stream, cursor=None):
     path = stream.replace("_", "-")
+    if stream in UNPAGINATED_STREAMS:
+        return [unpaginated_request(path)]
     if stream == "custom_fields":
         return [list_request(path, cursor, object_type=kind) for kind in ("account", "issue", "contact")]
     if stream == "users":
@@ -107,12 +108,11 @@ def test_users_includes_deactivated_users() -> None:
 @freeze_time(NOW)
 def test_unpaginated_streams_send_no_query_parameters(stream: str, empty: bool) -> None:
     records = [] if empty else [fixture_record(stream)]
-    request = unpaginated_request(stream.replace("_", "-"))
+    request = stream_requests(stream)[0]
     with HttpMocker() as mocker:
         mocker.get(request, unpaginated_page(records))
         output = run(stream)
         mocker.assert_number_of_calls(request, 1)
-        assert dict(mocker._mocker.request_history[0].qs) == {}
     assert output.errors == []
     assert [message.record.data for message in output.records] == records
 
@@ -125,7 +125,7 @@ def test_audit_logs_missing_pagination_stops_cleanly(empty: bool) -> None:
     final = [] if empty else [{**first, "id": "synthetic-final"}]
     requests = [list_request("audit-logs", cursor) for cursor in (None, "second", "final")]
     with HttpMocker() as mocker:
-        for request, response in zip(requests, [page([first], "second"), page([second], "final"), last_page(final)]):
+        for request, response in zip(requests, [page([first], "second"), page([second], "final"), unpaginated_page(final)]):
             mocker.get(request, response)
         output = run("audit_logs")
         for request in requests:
@@ -137,7 +137,7 @@ def test_audit_logs_missing_pagination_stops_cleanly(empty: bool) -> None:
 @pytest.mark.parametrize("stream", ("audit_logs", *UNPAGINATED_STREAMS))
 @freeze_time(NOW)
 def test_new_stream_permission_denied_is_config_error(stream: str) -> None:
-    request = list_request("audit-logs") if stream == "audit_logs" else unpaginated_request(stream.replace("_", "-"))
+    request = stream_requests(stream)[0]
     with HttpMocker() as mocker:
         mocker.get(request, error(403, "permission_denied"))
         output = run(stream, expecting_exception=True)

@@ -76,6 +76,7 @@ The Pylon source connector supports the following streams:
 
 ### Stream notes
 
+- **Audit Logs** re-reads the organization's full audit history on every sync. **Start Date** does not apply, so sync volume grows over time. **Full Refresh | Append** duplicates rows on each sync; use **Full Refresh | Overwrite** instead.
 - **Issues** is the only incremental stream. It uses `updated_at` as its cursor field and the `POST /issues/search` endpoint, so incremental syncs capture all issue modifications, not just newly created issues. The connector chooses 30-day query windows; this is not a documented Pylon search API limit. Inclusive bounds overlap at window edges to avoid subsecond gaps. The final query can extend up to one second beyond the cursor interval's end, and its bounds remain fixed across pages.
 - **Issue Messages** and **Issue Threads** are full-refresh child streams of Issues. On every sync, they re-read all messages or threads for each issue updated since **Start Date**, independently of the Issues stream's saved incremental cursor. They do not filter on the message or thread timestamp, so child records can predate **Start Date**. Both streams include `issue_id`, which you can join to Issues on `id`.
 - **Knowledge Base Articles** is a full-refresh child stream of Knowledge Bases. It includes `knowledge_base_id`, which you can join to Knowledge Bases on `id`.

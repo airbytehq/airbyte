@@ -15,12 +15,10 @@ from mock_server.helpers import (
     NOW,
     UNPAGINATED_STREAMS,
     fixture_record,
-    last_page,
     list_request,
     page,
     search_request,
     unpaginated_page,
-    unpaginated_request,
 )
 from mock_server.test_list_streams import stream_requests
 
@@ -36,10 +34,10 @@ def test_all_streams_in_one_read(record_property) -> None:
     with HttpMocker() as mocker:
         for stream in LIST_STREAMS:
             for request in stream_requests(stream):
-                response = last_page([fixture_record(stream)]) if stream == "audit_logs" else page([fixture_record(stream)])
-                mocker.get(request, response)
+                mocker.get(request, page([fixture_record(stream)]))
         for stream in UNPAGINATED_STREAMS:
-            mocker.get(unpaginated_request(stream.replace("_", "-")), unpaginated_page([fixture_record(stream)]))
+            for request in stream_requests(stream):
+                mocker.get(request, unpaginated_page([fixture_record(stream)]))
         mocker.post(search_request(), page([issue]))
         for stream, path in (
             ("issue_messages", f"issues/{issue['id']}/messages"),
@@ -49,14 +47,17 @@ def test_all_streams_in_one_read(record_property) -> None:
             mocker.get(list_request(path), page([fixture_record(stream)]))
         output = read(get_source(CONFIG), config=CONFIG, catalog=catalog.build())
     counts = Counter(message.record.stream for message in output.records)
+    terminal_statuses = {}
     print("\nstream | result | record count")
     for stream in streams:
         statuses = output.get_stream_statuses(stream)
-        assert statuses[-1] == AirbyteStreamStatus.COMPLETE
-        record_property(f"{stream}_terminal_status", statuses[-1].value)
-        result = "PASS" if counts[stream] else "FAIL"
+        terminal_status = statuses[-1] if statuses else None
+        terminal_statuses[stream] = terminal_status
+        record_property(f"{stream}_terminal_status", terminal_status.value if terminal_status else "MISSING")
+        result = "PASS" if counts[stream] and terminal_status == AirbyteStreamStatus.COMPLETE else "FAIL"
         print(f"{stream} | {result} | {counts[stream]}")
         record_property(stream, f"{result}: {counts[stream]} records")
+    assert all(status == AirbyteStreamStatus.COMPLETE for status in terminal_statuses.values()), terminal_statuses
     assert output.errors == []
     assert set(counts) == set(streams)
     assert all(counts[stream] >= 1 for stream in streams)

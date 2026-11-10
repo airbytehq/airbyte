@@ -63,10 +63,6 @@ def unpaginated_page(records: list[dict]) -> HttpResponse:
     return HttpResponse(json.dumps({"data": records}))
 
 
-def last_page(records: list[dict]) -> HttpResponse:
-    return unpaginated_page(records)
-
-
 def page(records, next_cursor=None):
     return HttpResponse(
         json.dumps(

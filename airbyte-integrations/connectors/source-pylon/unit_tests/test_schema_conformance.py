@@ -37,6 +37,16 @@ def test_timestamp_formats_are_enforced(manifest_path: Path) -> None:
         validator.validate({**record, "created_at": "not-a-timestamp"})
 
 
+@pytest.mark.parametrize("stream", ["audit_logs", "macro_groups", "surveys", "training_data"])
+@pytest.mark.parametrize("value", [None, 123])
+def test_new_stream_ids_are_non_nullable_strings(manifest_path: Path, stream: str, value: int | None) -> None:
+    schema = yaml.safe_load(manifest_path.read_text())["schemas"][stream]
+    assert schema["properties"]["id"] == {"type": "string"}
+    record = json.loads((FIXTURES / f"{stream}.json").read_text())
+    with pytest.raises(ValidationError):
+        Draft7Validator(schema).validate({**record, "id": value})
+
+
 @pytest.mark.parametrize("value", [None, "", "synthetic-future-delivery-mode"])
 def test_issue_thread_delivery_mode_is_nullable_and_open(manifest_path: Path, value: str | None) -> None:
     schema = yaml.safe_load(manifest_path.read_text())["schemas"]["issue_threads"]

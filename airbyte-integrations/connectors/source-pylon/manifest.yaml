@@ -1003,9 +1003,7 @@ schemas:
           - string
         format: date-time
       id:
-        type:
-          - "null"
-          - string
+        type: string
       link:
         type:
           - "null"
@@ -1038,9 +1036,7 @@ schemas:
           - string
         format: date-time
       id:
-        type:
-          - "null"
-          - string
+        type: string
       title:
         type:
           - "null"
@@ -1056,9 +1052,7 @@ schemas:
     additionalProperties: true
     properties:
       id:
-        type:
-          - "null"
-          - string
+        type: string
       name:
         type:
           - "null"
@@ -1121,9 +1115,7 @@ schemas:
           - "null"
           - boolean
       id:
-        type:
-          - "null"
-          - string
+        type: string
       name:
         type:
           - "null"
