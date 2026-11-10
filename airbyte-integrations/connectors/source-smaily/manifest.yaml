@@ -5,6 +5,19 @@ check:
   stream_names:
     - users
 definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [404]
+        action: FAIL
+        failure_type: config_error
+        error_message: Smaily returned 404 Not Found for the configured API subdomain. Check that the API subdomain matches an active Smaily account.
+      - type: HttpResponseFilter
+        http_codes: [401]
+        action: FAIL
+        failure_type: config_error
+        error_message: Smaily rejected the API credentials. Check the API user username and password in the source configuration.
   streams:
     users:
       type: DeclarativeStream
@@ -15,6 +28,8 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
+          error_handler:
+            $ref: "#/definitions/error_handler"
           url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
           authenticator:
             type: BasicHttpAuthenticator
@@ -86,6 +101,8 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
+          error_handler:
+            $ref: "#/definitions/error_handler"
           url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
           authenticator:
             type: BasicHttpAuthenticator
@@ -125,6 +142,8 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
+          error_handler:
+            $ref: "#/definitions/error_handler"
           url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
           authenticator:
             type: BasicHttpAuthenticator
@@ -193,6 +212,8 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
+          error_handler:
+            $ref: "#/definitions/error_handler"
           url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
           authenticator:
             type: BasicHttpAuthenticator
@@ -257,6 +278,8 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
+          error_handler:
+            $ref: "#/definitions/error_handler"
           url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
           authenticator:
             type: BasicHttpAuthenticator
@@ -320,6 +343,8 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
+          error_handler:
+            $ref: "#/definitions/error_handler"
           url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
           authenticator:
             type: BasicHttpAuthenticator
@@ -410,6 +435,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
+        error_handler:
+          $ref: "#/definitions/error_handler"
         url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
         authenticator:
           type: BasicHttpAuthenticator
@@ -480,6 +507,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
+        error_handler:
+          $ref: "#/definitions/error_handler"
         url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
         authenticator:
           type: BasicHttpAuthenticator
@@ -518,6 +547,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
+        error_handler:
+          $ref: "#/definitions/error_handler"
         url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
         authenticator:
           type: BasicHttpAuthenticator
@@ -585,6 +616,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
+        error_handler:
+          $ref: "#/definitions/error_handler"
         url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
         authenticator:
           type: BasicHttpAuthenticator
@@ -648,6 +681,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
+        error_handler:
+          $ref: "#/definitions/error_handler"
         url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
         authenticator:
           type: BasicHttpAuthenticator
@@ -710,6 +745,8 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
+        error_handler:
+          $ref: "#/definitions/error_handler"
         url_base: https://{{config['api_subdomain']}}.sendsmaily.net/api
         authenticator:
           type: BasicHttpAuthenticator
