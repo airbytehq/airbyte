@@ -39,4 +39,12 @@ data:
     - title: Yahoo Finance API
       url: https://www.yahoofinanceapi.com/
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
