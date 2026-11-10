@@ -8,6 +8,8 @@ When `join_channels` is enabled in the config, the `ChannelsRetriever` automatic
 
 **Why this matters:** The channels stream is not read-only when `join_channels` is enabled. It actively modifies the workspace by joining channels, which is a side effect that no other connector stream produces. The Slack API only returns messages from channels the bot has joined, so this behavior exists to ensure the messages and threads streams can actually retrieve data. If the bot lacks permission to join a channel, it logs a warning but does not fail the sync.
 
+Message and thread partitions exclude archived non-member channels even when `join_channels` is enabled; archived channels the bot already belongs to remain readable.
+
 ## 2. Dynamic Rate Limit Policy Switching on First 429
 
 The `MessagesAndThreadsApiBudget` starts with an `UnlimitedCallRatePolicy` (no rate limiting) and dynamically switches to a `MovingWindowCallRatePolicy` of 1 request per 60 seconds after the first 429 response. This switch is permanent for the duration of the sync and only applies to OAuth connections (API token connections do not use this budget).
