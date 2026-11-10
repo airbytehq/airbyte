@@ -35,13 +35,7 @@ Agent access and search are available only in Airbyte Cloud, not self-managed Ai
 
 ## IP allow list
 
-Agent access and search use the [Airbyte Cloud IP addresses](../operating-airbyte/ip-allowlist.md), plus the following addresses. If a source or destination restricts inbound traffic by IP address, allow these addresses too.
-
-| Geography     | Region    | IP address (CIDR) | IP addresses   |
-| ------------- | --------- | ----------------- | -------------- |
-| United States | us-west-2 | N/A               | 44.226.44.242  |
-| United States | us-west-2 | N/A               | 35.163.106.179 |
-| United States | us-west-2 | N/A               | 44.227.212.246 |
+If a source or destination restricts inbound traffic by IP address, allow the [context layer IP addresses](../operating-airbyte/ip-allowlist.md#context-layer) in addition to the Airbyte Cloud IP addresses.
 
 ## Usage limits
 

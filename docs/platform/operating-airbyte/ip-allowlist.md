@@ -14,4 +14,10 @@ Airbyte defaults to running syncs in the United States. To change this, or to ch
 
 ## Context layer
 
-If your organization uses the [context layer](../context-layer/readme.md), also allow the [context layer IP addresses](../context-layer/readme.md#ip-allow-list).
+If your organization uses the [context layer](../context-layer/readme.md), agent access and search also use the following IP addresses. Allow them in addition to the Airbyte Cloud IP addresses.
+
+| Geography     | Region    | IP address (CIDR) | IP addresses   |
+| ------------- | --------- | ----------------- | -------------- |
+| United States | us-west-2 | N/A               | 44.226.44.242  |
+| United States | us-west-2 | N/A               | 35.163.106.179 |
+| United States | us-west-2 | N/A               | 44.227.212.246 |
