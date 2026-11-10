@@ -24,9 +24,7 @@ def test_check_uses_supported_report_when_annotations_are_retired(reports_status
     source = get_source(config=config)
     entrypoint = AirbyteEntrypoint(source)
     reports_request = (
-        YoutubeAnalyticsRequestBuilder.reports_endpoint("job-channel-basic")
-        .with_created_after("1990-01-01T00:00:00.000000Z")
-        .build()
+        YoutubeAnalyticsRequestBuilder.reports_endpoint("job-channel-basic").with_created_after("1990-01-01T00:00:00.000000Z").build()
     )
     retired_job_request = HttpRequest(
         url=f"{YoutubeAnalyticsRequestBuilder.BASE_URL}/jobs",
