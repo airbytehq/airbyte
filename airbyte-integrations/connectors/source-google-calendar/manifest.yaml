@@ -243,7 +243,7 @@ definitions:
                 predicate: "{{ response.get('error', {}).get('code') in (403, '403') and ('insufficientPermissions' in response.get('error', {}) | string or 'ACCESS_TOKEN_SCOPE_INSUFFICIENT' in response.get('error', {}) | string or 'accessNotConfigured' in response.get('error', {}) | string or 'SERVICE_DISABLED' in response.get('error', {}) | string) }}"
                 action: FAIL
                 failure_type: config_error
-                error_message: "Reading the acl stream needs the calendar.acls.readonly OAuth scope (or calendar.acls / calendar) and an enabled Calendar API. Generate a new refresh token that includes that scope and paste it into Refresh token, or deselect the acl stream."
+                error_message: "Reading the acl stream needs the calendar.acls.readonly OAuth scope (or calendar.acls / calendar) and an enabled Calendar API. Re-authenticate and allow every requested permission, or generate a new refresh token that includes that scope and paste it into Refresh token, or deselect the acl stream."
               - type: HttpResponseFilter
                 http_codes:
                   - 403
@@ -618,16 +618,17 @@ spec:
                 airbyte_secret: true
               client_secret:
                 type: string
-                title: Client Secret
+                title: Client secret
                 description: The client secret of the Google OAuth app. Filled in automatically on Airbyte Cloud.
                 airbyte_secret: true
               refresh_token:
                 type: string
-                title: Refresh Token
+                title: Refresh token
                 description: Refresh token obtained from the Google OAuth consent flow.
                 airbyte_secret: true
           - title: Authenticate with custom app (client ID / secret)
             type: object
+            description: Use your own Google Cloud OAuth app. Required on Airbyte Open Source unless the instance has Google OAuth configured.
             required:
               - auth_type
               - client_id
@@ -645,13 +646,13 @@ spec:
                 airbyte_secret: true
               client_secret:
                 type: string
-                title: Client Secret
+                title: Client secret
                 description: The OAuth 2.0 client secret from your own Google Cloud OAuth app.
                 airbyte_secret: true
               refresh_token:
                 type: string
-                title: Refresh Token
-                description: "Refresh token from your own Google Cloud OAuth app, with either calendar.readonly or calendar.calendarlist.readonly, calendar.calendars.readonly, calendar.events.readonly, calendar.settings.readonly and calendar.freebusy. The acl stream also needs calendar.acls.readonly."
+                title: Refresh token
+                description: "Refresh token from your own Google Cloud OAuth app. It needs the calendar.readonly scope, or all five of calendar.calendarlist.readonly, calendar.calendars.readonly, calendar.events.readonly, calendar.settings.readonly, and calendar.freebusy. The acl stream also needs calendar.acls.readonly."
                 airbyte_secret: true
       calendarid:
         type: string
@@ -756,8 +757,8 @@ spec:
                 value: "{{ config['client_refresh_token_2'] }}"
                 value_type: string
           - type: ConfigRemoveFields
-            # Drop the flat keys only once `credentials` can authenticate on its own.
-            condition: "{{ config.get('credentials') is mapping and 'refresh_token' in config['credentials'] }}"
+            # Drop the flat keys only once `credentials` holds a full set; a partial block keeps them.
+            condition: "{{ config.get('credentials') is mapping and 'client_id' in config['credentials'] and 'client_secret' in config['credentials'] and 'refresh_token' in config['credentials'] }}"
             field_pointers:
               - - client_id
               - - client_secret

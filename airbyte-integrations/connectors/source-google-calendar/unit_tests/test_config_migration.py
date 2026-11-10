@@ -104,17 +104,44 @@ def test_existing_credentials_are_kept_when_flat_keys_remain(capsys, auth_type):
     "config",
     [
         pytest.param({k: v for k, v in LEGACY_CONFIG.items() if k != "client_id"}, id="flat_without_client_id"),
+        pytest.param({k: v for k, v in LEGACY_CONFIG.items() if k != "client_secret"}, id="flat_without_client_secret"),
+        pytest.param({k: v for k, v in LEGACY_CONFIG.items() if k != "client_refresh_token_2"}, id="flat_without_refresh_token"),
         pytest.param({**LEGACY_CONFIG, "credentials": None}, id="credentials_null"),
+        pytest.param({**LEGACY_CONFIG, "credentials": {"refresh_token": "new-refresh"}}, id="flat_plus_refresh_token_only"),
     ],
 )
 def test_incomplete_config_is_left_for_spec_validation(capsys, config):
     # Nothing is migrated or removed, so no stored value is lost, and spec validation reports the problem.
-    source = get_source(dict(config))
+    source = get_source(json.loads(json.dumps(config)))
 
     assert source._config == config
     assert _control_messages(capsys) == []
     with pytest.raises(AirbyteTracedException):
         _assert_valid_against_spec(source)
+
+
+def test_advanced_auth_targets_the_oauth_option():
+    spec = get_source(dict(LEGACY_CONFIG)).spec(logging.getLogger("test"))
+    oauth = spec.advanced_auth
+    credentials = spec.connectionSpecification["properties"]["credentials"]
+    oauth_option = next(o for o in credentials["oneOf"] if o["properties"]["auth_type"]["const"] == "oauth2.0")
+
+    assert oauth.auth_flow_type.value == "oauth2.0"
+    assert oauth.predicate_key == ["credentials", "auth_type"]
+    assert oauth.predicate_value == oauth_option["properties"]["auth_type"]["const"]
+    config_spec = oauth.oauth_config_specification
+    outputs = {
+        **config_spec.complete_oauth_output_specification["properties"],
+        **config_spec.complete_oauth_server_output_specification["properties"],
+    }
+    assert {name: field["path_in_connector_config"] for name, field in outputs.items()} == {
+        "refresh_token": ["credentials", "refresh_token"],
+        "client_id": ["credentials", "client_id"],
+        "client_secret": ["credentials", "client_secret"],
+    }
+    for name in outputs:
+        assert name in oauth_option["properties"]
+        assert name in oauth_option["required"]
 
 
 @pytest.mark.parametrize(
