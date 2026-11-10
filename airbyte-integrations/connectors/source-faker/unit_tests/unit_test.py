@@ -6,7 +6,7 @@ import jsonschema
 import pytest
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Status, Type
 
 
 class MockLogger:
@@ -216,7 +216,7 @@ def test_read_big_random_data():
 
 def test_with_purchases():
     source = SourceFaker()
-    config = {"count": 1000, "parallelism": 1}
+    config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
     stream_dicts = [
         {
             "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
@@ -284,3 +284,29 @@ def test_ensure_no_purchases_without_users():
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
+
+
+@pytest.mark.parametrize("config", [{"count": 10, "seed": 42}, {}])
+def test_check_and_read_with_optional_defaults(config):
+    source = SourceFaker()
+    assert source.check(logger, config).status is Status.SUCCEEDED
+
+    defaults = source.spec(logger).connectionSpecification["properties"]
+    for stream in source.streams(config)[1:]:
+        for key in ("count", "records_per_slice", "parallelism"):
+            assert getattr(stream, key) == config.get(key, defaults[key]["default"])
+
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    records = [message for message in source.read(logger, config, catalog, {}) if message.type is Type.RECORD]
+    assert len(records) == config.get("count", defaults["count"]["default"])
+
+
+@pytest.mark.parametrize("key", ["count", "records_per_slice", "parallelism"])
+@pytest.mark.parametrize("value", [0, -1, True, "invalid", None])
+def test_check_rejects_explicit_invalid_settings(key, value):
+    assert SourceFaker().check(logger, {key: value}).status is Status.FAILED
