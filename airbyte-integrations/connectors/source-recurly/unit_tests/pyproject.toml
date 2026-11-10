@@ -4,20 +4,28 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "source-recurly-tests"
-version = "0.10.0-rc.1"
+version = "0.0.0"
 description = "Unit tests for source-recurly"
 authors = ["Airbyte <contact@airbyte.io>"]
-package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.13"
-airbyte-cdk = "7.45.0"
+python = ">=3.11,<3.13"
+airbyte-cdk = "7.47.0"
 pytest = "^8"
-pytest-mock = "^3.6.1"
-requests-mock = "^1.12.1"
-jsonschema = {version = "^4", extras = ["format"]}
+pytest-cov = "^6"
+freezegun = "^1"
+requests-mock = "^1"
+jsonschema = { version = "^4", extras = ["format"] }
 
 [tool.pytest.ini_options]
+addopts = "--cov --cov-config=pyproject.toml --cov-report=term-missing"
 filterwarnings = [
     "ignore:This class is experimental*"
 ]
+
+[tool.coverage.run]
+include = ["*/source-recurly/components.py"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
