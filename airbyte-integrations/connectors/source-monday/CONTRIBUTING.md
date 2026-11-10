@@ -45,3 +45,7 @@ The Monday.com GraphQL API supports filtering by `updated_at` on boards and item
 ### Future incremental stream candidates
 
 - **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+
+## 4. Error handling: single handler, filter order
+
+Complexity and field-limit errors are retried, expired cursors reset pagination, and those body-code rules run before the 403 rule that skips inaccessible entities. Other HTTP-200 GraphQL errors are not failed because Monday may return useful partial data, and retries use `Retry-After` or a 60-second fallback. See [AGENTS.md](./AGENTS.md) for the full detail.
