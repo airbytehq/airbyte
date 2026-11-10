@@ -11,8 +11,10 @@ documented as "limited to events that occurred in the last 7 days", and it rejec
 `updated_at_min` accepts an arbitrarily old date.
 
 `base_incremental_events_stream` therefore puts a `min_datetime` floor of `day_delta(-7)` on its
-`MinMaxDatetime` start date, so the value actually sent as `created_at_min` is never older than seven
-days. The floor is evaluated per slice and applies to **both** inputs to the cursor: a `start_date`
+`MinMaxDatetime` start date and re-applies it in the requester's `created_at_min` expression, so the
+value sent is never older than seven days at request time. SDM evaluates `start_datetime` once, when
+it builds the streams at sync start, and `events` can be requested hours later. The floor applies to
+**both** inputs to the cursor: a `start_date`
 from config *and* a saved state cursor restored on an incremental run. A connection configured with a
 `start_date` of 2020 and a connection resuming `events` after a two-week pause therefore issue the
 same request — `created_at_min = now - 7d`.
@@ -34,16 +36,20 @@ spent by pushing the floor toward `-8`.
 
 ## 2. Cursor Pages Omit Sorting and Date Filters
 
-Recharge's [cursor pagination](https://developer.rechargepayments.com/2021-11/) accepts only `cursor`
-and `limit` on subsequent pages. Incremental streams using `updated_at` send
+Recharge's [2021-01 cursor pagination docs](https://developer.rechargepayments.com/2021-01/cursor_pagination)
+state that "the only compatible filter allowed to be used with cursors is limit"; the 2021-11 reference
+pairs `cursor` only with `limit` in its examples. Incremental streams using `updated_at` send
 `sort_by=updated_at-asc` on their first page so records arrive in cursor order. The requester expression
 `{{ 'updated_at-asc' if not next_page_token else '' }}` renders an empty value on cursor pages, which
 the CDK drops from request parameters. Combined with
 `ignore_stream_slicer_parameters_on_paginated_requests: true`, this removes both sorting and date
 filters after the first page. Each new slice starts with its own filters and sorting again.
+The shared `updated_at` cursor re-reads `lookback_window_days` plus one hour before the saved cursor
+to capture updates committed while the previous sync was running; orders and events do not use this margin.
 
 **Why this matters:** Making `sort_by` unconditional or retaining date filters on cursor pages sends
-parameters Recharge rejects. Do not apply this omission to page-number pagination: the deprecated
+parameters Recharge documents as incompatible with a cursor (whether it rejects or ignores them is not
+documented). Do not apply this omission to page-number pagination: the deprecated
 orders API needs filters and sorting on every page.
 
 ## 3. Orders Switches API Versions and Keeps a Naive Cursor
@@ -53,10 +59,14 @@ uses `2021-01`, while false or a missing key uses `2021-11`. The setup form's sp
 that does not change the missing-key runtime behavior. Each conditional child explicitly declares
 `type: DeclarativeStream` so manifest schema validation succeeds.
 
-Both variants use 30-day slices with one-second granularity and inclusive lower bounds. The
-[2021-01 orders API](https://developer.rechargepayments.com/2021-01/orders) returns naive US-Eastern
-`updated_at` values, so requests and state retain `%Y-%m-%d %H:%M:%S` rather than converting them to
-UTC. Cursor parsing also accepts legacy ISO timestamps with `+00:00` offsets. Neither variant uses
+Both variants use 30-day slices with one-second granularity and resume with `updated_at_min` equal
+to the saved cursor. Recharge documents only "updated after the given date", so treating that bound
+as inclusive is the connector's assumption, not a documented contract. The
+[2021-01 orders API](https://developer.rechargepayments.com/2021-01/orders) returns naive
+`updated_at` values and documents no timezone; comparing the same orders across API versions, in
+fixtures and in production state, shows they are US-Eastern wall-clock time. Requests and state
+therefore retain `%Y-%m-%d %H:%M:%S` rather than converting them to UTC. Cursor parsing also accepts
+legacy ISO timestamps with `+00:00` offsets. Neither variant uses
 `lookback_window_days`. The deprecated variant uses page numbers, restarting at page 1 (no `page`
 parameter) in each slice and retaining date filters and sorting on every page; the modern variant
 uses cursors and omits those parameters after the first page.

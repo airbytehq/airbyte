@@ -68,6 +68,10 @@ definitions:
     $ref: '#/definitions/requester_base'
     request_headers:
       x-recharge-version: 2021-11
+  requester_modern_api_sorted:
+    $ref: '#/definitions/requester_modern_api'
+    request_parameters:
+      sort_by: '{{ ''updated_at-asc'' if not next_page_token else '''' }}'
   retriever_api_deprecated:
     description: Default Retriever for Deprecated API `2021-01` Full Refresh streams.
     record_selector:
@@ -120,7 +124,7 @@ definitions:
       - '%Y-%m-%dT%H:%M:%S%z'
       - '%Y-%m-%dT%H:%M:%S'
       datetime_format: '%Y-%m-%dT%H:%M:%S%z'
-      lookback_window: P{{ config.get('lookback_window_days', 0) }}D
+      lookback_window: P{{ config.get('lookback_window_days', 0) }}DT1H
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
@@ -132,9 +136,7 @@ definitions:
     retriever:
       $ref: '#/definitions/retriever_api_modern'
       requester:
-        $ref: '#/definitions/requester_modern_api'
-        request_parameters:
-          sort_by: '{{ ''updated_at-asc'' if not next_page_token else '''' }}'
+        $ref: '#/definitions/requester_modern_api_sorted'
   base_incremental_events_stream:
     $ref: '#/definitions/base_modern_api_stream'
     incremental_sync:
@@ -149,10 +151,14 @@ definitions:
         datetime: '{{ config[''start_date''] }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
         min_datetime: '{{ day_delta(-7, ''%Y-%m-%dT%H:%M:%SZ'') }}'
-      start_time_option:
-        type: RequestOption
-        field_name: created_at_min
-        inject_into: request_parameter
+    retriever:
+      $ref: '#/definitions/retriever_api_modern'
+      requester:
+        $ref: '#/definitions/requester_modern_api'
+        request_parameters:
+          created_at_min: >-
+            {{ '' if next_page_token else format_datetime(max(str_to_datetime(stream_interval.start_time),
+            now_utc() - duration('P7D')), '%Y-%m-%dT%H:%M:%S%z') }}
   collections_stream:
     description: 'Collections Stream: https://developer.rechargepayments.com/2021-11/collections/collections_list'
     $ref: '#/definitions/base_modern_api_stream'
@@ -312,6 +318,28 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: '#/schemas/credit_adjustments'
+  orders_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    datetime_format: '%Y-%m-%d %H:%M:%S'
+    cursor_datetime_formats:
+    - '%Y-%m-%d %H:%M:%S'
+    - '%Y-%m-%dT%H:%M:%S%z'
+    - '%Y-%m-%dT%H:%M:%S'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config[''start_date''] }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    step: P30D
+    cursor_granularity: PT1S
+    start_time_option:
+      type: RequestOption
+      field_name: updated_at_min
+      inject_into: request_parameter
+    end_time_option:
+      type: RequestOption
+      field_name: updated_at_max
+      inject_into: request_parameter
   orders_deprecated:
     type: DeclarativeStream
     $ref: '#/definitions/base_stream'
@@ -325,27 +353,7 @@ definitions:
         request_parameters:
           sort_by: updated_at-asc
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      datetime_format: '%Y-%m-%d %H:%M:%S'
-      cursor_datetime_formats:
-      - '%Y-%m-%d %H:%M:%S'
-      - '%Y-%m-%dT%H:%M:%S%z'
-      - '%Y-%m-%dT%H:%M:%S'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P30D
-      cursor_granularity: PT1S
-      start_time_option:
-        type: RequestOption
-        field_name: updated_at_min
-        inject_into: request_parameter
-      end_time_option:
-        type: RequestOption
-        field_name: updated_at_max
-        inject_into: request_parameter
+      $ref: '#/definitions/orders_incremental_sync'
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -359,31 +367,9 @@ definitions:
     retriever:
       $ref: '#/definitions/retriever_api_modern'
       requester:
-        $ref: '#/definitions/requester_modern_api'
-        request_parameters:
-          sort_by: '{{ ''updated_at-asc'' if not next_page_token else '''' }}'
+        $ref: '#/definitions/requester_modern_api_sorted'
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: updated_at
-      datetime_format: '%Y-%m-%d %H:%M:%S'
-      cursor_datetime_formats:
-      - '%Y-%m-%d %H:%M:%S'
-      - '%Y-%m-%dT%H:%M:%S%z'
-      - '%Y-%m-%dT%H:%M:%S'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      step: P30D
-      cursor_granularity: PT1S
-      start_time_option:
-        type: RequestOption
-        field_name: updated_at_min
-        inject_into: request_parameter
-      end_time_option:
-        type: RequestOption
-        field_name: updated_at_max
-        inject_into: request_parameter
+      $ref: '#/definitions/orders_incremental_sync'
     schema_loader:
       type: InlineSchemaLoader
       schema:

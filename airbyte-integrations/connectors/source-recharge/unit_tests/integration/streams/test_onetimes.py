@@ -3,7 +3,6 @@
 #
 
 
-from datetime import datetime
 from unittest import TestCase
 
 import freezegun
@@ -66,7 +65,7 @@ class TestIncremental(StreamTestCase):
 
         output = read_incremental(self._config, _STREAM_NAME)
         test_cursor_value = get_cursor_value_from_state_message(output, _CURSOR_FIELD)
-        assert datetime.fromisoformat(test_cursor_value) == datetime.fromisoformat(max_cursor_value)
+        assert test_cursor_value == "2024-02-01T00:00:00+0000"
 
     @HttpMocker()
     def test_given_multiple_pages_when_read_then_return_records_with_state(self, http_mocker: HttpMocker) -> None:

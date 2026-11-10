@@ -4,8 +4,9 @@ from typing import Optional
 
 import freezegun
 import pytest
+from conftest import get_source
 
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import HttpResponseBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -76,16 +77,37 @@ def test_modern_cursor_page_sends_only_cursor_and_limit() -> None:
 
 
 @pytest.mark.parametrize("deprecated,version", [(True, "2021-01"), (False, "2021-11")])
-@pytest.mark.parametrize("cursor", ["2024-01-01 00:00:00", "2024-01-01T00:00:00+00:00"])
+@pytest.mark.parametrize("cursor", ["2024-01-01 00:00:00", "2024-01-01T00:00:00", "2024-01-01T00:00:00+00:00"])
 @freezegun.freeze_time("2024-01-30T23:59:59Z")
 def test_legacy_state_replays_inclusive_boundary(deprecated: bool, version: str, cursor: str) -> None:
     state = StateBuilder().with_stream_state("orders", {"updated_at": cursor}).build()
     request = orders_request(version).with_updated_at_range("2024-01-01 00:00:00", "2024-01-30 23:59:59").build()
     with HttpMocker() as http_mocker:
         response = orders_response(range(101, 102))
-        response.with_record(get_stream_record("orders", "id", "updated_at").with_id(102).with_cursor("2024-01-02 00:00:00"))
+        api_updated_at = "2024-01-02T00:00:00" if deprecated else "2024-01-02T00:00:00+00:00"
+        response.with_record(get_stream_record("orders", "id", "updated_at").with_id(102).with_cursor(api_updated_at))
         http_mocker.get(request, response.build())
-        output = read_incremental(orders_config(deprecated, "2020-01-01T00:00:00Z"), "orders", state)
+        output = read_incremental(orders_config(deprecated, "2020-01-01T00:00:00Z").with_lookback_window_days(3), "orders", state)
         assert [record.record.data["id"] for record in output.records] == [101, 102]
         assert get_cursor_value_from_state_message(output, "updated_at") == "2024-01-02 00:00:00"
         http_mocker.assert_number_of_calls(request, 1)
+
+
+@pytest.mark.parametrize("deprecated", [True, False, None])
+def test_each_api_option_yields_exactly_one_orders_stream(deprecated: Optional[bool]) -> None:
+    config = orders_config(deprecated).build()
+    stream_names = [stream.name for stream in get_source(config).streams(config)]
+    assert stream_names.count("orders") == 1
+    assert len(stream_names) == 15
+
+
+@pytest.mark.parametrize("status_code", [429, 500])
+@freezegun.freeze_time("2024-01-30T23:59:59Z")
+def test_retryable_error_is_retried_and_records_are_read(status_code: int) -> None:
+    request = orders_request("2021-01").with_updated_at_range("2024-01-01 00:00:00", "2024-01-30 23:59:59").build()
+    with HttpMocker() as http_mocker:
+        http_mocker.get(request, [HttpResponse(body="{}", status_code=status_code), orders_response(range(101, 102)).build()])
+        output = read_full_refresh(orders_config(True), "orders")
+        assert [record.record.data["id"] for record in output.records] == [101]
+        assert not output.errors
+        http_mocker.assert_number_of_calls(request, 2)

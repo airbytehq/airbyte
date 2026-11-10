@@ -24,7 +24,7 @@ class ConfigBuilder:
 
     def with_start_date(self, start_date: str) -> ConfigBuilder:
         # Stored verbatim, not reformatted through DATE_TIME_FORMAT (%z): the
-        # connector's spec requires start_date as literal ...Z (see spec.json's
+        # connector's spec requires start_date as literal ...Z (see manifest.yaml's
         # pattern and START_DATE above), not a %z offset like +0000. Every
         # stream's start_datetime.datetime_format expects that same ...Z shape.
         self._config["start_date"] = start_date

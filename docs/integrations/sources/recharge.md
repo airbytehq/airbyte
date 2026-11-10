@@ -5,7 +5,7 @@ This document guides you through setting up the Recharge source connector in Air
 **Key Features:**
 *   **Sync Modes:** Supports `Full Refresh` and `Incremental` syncs for core streams.
 *   **API Version:** Uses the `2021-11` API version for most streams. The `Orders` stream uses the deprecated `2021-01` API when **Use `Orders` Deprecated API** is on (the default in the setup form), and `2021-11` when it's off. The `Shop` stream always uses `2021-01`.
-*   **Lookback Window:** Supports a configurable lookback window for incremental streams to re-fetch recent data. The `events` stream is the exception, because the Recharge API only returns events from the last 7 days.
+*   **Lookback Window:** Supports a configurable lookback window for incremental streams to re-fetch recent data. The setting doesn't apply to the `orders` or `events` streams (the Recharge API only returns events from the last 7 days). See [Lookback Window](#lookback-window).
 
 ## Prerequisites
 
@@ -103,7 +103,7 @@ To avoid gaps in `events` data, schedule syncs to run at least once every 7 days
 
 ### Lookback Window
 
-The connector supports a configurable **Lookback Window (in days)** (`lookback_window_days`). On each incremental sync, the connector re-fetches records updated within that many days before the saved sync position. This can be useful for capturing late-arriving or updated records. The setting does not apply to `orders` or `events`.
+The connector supports a configurable **Lookback Window (in days)** (`lookback_window_days`). On each incremental sync, the connector re-fetches records updated within that many days, plus one hour, before the saved sync position. The extra hour re-reads records that changed while the previous sync was running. This can be useful for capturing late-arriving or updated records. The setting does not apply to `orders` or `events`.
 
 ## API Token Permissions (Scopes) & Plan Requirements
 
@@ -146,8 +146,8 @@ The Recharge connector is designed to handle Recharge API limitations under norm
 
 Recharge implements rate limits to ensure API stability and fair usage. The API uses a "leaky bucket" algorithm: each API token has a bucket of 40 requests that empties at 2 requests per second, so short bursts are allowed but the sustained rate is 2 requests per second. Higher Recharge plans may have higher limits.
 *   If the request rate exceeds the limit, the API will return a `429 - The request has been rate limited` error.
-*   The connector paces requests to 2 requests per second per API token.
-*   When a `429` error is received, the connector retries with exponential backoff (1, 2, 4 … seconds), up to 10 retries.
+*   The connector paces each sync to at most 2 requests per second, even if Recharge has raised your token's limit. Other syncs or apps that use the same API token are paced separately and share the token's limit, so together they can still receive `429` errors.
+*   When a `429` error is received, the connector retries with exponential backoff (1, 2, 4 … seconds), up to 10 retries or about 10 minutes, whichever comes first.
 
 For more details, see [Recharge API Rate Limits](https://docs.getrecharge.com/docs/api-rate-limits).
 
@@ -167,7 +167,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.0 | 2026-11-10 | [91334](https://github.com/airbytehq/airbyte/pull/91334) | Migrated to manifest-only; fixed `orders` on the 2021-01 API skipping pages across date slices and skipping the record at the saved cursor (refresh `orders` to recover previously skipped orders). |
+| 3.1.0 | 2026-11-10 | [91334](https://github.com/airbytehq/airbyte/pull/91334) | Migrated to manifest-only. Fixed `orders` skipping pages across date slices (2021-01 API) and skipping records at the saved cursor (both API versions); refresh `orders` to recover previously skipped orders. Added a one-hour lookback margin to other incremental streams except `events`. Requests are now paced at 2 per second on 2 threads, and records omit top-level fields whose value is `null`. |
 | 3.0.12 | 2026-09-17 | [86358](https://github.com/airbytehq/airbyte/pull/86358) | Fix `events` stream's `created_at_min` not clamped to the API's 7-day window, crashing the entire sync |
 | 3.0.11 | 2025-10-21 | [68391](https://github.com/airbytehq/airbyte/pull/68391) | Update dependencies |
 | 3.0.10 | 2025-10-14 | [67927](https://github.com/airbytehq/airbyte/pull/67927) | Update dependencies |

@@ -3,10 +3,11 @@
 #
 
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest import TestCase
 
 import freezegun
+from conftest import get_source
 
 from airbyte_cdk.test.mock_http import HttpMocker
 
@@ -38,6 +39,23 @@ _RECENT_MAX_CURSOR_VALUE = (NOW - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S
 @freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh(StreamTestCase):
     _STREAM_NAME = "events"
+
+    @HttpMocker()
+    def test_delayed_request_reapplies_seven_day_floor(self, http_mocker: HttpMocker) -> None:
+        with freezegun.freeze_time("2026-11-01T00:00:00Z") as clock:
+            stream_config = self._config.build()
+            stream = next(stream for stream in get_source(stream_config).streams(stream_config) if stream.name == _STREAM_NAME)
+            clock.tick(timedelta(hours=30))
+            request = self.stream_request().with_limit(250).with_created_min("2026-10-26T06:00:00+0000").build()
+            http_mocker.get(
+                request,
+                get_stream_response(_STREAM_NAME)
+                .with_record(get_stream_record(_STREAM_NAME, "id", _CURSOR_FIELD).with_id(101).with_cursor("2026-11-01T00:00:00+00:00"))
+                .build(),
+            )
+            records = [record for partition in stream.generate_partitions() for record in partition.read()]
+            assert [record.data["id"] for record in records] == [101]
+            http_mocker.assert_number_of_calls(request, 1)
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
@@ -101,7 +119,7 @@ class TestIncremental(StreamTestCase):
 
         output = read_incremental(self._config, _STREAM_NAME)
         test_cursor_value = get_cursor_value_from_state_message(output, _CURSOR_FIELD)
-        assert datetime.fromisoformat(test_cursor_value) == datetime.fromisoformat(max_cursor_value)
+        assert test_cursor_value == (NOW - timedelta(days=1)).strftime(DATE_TIME_FORMAT)
 
     @HttpMocker()
     def test_given_multiple_pages_when_read_then_return_records_with_state(self, http_mocker: HttpMocker) -> None:
