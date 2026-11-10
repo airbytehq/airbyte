@@ -49,4 +49,12 @@ data:
     - title: CallRail API rate limits
       url: https://apidocs.callrail.com/#rate-limiting
       type: rate_limits
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
