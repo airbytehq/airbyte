@@ -9,7 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 ### 1.2.4 — 2026-11-10
 
-Release resources and exit when the output channel fails during partition cleanup.
+[#91499](https://github.com/airbytehq/airbyte/pull/91499) — Release resources and exit when the output channel fails during partition cleanup.
 
 ### 1.2.3 — 2026-10-21
 
