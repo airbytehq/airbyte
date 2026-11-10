@@ -21,11 +21,15 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message:
-          Version 1.0.0 introduces changes to the connection configuration.
-          The `is_paid_account` config input is removed and streams unavailable to
-          unpaid accounts will simply be empty when read.
+        message: Version 1.0.0 introduces changes to the connection configuration. The `is_paid_account` config input is removed and streams unavailable to unpaid accounts will simply be empty when read.
         upgradeDeadline: "2024-08-20"
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   documentationUrl: https://docs.airbyte.com/integrations/sources/weatherstack
   tags:
     - cdk:low-code
@@ -35,8 +39,7 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
-    - suite:
-        unitTests
+    - suite: unitTests
         # Disabling acceptance tests for now
         # No / Low airbyte cloud usage
         # - suite: acceptanceTests
