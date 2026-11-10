@@ -46,6 +46,57 @@ def test_nullable_and_offset_entries(http_mocker: HttpMocker) -> None:
 
 
 @freeze_time("2026-11-10T00:00:00Z")
+def test_saved_state_replays_30_days(http_mocker: HttpMocker) -> None:
+    config = ConfigBuilder().with_start_date("2026-10-01T00:00:00Z").build()
+    catalog = CatalogBuilder().with_stream("timesheet_entries", SyncMode.incremental).build()
+    initial = (
+        BambooHrRequestBuilder("time_tracking/timesheet_entries")
+        .with_query_param("start", "2026-10-01")
+        .with_query_param("end", "2026-10-31")
+        .build()
+    )
+    current = (
+        BambooHrRequestBuilder("time_tracking/timesheet_entries")
+        .with_query_param("start", "2026-11-01")
+        .with_query_param("end", "2026-11-10")
+        .build()
+    )
+    http_mocker.get(initial, response([]))
+    http_mocker.get(current, response([{"id": 1, "start": "2026-11-05T09:00:00+00:00"}]))
+    first = read(get_source(config), config, catalog)
+    assert first.errors == []
+    assert [message.record.data["id"] for message in first.records] == [1]
+    assert first.most_recent_state.stream_state.start == "2026-11-05"
+    state = [first.state_messages[-1].state]
+    replay = (
+        BambooHrRequestBuilder("time_tracking/timesheet_entries")
+        .with_query_param("start", "2026-10-06")
+        .with_query_param("end", "2026-11-05")
+        .build()
+    )
+    http_mocker.get(
+        replay,
+        response([{"id": 2, "start": "2026-10-10T09:00:00+00:00"}, {"id": 1, "start": "2026-11-05T09:00:00+00:00"}]),
+    )
+    remaining = (
+        BambooHrRequestBuilder("time_tracking/timesheet_entries")
+        .with_query_param("start", "2026-11-06")
+        .with_query_param("end", "2026-11-10")
+        .build()
+    )
+    http_mocker.get(remaining, response([]))
+    second = read(get_source(config, state), config, catalog, state=state)
+    http_mocker.assert_number_of_calls(replay, 1)
+    assert second.errors == []
+    assert {message.record.data["id"] for message in second.records} == {1, 2}
+    assert len(second.records) == 2
+    assert second.most_recent_state.stream_state.start == "2026-11-05"
+    http_mocker.assert_number_of_calls(initial, 1)
+    http_mocker.assert_number_of_calls(current, 1)
+    http_mocker.assert_number_of_calls(remaining, 1)
+
+
+@freeze_time("2026-11-10T00:00:00Z")
 def test_old_start_date_is_clamped(http_mocker: HttpMocker) -> None:
     config = ConfigBuilder().with_start_date("2020-01-01T00:00:00Z").build()
     start = date(2025, 11, 11)
