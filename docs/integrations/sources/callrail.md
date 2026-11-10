@@ -1,19 +1,25 @@
 # CallRail
 
-## Overview
+This page contains the setup guide and reference information for the [CallRail](https://www.callrail.com/) source connector.
 
-The CailRail source supports Full Refresh and Incremental syncs.
+The connector reads calls, text message conversations, companies, and users from the [CallRail API v3](https://apidocs.callrail.com/) for a single CallRail account.
 
-### Output schema
+## Prerequisites
 
-This Source is capable of syncing the following core Streams:
+- A CallRail account.
+- A CallRail API key. CallRail API keys are scoped to the user who created them, so the connector can only read data that user can see in the CallRail interface. Calls, text messages, and companies in accounts or companies the user can't access aren't returned. An account administrator can also ask CallRail support to disable API access or limit it to admin users. For details, see [Authorization](https://apidocs.callrail.com/#authorization) in the CallRail API documentation.
+- Your CallRail account ID. To find it, open the CallRail dashboard in your browser and copy the nine-digit number that follows `/a/` in the URL.
 
-- [Calls](https://apidocs.callrail.com/#calls)
-- [Companies](https://apidocs.callrail.com/#companies)
-- [Text Messages](https://apidocs.callrail.com/#text-messages)
-- [Users](https://apidocs.callrail.com/#users)
+## Set up the CallRail connector in Airbyte
 
-### Features
+1. In Airbyte, go to **Sources** and select **CallRail**.
+2. Enter a **Source name**.
+3. For **API key**, enter your CallRail API key.
+4. For **Account ID**, enter your nine-digit CallRail account ID.
+5. For **Start date**, enter the date to start syncing data from, in `YYYY-MM-DD` format. The connector only reads records on or after this date.
+6. Click **Set up source**.
+
+## Supported sync modes
 
 | Feature                   | Supported? |
 | :------------------------ | :--------- |
@@ -23,12 +29,24 @@ This Source is capable of syncing the following core Streams:
 | SSL connection            | No         |
 | Namespaces                | No         |
 
-## Getting started
+## Supported streams
 
-### Requirements
+| Stream | CallRail endpoint | Primary key | Cursor field |
+| :----- | :---------------- | :---------- | :----------- |
+| `calls` | [Calls](https://apidocs.callrail.com/#calls) | `id` | `start_time` |
+| `conversations` | [Text Messages](https://apidocs.callrail.com/#text-messages) | `id` | `last_message_at` |
+| `companies` | [Companies](https://apidocs.callrail.com/#companies) | `id` | `created_at` |
+| `users` | [Users](https://apidocs.callrail.com/#users) | `id` | `created_at` |
 
-- CallRail Account
-- CallRail API Token
+The `conversations` stream contains SMS conversations from the CallRail Text Messages endpoint. Each record represents a conversation with one customer and includes its most recent messages in the `recent_messages` field.
+
+The `companies` and `users` streams use `created_at` as their cursor. Incremental syncs of these streams pick up newly created records but not changes to existing ones. To capture updates to existing companies or users, use a full refresh sync for these streams.
+
+## Limitations
+
+The connector reads data in 100-day windows from the start date up to the current date, requesting 100 records per page.
+
+CallRail limits each account to 1,000 general API requests per hour and 10,000 per day by default. If the connector exceeds these limits, CallRail returns HTTP 429 responses. If you sync a large amount of historical data and hit these limits, consider a later start date or contact CallRail support to request a higher limit. For details, see [Rate Limiting](https://apidocs.callrail.com/#rate-limiting).
 
 ## IP allow list
 
@@ -41,7 +59,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
-| 0.2.14 | 2026-10-20 | [89534](https://github.com/airbytehq/airbyte/pull/89534) | Migrate `acceptance-test-config.yml` to the `acceptance_tests` layout read by the standard tests |
+| 0.2.14 | 2026-11-10 | [89534](https://github.com/airbytehq/airbyte/pull/89534) | Migrate `acceptance-test-config.yml` to the `acceptance_tests` layout read by the standard tests |
 | 0.2.13 | 2025-05-17 | [60647](https://github.com/airbytehq/airbyte/pull/60647) | Update dependencies |
 | 0.2.12 | 2025-05-10 | [59890](https://github.com/airbytehq/airbyte/pull/59890) | Update dependencies |
 | 0.2.11 | 2025-05-03 | [59303](https://github.com/airbytehq/airbyte/pull/59303) | Update dependencies |
