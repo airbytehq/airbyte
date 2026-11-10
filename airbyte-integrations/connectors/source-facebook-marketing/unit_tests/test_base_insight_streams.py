@@ -17,6 +17,7 @@ from source_facebook_marketing.utils import DateInterval
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 
 
@@ -198,6 +199,99 @@ class TestBaseInsightsStream:
         )
 
         assert stream.request_params()["filtering"] == [{"field": "ad.effective_status", "operator": "IN", "value": ["ACTIVE", "ARCHIVED"]}]
+
+    @freeze_time("2026-09-25")
+    @pytest.mark.parametrize("out_of_order", [False, True])
+    @pytest.mark.parametrize("empty_results", [False, True])
+    def test_lookback_cursor_is_monotonic(self, mocker, api, async_manager_mock, account_id, out_of_order, empty_results):
+        cursor = date(2026, 9, 20)
+        first_date = cursor - timedelta(days=28)
+        end_date = cursor + timedelta(days=3)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime.combine(end_date, datetime.min.time()),
+            insights_lookback_window=28,
+        )
+        saved_state = {
+            account_id: {"date_start": cursor.isoformat(), "slices": [first_date.isoformat()]},
+            "time_increment": 1,
+        }
+        record = mocker.Mock()
+        record.export_all_data.return_value = {}
+
+        def make_job(**kwargs):
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = kwargs["interval"]
+            job.get_result.return_value = [] if empty_results else [record]
+            return job
+
+        mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob", side_effect=make_job)
+        requested_intervals = []
+
+        def completed_jobs():
+            jobs = list(async_manager_mock.call_args.kwargs["jobs"])
+            requested_intervals.extend(job.interval for job in jobs)
+            if out_of_order:
+                jobs[0], jobs[1] = jobs[1], jobs[0]
+                jobs[-1], jobs[-2] = jobs[-2], jobs[-1]
+            yield from jobs
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        previous_cursor = cursor.isoformat()
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=saved_state):
+            records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+            assert len(records) == (0 if empty_results else 1)
+            account_state = stream.state[account_id]
+            assert account_state["date_start"] >= previous_cursor
+            previous_cursor = account_state["date_start"]
+            assert all(value > previous_cursor for value in account_state["slices"])
+            if out_of_order and stream_slice["insight_job"].interval.start == first_date + timedelta(days=1):
+                assert first_date + timedelta(days=1) in stream._completed_slices[account_id]
+                resumed = AdsInsights(
+                    api=api,
+                    account_ids=[account_id],
+                    start_date=datetime(2026, 1, 1),
+                    end_date=datetime.combine(end_date, datetime.min.time()),
+                    insights_lookback_window=28,
+                )
+                resumed.state = stream.state
+                assert next(resumed._generate_async_jobs(params={}, account_id=account_id)).interval.start == first_date
+
+        assert [(interval.start, interval.end) for interval in requested_intervals] == [
+            (first_date + timedelta(days=offset), first_date + timedelta(days=offset))
+            for offset in range((end_date - first_date).days + 1)
+        ]
+        assert stream.state[account_id] == {"date_start": end_date.isoformat(), "slices": []}
+
+    @freeze_time("2026-09-25")
+    def test_failed_lookback_slice_preserves_cursor(self, mocker, api, async_manager_mock, account_id):
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 9, 23),
+            insights_lookback_window=28,
+        )
+        job = mocker.Mock(spec=InsightAsyncJob)
+        job.interval = DateInterval(date(2026, 8, 23), date(2026, 8, 23))
+        job.get_result.side_effect = FacebookRequestError(
+            message="Request failed",
+            request_context={"method": "GET"},
+            http_status=503,
+            http_headers={},
+            body={"error": {"message": "Service unavailable", "code": 2}},
+        )
+        async_manager_mock.completed_jobs.return_value = [job]
+        saved_state = {account_id: {"date_start": "2026-09-20", "slices": []}, "time_increment": 1}
+
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=saved_state):
+            with pytest.raises(AirbyteTracedException):
+                list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+
+        assert stream.state == saved_state
+        assert not stream._completed_slices[account_id]
 
     def test_read_records_all(self, mocker, api, some_config):
         """1. yield all from mock
@@ -396,7 +490,10 @@ class TestBaseInsightsStream:
         actual_state = stream.state
 
         result_state = state if not result_state else result_state
-        result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
+        account_state = result_state[some_config["account_ids"][0]]
+        account_state["slices"] = [
+            value for value in account_state.get("slices", []) if value > account_state.get(AdsInsights.cursor_field, "")
+        ]
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
