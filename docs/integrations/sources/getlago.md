@@ -47,7 +47,7 @@ If your organization restricts [API key permissions](https://getlago.com/docs/gu
 
 ### Set up the source in Airbyte
 
-1. Create a source and select **Lago API**.
+1. Create a source and select **Lago**.
 2. Enter a name for the source.
 3. Set **API Url** to your Lago API base URL. The default is `https://api.getlago.com/api/v1`; change it for an EU or self-hosted deployment.
 4. Set **API Key** to the key you copied from Lago. Enter the key without the `Bearer` prefix; the connector adds it to the authorization header.
