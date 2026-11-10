@@ -73,9 +73,11 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
 @Singleton
 class AzureBlobStorageConfigurationFactory(private val destinationCatalog: DestinationCatalog) :
     DestinationConfigurationFactory<
-        AzureBlobStorageSpecification, AzureBlobStorageConfiguration<*>> {
+        AzureBlobStorageSpecification,
+        AzureBlobStorageConfiguration<*>,
+    > {
     override fun makeWithoutExceptionHandling(
-        pojo: AzureBlobStorageSpecification
+        pojo: AzureBlobStorageSpecification,
     ): AzureBlobStorageConfiguration<*> {
         val azureBlobStorageClientConfiguration = pojo.toAzureBlobStorageClientConfiguration()
         azureBlobStorageClientConfiguration.endpointDomainName =
@@ -91,7 +93,7 @@ class AzureBlobStorageConfigurationFactory(private val destinationCatalog: Desti
                     FILE_DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS
                 } else {
                     DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS
-                }
+                },
         )
     }
 }
@@ -99,7 +101,7 @@ class AzureBlobStorageConfigurationFactory(private val destinationCatalog: Desti
 @Suppress("UNCHECKED_CAST")
 @Factory
 class AzureBlobStorageConfigurationProvider<T : OutputStream>(
-    private val config: DestinationConfiguration
+    private val config: DestinationConfiguration,
 ) {
     @Singleton
     fun get(): AzureBlobStorageConfiguration<T> {

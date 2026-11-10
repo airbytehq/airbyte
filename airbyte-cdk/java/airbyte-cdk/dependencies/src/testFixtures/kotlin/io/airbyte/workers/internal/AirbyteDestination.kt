@@ -21,8 +21,10 @@ interface AirbyteDestination : CheckedConsumer<AirbyteMessage, Exception>, AutoC
      *
      * @param destinationConfig
      * - contains the arguments that must be passed to the write method of the Destination.
+     *
      * @param jobRoot
      * - directory where the job can write data.
+     *
      * @param additionalEnvironmentVariables
      * @throws Exception
      * - throws if there is any failure in startup.
@@ -31,7 +33,7 @@ interface AirbyteDestination : CheckedConsumer<AirbyteMessage, Exception>, AutoC
     fun start(
         destinationConfig: WorkerDestinationConfig,
         jobRoot: Path,
-        additionalEnvironmentVariables: Map<String, String>
+        additionalEnvironmentVariables: Map<String, String>,
     )
 
     /**
@@ -78,7 +80,7 @@ interface AirbyteDestination : CheckedConsumer<AirbyteMessage, Exception>, AutoC
      * Attempts to read an AirbyteMessage from the Destination.
      *
      * @return returns an AirbyteMessage if the Destination emits one. Otherwise, empty. This method
-     * BLOCKS on waiting for the Destination to emit data to STDOUT.
+     *   BLOCKS on waiting for the Destination to emit data to STDOUT.
      */
     fun attemptRead(): Optional<AirbyteMessage>
 

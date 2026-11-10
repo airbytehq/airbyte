@@ -34,6 +34,7 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
     interface AcquiredResource : AutoCloseable {
         val resource: Resource.Acquired?
     }
+
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
@@ -59,7 +60,7 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
                 acquiredResources
                     .get()
                     .mapNotNull { (key, value) -> value.resource?.let { key to it } }
-                    .toMap()
+                    .toMap(),
             )
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
@@ -106,7 +107,7 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
             when (streamState.streamFeedBootstrap.dataChannelMedium) {
                 DataChannelMedium.SOCKET -> partitionId
                 DataChannelMedium.STDIO -> null
-            }
+            },
         )
     }
 

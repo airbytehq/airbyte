@@ -166,7 +166,7 @@ class ClearScapeManager(private val configFileName: String) {
             teradataHttpClient.deleteEnvironment(request, token).get()
         } catch (be: BaseException) {
             LOGGER.info(
-                "Environment ${configJSON["env_name"].asText()} is not available. Error - ${be.message}"
+                "Environment ${configJSON["env_name"].asText()} is not available. Error - ${be.message}",
             )
         }
     }

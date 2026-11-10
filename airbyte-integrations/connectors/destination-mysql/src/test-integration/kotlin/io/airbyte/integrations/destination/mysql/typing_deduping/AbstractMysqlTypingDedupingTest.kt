@@ -25,6 +25,7 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest(SQLDiale
     override val sqlGenerator = MysqlSqlGenerator()
     override val sourceOperations = MysqlTestSourceOperations()
     override val nameTransformer = MySQLNameTransformer()
+
     override fun getBaseConfig(): ObjectNode = containerizedConfig.deepCopy()
 
     override fun getDataSource(config: JsonNode?): DataSource =
@@ -84,7 +85,7 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest(SQLDiale
         // mysql doesn't have schemas, it only has databases.
         // so override this method to use dropDatabase.
         database!!.execute(
-            dslContext.dropDatabaseIfExists(streamNamespace).getSQL(ParamType.INLINED)
+            dslContext.dropDatabaseIfExists(streamNamespace).getSQL(ParamType.INLINED),
         )
     }
 

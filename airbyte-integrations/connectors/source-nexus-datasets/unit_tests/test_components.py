@@ -70,6 +70,20 @@ def test_decode_octet_stream_yields_records(components_module):
     assert result[0]["raw_data"] == {"id": "1", "name": "test"}
 
 
+def test_decode_binary_octet_stream_yields_records(components_module):
+    """Verify that the S3-served export (Content-Type: binary/octet-stream) is decoded as JSONL."""
+    FlexibleDecoder = components_module.FlexibleDecoder
+    decoder = FlexibleDecoder(parameters={})
+    records = [{"id": "1", "name": "test"}]
+    content = "\n".join(json.dumps(r) for r in records)
+    response = _create_response(200, content, "binary/octet-stream")
+
+    result = list(decoder.decode(response))
+
+    assert len(result) == 1
+    assert result[0]["raw_data"] == {"id": "1", "name": "test"}
+
+
 def test_decode_unsupported_content_type_raises_value_error(components_module):
     """Verify that an unsupported Content-Type raises ValueError."""
     FlexibleDecoder = components_module.FlexibleDecoder

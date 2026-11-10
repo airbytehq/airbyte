@@ -60,20 +60,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        ignored_fields:
-          contacts:
-            - name: "IMAGE_URL"
-              bypass_reason:
-                "image url is a dynamic s3 url with a changing expiration
-                date in the query parameter"
-          organisations:
-            - name: "IMAGE_URL"
-              bypass_reason:
-                "image url is a dynamic s3 url with a changing expiration
-                date in the query parameter"
-          users:
-            - name: "USER_CURRENCY"
-              bypass_reason: "this can change between sequential reads"
   incremental:
     tests:
       - config_path: "secrets/config.json"

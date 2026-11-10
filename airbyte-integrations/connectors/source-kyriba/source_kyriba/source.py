@@ -276,9 +276,14 @@ class SourceKyriba(AbstractSource):
             client.login()
             return True, None
         except Exception as e:
-            if isinstance(e, requests.exceptions.HTTPError) and e.response.status_code == 401:
-                err_message = f"Please check your `username` and `password`. Error: {repr(e)}"
-                return False, err_message
+            if isinstance(e, requests.exceptions.HTTPError) and e.response is not None:
+                if e.response.status_code == 401:
+                    return False, f"Please check your `username` and `password`. Error: {repr(e)}"
+                if e.response.status_code == 403:
+                    return False, (
+                        "Kyriba refused the login (403 Forbidden). Make sure the API user has API access enabled "
+                        f"and that Airbyte's IP addresses are allowed on your Kyriba instance. Error: {repr(e)}"
+                    )
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

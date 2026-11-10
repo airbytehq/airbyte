@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-api). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
+This source can sync data from the [Secoda API](https://docs.secoda.co/api). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
 
 ## This Source Supports the Following Streams
 
@@ -23,7 +23,12 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 ### Requirements
 
-- API Access
+- A Secoda API key. In Secoda, open **Settings → API** and click **Generate New API Key** (see the [Secoda authentication docs](https://docs.secoda.co/api/authentication)). The key has the same access as the user who created it.
+
+### Setup guide
+
+1. Enter the API key in the **Api Key** field.
+2. Click **Set up source**.
 
 ## IP allow list
 
@@ -36,6 +41,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------- |
+| 0.2.26 | 2026-10-07 | [88325](https://github.com/airbytehq/airbyte/pull/88325) | Fix dead Secoda API documentation links; migrate acceptance-test-config.yml to the `acceptance_tests` layout so CI tests can run |
 | 0.2.25 | 2025-05-10 | [60140](https://github.com/airbytehq/airbyte/pull/60140) | Update dependencies |
 | 0.2.24 | 2025-05-04 | [59624](https://github.com/airbytehq/airbyte/pull/59624) | Update dependencies |
 | 0.2.23 | 2025-04-27 | [58987](https://github.com/airbytehq/airbyte/pull/58987) | Update dependencies |

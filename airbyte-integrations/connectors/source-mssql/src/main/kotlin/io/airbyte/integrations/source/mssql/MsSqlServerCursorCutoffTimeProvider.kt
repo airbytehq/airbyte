@@ -62,7 +62,7 @@ object MsSqlServerCursorCutoffTimeProvider {
                                 .toLocalDateTime()
                         val cutoffValue =
                             Jsons.valueToTree<JsonNode>(
-                                SQL_SERVER_DATETIME_FORMATTER.format(startOfToday)
+                                SQL_SERVER_DATETIME_FORMATTER.format(startOfToday),
                             )
                         log.info {
                             "TIMESTAMP_WITHOUT_TIMEZONE cutoff for field '${cursorField.id}': ${cutoffValue.asText()}"
@@ -110,7 +110,7 @@ object MsSqlServerCursorCutoffTimeProvider {
                     LeafAirbyteSchemaType.DATE,
                     LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
-                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                 )
     }
 }

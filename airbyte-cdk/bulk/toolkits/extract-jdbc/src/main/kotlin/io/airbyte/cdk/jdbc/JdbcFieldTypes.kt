@@ -97,7 +97,7 @@ abstract class SymmetricJdbcFieldType<T>(
         jdbcAccessor,
         jsonCodec,
         jsonCodec,
-        jdbcAccessor
+        jdbcAccessor,
     )
 
 data object BooleanFieldType :
@@ -273,7 +273,7 @@ data object OffsetTimeFieldType :
 data object OffsetDateTimeFieldType :
     LosslessJdbcFieldType<OffsetDateTime, OffsetDateTime>(
         LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
-        TimestampTzGetter,
+        ObjectGetter(OffsetDateTime::class.java),
         OffsetDateTimeCodec,
         OffsetDateTimeCodec,
         AnyAccessor,

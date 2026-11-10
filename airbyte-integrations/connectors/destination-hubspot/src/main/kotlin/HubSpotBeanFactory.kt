@@ -37,7 +37,7 @@ class HubSpotBeanFactory {
     fun checkOperation(
         factory: DeclarativeDestinationFactory,
         checker: DlqChecker,
-        outputConsumer: OutputConsumer
+        outputConsumer: OutputConsumer,
     ): Operation = CheckOperationV2(factory.createDestinationChecker(checker), outputConsumer)
 
     @Singleton
@@ -62,12 +62,12 @@ class HubSpotBeanFactory {
                     "https://api.hubapi.com/oauth/v1/token",
                     credentials.clientId,
                     credentials.clientSecret,
-                    credentials.refreshToken
+                    credentials.refreshToken,
                 )
             }
             else ->
                 throw IllegalArgumentException(
-                    "Unsupported authenticator type: ${config.credentials.type}"
+                    "Unsupported authenticator type: ${config.credentials.type}",
                 )
         }
     }
@@ -93,7 +93,7 @@ class HubSpotBeanFactory {
         dlqPipelineFactory: DlqPipelineFactory,
     ): LoadPipeline =
         dlqPipelineFactory.createPipeline(
-            HubSpotLoader(httpClient, HubSpotObjectTypeIdMapper(httpClient), catalog)
+            HubSpotLoader(httpClient, HubSpotObjectTypeIdMapper(httpClient), catalog),
         )
 
     @Singleton fun writer() = HubSpotWriter()

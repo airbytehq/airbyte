@@ -579,7 +579,7 @@ definitions:
       access_token_name: access_token
       refresh_request_body:
         box_subject_id: "{{ config['user'] }}"
-        box_subject_type: user
+        box_subject_type: "{{ config.get('box_subject_type', 'user') }}"
       token_refresh_endpoint: https://api.box.com/oauth2/token
 
 streams:
@@ -624,7 +624,25 @@ spec:
       user:
         type: number
         order: 2
-        title: User
+        title: User ID or Enterprise ID
+        description: >-
+          Box user ID to authenticate as (when Subject Type is "user"), or the
+          Box enterprise ID to authenticate as the app's Service Account (when
+          Subject Type is "enterprise").
+      box_subject_type:
+        type: string
+        order: 3
+        title: Subject Type
+        description: >-
+          Which subject the Client Credentials Grant token is requested for.
+          "user" requires the app to have "App + Enterprise Access" and
+          "Generate User Access Tokens" enabled. "enterprise" authenticates as
+          the app's Service Account and works with the default "App Access
+          Only" level.
+        enum:
+          - user
+          - enterprise
+        default: user
     additionalProperties: true
 
 metadata:

@@ -24,8 +24,9 @@ class RedshiftSchemaRecordFormatter(
      * For all other column types (BIGINT, SUPER, etc.), nulls and missing values produce Java
      * `null`, which FastCSV writes as an unquoted empty field. Redshift auto-nullifies these.
      */
-    fun format(record: Map<String, AirbyteValue>): List<String?> =
-        columns.map { columnName -> record[columnName].toCsv(columnName in varcharColumns) }
+    fun format(record: Map<String, AirbyteValue>): List<String?> = columns.map { columnName ->
+        record[columnName].toCsv(columnName in varcharColumns)
+    }
 
     private fun AirbyteValue?.toCsv(isVarchar: Boolean): String? =
         when {

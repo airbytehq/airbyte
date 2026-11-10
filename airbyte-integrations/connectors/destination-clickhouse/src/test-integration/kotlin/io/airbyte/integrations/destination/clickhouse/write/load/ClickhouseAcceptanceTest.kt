@@ -169,7 +169,7 @@ abstract class ClickhouseAcceptanceTest(
 class ClickhouseDataDumper : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val config = Utils.specToConfig(spec)
         val client = Utils.getClickhouseClient(config)
@@ -217,7 +217,7 @@ class ClickhouseDataDumper : DestinationDataDumper {
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw UnsupportedOperationException("Clickhouse does not support file transfer.")
     }
@@ -227,7 +227,7 @@ object ClickhouseDataCleaner : DestinationCleaner {
     private val clickhouseSpecification =
         ValidatedJsonUtils.parseOne(
             ClickhouseSpecificationOss::class.java,
-            Files.readString(Utils.getConfigPath("valid_connection.json"))
+            Files.readString(Utils.getConfigPath("valid_connection.json")),
         )
 
     private val config =
@@ -240,7 +240,7 @@ object ClickhouseDataCleaner : DestinationCleaner {
                     "protocol" to "http",
                     "username" to ClickhouseContainerHelper.getUsername(),
                     "password" to ClickhouseContainerHelper.getPassword(),
-                )
+                ),
             )
 
     override fun cleanup() {

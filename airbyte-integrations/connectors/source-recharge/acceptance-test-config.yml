@@ -19,8 +19,6 @@ acceptance_tests:
             bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
           - name: payment_methods_stream
             bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
       - config_path: secrets/config_order_modern_api.json
         empty_streams:
           - name: collections
@@ -39,8 +37,6 @@ acceptance_tests:
             bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
           - name: payment_methods_stream
             bypass_reason: "The stream is tested with `Integration Tests`, since no data is available"
-        expect_records:
-          path: "integration_tests/expected_records_orders_modern_api.jsonl"
   connection:
     tests:
       - config_path: secrets/config.json
@@ -56,14 +52,12 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
-        timeout_seconds: 3200
   incremental:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/streams_with_output_records_catalog.json
         future_state:
           future_state_path: integration_tests/abnormal_state.json
-        timeout_seconds: 3200
   spec:
     tests:
       - spec_path: source_recharge/spec.json

@@ -23,12 +23,12 @@ class InsertLoaderRequestExecutorStep<Q : InsertLoaderRequest>(
     @Named("insertLoaderRequestQueue")
     private val inputQueue:
         PartitionedQueue<PipelineEvent<StreamKey, InsertLoaderRequestBuilderAccumulator.Result<Q>>>,
-    private val taskFactory: LoadPipelineStepTaskFactory
+    private val taskFactory: LoadPipelineStepTaskFactory,
 ) : LoadPipelineStep {
     override val numWorkers: Int = loader.numRequestExecutors
 
     override fun taskForPartition(
-        partition: Int
+        partition: Int,
     ): io.airbyte.cdk.load.task.internal.LoadPipelineStepTask<*, *, *, *, *> {
         return taskFactory.createFinalStep(requestExecutor, inputQueue, partition, numWorkers)
     }

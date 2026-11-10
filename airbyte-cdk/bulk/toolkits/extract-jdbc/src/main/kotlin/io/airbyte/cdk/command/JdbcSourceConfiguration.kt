@@ -60,7 +60,7 @@ interface JdbcSourceConfiguration : SourceConfiguration {
             if (invalidSchemas.isNotEmpty()) {
                 throw ConfigErrorException(
                     "Table filters reference schemas not in configured schemas list: $invalidSchemas. " +
-                        "Configured schemas: $configuredSchemas"
+                        "Configured schemas: $configuredSchemas",
                 )
             }
         }

@@ -28,8 +28,8 @@ internal class ConnectorConfigUpdaterTest {
 
         Mockito.`when`(
                 mDestinationApi.getDestination(
-                    DestinationIdRequestBody().destinationId(DESTINATION_ID)
-                )
+                    DestinationIdRequestBody().destinationId(DESTINATION_ID),
+                ),
             )
             .thenReturn(DestinationRead().destinationId(DESTINATION_ID).name(DESTINATION_NAME))
 

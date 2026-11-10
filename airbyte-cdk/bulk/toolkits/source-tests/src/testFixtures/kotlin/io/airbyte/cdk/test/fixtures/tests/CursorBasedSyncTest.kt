@@ -48,10 +48,9 @@ abstract class CursorBasedSyncTest {
         }
         val actual = DiscoverAndSyncAll(IntegrationTestOperations(configSpec), executor, testCases)
         val discoverAndSyncAllTest = DynamicTest.dynamicTest("discover-and-sync-all", actual)
-        val testCaseNodes =
-            testCases.map {
-                DynamicContainer.dynamicContainer(it.testName, dynamicTests(actual, it))
-            }
+        val testCaseNodes = testCases.map {
+            DynamicContainer.dynamicContainer(it.testName, dynamicTests(actual, it))
+        }
         return listOf(discoverAndSyncAllTest) + testCaseNodes
     }
 
@@ -62,7 +61,7 @@ abstract class CursorBasedSyncTest {
                     "sync1",
                     testCase,
                     actual.sync1MessagesByStream,
-                    testCase.expectedSync1Values
+                    testCase.expectedSync1Values,
                 )
             },
             DynamicTest.dynamicTest("sync2-records") {
@@ -70,7 +69,7 @@ abstract class CursorBasedSyncTest {
                     "sync2",
                     testCase,
                     actual.sync2MessagesByStream,
-                    testCase.expectedSync2Values
+                    testCase.expectedSync2Values,
                 )
             },
         )
@@ -85,8 +84,9 @@ abstract class CursorBasedSyncTest {
         val consumer = messagesByStream[testCase.tableName.uppercase()]
         Assertions.assertNotNull(consumer)
         val actualRecords = extractCursorFieldData(consumer!!.records(), testCase.cursorField)
-        val expectedRecords =
-            expectedJsonValues.map { Jsons.readTree("""{"${testCase.cursorField}":$it}""") }
+        val expectedRecords = expectedJsonValues.map {
+            Jsons.readTree("""{"${testCase.cursorField}":$it}""")
+        }
         log.info {
             "$syncLabel ${testCase.testName}: emitted records ${Jsons.writeValueAsString(sortedRecords(actualRecords))}"
         }
@@ -99,15 +99,14 @@ abstract class CursorBasedSyncTest {
     private fun extractCursorFieldData(
         records: List<AirbyteRecordMessage>,
         cursorField: String,
-    ): List<JsonNode> =
-        records.mapNotNull { record ->
-            val data = record.data as? ObjectNode ?: return@mapNotNull null
-            data.deepCopy().apply {
-                for (fieldName in data.fieldNames()) {
-                    if (fieldName != cursorField) remove(fieldName)
-                }
+    ): List<JsonNode> = records.mapNotNull { record ->
+        val data = record.data as? ObjectNode ?: return@mapNotNull null
+        data.deepCopy().apply {
+            for (fieldName in data.fieldNames()) {
+                if (fieldName != cursorField) remove(fieldName)
             }
         }
+    }
 
     private fun sortedRecords(records: List<JsonNode>): JsonNode =
         Jsons.createArrayNode().apply { addAll(records.sortedBy { it.toString() }) }
@@ -146,24 +145,22 @@ abstract class CursorBasedSyncTest {
         }
 
         private fun configuredCatalog(
-            streams: Map<String, AirbyteStream>
+            streams: Map<String, AirbyteStream>,
         ): ConfiguredAirbyteCatalog {
-            val configuredStreams =
-                testCases.mapNotNull { testCase ->
-                    streams[testCase.tableName]?.let { stream ->
-                        CatalogHelpers.toDefaultConfiguredStream(stream)
-                            .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(listOf(testCase.cursorField))
-                    }
+            val configuredStreams = testCases.mapNotNull { testCase ->
+                streams[testCase.tableName]?.let { stream ->
+                    CatalogHelpers.toDefaultConfiguredStream(stream)
+                        .withSyncMode(SyncMode.INCREMENTAL)
+                        .withCursorField(listOf(testCase.cursorField))
                 }
+            }
             return ConfiguredAirbyteCatalog().withStreams(configuredStreams)
         }
 
         private fun byStream(messages: List<AirbyteMessage>): Map<String, BufferingOutputConsumer> {
-            val result =
-                testCases.associate {
-                    it.tableName.uppercase() to BufferingOutputConsumer(ClockFactory().fixed())
-                }
+            val result = testCases.associate {
+                it.tableName.uppercase() to BufferingOutputConsumer(ClockFactory().fixed())
+            }
             for (msg in messages) {
                 result[streamName(msg) ?: continue]?.accept(msg)
             }

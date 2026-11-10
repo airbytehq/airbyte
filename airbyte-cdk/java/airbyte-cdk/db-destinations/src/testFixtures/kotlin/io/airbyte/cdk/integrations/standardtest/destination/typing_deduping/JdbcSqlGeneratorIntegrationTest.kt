@@ -35,6 +35,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     private val timestampWithTimeZoneType: DataType<*>
         // TODO - can we move this class into db_destinations/testFixtures?
         get() = sqlGenerator.toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
+
     abstract override val sqlGenerator: JdbcSqlGenerator
     protected abstract val sqlDialect: SQLDialect?
 
@@ -53,12 +54,12 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         tableName: Name,
         columnNames: List<String>,
         records: List<JsonNode>,
-        vararg columnsToParseJson: String
+        vararg columnsToParseJson: String,
     ) {
         var insert =
             dslContext.insertInto(
                 DSL.table(tableName),
-                columnNames.map { columnName: String -> DSL.field(DSL.quotedName(columnName)) }
+                columnNames.map { columnName: String -> DSL.field(DSL.quotedName(columnName)) },
             )
         for (record in records) {
             insert =
@@ -79,7 +80,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                         } else {
                             return@map DSL.`val`(columnAsString)
                         }
-                    }
+                    },
                 )
         }
         database.execute(insert.getSQL(ParamType.INLINED))
@@ -114,7 +115,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 .column(COLUMN_NAME_AB_ID, SQLDataType.VARCHAR(36).nullable(false))
                 .column(COLUMN_NAME_EMITTED_AT, timestampWithTimeZoneType.nullable(false))
                 .column(COLUMN_NAME_DATA, structType.nullable(false))
-                .getSQL(ParamType.INLINED)
+                .getSQL(ParamType.INLINED),
         )
     }
 
@@ -125,7 +126,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             sqlGenerator.columns.rawColumns,
             records,
             COLUMN_NAME_DATA,
-            COLUMN_NAME_AB_META
+            COLUMN_NAME_AB_META,
         )
     }
 
@@ -135,7 +136,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             DSL.name(streamId.rawNamespace, streamId.rawName),
             LEGACY_RAW_TABLE_COLUMNS,
             records,
-            COLUMN_NAME_DATA
+            COLUMN_NAME_DATA,
         )
     }
 
@@ -160,7 +161,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             COLUMN_NAME_AB_META,
             "struct",
             "array",
-            "unknown"
+            "unknown",
         )
     }
 
@@ -169,7 +170,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         return database.queryJsons(
             dslContext
                 .selectFrom(DSL.name(streamId!!.rawNamespace, streamId.rawName))
-                .getSQL(ParamType.INLINED)
+                .getSQL(ParamType.INLINED),
         )
     }
 
@@ -178,7 +179,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         return database.queryJsons(
             dslContext
                 .selectFrom(DSL.name(streamId!!.finalNamespace, streamId.finalName + suffix))
-                .getSQL(ParamType.INLINED)
+                .getSQL(ParamType.INLINED),
         )
     }
 
