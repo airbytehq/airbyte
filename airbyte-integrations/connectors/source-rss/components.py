@@ -28,7 +28,6 @@ MEDIA_NS = "http://search.yahoo.com/mrss/"
 XML_BASE_ATTRIBUTE = "{http://www.w3.org/XML/1998/namespace}base"
 
 _XML_ENTITIES = {"amp", "lt", "gt", "quot", "apos"}
-_BOMS = (("\ufeff", "utf-8-sig"),)
 _CDATA_SECTION = re.compile(r"(<!\[CDATA\[.*?\]\]>)", re.DOTALL)
 _ENTITY_OR_AMPERSAND = re.compile(r"&(?:(#[0-9]+|#[xX][0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]*);)?")
 _XML_DECLARATION = re.compile(r"^<\?xml[^>]*\?>")
@@ -37,8 +36,8 @@ _HEADER_CHARSET = re.compile(r"charset\s*=\s*[\"']?([^;\"'\s]+)", re.IGNORECASE)
 
 # Control characters are not allowed in XML 1.0, but feeds still contain them. They are shifted into a
 # private-use plane before parsing and shifted back afterwards, so their values survive unchanged.
-_CONTROL_CHARACTERS = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f]")
-_SHIFTED_CONTROL_CHARACTERS = re.compile("[\U000f0000-\U000f001f]")
+_CONTROL_CHARACTERS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
+_SHIFTED_CONTROL_CHARACTERS = re.compile(r"[\U000f0000-\U000f001f]")
 _CONTROL_CHARACTER_SHIFT = 0xF0000
 
 Field = Tuple[str, str]
