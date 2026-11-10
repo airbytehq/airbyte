@@ -6,7 +6,14 @@ import jsonschema
 import pytest
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Status, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
@@ -216,7 +223,7 @@ def test_read_big_random_data():
 
 def test_with_purchases():
     source = SourceFaker()
-    config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
+    config = {"count": 1000, "parallelism": 1}
     stream_dicts = [
         {
             "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
@@ -286,15 +293,10 @@ def test_ensure_no_purchases_without_users():
         iterator.__next__()
 
 
-@pytest.mark.parametrize("config", [{"count": 10, "seed": 42}, {}])
-def test_check_and_read_with_optional_defaults(config):
+@pytest.mark.parametrize("config, expected_count, expected_states", [({"count": 10, "seed": 42}, 10, 1), ({}, 1000, 10)])
+def test_check_and_read_with_optional_defaults(config, expected_count, expected_states):
     source = SourceFaker()
     assert source.check(logger, config).status is Status.SUCCEEDED
-
-    defaults = source.spec(logger).connectionSpecification["properties"]
-    for stream in source.streams(config)[1:]:
-        for key in ("count", "records_per_slice", "parallelism"):
-            assert getattr(stream, key) == config.get(key, defaults[key]["default"])
 
     stream_dict = {
         "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
@@ -302,8 +304,9 @@ def test_check_and_read_with_optional_defaults(config):
         "destination_sync_mode": "overwrite",
     }
     catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
-    records = [message for message in source.read(logger, config, catalog, {}) if message.type is Type.RECORD]
-    assert len(records) == config.get("count", defaults["count"]["default"])
+    messages = list(source.read(logger, config, catalog, {}))
+    assert sum(message.type is Type.RECORD for message in messages) == expected_count
+    assert sum(message.type is Type.STATE for message in messages) == expected_states
 
 
 @pytest.mark.parametrize("key", ["count", "records_per_slice", "parallelism"])
