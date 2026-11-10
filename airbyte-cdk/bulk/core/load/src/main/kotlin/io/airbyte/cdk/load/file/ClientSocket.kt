@@ -7,10 +7,13 @@ package io.airbyte.cdk.load.file
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.InputStream
+import java.net.ConnectException
+import java.net.SocketException
 import java.net.StandardProtocolFamily
 import java.net.UnixDomainSocketAddress
 import java.nio.channels.Channels
 import java.nio.channels.SocketChannel
+import kotlin.time.TimeSource
 
 class ClientSocket(
     val socketPath: String,
@@ -23,35 +26,51 @@ class ClientSocket(
     fun openInputStream(): InputStream {
         log.info { "Connecting client socket at $socketPath" }
         val socketFile = File(socketPath)
-        var totalWaitMs = 0L
-
-        while (!socketFile.exists()) {
-            log.info { "Waiting for socket file to be created: $socketPath" }
-            Thread.sleep(connectWaitDelayMs)
-            totalWaitMs += connectWaitDelayMs
-            if (totalWaitMs > connectTimeoutMs) {
-                throw IllegalStateException(
-                    "Socket file $socketPath not created after $connectTimeoutMs ms",
-                )
-            }
-        }
-        log.info { "Socket file $socketPath created" }
-
         val address = UnixDomainSocketAddress.of(socketFile.toPath())
-        val openedSocket = SocketChannel.open(StandardProtocolFamily.UNIX)
+        val start = TimeSource.Monotonic.markNow()
+        var lastFailure: SocketException? = null
 
-        log.info { "Socket file $socketPath opened" }
+        do {
+            if (socketFile.exists()) {
+                log.info { "Socket file $socketPath created" }
+                try {
+                    val openedSocket = SocketChannel.open(StandardProtocolFamily.UNIX)
+                    try {
+                        log.info { "Socket file $socketPath opened" }
+                        check(openedSocket.connect(address)) {
+                            "Failed to connect to socket $socketPath"
+                        }
 
-        if (!openedSocket.connect(address)) {
-            throw IllegalStateException("Failed to connect to socket $socketPath")
-        }
+                        // Dockerized destination tests use this exact message as a readiness
+                        // signal.
+                        log.info { "Socket file $socketPath connected for reading" }
 
-        // HACK: The dockerized destination tests uses this exact message
-        // as a signal that it's safe to create the TCP connection to the
-        // socat sidecar that feeds data into the socket. Removing it
-        // will break tests. TODO: Anything else.
-        log.info { "Socket file $socketPath connected for reading" }
+                        return Channels.newInputStream(openedSocket).buffered(bufferSizeBytes)
+                    } catch (e: Exception) {
+                        openedSocket.close()
+                        throw e
+                    }
+                } catch (e: SocketException) {
+                    if (e !is ConnectException && socketFile.exists()) {
+                        throw e
+                    }
+                    lastFailure = e
+                    log.info { "Socket file $socketPath is not ready for reading; retrying" }
+                }
+            } else {
+                log.info { "Waiting for socket file to be created: $socketPath" }
+            }
 
-        return Channels.newInputStream(openedSocket).buffered(bufferSizeBytes)
+            val remainingMs = connectTimeoutMs - start.elapsedNow().inWholeMilliseconds
+            if (remainingMs <= 0) {
+                break
+            }
+            Thread.sleep(minOf(connectWaitDelayMs, remainingMs))
+        } while (start.elapsedNow().inWholeMilliseconds < connectTimeoutMs)
+
+        throw IllegalStateException(
+            "Socket $socketPath not ready for reading after $connectTimeoutMs ms",
+            lastFailure,
+        )
     }
 }
