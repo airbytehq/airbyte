@@ -260,8 +260,7 @@ class TestBaseInsightsStream:
                 assert next(resumed._generate_async_jobs(params={}, account_id=account_id)).interval.start == first_date
 
         assert [(interval.start, interval.end) for interval in requested_intervals] == [
-            (first_date + timedelta(days=offset), first_date + timedelta(days=offset))
-            for offset in range((end_date - first_date).days + 1)
+            (first_date + timedelta(days=offset), first_date + timedelta(days=offset)) for offset in range((end_date - first_date).days + 1)
         ]
         assert stream.state[account_id] == {"date_start": end_date.isoformat(), "slices": []}
 
