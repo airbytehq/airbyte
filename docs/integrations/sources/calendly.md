@@ -136,6 +136,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.4.2 | 2026-11-10 | [91376](https://github.com/airbytehq/airbyte/pull/91376) | Update dependencies |
 | 0.4.1 | 2026-11-09 | [91293](https://github.com/airbytehq/airbyte/pull/91293) | Fix syncs that failed on `routing_forms` and `routing_form_submissions` below the Calendly Teams plan, and on `group_relationships` in organizations without groups |
 | 0.4.0 | 2026-11-04 | [90848](https://github.com/airbytehq/airbyte/pull/90848) | Add routing forms and submissions, contacts, outgoing communications, activity logs and meeting recaps streams; they need the new `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read` scopes |
 | 0.3.0 | 2026-11-04 | [90847](https://github.com/airbytehq/airbyte/pull/90847) | Add teams, event type memberships, group relationships, user availability schedules, locations, organization invitations and webhook subscriptions streams; user availability schedules, locations and webhook subscriptions need the new `availability:read`, `locations:read` and `webhooks:read` scopes |
