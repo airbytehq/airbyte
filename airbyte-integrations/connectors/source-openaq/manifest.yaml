@@ -132,28 +132,26 @@ definitions:
           path: locations
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 2
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    failure_type: config_error
-                    http_codes:
-                      - 422
-                    error_message: >-
-                      OpenAQ rejected the configured Countries value. Use numeric
-                      OpenAQ country IDs (e.g. 155 for the United States), not
-                      ISO country codes such as "FR". Look up IDs at
-                      https://docs.openaq.org/resources/countries
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
+            type: DefaultErrorHandler
+            max_retries: 2
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 422
+                error_message: >-
+                  OpenAQ rejected the configured Countries value. Use numeric
+                  OpenAQ country IDs (e.g. 155 for the United States), not
+                  ISO country codes such as "FR". Look up IDs at
+                  https://docs.openaq.org/resources/countries
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 500
         record_selector:
           type: RecordSelector
           extractor:
@@ -361,18 +359,16 @@ definitions:
           path: locations/{{ stream_partition.location_id }}/sensors
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
+            type: DefaultErrorHandler
+            max_retries: 10
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 500
         record_selector:
           type: RecordSelector
           extractor:
@@ -557,19 +553,17 @@ definitions:
           path: sensors/{{ stream_partition.sensor_id }}/days
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: SUCCESS
-                    http_codes:
-                      - 500
-                    error_message: Internal Server Error
+            type: DefaultErrorHandler
+            max_retries: 10
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 10
+            response_filters:
+              - type: HttpResponseFilter
+                action: SUCCESS
+                http_codes:
+                  - 500
+                error_message: Internal Server Error
         record_selector:
           type: RecordSelector
           extractor:
