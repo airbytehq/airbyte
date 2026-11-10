@@ -1,9 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import json
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
+import pytest
+
+from airbyte_cdk.models import AirbyteStateMessageSerializer, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -16,6 +19,69 @@ state_test_records = [
     {"id": "2", "last_edited_time": "2022-01-03T00:00:00.000Z"},
     {"id": "3", "last_edited_time": "2022-01-04T00:00:00.000Z"},
 ]
+
+
+@pytest.mark.parametrize("sync_mode", ["incremental", "full_refresh"])
+@pytest.mark.parametrize("changed", [False, True])
+def test_blocks_state_round_trip(requests_mock, sync_mode, changed):
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["incremental", "full_refresh"]},
+                    "sync_mode": sync_mode,
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+
+    def block(block_id, edited, has_children=False):
+        return {
+            "object": "block",
+            "id": block_id,
+            "type": "paragraph",
+            "last_edited_time": edited,
+            "has_children": has_children,
+            "parent": {"type": "page_id", "page_id": "page-1"},
+        }
+
+    old = "2022-01-02T00:00:00.000Z"
+    boundary = "2022-01-04T00:00:00.000Z"
+    edited = "2022-01-06T00:00:00.000Z"
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json={
+            "results": [{"object": "page", "id": "page-1", "last_edited_time": "2022-01-07T00:00:00.000Z"}],
+            "has_more": False,
+        },
+    )
+    page_blocks = [block("old-parent", old, True), block("boundary", boundary), block("editable", old)]
+    child_blocks = [block("child-old", old), block("child-boundary", boundary), block("child-editable", old)]
+    requests_mock.get("https://api.notion.com/v1/blocks/page-1/children", json={"results": page_blocks, "has_more": False})
+    requests_mock.get("https://api.notion.com/v1/blocks/old-parent/children", json={"results": child_blocks, "has_more": False})
+    first = read(get_source(config), config=config, catalog=catalog)
+    first.raise_if_errors()
+    all_ids = ["child-old", "child-boundary", "child-editable", "old-parent", "boundary", "editable"]
+    assert [record.record.data["id"] for record in first.records] == all_ids
+    serialized = json.dumps(AirbyteStateMessageSerializer.dump(first.state_messages[-1].state))
+    first_state = json.loads(serialized)["stream"]["stream_state"]
+    assert first_state["state"] == {"last_edited_time": "2022-01-04T00:00:00.000000Z"}
+    assert first_state["use_global_cursor"] is True
+    if changed:
+        page_blocks[-1]["last_edited_time"] = edited
+        child_blocks[-1]["last_edited_time"] = edited
+        requests_mock.get("https://api.notion.com/v1/blocks/page-1/children", json={"results": page_blocks, "has_more": False})
+        requests_mock.get("https://api.notion.com/v1/blocks/old-parent/children", json={"results": child_blocks, "has_more": False})
+    state = [AirbyteStateMessageSerializer.load(json.loads(serialized))]
+    second = read(get_source(config, state), config=config, catalog=catalog, state=state)
+    second.raise_if_errors()
+    expected_ids = ["child-boundary", "child-editable", "boundary", "editable"] if changed else ["child-boundary", "boundary"]
+    assert [record.record.data["id"] for record in second.records] == expected_ids
+    second_state = AirbyteStateMessageSerializer.dump(second.state_messages[-1].state)["stream"]["stream_state"]
+    assert second_state["state"] == {"last_edited_time": "2022-01-06T00:00:00.000000Z" if changed else "2022-01-04T00:00:00.000000Z"}
+    assert second_state["use_global_cursor"] is True
 
 
 def test_blocks_retriever_depth_restored_after_children(components_module):
