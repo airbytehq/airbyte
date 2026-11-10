@@ -33,3 +33,11 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
