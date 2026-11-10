@@ -39,4 +39,12 @@ data:
     - title: Oura authentication
       url: https://cloud.ouraring.com/docs/authentication
       type: authentication_guide
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
