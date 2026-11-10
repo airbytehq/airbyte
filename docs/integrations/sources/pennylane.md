@@ -4,21 +4,59 @@
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `start_time` | `string` | Start time, used for incremental syncs. No records created before that date will be synced.  |  |
-| `api_key` | `string` | Pennylane API key.  |  |
+| `start_time` | `string` | Only records last updated at or after this date are synced. Use an early date to sync the full history.  |  |
+| `api_key` | `string` | Pennylane Company API v2 token with read access to the synced resources.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| `supplier_invoices` | `id` | DefaultPaginator | ✅ |  ✅  |
-| `suppliers` | `source_id` | DefaultPaginator | ✅ |  ✅  |
-| `plan_items` | `number` | DefaultPaginator | ✅ |  ❌  |
-| `customers` | `source_id` | DefaultPaginator | ✅ |  ✅  |
-| `customer_invoices` | `id` | DefaultPaginator | ✅ |  ✅  |
-| `customer_estimates` | `id` | DefaultPaginator | ✅ |  ✅  |
-| `products` | `source_id` | DefaultPaginator | ✅ |  ✅  |
-| `category_groups` | `id` | DefaultPaginator | ✅ |  ✅  |
-| `categories` | `source_id` | DefaultPaginator | ✅ |  ✅  |
+| `customer_invoices` | `id` | Cursor | ✅ | ✅ |
+| `supplier_invoices` | `id` | Cursor | ✅ | ✅ |
+| `customers` | `id` | Cursor | ✅ | ✅ |
+| `suppliers` | `id` | Cursor | ✅ | ✅ |
+| `products` | `id` | Cursor | ✅ | ✅ |
+| `categories` | `id` | Cursor | ✅ | ✅ |
+| `category_groups` | `id` | Cursor | ✅ | ✅ |
+| `quotes` | `id` | Cursor | ✅ | ✅ |
+| `ledger_accounts` | `id` | Cursor | ✅ | ✅ |
+| `customer_invoice_lines` | `customer_invoice_id`, `id` | Cursor | ✅ | ✅ |
+| `customer_invoice_categories` | `customer_invoice_id`, `id` | Cursor | ✅ | ✅ |
+| `customer_invoice_matched_transactions` | `customer_invoice_id`, `id` | Cursor | ✅ | ✅ |
+| `customer_invoice_payments` | `customer_invoice_id`, `id` | Cursor | ✅ | ✅ |
+| `supplier_invoice_lines` | `supplier_invoice_id`, `id` | Cursor | ✅ | ✅ |
+| `supplier_invoice_categories` | `supplier_invoice_id`, `id` | Cursor | ✅ | ✅ |
+| `supplier_invoice_matched_transactions` | `supplier_invoice_id`, `id` | Cursor | ✅ | ✅ |
+| `supplier_invoice_payments` | `supplier_invoice_id`, `id` | Cursor | ✅ | ✅ |
+| `fiscal_years` | `id` | Cursor | ✅ | ✅ |
+| `ledger_entries` | `id` | Cursor | ✅ | ✅ |
+| `ledger_entry_lines` | `id` | Cursor | ✅ | ✅ |
+| `transactions` | `id` | Cursor | ✅ | ✅ |
+| `bank_accounts` | `id` | Cursor | ✅ | ✅ |
+| `billing_subscriptions` | `id` | Cursor | ✅ | ✅ |
+| `purchase_requests` | `id` | Cursor | ✅ | ✅ |
+| `billing_subscription_lines` | `billing_subscription_id`, `id` | Cursor | ✅ | ✅ |
+| `journals` | `id` | Cursor | ✅ | ❌ |
+| `trial_balance` | `fiscal_year_id`, `number` | Cursor | ✅ | ❌ |
+
+This connector uses the [Pennylane Company API v2](https://pennylane.readme.io/). Coming from a version before 1.0.0? Read the [migration guide](pennylane-migrations.md).
+
+### Incremental syncs
+
+API v2 cannot filter on `updated_at`, so the connector lists every record of a stream and keeps those updated since the last sync. Nested invoice and subscription streams are read only for parents that changed, using `invoice_updated_at` or `subscription_updated_at` as their cursor. `journals` has no update timestamp and `trial_balance` is a computed snapshot, so both are always fully read.
+
+Incremental syncs have these limits:
+
+- A sync ignores records updated in the 5 minutes before it started or while it runs, and the next sync picks them up. This stops a change made during a long read from being skipped.
+- Records deleted in Pennylane stay in the destination. Archived records are returned with `archived_at` set.
+- A nested record removed from an invoice stays in the destination.
+- Time-based status changes do not update `updated_at`. For example, a customer invoice can move from `upcoming` to `late` without being picked up, so compute lateness from `deadline`.
+- If a change to a nested record does not update its invoice's `updated_at`, the incremental sync does not pick it up. Editing an invoice line or changing its category does update it. For matched transactions and payments, use Full Refresh if you need to be certain of catching every change.
+
+### Sync duration
+
+The nested streams need one API call per invoice, and the API allows 25 requests per 5 seconds. Select only the nested streams you need, as the first sync can take a long time on accounts with many invoices.
+
+`trial_balance` returns one snapshot per fiscal year, covering the whole year.
 
 ## IP allow list
 
@@ -31,6 +69,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 1.0.0 | 2026-11-06 | [91193](https://github.com/airbytehq/airbyte/pull/91193) | Migrate to Pennylane API v2, add nested invoice streams and accounting streams, and replace `plan_items` and `customer_estimates`. |
 | 0.3.52 | 2026-11-03 | [90689](https://github.com/airbytehq/airbyte/pull/90689) | Update dependencies |
 | 0.3.51 | 2026-10-27 | [90031](https://github.com/airbytehq/airbyte/pull/90031) | Update dependencies |
 | 0.3.50 | 2026-10-20 | [89272](https://github.com/airbytehq/airbyte/pull/89272) | Update dependencies |
