@@ -45,7 +45,7 @@ def test_check_rejects_invalid_token():
         (401, "organization_deactivated", "Contact Pylon support"),
         (401, "organization_suspended", "Contact Pylon support"),
         (401, "unrecognized_code", "update the token in your Airbyte source settings"),
-        (403, "permission_denied", "The API token's role is not allowed to read"),
+        (403, "permission_denied", "The API token's role is not allowed to read https://api.usepylon.com/tags"),
     ],
 )
 @freeze_time(NOW)
