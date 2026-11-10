@@ -15,6 +15,28 @@ definitions:
         predicate: "{{ response.get('error', {}).get('type') == 'missing_feature' }}"
         action: IGNORE
         error_message: "Skipping feature-gated Recurly stream because this site lacks the required feature: {{ response.get('error', {}).get('message', '') }}"
+      - type: HttpResponseFilter
+        http_codes:
+          - 401
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Recurly rejected the API key (HTTP 401). In Recurly, open
+          Integrations > API Credentials, copy an active private API key for
+          this site, and paste it into the API Key field of this source.
+      - type: HttpResponseFilter
+        http_codes:
+          - 403
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Recurly denied access (HTTP 403). Use a private API key from the site
+          you want to sync, and make sure the key is enabled and allowed to
+          read data in Recurly under Integrations > API Credentials.
+    max_retries: 5
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 5
   streams:
     accounts:
       type: DeclarativeStream
