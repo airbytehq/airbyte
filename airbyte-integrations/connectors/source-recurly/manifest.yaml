@@ -1228,8 +1228,6 @@ definitions:
       type: DefaultErrorHandler
       max_retries: 5
       backoff_strategies:
-        - type: WaitUntilTimeFromHeader
-          header: X-RateLimit-Reset
         - type: ExponentialBackoffStrategy
           factor: 5
       response_filters:
@@ -1324,7 +1322,6 @@ spec:
         - 3
         description: >-
           The number of requests the connector sends to Recurly in parallel.
-          Values below 2 run with 2 workers.
       accounts_step_days:
         type: integer
         title: Days in length for each API call to get data
@@ -1451,7 +1448,7 @@ metadata:
 # In order to provide a fast response time to all our customers, we may rate limit excessive requests. By default, new Recurly sites have the following API rate limits:
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ [config.get('num_workers', 10) | int, 2] | max }}"
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
   max_concurrency: 20
 
 api_budget:

@@ -6,7 +6,7 @@ from freezegun import freeze_time
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
-from mock_server.helpers import NOW, START, list_request, page, page_request, record, run
+from mock_server.helpers import CONFIG, NOW, START, list_request, page, page_request, record, run
 
 
 STREAMS = ("add_ons", "credit_payments", "plans", "shipping_methods")
@@ -62,3 +62,13 @@ def test_incremental_with_state_resumes_from_saved_cursor(stream):
         mocker.assert_number_of_calls(request, 1)
     assert [message.record.data["id"] for message in output.records] == [f"{stream}-3"]
     assert output.most_recent_state.stream_state.__dict__["updated_at"] == "2026-01-12T00:00:00Z"
+
+
+@freeze_time(NOW)
+def test_single_worker_config_reads_all_pages():
+    with HttpMocker() as mocker:
+        mocker.get(list_request("plans"), page([record("plan-1", "2026-01-02T00:00:00Z")], next_path="/plans?cursor=page-2&limit=200"))
+        mocker.get(page_request("plans", "page-2"), page([record("plan-2", "2026-01-03T00:00:00Z")]))
+        output = run("plans", cfg={**CONFIG, "num_workers": 1})
+    assert [message.record.data["id"] for message in output.records] == ["plan-1", "plan-2"]
+    assert output.errors == []

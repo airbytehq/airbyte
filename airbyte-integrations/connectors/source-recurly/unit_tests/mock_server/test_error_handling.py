@@ -29,30 +29,34 @@ def test_auth_failures_are_actionable_config_errors(status, error_type, expected
     assert any(failure.failure_type == FailureType.config_error and expected in failure.message for failure in failures)
 
 
-def test_rate_limited_request_waits_until_the_reset_header_then_retries():
-    reset_epoch = 1768435260  # 2026-01-15T00:01:00Z, 60 seconds after NOW
-    with freeze_time(NOW) as clock, HttpMocker() as mocker, patch("time.sleep", side_effect=lambda seconds: clock.tick(seconds)) as sleep:
+RATE_LIMIT_HEADERS = {"X-RateLimit-Limit": "5000", "X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1768435500"}  # NOW + 300 s
+
+
+@freeze_time(NOW)
+def test_rate_limited_request_retries_with_exponential_backoff_then_succeeds():
+    with HttpMocker() as mocker, patch("time.sleep") as sleep:
         request = list_request("plans")
-        mocker.get(
-            request,
-            [
-                error(429, "rate_limited", headers={"X-RateLimit-Reset": str(reset_epoch), "X-RateLimit-Remaining": "0"}),
-                page([record("plan-1", "2026-01-02T00:00:00Z")]),
-            ],
-        )
+        mocker.get(request, [error(429, "rate_limited", headers=RATE_LIMIT_HEADERS), page([record("plan-1", "2026-01-02T00:00:00Z")])])
         output = run("plans")
         mocker.assert_number_of_calls(request, 2)
     assert [message.record.data["id"] for message in output.records] == ["plan-1"]
     assert output.errors == []
     waits = [call.args[0] for call in sleep.call_args_list if call.args and call.args[0]]
-    assert waits[0] == 61.0, waits
+    assert waits == [11.0], waits
 
 
 @freeze_time(NOW)
-def test_server_errors_retry_with_exponential_backoff_then_succeed():
+def test_server_errors_retry_with_exponential_backoff_even_when_rate_limit_headers_are_present():
     with HttpMocker() as mocker, patch("time.sleep") as sleep:
         request = list_request("plans")
-        mocker.get(request, [error(503, "unavailable"), error(503, "unavailable"), page([record("plan-1", "2026-01-02T00:00:00Z")])])
+        mocker.get(
+            request,
+            [
+                error(503, "unavailable", headers=RATE_LIMIT_HEADERS),
+                error(503, "unavailable", headers=RATE_LIMIT_HEADERS),
+                page([record("plan-1", "2026-01-02T00:00:00Z")]),
+            ],
+        )
         output = run("plans")
         mocker.assert_number_of_calls(request, 3)
     assert [message.record.data["id"] for message in output.records] == ["plan-1"]
