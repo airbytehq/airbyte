@@ -319,8 +319,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
-|:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------------ | :----------- | :--------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 3.0.23 | 2026-11-10 | [91310](https://github.com/airbytehq/airbyte/pull/91310) | Declare the refreshed `access_token` and `token_expiry_date` as hidden spec fields so the access token is masked |
 | 3.0.22 | 2026-11-10 | [91361](https://github.com/airbytehq/airbyte/pull/91361) | Update dependencies |
 | 3.0.21 | 2026-11-03 | [88968](https://github.com/airbytehq/airbyte/pull/88968) | Add actionable messages for Microsoft Entra refresh token errors |
