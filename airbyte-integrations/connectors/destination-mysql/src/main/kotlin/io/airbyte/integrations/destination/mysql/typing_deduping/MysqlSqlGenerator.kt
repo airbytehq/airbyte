@@ -414,16 +414,13 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
     }
 
     /**
-     * Turns a JSON scalar into its unquoted text form without a length limit. JSON null, a missing
-     * key and non-scalar values (objects, arrays) become SQL NULL, as they did with JSON_VALUE.
-     * Works on MySQL and MariaDB.
+     * Turns a JSON value into text without a length limit. JSON null and a missing key become SQL
+     * NULL. Objects and arrays are returned as their JSON text, as they were with JSON_VALUE. Works
+     * on MySQL and MariaDB.
      */
     private fun unquoteScalar(json: Field<*>): Field<String> {
         return DSL.case_()
-            .`when`(
-                jsonTypeof(json).`in`("NULL", "OBJECT", "ARRAY"),
-                DSL.inline(null as String?),
-            )
+            .`when`(jsonTypeof(json).eq("NULL"), DSL.inline(null as String?))
             .else_(DSL.function("JSON_UNQUOTE", SQLDataType.LONGVARCHAR, json))
     }
 
