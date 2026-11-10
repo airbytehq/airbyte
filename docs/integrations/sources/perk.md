@@ -32,6 +32,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2026-11-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update dependencies |
 | 0.0.1 | 2026-02-16 | | Initial release by [@claudiangr](https://github.com/claudiangr) via Connector Builder |
 
 </details>
