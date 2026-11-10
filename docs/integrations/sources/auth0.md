@@ -64,7 +64,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
-| 0.6.3 | 2026-11-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade base image to `source-declarative-manifest:7.47.0` |
+| 0.6.3 | 2026-11-09 | [91326](https://github.com/airbytehq/airbyte/pull/91326) | Upgrade base image to `source-declarative-manifest:7.47.0` |
 | 0.6.2 | 2024-10-29 | [47807](https://github.com/airbytehq/airbyte/pull/47807) | Update dependencies |
 | 0.6.1 | 2024-10-28 | [47624](https://github.com/airbytehq/airbyte/pull/47624) | Update dependencies |
 | 0.6.0 | 2024-08-23 | [44590](https://github.com/airbytehq/airbyte/pull/44590) | Refactor connector to manifest-only format |
