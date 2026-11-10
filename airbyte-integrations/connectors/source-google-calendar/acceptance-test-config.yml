@@ -8,7 +8,7 @@ acceptance_tests:
         # The credentials spec was restructured under `credentials` in 1.1.0;
         # legacy flat configs are migrated at runtime by config_normalization_rules.
         backward_compatibility_tests_config:
-          disable_for_version: "1.1.0"
+          disable_for_version: "1.0.1"
   connection:
     tests:
       - config_path: "secrets/config.json"
