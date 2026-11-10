@@ -59,7 +59,11 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 The `account_balances` stream makes one API request per account. On large sites, it can take a long time and consume a substantial portion of Recurly's API rate limit. Enable this stream only when you need account balances.
 
-The Recurly connector should not run into Recurly API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The `usage_records` stream reads every subscription on every sync, then makes one API request per subscription add-on. On large sites, it can be slow and consume a substantial portion of Recurly's API quota. Enable this stream only when you need usage records.
+
+Connections configured to propagate all stream changes automatically select new streams after a schema refresh. Review your stream selection to avoid enabling these high-cost streams unintentionally.
+
+API quota usage depends on the selected streams and site size, especially for `account_balances` and `usage_records`. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
 
@@ -85,7 +89,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
-| 1.4.0 | 2026-11-09 | [91305](https://github.com/airbytehq/airbyte/pull/91305) | Add account_acquisitions, account_balances, gift_cards, external_subscriptions, external_subscription_payment_phases, usage_records and items streams |
+| 1.4.0 | 2026-11-10 | [91305](https://github.com/airbytehq/airbyte/pull/91305) | Add account_acquisitions, account_balances, gift_cards, external_subscriptions, external_subscription_payment_phases, usage_records and items streams |
 | 1.3.70 | 2026-11-10 | [91708](https://github.com/airbytehq/airbyte/pull/91708) | Update dependencies |
 | 1.3.69 | 2026-11-03 | [90721](https://github.com/airbytehq/airbyte/pull/90721) | Update dependencies |
 | 1.3.68 | 2026-10-20 | [89408](https://github.com/airbytehq/airbyte/pull/89408) | Update dependencies |
