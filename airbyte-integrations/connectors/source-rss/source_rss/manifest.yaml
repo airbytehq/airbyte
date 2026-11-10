@@ -37,7 +37,16 @@ definitions:
       schema:
         $ref: "#/definitions/items_schema"
     $parameters:
-      path: "/"
+      # The full feed URL (including any query string) is provided via
+      # `url_base` on `requester`. Previously this was `/`, which caused
+      # the CDK's `_join_url` to call `urljoin(url_base, "/")`. `urljoin`
+      # treats `/` as an absolute path and resets the URL path to root,
+      # dropping the user's query string entirely (e.g.
+      # `https://example.com/feed/?key=abc` → `https://example.com/`).
+      # An empty string makes `_join_url` return `url_base` unchanged.
+      # See airbytehq/airbyte#76196 and the `_join_url` docstring in
+      # airbytehq/airbyte-python-cdk's http_requester.py.
+      path: ""
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: published
