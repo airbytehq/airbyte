@@ -4,10 +4,10 @@ from datetime import date, datetime
 
 import pytest
 from freezegun import freeze_time
-
-from airbyte_cdk.models import SyncMode
 from source_facebook_marketing.streams import AdsInsights
 from source_facebook_marketing.streams.async_job import InsightAsyncJob
+
+from airbyte_cdk.models import SyncMode
 
 
 @freeze_time("2026-04-01")
