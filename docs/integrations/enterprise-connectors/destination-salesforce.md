@@ -211,7 +211,6 @@ Airbyte manages the client ID and client secret. Authenticate through the Airbyt
 | :--- | :--- | :--- | :--- |
 | 0.0.8 | 2025-09-26 | [240](https://github.com/airbytehq/airbyte-enterprise/pull/240) | Pin Salesforce connector dependencies. |
 | 0.0.7 | 2025-09-15 | [226](https://github.com/airbytehq/airbyte-enterprise/pull/226) | Use a declarative specification. |
-
-- 0.0.6
+| 0.0.6 | 2025-07-30 | [209](https://github.com/airbytehq/airbyte-enterprise/pull/209) | Remove mandatory fields and fix discovery. |
 
 </details>
