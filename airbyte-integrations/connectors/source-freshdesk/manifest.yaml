@@ -905,6 +905,13 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/sla_policies"
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('id') is not none }}"
+          fields:
+            - path:
+                - id
+              value: "{{ record.get('id') | int }}"
     solution_articles:
       type: DeclarativeStream
       name: solution_articles
