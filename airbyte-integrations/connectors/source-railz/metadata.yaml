@@ -46,4 +46,12 @@ data:
     - title: Railz API documentation
       url: https://docs.railz.ai/
       type: api_reference
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
