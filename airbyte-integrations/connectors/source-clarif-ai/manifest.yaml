@@ -12,6 +12,15 @@ check:
     - applications
 
 definitions:
+  normalize_modified_at:
+    type: AddFields
+    condition: "{{ record.get('modified_at') }}"
+    fields:
+      - path:
+          - modified_at
+        value: >-
+          {{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
+             if record.get('modified_at') else record.get('modified_at') }}
   streams:
     applications:
       type: DeclarativeStream
@@ -75,6 +84,8 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/applications"
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
     datasets:
       type: DeclarativeStream
       name: datasets
@@ -146,6 +157,8 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/datasets"
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
     models:
       type: DeclarativeStream
       name: models
@@ -216,6 +229,8 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/models"
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
     model_versions:
       type: DeclarativeStream
       name: model_versions

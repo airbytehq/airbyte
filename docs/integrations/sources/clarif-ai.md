@@ -15,14 +15,20 @@ API Documentation: https://docs.clarifai.com/api-guide/api-overview/helpful-api-
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| applications | id | DefaultPaginator | ✅ |   ❌  |
-| datasets | id | DefaultPaginator | ✅ |   ❌  |
-| models | id | DefaultPaginator | ✅ |   ❌  |
+| applications | id | DefaultPaginator | ✅ |   ✅  |
+| datasets | id | DefaultPaginator | ✅ |   ✅  |
+| models | id | DefaultPaginator | ✅ |   ✅  |
 | model_versions | id | DefaultPaginator | ✅ |   ❌  |
 | worklows | id | DefaultPaginator | ✅ |   ❌  |
 | app_inputs | id | DefaultPaginator | ✅ |   ❌  |
 | app_inputs_jobs | id | DefaultPaginator | ✅ |   ❌ |
 | app_concepts | id | DefaultPaginator | ✅ |   ❌  |
+
+## Incremental sync behavior
+
+The `applications`, `datasets`, and `models` streams checkpoint the latest `modified_at` value received. Timestamps are normalized to UTC microsecond precision, truncating any finer fractional digits. Dataset and model checkpoints are tracked separately for each application.
+
+These list endpoints still enumerate all records on subsequent syncs; advancing the checkpoint does not reduce the records read from the API.
 
 ## IP allow list
 
@@ -35,6 +41,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.78 | 2026-11-10 | | Fixed incremental checkpoints for applications, datasets, and models when timestamps contain nanoseconds. |
 | 0.0.77 | 2026-11-10 | [91461](https://github.com/airbytehq/airbyte/pull/91461) | Update dependencies |
 | 0.0.76 | 2026-11-04 | [90341](https://github.com/airbytehq/airbyte/pull/90341) | Simplify error handler configuration with no behavior change |
 | 0.0.75 | 2026-11-03 | [90511](https://github.com/airbytehq/airbyte/pull/90511) | Update dependencies |
