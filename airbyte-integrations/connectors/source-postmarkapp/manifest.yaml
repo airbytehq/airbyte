@@ -20,8 +20,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /deliverystats
           http_method: GET
-          request_parameters:
-            count: "500"
           request_body_json:
             Accept: application/json
         record_selector:
@@ -38,11 +36,12 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            field_name: offset
+            field_name: count
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 500
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -58,8 +57,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /message-streams
           http_method: GET
-          request_parameters:
-            count: "500"
           request_body_json:
             Accept: application/json
         record_selector:
@@ -76,11 +73,12 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            field_name: offset
+            field_name: count
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 500
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -96,8 +94,6 @@ definitions:
           $ref: "#/definitions/account_base_requester"
           path: /domains
           http_method: GET
-          request_parameters:
-            count: "500"
           request_body_json:
             Accept: application/json
         record_selector:
@@ -114,11 +110,12 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            field_name: offset
+            field_name: count
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 500
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -134,8 +131,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /messages/outbound
           http_method: GET
-          request_parameters:
-            count: "500"
           request_body_json:
             Accept: application/json
         record_selector:
@@ -152,11 +147,12 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            field_name: offset
+            field_name: count
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 500
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -172,8 +168,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /bounces
           http_method: GET
-          request_parameters:
-            count: "500"
           request_body_json:
             Accept: application/json
         record_selector:
@@ -190,11 +184,12 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            field_name: offset
+            field_name: count
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 500
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -210,8 +205,6 @@ definitions:
           $ref: "#/definitions/account_base_requester"
           path: /servers
           http_method: GET
-          request_parameters:
-            count: "500"
           request_body_json:
             Accept: application/json
         record_selector:
@@ -228,11 +221,12 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            field_name: offset
+            field_name: count
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 500
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
