@@ -111,10 +111,6 @@ Log into the email you used in the preceding steps and verify your new Salesforc
 
 ### Step 2: Set up the Salesforce connector in Airbyte
 
-<!-- env:cloud -->
-
-#### For Airbyte Cloud
-
 Airbyte always uses its own Salesforce OAuth app and ignores any client ID or client secret you supply. Contact [Airbyte support](https://support.airbyte.com) if you need to use your own app. Syncs run as the Salesforce user who authenticates the destination.
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account
@@ -125,8 +121,6 @@ Airbyte always uses its own Salesforce OAuth app and ignores any client ID or cl
    - **Is Sandbox**: First, toggle this setting based on your Salesforce environment (sandbox or production). **Note**: Changing this setting requires redoing authentication.
    - Click **Authenticate your account** and log in to Salesforce as the integration user.
 6. Click **Set up destination** and wait for the connection test to complete
-
-<!-- /env:cloud -->
 
 ## Configuration
 
