@@ -260,6 +260,36 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @freeze_time("2023-01-10")
+    @pytest.mark.parametrize("state_format", ["legacy", "nested", "multiple_accounts"])
+    def test_lookback_cursor_waits_for_gaps(self, mocker, api, state_format: str) -> None:
+        account_ids = ["account_1", "account_2"] if state_format == "multiple_accounts" else ["account_1"]
+        stream = AdsInsights(
+            api=api,
+            account_ids=account_ids,
+            start_date=datetime(2023, 1, 1),
+            end_date=datetime(2023, 1, 6),
+            insights_lookback_window=2,
+        )
+        account_state = {"date_start": "2023-01-05", "slices": ["2023-01-06"]}
+        state = {"account_1": account_state, "time_increment": 1}
+        if state_format == "legacy":
+            state = {**account_state, "time_increment": 1}
+        elif state_format == "multiple_accounts":
+            state["account_2"] = {"date_start": "2023-01-06", "slices": []}
+        stream.state = state
+
+        job = mocker.Mock(spec=AsyncJob)
+        job.get_result.return_value = []
+        for day in (3, 4, 5):
+            job.interval = DateInterval(date(2023, 1, day), date(2023, 1, day))
+            assert list(stream.read_records(SyncMode.incremental, stream_slice={"insight_job": job, "account_id": "account_1"})) == []
+            assert stream.state["account_1"] == (
+                {"date_start": "2023-01-06", "slices": []} if day == 5 else {"date_start": "2023-01-05", "slices": ["2023-01-06"]}
+            )
+            if state_format == "multiple_accounts":
+                assert stream.state["account_2"] == {"date_start": "2023-01-06", "slices": []}
+
     def test_read_records_add_account_id(self, mocker, api, some_config):
         rec_without_account = mocker.Mock()
         rec_without_account.export_all_data.return_value = {}
