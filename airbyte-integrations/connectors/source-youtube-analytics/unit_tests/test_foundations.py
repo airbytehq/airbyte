@@ -294,6 +294,34 @@ def test_expired_refresh_token_tells_the_user_to_re_authenticate(config):
     assert "Refresh token is invalid or expired" in status.message
 
 
+@pytest.mark.parametrize("csv", ["date,channel_id,views\n", "date,channel_id,views\n20261001,channel-1,3\n"])
+def test_check_downloads_a_supported_report_when_retired_annotations_have_no_reports(config, csv):
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        mocker.get(
+            f"{_API}/jobs",
+            json={
+                "jobs": [
+                    {"id": "retired-annotations-job", "reportTypeId": "channel_annotations_a1"},
+                    {"id": _JOB_ID, "reportTypeId": _STREAM},
+                ]
+            },
+        )
+        mocker.get(f"{_API}/jobs/retired-annotations-job/reports", json={})
+        mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-01T00:00:00Z")]})
+        mocker.get(_download_url("r1"), text=csv)
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+        reporting_requests = [request for request in mocker.request_history if request.hostname == "youtubereporting.googleapis.com"]
+
+    assert status.status == Status.SUCCEEDED, status.message
+    assert [(request.method, request.path, request.qs) for request in reporting_requests] == [
+        ("GET", "/v1/jobs", {}),
+        ("GET", f"/v1/jobs/{_JOB_ID}/reports", {"createdafter": ["1990-01-01t00:00:00.000000z"]}),
+        ("GET", "/v1/media/channel/r1", {"alt": ["media"]}),
+    ]
+
+
 @pytest.mark.parametrize("stream", _EMPTY_STREAMS)
 def test_empty_stream_with_header_only_report_reads_cleanly(config, stream):
     """These streams have no rows for the CI channel; a header-only report file yields no records and no error."""
