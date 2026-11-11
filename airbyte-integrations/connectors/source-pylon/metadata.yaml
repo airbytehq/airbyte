@@ -65,7 +65,7 @@ data:
     breakingChanges:
       1.0.0:
         message: "Tags on accounts and issues are now arrays of strings instead of objects; typed destinations previously nulled these tags. Eight timestamp fields are now typed as date-time. Refresh the source schema after upgrading. See the migration guide: https://docs.airbyte.com/integrations/sources/pylon-migrations#upgrading-to-100"
-        upgradeDeadline: "2026-12-07"
+        upgradeDeadline: "2026-12-03"
         deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream
