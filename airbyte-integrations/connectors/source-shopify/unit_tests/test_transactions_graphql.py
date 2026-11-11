@@ -6,10 +6,15 @@ import json
 from typing import List
 
 import pytest
+from freezegun import freeze_time
+from source_shopify import SourceShopify
+from source_shopify.scopes import SCOPES_MAPPING
 from source_shopify.streams.streams import TransactionsGraphql
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 
 def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
@@ -26,6 +31,90 @@ def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, tran
         f'"amountSet":{{"shop_money":{{"amount":"57.23","currency":"USD"}}}},"fees":[],"paymentDetails":{{}}'
         f"}}]}}"
     )
+
+
+@pytest.mark.parametrize(
+    "lookback_days,order_updated_at,lower_bound",
+    [
+        (0, "2026-10-22T15:12:00Z", "2026-10-22T14:59:10+00:00"),
+        (0, "2026-10-22T14:59:10Z", "2026-10-22T14:59:10+00:00"),
+        (1, "2026-10-22T14:58:00Z", "2026-10-21T14:59:10+00:00"),
+    ],
+)
+def test_transactions_graphql_emits_refund_status_updates(
+    requests_mock,
+    bulk_successful_response,
+    bulk_job_completed_response,
+    auth_config,
+    lookback_days: int,
+    order_updated_at: str,
+    lower_bound: str,
+) -> None:
+    config = {**auth_config, "start_date": "2026-10-21", "lookback_window_in_days": lookback_days}
+    stream = TransactionsGraphql(config)
+    requests_mock.get(f"{stream.url_base}shop.json", json={"shop": {"id": 1}})
+    requests_mock.get(
+        "https://test-shop.myshopify.com/admin/oauth/access_scopes.json",
+        json={"access_scopes": [{"handle": scope} for scopes in SCOPES_MAPPING.values() for scope in scopes]},
+    )
+
+    def bulk_response(request, context):
+        if "bulkOperationRunQuery" in request.json()["query"]:
+            return bulk_successful_response
+        return bulk_job_completed_response
+
+    requests_mock.post(stream.job_manager.base_url, json=bulk_response)
+    refund = json.loads(_order_jsonl(1, "2026-10-20T10:00:00Z", 1001, "2026-10-22T13:00:00Z"))
+    refund["order_updated_at"] = "2026-10-22T13:00:00Z"
+    refund["transactions"][0].update(kind="REFUND", status="PENDING")
+    newer_order = json.loads(_order_jsonl(2, "2026-10-22T14:59:10Z", 1002, "2026-10-22T14:59:10Z"))
+    newer_order["order_updated_at"] = "2026-10-22T14:59:10Z"
+    result_url = bulk_job_completed_response["data"]["node"]["url"]
+    requests_mock.get(result_url, text="\n".join(map(json.dumps, [refund, newer_order])) + "\n")
+    catalog = CatalogBuilder().with_stream("transactions", SyncMode.incremental).build()
+    stream_state_cache.cached_state.pop("transactions", None)
+    try:
+        with freeze_time("2026-10-22T15:01:00Z"):
+            first = read(SourceShopify(), config, catalog)
+        assert first.errors == []
+        assert [(message.record.data["id"], message.record.data["status"]) for message in first.records] == [
+            (1001, "PENDING"),
+            (1002, "SUCCESS"),
+        ]
+        assert first.most_recent_state.stream_state.__dict__ == {"created_at": "2026-10-22T14:59:10+00:00"}
+
+        refund["order_updated_at"] = order_updated_at
+        refund["transactions"][0]["status"] = "SUCCESS"
+        requests_mock.get(result_url, text="\n".join(map(json.dumps, [refund, newer_order])) + "\n")
+        with freeze_time("2026-10-22T16:01:00Z"):
+            second = read(SourceShopify(), config, catalog, state=[first.state_messages[-1].state])
+        assert second.errors == []
+        assert [(message.record.data["id"], message.record.data["status"]) for message in second.records] == [
+            (1001, "SUCCESS"),
+            (1002, "SUCCESS"),
+        ]
+        assert second.most_recent_state.stream_state == first.most_recent_state.stream_state
+        assert all(
+            "order_created_at" not in message.record.data and "order_updated_at" not in message.record.data
+            for message in first.records + second.records
+        )
+        job_requests = [
+            request
+            for request in requests_mock.request_history
+            if request.method == "POST" and "bulkOperationRunQuery" in request.json()["query"]
+        ]
+        assert len(job_requests) == 2
+        for request, start, end in zip(
+            job_requests,
+            ["2026-10-21T00:00:00+00:00", lower_bound],
+            ["2026-10-22T15:01:00+00:00", "2026-10-22T16:01:00+00:00"],
+        ):
+            query = request.json()["query"]
+            assert f"updated_at:>='{start}' AND updated_at:<='{end}'" in query
+            assert "order_updated_at: updatedAt" in query
+            assert request.url == stream.job_manager.base_url
+    finally:
+        stream_state_cache.cached_state.pop("transactions", None)
 
 
 def test_transactions_graphql_emits_transactions_predating_state_with_new_order(
