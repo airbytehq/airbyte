@@ -7,6 +7,7 @@ import logging
 import sys
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
+import pendulum as pdm
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
@@ -442,7 +443,7 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
     def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
         # Existing transactions can change status without changing their creation time.
         order_updated_at = record.get("order_updated_at")
-        if order_updated_at and order_updated_at >= self._apply_lookback_window(state_value):
+        if order_updated_at and pdm.parse(order_updated_at) >= pdm.parse(self._apply_lookback_window(state_value)):
             return True
         order_created_at = record.get("order_created_at")
         return bool(order_created_at) and order_created_at >= state_value

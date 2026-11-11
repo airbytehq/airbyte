@@ -34,11 +34,12 @@ def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, tran
 
 
 @pytest.mark.parametrize(
-    "lookback_days,order_updated_at,lower_bound",
+    "lookback_days,order_updated_at,lower_bound,refund_created_at",
     [
-        (0, "2026-10-22T15:12:00Z", "2026-10-22T14:59:10+00:00"),
-        (0, "2026-10-22T14:59:10Z", "2026-10-22T14:59:10+00:00"),
-        (1, "2026-10-22T14:58:00Z", "2026-10-21T14:59:10+00:00"),
+        (0, "2026-10-22T15:12:00Z", "2026-10-22T14:59:10+00:00", "2026-10-22T13:00:00Z"),
+        (0, "2026-10-22T14:59:10Z", "2026-10-22T14:59:10+00:00", "2026-10-22T13:00:00Z"),
+        (1, "2026-10-22T14:58:00Z", "2026-10-21T14:59:10+00:00", "2026-10-22T13:00:00Z"),
+        (3, "2026-10-21T00:00:00Z", "2026-10-21T00:00:00+00:00", "2026-10-20T13:00:00Z"),
     ],
 )
 def test_transactions_graphql_emits_refund_status_updates(
@@ -49,6 +50,7 @@ def test_transactions_graphql_emits_refund_status_updates(
     lookback_days: int,
     order_updated_at: str,
     lower_bound: str,
+    refund_created_at: str,
 ) -> None:
     config = {**auth_config, "start_date": "2026-10-21", "lookback_window_in_days": lookback_days}
     stream = TransactionsGraphql(config)
@@ -64,8 +66,8 @@ def test_transactions_graphql_emits_refund_status_updates(
         return bulk_job_completed_response
 
     requests_mock.post(stream.job_manager.base_url, json=bulk_response)
-    refund = json.loads(_order_jsonl(1, "2026-10-20T10:00:00Z", 1001, "2026-10-22T13:00:00Z"))
-    refund["order_updated_at"] = "2026-10-22T13:00:00Z"
+    refund = json.loads(_order_jsonl(1, "2026-10-20T10:00:00Z", 1001, refund_created_at))
+    refund["order_updated_at"] = min("2026-10-22T13:00:00Z", order_updated_at)
     refund["transactions"][0].update(kind="REFUND", status="PENDING")
     newer_order = json.loads(_order_jsonl(2, "2026-10-22T14:59:10Z", 1002, "2026-10-22T14:59:10Z"))
     newer_order["order_updated_at"] = "2026-10-22T14:59:10Z"
