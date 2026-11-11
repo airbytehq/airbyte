@@ -1,39 +1,50 @@
-# Aha API
+# Aha
 
-API Documentation link [here](https://www.aha.io/api)
+This page contains the setup guide and reference information for the [Aha!](https://www.aha.io/) source connector. The connector reads data from the [Aha! REST API](https://www.aha.io/api).
 
-## Overview
+## Prerequisites
 
-The Aha API source supports full refresh syncs
+- An Aha! account with access to the data you want to sync
+- An Aha! API key
+- The URL of your Aha! account, for example `https://yourcompany.aha.io`
 
-### Output schema
+## Setup guide
 
-Two output streams are available from this source:
+### Step 1: Generate an Aha! API key
 
-_[features](https://www.aha.io/api/resources/features/list_features).
-_[products](https://www.aha.io/api/resources/products/list_products_in_the_account).
+Generate an API key in Aha! as described in the [Aha! authentication documentation](https://www.aha.io/api#authentication).
 
-### Features
+### Step 2: Set up the connector in Airbyte
+
+1. In Airbyte, create a new source and select **Aha**.
+2. For **API Bearer Token**, enter your Aha! API key.
+3. For **Aha Url Instance**, enter the base URL of your Aha! account, such as `https://yourcompany.aha.io`. Don't include a trailing slash or the `/api/v1` path. The connector appends `/api/v1` to this URL.
+4. Click **Set up source**. Airbyte tests the connection by reading the `products_stream` stream.
+
+## Supported sync modes
 
 | Feature           | Supported? |
 | :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | No         |
 
-### Performance considerations
+## Supported streams
 
-Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting).
+| Stream | Aha! API endpoint | Notes |
+| :----- | :---------------- | :---- |
+| `features_stream` | [List features](https://www.aha.io/api/resources/features/list_features) | |
+| `products_stream` | [List products](https://www.aha.io/api/resources/products/list_products_in_the_account) | |
+| `idea_categories_stream` | `GET /products/{product_id}/idea_categories` | Read once for each product in `products_stream`. |
+| `ideas_stream` | [List ideas](https://www.aha.io/api/resources/ideas/list_ideas) | |
+| `idea_endorsements_stream` | `GET /ideas/{idea_id}/endorsements` | Read once for each idea in `ideas_stream`. |
+| `idea_comments_stream` | `GET /ideas/{idea_id}/idea_comments` | Read once for each idea in `ideas_stream`. |
+| `users_stream` | [List users](https://www.aha.io/api/resources/users/list_users) | |
+| `goals_stream` | [List goals](https://www.aha.io/api/resources/goals/list_goals) | |
 
-## Getting started
+## Limitations
 
-### Requirements
-
-- Aha API Key.
-
-### Connect using `API Key`:
-
-1. Generate an API Key as described [here](https://www.aha.io/api#authentication).
-2. Use the generated `API Key` in the Airbyte connection.
+- The connector requests 5 records per page for every stream. Large accounts require many API requests, and the per-product and per-idea substreams make one or more requests for each parent record, so syncs can take a long time.
+- Aha! allows up to 300 API requests per minute and 20 requests per second. See the [Aha! rate limiting documentation](https://www.aha.io/api#rate-limiting) for details.
 
 ## IP allow list
 
@@ -46,6 +57,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------|
+| 0.4.25 | 2026-11-10 | [91318](https://github.com/airbytehq/airbyte/pull/91318) | Update to source-declarative-manifest base image 7.47.0 (airbyte-cdk 7.x) |
 | 0.4.24 | 2025-05-10 | [59855](https://github.com/airbytehq/airbyte/pull/59855) | Update dependencies |
 | 0.4.23 | 2025-05-03 | [59356](https://github.com/airbytehq/airbyte/pull/59356) | Update dependencies |
 | 0.4.22 | 2025-04-26 | [58723](https://github.com/airbytehq/airbyte/pull/58723) | Update dependencies |

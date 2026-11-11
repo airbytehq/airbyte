@@ -1,0 +1,22 @@
+{
+  "projects": "gid,resource_type,name,archived,color,created_at,current_status.gid,custom_field_settings.gid,default_view,due_date,due_on,html_notes,is_template,members.gid,modified_at,notes,public,start_on,workspace.gid,custom_fields.gid,followers.gid,icon,owner.gid,permalink_url,team.gid",
+  "sections_compact": "gid,resource_type,name",
+  "sections": "gid,resource_type,name,created_at,project.gid",
+  "tasks": "gid,resource_type,name,approval_status,completed,completed_at,completed_by.gid,created_at,dependencies.gid,dependents.gid,due_at,due_on,external.gid,hearted,hearts.user.gid,html_notes,is_rendered_as_separator,liked,likes.user.gid,memberships.(project|section).gid,modified_at,notes,num_hearts,num_likes,num_subtasks,actual_time_minutes,resource_subtype,start_on,assignee.gid,custom_fields,followers.gid,parent.gid,permalink_url,projects.gid,tags.gid,workspace.gid",
+  "stories_compact": "gid,resource_type,created_at,created_by.gid,resource_subtype,text,type,task.gid,target.gid",
+  "stories": "gid,resource_type,created_at,created_by.gid,resource_subtype,text,type,html_text,is_pinned,sticker_name,is_editable,is_edited,liked,likes.gid,num_likes,task.gid",
+  "workspaces": "gid,resource_type,name,email_domains,is_organization",
+  "tags": "gid,resource_type,color,followers.gid,name,permalink_url,workspace.gid",
+  "users": "gid,resource_type,name,email,photo,workspaces.gid",
+  "teams": "gid,resource_type,name,description,html_description,organization.gid,permalink_url",
+  "team_memberships": "gid,resource_type,is_guest,team.gid,user.gid",
+  "attachments_compact": "gid,resource_type,name,resource_subtype",
+  "attachments": "gid,resource_type,name,resource_subtype,created_at,download_url,permanent_url,host,parent.gid,size,view_url,connected_to_app",
+  "portfolios_compact": "gid,resource_type,name",
+  "portfolios": "gid,resource_type,name,color,created_at,created_by.gid,current_status_update.gid,due_on,members.gid,owner.gid,start_on,workspace.gid,permalink_url,public,project_templates.gid",
+  "portfolios_memberships": "gid,resource_type,portfolio.gid,user.gid",
+  "custom_fields": "gid,resource_type,created_by.gid,currency_code,custom_label,custom_label_position,description,display_value,enabled,enum_options.gid,enum_value.gid,format,has_notifications_enabled,is_global_to_workspace,number_value,precision,resource_subtype,text_value,type",
+  "organization_exports": "gid,resource_type,created_at,download_url,state,organization.gid",
+  "events": "user.gid,resource.gid,type,action,parent.gid,created_at,change.gid",
+  "portfolio_items": "gid,resource_type,name"
+}
