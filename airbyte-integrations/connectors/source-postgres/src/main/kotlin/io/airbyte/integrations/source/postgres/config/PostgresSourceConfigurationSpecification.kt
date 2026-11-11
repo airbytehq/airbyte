@@ -313,15 +313,15 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
  *
  * The saved configuration does not change. The CDK's [SshTunnelMethodConfiguration] is a flat union
  * of three objects told apart by `tunnel_method` (`NO_TUNNEL`, `SSH_KEY_AUTH`,
- * `SSH_PASSWORD_AUTH`), and this schema accepts exactly those three objects; it only describes them
- * in two levels:
- * - the "SSH tunnel" option declares what both SSH objects share, the jump server's host, port and
- *   user, and `tunnel_method` as one of the two SSH values, titled "SSH authentication";
- * - its nested `oneOf` has one branch per value, each adding the field only that value needs:
- *   `ssh_key` or `tunnel_user_password`.
+ * `SSH_PASSWORD_AUTH`). The three objects are published as the CDK generates them, retitled; the
+ * two SSH ones are merely grouped under an "SSH tunnel" option whose only content is a `oneOf` of
+ * the two, so the schema accepts exactly what it accepted before.
  *
- * Everything is derived from the schema the CDK generates for the type, so a field added there
- * shows up here: what the two SSH objects have in common goes to the tile, the rest to the branch.
+ * The "SSH tunnel" option deliberately declares no `properties` of its own, although both SSH
+ * objects share the jump server's host, port and user: the platform's secret detection reads the
+ * `properties` of an object schema and then ignores a `oneOf` next to them, which would leave
+ * `ssh_key` and `tunnel_user_password` stored as plain text.
+ *
  * The wording of the tiles belongs on the CDK type, shared by every database connector, once the
  * form design is settled.
  */
@@ -330,92 +330,55 @@ class ConnectionMethodOptionsSupplier : Supplier<JsonNode> {
         val cdkOptions: Map<String, ObjectNode> =
             ValidatedJsonUtils.generateAirbyteJsonSchema(SshTunnelMethodConfiguration::class.java)
                 .deepCopy<JsonNode>()["oneOf"]
-                .associate { discriminator(it).single() to it as ObjectNode }
-        val direct: ObjectNode = cdkOptions.getValue(NO_TUNNEL)
-        direct.put("title", "Direct connection")
-        direct.put(
-            "description",
-            "Airbyte connects to the database host directly. On Airbyte Cloud, allow Airbyte's " +
-                "IP addresses in your database firewall.",
-        )
-        val sshTunnel: ObjectNode =
-            sshTunnel(
-                Branch(
-                    cdkOptions.getValue(SSH_KEY_AUTH),
-                    "SSH key",
-                    "Airbyte logs into the jump server with an SSH private key.",
-                ),
-                Branch(
-                    cdkOptions.getValue(SSH_PASSWORD_AUTH),
-                    "Password",
-                    "Airbyte logs into the jump server with the SSH user's password.",
-                ),
-            )
-        return Jsons.objectNode().set("oneOf", Jsons.arrayNode().add(direct).add(sshTunnel))
-    }
-
-    /** One CDK option which becomes a branch of the "SSH authentication" choice. */
-    private data class Branch(val cdkOption: ObjectNode, val title: String, val description: String)
-
-    private fun sshTunnel(vararg branches: Branch): ObjectNode {
-        val first: ObjectNode = branches.first().cdkOption
-        // A field belongs to the tile when every SSH object declares it, identically.
-        val shared: List<String> =
-            first["properties"].fieldNames().asSequence().toList().filter { name: String ->
-                name != DISCRIMINATOR &&
-                    branches.all { it.cdkOption["properties"][name] == first["properties"][name] }
-            }
-        val tile: ObjectNode = Jsons.objectNode()
-        tile.put("title", "SSH tunnel")
-        tile.put("type", "object")
-        tile.put("additionalProperties", true)
-        tile.put(
+                .associate { discriminator(it)["enum"].single().asText() to it as ObjectNode }
+        val direct: ObjectNode =
+            cdkOptions
+                .getValue("NO_TUNNEL")
+                .describedAs(
+                    "Direct connection",
+                    "Airbyte connects to the database host directly. On Airbyte Cloud, allow " +
+                        "Airbyte's IP addresses in your database firewall.",
+                )
+        val sshTunnel: ObjectNode = Jsons.objectNode()
+        sshTunnel.put("title", "SSH tunnel")
+        sshTunnel.put("type", "object")
+        sshTunnel.put(
             "description",
             "Your database is in a private network. Airbyte connects through a jump server it " +
                 "can reach, as an SSH user of that server.",
         )
-        val tileProperties: ObjectNode = tile.putObject("properties")
-        val authentication: ObjectNode = tileProperties.putObject(DISCRIMINATOR)
-        authentication.put("type", "string")
-        authentication.put("title", "SSH authentication")
-        authentication.put("description", "How Airbyte logs into the jump server.")
-        val methods: List<String> = branches.map { discriminator(it.cdkOption).single() }
-        val methodValues = authentication.putArray("enum")
-        methods.forEach { methodValues.add(it) }
-        authentication.put("default", methods.first())
-        authentication.put("order", 0)
-        shared.forEach { tileProperties.set<JsonNode>(it, first["properties"][it]) }
-        val tileRequired = tile.putArray("required").add(DISCRIMINATOR)
-        required(first).filter { it in shared }.forEach { tileRequired.add(it) }
-        val choice = tile.putArray("oneOf")
-        for (branch in branches) {
-            val option: ObjectNode = choice.addObject()
-            option.put("title", branch.title)
-            option.put("type", "object")
-            option.put("additionalProperties", true)
-            option.put("description", branch.description)
-            val properties: ObjectNode = option.putObject("properties")
-            branch.cdkOption["properties"].properties().forEach { (name: String, schema: JsonNode)
-                ->
-                if (name !in shared) properties.set<JsonNode>(name, schema)
-            }
-            val optionRequired = option.putArray("required")
-            required(branch.cdkOption).filterNot { it in shared }.forEach { optionRequired.add(it) }
-        }
-        return tile
+        val authentication = sshTunnel.putArray("oneOf")
+        authentication.add(
+            cdkOptions
+                .getValue("SSH_KEY_AUTH")
+                .describedAs(
+                    "SSH key",
+                    "Airbyte logs into the jump server with an SSH private key.",
+                )
+                .authentication(),
+        )
+        authentication.add(
+            cdkOptions
+                .getValue("SSH_PASSWORD_AUTH")
+                .describedAs(
+                    "Password",
+                    "Airbyte logs into the jump server with the SSH user's password.",
+                )
+                .authentication(),
+        )
+        return Jsons.objectNode().set("oneOf", Jsons.arrayNode().add(direct).add(sshTunnel))
     }
 
-    private fun discriminator(option: JsonNode): List<String> =
-        option["properties"][DISCRIMINATOR]["enum"].map { it.asText() }
+    private fun ObjectNode.describedAs(title: String, description: String): ObjectNode =
+        put("title", title).put("description", description)
 
-    private fun required(option: JsonNode): List<String> = option["required"].map { it.asText() }
-
-    companion object {
-        private const val DISCRIMINATOR = "tunnel_method"
-        private const val NO_TUNNEL = "NO_TUNNEL"
-        private const val SSH_KEY_AUTH = "SSH_KEY_AUTH"
-        private const val SSH_PASSWORD_AUTH = "SSH_PASSWORD_AUTH"
+    /** The nested choice has no property of its own to name it; its discriminator carries it. */
+    private fun ObjectNode.authentication(): ObjectNode = apply {
+        discriminator(this).put("title", "SSH authentication")
     }
+
+    private fun discriminator(option: JsonNode): ObjectNode =
+        option["properties"]["tunnel_method"] as ObjectNode
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")

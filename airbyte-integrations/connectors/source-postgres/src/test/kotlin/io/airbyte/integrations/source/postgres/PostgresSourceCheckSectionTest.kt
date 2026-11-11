@@ -102,46 +102,33 @@ class PostgresSourceCheckSectionTest {
         val sshTunnel: JsonNode = method["oneOf"][1]
         Assertions.assertEquals(listOf("NO_TUNNEL"), tunnelMethods(direct))
         Assertions.assertEquals(listOf("tunnel_method"), names(direct["properties"]))
-        // The SSH tunnel tile: the authentication choice first, then what both SSH methods share.
+        // The SSH tunnel tile is nothing but the choice of an authentication: one object per
+        // choice, each the complete saved object, ending with the one secret only it needs.
         Assertions.assertEquals(
-            listOf("tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user"),
-            names(sshTunnel["properties"]),
+            listOf("title", "type", "description", "oneOf"),
+            names(sshTunnel),
         )
-        Assertions.assertEquals(
-            listOf("tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user"),
-            sshTunnel["required"].map(JsonNode::asText),
-        )
-        val authentication: JsonNode = sshTunnel["properties"]["tunnel_method"]
-        Assertions.assertEquals("SSH authentication", authentication["title"].asText())
-        Assertions.assertEquals(
-            listOf("SSH_KEY_AUTH", "SSH_PASSWORD_AUTH"),
-            tunnelMethods(sshTunnel),
-        )
-        Assertions.assertEquals("SSH_KEY_AUTH", authentication["default"].asText())
-        // One branch per authentication, each with the one field only it needs, still a secret.
         Assertions.assertEquals(
             listOf(
-                Triple("SSH key", listOf("SSH_KEY_AUTH"), listOf("tunnel_method", "ssh_key")),
-                Triple(
-                    "Password",
-                    listOf("SSH_PASSWORD_AUTH"),
-                    listOf("tunnel_method", "tunnel_user_password"),
-                ),
+                Triple("SSH key", listOf("SSH_KEY_AUTH"), "ssh_key"),
+                Triple("Password", listOf("SSH_PASSWORD_AUTH"), "tunnel_user_password"),
             ),
             sshTunnel["oneOf"].map {
-                Triple(
-                    it["title"].asText(),
-                    tunnelMethods(it),
-                    it["required"].map(JsonNode::asText),
-                )
+                Triple(it["title"].asText(), tunnelMethods(it), names(it["properties"]).last())
             },
         )
-        for (branch in sshTunnel["oneOf"]) {
+        for (authentication in sshTunnel["oneOf"]) {
+            val fields: List<String> = names(authentication["properties"])
             Assertions.assertEquals(
-                branch["required"].map(JsonNode::asText),
-                names(branch["properties"]),
+                listOf("tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user"),
+                fields.dropLast(1),
             )
-            val secret: JsonNode = branch["properties"][branch["required"].last().asText()]
+            Assertions.assertEquals(fields, authentication["required"].map(JsonNode::asText))
+            Assertions.assertEquals(
+                "SSH authentication",
+                authentication["properties"]["tunnel_method"]["title"].asText(),
+            )
+            val secret: JsonNode = authentication["properties"][fields.last()]
             Assertions.assertTrue(secret["airbyte_secret"].asBoolean(), secret.toString())
         }
         // The database host and port are fields of the section, next to the tiles and not inside
@@ -149,8 +136,35 @@ class PostgresSourceCheckSectionTest {
         val required: List<String> = spec["required"].map(JsonNode::asText)
         Assertions.assertTrue(required.containsAll(listOf("tunnel_method", "host", "port")))
         Assertions.assertTrue(
-            method["oneOf"].none { it["properties"].has("host") || it["properties"].has("port") },
+            objectSchemas(method).none {
+                it["properties"].has("host") || it["properties"].has("port")
+            },
         )
+    }
+
+    /**
+     * The platform finds the `airbyte_secret` fields of a spec by walking it, and for an object
+     * schema it reads `properties` and then ignores a `oneOf`, `anyOf` or `allOf` next to them. A
+     * secret declared under such a sibling would be stored and returned as plain text, so no schema
+     * of this spec may carry both.
+     */
+    @Test
+    fun testSpecKeepsSecretsWhereThePlatformLooksForThem() {
+        val spec: JsonNode = spec()
+        val both: List<JsonNode> =
+            objectSchemas(spec).filter { schema: JsonNode ->
+                listOf("oneOf", "anyOf", "allOf").any { schema.has(it) }
+            }
+        Assertions.assertEquals(listOf<JsonNode>(), both)
+        // The two tunnel secrets are each declared in the `properties` of one authentication.
+        val tunnelSecrets: List<String> =
+            objectSchemas(spec["properties"]["tunnel_method"]).flatMap { schema: JsonNode ->
+                schema["properties"]
+                    .properties()
+                    .filter { it.value.path("airbyte_secret").asBoolean() }
+                    .map { it.key }
+            }
+        Assertions.assertEquals(listOf("ssh_key", "tunnel_user_password"), tunnelSecrets)
     }
 
     /**
@@ -317,6 +331,11 @@ class PostgresSourceCheckSectionTest {
     /** The schema as the platform validates a configuration against it: JSON Schema draft-07. */
     private fun schema(node: JsonNode): JsonSchema =
         JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7).getSchema(node)
+
+    /** Every schema under [node], itself included, which declares `properties`. */
+    private fun objectSchemas(node: JsonNode): List<JsonNode> =
+        (if (node.has("properties")) listOf(node) else listOf()) +
+            node.flatMap { objectSchemas(it) }
 
     private fun names(properties: JsonNode): List<String> =
         properties.fieldNames().asSequence().toList()
