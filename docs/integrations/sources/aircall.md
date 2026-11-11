@@ -137,7 +137,7 @@ Aircall returns at most 10,000 calls, contacts, conversations or engagements for
 
 ### Six months of call history
 
-Aircall keeps only six months of call history in the API ([List all Calls](https://developers.aircall.io/api-references/#list-all-calls)). The connector reads `calls` from 365 days back on every full refresh and on the first incremental sync, which covers all the history Aircall keeps. Older calls aren't returned, so syncing `calls` in an Overwrite mode, clearing it, or running a Refresh and Remove Records sync deletes calls older than six months from the destination for good. Keep `calls` in `Incremental | Append + Deduped`, and use [Refresh and Retain Records](https://docs.airbyte.com/platform/operator-guides/refreshes#refresh-and-retain-records) to re-read the last six months. To get older calls, ask [Aircall Support](https://support.aircall.io/) for a one-time export.
+Aircall keeps only six months of call history in the API ([List all Calls](https://developers.aircall.io/api-references/#list-all-calls)). The connector reads `calls` from 365 days back on every full refresh and on the first incremental sync, which covers all the history Aircall keeps. Older calls aren't returned, so syncing `calls` in an Overwrite mode, clearing it, or running a Refresh and Remove Records sync deletes calls older than six months from the destination for good. Keep `calls` in `Incremental | Append + Deduped`, and use [Refresh and Retain Records](https://docs.airbyte.com/platform/operator-guides/refreshes#refresh-and-retain-records) to re-read the last six months. Copy the `calls` table before you clear it or change its sync mode.
 
 ### Rate limit
 
@@ -171,7 +171,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
 | 1.1.0 | 2026-11-03 | [90836](https://github.com/airbytehq/airbyte/pull/90836) | Add OAuth 2.0 authentication as the default; existing API key configurations move to the API Key option automatically |
-| 1.0.0 | 2026-11-03 | [90838](https://github.com/airbytehq/airbyte/pull/90838) | Add primary keys to `calls` and `contacts`, key `webhooks` on `webhook_id`, make `numbers` and `teams` full refresh only, and declare the column types the Aircall API documents |
+| 1.0.0 | 2026-11-11 | [90838](https://github.com/airbytehq/airbyte/pull/90838) | Add primary keys to `calls` and `contacts`, key `webhooks` on `webhook_id`, make `numbers` and `teams` full refresh only, and declare the column types the Aircall API documents |
+| 0.6.1 | 2026-11-10 | [91341](https://github.com/airbytehq/airbyte/pull/91341) | Update dependencies |
 | 0.6.0 | 2026-11-03 | [90837](https://github.com/airbytehq/airbyte/pull/90837) | Add `conversations`, `conversation_engagements`, `campaigns`, `campaign_outcomes`, `trackers`, `sms_templates` and `whatsapp_templates` streams |
 | 0.5.0 | 2026-11-03 | [90835](https://github.com/airbytehq/airbyte/pull/90835) | Read calls incrementally in daily windows that split at Aircall's 10,000-result limit, read contacts in date windows, honour Aircall's rate limit, declare `user_availability` `id` and `availability`, and read numbers and teams once per sync |
 | 0.4.27 | 2026-10-13 | [88524](https://github.com/airbytehq/airbyte/pull/88524) | Update dependencies |
