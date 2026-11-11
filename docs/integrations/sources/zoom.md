@@ -204,6 +204,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 2.2.3 | 2026-11-10 | [90955](https://github.com/airbytehq/airbyte/pull/90955) | Use one error handler per request; a Zoom error code returned with an unexpected HTTP 2xx or 5xx status now gets that code's handling instead of being accepted or retried |
+| 2.2.2 | 2026-11-10 | [91781](https://github.com/airbytehq/airbyte/pull/91781) | Update dependencies |
 | 2.2.1 | 2026-11-06 | [91199](https://github.com/airbytehq/airbyte/pull/91199) | Promote to certified support level |
 | 2.2.0 | 2026-11-06 | [91200](https://github.com/airbytehq/airbyte/pull/91200) | Raise page size to 300, add missing schema fields, bump base image to 7.46.0, add OpenAPI spec link |
 | 2.1.0 | 2026-11-06 | [91195](https://github.com/airbytehq/airbyte/pull/91195) | Add configurable concurrency and Pro-tier API rate-limit budget |
