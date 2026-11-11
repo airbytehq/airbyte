@@ -81,7 +81,8 @@ def test_substream_partition_state_advances_to_newest_nanosecond_modified_at(str
 
     assert sorted(record.record.data["id"] for record in output.records) == ["app1-new", "app1-old", "app2-only"]
     cursor_per_app = {
-        partition_state["partition"]["app_id"]: partition_state["cursor"]["modified_at"] for partition_state in _final_state(output)["states"]
+        partition_state["partition"]["app_id"]: partition_state["cursor"]["modified_at"]
+        for partition_state in _final_state(output)["states"]
     }
     assert cursor_per_app == {
         "app1": "2026-10-05T12:30:45.987654Z",
