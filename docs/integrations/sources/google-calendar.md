@@ -155,7 +155,7 @@ The `events` stream is incremental on the event's last modification time (`updat
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 1.2.0 | 2026-11-11 | TBD | Include calendar and ACL tombstones, expand schemas, and improve pagination and concurrency reliability. |
+| 1.2.0 | 2026-11-11 | [92016](https://github.com/airbytehq/airbyte/pull/92016) | Include calendar and ACL tombstones, expand schemas, and improve pagination and concurrency reliability. |
 | 1.1.0 | 2026-11-10 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative Google OAuth with granular read-only scopes, custom-app authentication, legacy credential migration, and missing-scope errors. |
 | 1.0.1 | 2026-11-10 | [91570](https://github.com/airbytehq/airbyte/pull/91570) | Update dependencies |
 | 1.0.0 | 2026-11-06 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, read `events`/`acl`/`freebusy` from every calendar when `calendarid` is empty, change the `events` primary key to `[calendar_id, id]`, return calendar resources from `calendars`, change the `colors` primary key to `kind`, and type date and date-time fields (breaking, see the [migration guide](/integrations/sources/google-calendar-migrations)) |
