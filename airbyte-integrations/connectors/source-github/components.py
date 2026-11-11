@@ -4,10 +4,8 @@
 
 """Custom low-code components for source-github.
 
-Everything here exists because the GitHub GraphQL responses cannot be reshaped into the
-connector's long-standing REST-compatible record shape with declarative transformations
-alone. Pagination, page-size reduction, error handling and incremental behavior are all
-handled by the manifest.
+The manifest configures stream behavior; custom components implement the transformations,
+pagination, and backoff logic it cannot express.
 """
 
 import base64
@@ -18,7 +16,7 @@ import struct
 from dataclasses import InitVar, dataclass
 from itertools import groupby
 from os import getenv
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlparse
 
 import requests
@@ -28,6 +26,7 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import (
     PaginationStrategy,
 )
@@ -56,6 +55,56 @@ GRAPHQL_REACTION_TO_REST = {
     "ROCKET": "rocket",
     "EYES": "eyes",
 }
+
+
+def _is_rate_limited_response(response: requests.Response) -> bool:
+    """Whether GitHub identifies an HTTP response as rate limited."""
+    if response.status_code == 429 or "Retry-After" in response.headers:
+        return True
+    if response.status_code != 200 and response.headers.get("X-RateLimit-Remaining") == "0":
+        return True
+
+    try:
+        body = response.json()
+    except ValueError:
+        return False
+    if not isinstance(body, Mapping):
+        return False
+
+    message = body.get("message")
+    if isinstance(message, str):
+        normalized_message = message.lower()
+        if "api rate limit exceeded" in normalized_message or "secondary rate limit" in normalized_message:
+            return True
+
+    errors = body.get("errors")
+    return isinstance(errors, list) and any(isinstance(error, Mapping) and error.get("type") == "RATE_LIMITED" for error in errors)
+
+
+@dataclass
+class RateLimitedResponseBackoffStrategy(BackoffStrategy):
+    """Apply nested header waits only to responses GitHub identifies as rate limited."""
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    backoff_strategies: List[BackoffStrategy]
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        if not isinstance(response_or_exception, requests.Response) or not _is_rate_limited_response(response_or_exception):
+            return None
+
+        for strategy in self.backoff_strategies:
+            wait = strategy.backoff_time(
+                response_or_exception=response_or_exception,
+                attempt_count=attempt_count,
+            )
+            if wait:
+                return wait
+        return None
 
 
 def _extract_database_id_from_node_id(node_id: Optional[str]) -> Optional[int]:
