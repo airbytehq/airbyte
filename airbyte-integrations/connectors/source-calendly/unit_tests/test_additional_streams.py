@@ -160,6 +160,21 @@ def test_routing_form_submissions_pages_for_each_parent_form() -> None:
             http.assert_number_of_calls(target, 1)
 
 
+@pytest.mark.parametrize("message", ["Please upgrade your Calendly account to Teams", "Please upgrade your Calendly account to Teams."])
+@pytest.mark.parametrize("stream", ["routing_forms", "routing_form_submissions"])
+def test_routing_forms_teams_plan_completes_empty(stream: str, message: str) -> None:
+    with HttpMocker() as http:
+        mock_user(http)
+        target = stream_request("routing_forms")
+        http.get(target, HttpResponse(body=json.dumps({"title": "Permission Denied", "message": message}), status_code=403))
+        output = read_stream(stream, sync_mode=SyncMode.full_refresh)
+        assert_complete(output, stream)
+        assert not output.records
+        assert not any(entry.log.level == Level.ERROR for entry in output.logs)
+        assert any(entry.log.level == Level.INFO and "routing forms require Teams" in entry.log.message for entry in output.logs)
+        http.assert_number_of_calls(target, 1)
+
+
 def test_contacts_pages_without_organization_filter() -> None:
     records = [
         {
