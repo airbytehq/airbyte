@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel xml:base="https://other.example/news/">
+    <title>Base Example</title>
+    <link>https://other.example/</link>
+    <description>Channel and link xml:base</description>
+    <item>
+      <title>Link base</title>
+      <link xml:base="https://other.example/posts/">story-2</link>
+      <guid isPermaLink="false">base-2</guid>
+      <pubDate>Mon, 09 Nov 2026 12:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Channel base</title>
+      <link>story-1</link>
+      <enclosure url="audio/ep1.mp3" length="1" type="audio/mpeg"/>
+      <guid isPermaLink="false">base-1</guid>
+      <pubDate>Mon, 09 Nov 2026 11:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>
