@@ -260,6 +260,46 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @freeze_time("2026-09-23")
+    @pytest.mark.parametrize("empty_result", [False, True])
+    def test_lookback_checkpoints_preserve_committed_cursor(self, mocker, api, empty_result):
+        account_id = "unknown_account"
+        saved_cursor = date(2026, 9, 20)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 8, 1),
+            end_date=datetime(2026, 9, 23),
+            insights_lookback_window=28,
+        )
+        stream.state = {account_id: {"date_start": saved_cursor.isoformat(), "slices": []}}
+        dates = list(stream._date_intervals(account_id))
+        assert dates[0] == saved_cursor - timedelta(days=28)
+        completion_order = [dates[0], dates[2], dates[1], dates[-1], *dates[3:-1]]
+        completed = set()
+        contiguous_cursor = dates[0] - timedelta(days=1)
+        record = mocker.Mock()
+        record.export_all_data.return_value = {"date_start": saved_cursor.isoformat()}
+        for slice_date in completion_order:
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = DateInterval(slice_date, slice_date)
+            job.get_result.return_value = [] if empty_result else [record]
+            records = list(
+                stream.read_records(
+                    sync_mode=SyncMode.incremental,
+                    stream_slice={"insight_job": job, "account_id": account_id},
+                )
+            )
+            assert len(records) == (0 if empty_result else 1)
+            completed.add(slice_date)
+            while contiguous_cursor + timedelta(days=1) in completed:
+                contiguous_cursor += timedelta(days=1)
+            state = stream.state[account_id]
+            assert state["date_start"] >= saved_cursor.isoformat()
+            assert state["date_start"] == max(saved_cursor, contiguous_cursor).isoformat()
+            assert state["slices"] == sorted(d.isoformat() for d in completed if d > max(saved_cursor, contiguous_cursor))
+        assert stream.state[account_id]["date_start"] == dates[-1].isoformat()
+
     def test_read_records_add_account_id(self, mocker, api, some_config):
         rec_without_account = mocker.Mock()
         rec_without_account.export_all_data.return_value = {}
@@ -397,6 +437,9 @@ class TestBaseInsightsStream:
 
         result_state = state if not result_state else result_state
         result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
+        account_state = result_state[some_config["account_ids"][0]]
+        if account_state.get("date_start"):
+            account_state["slices"] = [slice_date for slice_date in account_state["slices"] if slice_date > account_state["date_start"]]
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
