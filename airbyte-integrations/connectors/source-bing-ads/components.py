@@ -344,6 +344,20 @@ class LightSubstreamPartitionRouter(SubstreamPartitionRouter):
             )
 
 
+class BulkEntityAccountStateMigration(StateMigration):
+    """Keep per-account cursors without borrowing another account's high-water mark."""
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return "state" in stream_state or bool(stream_state.get("use_global_cursor"))
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        state = deepcopy(dict(stream_state))
+        state.pop("state", None)
+        state["use_global_cursor"] = False
+        state.setdefault("states", [])
+        return state
+
+
 class BulkStreamsStateMigration(StateMigration):
     """
     Due to a bug in python implementation legacy state may look like this:
