@@ -127,4 +127,3 @@ acceptance_tests:
     tests:
       - config_path: secrets/config_oauth.json
         configured_catalog_path: integration_tests/configured_catalog.json
-# CI-only touch: run connector tests with airbyte-cdk 7.46.0.post8.dev42871066020 (airbyte-python-cdk#1270). Do not merge.
