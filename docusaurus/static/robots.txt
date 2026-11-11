@@ -9,5 +9,6 @@ User-agent: *
 Content-Signal: ai-train=yes, search=yes, ai-input=yes
 Allow: /
 Disallow: /search
+Disallow: /cdn-cgi/
 
 Sitemap: https://docs.airbyte.com/sitemap.xml
