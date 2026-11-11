@@ -173,9 +173,18 @@ def test_read_products():
     assert state_rows_count in {1, 2}, "Expected 1 or 2 state messages per stream."
 
 
-def test_read_products_count():
+@pytest.mark.parametrize(
+    "products_count, records_per_slice",
+    [
+        pytest.param(10, 5, id="slice_size_divides_products_count"),
+        pytest.param(50, 20, id="partial_last_slice"),
+        pytest.param(7, 100, id="slice_larger_than_products_count"),
+        pytest.param(100, 1000, id="full_catalog_default_slice"),
+    ],
+)
+def test_read_products_count(products_count, records_per_slice):
     source = SourceFaker()
-    config = {"count": 999, "products_count": 10, "records_per_slice": 5, "parallelism": 1}
+    config = {"count": 999, "products_count": products_count, "records_per_slice": records_per_slice, "parallelism": 1}
     stream_dict = {
         "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
         "sync_mode": "incremental",
@@ -185,7 +194,7 @@ def test_read_products_count():
     iterator = source.read(logger, config, catalog, {})
 
     records = [row.record.data for row in iterator if row.type is Type.RECORD]
-    assert [record["id"] for record in records] == list(range(1, 11))
+    assert [record["id"] for record in records] == list(range(1, products_count + 1))
 
 
 def test_read_big_random_data():
