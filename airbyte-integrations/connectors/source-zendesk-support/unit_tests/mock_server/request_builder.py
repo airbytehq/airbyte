@@ -325,6 +325,11 @@ class ZendeskSupportRequestBuilder:
         return cls(cls.DEFAULT_SUBDOMAIN, "ticket_audits").with_authenticator(authenticator)
 
     @classmethod
+    def ticket_audits_per_ticket_endpoint(cls, authenticator: Authenticator, ticket_id: int) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /tickets/{ticket_id}/audits.json endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, f"tickets/{ticket_id}/audits.json").with_authenticator(authenticator)
+
+    @classmethod
     def ticket_comments_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
         """Create a request builder for the /incremental/ticket_events.json endpoint."""
         return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_events.json").with_authenticator(authenticator)

@@ -31,6 +31,10 @@
     },
     "id": {
       "type": ["null", "string"]
+    },
+    "end_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

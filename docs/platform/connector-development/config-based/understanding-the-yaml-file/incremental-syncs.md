@@ -24,8 +24,7 @@ During the sync, records are read from the API according to these time windows a
 
 Upon a successful sync, the final stream state will be the datetime of the last record emitted. On the subsequent sync, the connector will fetch records whose cursor value begins on that datetime and onward.
 
-Refer to the schema for both [`DatetimeBasedCursor`](reference.md#/definitions/DatetimeBasedCursor) and [`MinMaxDatetime`](reference.md#/definitions/MinMaxDatetime) in the YAML reference for more details.
-
+Refer to the schema for both [`DatetimeBasedCursor`](reference/DatetimeBasedCursor.md) and [`MinMaxDatetime`](reference/MinMaxDatetime.md) in the YAML reference for more details.
 
 Example:
 

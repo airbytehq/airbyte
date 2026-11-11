@@ -60,7 +60,7 @@ If you prefer to use OAuth for authentication with **Airbyte Open Source**, you 
 3. Find and select the **Google Drive API**.
 4. Click **ENABLE**.
 
-If your folder is viewable by anyone with its link, no further action is needed. If not, give your service account access to your folder. Check out [this video](https://youtu.be/GyomEw5a2NQ) for how to do this.
+If your folder is viewable by anyone with its link, no further action is needed. If not, give your service account access to your folder by selecting it in Google Drive, clicking **Share**, and adding the service account's email address (the `client_email` value in your JSON key) with **Viewer** permission. See [Google's sharing instructions](https://support.google.com/drive/answer/7166529) for details.
 
 <!-- /env:oss -->
 
@@ -275,6 +275,10 @@ Format options will not be taken into account. Instead, files will be transferre
 
 If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
 
+### Exclude Trashed Files
+
+This option is disabled by default. The Google Drive API returns trashed files unless they are explicitly filtered out. When enabled, the connector skips trashed files and files inside trashed folders. Files already synced before being trashed are not deleted from the destination; run a refresh to remove them.
+
 ### Replicate Permissions ACL
 This mode allows to sync Google Drive files permissions (ACLs) and Identities (users and groups) from your Google Workspace.
 The Identities Stream is enabled by default.
@@ -326,6 +330,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.6.4 | 2026-11-10 | [91555](https://github.com/airbytehq/airbyte/pull/91555) | Update dependencies |
+| 0.6.3 | 2026-11-03 | [90888](https://github.com/airbytehq/airbyte/pull/90888) | Raise minimum supported Python version to 3.11 |
+| 0.6.2 | 2026-11-03 | [90608](https://github.com/airbytehq/airbyte/pull/90608) | Update dependencies |
+| 0.6.1 | 2026-10-27 | [89918](https://github.com/airbytehq/airbyte/pull/89918) | Update dependencies |
+| 0.6.0 | 2026-10-21 | [89595](https://github.com/airbytehq/airbyte/pull/89595) | Add optional "Exclude Trashed Files" setting to skip files in the Google Drive trash |
 | 0.5.40 | 2026-10-20 | [89242](https://github.com/airbytehq/airbyte/pull/89242) | Update dependencies |
 | 0.5.39 | 2026-10-13 | [88658](https://github.com/airbytehq/airbyte/pull/88658) | Update dependencies |
 | 0.5.38 | 2026-10-06 | [87880](https://github.com/airbytehq/airbyte/pull/87880) | Update dependencies |

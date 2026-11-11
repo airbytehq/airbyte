@@ -22,11 +22,6 @@ definitions:
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['api_key'] }}"
-            name: jobs
-            primary_key: id
-            path: /spi/v3/jobs
-            field_path:
-              - jobs
           path: /spi/v3/jobs
           http_method: GET
           request_parameters:
@@ -45,19 +40,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: jobs
-            primary_key: id
-            path: /spi/v3/jobs
-            field_path:
-              - jobs
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            name: jobs
-            primary_key: id
-            path: /spi/v3/jobs
-            field_path:
-              - jobs
             cursor_value: "{{ response.paging.next }}"
             stop_condition: "{{ 'next' not in response['paging'] }}"
       schema_loader:
@@ -167,11 +152,6 @@ definitions:
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['api_key'] }}"
-            name: jobs
-            primary_key: id
-            path: /spi/v3/jobs
-            field_path:
-              - jobs
           path: /spi/v3/candidates
           http_method: GET
           request_parameters:
@@ -190,19 +170,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: candidates
-            primary_key: id
-            path: /spi/v3/candidates
-            field_path:
-              - candidates
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            name: candidates
-            primary_key: id
-            path: /spi/v3/candidates
-            field_path:
-              - candidates
             cursor_value: "{{ response.paging.next }}"
             stop_condition: "{{ 'next' not in response['paging'] }}"
       schema_loader:
@@ -245,11 +215,6 @@ definitions:
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['api_key'] }}"
-            name: jobs
-            primary_key: id
-            path: /spi/v3/jobs
-            field_path:
-              - jobs
           path: /spi/v3/stages
           http_method: GET
           request_parameters:
@@ -268,19 +233,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: stages
-            primary_key: slug
-            path: /spi/v3/stages
-            field_path:
-              - stages
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            name: stages
-            primary_key: slug
-            path: /spi/v3/stages
-            field_path:
-              - stages
             cursor_value: "{{ response.paging.next }}"
             stop_condition: "{{ 'next' not in response['paging'] }}"
       schema_loader:
@@ -319,11 +274,6 @@ definitions:
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['api_key'] }}"
-            name: jobs
-            primary_key: id
-            path: /spi/v3/jobs
-            field_path:
-              - jobs
           path: /spi/v3/recruiters
           http_method: GET
           request_parameters:
@@ -342,19 +292,9 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: limit
-            name: recruiters
-            primary_key: id
-            path: /spi/v3/recruiters
-            field_path:
-              - recruiters
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            name: recruiters
-            primary_key: id
-            path: /spi/v3/recruiters
-            field_path:
-              - recruiters
             cursor_value: "{{ response.paging.next }}"
             stop_condition: "{{ 'next' not in response['paging'] }}"
       schema_loader:
@@ -382,11 +322,6 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
-      name: jobs
-      primary_key: id
-      path: /spi/v3/jobs
-      field_path:
-        - jobs
 streams:
   - type: DeclarativeStream
     name: jobs
@@ -400,11 +335,6 @@ streams:
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-          name: jobs
-          primary_key: id
-          path: /spi/v3/jobs
-          field_path:
-            - jobs
         path: /spi/v3/jobs
         http_method: GET
         request_parameters:
@@ -423,19 +353,9 @@ streams:
           type: RequestOption
           inject_into: request_parameter
           field_name: limit
-          name: jobs
-          primary_key: id
-          path: /spi/v3/jobs
-          field_path:
-            - jobs
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          name: jobs
-          primary_key: id
-          path: /spi/v3/jobs
-          field_path:
-            - jobs
           cursor_value: "{{ response.paging.next }}"
           stop_condition: "{{ 'next' not in response['paging'] }}"
     schema_loader:
@@ -544,11 +464,6 @@ streams:
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-          name: jobs
-          primary_key: id
-          path: /spi/v3/jobs
-          field_path:
-            - jobs
         path: /spi/v3/candidates
         http_method: GET
         request_parameters:
@@ -567,19 +482,9 @@ streams:
           type: RequestOption
           inject_into: request_parameter
           field_name: limit
-          name: candidates
-          primary_key: id
-          path: /spi/v3/candidates
-          field_path:
-            - candidates
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          name: candidates
-          primary_key: id
-          path: /spi/v3/candidates
-          field_path:
-            - candidates
           cursor_value: "{{ response.paging.next }}"
           stop_condition: "{{ 'next' not in response['paging'] }}"
     schema_loader:
@@ -621,11 +526,6 @@ streams:
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-          name: jobs
-          primary_key: id
-          path: /spi/v3/jobs
-          field_path:
-            - jobs
         path: /spi/v3/stages
         http_method: GET
         request_parameters:
@@ -644,19 +544,9 @@ streams:
           type: RequestOption
           inject_into: request_parameter
           field_name: limit
-          name: stages
-          primary_key: slug
-          path: /spi/v3/stages
-          field_path:
-            - stages
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          name: stages
-          primary_key: slug
-          path: /spi/v3/stages
-          field_path:
-            - stages
           cursor_value: "{{ response.paging.next }}"
           stop_condition: "{{ 'next' not in response['paging'] }}"
     schema_loader:
@@ -694,11 +584,6 @@ streams:
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['api_key'] }}"
-          name: jobs
-          primary_key: id
-          path: /spi/v3/jobs
-          field_path:
-            - jobs
         path: /spi/v3/recruiters
         http_method: GET
         request_parameters:
@@ -717,19 +602,9 @@ streams:
           type: RequestOption
           inject_into: request_parameter
           field_name: limit
-          name: recruiters
-          primary_key: id
-          path: /spi/v3/recruiters
-          field_path:
-            - recruiters
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          name: recruiters
-          primary_key: id
-          path: /spi/v3/recruiters
-          field_path:
-            - recruiters
           cursor_value: "{{ response.paging.next }}"
           stop_condition: "{{ 'next' not in response['paging'] }}"
     schema_loader:

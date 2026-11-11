@@ -24,7 +24,7 @@ application {
 
 val hikariCpVersion = "7.0.2"
 val redshiftJdbcVersion = "2.2.7"
-val awsSdkV2Version = "2.31.1"
+val awsSdkV2Version = "2.57.2"
 val junitVersion = "5.13.4"
 val junitPlatformVersion = "1.13.4"
 
