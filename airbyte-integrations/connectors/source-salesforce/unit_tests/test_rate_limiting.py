@@ -1,25 +1,35 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import re
+import threading
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 import requests
 import requests_mock
-from requests.exceptions import ChunkedEncodingError
+from config_builder import ConfigBuilder
+from conftest import generate_stream
+from requests.exceptions import ChunkedEncodingError, InvalidURL
 from source_salesforce.api import (
     _LOGIN_DEDUP_SECONDS,
     _REFRESH_FAILURE_BACKOFF_SECONDS,
+    _REQUEST_TIMEOUT_SECONDS,
     _TOKEN_REFRESH_INTERVAL_SECONDS,
     API_VERSION,
     Salesforce,
     SalesforceTokenProvider,
 )
-from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
+from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
+from source_salesforce.streams import BulkDatetimeStreamSlicer
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.sources.streams.http.tcp_keepalive import TcpKeepaliveHTTPAdapter
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -161,6 +171,24 @@ class SalesforceRefreshAccessTokenIfStaleTest(TestCase):
             sf.refresh_access_token_if_stale()
         sf._perform_login.assert_called_once()
 
+    def test_proactive_refresh_queued_behind_a_rejected_grant_does_not_redeem_it(self) -> None:
+        """A thread that passed the unlocked check while another thread's refresh was being rejected must not redeem the grant again."""
+        sf = self._make_sf()
+        sf._last_login_time = 0.0
+
+        class _RejectedWhileWaiting:
+            def __enter__(self):
+                sf._login_permanently_failed = True
+
+            def __exit__(self, *args):
+                return False
+
+        sf._login_lock = _RejectedWhileWaiting()
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS + 1):
+            sf.refresh_access_token_if_stale()
+
+        sf._perform_login.assert_not_called()
+
     def test_login_flags_permanent_failure_on_credential_error(self) -> None:
         sf = self._make_sf()
         sf._perform_login.side_effect = AirbyteTracedException(failure_type=FailureType.config_error)
@@ -228,6 +256,129 @@ class SalesforceRefreshAccessTokenIfStaleTest(TestCase):
         sf._perform_login.assert_called_once()
 
 
+def test_token_request_is_sent_with_timeout(requests_mock) -> None:
+    requests_mock.post(
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"access_token": "t", "instance_url": "https://instance.salesforce.com"},
+    )
+    sf = Salesforce(refresh_token="a_refresh_token", client_id="a_client_id", client_secret="a_client_secret")
+
+    sf.login()
+
+    assert requests_mock.last_request.timeout == _REQUEST_TIMEOUT_SECONDS
+
+
+def test_rest_stream_request_is_sent_with_timeout(requests_mock, stream_config, stream_api) -> None:
+    """A stalled stream read must time out, not block the sync forever (issue #91214)."""
+    stream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    requests_mock.get(
+        re.compile(r"^https://fase-account\.salesforce\.com/services/data/.*"),
+        json={"records": [], "done": True},
+    )
+
+    list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert requests_mock.last_request.timeout == _REQUEST_TIMEOUT_SECONDS
+
+
+def test_bulk_job_requests_are_sent_with_timeout(requests_mock, stream_api) -> None:
+    """Creating, polling, downloading and deleting a Bulk job must time out too, not only REST reads."""
+    config = ConfigBuilder().start_date(datetime.now(timezone.utc) - timedelta(days=5)).stream_slice_step("P100D").build()
+    stream = generate_stream("Account", config, stream_api)
+    job_path = f"/services/data/{API_VERSION}/jobs/query"
+    requests_mock.register_uri("POST", job_path, json={"id": "a_job"})
+    requests_mock.register_uri("GET", f"{job_path}/a_job", json={"id": "a_job", "state": "JobComplete"})
+    requests_mock.register_uri("GET", f"{job_path}/a_job/results", text="Id,LastModifiedDate\n1,2026-11-01")
+    requests_mock.register_uri("DELETE", f"{job_path}/a_job")
+
+    stream_slice = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
+    list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+
+    bulk_requests = [r for r in requests_mock.request_history if "/jobs/query" in r.path]
+    assert {(r.method, r.path.rsplit("/", 1)[-1]) for r in bulk_requests} == {
+        ("POST", "query"),
+        ("GET", "a_job"),
+        ("GET", "results"),
+        ("DELETE", "a_job"),
+    }
+    assert [r.timeout for r in bulk_requests] == [_REQUEST_TIMEOUT_SECONDS] * len(bulk_requests)
+
+
+def test_bulk_requesters_use_tcp_keepalive(stream_api) -> None:
+    """Every Bulk job requester, abort included, must detect a dropped connection instead of waiting on it."""
+    config = ConfigBuilder().start_date(datetime.now(timezone.utc) - timedelta(days=5)).build()
+    stream = generate_stream("Account", config, stream_api)
+
+    with patch("source_salesforce.streams.HttpRequester", wraps=HttpRequester) as requester_spy:
+        stream._instantiate_declarative_stream(BulkDatetimeStreamSlicer(stream._stream_slicer_cursor), has_bulk_parent=False)
+
+    requesters = {call.kwargs["name"].rsplit(" - ", 1)[-1]: call.kwargs for call in requester_spy.call_args_list}
+    assert set(requesters) == {"creation requester", "polling requester", "download requester", "abort requester", "delete requester"}
+    for kwargs in requesters.values():
+        assert kwargs["use_tcp_keepalive"] is True
+        assert (kwargs["connect_timeout_in_seconds"], kwargs["read_timeout_in_seconds"]) == _REQUEST_TIMEOUT_SECONDS
+
+
+def test_rest_stream_session_uses_tcp_keepalive(stream_config, stream_api) -> None:
+    stream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+
+    assert isinstance(stream._http_client._session.get_adapter("https://fase-account.salesforce.com"), TcpKeepaliveHTTPAdapter)
+
+
+def test_salesforce_client_session_uses_tcp_keepalive() -> None:
+    sf = Salesforce(refresh_token="a_refresh_token", client_id="a_client_id", client_secret="a_client_secret")
+
+    assert isinstance(sf.session.get_adapter("https://login.salesforce.com"), TcpKeepaliveHTTPAdapter)
+
+
+def test_describe_request_is_sent_with_timeout(requests_mock) -> None:
+    describe_url = f"https://instance.salesforce.com/services/data/{API_VERSION}/sobjects"
+    requests_mock.get(describe_url, json={"sobjects": []})
+    sf = Salesforce()
+    sf.instance_url = "https://instance.salesforce.com"
+    sf.access_token = "an_access_token"
+
+    sf.describe()
+
+    assert requests_mock.last_request.timeout == _REQUEST_TIMEOUT_SECONDS
+
+
+@pytest.mark.timeout(30)
+def test_stalled_proactive_refresh_times_out_and_releases_lock() -> None:
+    stalled = threading.Event()
+    request_timeouts = []
+    fail_time = float(_TOKEN_REFRESH_INTERVAL_SECONDS + 1)
+
+    def fake_send(request, **kwargs):
+        timeout = kwargs.get("timeout")
+        request_timeouts.append(timeout)
+        if timeout is None:
+            stalled.wait(timeout=3)
+            raise AssertionError("request sent without timeout")
+        raise requests.exceptions.ReadTimeout()
+
+    with (
+        patch.object(SalesforceErrorHandler, "max_retries", new_callable=PropertyMock, return_value=0),
+        patch.object(SalesforceErrorHandler, "max_time", new_callable=PropertyMock, return_value=0),
+    ):
+        sf = Salesforce(refresh_token="a_refresh_token", client_id="a_client_id", client_secret="a_client_secret")
+        sf.access_token = "old_token"
+        sf._last_login_time = 0.0
+        sf.session.send = fake_send
+
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time):
+            thread = threading.Thread(target=sf.refresh_access_token_if_stale)
+            thread.start()
+            thread.join(timeout=5)
+
+    assert not thread.is_alive()
+    assert request_timeouts == [_REQUEST_TIMEOUT_SECONDS]
+    assert sf.access_token == "old_token"
+    assert sf._last_login_time == fail_time - _TOKEN_REFRESH_INTERVAL_SECONDS + _REFRESH_FAILURE_BACKOFF_SECONDS
+    assert sf._login_lock.acquire(blocking=False)
+    sf._login_lock.release()
+
+
 class SalesforceErrorHandlerTest(TestCase):
     def setUp(self) -> None:
         self._error_handler = SalesforceErrorHandler()
@@ -244,6 +395,18 @@ class SalesforceErrorHandlerTest(TestCase):
         assert resolution.response_action == ResponseAction.RETRY
         token_provider.force_refresh.assert_called_once()
 
+    def test_invalid_session_does_not_claim_a_refresh_that_failed(self) -> None:
+        token_provider = MagicMock()
+        token_provider.force_refresh.return_value = False
+        token_provider.credentials_permanently_failed = False
+        handler = SalesforceErrorHandler(token_provider=token_provider)
+        response = self._create_response("GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}])
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.RETRY
+        assert resolution.error_message == "Salesforce session expired or invalid. The token could not be refreshed."
+
     def test_invalid_session_fails_as_config_error_when_credentials_permanently_failed(self) -> None:
         token_provider = MagicMock()
         token_provider.force_refresh.return_value = False
@@ -255,6 +418,20 @@ class SalesforceErrorHandlerTest(TestCase):
 
         assert resolution.response_action == ResponseAction.FAIL
         assert resolution.failure_type == FailureType.config_error
+
+    def test_invalid_session_fails_with_client_credentials_message_when_credentials_permanently_failed(self) -> None:
+        sf = Salesforce(auth_type="ClientCredentials", domain_url="https://acme.my.salesforce.com")
+        sf._login_failure_message = "Salesforce rejected the Client Secret."
+        sf._login_permanently_failed = True
+        handler = SalesforceErrorHandler(token_provider=SalesforceTokenProvider(sf))
+        response = self._create_response("GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}])
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
+        assert resolution.error_message == "Salesforce rejected the Client Secret."
+        assert "Re-authenticate" not in resolution.error_message
 
     def test_first_401_with_dead_grant_fails_as_config_error_with_real_wiring(self) -> None:
         """End-to-end over the real objects (no mocked flags): the first INVALID_SESSION_ID redeems
@@ -268,7 +445,9 @@ class SalesforceErrorHandlerTest(TestCase):
 
         assert resolution.response_action == ResponseAction.FAIL
         assert resolution.failure_type == FailureType.config_error
-        assert resolution.error_message == "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
+        assert resolution.error_message == (
+            "Salesforce authentication is expired or revoked. Re-authenticate the source and check is_sandbox: sandbox orgs use test.salesforce.com."
+        )
         sf._perform_login.assert_called_once()
 
         # Subsequent 401s must not redeem the rejected grant again.
@@ -316,6 +495,74 @@ class SalesforceErrorHandlerTest(TestCase):
         with pytest.raises(BulkNotSupportedException):
             self._error_handler.interpret_response(response)
 
+    def test_given_invalid_field_on_rest_query_when_interpret_response_then_fail_as_config_error(self) -> None:
+        stream_name = "neutral_stream"
+        raw_message = (
+            "\nSELECT Id, Foo__c FROM Account\n"
+            "           ^\n"
+            "ERROR at Row:1:Column:12\n"
+            "No such column 'Foo__c' on entity 'Account'."
+        )
+        handler = SalesforceErrorHandler(stream_name=stream_name)
+        response = self._create_response(
+            "GET",
+            f"{_ANY_BASE_URL}/services/data/{API_VERSION}/query",
+            400,
+            [{"errorCode": "INVALID_FIELD", "message": raw_message}],
+        )
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
+        assert "Foo__c" in resolution.error_message
+        assert stream_name in resolution.error_message
+        assert raw_message not in resolution.error_message
+        assert "An error occurred:" not in resolution.error_message
+
+    def test_given_invalid_field_with_unrecognized_message_when_interpret_response_then_fail_as_config_error(self) -> None:
+        stream_name = "neutral_stream"
+        handler = SalesforceErrorHandler(stream_name=stream_name)
+        response = self._create_response(
+            "GET",
+            f"{_ANY_BASE_URL}/services/data/{API_VERSION}/query",
+            400,
+            [{"errorCode": "INVALID_FIELD", "message": "The query references an unavailable field."}],
+        )
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
+        assert "A field" in resolution.error_message
+        assert stream_name in resolution.error_message
+
+    def test_given_invalid_field_on_bulk_job_creation_when_interpret_response_then_fail_as_config_error(self) -> None:
+        handler = SalesforceErrorHandler(stream_name="neutral_stream")
+        response = self._create_response(
+            "POST",
+            self._url_for_job_creation(),
+            400,
+            [{"errorCode": "INVALID_FIELD", "message": "No such column 'Foo__c' on entity 'Account'."}],
+        )
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
+
+    def test_given_invalid_field_compound_data_error_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(
+        self,
+    ) -> None:
+        response = self._create_response(
+            "POST",
+            self._url_for_job_creation(),
+            400,
+            [{"errorCode": "INVALID_FIELD", "message": "Selecting compound data not supported in Bulk Query"}],
+        )
+        with pytest.raises(BulkNotSupportedException):
+            self._error_handler.interpret_response(response)
+
     def test_given_txn_security_metering_error_when_interpret_response_then_raise_config_error(self) -> None:
         response = self._create_response(
             "GET",
@@ -337,6 +584,28 @@ class SalesforceErrorHandlerTest(TestCase):
     def test_given_chunked_encoding_error_when_interpret_response_then_retry(self) -> None:
         error_resolution = self._error_handler.interpret_response(ChunkedEncodingError())
         assert error_resolution.response_action == ResponseAction.RETRY
+
+    def test_given_invalid_url_exception_when_interpret_response_then_retry_with_exception_in_message(self) -> None:
+        error_resolution = SalesforceErrorHandler(stream_name="a_stream").interpret_response(
+            InvalidURL("Invalid URL 'x': No host supplied")
+        )
+
+        assert error_resolution.response_action == ResponseAction.RETRY
+        assert error_resolution.failure_type == FailureType.system_error
+        assert error_resolution.error_message == "Request for stream 'a_stream' failed with InvalidURL: Invalid URL 'x': No host supplied"
+
+    def test_given_generic_request_exception_when_interpret_response_then_retry(self) -> None:
+        error_resolution = SalesforceErrorHandler(stream_name="a_stream").interpret_response(requests.exceptions.RequestException("boom"))
+
+        assert error_resolution.response_action == ResponseAction.RETRY
+        assert error_resolution.failure_type == FailureType.system_error
+        assert error_resolution.error_message == "Request for stream 'a_stream' failed with RequestException: boom"
+
+    def test_given_none_when_interpret_response_then_retry(self) -> None:
+        error_resolution = SalesforceErrorHandler(stream_name="a_stream").interpret_response(None)
+
+        assert error_resolution.response_action == ResponseAction.RETRY
+        assert error_resolution.failure_type == FailureType.system_error
 
     def test_given_401_invalid_session_id_with_token_provider_when_interpret_response_then_retry_and_refresh(self) -> None:
         token_provider = MagicMock()
@@ -369,6 +638,38 @@ class SalesforceErrorHandlerTest(TestCase):
         assert error_resolution.response_action == ResponseAction.RETRY
         assert error_resolution.failure_type == FailureType.transient_error
 
+    def test_my_domain_token_url_is_a_login_request(self) -> None:
+        response = self._create_response(
+            "POST",
+            "https://acme.my.salesforce.com/services/oauth2/token",
+            400,
+            {"error": "invalid_client", "error_description": "invalid client credentials"},
+        )
+
+        assert SalesforceErrorHandler()._is_login_request(response)
+
+    def test_client_credentials_proactive_refresh_requests_new_token(self) -> None:
+        sf = Salesforce(
+            auth_type="ClientCredentials",
+            domain_url="https://acme.my.salesforce.com",
+            client_id="a_client_id",
+            client_secret="a_client_secret",
+        )
+        sf._last_login_time = 0.0
+        endpoint = "https://acme.my.salesforce.com/services/oauth2/token"
+        with requests_mock.Mocker() as mocker:
+            mocker.register_uri(
+                "POST",
+                endpoint,
+                json={"access_token": "refreshed_token", "instance_url": "https://instance.salesforce.com"},
+            )
+            with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS + 1):
+                sf.refresh_access_token_if_stale()
+
+        assert mocker.last_request.url == endpoint
+        assert mocker.last_request.text == "grant_type=client_credentials&client_id=a_client_id&client_secret=a_client_secret"
+        assert sf.access_token == "refreshed_token"
+
     def test_given_401_with_different_error_code_when_interpret_response_then_fall_through(self) -> None:
         response = self._create_response(
             "GET",
@@ -394,3 +695,45 @@ class SalesforceErrorHandlerTest(TestCase):
 
     def _url_for_job_creation(self) -> str:
         return f"{_ANY_BASE_URL}/services/data/{API_VERSION}/jobs/query"
+
+
+class DefaultBackoffHandlerTest(TestCase):
+    _URL = "https://example.com/non-job-endpoint"
+
+    def test_gives_up_on_http_400_without_crashing(self) -> None:
+        backoff_exception = self._create_backoff_exception(400)
+        call_count = 0
+
+        @default_backoff_handler(max_tries=2)
+        def request() -> None:
+            nonlocal call_count
+            call_count += 1
+            raise backoff_exception
+
+        with pytest.raises(DefaultBackoffException):
+            request()
+
+        assert call_count == 1
+
+    def test_retries_http_500(self) -> None:
+        backoff_exception = self._create_backoff_exception(500)
+        call_count = 0
+
+        @default_backoff_handler(max_tries=2)
+        def request() -> None:
+            nonlocal call_count
+            call_count += 1
+            raise backoff_exception
+
+        with patch("backoff._sync.time.sleep"):
+            with pytest.raises(DefaultBackoffException):
+                request()
+
+        assert call_count == 2
+
+    def _create_backoff_exception(self, status_code: int) -> DefaultBackoffException:
+        with requests_mock.Mocker() as mocker:
+            mocker.get(self._URL, status_code=status_code, json=[{"errorCode": "X", "message": "y"}])
+            response = requests.get(self._URL)
+
+        return DefaultBackoffException(request=response.request, response=response, error_message="e")

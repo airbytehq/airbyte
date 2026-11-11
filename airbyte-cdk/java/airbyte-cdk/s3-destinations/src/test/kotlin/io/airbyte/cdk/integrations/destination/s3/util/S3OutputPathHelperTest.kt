@@ -20,8 +20,8 @@ internal class S3OutputPathHelperTest {
                 "bucket_path",
                 AirbyteStream()
                     .withName("stream_name")
-                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
-            )
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)),
+            ),
         )
 
         // With namespace
@@ -32,8 +32,8 @@ internal class S3OutputPathHelperTest {
                 AirbyteStream()
                     .withNamespace("namespace")
                     .withName("stream_name")
-                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
-            )
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)),
+            ),
         )
 
         // With empty namespace
@@ -44,8 +44,8 @@ internal class S3OutputPathHelperTest {
                 AirbyteStream()
                     .withNamespace("")
                     .withName("stream_name")
-                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
-            )
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)),
+            ),
         )
 
         // With namespace with slash chart in the end
@@ -56,8 +56,8 @@ internal class S3OutputPathHelperTest {
                 AirbyteStream()
                     .withNamespace("namespace/")
                     .withName("stream_name")
-                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
-            )
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)),
+            ),
         )
 
         // With namespace with slash chart in the name
@@ -68,8 +68,8 @@ internal class S3OutputPathHelperTest {
                 AirbyteStream()
                     .withNamespace("namespace/subfolder/")
                     .withName("stream_name")
-                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
-            )
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)),
+            ),
         )
 
         // With an AWS Glue crawler
@@ -80,8 +80,8 @@ internal class S3OutputPathHelperTest {
                 AirbyteStream()
                     .withNamespace("namespace")
                     .withName("date=2022-03-15")
-                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))
-            )
+                    .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)),
+            ),
         )
     }
 }

@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+import json
 import re
 from copy import deepcopy
 from pathlib import Path
@@ -7,8 +8,13 @@ from typing import Any, List, Optional
 from base_test import BaseTest
 from config_builder import ConfigBuilder
 from freezegun import freeze_time
+from protocol_helpers import read_helper
+from request_builder import RequestBuilder
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.mock_http import HttpRequest, HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import find_template
 
 
 SECOND_READ_FREEZE_TIME = "2024-05-08"
@@ -30,6 +36,140 @@ class TestReportStream(BaseTest):
             path_to_tmp_file = Path(__file__).parent.parent / f"resource/response/{file}.csv"
             return path_to_tmp_file
         return Path(__file__).parent.parent / "resource/response/non-existing-file.csv"
+
+
+class TestReportDownloadErrorHandling(TestReportStream):
+    stream_name = "age_gender_audience_report_hourly"
+
+    _submit_request_body = {
+        "ReportRequest": {
+            "ExcludeColumnHeaders": False,
+            "ExcludeReportFooter": True,
+            "ExcludeReportHeader": True,
+            "Format": "Csv",
+            "FormatVersion": "2.0",
+            "ReportName": "AgeGenderAudienceReport",
+            "ReturnOnlyCompleteData": False,
+            "Type": "AgeGenderAudienceReportRequest",
+            "Aggregation": "Hourly",
+            "Columns": [
+                "AccountName",
+                "AccountNumber",
+                "AccountId",
+                "TimePeriod",
+                "CampaignName",
+                "CampaignId",
+                "AdGroupName",
+                "AdGroupId",
+                "AdDistribution",
+                "AgeGroup",
+                "Gender",
+                "Impressions",
+                "Clicks",
+                "Conversions",
+                "Spend",
+                "Revenue",
+                "ExtendedCost",
+                "Assists",
+                "Language",
+                "AccountStatus",
+                "CampaignStatus",
+                "AdGroupStatus",
+                "BaseCampaignId",
+                "AllConversions",
+                "AllRevenue",
+                "ViewThroughConversions",
+                "Goal",
+                "GoalType",
+                "AbsoluteTopImpressionRatePercent",
+                "TopImpressionRatePercent",
+                "ConversionsQualified",
+                "AllConversionsQualified",
+                "ViewThroughConversionsQualified",
+                "ViewThroughRevenue",
+            ],
+            "Scope": {"AccountIds": [180535609]},
+            "Time": {
+                "CustomDateRangeStart": {"Day": 1, "Month": 1, "Year": 2024},
+                "CustomDateRangeEnd": {"Day": 6, "Month": 5, "Year": 2024},
+                "ReportTimeZone": "GreenwichMeanTimeDublinEdinburghLisbonLondon",
+            },
+        }
+    }
+
+    _expired_sas_response_body = (
+        "<Error><Code>AuthenticationFailed</Code><Message>Server failed to authenticate the request.</Message>"
+        "<AuthenticationErrorDetail>Signature not valid in the specified time frame: Start [2024-01-01T00:00:00Z] "
+        "- Expiry [2024-01-01T00:10:00Z] - Current [2024-01-01T00:11:00Z]</AuthenticationErrorDetail></Error>"
+    )
+    _permission_mismatch_response_body = (
+        "<Error><Code>AuthorizationPermissionMismatch</Code><Message>This request is not authorized to perform this "
+        "operation using this permission.</Message></Error>"
+    )
+    _expired_sas_error_message = "Bing Ads file download URL is expired."
+    _default_forbidden_error_message = "Forbidden. You don't have permission to access this resource."
+
+    def _mock_report_apis(self, download_response: HttpResponse):
+        self.mock_user_query_api(response_template="user_query")
+        self.mock_accounts_search_api(
+            response_template="accounts_search_for_report",
+            body=b'{"PageInfo": {"Index": 0, "Size": 1000}, "Predicates": [{"Field": "UserId", "Operator": "Equals", "Value": "123456789"}], "ReturnAdditionalFields": "TaxCertificate,AccountMode"}',
+        )
+        self.http_mocker.post(
+            HttpRequest(
+                url="https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Submit",
+                body=json.dumps(self._submit_request_body),
+            ),
+            HttpResponse('{"ReportRequestId": "thisisthereport_requestid"}', 200),
+        )
+        poll_response = HttpResponse(
+            json.dumps(find_template("generate_report_poll", __file__)),
+            200,
+        )
+        self.http_mocker.post(
+            RequestBuilder(resource="GenerateReport/Poll", api="reporting")
+            .with_body('{"ReportRequestId": "thisisthereport_requestid"}')
+            .build(),
+            [poll_response, poll_response],
+        )
+        self.http_mocker.get(RequestBuilder(resource="").build_report_url(), download_response)
+
+    def _read_with_download_response(self, download_response: HttpResponse):
+        self._mock_report_apis(download_response)
+        catalog = CatalogBuilder().with_stream(self.stream_name, SyncMode.full_refresh).build()
+        return read_helper(self._config, catalog, expecting_exception=True)
+
+    def _assert_error(self, output, failure_type: str, message: str, message_contains: bool = False):
+        errors = [message.trace.error for message in output.errors]
+        assert any(
+            getattr(error.failure_type, "value", error.failure_type) == failure_type
+            and (message in error.message if message_contains else error.message == message)
+            for error in errors
+        ), [(error.failure_type, error.message) for error in errors]
+
+    @freeze_time("2024-05-06")
+    def test_expired_download_url_is_transient_error(self):
+        output = self._read_with_download_response(
+            HttpResponse(
+                self._expired_sas_response_body,
+                403,
+                headers={"x-ms-error-code": "AuthenticationFailed"},
+            )
+        )
+
+        self._assert_error(output, "transient_error", self._expired_sas_error_message)
+
+    @freeze_time("2024-05-06")
+    def test_other_download_forbidden_error_remains_config_error(self):
+        output = self._read_with_download_response(
+            HttpResponse(
+                self._permission_mismatch_response_body,
+                403,
+                headers={"x-ms-error-code": "AuthorizationPermissionMismatch"},
+            )
+        )
+
+        self._assert_error(output, "config_error", self._default_forbidden_error_message, message_contains=True)
 
 
 class TestSuiteReportStream(TestReportStream):

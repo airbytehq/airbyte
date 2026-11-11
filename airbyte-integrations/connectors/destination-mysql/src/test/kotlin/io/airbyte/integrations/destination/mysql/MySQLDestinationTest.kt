@@ -21,8 +21,8 @@ class MySQLDestinationTest {
                 JdbcUtils.USERNAME_KEY,
                 "user",
                 JdbcUtils.DATABASE_KEY,
-                "db"
-            )
+                "db",
+            ),
         )
     }
 
@@ -38,8 +38,8 @@ class MySQLDestinationTest {
                 JdbcUtils.DATABASE_KEY,
                 "db",
                 JdbcUtils.JDBC_URL_PARAMS_KEY,
-                extraParam
-            )
+                extraParam,
+            ),
         )
     }
 
@@ -55,8 +55,8 @@ class MySQLDestinationTest {
                 JdbcUtils.DATABASE_KEY,
                 "db",
                 JdbcUtils.SSL_KEY,
-                false
-            )
+                false,
+            ),
         )
     }
 
@@ -87,6 +87,7 @@ class MySQLDestinationTest {
             MySQLDestination()
                 .getDefaultConnectionProperties(buildConfigNoExtraJdbcParametersWithoutSsl())
         Assertions.assertEquals(MySQLDestination.DEFAULT_JDBC_PARAMETERS, defaultProperties)
+        Assertions.assertEquals("LOCAL", defaultProperties["connectionTimeZone"])
     }
 
     @Test
@@ -94,6 +95,7 @@ class MySQLDestinationTest {
         val defaultProperties =
             MySQLDestination().getDefaultConnectionProperties(buildConfigNoJdbcParameters())
         Assertions.assertEquals(MySQLDestination.DEFAULT_SSL_JDBC_PARAMETERS, defaultProperties)
+        Assertions.assertEquals("LOCAL", defaultProperties["connectionTimeZone"])
     }
 
     companion object {

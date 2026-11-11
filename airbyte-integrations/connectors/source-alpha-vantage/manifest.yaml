@@ -26,7 +26,7 @@ definitions:
             datatype: json
             outputsize: "{{ config['outputsize'] }}"
             interval: "{{ config['interval'] }}"
-            adjusted: "{{ config['adjusted'] }}"
+            adjusted: "{{ 'true' if config.get('adjusted') else 'false' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -55,7 +55,7 @@ definitions:
             datatype: json
             outputsize: "{{ config['outputsize'] }}"
             interval: "{{ config['interval'] }}"
-            adjusted: "{{ config['adjusted'] }}"
+            adjusted: "{{ 'true' if config.get('adjusted') else 'false' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -84,7 +84,7 @@ definitions:
             datatype: json
             outputsize: "{{ config['outputsize'] }}"
             interval: "{{ config['interval'] }}"
-            adjusted: "{{ config['adjusted'] }}"
+            adjusted: "{{ 'true' if config.get('adjusted') else 'false' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -113,7 +113,7 @@ definitions:
             datatype: json
             outputsize: "{{ config['outputsize'] }}"
             interval: "{{ config['interval'] }}"
-            adjusted: "{{ config['adjusted'] }}"
+            adjusted: "{{ 'true' if config.get('adjusted') else 'false' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -142,7 +142,7 @@ definitions:
             datatype: json
             outputsize: "{{ config['outputsize'] }}"
             interval: "{{ config['interval'] }}"
-            adjusted: "{{ config['adjusted'] }}"
+            adjusted: "{{ 'true' if config.get('adjusted') else 'false' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -171,7 +171,7 @@ definitions:
             datatype: json
             outputsize: "{{ config['outputsize'] }}"
             interval: "{{ config['interval'] }}"
-            adjusted: "{{ config['adjusted'] }}"
+            adjusted: "{{ 'true' if config.get('adjusted') else 'false' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -200,7 +200,7 @@ definitions:
             datatype: json
             outputsize: "{{ config['outputsize'] }}"
             interval: "{{ config['interval'] }}"
-            adjusted: "{{ config['adjusted'] }}"
+            adjusted: "{{ 'true' if config.get('adjusted') else 'false' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -229,12 +229,12 @@ definitions:
             datatype: json
             outputsize: "{{ config['outputsize'] }}"
             interval: "{{ config['interval'] }}"
-            adjusted: "{{ config['adjusted'] }}"
+            adjusted: "{{ 'true' if config.get('adjusted') else 'false' }}"
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.ObjectDpathExtractor
+            type: DpathExtractor
+            field_path: []
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -242,6 +242,42 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://www.alphavantage.co
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 5
+      response_filters:
+        - type: HttpResponseFilter
+          predicate: "{{ 'Error Message' in response }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "Alpha Vantage rejected the request: {{ response['Error Message'] }}"
+        - type: HttpResponseFilter
+          predicate: "{{ 'Information' in response and 'This is a premium endpoint' in response['Information'] }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "Alpha Vantage rejected the request: {{ response['Information'] }}"
+        - type: HttpResponseFilter
+          predicate: "{{ 'Information' in response }}"
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: "Alpha Vantage rate limit reached: {{ response['Information'] }}"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
+  max_concurrency: 1
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1
+          interval: PT2S
+      matchers: [] # free keys allow 1 request per second across all endpoints
 
 streams:
   - $ref: "#/definitions/streams/time_series_intraday"

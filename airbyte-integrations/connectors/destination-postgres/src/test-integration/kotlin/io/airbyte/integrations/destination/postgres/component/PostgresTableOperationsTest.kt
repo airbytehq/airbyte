@@ -17,7 +17,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Isolated
 
+@Isolated
 @MicronautTest(environments = ["component"])
 class PostgresTableOperationsTest(
     override val client: PostgresAirbyteClient,

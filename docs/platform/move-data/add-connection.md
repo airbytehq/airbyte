@@ -11,6 +11,8 @@ import CaptureHarFile from '../_partials/_capture-har-file.md';
 
 After you add a [source](../using-airbyte/getting-started/add-a-source) and a [destination](../using-airbyte/getting-started/add-a-destination), add a new connection to start syncing data from your source to your destination.
 
+Connectors can be data replication connectors, agent connectors, or both. Agent connectors support agent access for direct reads and search. In Airbyte Cloud, a connection can also feed the [context layer search index](../context-layer/search.md) when both the source and destination are agent connectors. Search operates on the connection's synced data. After an organization administrator enables **Semantic search**, new eligible connections have it on by default. You can change it during connection setup or in connection settings with workspace edit permission.
+
 ## ELT and data activation destinations are different
 
 You configure all connections in a similar way. However, the exact process is different for [data activation](elt-data-activation) destinations. This page explains how to set up both.
@@ -31,7 +33,7 @@ Follow these steps to create a connection to a database, warehouse, lake, or sim
 
 2. Click **New connection**.
 
-3. Click the source you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-source).
+3. Click the source you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-source). Sources and destinations you saved as drafts don't appear here until you finish setting them up.
 
 4. Click the destination you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-destination). Wait a moment while Airbyte fetches the schema of your data.
 
@@ -70,7 +72,7 @@ Follow these steps to create a connection to a data activation destination.
 
 2. Click **New connection**.
 
-3. Click the source you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-source).
+3. Click the source you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-source). Sources and destinations you saved as drafts don't appear here until you finish setting them up.
 
 4. Click the destination you want to use. If you don't have one yet, you can [add one](../using-airbyte/getting-started/add-a-destination). Wait a moment while Airbyte fetches the schema of your data. When it's done, Airbyte asks you to set up mappings.
 

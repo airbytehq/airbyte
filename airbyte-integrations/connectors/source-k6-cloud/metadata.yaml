@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e300ece7-b073-43a3-852e-8aff36a57f13
-  dockerImageTag: 0.2.26
+  dockerImageTag: 0.2.27
   dockerRepository: airbyte/source-k6-cloud
   documentationUrl: https://docs.airbyte.com/integrations/sources/k6-cloud
   githubIssueLabel: source-k6-cloud
@@ -16,15 +16,15 @@ data:
   name: K6 Cloud
   registryOverrides:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   remoteRegistries:
     pypi:
       enabled: false
       packageName: airbyte-source-k6-cloud
-  supportLevel: community
+  supportLevel: archived
   tags:
     - cdk:low-code
     - language:manifest-only
@@ -41,10 +41,13 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
-    - title: k6 Cloud API documentation
-      url: https://k6.io/docs/cloud/cloud-reference/cloud-rest-api/
+    - title: Migrate from app.k6.io to Grafana Cloud k6
+      url: https://grafana.com/docs/grafana-cloud/observe-and-act/testing/k6/reference/migrate-from-app-k6-io-to-gck6/
+      type: other
+    - title: Grafana Cloud k6 REST API documentation
+      url: https://grafana.com/docs/grafana-cloud/observe-and-act/testing/k6/reference/cloud-rest-api/
       type: api_reference
-    - title: k6 Cloud Status
-      url: https://status.k6.io/
+    - title: Grafana Cloud Status
+      url: https://status.grafana.com/
       type: status_page
 metadataSpecVersion: "1.0"

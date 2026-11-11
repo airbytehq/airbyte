@@ -73,7 +73,7 @@ class SingleStreamInsert(
             generationId = generationId,
             minimumGenerationId = minGenerationId,
             syncId = 1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
     }
 
@@ -100,7 +100,7 @@ class SingleStreamInsert(
                 stream = stream,
                 data = Jsons.serialize(data),
                 emittedAtMs = System.currentTimeMillis(),
-                checkpointId = checkpointId
+                checkpointId = checkpointId,
             )
         }
         private val messageParts =
@@ -173,7 +173,7 @@ class SingleStreamFileTransfer(
     private val numFiles: Int,
     private val fileSizeMb: Int,
     private val stagingDirectory: Path,
-    private val seed: Long = 8656931613L
+    private val seed: Long = 8656931613L,
 ) : PerformanceTestScenario {
     private val log = KotlinLogging.logger {}
 
@@ -186,7 +186,7 @@ class SingleStreamFileTransfer(
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     override val catalog: DestinationCatalog =
@@ -201,8 +201,8 @@ class SingleStreamFileTransfer(
                     minimumGenerationId = 1,
                     syncId = 101,
                     namespaceMapper = NamespaceMapper(),
-                )
-            )
+                ),
+            ),
         )
 
     private fun makeFileName(index: Long): String =
@@ -234,7 +234,7 @@ class SingleStreamFileTransfer(
                         bytes = fileSizeMb * 1024 * 1024L,
                         modified = System.currentTimeMillis(),
                         sourceFileUrl = fileName,
-                    )
+                    ),
                 )
             destination.sendMessage(InputFile(message))
         }
@@ -244,7 +244,7 @@ class SingleStreamFileTransfer(
         PerformanceTestScenario.Summary(
             records = numFiles.toLong(),
             size = numFiles * fileSizeMb * 1024 * 1024L,
-            expectedRecordsCount = numFiles.toLong()
+            expectedRecordsCount = numFiles.toLong(),
         )
 }
 
@@ -254,7 +254,7 @@ class SingleStreamFileAndMetadataTransfer(
     private val numFiles: Int,
     private val fileSizeMb: Int,
     private val stagingDirectory: Path,
-    private val seed: Long = 8656931613L
+    private val seed: Long = 8656931613L,
 ) : PerformanceTestScenario {
     private val log = KotlinLogging.logger {}
 
@@ -268,7 +268,7 @@ class SingleStreamFileAndMetadataTransfer(
             minimumGenerationId = 0,
             syncId = 1,
             includeFiles = true,
-            namespaceMapper = NamespaceMapper()
+            namespaceMapper = NamespaceMapper(),
         )
 
     override val catalog: DestinationCatalog =
@@ -283,9 +283,9 @@ class SingleStreamFileAndMetadataTransfer(
                     minimumGenerationId = 1,
                     syncId = 101,
                     includeFiles = true,
-                    namespaceMapper = NamespaceMapper()
-                )
-            )
+                    namespaceMapper = NamespaceMapper(),
+                ),
+            ),
         )
 
     private fun makeFileName(index: Long): String =
@@ -331,7 +331,8 @@ class SingleStreamFileAndMetadataTransfer(
                       "created_at": "2025-03-11T23:33:57Z",
                       "updated_at": "2025-03-11T23:33:57Z"
                     }
-            """.trimIndent()
+                """
+                    .trimIndent()
 
             val msg =
                 InputRecord(
@@ -342,7 +343,7 @@ class SingleStreamFileAndMetadataTransfer(
                     meta = null,
                     serialized = dataStr,
                     checkpointId =
-                        checkpointKeyForMedium(destination.dataChannelMedium)?.checkpointId
+                        checkpointKeyForMedium(destination.dataChannelMedium)?.checkpointId,
                 )
 
             destination.sendMessage(msg)
@@ -353,7 +354,7 @@ class SingleStreamFileAndMetadataTransfer(
         PerformanceTestScenario.Summary(
             records = numFiles.toLong(),
             size = numFiles * fileSizeMb * 1024 * 1024L,
-            expectedRecordsCount = numFiles.toLong()
+            expectedRecordsCount = numFiles.toLong(),
         )
 }
 
@@ -388,7 +389,7 @@ class MultiStreamInsert(
                 generationId = generationId,
                 minimumGenerationId = minGenerationId,
                 syncId = 1,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
             )
         }
     }
@@ -405,11 +406,11 @@ class MultiStreamInsert(
                     stream = stream,
                     data =
                         Jsons.serialize(
-                            (listOf(idColumn) + columns).associate { Pair(it.name, it.sample) }
+                            (listOf(idColumn) + columns).associate { Pair(it.name, it.sample) },
                         ),
                     emittedAtMs = System.currentTimeMillis(),
                     checkpointId =
-                        checkpointKeyForMedium(destination.dataChannelMedium)?.checkpointId
+                        checkpointKeyForMedium(destination.dataChannelMedium)?.checkpointId,
                 )
             val jsonString = inputRecord.serializeToString()
             val size = jsonString.length.toLong()
@@ -426,7 +427,7 @@ class MultiStreamInsert(
         PerformanceTestScenario.Summary(
             recordCount,
             byteCount,
-            expectedRecordsCount = recordsToInsertPerStream * streams.size
+            expectedRecordsCount = recordsToInsertPerStream * streams.size,
         )
 }
 

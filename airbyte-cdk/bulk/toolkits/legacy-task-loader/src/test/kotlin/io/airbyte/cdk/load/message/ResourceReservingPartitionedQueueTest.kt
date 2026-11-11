@@ -19,11 +19,11 @@ class ResourceReservingPartitionedQueueTest {
     fun `part queue respects memory available`() = runTest {
         val reservationManager = mockk<ReservationManager>(relaxed = true)
         coEvery { reservationManager.totalCapacityBytes } returns 1000
-        val reservation = mockk<Reserved<ResourceReservingPartitionedQueue<Unit>>>(relaxed = true)
+        val reservation = mockk<Reserved<Any>>(relaxed = true)
         coEvery { reservation.bytesReserved } returns 500
-        coEvery {
-            reservationManager.reserveOrThrow<ResourceReservingPartitionedQueue<Unit>>(any(), any())
-        } returns reservation
+        // The queue reserves on behalf of its runBlocking scope, not itself; mockk >= 1.14.9 checks
+        // the type argument of any() against the actual argument (mockk#1494).
+        coEvery { reservationManager.reserveOrThrow<Any>(any(), any()) } returns reservation
         ResourceReservingPartitionedQueue<Unit>(
             reservationManager,
             0.5,
@@ -31,9 +31,7 @@ class ResourceReservingPartitionedQueueTest {
             1, // not relevant
             1, // not relevant
         )
-        coVerify {
-            reservationManager.reserveOrThrow<ResourceReservingPartitionedQueue<Unit>>(500, any())
-        }
+        coVerify { reservationManager.reserveOrThrow<Any>(500, any()) }
     }
 
     @Test

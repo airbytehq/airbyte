@@ -136,7 +136,7 @@
         "oneOf": [
           {
             "additionalProperties": true,
-            "description": "To allow unencrypted communication only when the source doesn't support encryption.",
+            "description": "To allow unencrypted communication only when the source doesn't support encryption. On Airbyte Cloud this requires an SSH tunnel.",
             "properties": {
               "mode": {
                 "default": "preferred",

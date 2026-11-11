@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-const val CSV_CONTENT: String = """
+const val CSV_CONTENT: String =
+    """
 id,value
 ID_0,value_0
 ID_1,value_1

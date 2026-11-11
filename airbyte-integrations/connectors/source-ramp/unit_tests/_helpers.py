@@ -21,6 +21,13 @@ REIMBURSEMENTS_URL = f"{BASE_URL}/reimbursements"
 ACCESS_TOKEN = "test-access-token"
 TOKEN_RESPONSE = {"access_token": ACCESS_TOKEN, "expires_in": 864000, "token_type": "Bearer"}
 
+# Every stream logs in with the same token request, asking for all the scopes the connector reads.
+ALL_SCOPES = (
+    "transactions:read cards:read reimbursements:read users:read departments:read locations:read"
+    " entities:read business:read funds:read spend_programs:read bills:read vendors:read"
+    " receipts:read merchants:read purchase_orders:read"
+)
+
 START_DATE = "2024-01-01T00:00:00Z"
 CONFIG = {
     "client_id": "test_client_id",

@@ -7,7 +7,6 @@ from typing import Any, Iterable, List, Mapping, Optional
 
 import dpath.util
 
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.transformations import AddFields
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
@@ -86,31 +85,16 @@ class UpdatesSubstreamPartitionRouter(SubstreamPartitionRouter):
                 parent_field = parent_stream_config.parent_key.eval(self.config)
                 partition_field = parent_stream_config.partition_field.eval(self.config)
 
-                for parent_stream_slice in parent_stream.stream_slices(
-                    sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
-                ):
-                    empty_parent_slice = True
-                    parent_slice = parent_stream_slice
+                for parent_partition in parent_stream.generate_partitions():
+                    parent_slice = parent_partition.to_slice()
 
-                    for parent_record in parent_stream.read_records(
-                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
-                    ):
-                        # Skip non-records (eg AirbyteLogMessage)
-                        if isinstance(parent_record, AirbyteMessage):
-                            if parent_record.type == Type.RECORD:
-                                parent_record = parent_record.record.data
-                            else:
-                                continue
-                        empty_parent_slice = False
-                        stream_state_values = parent_record.get(parent_field)
-                        updates_object_id = parent_record.get("id")
+                    for parent_record in parent_partition.read():
+                        record_data = parent_record.data
+                        stream_state_values = record_data.get(parent_field)
+                        updates_object_id = record_data.get("id")
 
                         for stream_state_value in stream_state_values:
                             yield StreamSlice(
                                 partition={partition_field: stream_state_value, "parent_slice": parent_slice},
                                 cursor_slice={"updates_object_id": updates_object_id},
                             )
-
-                    # If the parent slice contains no records,
-                    if empty_parent_slice:
-                        yield from []
