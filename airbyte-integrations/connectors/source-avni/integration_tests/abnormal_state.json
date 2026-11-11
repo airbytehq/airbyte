@@ -1,14 +1,46 @@
-{
-  "subjects": {
-    "last_modified_at": "2200-06-27T04:18:36.914Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "subjects"
+      },
+      "stream_state": {
+        "last_modified_at": "2200-06-27T04:18:36.914000Z"
+      }
+    }
   },
-  "program_enrolments": {
-    "last_modified_at": "2200-06-27T04:18:36.914Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "program_enrolments"
+      },
+      "stream_state": {
+        "last_modified_at": "2200-06-27T04:18:36.914000Z"
+      }
+    }
   },
-  "program_encounters": {
-    "last_modified_at": "2200-06-27T04:18:36.914Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "program_encounters"
+      },
+      "stream_state": {
+        "last_modified_at": "2200-06-27T04:18:36.914000Z"
+      }
+    }
   },
-  "encounters": {
-    "last_modified_at": "2200-06-27T04:18:36.914Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "encounters"
+      },
+      "stream_state": {
+        "last_modified_at": "2200-06-27T04:18:36.914000Z"
+      }
+    }
   }
-}
+]
