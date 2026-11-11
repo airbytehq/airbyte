@@ -188,7 +188,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                              |
 | ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.1.4 | 2026-11-03 | [90330](https://github.com/airbytehq/airbyte/pull/90330) | Simplify the API error handling configuration; retry and failure behavior is unchanged |
+| 1.1.5 | 2026-11-11 | [90330](https://github.com/airbytehq/airbyte/pull/90330) | Simplify the API error handling configuration; retry and failure behavior is unchanged |
+| 1.1.4 | 2026-11-10 | [91783](https://github.com/airbytehq/airbyte/pull/91783) | Update dependencies |
 | 1.1.3 | 2026-11-03 | [90796](https://github.com/airbytehq/airbyte/pull/90796) | Update dependencies |
 | 1.1.2 | 2026-10-31 | [90314](https://github.com/airbytehq/airbyte/pull/90314) | Report a specific error message when YouTube cannot find a channel's uploads playlist |
 | 1.1.1 | 2026-10-27 | [90088](https://github.com/airbytehq/airbyte/pull/90088) | Update dependencies |
