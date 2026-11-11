@@ -794,6 +794,14 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.outreach.io/api/v2/
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: REFRESH_TOKEN_THEN_RETRY
+          http_codes: [401]
+          error_message: >-
+            Authentication to Outreach has expired. The access token will be refreshed and the request retried. If this issue persists, re-authenticate to restore access to Outreach.
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config['client_id'] }}"

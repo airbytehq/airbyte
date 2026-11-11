@@ -68,6 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.54 | 2026-11-10 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Refresh the OAuth access token and retry when it expires mid-sync instead of failing |
 | 1.1.53 | 2026-11-10 | [91643](https://github.com/airbytehq/airbyte/pull/91643) | Update dependencies |
 | 1.1.52 | 2026-11-03 | [90625](https://github.com/airbytehq/airbyte/pull/90625) | Update dependencies |
 | 1.1.51 | 2026-10-27 | [90022](https://github.com/airbytehq/airbyte/pull/90022) | Update dependencies |
