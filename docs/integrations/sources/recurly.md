@@ -1,6 +1,6 @@
 # Recurly
 
-This page contains the setup guide and reference information for the Recurly source connector. The connector reads data from the [Recurly v3 API](https://recurly.com/developers/api/v2021-02-25/index.html) (version `v2021-02-25`).
+This page contains the setup guide and reference information for the Recurly source connector. The connector reads data from the [Recurly v3 API](https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started) (version `v2021-02-25`).
 
 ## Prerequisites
 
@@ -10,23 +10,25 @@ This page contains the setup guide and reference information for the Recurly sou
 
 ## Setup guide
 
-### Step 1: Get a Recurly API key
+Create a private API key in Recurly, then configure your Airbyte source with that key and the optional settings below.
+
+## Set up Recurly
 
 1. Sign in to Recurly as a user with the Integration permission.
 2. Go to **Integrations** > **API Credentials**.
 3. Copy an existing private API key, or add a new private key for Airbyte.
 
-Recurly private API keys grant full access to your site's data, and Recurly doesn't offer read-only keys. Creating a dedicated key for Airbyte lets you revoke its access without affecting other integrations. For more information, see [Recurly API keys](https://docs.recurly.com/docs/api-keys).
+Recurly private API keys grant full access to your site's data, and Recurly doesn't offer read-only keys. Creating a dedicated key for Airbyte lets you revoke its access without affecting other integrations. For more information, see [Generate an API key](https://docs.recurly.com/docs/api-keys#generate-an-api-key).
 
-### Step 2: Set up the Recurly connector in Airbyte
+## Set up the Recurly connector in Airbyte
 
 1. In Airbyte, go to **Sources** and add a new source. Select **Recurly**.
-2. For **API Key**, paste the private API key from Step 1.
+2. For **API Key**, paste the [private API key](https://docs.recurly.com/docs/api-keys#add-a-private-api-key) you copied in Recurly.
 3. (Optional) For **Start Date**, enter the UTC date and time to start replicating data from, in the format `YYYY-MM-DDTHH:mm:ssZ`. If you leave it empty, the connector replicates the last five years of data.
 4. (Optional) For **End Date**, enter the UTC date and time to stop replicating data at, in the format `YYYY-MM-DDTHH:mm:ssZ`. Records updated after this time aren't replicated. If you leave it empty, the connector replicates data up to the time of the sync.
 5. (Optional) For **Number of concurrent threads**, enter the number of requests the connector sends to Recurly in parallel, from 1 to 20. The default is 10.
 6. (Optional) For **Days in length for each API call to get data**, enter the number of days of data the connector requests at a time from the accounts stream, from 1 to 365. The default is 30. Smaller values result in more API calls but better concurrency.
-7. (Optional) Turn on **Use Sandbox Environment** if the API key belongs to a Recurly sandbox site. Sandbox sites have a lower rate limit than production sites.
+7. (Optional) Turn on **Use Sandbox Environment** if the API key belongs to a Recurly sandbox site. This setting defaults to off and selects the [API request limit](https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits), not a different API endpoint. Sandbox sites have a lower rate limit than production sites.
 8. Click **Set up source**.
 
 ## Supported sync modes
@@ -38,30 +40,38 @@ The Recurly source connector supports the following sync modes:
 
 All streams except Export Dates support incremental syncs. Most streams use `updated_at` as the cursor. The Account Notes stream uses `created_at`.
 
-## Supported streams
+For a first sync or a reset, leaving **Start Date** empty starts date-filtered streams five years before the sync runs. To retrieve older history, enter an explicit start date. Subsequent incremental syncs resume from their saved progress rather than rereading five years of history. Export Dates is not filtered by these dates.
 
-- [Accounts](https://docs.recurly.com/docs/accounts)
-- [Account Coupon Redemptions](https://docs.recurly.com/docs/coupons#redemptions)
-- [Account Notes](https://docs.recurly.com/docs/accounts#account-notes)
-- [Add Ons](https://docs.recurly.com/docs/plans#add-ons-1)
-- [Billing Infos](https://docs.recurly.com/docs/accounts#billing-info)
-- [Coupons](https://docs.recurly.com/docs/coupons)
-- [Credit Payments](https://docs.recurly.com/docs/invoices)
-- [Export Dates](https://docs.recurly.com/docs/export-overview) (Full Refresh only)
-- [Invoices](https://docs.recurly.com/docs/invoices)
-- [Line Items](https://docs.recurly.com/docs/invoices#line-items)
-- [Measured Units](https://recurly.com/developers/api/v2021-02-25/index.html#tag/measured_unit)
-- [Plans](https://docs.recurly.com/docs/plans)
-- [Shipping Addresses](https://docs.recurly.com/docs/shipping-addresses)
-- [Shipping Methods](https://docs.recurly.com/docs/shipping#shipping-methods)
-- [Subscriptions](https://docs.recurly.com/docs/subscriptions)
-- [Transactions](https://docs.recurly.com/docs/transactions)
-- [Unique Coupons](https://docs.recurly.com/docs/bulk-unique-coupons)
-- Unique Coupons Parent
+Account Coupon Redemptions, Account Notes, and Billing Infos only revisit accounts updated since their previous sync. Changes to records within an account can be missed if Recurly does not also update the account. Shipping Addresses revisits accounts within the configured date range on each sync. Unique Coupons reads codes for bulk coupons within the configured date range.
+
+## Supported Streams
+
+- [Accounts](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_accounts)
+- [Account Coupon Redemptions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_account_coupon_redemptions)
+- [Account Notes](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_account_notes)
+- [Add Ons](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_add_ons)
+- [Billing Infos](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_billing_infos)
+- [Coupons](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_coupons)
+- [Credit Payments](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_credit_payments)
+- [Export Dates](https://recurly.com/developers/api/v2021-02-25/index.html#operation/get_export_dates) (Full Refresh only)
+- [Invoices](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_invoices)
+- [Line Items](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_line_items)
+- [Measured Units](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_measured_unit)
+- [Plans](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_plans)
+- [Shipping Addresses](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_shipping_addresses)
+- [Shipping Methods](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_shipping_methods)
+- [Subscriptions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_subscriptions)
+- [Transactions](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_transactions)
+- [Unique Coupons](https://recurly.com/developers/api/v2021-02-25/index.html#operation/list_unique_coupon_codes)
+- Unique Coupons Parent: a helper stream containing bulk coupons, used to find the individual codes synced by Unique Coupons. It does not contain the individual codes itself.
 
 The Account Coupon Redemptions, Account Notes, Billing Infos, and Shipping Addresses streams make one request per account, so they can take longer to sync on sites with many accounts.
 
-## Limitations and troubleshooting
+## Limitations & Troubleshooting
+
+### Site region
+
+The connector only uses the US API endpoint, `https://v3.recurly.com`. You cannot configure an EU endpoint. **Use Sandbox Environment** does not change the region.
 
 ### Rate limits
 
@@ -72,6 +82,8 @@ Recurly applies the limit to the whole site, but the connector only tracks its o
 ### Authentication errors
 
 If Recurly returns HTTP 401 or 403, the sync fails with a configuration error. Make sure the API key is an active private key for the site you want to sync, then update the **API Key** field.
+
+Billing Infos reads the multiple-payment-method endpoint associated with Recurly's premium Wallet feature. Check that your site has access to the features needed by your selected streams. If a selected stream returns HTTP 403 despite a valid key, check with Recurly whether your site's permissions or feature access restrict that data, or deselect the stream. The connector does not skip forbidden streams automatically.
 
 ## IP allow list
 
