@@ -51,7 +51,7 @@ data:
     sl: 100
   externalDocumentationUrls:
     - title: Track PMS API reference
-      url: https://developer.trackhs.com/reference/
+      url: https://developer.trackhs.com/reference/getreservations
       type: api_reference
     - title: Track PMS OpenAPI specifications
       url: https://developer.trackhs.com/openapi/
