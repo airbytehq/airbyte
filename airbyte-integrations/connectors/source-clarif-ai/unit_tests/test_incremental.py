@@ -50,11 +50,11 @@ def test_applications_state_advances_to_newest_nanosecond_modified_at():
         mocker.get(_APPS_URL, json={"apps": _APPS})
         first = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
 
+    assert _final_state(first) == {"modified_at": "2026-10-14T09:41:55.568082Z"}
     assert [(record.record.data["id"], record.record.data["modified_at"]) for record in first.records] == [
         ("app1", "2026-10-02T17:05:11.904417Z"),
         ("app2", "2026-10-14T09:41:55.568082Z"),
     ]
-    assert _final_state(first) == {"modified_at": "2026-10-14T09:41:55.568082Z"}
 
     state = StateBuilder().with_stream_state("applications", _final_state(first)).build()
     newer_app = {"id": "app3", "modified_at": "2026-11-01T00:00:00.000000001Z"}
