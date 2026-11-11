@@ -118,8 +118,8 @@ class BigqueryDirectLoadDatabaseInitialStatusGathererTest {
                                 finalTableName = realTableName,
                             ),
                         columnNameMapping = ColumnNameMapping(emptyMap()),
-                    )
-            )
+                    ),
+            ),
         )
     }
 }
