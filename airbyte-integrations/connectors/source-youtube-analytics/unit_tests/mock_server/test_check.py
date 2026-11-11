@@ -22,15 +22,9 @@ def test_check_uses_active_basic_report_when_annotations_has_no_reports():
 
 def _check_uses_active_basic_report(http_mocker: HttpMocker):
     config = ConfigBuilder().build()
-    basic_reports = (
-        YoutubeAnalyticsRequestBuilder.reports_endpoint("basic-job")
-        .with_created_after("1990-01-01T00:00:00.000000Z")
-        .build()
-    )
+    basic_reports = YoutubeAnalyticsRequestBuilder.reports_endpoint("basic-job").with_created_after("1990-01-01T00:00:00.000000Z").build()
     annotations_reports = (
-        YoutubeAnalyticsRequestBuilder.reports_endpoint("annotations-job")
-        .with_created_after("1990-01-01T00:00:00.000000Z")
-        .build()
+        YoutubeAnalyticsRequestBuilder.reports_endpoint("annotations-job").with_created_after("1990-01-01T00:00:00.000000Z").build()
     )
     http_mocker.post(
         YoutubeAnalyticsRequestBuilder.token_request(),
