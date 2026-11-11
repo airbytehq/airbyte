@@ -271,9 +271,7 @@ class TestIncrementalTwilioStream:
         ],
         ids=["legacy-stale", "new-shape-stale", "mixed-stale-duplicate", "global-flag-stale", "newer-partition"],
     )
-    def test_messages_partition_state_does_not_rewind(
-        self, requests_mock, partitions, use_global_cursor, expected_lower
-    ):
+    def test_messages_partition_state_does_not_rewind(self, requests_mock, partitions, use_global_cursor, expected_lower):
         requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
         requests = []
 
@@ -283,17 +281,21 @@ class TestIncrementalTwilioStream:
 
         requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json=_messages)
         uri = ACCOUNTS_JSON["accounts"][0]["subresource_uris"]["messages"]
-        state = StateBuilder().with_stream_state(
-            "messages",
-            {
-                "state": {"date_sent": "2022-11-15T12:00:00Z"},
-                "states": [
-                    {"partition": {"subresource_uri": uri, **partition}, "cursor": {"date_sent": cursor}}
-                    for partition, cursor in partitions
-                ],
-                "use_global_cursor": use_global_cursor,
-            },
-        ).build()
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "state": {"date_sent": "2022-11-15T12:00:00Z"},
+                    "states": [
+                        {"partition": {"subresource_uri": uri, **partition}, "cursor": {"date_sent": cursor}}
+                        for partition, cursor in partitions
+                    ],
+                    "use_global_cursor": use_global_cursor,
+                },
+            )
+            .build()
+        )
 
         read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
 
@@ -1081,9 +1083,7 @@ def test_stale_partition_state_migration_deduplicates_without_mutating_input():
     assert not migration.should_migrate(migrated)
 
 
-@pytest.mark.parametrize(
-    "state", [{}, {"states": [{"partition": {}, "cursor": {"date_sent": "2022-11-13T12:00:00Z"}}]}]
-)
+@pytest.mark.parametrize("state", [{}, {"states": [{"partition": {}, "cursor": {"date_sent": "2022-11-13T12:00:00Z"}}]}])
 def test_stale_partition_state_migration_without_global_is_no_op(state):
     migration = TwilioStalePartitionStateMigration()
     assert not migration.should_migrate(state)
