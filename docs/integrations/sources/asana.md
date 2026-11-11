@@ -131,7 +131,7 @@ Asana's organization export endpoints are only available to Enterprise organizat
 ### Troubleshooting
 
 - If you encounter access errors while using OAuth, make sure your Asana OAuth app is available in the authorizing workspace and is configured with **Full permissions**. The connector requests Asana's `default` OAuth scope during authorization. For more information, see Asana's [OAuth documentation](https://developers.asana.com/docs/oauth).
-- The connector skips records when Asana returns HTTP 402, 403, 404, 412, or 451 errors instead of failing the sync. If a stream syncs fewer records than you expect, or no records, confirm that the authenticated Asana user can view those resources in Asana and that your Asana plan includes the related feature.
+- When Asana returns an HTTP 402, 403, 404, 412, or 451 error, the connector skips that request and continues the sync instead of failing. If a stream syncs fewer records than you expect, or no records, confirm that the authenticated Asana user can view those resources in Asana and that your Asana plan includes the related feature.
 - For other troubleshooting topics, see the [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
