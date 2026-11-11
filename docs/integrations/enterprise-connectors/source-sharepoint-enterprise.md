@@ -245,6 +245,7 @@ Before parsing each document, the connector exports Word Document files to Docx 
 :::info
 
 The raw file replication feature has the following requirements and limitations:
+
 - **Max File Size:** `1GB` per file
 - **Supported Destinations:**
   - S3: `v1.4.0` or later
