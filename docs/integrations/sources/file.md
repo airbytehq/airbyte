@@ -302,6 +302,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.1      | 2026-11-04 | [91047](https://github.com/airbytehq/airbyte/pull/91047) | Raise minimum supported Python version to 3.11 |
 | 0.6.0      | 2025-11-03 | [69148](https://github.com/airbytehq/airbyte/pull/69148) | Promoting release candidate 0.6.0-rc.1 to a main version.                                                                                                                                             |
 | 0.6.0-rc.1 | 2025-10-22 | [68588](https://github.com/airbytehq/airbyte/pull/68588) | Update to airbyte-cdk ^v7                                                                                                                                              |
 | 0.5.46     | 2025-10-21 | [68484](https://github.com/airbytehq/airbyte/pull/68484) | Update dependencies                                                                                                                                                    |
