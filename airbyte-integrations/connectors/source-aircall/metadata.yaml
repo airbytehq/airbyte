@@ -38,7 +38,7 @@ data:
           no longer returns: copy the table first. Some destinations need a step before the first sync, such as
           Snowflake for append-mode `calls` and ClickHouse for append-mode `users`. See the
           [migration guide](https://docs.airbyte.com/integrations/sources/aircall-migrations#upgrading-to-100).
-        upgradeDeadline: "2026-11-23"
+        upgradeDeadline: "2026-11-25"
         deadlineAction: disable
         scopedImpact:
           - scopeType: stream
