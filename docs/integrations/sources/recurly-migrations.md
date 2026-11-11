@@ -1,4 +1,4 @@
-import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+import MigrationGuide from '@site/static/\_migration_guides_upgrade_guide.md';
 
 # Recurly Migration Guide
 
@@ -6,19 +6,19 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 Version 2.0.0 corrects the following schemas to match the Recurly API:
 
-| Stream | Field | Change |
-| :----- | :---- | :----- |
-| `subscriptions` | `coupon_redemptions` | An array of coupon redemption objects instead of a single object. The fields within each redemption are unchanged. |
-| `accounts` | `external_accounts[].created_at`, `external_accounts[].updated_at` | Strings now declared with the `date-time` format. |
-| `account_coupon_redemptions` | `coupon.redeem_by` | String now declared with the `date-time` format. |
-| `coupons` | `redeem_by` | String now declared with the `date-time` format. |
-| `unique_coupons_parent` | `created_at`, `updated_at` | Strings now declared with the `date-time` format. |
+| Stream                       | Field                                                              | Change                                                                                                             |
+| :--------------------------- | :----------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| `subscriptions`              | `coupon_redemptions`                                               | An array of coupon redemption objects instead of a single object. The fields within each redemption are unchanged. |
+| `accounts`                   | `external_accounts[].created_at`, `external_accounts[].updated_at` | Strings now declared with the `date-time` format.                                                                  |
+| `account_coupon_redemptions` | `coupon.redeem_by`                                                 | String now declared with the `date-time` format.                                                                   |
+| `coupons`                    | `redeem_by`                                                        | String now declared with the `date-time` format.                                                                   |
+| `unique_coupons_parent`      | `created_at`, `updated_at`                                         | Strings now declared with the `date-time` format.                                                                  |
 
 To migrate:
 
 1. Upgrade the Recurly source connector to version 2.0.0.
 2. Refresh the source schema for the affected streams listed above and apply the schema changes to your connections.
-3. Resume syncing. If your destination cannot alter an affected column's type, reset or clear **only the affected streams**, then sync them again to rebuild their data. Clearing deletes existing destination data for those streams until the sync completes; confirm that you can re-read the required history before doing so. No reset or clear is needed if your destination can apply the type changes.
+3. To restore `coupon_redemptions` on previously synced rows, run [**Refresh stream**](https://docs.airbyte.com/platform/operator-guides/refreshes) for `subscriptions`. With Destinations V2, rows written using the old object schema had this field nulled, with an error recorded in `_airbyte_meta`; refreshing the schema only fixes new rows. The date-time format changes do not require re-syncing history. For other affected streams, reset or clear **only the affected streams** if your destination cannot alter the column type, then sync them again to rebuild their data. Clearing deletes existing destination data for those streams until the sync completes; confirm that you can re-read the required history before doing so.
 4. Update downstream queries or models that treat `subscriptions.coupon_redemptions` as an object to handle an array, and check any models that rely on the affected timestamp columns being strings.
 
 ## Upgrading to 1.0.0
