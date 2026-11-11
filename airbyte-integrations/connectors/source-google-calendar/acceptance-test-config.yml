@@ -16,8 +16,6 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog_full_refresh.json"
         empty_streams:
-          - name: "acl"
-            bypass_reason: "Sandbox refresh token lacks the calendar.acls.readonly scope until the OAuth scope change (#86469) lands"
           - name: "freebusy"
             bypass_reason: "The sandbox calendar may have no busy blocks in the rolling 75-day window"
   # The CDK standard-test runner used in CI reads every section below. Entries sharing a config are
