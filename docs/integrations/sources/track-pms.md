@@ -24,6 +24,8 @@ The connector uses HTTP Basic authentication, sending `api_key` as the username 
 
 The connector handles Track's API rate limit of 10,000 requests per 5 minutes. When the rate limit is reached, the connector waits approximately 5 minutes before retrying.
 
+The `reservations_booking_fees`, `reservations_fees`, `reservations_logs`, `reservations_notes` and `reservations_tags` streams support full refresh only. On every sync, each of these streams reads the full `reservations` history and then sends at least one request for each reservation. For example, if you enable all five streams for an account with 20,000 reservations, each sync sends at least 100,000 requests and takes more than 50 minutes at Track's rate limit. Track applies the rate limit per IP address, so connections that send requests from the same IP addresses, such as Airbyte Cloud connections, share it. Enable only the reservation streams that you need.
+
 ## Streams
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental | API Docs |
@@ -31,10 +33,10 @@ The connector handles Track's API rate limit of 10,000 requests per 5 minutes. W
 | accounting_accounts | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getledgeraccounts) |
 | accounting_bills | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getbillscollection) |
 | accounting_charges | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getaccountingchargescollection) |
-| accounting_deposits | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| accounting_deposits | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getalldeposits-1) |
 | accounting_deposits_payments | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getdepositpayments) |
 | accounting_items | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getitemscollection) |
-| accounting_transactions | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getowneridtransactionscollection) |
+| accounting_transactions | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getaccountingtransactionscollection) |
 | booking_fees | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getbookingfees) |
 | charges | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getchargescollection) |
 | companies | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getcompanies) |
@@ -59,29 +61,35 @@ The connector handles Track's API rate limit of 10,000 requests per 5 minutes. W
 | groups_breakdown | group_id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getgroupbreakdown) |
 | groups_tags | group_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getgrouptagmappingcollection) |
 | housekeeping_clean_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcleantypes) |
-| housekeeping_task_list | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| housekeeping_task_list | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getalltasklists) |
 | housekeeping_work_orders | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getworkorders) |
+| housekeeping_zones | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gethousekeepingzonescollection) |
 | lodging_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getlodgingtypescollection) |
 | maintenance_problems | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getmaintenanceproblemscollection) |
 | maintenance_work_orders | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getmaintworkorders) |
 | nodes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getnodes) |
-| nodes_types | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| nodes_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getallnodetypes) |
 | owners | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getownercollection) |
 | owners_contracts | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getownercontractcollection) |
 | owners_pii_redacted | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getownercollection) |
 | owners_statements | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-statements) |
 | owners_statements_transactions | statement_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getstatementtransactionscollection) |
 | owners_units | ownerId.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getownerunitscollection) |
-| promo_codes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getpromocodesv2) |
+| promo_codes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/openapi/v2-pms-promo-codes-api.json) |
 | quotes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getquotescollectionv2) |
-| rate_types | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| rate_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getallratetypes) |
 | reservations | id | Elastic Search PIT | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservations) |
+| reservations_booking_fees | reservation_id.id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | reservations_cancellation_policies | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcancellationpolicies) |
 | reservations_cancellation_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcancellationreasons) |
 | reservations_discount_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getdiscountreasons) |
+| reservations_fees | reservation_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getreservationfees) |
 | reservations_guarantee_policies | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-reservations-policies-guaranties) |
+| reservations_logs | reservation_id.id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| reservations_notes | reservation_id.id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+| reservations_tags | reservation_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv1reservationtags) |
 | reservations_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getreservationtypes) |
-| reservations_v2 | id | Elastic Search PIT | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservations-1) |
+| reservations_v2 | id | Elastic Search PIT | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservationsv2) |
 | reviews | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getreviewscollection) |
 | roles | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | suspend_code_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getsuspendcodereasons) |
@@ -96,15 +104,17 @@ The connector handles Track's API rate limit of 10,000 requests per 5 minutes. W
 | units_bed_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getbedtypescollection) |
 | units_blocks | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitblockscollection) |
 | units_channel | unit_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitchannelunitcollection) |
-| units_daily_pricing_v2 | unit_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv2unitdailypricing) |
 | units_daily_pricing_parent | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
+| units_daily_pricing_v2 | unit_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv2unitdailypricing) |
 | units_taxes | unit_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitchanneltaxcollection) |
 | units_taxes_parent | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
 | units_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunittypes-2) |
-| units_types_daily_pricing_v2 | unit_type_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv2unittypedailypricing) |
 | units_types_daily_pricing_parent | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunittypes-2) |
+| units_types_daily_pricing_v2 | unit_type_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv2unittypedailypricing) |
 | users | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | users_pii_redacted | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
+
+The reservation booking fees, logs, and notes endpoints are not documented in Track's published API reference. Their paths and response formats have not been verified against the live API.
 
 ## IP allow list
 
@@ -117,6 +127,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Subject |
 | ------------------ | ------------ | ---------------- |
+| 4.4.0 | 2026-11-10 | Added housekeeping zones and reservation booking fees, fees, logs, notes and tags streams. `units_daily_pricing_parent` and `units_types_daily_pricing_parent` no longer drop units and unit types without a lodging type, so they now emit the same records as `units` and `units_types`; `units_daily_pricing_v2` and `units_types_daily_pricing_v2` now include those units' rates. |
 | 4.3.22 | 2026-10-20 | Update dependencies |
 | 4.3.21 | 2026-10-13 | Update dependencies |
 | 4.3.20 | 2026-10-12 | Mark `api_key` as `airbyte_secret` |
