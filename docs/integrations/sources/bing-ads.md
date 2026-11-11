@@ -321,7 +321,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.23 | 2026-11-10 | TBD | Report a clear, retryable error when a report or bulk file download link expires. |
+| 3.0.23 | 2026-11-10 | [91998](https://github.com/airbytehq/airbyte/pull/91998) | Report a clear, retryable error when a report or bulk file download link expires. |
 | 3.0.22 | 2026-11-10 | [91361](https://github.com/airbytehq/airbyte/pull/91361) | Update dependencies |
 | 3.0.21 | 2026-11-03 | [88968](https://github.com/airbytehq/airbyte/pull/88968) | Add actionable messages for Microsoft Entra refresh token errors |
 | 3.0.20 | 2026-11-03 | [89720](https://github.com/airbytehq/airbyte/pull/89720) | Sync App, Hotel and Objective-based campaigns (and their ad groups and ads), which were previously skipped |
