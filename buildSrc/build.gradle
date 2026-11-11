@@ -10,6 +10,8 @@ repositories {
 dependencies {
     // Note this dependency version needs to line up with the generateJsonSchema2Pojo plugin used in the project.
     implementation 'org.yaml:snakeyaml:1.33'
+    // ShadowJar for the connector fat jar (airbyte-connector-fat-jar). The 8.3 line supports Gradle 8; 9.x needs Gradle 9.
+    implementation 'com.gradleup.shadow:shadow-gradle-plugin:8.3.9'
 }
 
 tasks.withType(Jar).configureEach {

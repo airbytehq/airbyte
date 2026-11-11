@@ -54,6 +54,8 @@ Each JSONL line is flattened for analytics: `actor` and `principal` become `acto
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.4 | 2026-11-10 | [91660](https://github.com/airbytehq/airbyte/pull/91660) | Update dependencies |
+| 0.0.3 | 2026-11-03 | [90676](https://github.com/airbytehq/airbyte/pull/90676) | Update dependencies |
 | 0.0.2 | 2026-10-27 | [90015](https://github.com/airbytehq/airbyte/pull/90015) | Update dependencies |
 | 0.0.1 | 2026-10-08 | [88374](https://github.com/airbytehq/airbyte/pull/88374) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
