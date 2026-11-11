@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from itertools import product
 from pathlib import Path
 
 import jsonschema
@@ -10,7 +11,14 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
@@ -295,3 +303,48 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        {
+            key: value
+            for key, value, supplied in zip(("count", "records_per_slice", "parallelism"), (10, 5, 1), supplied_settings)
+            if supplied
+        }
+        for supplied_settings in product((False, True), repeat=3)
+    ]
+    + [{"sourceType": "faker", "count": 5000, "seed": 42}],
+)
+def test_check_and_read_with_optional_numeric_settings(config: dict[str, int | str]) -> None:
+    source = SourceFaker()
+    original_config = config.copy()
+
+    result = source.check(logger, config)
+
+    assert result.status == Status.SUCCEEDED, result.message
+    assert config == original_config
+
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    records = [message.record for message in source.read(logger, config, catalog, {}) if message.type == Type.RECORD]
+
+    assert [record.data["id"] for record in records] == list(range(1, config.get("count", 1000) + 1))
+    assert config == original_config
+
+
+@pytest.mark.parametrize("setting", ["count", "records_per_slice", "parallelism"])
+@pytest.mark.parametrize("value", [0, -1, None, False, True, "10"])
+@pytest.mark.parametrize("other_settings", [{}, {"count": 10, "records_per_slice": 5, "parallelism": 1}])
+def test_check_rejects_explicit_invalid_numeric_settings(setting: str, value: int | str | None, other_settings: dict[str, int]) -> None:
+    config = {**other_settings, setting: value}
+
+    result = SourceFaker().check(logger, config)
+
+    assert result.status == Status.FAILED
+    assert result.message == repr(f"`{setting}` must be a number greater than or equal to 1, got {value!r}")
