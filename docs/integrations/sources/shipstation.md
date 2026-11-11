@@ -29,7 +29,7 @@ Create a **ShipStation** source and enter the following values:
 |-------|------------------|-------------|
 | `username` | **API Key** | Your ShipStation V1 API key, used as the HTTP Basic authentication username. |
 | `password` | **API Secret** | The matching V1 API secret, used as the HTTP Basic authentication password. |
-| `start_date` | **Start date** | Required. The starting timestamp for `orders`, `shipments`, and `fulfillments`, in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2026-01-01T00:00:00Z`. There is no default. |
+| `start_date` | **Start date** | Required. The starting timestamp for `orders`, `shipments`, and `fulfillments`, in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2026-01-01T00:00:00Z`. No default value. |
 
 ## Supported streams and sync modes
 
