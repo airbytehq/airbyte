@@ -83,6 +83,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.56 | 2026-11-11 | [90912](https://github.com/airbytehq/airbyte/pull/90912) | Drop support for Python 3.10; the connector now requires Python 3.11 or newer |
 | 0.1.55 | 2026-11-10 | [91505](https://github.com/airbytehq/airbyte/pull/91505) | Update dependencies |
 | 0.1.54 | 2026-11-03 | [90548](https://github.com/airbytehq/airbyte/pull/90548) | Update dependencies |
 | 0.1.53 | 2026-10-27 | [89874](https://github.com/airbytehq/airbyte/pull/89874) | Update dependencies |

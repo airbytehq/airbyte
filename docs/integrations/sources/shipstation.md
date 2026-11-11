@@ -1,48 +1,80 @@
-# Shipstation
-This page contains the setup guide and reference information for Shipstation source connector.
+# ShipStation
 
-Documentation reference:
-Visit https://www.shipstation.com/docs/api/ for API documentation
+The ShipStation source connector reads data from the [ShipStation V1 API](https://www.shipstation.com/docs/api/) at `https://ssapi.shipstation.com/`.
 
-Authentication setup
+## Prerequisites
 
-To get your API key and secret in ShipStation:
+- A ShipStation account with V1 API access. See ShipStation's [API subscription requirements](https://help.shipstation.com/hc/en-us/articles/360025856212-ShipStation-API) for eligible plans.
+- A V1 API key and API secret. Only the ShipStation account owner can generate these credentials, and email verification is required. V2 API keys are not interchangeable with V1 credentials.
 
-↳ Go to Account Settings.
+## Setup guide
 
-↳ Select Account from the side navigation, then choose API Settings.
+### Get your API credentials
 
-↳ Click &quot;Generate New API Keys&quot; if no key and secret are listed yet.
+If you already have a valid V1 API key and secret stored securely, use that pair. Otherwise, follow ShipStation's [API key instructions](https://help.shipstation.com/hc/en-us/articles/360025856212-ShipStation-API):
 
-** IMPORTANT **
-↳If you&#39;ve already generated your API keys, the existing API keys will be displayed here and the button will read Regenerate API Keys.
+1. Sign in as the ShipStation account owner and open **Settings > Account > API Settings**.
+2. Select **V1** from the API version dropdown and click **Generate API Key**.
+3. Complete the email verification, then return to generate the key.
+4. Choose an expiration period and click **Generate**.
+5. Copy the API key and API secret and store them securely. ShipStation displays them only once, immediately after generation.
 
-If you already have API keys, do NOT generate new ones. Instead, copy your existing key and secret.
+Before your credentials expire, generate a replacement pair and update the source in Airbyte. See ShipStation's [key rotation instructions](https://help.shipstation.com/hc/en-us/articles/360025856212-ShipStation-API) for details.
 
-Copy your key and secret and paste them into the respective fields.
+### Configure the source in Airbyte
 
+Create a **ShipStation** source and enter the following values:
 
-## Configuration
+| Input | Field in Airbyte | Description |
+|-------|------------------|-------------|
+| `username` | **API Key** | Your ShipStation V1 API key, used as the HTTP Basic authentication username. |
+| `password` | **API Secret** | The matching V1 API secret, used as the HTTP Basic authentication password. |
+| `start_date` | **Start date** | Required. The starting timestamp for `orders`, `shipments`, and `fulfillments`, in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2026-01-01T00:00:00Z`. No default value. |
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `username` | `string` | API Key.  |  |
-| `password` | `string` | API Secret.  |  |
+## Supported streams and sync modes
 
-## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| carriers | shippingProviderId | No pagination | ✅ |  ❌  |
-| customers | customerId | DefaultPaginator | ✅ |  ❌  |
-| fulfillments | fulfillmentId | DefaultPaginator | ✅ |  ❌  |
-| orders | orderId | DefaultPaginator | ✅ |  ❌  |
-| products | productId | DefaultPaginator | ✅ |  ❌  |
-| shipments | shipmentId | DefaultPaginator | ✅ |  ❌  |
-| marketplaces | name.marketplaceId | No pagination | ✅ |  ❌  |
-| stores | storeId | No pagination | ✅ |  ❌  |
-| users | userId | No pagination | ✅ |  ❌  |
-| warehouses | warehouseId | No pagination | ✅ |  ❌  |
-| webhooks | WebHookID | No pagination | ✅ |  ❌  |
+All streams support full refresh. Only `orders`, `shipments`, and `fulfillments` support incremental sync.
+
+| Stream | Data | Primary key | Incremental cursor |
+|--------|------|-------------|--------------------|
+| `carriers` | Shipping providers connected to your account | `shippingProviderId` | Not supported |
+| `carrier_packages` | Package types available for each connected carrier | `carrierCode`, `code` | Not supported |
+| `carrier_services` | Shipping services available for each connected carrier | `carrierCode`, `code`, `domestic`, `international` | Not supported |
+| `customers` | Customer records | `customerId` | Not supported |
+| `fulfillments` | Fulfillment records, including orders marked as shipped through the UI or API | `fulfillmentId` | `createDate` |
+| `orders` | Orders | `orderId` | `modifyDate` |
+| `products` | Product records | `productId` | Not supported |
+| `shipments` | Shipments with labels generated in ShipStation, including shipment items | `shipmentId` | `createDate` |
+| `marketplaces` | Supported marketplaces | `name`, `marketplaceId` | Not supported |
+| `stores` | Stores, including inactive stores | `storeId` | Not supported |
+| `tags` | Tags defined for your account | `tagId` | Not supported |
+| `users` | Users, including inactive users | `userId` | Not supported |
+| `warehouses` | Ship From locations | `warehouseId` | Not supported |
+| `webhooks` | Registered webhook configurations | `WebHookID` | Not supported |
+
+The `carrier_packages` and `carrier_services` streams read the carrier list and request packages or services for each distinct carrier code. You do not need to enter carrier codes manually.
+
+### Incremental sync behavior
+
+- `orders` uses `modifyDate` to retrieve new and updated orders from the configured start date.
+- `shipments` and `fulfillments` use `createDate`. Changes to records created before the saved cursor's lookback window are not captured by incremental sync. Use a full refresh to retrieve those changes, with a start date early enough to include the records.
+- All three incremental streams use a six-hour lookback window, so subsequent syncs can emit records that were already read.
+
+ShipStation's [V1 API timestamps](https://www.shipstation.com/docs/api/requirements/) use Pacific Time (PST/PDT).
+
+### Shipment coverage
+
+The [`shipments` endpoint](https://www.shipstation.com/docs/api/shipments/list/) returns only shipments with labels generated in ShipStation. Orders marked as shipped through the UI or API are treated as external shipments and are available from the [`fulfillments` endpoint](https://docs.shipstation.com/apis/shipstation-v1/openapi/fulfillments/list_fulfillments).
+
+The `webhooks` stream reads webhook configurations; it does not receive webhook events.
+
+## Rate limits and troubleshooting
+
+ShipStation's [V1 API rate limit](https://www.shipstation.com/docs/api/requirements/) is 40 requests per minute per API key and secret pair. Other applications using the same credentials share this limit. The connector waits according to the `X-Rate-Limit-Reset` response header when rate limited.
+
+- **401 Unauthorized**: Check that the API key and secret are a matching, unexpired V1 pair.
+- **402 response**: Check that your ShipStation plan includes V1 API access.
+- **429 Too Many Requests**: Reduce overlapping API activity that uses the same credentials if throttling persists.
 
 ## IP allow list
 
@@ -55,6 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.0 | 2026-11-11 | [91538](https://github.com/airbytehq/airbyte/pull/91538) | Add `tags`, `carrier_packages` and `carrier_services` streams, declare additional `orders`, `products` and `fulfillments` fields, and set heartbeat and suggested-streams metadata |
 | 0.2.54 | 2026-11-10 | [91707](https://github.com/airbytehq/airbyte/pull/91707) | Update dependencies |
 | 0.2.53 | 2026-11-04 | [90360](https://github.com/airbytehq/airbyte/pull/90360) | Simplify rate-limit error handling configuration with no change in retry behavior |
 | 0.2.52 | 2026-11-03 | [90739](https://github.com/airbytehq/airbyte/pull/90739) | Update dependencies |
