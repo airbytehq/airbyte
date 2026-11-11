@@ -57,6 +57,8 @@ definitions:
             page_size: 20
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -128,6 +130,8 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -198,6 +202,8 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -507,6 +513,18 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/app_concepts"
+  # Clarifai returns `modified_at` with nanosecond precision (nine fractional digits), which the cursor's
+  # `%f` directive (at most six digits) cannot parse. Without this, the cursor skips every record and the
+  # state never moves past the start date.
+  truncate_modified_at_to_microseconds:
+    type: AddFields
+    condition: "{{ record.get('modified_at') is string and record['modified_at']|length > 27 }}"
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - modified_at
+        value: "{{ (record.get('modified_at') or '')[:26] ~ 'Z' }}"
+        value_type: string
   base_requester:
     type: HttpRequester
     url_base: https://api.clarifai.com
