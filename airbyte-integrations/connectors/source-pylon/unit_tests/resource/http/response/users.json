@@ -1,0 +1,18 @@
+{
+  "avatar_url": "https://example.test/synthetic",
+  "email": "synthetic@example.test",
+  "emails": [],
+  "id": "synthetic-id",
+  "is_deactivated": false,
+  "name": "synthetic-name",
+  "role": {
+    "id": "synthetic-id",
+    "name": "synthetic-name",
+    "slug": "synthetic-slug"
+  },
+  "role_id": "synthetic-role_id",
+  "role_ids": [],
+  "roles": [],
+  "skills": [],
+  "status": "synthetic-status"
+}

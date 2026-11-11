@@ -180,6 +180,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.0.3 | 2026-11-10 | [91677](https://github.com/airbytehq/airbyte/pull/91677) | Update dependencies |
 | 5.0.2 | 2026-11-03 | [90685](https://github.com/airbytehq/airbyte/pull/90685) | Update dependencies |
 | 5.0.1 | 2026-11-02 | [90176](https://github.com/airbytehq/airbyte/pull/90176) | Mark the connector as certified |
 | 5.0.0 | 2026-11-01 | [90177](https://github.com/airbytehq/airbyte/pull/90177) | Type the remaining date and time fields on nine streams and correct declared shapes on goals, leads, mailThreads and deal_fields; declare fields Pipedrive returns without documenting them |

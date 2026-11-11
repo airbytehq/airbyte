@@ -3,7 +3,7 @@
 """Mock-server tests for the `report_webinar_participants` stream (`acceptance-test-config.yml` `empty_streams`).
 
 `GET /report/webinars/{webinarUUID}/participants` for every webinar returned by `GET /users/{userId}/webinars`.
-Keyed on the webinar `uuid` (double URL-encoded in the path), paginated with `page_size=30` and
+Keyed on the webinar `uuid` (double URL-encoded in the path), paginated with `page_size=300` and
 `next_page_token`, records under `participants`, injects `webinar_uuid`. A webinar with no report data
 (code 3001) is skipped.
 """

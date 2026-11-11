@@ -34,12 +34,7 @@ _EMPTY_STREAMS = [
     "channel_end_screens_a1",
     "channel_province_a3",
     "channel_sharing_service_a1",
-    "playlist_basic_a2",
-    "playlist_combined_a2",
-    "playlist_device_os_a2",
-    "playlist_playback_location_a2",
     "playlist_province_a2",
-    "playlist_traffic_source_a2",
 ]
 
 

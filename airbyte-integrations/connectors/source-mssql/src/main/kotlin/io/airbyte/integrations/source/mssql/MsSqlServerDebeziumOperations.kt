@@ -56,6 +56,7 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.atomic.AtomicLong
+import java.util.regex.Pattern
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.collections.plus
@@ -727,7 +728,11 @@ class MsSqlServerDebeziumOperations(
 
     private fun generateCommonDebeziumProperties(streams: List<Stream>): Map<String, String> {
         val databaseName = configuration.databaseName
-        val schemaList = streams.map { it.namespace }.distinct().joinToString(",")
+        // schema.include.list is a list of regexes, so quote each schema name
+        val schemaList =
+            DebeziumPropertiesBuilder.joinIncludeList(
+                streams.map { Pattern.quote(it.namespace) }.distinct(),
+            )
         val messageKeyColumns = buildMessageKeyColumns(streams)
         val tunnelSession: TunnelSession = jdbcConnectionFactory.ensureTunnelSession()
 
@@ -844,24 +849,22 @@ class MsSqlServerDebeziumOperations(
         return streams
             .filter { it.configuredPrimaryKey?.isNotEmpty() == true }
             .joinToString(";") { stream ->
-                val tableId =
-                    "${escapeSpecialChars(stream.namespace)}.${escapeSpecialChars(stream.name)}"
-                val keyCols =
-                    stream.configuredPrimaryKey!!.joinToString(",") { escapeSpecialChars(it.id) }
+                val tableId = "${stream.namespace.escaped()}.${stream.name.escaped()}"
+                val keyCols = stream.configuredPrimaryKey!!.joinToString(",") { it.id.escaped() }
                 "$tableId:$keyCols"
             }
     }
 
     /**
-     * Escapes special characters for Debezium message key columns. Escapes: comma (,), period (.),
-     * semicolon (;), and colon (:) This replicates the logic from the old MSSQL connector's
-     * escapeSpecialChars method.
+     * Escapes special characters for Debezium message key columns. Escapes: space (converted to
+     * \s), dollar sign ($), comma (,), period (.), semicolon (;), and colon (:).
      */
-    private fun escapeSpecialChars(input: String?): String {
-        if (input == null) return ""
-        return input
-            .map { char ->
+    private fun String?.escaped(): String {
+        if (this == null) return ""
+        return map { char ->
                 when (char) {
+                    ' ' -> "\\s"
+                    '$',
                     ',',
                     '.',
                     ';',
