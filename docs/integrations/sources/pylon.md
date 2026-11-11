@@ -124,6 +124,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 1.0.0 | 2026-11-11 | [92021](https://github.com/airbytehq/airbyte/pull/92021) | Type `tags` as strings and 8 timestamp fields as `date-time` |
 | 0.1.0 | 2026-11-10 | [91827](https://github.com/airbytehq/airbyte/pull/91827) | Add Audit Logs, Macro Groups, Surveys, and Training Data streams, with an Admin-role error message for Audit Logs. |
 | 0.0.32 | 2026-11-10 | [91678](https://github.com/airbytehq/airbyte/pull/91678) | Update dependencies |
 | 0.0.31 | 2026-11-06 | [91022](https://github.com/airbytehq/airbyte/pull/91022) | Add EU region support, documented fields, deactivated users, inclusive issue windows, parent IDs on child streams, actionable errors, request budgets, and configurable concurrency. |
