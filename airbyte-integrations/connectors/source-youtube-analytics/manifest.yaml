@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - report_types
+    - channel_annotations_a1
 
 definitions:
   streams:
@@ -68,31 +68,6 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: createdAfter
-
-    report_types:
-      type: DeclarativeStream
-      name: report_types
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: reportTypes
-          extra_request_parameters:
-            includeSystemManaged: "true"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - reportTypes
-        paginator:
-          $ref: "#/definitions/next_page_token_paginator"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/report_types"
 
     base_report_stream:
       type: DeclarativeStream
@@ -633,7 +608,6 @@ definitions:
       class_name: source_declarative_manifest.components.CustomDecoder
 
 streams:
-  - $ref: "#/definitions/streams/report_types"
   - $ref: "#/definitions/streams/channel_annotations_a1"
   - $ref: "#/definitions/streams/channel_basic_a3"
   - $ref: "#/definitions/streams/channel_cards_a1"
@@ -761,7 +735,6 @@ spec:
 
 metadata:
   autoImportSchema:
-    report_types: false
     channel_annotations_a1: false
     channel_basic_a3: false
     channel_cards_a1: false
@@ -789,29 +762,6 @@ metadata:
   assist: {}
 
 schemas:
-  report_types:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type:
-          - "null"
-          - string
-      name:
-        type:
-          - "null"
-          - string
-      deprecateTime:
-        type:
-          - "null"
-          - string
-        format: date-time
-        airbyte_type: timestamp_with_timezone
-      systemManaged:
-        type:
-          - "null"
-          - boolean
   channel_annotations_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
