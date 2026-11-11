@@ -5,7 +5,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 ## Upgrading to 1.0.0
 
 :::danger Risk of permanent data loss for `calls`
-Aircall's API returns only the last six months of calls. Clearing `calls`, or switching it from an append mode to any Overwrite mode, deletes every older call for good: a re-sync can't restore it. Aircall Support can provide a one-time export of older calls. Copy the `calls` table before you do either.
+Aircall's API returns only the last six months of calls. Clearing `calls`, or switching it from an append mode to any Overwrite mode, deletes every older call for good: a re-sync can't restore it. Copy the `calls` table before you do either.
 :::
 
 Version 1.0.0 adds primary keys for deduplication, makes `numbers` and `teams` full refresh only, and declares the types the [Aircall API reference](https://developers.aircall.io/api-references/) documents. The values Aircall returns don't change.
