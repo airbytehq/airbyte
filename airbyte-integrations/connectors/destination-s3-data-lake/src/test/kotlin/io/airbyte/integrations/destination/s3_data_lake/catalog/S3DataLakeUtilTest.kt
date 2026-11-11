@@ -419,7 +419,7 @@ internal class S3DataLakeUtilTest {
 
         Assertions.assertEquals(
             "aws-creds-static-creds",
-            catalogProperties["client.credentials-provider.aws-creds-mode"]
+            catalogProperties["client.credentials-provider.aws-creds-mode"],
         )
         Assertions.assertNull(catalogProperties["s3.access-key-id"])
         Assertions.assertNull(catalogProperties["s3.secret-access-key"])
@@ -448,23 +448,23 @@ internal class S3DataLakeUtilTest {
 
         Assertions.assertEquals(
             "aws-creds-assume-role",
-            catalogProperties["client.credentials-provider.aws-creds-mode"]
+            catalogProperties["client.credentials-provider.aws-creds-mode"],
         )
         Assertions.assertEquals(
             "system-access-key",
-            catalogProperties["client.credentials-provider.access-key-id"]
+            catalogProperties["client.credentials-provider.access-key-id"],
         )
         Assertions.assertEquals(
             "system-secret-key",
-            catalogProperties["client.credentials-provider.secret-access-key"]
+            catalogProperties["client.credentials-provider.secret-access-key"],
         )
         Assertions.assertEquals(
             "system-external-id",
-            catalogProperties["client.credentials-provider.external-id"]
+            catalogProperties["client.credentials-provider.external-id"],
         )
         Assertions.assertEquals(
             "arn:aws:iam::123456789012:role/test",
-            catalogProperties["client.credentials-provider.role-arn"]
+            catalogProperties["client.credentials-provider.role-arn"],
         )
     }
 
@@ -481,24 +481,24 @@ internal class S3DataLakeUtilTest {
 
         Assertions.assertEquals(
             "aws-creds-assume-role",
-            catalogProperties["client.credentials-provider.aws-creds-mode"]
+            catalogProperties["client.credentials-provider.aws-creds-mode"],
         )
         Assertions.assertEquals(
             "arn:aws:iam::123456789012:role/test",
-            catalogProperties["client.credentials-provider.role-arn"]
+            catalogProperties["client.credentials-provider.role-arn"],
         )
         Assertions.assertEquals(
             S3BucketRegion.`us-east-1`.region,
-            catalogProperties["client.credentials-provider.region"]
+            catalogProperties["client.credentials-provider.region"],
         )
         Assertions.assertFalse(
-            catalogProperties.containsKey("client.credentials-provider.access-key-id")
+            catalogProperties.containsKey("client.credentials-provider.access-key-id"),
         )
         Assertions.assertFalse(
-            catalogProperties.containsKey("client.credentials-provider.secret-access-key")
+            catalogProperties.containsKey("client.credentials-provider.secret-access-key"),
         )
         Assertions.assertFalse(
-            catalogProperties.containsKey("client.credentials-provider.external-id")
+            catalogProperties.containsKey("client.credentials-provider.external-id"),
         )
     }
 
