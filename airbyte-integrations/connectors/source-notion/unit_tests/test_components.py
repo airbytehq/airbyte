@@ -3,6 +3,8 @@
 #
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
@@ -16,6 +18,71 @@ state_test_records = [
     {"id": "2", "last_edited_time": "2022-01-03T00:00:00.000Z"},
     {"id": "3", "last_edited_time": "2022-01-04T00:00:00.000Z"},
 ]
+
+
+@pytest.mark.parametrize("state_format", ["legacy", "global", "none", "full_refresh"])
+def test_blocks_incremental_filters_after_traversing_children(requests_mock, state_format):
+    config = {"start_date": "2022-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    cursor = "2022-02-01T00:00:00.000Z"
+    latest = "2022-03-01T00:00:00.000Z"
+
+    def block(block_id, edited, has_children=False):
+        return {"object": "block", "id": block_id, "type": "paragraph", "last_edited_time": edited, "has_children": has_children}
+
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json={"results": [{"object": "page", "id": "page-1", "last_edited_time": "2022-01-02T00:00:00.000Z"}], "has_more": False},
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        complete_qs=True,
+        json={
+            "results": [block("old-parent", "2021-01-01T00:00:00.000Z", True), block("boundary", cursor), block("new", latest)],
+            "has_more": False,
+        },
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/old-parent/children?page_size=100",
+        complete_qs=True,
+        json={"results": [block("new-child", latest)], "has_more": False},
+    )
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                    "sync_mode": "full_refresh" if state_format == "full_refresh" else "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    initial_state = {"last_edited_time": cursor}
+    if state_format == "global":
+        initial_state = {"use_global_cursor": True, "state": initial_state, "lookback_window": 1, "parent_state": {}}
+    elif state_format in ["none", "full_refresh"]:
+        initial_state = {}
+    state = StateBuilder().with_stream_state("blocks", initial_state).build()
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+    assert [record.record.data["id"] for record in output.records] == (
+        ["new-child", "boundary", "new"] if initial_state else ["new-child", "old-parent", "boundary", "new"]
+    )
+    assert output.state_messages[-1].state.stream.stream_state.__dict__ == {
+        "use_global_cursor": True,
+        "state": {"last_edited_time": "2022-03-01T00:00:00.000000Z"},
+        "lookback_window": 1,
+        "parent_state": {},
+    }
+    assert len(requests_mock.request_history) == 3
+    if state_format == "none":
+        state = [output.state_messages[-1].state]
+        second_output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+        assert [record.record.data["id"] for record in second_output.records] == ["new-child", "new"]
+        assert (
+            second_output.state_messages[-1].state.stream.stream_state.__dict__
+            == output.state_messages[-1].state.stream.stream_state.__dict__
+        )
+        assert len(requests_mock.request_history) == 6
 
 
 def test_blocks_retriever_depth_restored_after_children(components_module):

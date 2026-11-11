@@ -1,10 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 import logging
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -23,9 +25,12 @@ class BlocksRetriever(SimpleRetriever):
 
     """
 
+    cursor: Optional[Cursor] = None
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
+        self._has_initial_state = bool(self.cursor and self.cursor.state.get("state", {}).get("last_edited_time"))
 
     def read_records(
         self,
@@ -50,4 +55,12 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            yield stream_data
+            lower_bound = stream_slice.cursor_slice.get("start_time") if stream_slice else None
+            last_edited_time = stream_data.data.get("last_edited_time")
+            if (
+                not self._has_initial_state
+                or not lower_bound
+                or not last_edited_time
+                or datetime.fromisoformat(last_edited_time) >= datetime.fromisoformat(lower_bound)
+            ):
+                yield stream_data
