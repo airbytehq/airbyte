@@ -34,9 +34,7 @@ def test_check_succeeds_without_retired_annotations_report() -> None:
             ),
         )
         http_mocker.get(
-            YoutubeAnalyticsRequestBuilder.reports_endpoint("basic-job")
-            .with_created_after("1990-01-01T00:00:00.000000Z")
-            .build(),
+            YoutubeAnalyticsRequestBuilder.reports_endpoint("basic-job").with_created_after("1990-01-01T00:00:00.000000Z").build(),
             HttpResponse(
                 body=json.dumps(
                     {
