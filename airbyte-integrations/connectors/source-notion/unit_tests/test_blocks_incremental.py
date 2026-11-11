@@ -10,6 +10,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
 
+
 CONFIG = {"start_date": "2023-06-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
 OLD = "2023-01-01T00:00:00.000Z"
 BOUNDARY = "2023-06-01T00:00:00.000Z"
