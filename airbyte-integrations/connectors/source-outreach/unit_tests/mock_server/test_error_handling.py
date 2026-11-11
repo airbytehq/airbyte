@@ -50,29 +50,6 @@ class _Clock:
         self._freezer.stop()
 
 
-class _Clock:
-    """Freezes time and turns every `time.sleep` into a jump of the frozen clock, recording the waits."""
-
-    def __init__(self) -> None:
-        self.sleeps: list[float] = []
-        self._freezer = freezegun.freeze_time(_NOW)
-        self._patch = patch("time.sleep", side_effect=self._sleep)
-
-    def _sleep(self, seconds: float) -> None:
-        self.sleeps.append(seconds)
-        # A zero-second sleep still has to move the clock, or the rate limiter never sees its window expire.
-        self._frozen_time.tick(max(seconds, 0.001))
-
-    def __enter__(self) -> "_Clock":
-        self._frozen_time = self._freezer.start()
-        self._patch.start()
-        return self
-
-    def __exit__(self, *args) -> None:
-        self._patch.stop()
-        self._freezer.stop()
-
-
 class TestErrorHandling(TestCase):
     @HttpMocker()
     def test_403_fails_as_config_error_with_the_scope_outreach_names(self, http_mocker: HttpMocker) -> None:
@@ -140,7 +117,8 @@ class TestErrorHandling(TestCase):
                     "rateLimitExceeded",
                     "Rate Limit Exceeded",
                     "You have exceeded your permitted rate limit of 10,000; please try again at 2026-11-11T12:00:42.",
-                    headers={"Retry-After": str(int(_NOW.timestamp()) + 42), "X-RateLimit-Remaining": "0"},
+                    # No `X-RateLimit-Remaining` header here, so the budget assertion below rests on the 429 status alone.
+                    headers={"Retry-After": str(int(_NOW.timestamp()) + 42)},
                 ),
                 _accounts_page(),
             ],

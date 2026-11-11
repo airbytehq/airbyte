@@ -7,7 +7,7 @@ import yaml
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
-from unit_tests.conftest import _YAML_FILE_PATH
+from unit_tests.conftest import _YAML_FILE_PATH, build_source
 
 from .config import ConfigBuilder
 from .request_builder import OutreachRequestBuilder
@@ -39,6 +39,14 @@ class TestSpec(TestCase):
 
         assert not output.errors
         assert record_ids(output) == [1]
+
+    def test_num_workers_sets_the_size_of_the_worker_pool(self) -> None:
+        # The CDK exposes the worker count only through the thread pool it builds from `concurrency_level`.
+        def worker_count(config: dict) -> int:
+            return build_source(config)._concurrent_source._threadpool._threadpool._max_workers
+
+        assert worker_count(ConfigBuilder().build()) == 3
+        assert worker_count(ConfigBuilder().with_num_workers(7).build()) == 7
 
     def test_read_rejects_fewer_than_two_workers(self) -> None:
         output = read_stream("users", SyncMode.full_refresh, config=ConfigBuilder().with_num_workers(1).build(), expecting_exception=True)
