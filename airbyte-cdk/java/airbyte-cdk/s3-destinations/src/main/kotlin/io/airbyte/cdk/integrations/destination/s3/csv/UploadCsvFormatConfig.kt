@@ -16,17 +16,17 @@ import java.util.*
 class UploadCsvFormatConfig(val flattening: Flattening, val compressionType: CompressionType) :
     UploadFormatConfig {
     constructor(
-        formatConfig: JsonNode
+        formatConfig: JsonNode,
     ) : this(
         fromValue(
             if (formatConfig.has("flattening")) formatConfig["flattening"].asText()
-            else Flattening.NO.value
+            else Flattening.NO.value,
         ),
         if (formatConfig.has(S3DestinationConstants.COMPRESSION_ARG_NAME))
             CompressionTypeHelper.parseCompressionType(
-                formatConfig[S3DestinationConstants.COMPRESSION_ARG_NAME]
+                formatConfig[S3DestinationConstants.COMPRESSION_ARG_NAME],
             )
-        else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
+        else S3DestinationConstants.DEFAULT_COMPRESSION_TYPE,
     )
 
     override val format: FileUploadFormat = FileUploadFormat.CSV

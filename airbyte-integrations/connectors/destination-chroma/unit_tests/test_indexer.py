@@ -5,8 +5,10 @@
 import unittest
 from unittest.mock import Mock
 
+from chromadb.auth import ClientAuthProvider
+from chromadb.config import get_class
 from destination_chroma.config import ChromaIndexingConfigModel
-from destination_chroma.indexer import ChromaIndexer
+from destination_chroma.indexer import BASIC_AUTH_PROVIDER, ChromaIndexer
 
 from airbyte_cdk.models import AirbyteStream, DestinationSyncMode, SyncMode
 
@@ -157,3 +159,7 @@ class TestChromaIndexer(unittest.TestCase):
         self.chroma_indexer.delete(["some_id"], None, "some_stream")
 
         self.mock_client.get_collection().delete.assert_called_with(where={"_ab_record_id": {"$in": ["some_id"]}})
+
+    def test_basic_auth_provider_is_resolvable(self):
+        provider = get_class(BASIC_AUTH_PROVIDER, ClientAuthProvider)
+        assert issubclass(provider, ClientAuthProvider)

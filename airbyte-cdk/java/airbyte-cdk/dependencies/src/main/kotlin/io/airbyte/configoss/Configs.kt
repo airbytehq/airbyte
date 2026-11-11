@@ -11,7 +11,7 @@ package io.airbyte.configoss
  * Please also add one of the following tags to the env var accordingly:
  *
  * 1. 'Internal-use only' if a var is mainly for Airbyte-only configuration. e.g. tracking, test or
- * Cloud related etc.
+ *    Cloud related etc.
  *
  * 2. 'Alpha support' if a var does not have proper support and should be used with care.
  */
@@ -24,6 +24,6 @@ interface Configs {
 
     enum class DeploymentMode {
         OSS,
-        CLOUD
+        CLOUD,
     }
 }

@@ -107,6 +107,45 @@ def test_oauth_access_token_is_used_until_expiry():
     assert graphql_requests[0].headers["Authorization"] == "Bearer existing-access-token"
 
 
+def test_oauth_refresh_control_message_contains_no_api_key():
+    config = deepcopy(CONFIG)
+    config["credentials"]["token_expiry_date"] = "2000-01-01T00:00:00.000Z"
+    source = YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH), config=config)
+
+    def token_request(*, method, url, **kwargs):
+        return _response(
+            TOKEN_URL,
+            200,
+            {
+                "access_token": "new-access-token",
+                "refresh_token": "new-refresh-token",
+                "expires_in": 3600,
+            },
+        )
+
+    def graphql_request(request, **kwargs):
+        return _response(
+            GRAPHQL_URL,
+            200,
+            {"data": {"issues": {"nodes": [], "pageInfo": {"hasNextPage": False, "endCursor": None}}}},
+            request,
+        )
+
+    catalog = CatalogBuilder().with_stream("issues", SyncMode.full_refresh).build()
+    with patch("requests.request", side_effect=token_request), patch("requests.sessions.Session.send", side_effect=graphql_request):
+        output = read(source, config, catalog)
+
+    assert not output.errors
+    control_messages = output.get_message_by_types([Type.CONTROL])
+    assert len(control_messages) == 1
+    updated_config = control_messages[0].control.connectorConfig.config
+    assert updated_config["credentials"]["access_token"] == "new-access-token"
+    assert updated_config["credentials"]["refresh_token"] == "new-refresh-token"
+    assert "token_expiry_date" in updated_config["credentials"]
+    assert "api_key" not in updated_config["credentials"]
+    assert "api_key" not in updated_config
+
+
 @pytest.mark.parametrize(
     "error_value",
     ["invalid_grant", "invalid_request", "invalid_client", "unauthorized_client"],

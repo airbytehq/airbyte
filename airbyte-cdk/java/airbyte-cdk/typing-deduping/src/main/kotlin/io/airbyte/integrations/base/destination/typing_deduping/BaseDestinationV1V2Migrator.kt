@@ -14,7 +14,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     override fun migrateIfNecessary(
         sqlGenerator: SqlGenerator,
         destinationHandler: DestinationHandler<*>,
-        streamConfig: StreamConfig
+        streamConfig: StreamConfig,
     ) {
         LOGGER.info {
             "Assessing whether migration is necessary for stream ${streamConfig.id.finalName}"
@@ -67,7 +67,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     fun migrate(
         sqlGenerator: SqlGenerator,
         destinationHandler: DestinationHandler<*>,
-        streamConfig: StreamConfig
+        streamConfig: StreamConfig,
     ) {
         val namespacedTableName = convertToV1RawName(streamConfig)
         try {
@@ -75,8 +75,8 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
                 sqlGenerator.migrateFromV1toV2(
                     streamConfig.id,
                     namespacedTableName.namespace,
-                    namespacedTableName.tableName
-                )
+                    namespacedTableName.tableName,
+                ),
             )
         } catch (e: Exception) {
             val message = "Attempted and failed to migrate stream ${streamConfig.id.finalName}"
@@ -91,11 +91,11 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
      * @return whether the schema is as expected
      */
     private fun doesV1RawTableMatchExpectedSchema(
-        existingV2AirbyteRawTable: DialectTableDefinition
+        existingV2AirbyteRawTable: DialectTableDefinition,
     ): Boolean {
         return schemaMatchesExpectation(
             existingV2AirbyteRawTable,
-            JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS
+            JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS,
         )
     }
 
@@ -105,7 +105,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
      * @param existingV2AirbyteRawTable the v2 raw table
      */
     private fun validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(
-        existingV2AirbyteRawTable: DialectTableDefinition
+        existingV2AirbyteRawTable: DialectTableDefinition,
     ) {
         // Account for the fact that the meta column was added later, so skip the rebuilding of the
         // raw
@@ -154,7 +154,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
                 getTableIfExists(streamConfig.id.rawNamespace, streamConfig.id.rawName)
             existingV2Table.ifPresent { existingV2AirbyteRawTable: DialectTableDefinition ->
                 this.validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(
-                    existingV2AirbyteRawTable
+                    existingV2AirbyteRawTable,
                 )
             }
             return existingV2Table.isPresent
@@ -194,7 +194,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
      */
     abstract fun schemaMatchesExpectation(
         existingTable: DialectTableDefinition,
-        columns: Collection<String>
+        columns: Collection<String>,
     ): Boolean
 
     /**
@@ -207,7 +207,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     @Throws(Exception::class)
     abstract fun getTableIfExists(
         namespace: String?,
-        tableName: String?
+        tableName: String?,
     ): Optional<DialectTableDefinition>
 
     /**

@@ -139,10 +139,9 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { tenants(first: 10, after: $after) { nodes
-              { id               accountId code createdAt id lastLogin
-              latestProvisioningChangeId name platformId provisioningRequired
-              provisioningState subdomain updatedAt userCount utilizationMetrics
-              } pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
+              { id               accountId code createdAt id lastLogin name
+              platformId subdomain updatedAt userCount utilizationMetrics }
+              pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
               } 
         record_selector:
           type: RecordSelector
@@ -277,13 +276,9 @@ definitions:
               query($after: String) { entities(first: 10, after: $after) { nodes
               { id               abbreviation accentColor baseCurrencyId
               billingCity billingCountry billingState billingStreet billingZip
-              brandColor createdAt customerServiceEmail
-              defaultAccountsReceivableAccountId defaultBankingFeesAccountId
-              defaultConversionGainAccountId defaultConversionLossAccountId
-              defaultCpcaAccountId defaultDeferredRevenueAccountId
-              defaultPaymentAccountId defaultRecognizedRevenueAccountId
-              defaultTaxPayableAccountId emailSenderName emailTemplate fax
-              fiscalYearStartMonth id invoiceNumberPrefix invoiceNumberSeq
+              brandColor createdAt customerServiceEmail emailSenderName
+              emailTemplate fax fiscalYearStartMonth id invoiceNumberPrefix
+              invoiceNumberSeq
               invoicesImageUrl isDefault name phone privacyUrl quoteNumberPrefix
               quoteNumberSeq quotesImageUrl refundPolicyUrl taxId taxType
               termsUrl timezone topNavImageUrl updatedAt website } pageInfo {
@@ -459,9 +454,8 @@ definitions:
               query($after: String) { invoiceItems(first: 10, after: $after) {
               nodes { id               amount chargeType couponId currencyId
               discount id invoiceId lineText position price priceDecimals
-              priceListId pricingModel prorationRate quantity subtotal taxAmount
-              taxCode unitOfMeasure vatCode } pageInfo { startCursor endCursor
-              hasNextPage hasPreviousPage } } } 
+              prorationRate quantity subtotal taxAmount taxCode vatCode }
+              pageInfo { startCursor endCursor hasNextPage hasPreviousPage } } } 
         record_selector:
           type: RecordSelector
           extractor:
@@ -502,7 +496,7 @@ definitions:
             query: >-
               query($after: String) { transactions(first: 10, after: $after) {
               nodes { id               accountId amount createdAt currencyId
-              description dueAt id state transactionableId } pageInfo {
+              description id state transactionableId } pageInfo {
               startCursor endCursor hasNextPage hasPreviousPage } } } 
         record_selector:
           type: RecordSelector
@@ -533,17 +527,17 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: >-
-              {{ '{"after": "' + response.data.quote_charges.pageInfo.endCursor
-              + '"}' if response.data.quote_charges.pageInfo.endCursor else ""
+              {{ '{"after": "' + response.data.quoteCharges.pageInfo.endCursor
+              + '"}' if response.data.quoteCharges.pageInfo.endCursor else ""
               }}
-            stop_condition: "{{ response.data.quote_charges.pageInfo.hasNextPage is false }}"
+            stop_condition: "{{ response.data.quoteCharges.pageInfo.hasNextPage is false }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: /graphql
           http_method: POST
           request_body_json:
             query: >-
-              query($after: String) { quote_charges(first: 10, after: $after) {
+              query($after: String) { quoteCharges(first: 10, after: $after) {
               nodes { id               amount billingPeriod chargeType couponId
               createdAt currencyId currentQuantity discount id invoiceLineText
               kind name price priceDecimals priceListChargeId pricingModel
@@ -557,7 +551,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
-              - quote_charges
+              - quoteCharges
               - nodes
               - "*"
       primary_key:
@@ -591,8 +585,9 @@ definitions:
           request_body_json:
             query: >-
               query($after: String) { subscriptions(first: 10, after: $after) {
-              nodes { id               accountId cancelationDate createdAt
-              currencyId endDate id name period priceListId rampIntervalMonths
+              nodes { id               accountId cancelationDate:
+              cancellationDate createdAt currencyId endDate id name period
+              priceListId rampIntervalMonths
               startDate trialEndDate trialPeriod trialStartDate updatedAt }
               pageInfo { startCursor endCursor hasNextPage hasPreviousPage } }
               } 
@@ -709,6 +704,19 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"apikey\"] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          http_codes: [401]
+          error_message: "Bunny rejected the API key (HTTP 401). Generate a new access token for your Bunny API client and update the connector configuration."
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: system_error
+          predicate: "{{ 'errors' in response and not response.get('data') }}"
+          error_message: "Bunny GraphQL API returned errors: {{ response['errors'] | map(attribute='message') | join('; ') }}"
 
 streams:
   - $ref: "#/definitions/streams/accounts"

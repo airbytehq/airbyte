@@ -33,11 +33,11 @@ import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
 private val AIRBYTE_META_COLUMNS = Meta.COLUMN_NAMES + setOf(CDC_DELETED_AT_COLUMN)
 
 class SnowflakeDataDumper(
-    private val configProvider: (ConfigurationSpecification) -> SnowflakeConfiguration
+    private val configProvider: (ConfigurationSpecification) -> SnowflakeConfiguration,
 ) : DestinationDataDumper {
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val config = configProvider(spec)
         val snowflakeFinalTableNameGenerator =
@@ -67,7 +67,8 @@ class SnowflakeDataDumper(
                     FROM information_schema.tables
                     WHERE table_schema = '${sqlEscape(tableName.namespace.replace("\"\"", "\""))}'
                     AND table_name = '${sqlEscape(tableName.name.replace("\"\"", "\""))}'
-                """.trimIndent()
+                """
+                        .trimIndent()
 
                 val existsResultSet = statement.executeQuery(tableExistsQuery)
                 existsResultSet.next()
@@ -81,7 +82,7 @@ class SnowflakeDataDumper(
 
                 val resultSet =
                     statement.executeQuery(
-                        "SELECT * FROM ${sqlGenerator.fullyQualifiedName(tableName)}"
+                        "SELECT * FROM ${sqlGenerator.fullyQualifiedName(tableName)}",
                     )
 
                 while (resultSet.next()) {
@@ -97,19 +98,18 @@ class SnowflakeDataDumper(
                                         convertValue(
                                             unformatJsonValue(
                                                 columnType = columnType,
-                                                value = value
-                                            )
-                                        )
+                                                value = value,
+                                            ),
+                                        ),
                                     )
-                                }
-                                    ?: NullValue
+                                } ?: NullValue
                         }
                     }
                     val outputRecord =
                         OutputRecord(
                             rawId =
                                 resultSet.getString(
-                                    Meta.COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()
+                                    Meta.COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName(),
                                 ),
                             extractedAt =
                                 resultSet
@@ -122,7 +122,7 @@ class SnowflakeDataDumper(
                             data = ObjectValue(dataMap),
                             airbyteMeta =
                                 stringToMeta(
-                                    resultSet.getString(Meta.COLUMN_NAME_AB_META.uppercase())
+                                    resultSet.getString(Meta.COLUMN_NAME_AB_META.uppercase()),
                                 ),
                         )
                     output.add(outputRecord)
@@ -135,7 +135,7 @@ class SnowflakeDataDumper(
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw UnsupportedOperationException("Snowflake does not support file transfer.")
     }

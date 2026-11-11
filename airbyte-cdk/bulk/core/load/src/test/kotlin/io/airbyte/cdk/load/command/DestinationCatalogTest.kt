@@ -37,7 +37,7 @@ class DestinationCatalogTest {
                             AirbyteStream()
                                 .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                 .withNamespace("namespace1")
-                                .withName("name1")
+                                .withName("name1"),
                         ),
                     ConfiguredAirbyteStream()
                         .withSyncId(12)
@@ -47,10 +47,11 @@ class DestinationCatalogTest {
                         .withStream(
                             AirbyteStream()
                                 .withJsonSchema(
-                                    """{"type": "object", "properties": {"id1": {"type": "integer"}, "id2": {"type": "integer"}, "cursor": {"type": "integer"}}, "additionalProperties": false}""".deserializeToNode()
+                                    """{"type": "object", "properties": {"id1": {"type": "integer"}, "id2": {"type": "integer"}, "cursor": {"type": "integer"}}, "additionalProperties": false}"""
+                                        .deserializeToNode(),
                                 )
                                 .withNamespace("namespace2")
-                                .withName("name2")
+                                .withName("name2"),
                         )
                         .withPrimaryKey(listOf(listOf("id1"), listOf("id2")))
                         .withCursorField(listOf("cursor")),
@@ -63,7 +64,7 @@ class DestinationCatalogTest {
                             AirbyteStream()
                                 .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                 .withNamespace("namespace3")
-                                .withName("name3")
+                                .withName("name3"),
                         ),
                     ConfiguredAirbyteStream()
                         .withSyncId(12)
@@ -73,10 +74,11 @@ class DestinationCatalogTest {
                         .withStream(
                             AirbyteStream()
                                 .withJsonSchema(
-                                    """{"type": "object", "properties": {"id1": {"type": "integer"}, "id2": {"type": "integer"}, "cursor": {"type": "integer"}}, "additionalProperties": false}""".deserializeToNode()
+                                    """{"type": "object", "properties": {"id1": {"type": "integer"}, "id2": {"type": "integer"}, "cursor": {"type": "integer"}}, "additionalProperties": false}"""
+                                        .deserializeToNode(),
                                 )
                                 .withNamespace("namespace4")
-                                .withName("name4")
+                                .withName("name4"),
                         )
                         .withPrimaryKey(listOf(listOf("id1"), listOf("id2")))
                         .withCursorField(listOf("cursor")),
@@ -108,7 +110,7 @@ class DestinationCatalogTest {
                                 finalSchema = mapOf(),
                             ),
                         importType = Append,
-                    )
+                    ),
             )
         val expectedOrderedSchema =
             arrayOf(
@@ -118,7 +120,7 @@ class DestinationCatalogTest {
             )
         assertEquals(
             expectedOrderedSchema.toList(),
-            stream.airbyteValueProxyFieldAccessors.toList()
+            stream.airbyteValueProxyFieldAccessors.toList(),
         )
     }
 
@@ -146,7 +148,7 @@ class DestinationCatalogTest {
                                             finalSchema = mapOf(),
                                         ),
                                     importType = Append,
-                                )
+                                ),
                         ),
                         DestinationStream(
                             unmappedNamespace = null,
@@ -166,9 +168,9 @@ class DestinationCatalogTest {
                                             finalSchema = mapOf(),
                                         ),
                                     importType = Append,
-                                )
+                                ),
                         ),
-                    )
+                    ),
                 )
             }
         assertEquals("Some streams appeared multiple times: [foo]", e.message)
@@ -200,16 +202,16 @@ class DestinationCatalogTest {
                                     importType =
                                         Dedupe(
                                             primaryKey = listOf(listOf("id")),
-                                            cursor = emptyList()
+                                            cursor = emptyList(),
                                         ),
-                                )
-                        )
-                    )
+                                ),
+                        ),
+                    ),
                 )
             }
         assertEquals(
             "For stream foo: A primary key column does not exist in the schema: id",
-            e.message
+            e.message,
         )
     }
 
@@ -234,7 +236,7 @@ class DestinationCatalogTest {
                                         ColumnSchema(
                                             inputSchema =
                                                 linkedMapOf(
-                                                    "id" to FieldType(IntegerType, nullable = true)
+                                                    "id" to FieldType(IntegerType, nullable = true),
                                                 ),
                                             inputToFinalColumnNames = mapOf("id" to "id"),
                                             finalSchema = mapOf(),
@@ -244,14 +246,14 @@ class DestinationCatalogTest {
                                             primaryKey = listOf(listOf("id")),
                                             cursor = listOf("updated_at"),
                                         ),
-                                )
-                        )
-                    )
+                                ),
+                        ),
+                    ),
                 )
             }
         assertEquals(
             "For stream foo: The cursor does not exist in the schema: updated_at",
-            e.message
+            e.message,
         )
     }
 }

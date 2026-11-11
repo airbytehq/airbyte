@@ -26,7 +26,7 @@ private val LOGGER = KotlinLogging.logger {}
 class StreamingJdbcDatabase(
     dataSource: DataSource,
     sourceOperations: JdbcCompatibleSourceOperations<*>?,
-    private val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>
+    private val streamingQueryConfigProvider: Supplier<JdbcStreamingQueryConfig>,
 ) : DefaultJdbcDatabase(dataSource, sourceOperations) {
     /**
      * Assuming that the [JdbcStreamingQueryConfig] is configured correctly for the JDBC driver
@@ -38,8 +38,8 @@ class StreamingJdbcDatabase(
      *
      * @param statementCreator create a [PreparedStatement] from a [Connection].
      * @param recordTransform transform each record of that result set into the desired type. do NOT
-     * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
-     * from recordTransform.
+     *   just pass the [ResultSet] through. it is a stateful object will not be accessible if
+     *   returned from recordTransform.
      * @param <T> type that each record will be mapped to.
      * @return Result of the query mapped to a stream. This stream must be closed!
      * @throws SQLException SQL related exceptions. </T>
@@ -48,7 +48,7 @@ class StreamingJdbcDatabase(
     @Throws(SQLException::class)
     override fun <T> unsafeQuery(
         statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException>
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>,
     ): Stream<T> {
         try {
             val connection = dataSource.connection
@@ -81,7 +81,7 @@ class StreamingJdbcDatabase(
     protected fun <T> toUnsafeStream(
         resultSet: ResultSet,
         mapper: CheckedFunction<ResultSet, T, SQLException>,
-        streamingConfig: JdbcStreamingQueryConfig
+        streamingConfig: JdbcStreamingQueryConfig,
     ): Stream<T> {
         return StreamSupport.stream(
             object : AbstractSpliterator<T>(Long.MAX_VALUE, ORDERED) {
@@ -103,7 +103,7 @@ class StreamingJdbcDatabase(
                     }
                 }
             },
-            false
+            false,
         )
     }
 }

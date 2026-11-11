@@ -19,9 +19,13 @@ class GcsJsonlFormatConfigTest {
     @Throws(IllegalAccessException::class)
     fun testHandlePartSizeConfig() {
         val config =
-            ConfigTestUtils.getBaseConfig(Jsons.deserialize("""{
+            ConfigTestUtils.getBaseConfig(
+                Jsons.deserialize(
+                    """{
   "format_type": "JSONL"
-}"""))
+}""",
+                ),
+            )
 
         val gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config)
         ConfigTestUtils.assertBaseConfig(gcsDestinationConfig)
@@ -35,7 +39,7 @@ class GcsJsonlFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 
@@ -43,9 +47,13 @@ class GcsJsonlFormatConfigTest {
     @Throws(IllegalAccessException::class)
     fun testHandleAbsenceOfPartSizeConfig() {
         val config =
-            ConfigTestUtils.getBaseConfig(Jsons.deserialize("""{
+            ConfigTestUtils.getBaseConfig(
+                Jsons.deserialize(
+                    """{
   "format_type": "JSONL"
-}"""))
+}""",
+                ),
+            )
 
         val gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config)
         ConfigTestUtils.assertBaseConfig(gcsDestinationConfig)
@@ -55,7 +63,7 @@ class GcsJsonlFormatConfigTest {
         val partSizeBytes = FieldUtils.readField(streamTransferManager, "partSize", true) as Int
         Assertions.assertEquals(
             Constants.MB * StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB,
-            partSizeBytes
+            partSizeBytes,
         )
     }
 }

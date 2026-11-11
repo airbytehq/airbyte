@@ -123,7 +123,7 @@ constructor(
 
                     if (terminalStatusesFromSource.containsKey(it)) {
                         throw IllegalStateException(
-                            "Received a record message after a terminal stream status for stream ${it.namespace}.${it.name}"
+                            "Received a record message after a terminal stream status for stream ${it.namespace}.${it.name}",
                         )
                     }
                 }
@@ -143,7 +143,7 @@ constructor(
                                 terminalStatusesFromSource[it.streamDescriptor] != it.status
                         if (conflictsWithExistingStatus) {
                             throw IllegalStateException(
-                                "Received conflicting stream statuses for stream ${it.streamDescriptor.namespace}.${it.streamDescriptor.name}"
+                                "Received conflicting stream statuses for stream ${it.streamDescriptor.namespace}.${it.streamDescriptor.name}",
                             )
                         }
                         terminalStatusesFromSource[it.streamDescriptor] = it.status
@@ -172,29 +172,28 @@ constructor(
         bufferManager.close()
 
         val unsuccessfulStreams = ArrayList<StreamDescriptor>()
-        val streamSyncSummaries =
-            streamNames.associate { streamDescriptor ->
-                // If we didn't receive a stream status message, assume failure.
-                // This is possible if e.g. the orchestrator crashes before sending us the message.
-                val terminalStatusFromSource =
-                    terminalStatusesFromSource[streamDescriptor] ?: AirbyteStreamStatus.INCOMPLETE
-                if (terminalStatusFromSource == AirbyteStreamStatus.INCOMPLETE) {
-                    unsuccessfulStreams.add(streamDescriptor)
-                }
-
-                if (bufferManager.defaultNamespace == null) {
-                    streamDescriptor
-                } else {
-                    StreamDescriptorUtils.withDefaultNamespace(
-                        streamDescriptor,
-                        bufferManager.defaultNamespace,
-                    )
-                } to
-                    StreamSyncSummary(
-                        getRecordCounter(streamDescriptor).get(),
-                        terminalStatusFromSource,
-                    )
+        val streamSyncSummaries = streamNames.associate { streamDescriptor ->
+            // If we didn't receive a stream status message, assume failure.
+            // This is possible if e.g. the orchestrator crashes before sending us the message.
+            val terminalStatusFromSource =
+                terminalStatusesFromSource[streamDescriptor] ?: AirbyteStreamStatus.INCOMPLETE
+            if (terminalStatusFromSource == AirbyteStreamStatus.INCOMPLETE) {
+                unsuccessfulStreams.add(streamDescriptor)
             }
+
+            if (bufferManager.defaultNamespace == null) {
+                streamDescriptor
+            } else {
+                StreamDescriptorUtils.withDefaultNamespace(
+                    streamDescriptor,
+                    bufferManager.defaultNamespace,
+                )
+            } to
+                StreamSyncSummary(
+                    getRecordCounter(streamDescriptor).get(),
+                    terminalStatusFromSource,
+                )
+        }
         onClose.accept(hasFailed, streamSyncSummaries)
 
         // as this throws an exception, we need to be after all other close functions.

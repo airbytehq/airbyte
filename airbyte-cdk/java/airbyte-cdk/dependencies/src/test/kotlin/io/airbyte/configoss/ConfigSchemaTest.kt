@@ -23,7 +23,7 @@ internal class ConfigSchemaTest {
         for (value in ConfigSchema.entries) {
             Assertions.assertTrue(
                 Files.exists(value.configSchemaFile.toPath()),
-                value.configSchemaFile.toPath().toString() + " does not exist"
+                value.configSchemaFile.toPath().toString() + " does not exist",
             )
         }
     }

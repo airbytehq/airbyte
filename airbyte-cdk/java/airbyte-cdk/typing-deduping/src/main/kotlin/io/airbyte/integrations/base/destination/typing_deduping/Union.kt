@@ -6,9 +6,10 @@ package io.airbyte.integrations.base.destination.typing_deduping
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
- * Represents a {type: [a, b, ...]} schema. This is theoretically equivalent to {oneOf: [{type: a},
- * {type: b}, ...]} but legacy normalization only handles the {type: [...]} schemas.
+ * Represents a {type: [a, b, ...]} schema. This is theoretically equivalent to {oneOf:
+ * [{type: a}, {type: b}, ...]} but legacy normalization only handles the {type: [...]} schemas.
  *
  * Eventually we should:
  *

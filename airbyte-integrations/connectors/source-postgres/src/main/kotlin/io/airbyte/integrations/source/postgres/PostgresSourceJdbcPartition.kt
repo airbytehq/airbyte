@@ -43,16 +43,16 @@ val xminField = NonEmittedField("xmin", LongFieldType)
 val xminCursorUpperBoundQuery =
     SelectQuery(
         """
-            SELECT CASE 
-                WHEN pg_is_in_recovery() 
-                THEN txid_snapshot_xmin(txid_current_snapshot()) 
-                ELSE txid_current() 
-            END AS current_xmin
-            """
+        SELECT CASE 
+            WHEN pg_is_in_recovery() 
+            THEN txid_snapshot_xmin(txid_current_snapshot()) 
+            ELSE txid_current() 
+        END AS current_xmin
+        """
             .trimIndent()
             .replace("\n", " "),
         listOf(EmittedField("current_xmin", LongFieldType)),
-        emptyList()
+        emptyList(),
     )
 
 sealed class PostgresSourceJdbcPartition(
@@ -78,7 +78,7 @@ sealed class PostgresSourceJdbcUnsplittablePartition(
             SelectQuerySpec(
                 SelectColumns(stream.fields),
                 From(stream.name, stream.namespace),
-                limit = Limit(sampleSize.toLong())
+                limit = Limit(sampleSize.toLong()),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
@@ -144,7 +144,7 @@ class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
             SelectQuerySpec(
                 SelectColumns(stream.fields),
                 From(stream.name, stream.namespace),
-                limit = Limit(sampleSize.toLong())
+                limit = Limit(sampleSize.toLong()),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
@@ -188,8 +188,9 @@ class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
                         } + listOf(lastLeaf),
                     )
                 }
-            val zippedUpperBound: List<Pair<DataField, JsonNode>> =
-                upperBound.let { checkpointColumns.zip(listOf(it)) }
+            val zippedUpperBound: List<Pair<DataField, JsonNode>> = upperBound.let {
+                checkpointColumns.zip(listOf(it))
+            }
             val upperBoundDisj: List<WhereClauseNode> =
                 zippedUpperBound.mapIndexed { idx: Int, (leqCol: DataField, leqValue: JsonNode) ->
                     val lastLeaf: WhereClauseLeafNode =
@@ -231,7 +232,7 @@ sealed class PostgresSourceSplittablePartition(
                 from,
                 where,
                 OrderBy(ctidField),
-                Limit(limit)
+                Limit(limit),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
@@ -242,7 +243,7 @@ sealed class PostgresSourceSplittablePartition(
             SelectQuerySpec(
                 SelectColumns((listOf(ctidField) + stream.fields).distinct()),
                 From(stream.name, stream.namespace),
-                limit = Limit(sampleSize.toLong())
+                limit = Limit(sampleSize.toLong()),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
@@ -293,7 +294,7 @@ class PostgresSourceJdbcSplittableSnapshotPartition(
     override val lowerBound: JsonNode?,
     override val upperBound: JsonNode?,
     val filenode: Filenode?,
-    override val isLowerBoundIncluded: Boolean
+    override val isLowerBoundIncluded: Boolean,
 ) : PostgresSourceSplittablePartition(selectQueryGenerator, streamState, listOf(ctidField)) {
     override val completeState: OpaqueStateValue
         get() =
@@ -305,7 +306,7 @@ class PostgresSourceJdbcSplittableSnapshotPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue {
         return PostgresSourceJdbcStreamStateValue.snapshotCheckpoint(
             lastRecord.nonEmittedData.toJson()["ctid"],
-            filenode
+            filenode,
         )
     }
 }
@@ -316,7 +317,7 @@ sealed class PostgresSourceCursorPartition(
     checkpointColumns: List<DataField>,
     val cursor: DataField,
     val explicitCursorUpperBound: JsonNode?,
-    val filenode: Filenode?
+    val filenode: Filenode?,
 ) :
     PostgresSourceSplittablePartition(selectQueryGenerator, streamState, checkpointColumns),
     JdbcCursorPartition<PostgresSourceJdbcStreamState> {
@@ -337,7 +338,7 @@ class PostgresSourceJdbcSplittableSnapshotWithXminPartition(
     override val upperBound: JsonNode?,
     xminUpperBound: JsonNode?,
     filenode: Filenode?,
-    override val isLowerBoundIncluded: Boolean
+    override val isLowerBoundIncluded: Boolean,
 ) :
     PostgresSourceCursorPartition(
         selectQueryGenerator,
@@ -345,7 +346,7 @@ class PostgresSourceJdbcSplittableSnapshotWithXminPartition(
         listOf(ctidField),
         xminField,
         xminUpperBound,
-        filenode
+        filenode,
     ) {
     override val completeState: OpaqueStateValue
         get() =
@@ -356,7 +357,7 @@ class PostgresSourceJdbcSplittableSnapshotWithXminPartition(
                     PostgresSourceJdbcStreamStateValue.snapshotWithXminCheckpoint(
                         upperBound,
                         cursorUpperBound,
-                        filenode
+                        filenode,
                     )
             }
 
@@ -367,7 +368,7 @@ class PostgresSourceJdbcSplittableSnapshotWithXminPartition(
         PostgresSourceJdbcStreamStateValue.snapshotWithXminCheckpoint(
             lastRecord.nonEmittedData.toJson()["ctid"],
             cursorUpperBound,
-            filenode
+            filenode,
         )
 }
 
@@ -379,7 +380,7 @@ class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
     cursor: DataField,
     cursorUpperBound: JsonNode?,
     filenode: Filenode?,
-    override val isLowerBoundIncluded: Boolean
+    override val isLowerBoundIncluded: Boolean,
 ) :
     PostgresSourceCursorPartition(
         selectQueryGenerator,
@@ -387,7 +388,7 @@ class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
         listOf(ctidField),
         cursor,
         cursorUpperBound,
-        filenode
+        filenode,
     ) {
 
     override val completeState: OpaqueStateValue
@@ -429,7 +430,7 @@ class PostgresSourceJdbcXminIncrementalPartition(
         listOf(xminField),
         xminField,
         xminUpperBound,
-        null
+        null,
     ) {
     override val lowerBound: JsonNode? = xminLowerBound
     override val upperBound: JsonNode
@@ -444,7 +445,7 @@ class PostgresSourceJdbcXminIncrementalPartition(
             SelectQuerySpec(
                 SelectColumns(listOf(xminField) + (stream.fields).distinct()),
                 From(stream.name, stream.namespace),
-                limit = Limit(sampleSize.toLong())
+                limit = Limit(sampleSize.toLong()),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
@@ -475,7 +476,7 @@ class PostgresSourceJdbcCursorIncrementalPartition(
         listOf(cursor),
         cursor,
         cursorUpperBound,
-        null // Incremental partitions do not track filenode
+        null, // Incremental partitions do not track filenode
     ) {
     override val lowerBound: JsonNode = cursorLowerBound
     override val upperBound: JsonNode
@@ -491,7 +492,7 @@ class PostgresSourceJdbcCursorIncrementalPartition(
                 from,
                 where,
                 OrderBy(cursor),
-                Limit(limit)
+                Limit(limit),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
@@ -502,7 +503,7 @@ class PostgresSourceJdbcCursorIncrementalPartition(
             SelectQuerySpec(
                 SelectColumns((stream.fields).distinct()),
                 From(stream.name, stream.namespace),
-                limit = Limit(sampleSize.toLong())
+                limit = Limit(sampleSize.toLong()),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
@@ -513,6 +514,7 @@ class PostgresSourceJdbcCursorIncrementalPartition(
                 cursor,
                 cursorUpperBound,
             )
+
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,

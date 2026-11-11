@@ -350,6 +350,8 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          $ref: "#/definitions/streams/registrations initial/retriever/paginator"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -418,6 +420,8 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          $ref: "#/definitions/streams/sessions initial/retriever/paginator"
         decoder:
           type: JsonDecoder
       schema_loader:
