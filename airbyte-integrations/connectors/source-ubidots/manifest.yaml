@@ -41,7 +41,7 @@ definitions:
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: per_page
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -77,7 +77,7 @@ definitions:
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: per_page
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
             page_size: 200
@@ -113,7 +113,7 @@ definitions:
           page_size_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: per_page
+            field_name: page_size
           pagination_strategy:
             type: CursorPagination
             page_size: 200

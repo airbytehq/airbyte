@@ -8,7 +8,7 @@ import pytest
 from destination_deepset import util
 from pydantic import BaseModel
 
-from airbyte_cdk.models import AirbyteMessage, DestinationSyncMode, FailureType, Level, TraceType, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, DestinationSyncMode, FailureType, Level, TraceType, Type
 
 
 class Simple(BaseModel):
@@ -65,7 +65,16 @@ def test_get_trace_message(message: str, exception: Exception | None, expected: 
     assert airbyte_message.trace.type == TraceType.ERROR
     assert airbyte_message.trace.error.message == error_message
     assert airbyte_message.trace.error.internal_message == internal_error_message
-    assert airbyte_message.trace.error.failure_type == FailureType.transient_error.value
+    assert airbyte_message.trace.error.failure_type == FailureType.transient_error
+
+
+def test_get_trace_message_is_serializable() -> None:
+    airbyte_message = util.get_trace_message("Hello", exception=Exception("World"))
+
+    serialized = AirbyteMessageSerializer.dump(airbyte_message)
+
+    assert serialized["trace"]["error"]["failure_type"] == "transient_error"
+    assert isinstance(serialized["trace"]["emitted_at"], int)
 
 
 def test_get_log_message() -> None:

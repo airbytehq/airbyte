@@ -11,12 +11,20 @@ dependencies {
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage')
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-s3')
 
-    testFixturesApi("io.micronaut.test:micronaut-test-core:4.5.0")
-    testFixturesApi("io.micronaut.test:micronaut-test-junit5:4.5.0")
+    testFixturesApi("io.micronaut.test:micronaut-test-core:4.10.3")
+    testFixturesApi("io.micronaut.test:micronaut-test-junit5:4.10.3")
     testFixturesApi(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader")))
     testFixturesApi(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage")))
 
     integrationTestImplementation testFixtures(project)
+    // KSP 2 does not apply the `ksp` configuration to this compilation (KSP 1 did).
+    kspIntegrationTest platform("io.micronaut:micronaut-core-bom:$micronautVersion")
+    kspIntegrationTest 'io.micronaut:micronaut-inject-kotlin'
+}
+
+configurations {
+    // Same as legacy-task-loader: the JUnit engine and platform launcher live on testRuntimeOnly.
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 def integrationTestTask = tasks.register('integrationTest', Test) {

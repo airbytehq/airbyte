@@ -10,7 +10,7 @@ data class ObjectStoragePathConfiguration(
     val prefix: String,
     val pathPattern: String?,
     val fileNamePattern: String?,
-    val resolveNamesMethod: ((String) -> String) = { Transformations.toS3SafeCharacters(it) }
+    val resolveNamesMethod: ((String) -> String) = { Transformations.toS3SafeCharacters(it) },
 )
 
 interface ObjectStoragePathConfigurationProvider {

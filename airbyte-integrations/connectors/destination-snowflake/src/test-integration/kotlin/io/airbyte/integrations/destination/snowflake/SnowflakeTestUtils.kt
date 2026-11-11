@@ -16,13 +16,15 @@ object SnowflakeTestUtils {
      *
      * This parameter causes Snowflake to upcase all identifiers, regardless of quoting. We've seen
      * this parameter cause problems in the past (e.g. a simple `select count(*) as "total"` will
-     * return a ResultSet with `TOTAL` as the column name rather than `total`), so run all our tests
-     * against this config.
+     * return a ResultSet with `TOTAL` as the column name rather than `total`), so the
+     * identifier-sensitive subset of the acceptance suite runs against this config (see
+     * `SnowflakeInsertIgnoreCasingAcceptanceTest`).
      */
     const val CONFIG_WITH_AUTH_STAGING_IGNORE_CASING = "secrets/1s1t_case_insensitive.json"
     const val CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE =
         "secrets/config_with_auth_staging_and_raw_override.json"
 
     fun getConfig(configPath: String): String = Files.readString(getConfigPath(configPath))
+
     fun getConfigPath(configPath: String): Path = Path.of(configPath)
 }

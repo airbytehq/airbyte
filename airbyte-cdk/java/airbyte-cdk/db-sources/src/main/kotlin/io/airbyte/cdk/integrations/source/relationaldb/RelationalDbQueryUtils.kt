@@ -13,6 +13,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 
 private val LOGGER = KotlinLogging.logger {}
+
 /** Utility class for methods to query a relational db. */
 object RelationalDbQueryUtils {
 
@@ -41,7 +42,7 @@ object RelationalDbQueryUtils {
     fun getFullyQualifiedTableNameWithQuoting(
         nameSpace: String?,
         tableName: String,
-        quoteString: String
+        quoteString: String,
     ): String {
         return (if (nameSpace == null || nameSpace.isEmpty())
             getIdentifierWithQuoting(tableName, quoteString)
@@ -68,7 +69,7 @@ object RelationalDbQueryUtils {
         database: Database,
         sqlQuery: String?,
         tableName: String?,
-        schemaName: String?
+        schemaName: String?,
     ): AutoCloseableIterator<JsonNode> {
         val airbyteStreamNameNamespacePair =
             AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName)
@@ -79,13 +80,13 @@ object RelationalDbQueryUtils {
                     val stream = database!!.unsafeQuery(sqlQuery)
                     return@lazyIterator AutoCloseableIterators.fromStream<JsonNode>(
                         stream,
-                        airbyteStreamNameNamespacePair
+                        airbyteStreamNameNamespacePair,
                     )
                 } catch (e: Exception) {
                     throw RuntimeException(e)
                 }
             },
-            airbyteStreamNameNamespacePair
+            airbyteStreamNameNamespacePair,
         )
     }
 

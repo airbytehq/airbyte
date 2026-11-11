@@ -31,7 +31,7 @@ private val logger = KotlinLogging.logger {}
 
 class CustomerIoState(
     private val httpClient: HttpClient,
-    private val entryAssembler: BatchEntryAssembler
+    private val entryAssembler: BatchEntryAssembler,
 ) : AutoCloseable {
     val decoder: JsonDecoder = JsonDecoder()
     val requestBody: ObjectNode = Jsons.objectNode()
@@ -60,8 +60,8 @@ class CustomerIoState(
                     method = RequestMethod.POST,
                     url = "https://track.customer.io/api/v2/batch",
                     headers = mapOf("Content-Type" to "application/json"),
-                    body = requestBody.serializeToJsonBytes()
-                )
+                    body = requestBody.serializeToJsonBytes(),
+                ),
             )
 
         response.use {
@@ -74,12 +74,12 @@ class CustomerIoState(
                                 "rejected_reason" to it.get("reason").asText(),
                                 "rejected_field" to it.get("field").asText(),
                                 "rejected_message" to it.get("message").asText(),
-                            )
+                            ),
                         )
                     }
                 else ->
                     throw IllegalStateException(
-                        "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}"
+                        "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}",
                     )
             }
         }
@@ -90,21 +90,21 @@ class CustomerIoState(
 
 class CustomerIoLoader(
     private val httpClient: HttpClient,
-    private val catalog: DestinationCatalog
+    private val catalog: DestinationCatalog,
 ) : DlqLoader<CustomerIoState> {
     override fun start(key: StreamKey, part: Int): CustomerIoState {
         logger.info { "CustomerIoLoader.start for ${key.serializeToString()} with part $part" }
         val stream =
             (catalog.streams.find { it.mappedDescriptor == key.stream }
                 ?: throw IllegalStateException(
-                    "Could not find stream ${key.stream} as part of the catalog."
+                    "Could not find stream ${key.stream} as part of the catalog.",
                 ))
         return CustomerIoState(httpClient, selectBatchEntryAssembler(stream))
     }
 
     override fun accept(
         record: DestinationRecordRaw,
-        state: CustomerIoState
+        state: CustomerIoState,
     ): DlqLoader.DlqLoadResult {
         state.accumulate(record)
         if (state.isFull()) {
@@ -126,7 +126,7 @@ class CustomerIoLoader(
             "person_identify" -> PersonIdentifyBatchEntryAssembler()
             else ->
                 throw IllegalArgumentException(
-                    "Unknown destination object name ${stream.destinationObjectName}"
+                    "Unknown destination object name ${stream.destinationObjectName}",
                 )
         }
     }

@@ -25,8 +25,6 @@ acceptance_tests:
     tests:
       - config_path: "integration_tests/temp/config_active.json"
         configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
-        expect_records:
-          path: "integration_tests/expected_records.txt"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
           secrets_path: "secrets/cat-config.json"

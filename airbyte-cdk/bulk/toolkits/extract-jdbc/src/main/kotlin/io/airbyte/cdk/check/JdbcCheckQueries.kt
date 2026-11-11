@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.check
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.ConfigurationProperties
@@ -26,7 +25,6 @@ const val CHECK_QUERIES_PREFIX = "airbyte.connector.check.jdbc"
  */
 @Singleton
 @ConfigurationProperties(CHECK_QUERIES_PREFIX)
-@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class JdbcCheckQueries {
 
     // Micronaut configuration objects work better with mutable properties.

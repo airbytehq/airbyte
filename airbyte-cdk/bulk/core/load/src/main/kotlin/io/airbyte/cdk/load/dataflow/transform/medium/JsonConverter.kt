@@ -37,7 +37,7 @@ class JsonConverter(
                             partitionKey = input.partitionKey,
                             stream = input.msg.stream.mappedDescriptor,
                             result = coercer.validate(value),
-                            value = value
+                            value = value,
                         )
                     }
 

@@ -111,14 +111,14 @@ class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
                     ValidationResult.Valid
                 } else {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 }
             }
             is StringValue -> {
                 if (!isVarcharValid(abValue.value)) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else {
                     ValidationResult.Valid
@@ -128,7 +128,7 @@ class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
             is ObjectValue -> {
                 if (!isVariantValid(abValue.toCsvValue().toString())) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else {
                     ValidationResult.Valid
@@ -148,12 +148,12 @@ class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
             } else {
                 ValidationResult.ShouldTruncate(
                     NumberValue(targetValue),
-                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                 )
             }
         } else {
             ValidationResult.ShouldNullify(
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             )
         }
 
@@ -168,12 +168,12 @@ class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
         // Range-check after rounding: rounding can carry into a 30th integer digit.
         return if (targetValue.abs() >= NUMERIC_38_9_ABS_LIMIT) {
             ValidationResult.ShouldNullify(
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             )
         } else if (targetValue.compareTo(abValue.value) != 0) {
             ValidationResult.ShouldTruncate(
                 NumberValue(targetValue),
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
             )
         } else {
             ValidationResult.Valid

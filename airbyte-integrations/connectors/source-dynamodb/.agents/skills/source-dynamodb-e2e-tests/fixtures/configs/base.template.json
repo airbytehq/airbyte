@@ -1,0 +1,9 @@
+{
+  "credentials": {
+    "auth_type": "User",
+    "access_key_id": "dummy",
+    "secret_access_key": "dummy"
+  },
+  "endpoint": "REPLACED_BY_RENDER_CONFIG",
+  "region": "us-east-1"
+}

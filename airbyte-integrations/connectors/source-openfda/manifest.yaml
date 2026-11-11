@@ -39,16 +39,11 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
+            type: RequestPath
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 1000
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -73,16 +68,11 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
+            type: RequestPath
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 1000
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -107,16 +97,11 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
+            type: RequestPath
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 1000
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -141,16 +126,11 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
+            type: RequestPath
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 1000
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -173,16 +153,11 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
+            type: RequestPath
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -205,16 +180,11 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
+            type: RequestPath
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -239,16 +209,11 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
+            type: RequestPath
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -271,16 +236,11 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
+            type: RequestPath
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 100
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -303,16 +263,11 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: skip
-          page_size_option:
-            type: RequestOption
-            field_name: limit
-            inject_into: request_parameter
+            type: RequestPath
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 1000
+            type: CursorPagination
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -320,6 +275,17 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.fda.gov/
+    request_parameters:
+      limit: "{{ 1000 if next_page_token is none else '' }}"
+      api_key: "{{ config.get('api_key', '') }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 404
+          error_message_contains: No matches found
 
 streams:
   - $ref: "#/definitions/streams/animal_veterinary_adverse_events"
@@ -338,7 +304,17 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required: []
-    properties: {}
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: >-
+          Optional openFDA API key. Without a key openFDA allows 240 requests per
+          minute and 1,000 requests per day per IP address; with a key the daily
+          quota is 120,000 requests. Get a key at
+          https://open.fda.gov/apis/authentication/.
+        airbyte_secret: true
+        order: 0
     additionalProperties: true
 
 metadata:

@@ -64,7 +64,7 @@ class AzureBlobStorageClientFactory(
             }
             else -> {
                 throw IllegalStateException(
-                    "No valid authentication method provided for Azure Blob Storage"
+                    "No valid authentication method provided for Azure Blob Storage",
                 )
             }
         }

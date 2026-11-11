@@ -20,7 +20,7 @@ class TestAirbyteStreamFactory(
 
     override fun create(
         config: SourceConfiguration,
-        discoveredStream: DiscoveredStream
+        discoveredStream: DiscoveredStream,
     ): AirbyteStream =
         AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
             val hasPK = discoveredStream.primaryKeyColumnIDs.isNotEmpty()

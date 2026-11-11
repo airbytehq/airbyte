@@ -67,7 +67,7 @@ data class BigqueryBulkLoadConfiguration(
         awsAccessKeyConfiguration =
             AWSAccessKeyConfiguration(
                 accessKeyId = credentials.accessKeyId,
-                secretAccessKey = credentials.secretAccessKey
+                secretAccessKey = credentials.secretAccessKey,
             )
 
         objectStoragePathConfiguration =
@@ -76,7 +76,7 @@ data class BigqueryBulkLoadConfiguration(
                 pathPattern =
                     "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${UUID}",
                 fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
-                resolveNamesMethod = { Transformations.toAlphanumericAndUnderscore(it) }
+                resolveNamesMethod = { Transformations.toAlphanumericAndUnderscore(it) },
             )
     }
 }

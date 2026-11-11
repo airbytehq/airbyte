@@ -92,7 +92,7 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Run Hydra Failure
-        uses: aaronsteers/devin-action@main
+        uses: airbytehq/devin-action@main
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ steps.resolve.outputs.issue_number }}

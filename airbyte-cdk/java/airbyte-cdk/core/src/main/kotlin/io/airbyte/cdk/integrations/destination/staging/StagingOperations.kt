@@ -15,21 +15,21 @@ import java.util.*
  * storage for the purposes of efficiently uploading bulk data to destinations
  *
  * TODO: This interface is shared between Snowflake and Redshift connectors where the staging
- * mechanism is different wire protocol. Make the interface more Generic and have sub interfaces to
- * support BlobStorageOperations or Jdbc based staging operations.
+ *   mechanism is different wire protocol. Make the interface more Generic and have sub interfaces
+ *   to support BlobStorageOperations or Jdbc based staging operations.
  */
 interface StagingOperations : SqlOperations {
     /**
      * @param outputTableName The name of the table this staging file will be loaded into (typically
-     * a raw table). Not all destinations use the table name in the staging path (e.g. Snowflake
-     * simply uses a timestamp + UUID), but e.g. Redshift does rely on this to ensure uniqueness.
+     *   a raw table). Not all destinations use the table name in the staging path (e.g. Snowflake
+     *   simply uses a timestamp + UUID), but e.g. Redshift does rely on this to ensure uniqueness.
      */
     fun getStagingPath(
         connectionId: UUID?,
         namespace: String?,
         streamName: String?,
         outputTableName: String?,
-        writeDatetime: Instant?
+        writeDatetime: Instant?,
     ): String?
 
     /**
@@ -63,7 +63,7 @@ interface StagingOperations : SqlOperations {
         recordsData: SerializableBuffer?,
         schemaName: String?,
         stageName: String?,
-        stagingPath: String?
+        stagingPath: String?,
     ): String
 
     /**
@@ -82,7 +82,7 @@ interface StagingOperations : SqlOperations {
         stagingPath: String?,
         stagedFiles: List<String>?,
         tableName: String?,
-        schemaName: String?
+        schemaName: String?,
     )
 
     /**

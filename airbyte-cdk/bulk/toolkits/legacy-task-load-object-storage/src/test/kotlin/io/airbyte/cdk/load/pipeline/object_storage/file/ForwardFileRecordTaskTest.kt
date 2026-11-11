@@ -74,7 +74,7 @@ class ForwardFileRecordTaskTest {
     fun `forwards end of stream`() = runTest {
         val input =
             PipelineEndOfStream<StreamKey, ObjectLoaderUploadCompleter.UploadResult<String>>(
-                Fixtures.unmappedDescriptor
+                Fixtures.unmappedDescriptor,
             )
         task.handleEvent(input)
 
@@ -102,14 +102,14 @@ class ForwardFileRecordTaskTest {
             val result =
                 ObjectLoaderUploadCompleter.UploadResult<String>(
                     state = BatchState.LOADED,
-                    remoteObject = null
+                    remoteObject = null,
                 )
             val input =
                 PipelineMessage(
                     checkpointCounts = mapOf(),
                     key = key,
                     value = result,
-                    context = context
+                    context = context,
                 )
             task.handleEvent(input)
 
@@ -128,14 +128,14 @@ class ForwardFileRecordTaskTest {
         val result =
             ObjectLoaderUploadCompleter.UploadResult(
                 state = BatchState.LOADED,
-                remoteObject = "uploaded thing"
+                remoteObject = "uploaded thing",
             )
         val input =
             PipelineMessage(
                 checkpointCounts = mapOf(),
                 key = key,
                 value = result,
-                context = context
+                context = context,
             )
         task.handleEvent(input)
 
@@ -156,13 +156,13 @@ class ForwardFileRecordTaskTest {
             AirbyteMessage()
                 .withRecord(
                     AirbyteRecordMessage()
-                        .withData(Jsons.deserialize("""{"something": "has to give"}"""))
+                        .withData(Jsons.deserialize("""{"something": "has to give"}""")),
                 )
 
         private fun schema() =
             ObjectType(
                 properties =
-                    LinkedHashMap(mapOf("something" to FieldType(StringType, nullable = true)))
+                    LinkedHashMap(mapOf("something" to FieldType(StringType, nullable = true))),
             )
 
         fun stream(includeFiles: Boolean = true, schema: ObjectType = schema()) =

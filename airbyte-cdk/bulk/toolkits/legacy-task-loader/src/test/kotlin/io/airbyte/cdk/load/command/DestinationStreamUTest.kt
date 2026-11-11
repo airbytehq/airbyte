@@ -65,8 +65,8 @@ class DestinationStreamUTest {
                 .withPrimaryKey(
                     listOf<List<String>>(
                         listOf<String>("composite_key_1"),
-                        listOf<String>("composite_key_2")
-                    )
+                        listOf<String>("composite_key_2"),
+                    ),
                 )
 
         val stream = a_stream_factory().make(configuredStream)
@@ -81,11 +81,11 @@ class DestinationStreamUTest {
             a_configured_stream()
                 .withDestinationObjectName(A_DESTINATION_OBJECT_NAME)
                 .withPrimaryKey(
-                    listOf<List<String>>(listOf<String>("nested_key_root", "nested_key_leaf"))
+                    listOf<List<String>>(listOf<String>("nested_key_root", "nested_key_leaf")),
                 )
 
         assertFailsWith<IllegalArgumentException>(
-            block = { a_stream_factory().make(configuredStream) }
+            block = { a_stream_factory().make(configuredStream) },
         )
     }
 
@@ -95,11 +95,11 @@ class DestinationStreamUTest {
             a_configured_stream()
                 .withDestinationObjectName(A_DESTINATION_OBJECT_NAME)
                 .withPrimaryKey(
-                    listOf<List<String>>(listOf<String>("composite_key_1"), listOf<String>())
+                    listOf<List<String>>(listOf<String>("composite_key_1"), listOf<String>()),
                 )
 
         assertFailsWith<IllegalArgumentException>(
-            block = { a_stream_factory().make(configuredStream) }
+            block = { a_stream_factory().make(configuredStream) },
         )
     }
 

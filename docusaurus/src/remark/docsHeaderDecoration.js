@@ -4,6 +4,7 @@ const { parseCDKVersion } = require("../scripts/connector_registry");
 const {
   getDefaultDataWorkersForSource,
 } = require("../scripts/data-worker-consumption");
+const { isAgentConnector } = require("../plugins/agentConnectors");
 const visit = require("unist-util-visit").visit;
 
 /**
@@ -68,6 +69,9 @@ const plugin = () => {
           defaultDataWorkers,
           lastUpdated,
           definitionId: registryEntry.definitionId,
+          isAgent: boolToBoolString(
+            isAgentConnector(registryEntry.dockerRepository),
+          ),
         };
 
         firstHeading = false;

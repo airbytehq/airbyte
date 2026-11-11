@@ -19,12 +19,12 @@ class PostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest() {
         testdb =
             PostgresTestDatabase.`in`(
                     PostgresTestDatabase.BaseImage.POSTGRES_17,
-                    PostgresTestDatabase.ContainerModifier.CONF
+                    PostgresTestDatabase.ContainerModifier.CONF,
                 )
                 .with("CREATE SCHEMA %S;", SCHEMA_NAME)
                 .with("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');")
                 .with(
-                    "CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);"
+                    "CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);",
                 ) // In one of the test case, we have some money values with currency symbol.
                 // Postgres can only
                 // understand those money values if the symbol corresponds to the monetary locale
@@ -35,7 +35,7 @@ class PostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest() {
                 // necessary here to make sure the unit test can pass, no matter what the locale the
                 // runner VM has.
                 .with(
-                    "SET lc_monetary TO 'en_US.utf8';"
+                    "SET lc_monetary TO 'en_US.utf8';",
                 ) // Set up a fixed timezone here so that timetz and timestamptz always have the
                 // same time zone
                 // wherever the tests are running on.
