@@ -76,7 +76,7 @@
   "snoozed_until_time": "2026-01-10T12:00:00Z",
   "source": "synthetic-source",
   "state": "synthetic-state",
-  "tags": [],
+  "tags": ["synthetic-priority", "synthetic-support"],
   "team": {
     "id": "synthetic-id"
   },
