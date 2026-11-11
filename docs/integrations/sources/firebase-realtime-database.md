@@ -8,8 +8,8 @@ The Firebase Realtime Database source supports Full Refresh sync of one stream p
 
 The connector emits one record for each immediate child of the selected node, with two string fields:
 
-- `key`: The child's key.
-- `value`: The child's value serialized as JSON. Nested objects remain inside this string.
+- `key`: the child's key.
+- `value`: the child's value serialized as JSON. Nested objects remain inside this string.
 
 For example, if `store-a/users` contains:
 
@@ -50,7 +50,7 @@ To use the Firebase Realtime Database source, you'll need:
 - A Google Cloud service account with the **Firebase Realtime Database Viewer** role (`roles/firebasedatabase.viewer`) in that project.
 - A service account key in JSON format.
 
-Select a node whose data is a JSON object keyed by child names, as shown in the example above. The connector expects key-value pairs at this level; select the parent object rather than an individual scalar value.
+Select a node whose data is a JSON object keyed by child names, as shown in the record example. The connector expects key-value pairs at this level. Select the parent object rather than an individual scalar value.
 
 #### Service account
 
@@ -69,14 +69,14 @@ Create a Firebase Realtime Database source in Airbyte and enter the following se
 
 - **Database Name**: the name of your database (for databases in `us-central1`, this is the `<database_name>` in `https://<database_name>.firebaseio.com`). If your database is in another region (for example `europe-west1` or `asia-southeast1`), enter the full database URL or hostname instead, e.g. `https://<database_name>.europe-west1.firebasedatabase.app`. You can find the URL in the Firebase console; see [Realtime Database locations](https://firebase.google.com/docs/database/locations).
 - **Service Account Key JSON**: the contents of your Service Account Key JSON file.
-- **Node Path \[Optional\]**: The path within the database to sync, such as `store-a/users`. Enter a node path without the database URL or a `.json` suffix. Leave it empty to sync the root node.
-- **Buffer Size \[Optional\]**: The number of child records to fetch per request. The default is `10000`. Use an integer of at least `2`: pagination includes the previous page's last key, so a buffer size of `1` stops after the first record.
+- **Node Path \[Optional\]**: the path within the database to sync, such as `store-a/users`. Enter a node path without the database URL or a `.json` suffix. Leave it empty to sync the root node.
+- **Buffer Size \[Optional\]**: the number of child records to fetch per request. The default is `10000`. Use an integer of at least `2`: pagination includes the previous page's last key, so a buffer size of `1` stops after the first record.
 
 ## Limitations
 
-- Each sync reads all records at the configured path. Incremental sync and Change Data Capture are not supported.
+- Each sync reads all records at the configured path.
 - An empty or nonexistent node produces no records.
-- Firebase limits each read response to 256 MB and queries to paths containing at most 75 million nodes. See [Realtime Database limits](https://firebase.google.com/docs/database/usage/limits) for current quotas. If a read exceeds the response size limit, reduce **Buffer Size** or select a smaller subtree with **Node Path**. Each child's nested data is read together, so reducing **Buffer Size** cannot split an oversized child value.
+- Firebase limits each read response to 256 MB and queries to paths containing at most 75 million nodes. See [Realtime Database limits](https://firebase.google.com/docs/database/usage/limits) for current quotas. If a read exceeds the response size limit, reduce **Buffer Size** or select a smaller subtree with **Node Path**. Each request includes the child's nested data, so reducing **Buffer Size** can't split an oversized child value.
 
 ## IP allow list
 
