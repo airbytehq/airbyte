@@ -119,10 +119,15 @@ class PipelineEventBookkeepingRouter(
             openStreamQueue.publish(stream)
         }
 
-        // Other data channels can carry the same stream, so every message waits for it to open
-        syncManager.getOrAwaitStreamLoader(stream.mappedDescriptor)
-
         val manager = syncManager.getStreamManager(stream.mappedDescriptor)
+
+        // Other data channels can carry the same stream, so every message must wait for it to
+        // open. The flag check is a single volatile read on the manager we already hold, so once
+        // the loader has started the hot path never pays for the map lookup, the suspend call, or
+        // its continuation allocation.
+        if (!manager.isLoaderStarted()) {
+            syncManager.getOrAwaitStreamLoader(stream.mappedDescriptor)
+        }
 
         return when (message) {
             is DestinationRecord -> {

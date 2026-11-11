@@ -236,6 +236,7 @@ class PipelineEventBookkeepingRouterTest {
         sync.registerStartedStreamLoader(stream1.mappedDescriptor, Result.success(mockk()))
         runCurrent()
         assertTrue(first.isCompleted)
+        assertTrue(sync.getStreamManager(stream1.mappedDescriptor).isLoaderStarted())
 
         val late = async { r.handleStreamMessage(record(stream1)) }
         runCurrent()
@@ -243,6 +244,28 @@ class PipelineEventBookkeepingRouterTest {
         // After initialization completes, later records pass the router without waiting
         assertTrue(late.isCompleted)
         coVerify(exactly = 1) { openStreamQueue.publish(stream1) }
+    }
+
+    @Test
+    fun `started stream skips the suspending loader lookup entirely`() = runTest {
+        val r = router(1)
+        every { streamManager1.isLoaderStarted() } returns true
+
+        r.handleStreamMessage(record(stream1))
+
+        // The flag on the already-fetched StreamManager is the only check on the hot path
+        coVerify(exactly = 0) { syncManager.getOrAwaitStreamLoader(any()) }
+    }
+
+    @Test
+    fun `unstarted stream falls through to the suspending loader lookup`() = runTest {
+        val r = router(1)
+        every { streamManager1.isLoaderStarted() } returns false
+        coEvery { syncManager.getOrAwaitStreamLoader(stream1.mappedDescriptor) } returns mockk()
+
+        r.handleStreamMessage(record(stream1))
+
+        coVerify(exactly = 1) { syncManager.getOrAwaitStreamLoader(stream1.mappedDescriptor) }
     }
 
     @Test

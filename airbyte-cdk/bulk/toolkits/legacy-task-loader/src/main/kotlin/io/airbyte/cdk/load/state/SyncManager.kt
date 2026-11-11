@@ -45,6 +45,12 @@ class SyncManager(val catalog: DestinationCatalog) {
         streamLoaders
             .getOrPut(streamDescriptor) { CompletableDeferred() }
             .complete(streamLoaderResult)
+        // Set after completing the deferred so that "started" always implies the deferred is done.
+        // A failure deliberately leaves the flag unset so that every reader falls through to
+        // getOrAwaitStreamLoader() and gets the exception.
+        if (streamLoaderResult.isSuccess) {
+            getStreamManager(streamDescriptor).markLoaderStarted()
+        }
     }
 
     suspend fun getOrAwaitStreamLoader(stream: DestinationStream.Descriptor): StreamLoader {
