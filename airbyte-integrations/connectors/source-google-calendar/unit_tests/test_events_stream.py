@@ -548,8 +548,9 @@ def test_410_updated_min_too_long_ago_is_transient():
         error = _error_trace(output)
         assert error.failure_type == FailureType.transient_error
         assert error.message == (
-            "Google Calendar rejects the saved events sync position as too old. "
-            "Automatic re-reading requires a sync position older than 21 days."
+            "Google Calendar rejected the saved sync position of the events stream as too old. "
+            "Reset the events stream to re-read it now; otherwise syncs re-read automatically "
+            "once the saved position is more than 21 days old."
         )
 
 

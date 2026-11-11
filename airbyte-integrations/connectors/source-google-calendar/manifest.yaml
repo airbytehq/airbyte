@@ -570,7 +570,7 @@ definitions:
             - 410
           action: FAIL
           failure_type: transient_error
-          error_message: "Google Calendar rejects the saved events sync position as too old. Automatic re-reading requires a sync position older than 21 days."
+          error_message: "Google Calendar rejected the saved sync position of the events stream as too old. Reset the events stream to re-read it now; otherwise syncs re-read automatically once the saved position is more than 21 days old."
         - $ref: "#/definitions/error_filters/too_many_requests"
         - $ref: "#/definitions/error_filters/server_errors"
 
