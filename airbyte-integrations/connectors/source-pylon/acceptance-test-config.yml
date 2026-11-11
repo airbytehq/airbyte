@@ -1,0 +1,15 @@
+acceptance_tests:
+  spec:
+    tests:
+      - config_path: integration_tests/sample_config.json
+  discovery:
+    tests:
+      - config_path: integration_tests/sample_config.json
+  connection:
+    bypass_reason: "No sandbox account exists; covered by unit_tests/mock_server check tests."
+  basic_read:
+    bypass_reason: "No sandbox account exists; covered by unit_tests/mock_server list, child, and all-streams tests."
+  incremental:
+    bypass_reason: "No sandbox account exists; covered by unit_tests/mock_server issues seam and resume tests."
+  full_refresh:
+    bypass_reason: "No sandbox account exists; covered by unit_tests/mock_server full-refresh and all-streams tests."

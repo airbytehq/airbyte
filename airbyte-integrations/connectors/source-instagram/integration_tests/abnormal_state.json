@@ -2,11 +2,32 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "17841408147298757": { "date": "2222-01-01T00:00:00Z" },
-        "17841403112736866": { "date": "2222-01-01T00:00:00Z" }
+      "stream_descriptor": {
+        "name": "user_insights"
       },
-      "stream_descriptor": { "name": "user_insights" }
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "business_account_id": "17841408147298757"
+            },
+            "cursor": {
+              "date": "2222-01-01T00:00:00+00:00"
+            }
+          },
+          {
+            "partition": {
+              "business_account_id": "17841403112736866"
+            },
+            "cursor": {
+              "date": "2222-01-01T00:00:00+00:00"
+            }
+          }
+        ],
+        "lookback_window": 0,
+        "parent_state": {}
+      }
     }
   }
 ]

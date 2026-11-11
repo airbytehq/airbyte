@@ -17,7 +17,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 from .api import ZohoAPI
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
-from .types import FieldMeta, ModuleMeta, ZohoPickListItem
+from .types import FieldMeta, ModuleMeta
 
 
 def parse_iso(value: Any) -> Any:
@@ -47,6 +47,13 @@ class ZohoCrmStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
+
+    # Legacy hooks inherited from CDK 1; keeping them routes CDK 7 through its adapter so retry behavior is unchanged.
+    def should_retry(self, response: requests.Response) -> bool:
+        return response.status_code == HTTPStatus.TOO_MANY_REQUESTS or HTTPStatus.INTERNAL_SERVER_ERROR <= response.status_code < 600
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = [] if response.status_code in EMPTY_BODY_STATUSES else response.json()["data"]
@@ -139,13 +146,7 @@ class ZohoStreamFactory:
 
     def _populate_fields_meta(self, module: ModuleMeta):
         fields_meta_json = self.api.fields_settings(module.api_name)
-        fields_meta = []
-        for field in fields_meta_json:
-            pick_list_values = field.get("pick_list_values", [])
-            if pick_list_values:
-                field["pick_list_values"] = [ZohoPickListItem.from_dict(pick_list_item) for pick_list_item in field["pick_list_values"]]
-            fields_meta.append(FieldMeta.from_dict(field))
-        module.fields = fields_meta
+        module.fields = [FieldMeta.from_dict(field) for field in fields_meta_json]
 
     def _populate_module_meta(self, module: ModuleMeta):
         module_meta_json = self.api.module_settings(module.api_name)

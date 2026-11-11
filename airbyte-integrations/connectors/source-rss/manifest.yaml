@@ -1,0 +1,118 @@
+version: 7.45.0
+
+type: DeclarativeSource
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: CustomRecordExtractor
+      class_name: source_declarative_manifest.components.CustomExtractor
+    record_filter:
+      type: RecordFilter
+      condition: "{{ record.get('published') is not none }}"
+
+  requester:
+    type: HttpRequester
+    url: "{{ config['url'] }}"
+    http_method: GET
+    authenticator:
+      type: NoAuth
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  items_stream:
+    type: DeclarativeStream
+    name: items
+    retriever:
+      $ref: "#/definitions/retriever"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/items_schema"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: published
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      is_client_side_incremental: true
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (now_utc() - duration('PT23H')).strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+
+  items_schema:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - published
+    properties:
+      title:
+        type:
+          - "null"
+          - string
+      link:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      category:
+        type:
+          - "null"
+          - string
+      comments:
+        type:
+          - "null"
+          - string
+      enclosure:
+        type:
+          - "null"
+          - string
+      guid:
+        type:
+          - "null"
+          - string
+      published:
+        type:
+          - string
+        format: date-time
+
+streams:
+  - $ref: "#/definitions/items_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - items
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/rss
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: RSS Spec
+    type: object
+    required:
+      - url
+    properties:
+      url:
+        type: string
+        description: RSS Feed URL

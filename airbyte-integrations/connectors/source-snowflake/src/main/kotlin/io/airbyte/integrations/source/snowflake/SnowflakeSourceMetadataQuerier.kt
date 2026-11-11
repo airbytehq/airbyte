@@ -40,6 +40,12 @@ import java.sql.Statement
 import kotlin.use
 
 /**
+ * Invalid identifier; a view that references a column dropped from its base table fails with it on
+ * every probe.
+ */
+private const val ERRORCODE_INVALID_IDENTIFIER = 904
+
+/**
  * Object error codes:
  * 1. 2003 / 2043: "object does not exist or not authorized" (the same codes in application.yml)
  * 2. 2037: failure during expansion of view
@@ -170,7 +176,7 @@ class SnowflakeSourceMetadataQuerier(
             queryColumnMetadata(
                 base.conn,
                 selectLimit0(table, columnMetadata.map { it.name }),
-                onToleratedFailure = { wholeObjectFailure = isWholeObjectFailure(it) },
+                onToleratedFailure = { wholeObjectFailure = isWholeObjectFailure(it, table) },
             )
         if (allColumnsProbe != null) {
             return allColumnsProbe
@@ -257,10 +263,14 @@ class SnowflakeSourceMetadataQuerier(
      * table/view. Everything else is treated as fatal.
      */
     private fun isTolerableObjectError(e: SQLException): Boolean =
-        e.errorCode in TOLERABLE_OBJECT_ERROR_CODES || e.sqlState in TOLERABLE_OBJECT_SQLSTATES
+        e.errorCode in TOLERABLE_OBJECT_ERROR_CODES ||
+            e.errorCode == ERRORCODE_INVALID_IDENTIFIER ||
+            e.sqlState in TOLERABLE_OBJECT_SQLSTATES
 
-    private fun isWholeObjectFailure(e: SQLException): Boolean =
-        e.sqlState == "42601" || e.errorCode in TOLERABLE_OBJECT_ERROR_CODES
+    private fun isWholeObjectFailure(e: SQLException, table: TableName): Boolean =
+        e.sqlState == "42601" ||
+            e.errorCode in TOLERABLE_OBJECT_ERROR_CODES ||
+            (e.errorCode == ERRORCODE_INVALID_IDENTIFIER && table.type == "VIEW")
 
     fun <T> swallow(supplier: () -> T): T? {
         try {
