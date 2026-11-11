@@ -38,6 +38,10 @@ class SnowflakeSourceDiscoverLiveTest : AbstractSnowflakeLiveTest() {
             "INC_DATE",
             "INC_VARCHAR",
             "INC_NOPK_NUMBER",
+            "INC_TS_NTZ_DEFAULT_TZ",
+            "INC_TS_TZ_DEFAULT_TZ",
+            "INC_TS_LTZ_DEFAULT_TZ",
+            "INC_DATE_DEFAULT_TZ",
             "SPLIT_100K",
         )
 

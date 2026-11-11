@@ -1,0 +1,124 @@
+name: "Hydra: Auto-merge daily digest"
+
+on:
+  schedule:
+    # Weekdays at 08:00 Pacific Time
+    - cron: "0 8 * * 1-5"
+      timezone: "America/Los_Angeles"
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Dry run. Write the digest to the job summary without posting it to Slack."
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: hydra-automerge-daily-digest
+  cancel-in-progress: false
+
+jobs:
+  post-digest:
+    name: Post auto-merge daily digest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Build digest
+        id: digest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          export TZ=America/Los_Angeles
+
+          if [[ "$(date +%u)" == "1" ]]; then
+            days_back=3
+            window_phrase="since Friday at 8:00 AM PT"
+          else
+            days_back=1
+            window_phrase="in the last 24 hours"
+          fi
+          start_day="$(date -d "${days_back} days ago" +%F)"
+          start_iso="$(date -u -d "TZ=\"America/Los_Angeles\" ${start_day} 08:00" +%Y-%m-%dT%H:%M:%SZ)"
+          run_at="$(date "+%A, %B %-d, %Y at %-I:%M %p PT")"
+
+          merged_prs="$(gh pr list \
+            --repo airbytehq/airbyte \
+            --state merged \
+            --label hyd-automerged \
+            --search "merged:>=${start_iso}" \
+            --limit 200 \
+            --json number,title,mergedAt,files \
+            | jq --arg start_iso "$start_iso" "map(select(.mergedAt >= \$start_iso)) | sort_by(.mergedAt)")"
+
+          # This API-team filter mirrors the owning-teams step in hydra-automerge.yml.
+          declare -A api_connector_cache=()
+          api_prs='[]'
+          while IFS= read -r pr; do
+            connectors="$(jq -r '.files[]?.path // empty' <<< "$pr" \
+              | sed -n 's|^airbyte-integrations/connectors/\([^/]*\)/.*|\1|p;s|^docs/integrations/sources/\([^/.]*\).*|source-\1|p;s|^docs/integrations/destinations/\([^/.]*\).*|destination-\1|p' \
+              | sort -u)"
+
+            has_api_connector=false
+            while IFS= read -r connector; do
+              [[ -n "$connector" ]] || continue
+              if [[ -z "${api_connector_cache[$connector]+x}" ]]; then
+                if [[ "$connector" == destination-* ]]; then
+                  api_connector_cache[$connector]=false
+                elif metadata="$(gh api -H "Accept: application/vnd.github.raw" \
+                  "repos/airbytehq/airbyte/contents/airbyte-integrations/connectors/$connector/metadata.yaml" 2>/dev/null)"; then
+                  if grep -qE '^\s*- language:(java|kotlin)\s*$' <<< "$metadata"; then
+                    api_connector_cache[$connector]=false
+                  else
+                    api_connector_cache[$connector]=true
+                  fi
+                else
+                  api_connector_cache[$connector]=true
+                fi
+              fi
+              if [[ "${api_connector_cache[$connector]}" == "true" ]]; then
+                has_api_connector=true
+                break
+              fi
+            done <<< "$connectors"
+
+            if [[ "$has_api_connector" == "true" ]]; then
+              api_prs="$(jq --argjson pr "$pr" ". + [\$pr]" <<< "$api_prs")"
+            fi
+          done < <(jq -c '.[]' <<< "$merged_prs")
+
+          pr_count="$(jq 'length' <<< "$api_prs")"
+          text=":robot_face: *Hydra Auto-Merge: Daily Summary*"$'\n'"$run_at"$'\n'
+          if [[ "$pr_count" == "0" ]]; then
+            text+=":white_check_mark: No PRs auto-merged ${window_phrase}."
+          else
+            pr_noun=PRs
+            [[ "$pr_count" == "1" ]] && pr_noun=PR
+            text+="*${pr_count} ${pr_noun}* auto-merged ${window_phrase}:"$'\n'
+            while IFS= read -r pr; do
+              number="$(jq -r '.number' <<< "$pr")"
+              title="$(jq -r '.title | gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;")' <<< "$pr")"
+              text+="• <https://github.com/airbytehq/airbyte/pull/${number}|#${number}> ${title}"$'\n'
+            done < <(jq -c '.[]' <<< "$api_prs")
+            text+="<!subteam^S08SQDL2RS9|@oc-apis-support> please review and flag any merge that looks wrong."
+          fi
+
+          payload_file="$RUNNER_TEMP/digest-payload.json"
+          jq -n --arg text "$text" \
+            "{channel: \"C0BHDAPNPCY\", text: \$text, unfurl_links: false, unfurl_media: false}" \
+            > "$payload_file"
+          echo "payload-file=$payload_file" | tee -a "$GITHUB_OUTPUT"
+          printf "Window start: %s\nPR count: %s\n\n\`\`\`text\n%s\n\`\`\`\n" \
+            "$start_iso" "$pr_count" "$text" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post digest to team-apis Slack channel
+        if: inputs.dry-run != true
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload-file-path: ${{ steps.digest.outputs.payload-file }}

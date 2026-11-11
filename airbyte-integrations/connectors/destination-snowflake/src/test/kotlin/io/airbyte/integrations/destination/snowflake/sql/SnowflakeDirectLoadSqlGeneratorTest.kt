@@ -46,6 +46,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     fun setUp() {
         every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
         every { snowflakeConfiguration.database } returns "test-database"
+        every { snowflakeConfiguration.internalTableSchema } returns "airbyte_internal"
         every { snowflakeConfiguration.legacyRawTablesOnly } returns false
         every { snowflakeConfiguration.trimSpace } returns true
 
@@ -399,6 +400,24 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         """
                 .trimMargin()
         assertEquals(expectedSql, sql)
+    }
+
+    @Test
+    fun testFullyQualifiedStageNameUsesInternalSchema() {
+        val tableName = TableName(namespace = "FLEX", name = "FLEX_STG_LEVELS")
+
+        assertEquals(
+            "\"TEST-DATABASE\".\"airbyte_internal\".\"airbyte_stage_FLEX_STG_LEVELS\"",
+            snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName),
+        )
+
+        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "f.csv.gz", listOf("a"))
+        assertTrue(sql.startsWith("COPY INTO \"TEST-DATABASE\".\"FLEX\".\"FLEX_STG_LEVELS\""))
+        assertTrue(
+            sql.contains(
+                "FROM '@\"TEST-DATABASE\".\"airbyte_internal\".\"airbyte_stage_FLEX_STG_LEVELS\"'",
+            ),
+        )
     }
 
     @Test

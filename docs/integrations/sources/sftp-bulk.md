@@ -188,13 +188,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 1.9.3 | 2026-10-20 | [89517](https://github.com/airbytehq/airbyte/pull/89517) | Allow Python 3.13 and upgrade base image to python-connector-base 4.1.1 |
 | 1.9.2 | 2026-04-06 | [76108](https://github.com/airbytehq/airbyte/pull/76108) | Catch `struct.error` during private key parsing and re-raise `AirbyteTracedException` instead of swallowing config errors as warnings |
 | 1.9.1 | 2026-04-01 | [75967](https://github.com/airbytehq/airbyte/pull/75967) | Support non-RSA private key types (Ed25519, ECDSA, DSS) for SSH authentication |
 | 1.9.0 | 2026-01-08 | [71225](https://github.com/airbytehq/airbyte/pull/71225) | Promoting release candidate 1.9.0-rc.2 to a main version. |
 | 1.9.0-rc.2 | 2026-01-05 | [71038](https://github.com/airbytehq/airbyte/pull/71038) | Fix directory could match globs logic |
 | 1.9.0-rc.1 | 2025-12-09 | [69167](https://github.com/airbytehq/airbyte/pull/69167) | Fix OOM on check, update airbyte-cdk version |
-| 1.8.9      | 2025-11-24 | | Increase `maxSecondsBetweenMessages` to 3 hours                                                                                                                          |
-| 1.8.8      | 2025-11-10 | [69257](https://github.com/airbytehq/airbyte/pull/69257) | Update error message when file exceeds size limit                                                                                                                      |
+| 1.8.9 | 2025-11-24 | | Increase `maxSecondsBetweenMessages` to 3 hours |
+| 1.8.8 | 2025-11-10 | [69257](https://github.com/airbytehq/airbyte/pull/69257) | Update error message when file exceeds size limit |
+| 1.8.7 | 2025-10-21 | [68276](https://github.com/airbytehq/airbyte/pull/68276) | Update dependencies |
 | 1.8.6 | 2025-10-14 | [67923](https://github.com/airbytehq/airbyte/pull/67923) | Update dependencies |
 | 1.8.5 | 2025-10-07 | [67234](https://github.com/airbytehq/airbyte/pull/67234) | Update dependencies |
 | 1.8.4 | 2025-09-30 | [66868](https://github.com/airbytehq/airbyte/pull/66868) | Update dependencies |

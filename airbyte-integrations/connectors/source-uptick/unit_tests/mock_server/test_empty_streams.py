@@ -1,15 +1,19 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import json
+from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 import pytest
+import yaml
 from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 from airbyte_cdk.test.state_builder import StateBuilder
 from mock_server.config import ConfigBuilder
 from mock_server.request_builder import UptickRequestBuilder
@@ -20,6 +24,7 @@ EMPTY_STREAMS = (
     "remarkevents",
     "majorservices",
     "promptquestions",
+    "promptanswergroups",
     "promptanswers",
     "servicequotefixedlineitems",
     "servicequotedoandchargelineitems",
@@ -34,6 +39,7 @@ _TOKEN_RESPONSE = {
 _CREATED = "2026-01-01T00:00:00.000000+0000"
 _UPDATED = "2026-01-02T00:00:00.000000+0000"
 _STATE_CURSOR = "2026-01-01T00:00:00.000000+0000"
+_DATE_ONLY_STATE_CURSOR = "2025-09-03"
 _LATEST_UPDATED = "2026-01-03T00:00:00.000000+0000"
 _RETRY_STREAM = EMPTY_STREAMS[0]
 _INCREMENTAL_EMPTY_STREAMS = tuple(stream for stream in EMPTY_STREAMS if stream not in UptickRequestBuilder.FULL_REFRESH_STREAMS)
@@ -49,6 +55,7 @@ _EXPECTED_RELATIONSHIPS = {
     "remarkevents": ("remark", "task", "servicetask", "account"),
     "majorservices": ("asset", "routineserviceleveltype"),
     "promptquestions": ("section",),
+    "promptanswergroups": ("servicetask", "task", "section"),
     "promptanswers": ("question", "answergroup"),
     "servicequotefixedlineitems": ("servicequote",),
     "servicequotedoandchargelineitems": ("servicequote",),
@@ -123,6 +130,20 @@ def _record(
             }
         )
         relationships = {"section": _relationship()}
+    elif stream == "promptanswergroups":
+        attributes.update(
+            {
+                "key": "answer_group",
+                "order": 1,
+                "group_type": "default",
+                "guid": "00000000-0000-4000-8000-000000000001",
+            }
+        )
+        relationships = {
+            "servicetask": _relationship(),
+            "task": _relationship(),
+            "section": _relationship(),
+        }
     elif stream == "promptanswers":
         attributes.update(
             {
@@ -186,9 +207,7 @@ def _mock_token(http_mocker: HttpMocker) -> None:
     http_mocker.post(
         HttpRequest(
             url=UptickRequestBuilder.token_endpoint(),
-            body=(
-                "grant_type=password&client_id=test-client-id&client_secret=test-client-secret" "&username=test-user&password=test-password"
-            ),
+            body="grant_type=password&client_id=test-client-id&client_secret=test-client-secret&username=test-user&password=test-password",
         ),
         HttpResponse(body=json.dumps(_TOKEN_RESPONSE), status_code=200),
     )
@@ -217,6 +236,67 @@ def test_empty_streams_read_two_pages(stream: str, sync_mode: SyncMode) -> None:
             assert all(message.record.data["updated"] for message in output.records)
         http_mocker.assert_number_of_calls(first_page, 1)
         http_mocker.assert_number_of_calls(second_page, 1)
+
+
+def test_cursor_pagination_sends_bare_cursor_and_preserves_next_cursor() -> None:
+    stream = "servicegroups"
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        first_page = UptickRequestBuilder.collection(stream)
+        second_page = UptickRequestBuilder.collection(stream, page=2)
+        http_mocker.get(
+            first_page,
+            _response(
+                [_record(stream, 1)],
+                UptickRequestBuilder.next_page_url(stream),
+            ),
+        )
+        http_mocker.get(second_page, _response([_record(stream, 2)]))
+
+        output = _read(stream, SyncMode.incremental)
+
+        assert output.errors == []
+        requests = [
+            request
+            for request in http_mocker._mocker.request_history
+            if request.method == "GET" and urlparse(request.url).path == f"/api/v2.16/{stream}/"
+        ]
+        assert len(requests) == 2
+        first_page_params = parse_qs(urlparse(requests[0].url).query, keep_blank_values=True)
+        next_page_params = parse_qs(urlparse(requests[1].url).query, keep_blank_values=True)
+        assert first_page_params == {
+            "page[cursor]": [""],
+            "ordering": ["-updated"],
+            "show_deleted": ["true"],
+            "fields[ServiceGroup]": ["id,created,updated,name"],
+            "updatedsince": [UptickRequestBuilder.START_DATE],
+            "page[size]": ["1000"],
+        }, requests[0].url
+        assert next_page_params == {
+            "page[cursor]": [UptickRequestBuilder.NEXT_PAGE_CURSOR],
+            "page[size]": ["1000"],
+            "ordering": ["-updated"],
+            "show_deleted": ["true"],
+            "fields[ServiceGroup]": ["id,created,updated,name"],
+            "updatedsince": [UptickRequestBuilder.START_DATE],
+        }, requests[1].url
+
+
+def test_jsonapi_streams_use_cursor_pagination_and_page_size() -> None:
+    manifest_path = Path(__file__).resolve().parents[2] / "manifest.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text())
+    jsonapi_streams = [stream for stream in manifest["streams"] if "/api/v2.16/" in stream["retriever"]["requester"]["url"]]
+
+    assert len(jsonapi_streams) == 54
+    for stream in jsonapi_streams:
+        requester = stream["retriever"]["requester"]
+        assert requester["url"].endswith("/?page[cursor]"), stream["name"]
+        assert requester["request_parameters"]["page[size]"] == "1000", stream["name"]
+
+    task_profitability = next(stream for stream in manifest["streams"] if stream["name"] == "task_profitability")
+    task_profitability_requester = task_profitability["retriever"]["requester"]
+    assert "page[cursor]" not in task_profitability_requester["url"]
+    assert "page[size]" not in task_profitability_requester.get("request_parameters", {})
 
 
 @pytest.mark.parametrize("stream,sync_mode", _EMPTY_STREAM_SYNC_MODES)
@@ -253,6 +333,23 @@ def test_incremental_uses_state_cursor(stream: str) -> None:
 
         assert output.errors == []
         assert [message.record.data["id"] for message in output.records] == [1, 2]
+        assert output.most_recent_state.stream_descriptor.name == stream
+        assert output.most_recent_state.stream_state.updated == _LATEST_UPDATED
+        http_mocker.assert_number_of_calls(first_page, 1)
+
+
+def test_incremental_accepts_date_only_state_cursor() -> None:
+    stream = "servicegroups"
+    state = StateBuilder().with_stream_state(stream, {"updated": _DATE_ONLY_STATE_CURSOR}).build()
+    first_page = UptickRequestBuilder.collection(stream, updatedsince="2025-09-03T00:00:00.000000+0000")
+    with HttpMocker() as http_mocker:
+        _mock_token(http_mocker)
+        http_mocker.get(first_page, _response([_record(stream, 1, updated=_LATEST_UPDATED)]))
+
+        output = _read(stream, state=state)
+
+        assert output.errors == []
+        assert [message.record.data["id"] for message in output.records] == [1]
         assert output.most_recent_state.stream_descriptor.name == stream
         assert output.most_recent_state.stream_state.updated == _LATEST_UPDATED
         http_mocker.assert_number_of_calls(first_page, 1)

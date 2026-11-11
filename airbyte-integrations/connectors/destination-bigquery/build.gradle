@@ -35,7 +35,7 @@ application {
 
 dependencies {
     // Connector-local Java SDK; GCS continues to use its existing Kotlin SDK and credentials.
-    implementation enforcedPlatform('software.amazon.awssdk:bom:2.46.0')
+    implementation enforcedPlatform('software.amazon.awssdk:bom:2.57.2')
     implementation('software.amazon.awssdk:s3') {
         exclude group: 'software.amazon.awssdk', module: 'apache-client'
         exclude group: 'software.amazon.awssdk', module: 'apache5-client'
@@ -52,7 +52,7 @@ dependencies {
     // but we're still waiting for google to cut another release.
     // so for now, use a specific bigquery version.
     // https://github.com/airbytehq/airbyte-internal-issues/issues/13662
-    implementation 'com.google.cloud:google-cloud-bigquery:2.62.0'
+    implementation 'com.google.cloud:google-cloud-bigquery:2.73.0'
 
     integrationTestImplementation 'com.google.cloud:google-cloud-bigquery'
     testImplementation "io.mockk:mockk:1.14.11"

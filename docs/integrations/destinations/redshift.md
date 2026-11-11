@@ -148,7 +148,7 @@ Navigate to the Airbyte UI to set up Redshift as a destination:
 | Field                                                                                                                                         | Description                                                                                                                                                               |
 |:----------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [JDBC URL Params](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-configuration-options.html) (Optional)                              | Additional properties to pass to the JDBC URL string when connecting to the database, formatted as `key=value` pairs separated by `&`. Example: `key1=value1&key2=value2` |
-| [SSH Tunnel Method](https://docs.airbyte.com/platform/using-airbyte/configuring-connections/configuring-the-connection#ssh-tunnel) (Optional) | Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.                                                      |
+| [SSH Tunnel Method](#optional-ssh-bastion-host) (Optional)                                                                                    | Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.                                                      |
 | Drop tables and columns with CASCADE (Optional)                                                                                               | Whether to use `CASCADE` when dropping tables and columns. **Warning:** This deletes data in all dependent objects (views, etc.), including during schema evolution. Default: `false`. |
 
 ## Output schema
@@ -263,7 +263,7 @@ If your Redshift cluster is in a private VPC, you may need to:
    Airbyte to your Redshift cluster (if they exist in separate VPCs).
 2. Configure an SSH Bastion Host (see [Step 2](#optional-ssh-bastion-host)) to tunnel through to the private cluster.
 3. For Airbyte Cloud, ensure
-   the [Airbyte IP addresses](https://docs.airbyte.com/platform/using-airbyte/configuring-connections/configuring-the-connection#allow-list-ip-addresses)
+   the [Airbyte IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist)
    are allowed in your Redshift cluster's security group and network policy.
 
 ### 'S3 access denied' during staging
@@ -297,6 +297,7 @@ This is by design for performance reasons.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.13 | 2026-10-22 | [89657](https://github.com/airbytehq/airbyte/pull/89657) | Upgrade to Bulk CDK 1.1.9: fix critical CVEs in Apache MINA (mina-core 2.0.31), MINA SSHD 2.20.0 and BouncyCastle 1.86; netty 4.1.139; AWS SDK 2.57.2. |
 | 4.0.12 | 2026-10-15 | [87619](https://github.com/airbytehq/airbyte/pull/87619) | Upgrade to Bulk CDK 1.1.1. |
 | 4.0.11  | 2026-10-15 | [88985](https://github.com/airbytehq/airbyte/pull/88985)   | Suppress a SpotBugs false positive (`NP_NONNULL_PARAM_VIOLATION`) on the suspend `createNamespace` so the connector lint passes; no functional change.                                                            |
 | 4.0.10  | 2026-09-03 | [85284](https://github.com/airbytehq/airbyte/pull/85284)   | Use `svv_all_schemas` instead of `information_schema.schemata` for schema existence check to support users with USAGE/CREATE-only grants.                                                                         |
