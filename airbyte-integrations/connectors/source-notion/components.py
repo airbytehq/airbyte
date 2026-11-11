@@ -25,14 +25,14 @@ class BlocksRetriever(SimpleRetriever):
 
     """
 
-    cursor: Optional[Cursor] = None
     client_side_incremental_sync: Optional[Mapping[str, Any]] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
+        self._incremental_cursor = self.stream_slicer if isinstance(self.stream_slicer, Cursor) else None
         if self.client_side_incremental_sync:
-            self.cursor = self.client_side_incremental_sync["cursor"]
+            self._incremental_cursor = self.client_side_incremental_sync["cursor"]
         record_filter = self.record_selector.record_filter
         if isinstance(record_filter, ClientSideIncrementalRecordFilterDecorator):
             self.record_selector.record_filter = RecordFilter(
@@ -62,5 +62,5 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            if self.cursor is None or self.cursor.should_be_synced(stream_data):
+            if self._incremental_cursor is None or self._incremental_cursor.should_be_synced(stream_data):
                 yield stream_data
