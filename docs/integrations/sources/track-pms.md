@@ -8,23 +8,33 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 
 ## Prerequisites
 
-To use this connector, you need API credentials from your Track PMS account. Contact your Track PMS administrator or Track support to obtain your API key and secret. For more information, see the [Track authentication documentation](https://developer.trackhs.com/docs/authentication#authentication).
+To use this connector, you need your Track PMS account's domain and an API key and secret with server-context access. Track's [PMS units API](https://developer.trackhs.com/reference/getunits) requires a server-context key for external access; the connector uses this endpoint to test the connection. Contact your Track PMS administrator or Track support to obtain these credentials. For more information, see the [Track authentication documentation](https://developer.trackhs.com/docs/authentication#authentication).
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `customer_domain` | `string` | Your Track PMS domain. Enter the domain only, without `https://` or trailing paths. For example: `api.trackhs.com` or your customer-specific subdomain. |  |
+| `customer_domain` | `string` | Your account-specific Track PMS domain, such as `your-company.trackhs.com`. Enter only the hostname, without `https://` or `/api`; the connector adds those parts. |  |
 | `api_key` | `string` | Your Track API key, used as the username for authentication. |  |
 | `api_secret` | `string` | Your Track API secret, used as the password for authentication. |  |
 
 The connector uses HTTP Basic authentication, sending `api_key` as the username and `api_secret` as the password. If authentication fails, verify that you have provided both values correctly.
 
+In Airbyte, select **Track PMS** as your source and enter **Customer Domain**, **API Key**, and **API Secret** using the values above.
+
 ## Sync behavior
 
-The connector handles Track's API rate limit of 10,000 requests per 5 minutes. When the rate limit is reached, the connector waits approximately 5 minutes before retrying.
+Streams marked as incremental in the table below use `updatedAt` as their cursor and send an `updatedSince` filter to Track. The first incremental sync reads historical records from January 1, 1900; subsequent syncs use the saved cursor. There is no configurable start date. The `units`, `units_daily_pricing_parent`, and `units_taxes_parent` streams support full refresh only.
 
-The `reservations_booking_fees`, `reservations_fees`, `reservations_logs`, `reservations_notes` and `reservations_tags` streams support full refresh only. On every sync, each of these streams reads the full `reservations` history and then sends at least one request for each reservation. For example, if you enable all five streams for an account with 20,000 reservations, each sync sends at least 100,000 requests and takes more than 50 minutes at Track's rate limit. Track applies the rate limit per IP address, so connections that send requests from the same IP addresses, such as Airbyte Cloud connections, share it. Enable only the reservation streams that you need.
+### Rate limits and reservation substreams
+
+Track's [API rate limit](https://developer.trackhs.com/docs/rate-limits) is 10,000 requests per 5 minutes per IP address. Connections that send requests from the same IP address share this limit. After a rate-limit response (HTTP 429), the connector waits 305 seconds before retrying, with up to three retries.
+
+The `reservations_booking_fees`, `reservations_fees`, `reservations_logs`, `reservations_notes` and `reservations_tags` streams support full refresh only. On every sync, each of these streams reads the full `reservations` history and then sends at least one request for each reservation, even if you sync `reservations` incrementally. For example, enabling all five streams for an account with 20,000 reservations requires at least 100,000 child-stream requests, plus requests to list reservations and paginate results. Enable only the reservation streams that you need.
+
+### Daily pricing
+
+The `units_daily_pricing_v2` and `units_types_daily_pricing_v2` streams read pricing for each unit and unit type returned by their respective parent streams, `units_daily_pricing_parent` and `units_types_daily_pricing_parent`. Starting in version 4.4.0, these parents include units and unit types without a lodging type. Pricing is full refresh only. If Track returns HTTP 404 for a unit's or unit type's pricing endpoint, the connector skips that response without failing the sync.
 
 ## Streams
 
@@ -98,16 +108,16 @@ The `reservations_booking_fees`, `reservations_fees`, `reservations_logs`, `rese
 | tax_policies | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gettaxpolicycollection) |
 | taxes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gettaxcollection) |
 | travel_insurance_products | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/gettravelinsuranceproducts) |
-| units | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
+| units | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
 | units_amenities | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitamenities) |
 | units_amenity_groups | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitamenitygroups) |
 | units_bed_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getbedtypescollection) |
 | units_blocks | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitblockscollection) |
 | units_channel | unit_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitchannelunitcollection) |
-| units_daily_pricing_parent | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
+| units_daily_pricing_parent | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
 | units_daily_pricing_v2 | unit_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv2unitdailypricing) |
 | units_taxes | unit_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunitchanneltaxcollection) |
-| units_taxes_parent | id | DefaultPaginator | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
+| units_taxes_parent | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getchannelunits) |
 | units_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunittypes-2) |
 | units_types_daily_pricing_parent | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getunittypes-2) |
 | units_types_daily_pricing_v2 | unit_type_id.rateTypeId | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv2unittypedailypricing) |
@@ -127,7 +137,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Subject |
 | ------------------ | ------------ | ---------------- |
-| 4.4.0 | 2026-11-10 | Added housekeeping zones and reservation booking fees, fees, logs, notes and tags streams. `units_daily_pricing_parent` and `units_types_daily_pricing_parent` no longer drop units and unit types without a lodging type, so they now emit the same records as `units` and `units_types`; `units_daily_pricing_v2` and `units_types_daily_pricing_v2` now include those units' rates. |
+| 4.4.0 | 2026-11-11 | [91833](https://github.com/airbytehq/airbyte/pull/91833): Added housekeeping zones and reservation booking fees, fees, logs, notes and tags streams. `units_daily_pricing_parent` and `units_types_daily_pricing_parent` no longer drop units and unit types without a lodging type, so they now emit the same records as `units` and `units_types`; `units_daily_pricing_v2` and `units_types_daily_pricing_v2` now include those units' rates. |
 | 4.3.22 | 2026-10-20 | Update dependencies |
 | 4.3.21 | 2026-10-13 | Update dependencies |
 | 4.3.20 | 2026-10-12 | Mark `api_key` as `airbyte_secret` |
