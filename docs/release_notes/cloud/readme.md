@@ -1,5 +1,15 @@
 # Airbyte Cloud release notes
 
+## November 11, 2026
+
+Connections
+
+- Your connections no longer stop syncing when Airbyte retries starting a sync. Previously, a slow start could fail the sync that had already begun and leave a second sync stuck as pending, so the connection didn't sync again until it was fixed manually.
+
+Platform
+
+- Plan and payment changes are again reflected in Airbyte shortly after you make them. Since November 9, some updates, such as completing checkout for a paid plan, may not have shown up in your organization's billing status.
+
 ## November 6, 2026
 
 Connections
