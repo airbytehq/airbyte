@@ -5,6 +5,7 @@ from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -22,6 +23,9 @@ class BlocksRetriever(SimpleRetriever):
     BlocksRetriever calls read_records when received record.has_children is True.
 
     """
+
+    cursor: Optional[Cursor] = None
+    is_client_side_incremental_sync: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
@@ -50,4 +54,5 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            yield stream_data
+            if not self.is_client_side_incremental_sync or self.cursor.should_be_synced(stream_data):
+                yield stream_data
