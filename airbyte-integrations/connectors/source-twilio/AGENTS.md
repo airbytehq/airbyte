@@ -12,6 +12,9 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 **Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.
 
+- `TwilioStalePartitionStateMigration` clamps stale per-account cursors to the global cursor and keeps the newest cursor when migrated partitions collide.
+- Add it after partition-shape migrations when defining or overriding state migrations on incremental substreams.
+
 ### Future incremental stream candidates
 
 None identified yet.

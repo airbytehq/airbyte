@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from copy import deepcopy
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
-from components import TwilioConferencesStateMigration
+from components import TwilioConferencesStateMigration, TwilioStalePartitionStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
@@ -253,6 +254,51 @@ class TestIncrementalTwilioStream:
         assert accounts_matcher.called, "Accounts endpoint was not called"
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "partitions,use_global_cursor,expected_lower",
+        [
+            ([({}, "2022-11-13T12:11:10Z")], False, "2022-11-15 12:00:00Z"),
+            ([({"parent_slice": {}}, "2022-11-13 12:11:10Z")], False, "2022-11-15 12:00:00Z"),
+            (
+                [({"parent_slice": {}}, "2022-11-15T12:00:00Z"), ({}, "2022-11-13T12:11:10Z")],
+                False,
+                "2022-11-15 12:00:00Z",
+            ),
+            ([({}, "2022-11-13T12:11:10Z")], True, "2022-11-15 12:00:00Z"),
+            ([({"parent_slice": {}}, "2022-11-15 13:00:00Z")], False, "2022-11-15 13:00:00Z"),
+        ],
+        ids=["legacy-stale", "new-shape-stale", "mixed-stale-duplicate", "global-flag-stale", "newer-partition"],
+    )
+    def test_messages_partition_state_does_not_rewind(
+        self, requests_mock, partitions, use_global_cursor, expected_lower
+    ):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        requests = []
+
+        def _messages(request, context):
+            requests.append(parse_qs(urlparse(request.url).query, keep_blank_values=True))
+            return {"messages": []}
+
+        requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json=_messages)
+        uri = ACCOUNTS_JSON["accounts"][0]["subresource_uris"]["messages"]
+        state = StateBuilder().with_stream_state(
+            "messages",
+            {
+                "state": {"date_sent": "2022-11-15T12:00:00Z"},
+                "states": [
+                    {"partition": {"subresource_uri": uri, **partition}, "cursor": {"date_sent": cursor}}
+                    for partition, cursor in partitions
+                ],
+                "use_global_cursor": use_global_cursor,
+            },
+        ).build()
+
+        read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        assert requests
+        assert requests[0]["DateSent>"] == [expected_lower]
 
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
@@ -1003,3 +1049,42 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+def test_stale_partition_state_migration_deduplicates_without_mutating_input():
+    migration = TwilioStalePartitionStateMigration()
+    original = {
+        "state": {"date_sent": "2022-11-15T12:00:00Z", "date_created": "2022-11-15T12:00:00Z"},
+        "states": [
+            {
+                "partition": {"subresource_uri": "/Messages.json", "parent_slice": {}},
+                "cursor": {"date_sent": "2022-11-15T13:00:00Z", "date_created": "2022-11-13T12:00:00Z"},
+            },
+            {
+                "partition": {"parent_slice": {}, "subresource_uri": "/Messages.json"},
+                "cursor": {"date_sent": "2022-11-13 12:00:00Z", "date_created": "2022-11-16T12:00:00Z"},
+            },
+        ],
+    }
+    snapshot = deepcopy(original)
+
+    assert migration.should_migrate(original)
+    migrated = migration.migrate(original)
+
+    assert original == snapshot
+    assert migrated["state"] == original["state"]
+    assert len(migrated["states"]) == 1
+    assert migrated["states"][0]["cursor"] == {
+        "date_sent": "2022-11-15T13:00:00Z",
+        "date_created": "2022-11-16T12:00:00Z",
+    }
+    assert not migration.should_migrate(migrated)
+
+
+@pytest.mark.parametrize(
+    "state", [{}, {"states": [{"partition": {}, "cursor": {"date_sent": "2022-11-13T12:00:00Z"}}]}]
+)
+def test_stale_partition_state_migration_without_global_is_no_op(state):
+    migration = TwilioStalePartitionStateMigration()
+    assert not migration.should_migrate(state)
+    assert migration.migrate(state) == state

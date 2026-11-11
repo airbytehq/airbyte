@@ -3,12 +3,13 @@
 #
 
 import copy
+import json
 from datetime import datetime, timezone
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +82,77 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Clamp saved partition cursors to the global cursor and retain the newest cursor for duplicate partitions.
+
+    Initial:
+      {"state": {"date_sent": "2022-11-15T12:00:00Z"},
+       "states": [{"partition": {"subresource_uri": "/Messages.json", "parent_slice": {}},
+                   "cursor": {"date_sent": "2022-11-13T12:00:00Z"}}]}
+
+    Final:
+      {"state": {"date_sent": "2022-11-15T12:00:00Z"},
+       "states": [{"partition": {"subresource_uri": "/Messages.json", "parent_slice": {}},
+                   "cursor": {"date_sent": "2022-11-15T12:00:00Z"}}]}
+    """
+
+    @staticmethod
+    def _parse(value: Any):
+        return ab_datetime_try_parse(value) if isinstance(value, str) else None
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        global_cursor = stream_state.get("state")
+        if not global_cursor:
+            return False
+
+        partitions = set()
+        for entry in stream_state.get("states", []):
+            partition_key = json.dumps(entry["partition"], sort_keys=True, separators=(",", ":"))
+            if partition_key in partitions:
+                return True
+            partitions.add(partition_key)
+            for field, value in entry.get("cursor", {}).items():
+                if field not in global_cursor:
+                    continue
+                partition_date = self._parse(value)
+                global_date = self._parse(global_cursor[field])
+                if partition_date and global_date:
+                    if partition_date < global_date:
+                        return True
+        return False
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated = copy.deepcopy(stream_state)
+        global_cursor = migrated.get("state")
+        if not global_cursor:
+            return migrated
+
+        partitions: dict[str, dict[str, Any]] = {}
+        for entry in migrated.get("states", []):
+            for field, value in entry.get("cursor", {}).items():
+                if field not in global_cursor:
+                    continue
+                partition_date = self._parse(value)
+                global_date = self._parse(global_cursor[field])
+                if partition_date and global_date:
+                    if partition_date < global_date:
+                        entry["cursor"][field] = global_cursor[field]
+
+            partition_key = json.dumps(entry["partition"], sort_keys=True, separators=(",", ":"))
+            if partition_key in partitions:
+                previous_cursor = partitions[partition_key].setdefault("cursor", {})
+                for field, value in entry.get("cursor", {}).items():
+                    old_date = self._parse(previous_cursor.get(field))
+                    new_date = self._parse(value)
+                    if field not in previous_cursor or (new_date and (not old_date or new_date > old_date)):
+                        previous_cursor[field] = value
+            else:
+                partitions[partition_key] = entry
+        migrated["states"] = list(partitions.values())
+        return migrated
 
 
 class TwilioAlertsStateMigration(StateMigration):
@@ -164,7 +236,7 @@ class TwilioUsageRecordsStateMigration(StateMigration):
     """
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        new_state = {"states": []}
+        new_state = {**copy.deepcopy(stream_state), "states": []}
         for state in stream_state.get("states", []):
             partition_state = {}
             if "partition" not in state or "account_sid" not in state["partition"]:
@@ -218,7 +290,7 @@ class TwilioMessageMediaStateMigration(StateMigration):
     """
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        new_state = {"states": []}
+        new_state = {**copy.deepcopy(stream_state), "states": []}
         for state in stream_state.get("states", []):
             partition_state = {}
             if not "partition" in state or "subresource_uri" not in state["partition"]:
@@ -302,7 +374,7 @@ class TwilioConferencesStateMigration(StateMigration):
                 new_partition = copy.deepcopy(state["partition"])
                 new_partition["conference_status"] = status
                 new_states.append({"partition": new_partition, "cursor": copy.deepcopy(state.get("cursor", {}))})
-        return {"states": new_states}
+        return {**copy.deepcopy(stream_state), "states": new_states}
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         if stream_state and any("conference_status" not in state.get("partition", {}) for state in stream_state.get("states", [])):
