@@ -18,12 +18,22 @@ class Products(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+    def __init__(
+        self,
+        count: int,
+        seed: int,
+        parallelism: int,
+        records_per_slice: int,
+        always_updated: bool,
+        products_count: int = 100,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
         self.records_per_slice = records_per_slice
         self.always_updated = always_updated
+        self.products_count = products_count
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -48,18 +58,22 @@ class Products(Stream, IncrementalMixin):
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
 
-        products = self.load_products()
+        products = [product for product in self.load_products() if product["id"] <= self.count][: self.products_count]
         updated_at = ""
 
         median_record_byte_size = 180
         rows_to_emit = len(products)
         yield generate_estimate(self.name, rows_to_emit, median_record_byte_size)
 
-        for product in products:
-            if product["id"] <= self.count:
+        # Emit the catalog in slices of `records_per_slice`, checkpointing after
+        # each one, the same way the users and purchases streams do.
+        page_size = max(1, min(self.records_per_slice, len(products)))
+        for page in range(len(products) // page_size):
+            for product in products[page * page_size : (page + 1) * page_size]:
                 updated_at = format_airbyte_time(datetime.datetime.now())
                 product["updated_at"] = updated_at
                 yield product
+            self.state = {"seed": self.seed, "updated_at": updated_at}
 
         self.state = {"seed": self.seed, "updated_at": updated_at}
 
