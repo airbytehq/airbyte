@@ -56,6 +56,48 @@ def async_job_mock_fixture(mocker):
 
 
 class TestBaseInsightsStream:
+    @freeze_time("2026-09-25")
+    @pytest.mark.parametrize("has_records", [False, True])
+    def test_lookback_checkpoint_is_monotonic(self, api, mocker, has_records):
+        account_id = "unknown_account"
+
+        def make_stream(state):
+            stream = AdsInsights(
+                api=api,
+                account_ids=[account_id],
+                start_date=datetime(2026, 9, 1),
+                end_date=datetime(2026, 9, 22),
+                insights_lookback_window=3,
+            )
+            stream.state = state
+            return stream
+
+        def complete(stream, job):
+            record = mocker.Mock()
+            record.export_all_data.return_value = {}
+            mocker.patch.object(job, "get_result", return_value=[record] if has_records else [])
+            list(stream.read_records(SyncMode.incremental, stream_slice={"account_id": account_id, "insight_job": job}))
+            checkpoint = stream.state[account_id]
+            assert checkpoint["date_start"] >= "2026-09-20"
+            assert all(value > checkpoint["date_start"] for value in checkpoint["slices"])
+            return copy.deepcopy(stream.state)
+
+        stream = make_stream({"date_start": "2026-09-20", "slices": []})
+        jobs = list(stream._generate_async_jobs({}, account_id))
+        expected_dates = [date(2026, 9, day) for day in range(17, 23)]
+        assert [job.interval.start for job in jobs] == expected_dates
+        complete(stream, jobs[0])
+        complete(stream, jobs[2])
+        interrupted_state = complete(stream, jobs[5])
+        assert interrupted_state[account_id] == {"date_start": "2026-09-20", "slices": ["2026-09-22"]}
+
+        resumed = make_stream(interrupted_state)
+        resumed_jobs = list(resumed._generate_async_jobs({}, account_id))
+        assert [job.interval.start for job in resumed_jobs] == expected_dates
+        for index in [2, 0, 1, 3, 4]:
+            complete(resumed, resumed_jobs[index])
+        assert resumed.state[account_id] == {"date_start": "2026-09-22", "slices": []}
+
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,
@@ -397,6 +439,8 @@ class TestBaseInsightsStream:
 
         result_state = state if not result_state else result_state
         result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
+        account_state = result_state[some_config["account_ids"][0]]
+        account_state["slices"] = [value for value in account_state["slices"] if value > account_state.get(AdsInsights.cursor_field, "")]
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
