@@ -3,6 +3,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
@@ -26,6 +27,14 @@ class BlocksRetriever(SimpleRetriever):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
+        self._incremental_record_filter = None
+        if isinstance(self.record_selector.record_filter, ClientSideIncrementalRecordFilterDecorator):
+            self._incremental_record_filter = self.record_selector.record_filter
+            self.record_selector.record_filter = RecordFilter(
+                config=self.config,
+                parameters=parameters,
+                condition=self._incremental_record_filter.condition,
+            )
 
     def read_records(
         self,
@@ -50,4 +59,10 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            yield stream_data
+            if self._incremental_record_filter is None or next(
+                self._incremental_record_filter.filter_records(
+                    [stream_data.data], stream_state=self.state, stream_slice=stream_slice
+                ),
+                None,
+            ) is not None:
+                yield stream_data
