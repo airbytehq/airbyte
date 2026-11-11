@@ -7,7 +7,7 @@ from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
-from components import TwilioConferencesStateMigration
+from components import TwilioConferencesStateMigration, TwilioMessagesStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
@@ -85,6 +85,86 @@ def _parse_alert_date(value):
 
 def _alert_state_date(output):
     return output.most_recent_state.stream_state.__dict__["date_generated"]
+
+
+@pytest.mark.parametrize("state_format", ["mixed", "partitions", "global"])
+@freeze_time("2022-11-20T00:00:00Z")
+def test_messages_resume_global_cursor(requests_mock, state_format):
+    recent = "2022-11-15T12:00:00Z"
+    minimum = "2022-11-10T12:00:00Z"
+    latest = "2022-11-19T12:00:00Z"
+    accounts = ["AC123", "AC456"] if state_format == "partitions" else ["AC123"]
+    cursors = [recent, minimum] if state_format == "partitions" else ["2022-01-01T00:00:00Z"]
+    stream_state = {
+        "states": [
+            {
+                "partition": {"subresource_uri": f"/2010-04-01/Accounts/{account}/Messages.json", "parent_slice": {}},
+                "cursor": {"date_sent": cursor},
+            }
+            for account, cursor in zip(accounts, cursors)
+        ]
+    }
+    if state_format == "mixed":
+        stream_state["state"] = {"date_sent": recent}
+    elif state_format == "global":
+        stream_state = {"use_global_cursor": True, "state": {"date_sent": recent}}
+    requests_mock.get(
+        f"{BASE}/Accounts.json",
+        json={
+            "accounts": [
+                {"sid": account, "subresource_uris": {"messages": f"/2010-04-01/Accounts/{account}/Messages.json"}} for account in accounts
+            ]
+        },
+    )
+    matchers = [
+        requests_mock.get(
+            f"{BASE}/Accounts/{account}/Messages.json",
+            json={"messages": [{"sid": f"SM{account}", "account_sid": account, "date_sent": latest}]},
+        )
+        for account in accounts
+    ]
+    state = StateBuilder().with_stream_state("messages", stream_state).build()
+
+    output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+    expected = minimum if state_format == "partitions" else recent
+    for matcher in matchers:
+        query = parse_qs(urlparse(matcher.request_history[0].url).query)
+        assert query["DateSent>"] == [expected.replace("T", " ")]
+    assert len(output.records) == len(accounts)
+    final_state = output.most_recent_state.stream_state.__dict__
+    assert final_state["use_global_cursor"] is True
+    assert final_state["state"]["date_sent"] == latest.replace("T", " ")
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        {},
+        {"states": []},
+        {"date_sent": "2022-11-15T12:00:00Z"},
+        {"use_global_cursor": True, "state": {"date_sent": "2022-11-15T12:00:00Z"}},
+        {"use_global_cursor": True, "state": {"date_sent": "2022-11-15T12:00:00Z"}, "states": [{"cursor": {}}]},
+    ],
+)
+def test_messages_state_migration_no_op(state):
+    assert not TwilioMessagesStateMigration().should_migrate(state)
+
+
+def test_messages_state_migration_preserves_metadata():
+    state = {
+        "states": [{"cursor": {"date_sent": "2022-01-01T00:00:00Z"}}],
+        "state": {"date_sent": "2022-11-15T12:00:00Z"},
+        "parent_state": {"accounts": {}},
+        "lookback_window": 0,
+    }
+    migration = TwilioMessagesStateMigration()
+    assert migration.should_migrate(state)
+    assert migration.migrate(state) == {
+        "date_sent": "2022-11-15T12:00:00Z",
+        "parent_state": {"accounts": {}},
+        "lookback_window": 0,
+    }
 
 
 class TestTwilioStream:
