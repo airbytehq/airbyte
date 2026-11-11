@@ -152,6 +152,24 @@ class TestSourceFacebookMarketing:
 
         assert len(streams) == 31
 
+    @pytest.mark.parametrize(
+        "top_level, insight_options, expected",
+        [
+            pytest.param(True, {}, True, id="top-level-enabled-insight-unset"),
+            pytest.param(False, {"include_incrementality": True}, True, id="insight-enabled"),
+            pytest.param(False, {"include_incrementality": False}, False, id="both-disabled"),
+        ],
+    )
+    def test_custom_insights_incrementality_request_params(self, config, api, fb_marketing, top_level, insight_options, expected):
+        config["include_incrementality"] = top_level
+        config["custom_insights"] = [{"name": "test", "fields": ["actions"], **insight_options}]
+
+        streams = fb_marketing.streams(config)
+        custom_stream = next(stream for stream in streams if stream.name == "customtest")
+
+        windows = custom_stream.request_params()["action_attribution_windows"]
+        assert ("incrementality" in windows) is expected
+
     def test_spec(self, fb_marketing):
         spec = fb_marketing.spec()
 
