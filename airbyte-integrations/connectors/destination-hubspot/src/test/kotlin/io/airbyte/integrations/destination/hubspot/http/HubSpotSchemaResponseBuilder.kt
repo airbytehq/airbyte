@@ -14,7 +14,7 @@ class HubSpotCustomObjectSchemaResponseBuilder {
     private val results = response.putArray("results")
 
     fun withResult(
-        builder: HubSpotSchemaResponseBuilder
+        builder: HubSpotSchemaResponseBuilder,
     ): HubSpotCustomObjectSchemaResponseBuilder {
         results.add(builder.schema)
         return this

@@ -25,13 +25,13 @@ class DebeziumRecordIteratorTest {
                 mock(),
                 object : CdcTargetPosition<Long> {
                     override fun reachedTargetPosition(
-                        changeEventWithMetadata: ChangeEventWithMetadata?
+                        changeEventWithMetadata: ChangeEventWithMetadata?,
                     ): Boolean {
                         return false
                     }
 
                     override fun extractPositionFromHeartbeatOffset(
-                        sourceOffset: Map<String?, *>
+                        sourceOffset: Map<String?, *>,
                     ): Long {
                         return sourceOffset["lsn"] as Long
                     }
@@ -83,13 +83,13 @@ class DebeziumRecordIteratorTest {
                 mock(),
                 object : CdcTargetPosition<Long> {
                     override fun reachedTargetPosition(
-                        changeEventWithMetadata: ChangeEventWithMetadata?
+                        changeEventWithMetadata: ChangeEventWithMetadata?,
                     ): Boolean {
                         return false
                     }
 
                     override fun extractPositionFromHeartbeatOffset(
-                        sourceOffset: Map<String?, *>
+                        sourceOffset: Map<String?, *>,
                     ): Long {
                         return sourceOffset["lsn"] as Long
                     }
@@ -116,7 +116,7 @@ class DebeziumRecordIteratorTest {
                 listOf(Duration.ofMinutes(59), "59.00 minutes"),
                 listOf(Duration.ofMinutes(60), "1.00 hours"),
                 listOf(Duration.ofMinutes(150), "2.50 hours"),
-                listOf(Duration.ofHours(5), "5.00 hours")
+                listOf(Duration.ofHours(5), "5.00 hours"),
             )
 
         testCases.forEach { testCase ->
@@ -164,9 +164,9 @@ class DebeziumRecordIteratorTest {
                         override fun destination(): String? {
                             return null
                         }
-                    }
-                )
-            )
+                    },
+                ),
+            ),
         )
     }
 }

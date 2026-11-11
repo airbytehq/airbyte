@@ -74,14 +74,14 @@ class MSSQLBulkLoadHandlerTest {
     }
 
     private fun bulkLoadHandler(
-        queryBuilder: MSSQLQueryBuilder = queryBuilder()
+        queryBuilder: MSSQLQueryBuilder = queryBuilder(),
     ): MSSQLBulkLoadHandler {
         return MSSQLBulkLoadHandler(
             dataSource = dataSource,
             schemaName = "dbo",
             mainTableName = "MyMainTable",
             bulkUploadDataSource = "MyBlobDataSource",
-            mssqlQueryBuilder = queryBuilder
+            mssqlQueryBuilder = queryBuilder,
         )
     }
 
@@ -99,7 +99,7 @@ class MSSQLBulkLoadHandlerTest {
         // When
         bulkLoadHandler.bulkLoadForAppendOverwrite(
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         // Then
@@ -109,7 +109,7 @@ class MSSQLBulkLoadHandlerTest {
         assertTrue(bulkInsertSql.contains("FROM '$dataFilePath'"))
         assertTrue(bulkInsertSql.contains("FORMATFILE = '$formatFilePath'"))
         assertFalse(
-            sqlStatements.any { it.contains("DELETE FROM [dbo].[MyMainTable] WITH (TABLOCK)") }
+            sqlStatements.any { it.contains("DELETE FROM [dbo].[MyMainTable] WITH (TABLOCK)") },
         )
 
         // Verify that commit was called and rollback was not
@@ -177,7 +177,7 @@ class MSSQLBulkLoadHandlerTest {
             cursorColumns = cursorColumns,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         // Then
@@ -188,25 +188,25 @@ class MSSQLBulkLoadHandlerTest {
         // 1) The first statement should create staging table in target schema
         assertTrue(
             sqlStatements.any { it.contains("SELECT TOP 0 *\nINTO [dbo].[_airbyte_staging_") },
-            "Expected a statement containing SELECT TOP 0 * INTO [dbo].[_airbyte_staging_"
+            "Expected a statement containing SELECT TOP 0 * INTO [dbo].[_airbyte_staging_",
         )
 
         // 2) The second statement should do the bulk insert into staging table
         assertTrue(
             sqlStatements.any { it.contains("BULK INSERT [dbo].[_airbyte_staging_") },
-            "Expected a statement containing BULK INSERT [dbo].[_airbyte_staging_"
+            "Expected a statement containing BULK INSERT [dbo].[_airbyte_staging_",
         )
 
         // 3) The third statement should be MERGE into the main table
         assertTrue(
             sqlStatements.any { it.contains("MERGE INTO [dbo].[MyMainTable] AS Target") },
-            "Expected a statement containing MERGE INTO [dbo].[MyMainTable] AS Target"
+            "Expected a statement containing MERGE INTO [dbo].[MyMainTable] AS Target",
         )
 
         // 4) The staging table should be dropped in the finally block
         assertTrue(
             sqlStatements.any { it.contains("DROP TABLE IF EXISTS [dbo].[_airbyte_staging_") },
-            "Expected a DROP TABLE statement for the staging table"
+            "Expected a DROP TABLE statement for the staging table",
         )
 
         // Commits: createStagingTable + main transaction + dropStagingTable
@@ -214,7 +214,7 @@ class MSSQLBulkLoadHandlerTest {
         verify(exactly = 1) { connection.close() }
         verify(exactly = 0) { connection.rollback() }
         assertFalse(
-            sqlStatements.any { it.contains("DELETE FROM [dbo].[MyMainTable] WITH (TABLOCK)") }
+            sqlStatements.any { it.contains("DELETE FROM [dbo].[MyMainTable] WITH (TABLOCK)") },
         )
     }
 
@@ -236,7 +236,7 @@ class MSSQLBulkLoadHandlerTest {
                 cursorColumns = cursorColumns,
                 nonPkColumns = nonPkColumns,
                 dataFilePath = dataFilePath,
-                formatFilePath = formatFilePath
+                formatFilePath = formatFilePath,
             )
         }
 
@@ -262,7 +262,7 @@ class MSSQLBulkLoadHandlerTest {
                 cursorColumns = cursorColumns,
                 nonPkColumns = nonPkColumns,
                 dataFilePath = dataFilePath,
-                formatFilePath = formatFilePath
+                formatFilePath = formatFilePath,
             )
         }
 
@@ -282,14 +282,14 @@ class MSSQLBulkLoadHandlerTest {
         bulkLoadHandler.bulkLoadForAppendOverwrite(
             dataFilePath = dataFilePath,
             formatFilePath = formatFilePath,
-            rowsPerBatch = rowsPerBatch
+            rowsPerBatch = rowsPerBatch,
         )
 
         val sqlStatements = capturedSqlStatements()
         val bulkInsertSql = sqlStatements.single { it.contains("BULK INSERT [dbo].[MyMainTable]") }
         assertTrue(
             bulkInsertSql.contains("ROWS_PER_BATCH = 5000"),
-            "Expected ROWS_PER_BATCH clause"
+            "Expected ROWS_PER_BATCH clause",
         )
     }
 
@@ -301,14 +301,14 @@ class MSSQLBulkLoadHandlerTest {
         // Force a call via the public method
         bulkLoadHandler.bulkLoadForAppendOverwrite(
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         val sqlStatements = capturedSqlStatements()
         val bulkInsertSql = sqlStatements.single { it.contains("BULK INSERT [dbo].[MyMainTable]") }
         assertFalse(
             bulkInsertSql.contains("ROWS_PER_BATCH"),
-            "Should not contain ROWS_PER_BATCH clause"
+            "Should not contain ROWS_PER_BATCH clause",
         )
     }
 
@@ -327,7 +327,7 @@ class MSSQLBulkLoadHandlerTest {
             cursorColumns = cursorColumns,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         val sqlSlot = mutableListOf<String>()
@@ -335,7 +335,7 @@ class MSSQLBulkLoadHandlerTest {
 
         assertTrue(
             sqlSlot.any { it.contains("SELECT TOP 0 *\nINTO [dbo].[_airbyte_staging_") },
-            "Expected creation of staging table via SELECT TOP 0 * INTO [dbo].[_airbyte_staging_"
+            "Expected creation of staging table via SELECT TOP 0 * INTO [dbo].[_airbyte_staging_",
         )
     }
 
@@ -353,7 +353,7 @@ class MSSQLBulkLoadHandlerTest {
             cursorColumns = cursorColumns,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         val sqlSlot = mutableListOf<String>()
@@ -366,20 +366,20 @@ class MSSQLBulkLoadHandlerTest {
         // Should have ON condition for both PK columns
         assertTrue(
             mergeStatement.contains(
-                "ON Target.[Id] = Source.[Id] AND Target.[TenantId] = Source.[TenantId]\n"
-            )
+                "ON Target.[Id] = Source.[Id] AND Target.[TenantId] = Source.[TenantId]\n",
+            ),
         )
         // Should have an UPDATE with the non-PK columns
         assertTrue(
             mergeStatement.contains(
-                "WHEN MATCHED THEN\n    UPDATE SET\n        Target.[Name] = Source.[Name], Target.[Description] = Source.[Description]\n"
-            )
+                "WHEN MATCHED THEN\n    UPDATE SET\n        Target.[Name] = Source.[Name], Target.[Description] = Source.[Description]\n",
+            ),
         )
         // Should have an INSERT with [Id], [TenantId], [Name], [Description]
         assertTrue(
             mergeStatement.contains(
-                "WHEN NOT MATCHED THEN\n    INSERT ([Id], [TenantId], [Name], [Description])\n    VALUES (Source.[Id], Source.[TenantId], Source.[Name], Source.[Description])\n;"
-            )
+                "WHEN NOT MATCHED THEN\n    INSERT ([Id], [TenantId], [Name], [Description])\n    VALUES (Source.[Id], Source.[TenantId], Source.[Name], Source.[Description])\n;",
+            ),
         )
     }
 
@@ -391,11 +391,11 @@ class MSSQLBulkLoadHandlerTest {
         val stagingTableName = method.invoke(bulkLoadHandler) as String
         assertTrue(
             stagingTableName.startsWith("_airbyte_staging_"),
-            "Staging table name should start with _airbyte_staging_"
+            "Staging table name should start with _airbyte_staging_",
         )
         assertTrue(
             stagingTableName.length > "_airbyte_staging_".length,
-            "Staging table name should contain a timestamp suffix"
+            "Staging table name should contain a timestamp suffix",
         )
     }
 
@@ -419,7 +419,7 @@ class MSSQLBulkLoadHandlerTest {
             cursorColumns = cursorColumns,
             nonPkColumns = nonPkColumns,
             dataFilePath = dataFilePath,
-            formatFilePath = formatFilePath
+            formatFilePath = formatFilePath,
         )
 
         // Then
@@ -432,31 +432,33 @@ class MSSQLBulkLoadHandlerTest {
         // Ensure CREATE TABLE statement is present:
         assertTrue(
             sqlStatements.any { it.contains("SELECT TOP 0 *\nINTO [dbo].[_airbyte_staging_") },
-            "Expected the staging table creation statement (SELECT TOP 0 * INTO [dbo].[_airbyte_staging_...)"
+            "Expected the staging table creation statement (SELECT TOP 0 * INTO [dbo].[_airbyte_staging_...)",
         )
 
         // Ensure the bulk insert statement is present:
         assertTrue(
             sqlStatements.any { it.contains("BULK INSERT [dbo].[_airbyte_staging_") },
-            "Expected a BULK INSERT statement into the staging table"
+            "Expected a BULK INSERT statement into the staging table",
         )
 
         // **Ensure we have a CTE-based deduplication statement:**
         // For example, looking for "WITH Dedup_CTE" or "ROW_NUMBER() OVER"
-        val dedupStatement =
-            sqlStatements.find { it.contains("ROW_NUMBER() OVER") && it.contains("DELETE") }
+        val dedupStatement = sqlStatements.find {
+            it.contains("ROW_NUMBER() OVER") && it.contains("DELETE")
+        }
         assertTrue(dedupStatement != null, "Expected a dedup statement using ROW_NUMBER() in a CTE")
 
         assertTrue(
             dedupStatement!!.contains(
-                ";WITH Dedup_CTE AS (\n    SELECT T.*,\n        ROW_NUMBER() OVER (\n            PARTITION BY T.[Id]\n            ORDER BY T.[updated_at] DESC\n        ) AS row_num\n    FROM ["
-            )
+                ";WITH Dedup_CTE AS (\n    SELECT T.*,\n        ROW_NUMBER() OVER (\n            PARTITION BY T.[Id]\n            ORDER BY T.[updated_at] DESC\n        ) AS row_num\n    FROM [",
+            ),
         )
         assertTrue(dedupStatement.contains("DELETE\n" + "FROM Dedup_CTE\n" + "WHERE row_num > 1;"))
 
         // Ensure we have a MERGE statement referencing the main table
-        val mergeStatement =
-            sqlStatements.find { it.contains("MERGE INTO [dbo].[MyMainTable] AS Target") }
+        val mergeStatement = sqlStatements.find {
+            it.contains("MERGE INTO [dbo].[MyMainTable] AS Target")
+        }
         assertTrue(mergeStatement != null, "Expected a MERGE statement into main table")
 
         // Verify no rollback, commits (staging table creation + main transaction + staging table

@@ -106,7 +106,7 @@ class NonDockerizedDestination(
                         EnvVarConstants.DATA_CHANNEL_SOCKET_PATHS to
                             socketWriters.joinToString(",") { it.socketPath },
                         EnvVarConstants.NAMESPACE_MAPPER_CONFIG_PATH to
-                            namespaceMappingConfigPath.toString()
+                            namespaceMappingConfigPath.toString(),
                     )
                 }
             }
@@ -153,7 +153,7 @@ class NonDockerizedDestination(
     override suspend fun sendMessage(string: String) {
         writeLock.withLock {
             destinationDataChannels[onChannel.rotate(destinationDataChannels.size)].write(
-                string.toByteArray()
+                string.toByteArray(),
             )
         }
     }
@@ -161,7 +161,7 @@ class NonDockerizedDestination(
     override suspend fun sendMessage(
         message: InputMessage,
         broadcast: Boolean,
-        useSingleSocket: Boolean
+        useSingleSocket: Boolean,
     ) {
         writeLock.withLock {
             val channelsToSendTo =
@@ -229,7 +229,7 @@ class NonDockerizedDestinationFactory(
             dataChannelMedium = dataChannelMedium,
             dataChannelFormat = dataChannelFormat,
             namespaceMappingConfig = namespaceMappingConfig,
-            *featureFlags
+            *featureFlags,
         )
     }
 }

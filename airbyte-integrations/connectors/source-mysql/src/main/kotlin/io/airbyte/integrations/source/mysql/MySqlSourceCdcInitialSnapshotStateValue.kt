@@ -28,8 +28,8 @@ data class MySqlSourceCdcInitialSnapshotStateValue(
                 MySqlSourceCdcInitialSnapshotStateValue(
                     streamName = stream.name,
                     cursorField = listOf(),
-                    streamNamespace = stream.namespace
-                )
+                    streamNamespace = stream.namespace,
+                ),
             )
 
         /** Value representing the progress of an ongoing snapshot. */
@@ -46,7 +46,7 @@ data class MySqlSourceCdcInitialSnapshotStateValue(
                             pkName = primaryKeyField.id,
                             pkVal = primaryKeyCheckpoint.first().asText(),
                             stateType = "primary_key",
-                        )
+                        ),
                     )
             }
         }

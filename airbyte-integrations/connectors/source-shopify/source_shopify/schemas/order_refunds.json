@@ -49,7 +49,8 @@
     },
     "processed_at": {
       "description": "Date and time when the refund was processed",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "user_id": {
       "description": "ID of the user who initiated the refund",
@@ -548,7 +549,8 @@
           },
           "created_at": {
             "description": "Date and time when the transaction was created",
-            "type": ["null", "string"]
+            "type": ["null", "string"],
+            "format": "date-time"
           },
           "currency": {
             "description": "Currency used for the transaction",
@@ -588,7 +590,8 @@
           },
           "processed_at": {
             "description": "Date and time when the transaction was processed",
-            "type": ["null", "string"]
+            "type": ["null", "string"],
+            "format": "date-time"
           },
           "receipt": {
             "description": "Details of the receipt for the transaction",

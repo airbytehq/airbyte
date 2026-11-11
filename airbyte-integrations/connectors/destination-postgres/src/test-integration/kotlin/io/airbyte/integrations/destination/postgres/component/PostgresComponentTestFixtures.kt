@@ -31,7 +31,7 @@ object PostgresComponentTestFixtures {
                 "union" to ColumnType("jsonb", true),
                 "legacy_union" to ColumnType("jsonb", true),
                 "unknown" to ColumnType("jsonb", true),
-            )
+            ),
         )
 
     val allTypesColumnNameMapping = TableOperationsFixtures.ALL_TYPES_MAPPING

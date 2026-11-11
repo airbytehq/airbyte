@@ -61,7 +61,7 @@ class AirbyteMessageDeserializer(
                 } else {
                     val obfuscated = Jsons.obfuscateDeserializationException(e)
                     throw RuntimeException(
-                        "ValueInstantiationException when deserializing PartialAirbyteMessage: $obfuscated"
+                        "ValueInstantiationException when deserializing PartialAirbyteMessage: $obfuscated",
                     )
                 }
             } catch (e: Exception) {

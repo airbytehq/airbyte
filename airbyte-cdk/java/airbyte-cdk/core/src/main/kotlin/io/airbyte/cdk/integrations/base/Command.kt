@@ -8,5 +8,5 @@ enum class Command {
     CHECK,
     DISCOVER,
     READ,
-    WRITE
+    WRITE,
 }

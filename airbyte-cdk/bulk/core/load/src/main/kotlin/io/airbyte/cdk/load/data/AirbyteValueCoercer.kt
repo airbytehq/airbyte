@@ -38,7 +38,7 @@ class AirbyteValueCoercer {
     fun coerce(
         value: AirbyteValue,
         type: AirbyteType,
-        respectLegacyUnions: Boolean = false
+        respectLegacyUnions: Boolean = false,
     ): AirbyteValue? {
         // Don't modify nulls.
         if (value == NullValue) {
@@ -118,7 +118,7 @@ class AirbyteValueCoercer {
                 is TimestampWithTimezoneValue,
                 is TimestampWithoutTimezoneValue ->
                     throw IllegalArgumentException(
-                        "Invalid value type ${value.javaClass.canonicalName}"
+                        "Invalid value type ${value.javaClass.canonicalName}",
                     )
             }
         return StringValue(stringified)
@@ -160,7 +160,7 @@ class AirbyteValueCoercer {
             else ->
                 requireType<StringValue, TimeWithoutTimezoneValue>(value) {
                     TimeWithoutTimezoneValue(
-                        LocalTime.parse(it.value, TemporalFormatters.TIME_FORMATTER)
+                        LocalTime.parse(it.value, TemporalFormatters.TIME_FORMATTER),
                     )
                 }
         }

@@ -56,7 +56,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
     override fun buildStreamId(
         namespace: String,
         name: String,
-        rawNamespaceOverride: String
+        rawNamespaceOverride: String,
     ): StreamId {
         // Wrap everything in getIdentifier() calls to truncate long names.
         // I don't understand why the MysqlNameTransformer doesn't call getIdentifier
@@ -96,11 +96,11 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
 
     override fun extractRawDataFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): MutableList<Field<*>> {
         return columns.entries
             .stream()
-            .map<Field<out Any>> { column: Map.Entry<ColumnId, AirbyteType> ->
+            .map<Field<*>> { column: Map.Entry<ColumnId, AirbyteType> ->
                 val type: AirbyteType = column.value
                 val isStruct: Boolean = type is Struct
                 val isArray: Boolean = type is Array
@@ -162,7 +162,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
                             DSL.case_()
                                 .`when`<Any?>(
                                     castedValue.notLikeRegex(
-                                        "^[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?([-+][0-9]{2}(:?[0-9]{2})?|Z)$"
+                                        "^[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?([-+][0-9]{2}(:?[0-9]{2})?|Z)$",
                                     ),
                                     DSL.`val`<Any?>(null as Any?),
                                 )
@@ -172,7 +172,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
                             DSL.case_()
                                 .`when`<Any?>(
                                     castedValue.notLikeRegex(
-                                        "^[0-9]+-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?([-+][0-9]{2}(:?[0-9]{2})?|Z)$"
+                                        "^[0-9]+-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?([-+][0-9]{2}(:?[0-9]{2})?|Z)$",
                                     ),
                                     DSL.`val`<Any?>(null as Any?),
                                 )
@@ -188,7 +188,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
     override fun castedField(
         field: Field<*>,
         type: AirbyteProtocolType,
-        useExpensiveSaferCasting: Boolean
+        useExpensiveSaferCasting: Boolean,
     ): Field<*> {
         return if (type == AirbyteProtocolType.BOOLEAN) {
             // for some reason, CAST('true' AS UNSIGNED) throws an error
@@ -234,7 +234,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
                             )
                         },
                         Stream.of<Field<Any>>(
-                            field(name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
+                            field(name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)),
                         ),
                     )
                     .flatMap(Function.identity())
@@ -311,14 +311,14 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
         // Use a sql literal because jooq's interface is being dumb about varargs in DSL.coalesce
         return field(
                 sql(
-                    """COALESCE(${JavaBaseConstants.COLUMN_NAME_AB_META}, JSON_OBJECT('changes', JSON_ARRAY()))"""
-                )
+                    """COALESCE(${JavaBaseConstants.COLUMN_NAME_AB_META}, JSON_OBJECT('changes', JSON_ARRAY()))""",
+                ),
             )
             .`as`(JavaBaseConstants.COLUMN_NAME_AB_META)
     }
 
     override fun getFinalTableMetaColumns(
-        includeMetaColumn: Boolean
+        includeMetaColumn: Boolean,
     ): LinkedHashMap<String, DataType<*>> {
         val metaColumns: LinkedHashMap<String, DataType<*>> =
             super.getFinalTableMetaColumns(includeMetaColumn)
@@ -336,7 +336,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
 
     override fun getRowNumber(
         primaryKey: List<ColumnId>,
-        cursorField: Optional<ColumnId>
+        cursorField: Optional<ColumnId>,
     ): Field<Int> {
         val primaryKeyFields: List<Field<*>> =
             primaryKey
@@ -382,7 +382,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
     override fun createV2RawTableFromV1Table(
         rawTableName: Name,
         namespace: String,
-        tableName: String
+        tableName: String,
     ) =
         dslContext
             .createTable(rawTableName)

@@ -36,8 +36,8 @@ data class GcsDataLakeConfiguration(
             listOf(
                 "https://www.googleapis.com/auth/cloud-platform", // Full GCP access
                 "https://www.googleapis.com/auth/devstorage.read_write", // GCS read/write
-                "https://www.googleapis.com/auth/bigquery" // BigQuery/BigLake access
-            )
+                "https://www.googleapis.com/auth/bigquery", // BigQuery/BigLake access
+            ),
         )
     }
 
@@ -50,7 +50,7 @@ data class GcsDataLakeConfiguration(
                     credentials.projectId
                 } else {
                     throw IllegalStateException(
-                        "Could not determine GCP project ID from credentials. Please provide gcp_project_id explicitly."
+                        "Could not determine GCP project ID from credentials. Please provide gcp_project_id explicitly.",
                     )
                 }
             }
@@ -62,7 +62,7 @@ class GcsDataLakeConfigurationFactory :
     DestinationConfigurationFactory<GcsDataLakeSpecification, GcsDataLakeConfiguration> {
 
     override fun makeWithoutExceptionHandling(
-        pojo: GcsDataLakeSpecification
+        pojo: GcsDataLakeSpecification,
     ): GcsDataLakeConfiguration {
         return GcsDataLakeConfiguration(
             gcsBucketName = pojo.gcsBucketName,

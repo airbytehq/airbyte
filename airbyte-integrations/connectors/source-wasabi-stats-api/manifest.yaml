@@ -4,7 +4,7 @@ type: DeclarativeSource
 
 description: >-
   Connector for https://www.wasabi.com stats API. API docs:
-  https://docs.wasabi.com/docs/wasabi-stats-api
+  https://docs.wasabi.com/apidocs/wasabi-stats-api
 
 check:
   type: CheckStream
@@ -137,6 +137,21 @@ definitions:
         type: RequestOption
         field_name: Authorization
         inject_into: header
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+            - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Wasabi rejected the Stats API credentials{{ ' (' ~ response.get('Msg') ~ ')' if response.get('Msg') else '' }}.
+            The API Key must be a Wasabi access key pair in the format `AccessKey:SecretKey`
+            (not a Wasabi Account Control API key), and the keys must belong to the Root user
+            or to a sub-user with the WasabiAccountStatsAccess / WasabiBucketStatsAccess policy.
+            See https://docs.wasabi.com/apidocs/authentication-with-wasabi-stats-api.
 
 streams:
   - $ref: "#/definitions/streams/Standalone Utilizations"

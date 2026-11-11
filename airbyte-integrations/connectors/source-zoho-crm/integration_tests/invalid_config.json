@@ -4,6 +4,5 @@
   "client_secret": "client_secret",
   "environment": "Developer",
   "dc_region": "US",
-  "start_datetime": "yesterday",
-  "edition": "Free"
+  "start_datetime": "yesterday"
 }

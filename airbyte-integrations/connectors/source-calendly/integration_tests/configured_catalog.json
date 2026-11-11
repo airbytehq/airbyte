@@ -1,0 +1,1832 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "event_types",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "type": {
+              "type": ["string", "null"]
+            },
+            "active": {
+              "type": ["boolean", "null"]
+            },
+            "admin_managed": {
+              "type": ["boolean", "null"]
+            },
+            "booking_method": {
+              "type": ["string", "null"]
+            },
+            "color": {
+              "type": ["string", "null"]
+            },
+            "created_at": {
+              "type": ["string", "null"]
+            },
+            "custom_questions": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "properties": {
+                  "type": {
+                    "type": ["string", "null"]
+                  },
+                  "answer_choices": {
+                    "type": ["array", "null"],
+                    "items": {
+                      "type": ["string", "null"]
+                    }
+                  },
+                  "enabled": {
+                    "type": ["boolean", "null"]
+                  },
+                  "include_other": {
+                    "type": ["boolean", "null"]
+                  },
+                  "name": {
+                    "type": ["string", "null"]
+                  },
+                  "position": {
+                    "type": ["number", "null"]
+                  },
+                  "required": {
+                    "type": ["boolean", "null"]
+                  }
+                }
+              }
+            },
+            "description_html": {
+              "type": ["string", "null"]
+            },
+            "description_plain": {
+              "type": ["string", "null"]
+            },
+            "duration": {
+              "type": ["number", "null"]
+            },
+            "duration_options": {
+              "type": ["array", "null"]
+            },
+            "deleted_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "internal_note": {
+              "type": ["string", "null"]
+            },
+            "is_paid": {
+              "type": ["boolean", "null"]
+            },
+            "kind": {
+              "type": ["string", "null"]
+            },
+            "locale": {
+              "type": ["string", "null"]
+            },
+            "locations": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "properties": {
+                  "kind": {
+                    "type": ["string", "null"]
+                  },
+                  "location": {
+                    "type": ["string", "null"]
+                  },
+                  "additional_info": {
+                    "type": ["string", "null"]
+                  },
+                  "phone_number": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "pooling_type": {
+              "type": ["string", "null"]
+            },
+            "position": {
+              "type": ["number", "null"]
+            },
+            "profile": {
+              "type": ["object", "null"],
+              "properties": {
+                "type": {
+                  "type": ["string", "null"]
+                },
+                "name": {
+                  "type": ["string", "null"]
+                },
+                "owner": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "scheduling_url": {
+              "type": ["string", "null"]
+            },
+            "secret": {
+              "type": ["boolean", "null"]
+            },
+            "slug": {
+              "type": ["string", "null"]
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "uri": {
+              "type": "string"
+            }
+          },
+          "required": ["uri", "updated_at"]
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "api_user",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "avatar_url": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "created_at": {
+              "type": ["string", "null"]
+            },
+            "current_organization": {
+              "type": ["string", "null"]
+            },
+            "email": {
+              "type": ["string", "null"]
+            },
+            "locale": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "resource_type": {
+              "type": ["string", "null"]
+            },
+            "scheduling_url": {
+              "type": ["string", "null"]
+            },
+            "slug": {
+              "type": ["string", "null"]
+            },
+            "time_notation": {
+              "type": ["string", "null"]
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "updated_at": {
+              "type": ["string", "null"]
+            },
+            "uri": {
+              "type": "string"
+            }
+          },
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "groups",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "created_at": {
+              "type": ["string", "null"]
+            },
+            "member_count": {
+              "type": ["number", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "organization": {
+              "type": ["string", "null"]
+            },
+            "updated_at": {
+              "type": ["string", "null"]
+            },
+            "uri": {
+              "type": "string"
+            }
+          },
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "organization_memberships",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "created_at": {
+              "type": ["string", "null"]
+            },
+            "organization": {
+              "type": ["string", "null"]
+            },
+            "role": {
+              "type": ["string", "null"]
+            },
+            "updated_at": {
+              "type": ["string", "null"]
+            },
+            "uri": {
+              "type": "string"
+            },
+            "user": {
+              "type": ["object", "null"],
+              "properties": {
+                "avatar_url": {
+                  "type": ["string", "null"]
+                },
+                "created_at": {
+                  "type": ["string", "null"]
+                },
+                "email": {
+                  "type": ["string", "null"]
+                },
+                "locale": {
+                  "type": ["string", "null"]
+                },
+                "name": {
+                  "type": ["string", "null"]
+                },
+                "scheduling_url": {
+                  "type": ["string", "null"]
+                },
+                "slug": {
+                  "type": ["string", "null"]
+                },
+                "time_notation": {
+                  "type": ["string", "null"]
+                },
+                "timezone": {
+                  "type": ["string", "null"]
+                },
+                "updated_at": {
+                  "type": ["string", "null"]
+                },
+                "uri": {
+                  "type": ["string", "null"]
+                }
+              }
+            }
+          },
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "scheduled_events",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "calendar_event": {
+              "type": ["object", "null"],
+              "properties": {
+                "external_id": {
+                  "type": ["string", "null"]
+                },
+                "kind": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "cancellation": {
+              "type": ["object", "null"],
+              "properties": {
+                "canceled_by": {
+                  "type": ["string", "null"]
+                },
+                "canceler_type": {
+                  "type": ["string", "null"]
+                },
+                "created_at": {
+                  "type": ["string", "null"]
+                },
+                "reason": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "created_at": {
+              "type": ["string", "null"]
+            },
+            "end_time": {
+              "type": ["string", "null"]
+            },
+            "event_guests": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "properties": {
+                  "created_at": {
+                    "type": ["string", "null"]
+                  },
+                  "email": {
+                    "type": ["string", "null"]
+                  },
+                  "updated_at": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            },
+            "event_memberships": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "properties": {
+                  "buffered_end_time": {
+                    "type": ["string", "null"]
+                  },
+                  "buffered_start_time": {
+                    "type": ["string", "null"]
+                  },
+                  "user": {
+                    "type": ["string", "null"]
+                  },
+                  "user_email": {
+                    "type": ["string", "null"]
+                  },
+                  "user_name": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            },
+            "event_type": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invitees_counter": {
+              "type": ["object", "null"],
+              "properties": {
+                "active": {
+                  "type": ["number", "null"]
+                },
+                "limit": {
+                  "type": ["number", "null"]
+                },
+                "total": {
+                  "type": ["number", "null"]
+                }
+              }
+            },
+            "meeting_notes_html": {
+              "type": ["string", "null"]
+            },
+            "meeting_notes_plain": {
+              "type": ["string", "null"]
+            },
+            "location": {
+              "type": ["object", "null"],
+              "properties": {
+                "additional_info": {
+                  "type": ["string", "null"]
+                },
+                "data": {
+                  "type": ["object", "null"]
+                },
+                "type": {
+                  "type": ["string", "null"]
+                },
+                "join_url": {
+                  "type": ["string", "null"]
+                },
+                "location": {
+                  "type": ["string", "null"]
+                },
+                "status": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "start_time": {
+              "type": "string"
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "updated_at": {
+              "type": ["string", "null"]
+            },
+            "uri": {
+              "type": "string"
+            }
+          },
+          "required": ["uri", "start_time"]
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["start_time"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "event_invitees",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "cancel_url": {
+              "type": ["string", "null"]
+            },
+            "cancellation": {
+              "type": ["object", "null"],
+              "properties": {
+                "canceled_by": {
+                  "type": ["string", "null"]
+                },
+                "canceler_type": {
+                  "type": ["string", "null"]
+                },
+                "created_at": {
+                  "type": ["string", "null"]
+                },
+                "reason": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "email": {
+              "type": ["string", "null"]
+            },
+            "event": {
+              "type": ["string", "null"]
+            },
+            "id": {
+              "type": ["string", "null"]
+            },
+            "invitee_scheduled_by": {
+              "type": ["string", "null"]
+            },
+            "first_name": {
+              "type": ["string", "null"]
+            },
+            "last_name": {
+              "type": ["string", "null"]
+            },
+            "payment": {
+              "type": ["object", "null"],
+              "properties": {
+                "external_id": {
+                  "type": ["string", "null"]
+                },
+                "provider": {
+                  "type": ["string", "null"]
+                },
+                "amount": {
+                  "type": ["number", "null"]
+                },
+                "currency": {
+                  "type": ["string", "null"]
+                },
+                "terms": {
+                  "type": ["string", "null"]
+                },
+                "successful": {
+                  "type": ["boolean", "null"]
+                }
+              }
+            },
+            "no_show": {
+              "type": ["object", "null"],
+              "properties": {
+                "uri": {
+                  "type": ["string", "null"]
+                },
+                "created_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                }
+              }
+            },
+            "reconfirmation": {
+              "type": ["object", "null"],
+              "properties": {
+                "created_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "confirmed_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                }
+              }
+            },
+            "routing_form_submission": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "scheduling_method": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "new_invitee": {
+              "type": ["string", "null"]
+            },
+            "old_invitee": {
+              "type": ["string", "null"]
+            },
+            "questions_and_answers": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "properties": {
+                  "answer": {
+                    "type": ["string", "null"]
+                  },
+                  "position": {
+                    "type": ["number", "null"]
+                  },
+                  "question": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            },
+            "reschedule_url": {
+              "type": ["string", "null"]
+            },
+            "rescheduled": {
+              "type": ["boolean", "null"]
+            },
+            "scheduled_event_id": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "text_reminder_number": {
+              "type": ["string", "null"]
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "tracking": {
+              "type": ["object", "null"],
+              "properties": {
+                "utm_campaign": {
+                  "type": ["string", "null"]
+                },
+                "utm_source": {
+                  "type": ["string", "null"]
+                },
+                "utm_medium": {
+                  "type": ["string", "null"]
+                },
+                "utm_content": {
+                  "type": ["string", "null"]
+                },
+                "utm_term": {
+                  "type": ["string", "null"]
+                },
+                "salesforce_uuid": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "updated_at": {
+              "type": ["string", "null"]
+            },
+            "uri": {
+              "type": "string"
+            }
+          },
+          "required": ["uri", "created_at"]
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "teams",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "uri": {
+              "type": "string"
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "organization": {
+              "type": ["string", "null"]
+            },
+            "scheduling_url": {
+              "type": ["string", "null"]
+            }
+          },
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "event_type_memberships",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "uri": {
+              "type": "string"
+            },
+            "event_type": {
+              "type": ["object", "null"],
+              "properties": {
+                "active": {
+                  "type": ["boolean", "null"]
+                },
+                "admin_managed": {
+                  "type": ["boolean", "null"]
+                },
+                "booking_method": {
+                  "type": ["string", "null"]
+                },
+                "color": {
+                  "type": ["string", "null"]
+                },
+                "created_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "custom_questions": {
+                  "type": ["array", "null"],
+                  "items": {
+                    "type": ["object", "null"],
+                    "properties": {
+                      "name": {
+                        "type": ["string", "null"]
+                      },
+                      "type": {
+                        "type": ["string", "null"]
+                      },
+                      "position": {
+                        "type": ["integer", "null"]
+                      },
+                      "enabled": {
+                        "type": ["boolean", "null"]
+                      },
+                      "required": {
+                        "type": ["boolean", "null"]
+                      },
+                      "answer_choices": {
+                        "type": ["array", "null"],
+                        "items": {
+                          "type": ["string", "null"]
+                        }
+                      },
+                      "include_other": {
+                        "type": ["boolean", "null"]
+                      }
+                    }
+                  }
+                },
+                "deleted_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "description_html": {
+                  "type": ["string", "null"]
+                },
+                "description_plain": {
+                  "type": ["string", "null"]
+                },
+                "duration": {
+                  "type": ["number", "null"]
+                },
+                "duration_options": {
+                  "type": ["array", "null"],
+                  "items": {
+                    "type": ["integer", "null"]
+                  }
+                },
+                "internal_note": {
+                  "type": ["string", "null"]
+                },
+                "is_paid": {
+                  "type": ["boolean", "null"]
+                },
+                "kind": {
+                  "type": ["string", "null"]
+                },
+                "locale": {
+                  "type": ["string", "null"]
+                },
+                "locations": {
+                  "type": ["array", "null"],
+                  "items": {
+                    "type": ["object", "null"],
+                    "properties": {
+                      "kind": {
+                        "type": ["string", "null"]
+                      },
+                      "location": {
+                        "type": ["string", "null"]
+                      },
+                      "additional_info": {
+                        "type": ["string", "null"]
+                      },
+                      "phone_number": {
+                        "type": ["string", "null"]
+                      }
+                    }
+                  }
+                },
+                "name": {
+                  "type": ["string", "null"]
+                },
+                "pooling_type": {
+                  "type": ["string", "null"]
+                },
+                "position": {
+                  "type": ["integer", "null"]
+                },
+                "profile": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "type": {
+                      "type": ["string", "null"]
+                    },
+                    "name": {
+                      "type": ["string", "null"]
+                    },
+                    "owner": {
+                      "type": ["string", "null"]
+                    }
+                  }
+                },
+                "scheduling_url": {
+                  "type": ["string", "null"]
+                },
+                "secret": {
+                  "type": ["boolean", "null"]
+                },
+                "slug": {
+                  "type": ["string", "null"]
+                },
+                "type": {
+                  "type": ["string", "null"]
+                },
+                "updated_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "uri": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "member": {
+              "type": ["object", "null"],
+              "properties": {
+                "uri": {
+                  "type": ["string", "null"]
+                },
+                "name": {
+                  "type": ["string", "null"]
+                },
+                "slug": {
+                  "type": ["string", "null"]
+                },
+                "email": {
+                  "type": ["string", "null"]
+                },
+                "scheduling_url": {
+                  "type": ["string", "null"]
+                },
+                "timezone": {
+                  "type": ["string", "null"]
+                },
+                "time_notation": {
+                  "type": ["string", "null"]
+                },
+                "avatar_url": {
+                  "type": ["string", "null"]
+                },
+                "created_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "updated_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "current_organization": {
+                  "type": ["string", "null"]
+                },
+                "resource_type": {
+                  "type": ["string", "null"]
+                },
+                "locale": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "updated_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "created_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            }
+          },
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "group_relationships",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "uri": {
+              "type": "string"
+            },
+            "role": {
+              "type": ["string", "null"]
+            },
+            "owner": {
+              "type": ["object", "null"],
+              "properties": {
+                "uri": {
+                  "type": ["string", "null"]
+                },
+                "role": {
+                  "type": ["string", "null"]
+                },
+                "user": {
+                  "type": ["object", "string", "null"],
+                  "properties": {
+                    "uri": {
+                      "type": ["string", "null"]
+                    },
+                    "name": {
+                      "type": ["string", "null"]
+                    },
+                    "slug": {
+                      "type": ["string", "null"]
+                    },
+                    "email": {
+                      "type": ["string", "null"]
+                    },
+                    "scheduling_url": {
+                      "type": ["string", "null"]
+                    },
+                    "timezone": {
+                      "type": ["string", "null"]
+                    },
+                    "avatar_url": {
+                      "type": ["string", "null"]
+                    },
+                    "locale": {
+                      "type": ["string", "null"]
+                    },
+                    "created_at": {
+                      "type": ["string", "null"],
+                      "format": "date-time"
+                    },
+                    "updated_at": {
+                      "type": ["string", "null"],
+                      "format": "date-time"
+                    }
+                  }
+                },
+                "organization": {
+                  "type": ["string", "null"]
+                },
+                "updated_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "created_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                },
+                "type": {
+                  "type": ["string", "null"]
+                },
+                "email": {
+                  "type": ["string", "null"]
+                },
+                "status": {
+                  "type": ["string", "null"]
+                },
+                "last_sent_at": {
+                  "type": ["string", "null"],
+                  "format": "date-time"
+                }
+              }
+            },
+            "organization": {
+              "type": ["string", "null"]
+            },
+            "group": {
+              "type": ["string", "null"]
+            },
+            "created_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            }
+          },
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "user_availability_schedules",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "uri": {
+              "type": "string"
+            },
+            "default": {
+              "type": ["boolean", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "user": {
+              "type": ["string", "null"]
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "rules": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "properties": {
+                  "type": {
+                    "type": ["string", "null"]
+                  },
+                  "intervals": {
+                    "type": ["array", "null"],
+                    "items": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "from": {
+                          "type": ["string", "null"]
+                        },
+                        "to": {
+                          "type": ["string", "null"]
+                        }
+                      }
+                    }
+                  },
+                  "wday": {
+                    "type": ["string", "null"]
+                  },
+                  "date": {
+                    "type": ["string", "null"],
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          },
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "locations",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "connected": {
+              "type": ["boolean", "null"]
+            },
+            "user": {
+              "type": "string"
+            }
+          },
+          "required": ["user", "kind"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "organization_invitations",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "uri": {
+              "type": "string"
+            },
+            "organization": {
+              "type": ["string", "null"]
+            },
+            "email": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "created_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "last_sent_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "user": {
+              "type": ["string", "null"]
+            }
+          },
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "webhook_subscriptions",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/schema#",
+          "additionalProperties": true,
+          "properties": {
+            "uri": {
+              "type": "string"
+            },
+            "callback_url": {
+              "type": ["string", "null"]
+            },
+            "created_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "retry_started_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "state": {
+              "type": ["string", "null"]
+            },
+            "events": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["string", "null"]
+              }
+            },
+            "scope": {
+              "type": ["string", "null"]
+            },
+            "organization": {
+              "type": ["string", "null"]
+            },
+            "user": {
+              "type": ["string", "null"]
+            },
+            "group": {
+              "type": ["string", "null"]
+            },
+            "creator": {
+              "type": ["string", "null"]
+            }
+          },
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "routing_forms",
+        "json_schema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "uri": {
+              "type": "string",
+              "format": "uri"
+            },
+            "organization": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "questions": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "additionalProperties": true,
+                "properties": {
+                  "uuid": {
+                    "type": ["string", "null"],
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": ["string", "null"]
+                  },
+                  "type": {
+                    "type": ["string", "null"]
+                  },
+                  "required": {
+                    "type": ["boolean", "null"]
+                  },
+                  "answer_choices": {
+                    "type": ["array", "null"],
+                    "items": {
+                      "type": ["string", "null"]
+                    }
+                  }
+                }
+              }
+            },
+            "created_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#",
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "routing_form_submissions",
+        "json_schema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "uri": {
+              "type": "string",
+              "format": "uri"
+            },
+            "routing_form": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "questions_and_answers": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "additionalProperties": true,
+                "properties": {
+                  "question_uuid": {
+                    "type": ["string", "null"],
+                    "format": "uuid"
+                  },
+                  "question": {
+                    "type": ["string", "null"]
+                  },
+                  "answer": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            },
+            "tracking": {
+              "type": ["object", "null"],
+              "additionalProperties": true,
+              "properties": {
+                "utm_campaign": {
+                  "type": ["string", "null"]
+                },
+                "utm_source": {
+                  "type": ["string", "null"]
+                },
+                "utm_medium": {
+                  "type": ["string", "null"]
+                },
+                "utm_content": {
+                  "type": ["string", "null"]
+                },
+                "utm_term": {
+                  "type": ["string", "null"]
+                },
+                "salesforce_uuid": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "result": {
+              "properties": {
+                "type": {
+                  "type": ["string", "null"]
+                },
+                "value": {
+                  "type": ["string", "object", "null"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "headline": {
+                      "type": ["string", "null"]
+                    },
+                    "body": {
+                      "type": ["string", "null"]
+                    }
+                  }
+                }
+              },
+              "type": ["object", "null"],
+              "additionalProperties": true
+            },
+            "submitter": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "submitter_type": {
+              "type": ["string", "null"]
+            },
+            "created_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#",
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contacts",
+        "json_schema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "uri": {
+              "type": "string",
+              "format": "uri"
+            },
+            "app_url": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "emails": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "additionalProperties": true,
+                "properties": {
+                  "email": {
+                    "type": ["string", "null"],
+                    "format": "email"
+                  },
+                  "is_primary": {
+                    "type": ["boolean", "null"]
+                  }
+                }
+              }
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "phone_numbers": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "additionalProperties": true,
+                "properties": {
+                  "phone_number": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            },
+            "timezone": {
+              "type": ["string", "null"]
+            },
+            "job_title": {
+              "type": ["string", "null"]
+            },
+            "company": {
+              "type": ["string", "null"]
+            },
+            "country": {
+              "type": ["string", "null"]
+            },
+            "state": {
+              "type": ["string", "null"]
+            },
+            "city": {
+              "type": ["string", "null"]
+            },
+            "linkedin": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "custom_fields": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "additionalProperties": true,
+                "properties": {
+                  "uri": {
+                    "type": ["string", "null"],
+                    "format": "uri"
+                  },
+                  "label": {
+                    "type": ["string", "null"]
+                  },
+                  "value": {
+                    "type": ["string", "null", "number", "boolean", "array"]
+                  }
+                }
+              }
+            },
+            "created_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "first_email_date": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "last_email_date": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "next_meeting_date": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "last_meeting_date": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "last_interaction_date": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#",
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": false,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "outgoing_communications",
+        "json_schema": {
+          "properties": {
+            "type": {
+              "type": ["string", "null"]
+            },
+            "to": {
+              "type": ["string", "null"]
+            },
+            "from": {
+              "type": ["string", "null"]
+            },
+            "subject": {
+              "type": ["string", "null"]
+            },
+            "body": {
+              "type": ["string", "null"]
+            },
+            "sender_uri": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "sender_email": {
+              "type": ["string", "null"]
+            },
+            "event_type_uri": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "event_uri": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "sent_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "scheduling_url": {
+              "type": ["string", "null"],
+              "format": "uri"
+            }
+          },
+          "type": "object",
+          "additionalProperties": true,
+          "$schema": "http://json-schema.org/schema#",
+          "required": ["created_at"]
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "activity_log_entries",
+        "json_schema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "occurred_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "actor": {
+              "type": ["object", "null"],
+              "additionalProperties": true,
+              "properties": {
+                "uri": {
+                  "type": ["string", "null"]
+                },
+                "type": {
+                  "type": ["string", "null"]
+                },
+                "organization": {
+                  "type": ["object", "null"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "uri": {
+                      "type": ["string", "null"]
+                    },
+                    "role": {
+                      "type": ["string", "null"]
+                    }
+                  }
+                },
+                "group": {
+                  "type": ["object", "null"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "uri": {
+                      "type": ["string", "null"]
+                    },
+                    "name": {
+                      "type": ["string", "null"]
+                    },
+                    "role": {
+                      "type": ["string", "null"]
+                    }
+                  }
+                },
+                "display_name": {
+                  "type": ["string", "null"]
+                },
+                "alternative_identifier": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "details": {
+              "type": ["object", "null"],
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "fully_qualified_name": {
+              "type": ["string", "null"]
+            },
+            "uri": {
+              "type": "string"
+            },
+            "namespace": {
+              "type": ["string", "null"]
+            },
+            "action": {
+              "type": ["string", "null"]
+            },
+            "organization": {
+              "type": ["string", "null"]
+            }
+          },
+          "$schema": "http://json-schema.org/schema#",
+          "required": ["uri", "occurred_at"]
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["occurred_at"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "meeting_recaps",
+        "json_schema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "uri": {
+              "type": "string",
+              "format": "uri"
+            },
+            "app_url": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "event": {
+              "type": ["string", "null"],
+              "format": "uri"
+            },
+            "status": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "location": {
+              "properties": {
+                "type": {
+                  "type": ["string", "null"]
+                },
+                "location": {
+                  "type": ["string", "null"]
+                },
+                "additional_info": {
+                  "type": ["string", "null"]
+                },
+                "status": {
+                  "type": ["string", "null"]
+                },
+                "join_url": {
+                  "type": ["string", "null"],
+                  "format": "uri"
+                },
+                "data": {
+                  "properties": {
+                    "id": {
+                      "type": ["string", "integer", "null"]
+                    },
+                    "telephony": {
+                      "type": ["object", "null"],
+                      "additionalProperties": true,
+                      "properties": {
+                        "callInNumbers": {
+                          "type": ["array", "null"],
+                          "items": {
+                            "type": ["object", "null"],
+                            "additionalProperties": true,
+                            "properties": {
+                              "label": {
+                                "type": ["string", "null"]
+                              },
+                              "callInNumber": {
+                                "type": ["string", "null"]
+                              },
+                              "tollType": {
+                                "type": ["string", "null"]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "password": {
+                      "type": ["string", "null"]
+                    }
+                  },
+                  "type": ["object", "null"],
+                  "additionalProperties": true
+                }
+              },
+              "type": ["object", "null"],
+              "additionalProperties": true
+            },
+            "start_time": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "end_time": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "created_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": ["string", "null"],
+              "format": "date-time"
+            },
+            "attendees": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["object", "null"],
+                "additionalProperties": true,
+                "properties": {
+                  "host": {
+                    "type": ["boolean", "null"]
+                  },
+                  "user_email": {
+                    "type": ["string", "null"],
+                    "format": "email"
+                  },
+                  "user_name": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            },
+            "transcript": {
+              "type": ["string", "null"],
+              "format": "uri"
+            }
+          },
+          "$schema": "http://json-schema.org/schema#",
+          "required": ["uri"]
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["start_time"],
+        "source_defined_primary_key": [["uri"]],
+        "is_resumable": true,
+        "is_file_based": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

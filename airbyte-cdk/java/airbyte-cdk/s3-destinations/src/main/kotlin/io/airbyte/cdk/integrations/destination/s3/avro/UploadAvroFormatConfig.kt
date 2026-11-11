@@ -57,33 +57,29 @@ class UploadAvroFormatConfig : UploadFormatConfig {
             if (codecConfig == null || codecConfig.isNull || !codecConfig.isTextual) {
                 return CodecFactory.nullCodec()
             }
-            val codecType = codecConfig.asText()
             val codec = CompressionCodec.fromConfigValue(codecConfig.asText())
-            when (codec) {
+            return when (codec) {
                 CompressionCodec.NULL -> {
-                    return CodecFactory.nullCodec()
+                    CodecFactory.nullCodec()
                 }
                 CompressionCodec.DEFLATE -> {
                     val compressionLevel = getCompressionLevel(compressionCodecConfig, 0, 0, 9)
-                    return CodecFactory.deflateCodec(compressionLevel)
+                    CodecFactory.deflateCodec(compressionLevel)
                 }
                 CompressionCodec.BZIP2 -> {
-                    return CodecFactory.bzip2Codec()
+                    CodecFactory.bzip2Codec()
                 }
                 CompressionCodec.XZ -> {
                     val compressionLevel = getCompressionLevel(compressionCodecConfig, 6, 0, 9)
-                    return CodecFactory.xzCodec(compressionLevel)
+                    CodecFactory.xzCodec(compressionLevel)
                 }
                 CompressionCodec.ZSTANDARD -> {
                     val compressionLevel = getCompressionLevel(compressionCodecConfig, 3, -5, 22)
                     val includeChecksum = getIncludeChecksum(compressionCodecConfig, false)
-                    return CodecFactory.zstandardCodec(compressionLevel, includeChecksum)
+                    CodecFactory.zstandardCodec(compressionLevel, includeChecksum)
                 }
                 CompressionCodec.SNAPPY -> {
-                    return CodecFactory.snappyCodec()
-                }
-                else -> {
-                    throw IllegalArgumentException("Unsupported compression codec: $codecType")
+                    CodecFactory.snappyCodec()
                 }
             }
         }
@@ -92,7 +88,7 @@ class UploadAvroFormatConfig : UploadFormatConfig {
             compressionCodecConfig: JsonNode,
             defaultLevel: Int,
             minLevel: Int,
-            maxLevel: Int
+            maxLevel: Int,
         ): Int {
             val levelConfig = compressionCodecConfig["compression_level"]
             if (levelConfig == null || levelConfig.isNull || !levelConfig.isIntegralNumber) {
@@ -104,7 +100,7 @@ class UploadAvroFormatConfig : UploadFormatConfig {
                     "Invalid compression level: %d, expected an integer in range [%d, %d]",
                     level,
                     minLevel,
-                    maxLevel
+                    maxLevel,
                 )
             }
             return level

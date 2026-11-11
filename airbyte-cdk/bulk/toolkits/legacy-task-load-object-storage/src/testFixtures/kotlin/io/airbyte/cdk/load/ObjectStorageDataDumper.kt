@@ -44,7 +44,7 @@ class ObjectStorageDataDumper(
     private val client: ObjectStorageClient<*>,
     private val pathFactory: ObjectStoragePathFactory,
     private val formatConfig: ObjectStorageFormatConfiguration,
-    private val compressionConfig: ObjectStorageCompressionConfiguration<*>? = null
+    private val compressionConfig: ObjectStorageCompressionConfiguration<*>? = null,
 ) {
     fun dump(): List<OutputRecord> {
         // Note: this is implicitly a test of the `streamConstant` final directory

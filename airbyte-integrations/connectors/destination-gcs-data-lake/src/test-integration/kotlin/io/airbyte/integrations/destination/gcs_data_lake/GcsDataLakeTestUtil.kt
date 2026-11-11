@@ -25,8 +25,8 @@ object GcsDataLakeTestUtil {
         getConfig(
             ValidatedJsonUtils.parseOne(
                 GcsDataLakeSpecification::class.java,
-                Files.readString(path)
-            )
+                Files.readString(path),
+            ),
         )
 
     fun getConfig(spec: ConfigurationSpecification) =
@@ -44,7 +44,7 @@ object GcsDataLakeTestUtil {
         val properties = gcsDataLakeCatalogUtil.toCatalogProperties(config)
         return icebergUtil.createCatalog(
             io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_CATALOG_NAME,
-            properties
+            properties,
         )
     }
 }

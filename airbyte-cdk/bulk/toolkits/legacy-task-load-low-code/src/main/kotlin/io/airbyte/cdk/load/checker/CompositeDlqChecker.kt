@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 class CompositeDlqChecker(
     private val decorated: DestinationCheckerV2,
     private val dlqChecker: DlqChecker,
-    private val objectStorageConfig: ObjectStorageConfig
+    private val objectStorageConfig: ObjectStorageConfig,
 ) : DestinationCheckerV2 {
     override fun check() {
         decorated.check()

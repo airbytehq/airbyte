@@ -36,7 +36,7 @@ class AggregateStageTest {
                 fields = emptyMap(),
                 partitionKey = partitionKey,
                 sizeBytes = 100L,
-                emittedAtMs = emittedAtMs
+                emittedAtMs = emittedAtMs,
             )
 
         val streamMock =
@@ -70,7 +70,7 @@ class AggregateStageTest {
                     partitionCountsHistogram = mockCountsHistogram,
                     partitionBytesHistogram = mockBytesHistogram,
                     mappedDesc = streamDescriptor,
-                )
+                ),
             )
         }
     }
@@ -85,7 +85,7 @@ class AggregateStageTest {
                 fields = emptyMap(),
                 partitionKey = partitionKey,
                 sizeBytes = 100L,
-                emittedAtMs = emittedAtMs
+                emittedAtMs = emittedAtMs,
             )
 
         val streamMock =
@@ -115,7 +115,7 @@ class AggregateStageTest {
                 fields = emptyMap(),
                 partitionKey = partitionKey,
                 sizeBytes = 100L,
-                emittedAtMs = emittedAtMs
+                emittedAtMs = emittedAtMs,
             )
 
         val streamMock =
@@ -164,7 +164,7 @@ class AggregateStageTest {
                     partitionCountsHistogram = mockCounts1,
                     partitionBytesHistogram = mockBytes1,
                     mappedDesc = streamDescriptor,
-                )
+                ),
             )
         }
         coVerify(exactly = 1) {
@@ -174,7 +174,7 @@ class AggregateStageTest {
                     partitionCountsHistogram = mockCounts2,
                     partitionBytesHistogram = mockBytes2,
                     mappedDesc = streamDescriptor,
-                )
+                ),
             )
         }
     }

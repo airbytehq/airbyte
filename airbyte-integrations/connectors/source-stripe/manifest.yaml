@@ -35,38 +35,39 @@ definitions:
     authenticator:
       $ref: "#/definitions/bearer_authenticator"
     http_method: GET
+    use_tcp_keepalive: true
+    connect_timeout_in_seconds: 30
+    read_timeout_in_seconds: 80
     request_headers:
       Stripe-Version: "2022-11-15"
       Stripe-Account: '{{ config.get("account_id") }}'
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: IGNORE
-              http_codes:
-                - 403
-              error_message: >-
-                {{ response['error']['message'] }}
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: IGNORE
-              http_codes:
-                - 400
-              error_message: >-
-                {{ response['error']['message'] }}
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: IGNORE
-              http_codes:
-                - 404
-              error_message: >-
-                Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
-                child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
-                you may safely ignore this warning.
+      type: DefaultErrorHandler
+      response_filters:
+        - $ref: "#/definitions/ignore_403_filter"
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 400
+          error_message: >-
+            {{ response['error']['message'] }}
+        - $ref: "#/definitions/ignore_404_filter"
+  ignore_403_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    http_codes:
+      - 403
+    error_message: >-
+      {{ response['error']['message'] }}
+  ignore_404_filter:
+    type: HttpResponseFilter
+    action: IGNORE
+    http_codes:
+      - 404
+    error_message: >-
+      Data was not found. Error message: {{ response['error']['message'] }} If this is a path for getting 
+      child attributes like /v1/checkout/sessions/<session_id>/line_items when running the incremental sync, 
+      you may safely ignore this warning.
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['client_secret'] }}"
@@ -195,6 +196,17 @@ definitions:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
+  # A Connect platform's /v1/events never carries connected-account events, so accounts reads the list by created.
+  # The start defaults to 2010 so a full refresh keeps covering every account, and accounts_start_date lets a user
+  # move it; fixed step so num_workers reads windows in parallel.
+  accounts_cursor:
+    $ref: "#/definitions/entity_with_slice_cursor"
+    step: P30D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ format_datetime(config.get('accounts_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%dT%H:%M:%S%z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+
   # Events flow components
   events_based_stream:
     $ref: "#/definitions/base_stream"
@@ -219,7 +231,7 @@ definitions:
               - data
               - object
               - updated
-            value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+            value: "{{ (record.get('updated', record.get('created', now_utc().timestamp())) | int) - (1 if record.get('type', '').endswith('.created') else 0) }}"
             value_type: integer
         condition: "{{ record.get('data', {}).get('object', False) }}"
       - type: DpathFlattenFields
@@ -982,31 +994,28 @@ definitions:
             $ref: "#/schemas/top_ups"
 
     accounts:
-      type: StateDelegatingStream
-      api_retention_period: "{{ 'P30D' if 'accounts' in config.get('api_retention_streams', []) else '' }}"
+      $ref: "#/definitions/entity_restricted_stream"
+      retriever:
+        $ref: "#/definitions/base_retriever"
+        partition_router:
+          # A single static partition makes the cursor a ConcurrentPerPartitionCursor in global mode:
+          # created windows still run in parallel, but no STATE is emitted until the walk completes,
+          # so a killed attempt restarts instead of resuming from a checkpoint the now_utc() fallback
+          # could push ahead of windows still being read. Same pattern as bank_accounts.
+          type: ListPartitionRouter
+          cursor_field: accounts_walk
+          values:
+            - all
+      incremental_sync:
+        $ref: "#/definitions/accounts_cursor"
+        global_substream_cursor: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
       $parameters:
         name: accounts
-      full_refresh_stream:
-        $ref: "#/definitions/entity_restricted_stream"
-        retriever:
-          $ref: "#/definitions/base_retriever"
-          $parameters:
-            path: accounts
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/accounts"
-      incremental_stream:
-        $ref: "#/definitions/events_based_stream"
-        retriever:
-          $ref: "#/definitions/events_objects_retriever"
-          $parameters:
-            request_parameters:
-              types[]: '{{["account.updated", "account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/accounts"
+        path: accounts
 
     checkout_sessions:
       type: StateDelegatingStream
@@ -1167,6 +1176,12 @@ definitions:
         $ref: "#/definitions/base_retriever"
         $parameters:
           path: customers/{{ stream_partition.customer_id }}/balance_transactions
+        requester:
+          $ref: "#/definitions/base_requester"
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - $ref: "#/definitions/ignore_404_filter"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1174,7 +1189,55 @@ definitions:
               parent_key: id
               partition_field: customer_id
               stream:
-                $ref: "#/definitions/streams/customers"
+                $ref: "#/definitions/events_based_stream"
+                $parameters:
+                  name: cbt_customer_events
+                retriever:
+                  $ref: "#/definitions/events_objects_retriever"
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: events
+                    # must not IGNORE 400/403: an ignored events response would miss a customer update or delete
+                    error_handler:
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - $ref: "#/definitions/ignore_404_filter"
+                  $parameters:
+                    request_parameters:
+                      types[]: '{{["customer.updated", "customer.deleted"]}}'
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $ref: "#/schemas/customers"
+                incremental_sync:
+                  $ref: "#/definitions/events_read_slice_cursor"
+                  lookback_window: P0D
+              incremental_dependency: true
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/entity_stream"
+                $parameters:
+                  name: customers
+                retriever:
+                  $ref: "#/definitions/base_retriever"
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    # must not IGNORE 400/403: an ignored window or page would let the low-water mark move past unread customers
+                    error_handler:
+                      type: DefaultErrorHandler
+                      response_filters:
+                        - $ref: "#/definitions/ignore_404_filter"
+                  $parameters:
+                    path: customers
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $ref: "#/schemas/customers"
+                incremental_sync:
+                  $ref: "#/definitions/entity_with_slice_cursor"
+                  step: P7D
               incremental_dependency: true
       # This stream is not truly incremental on the child level.
       # We're configuring it this way to support incremental syncs on the parent only,
@@ -1183,6 +1246,9 @@ definitions:
         $ref: "#/definitions/entity_single_slice_cursor"
         cursor_field: created
         global_substream_cursor: true
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.CustomerBalanceTransactionsEventsParentStateMigration
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -1468,6 +1534,8 @@ definitions:
           requester:
             $ref: "#/definitions/base_requester"
             path: events
+            request_parameters:
+              types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
           record_selector:
             type: RecordSelector
             extractor:
@@ -1482,33 +1550,66 @@ definitions:
                   - lines
                   - data
                 remain_original_record: true
+                truncation_indicator_path:
+                  - data
+                  - object
+                  - lines
+                  - has_more
+                truncated_list_retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: invoices/{{ stream_slice['parent_record']['data']['object']['id'] }}/lines
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    $ref: "#/definitions/base_paginator"
             transform_before_filtering: true
           paginator:
             $ref: "#/definitions/base_paginator"
-          $parameters:
-            request_parameters:
-              types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
         schema_loader:
           type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/invoice_line_items"
         transformations:
+          # Events render lines at the account's default Stripe API version. Before 2019-12-03, line ids are legacy
+          # (ii_/sub_/su_/sli_; sub_ and su_ are the subscription id) and the il_ id is in `unique_id`.
+          # Keep `unique_id` and `unique_line_item_id` on the record (undeclared, so the platform drops them).
+          # Pinned-version /lines records have no `unique_id` (no-op).
+          - type: AddFields
+            fields:
+              - path:
+                  - subscription
+                value: "{{ record.get('id') }}"
+                value_type: string
+            condition: "{{ record.get('unique_id') and record.get('type') == 'subscription' and not record.get('subscription') and (record.get('id') or '').startswith(('sub_', 'su_')) }}"
+          - type: AddFields
+            fields:
+              - path:
+                  - id
+                value: "{{ record.get('unique_id') }}"
+                value_type: string
+            condition: "{{ record.get('unique_id') }}"
           - type: AddFields
             fields:
               - path:
                   - is_deleted
                 value: "{{ True }}"
-            condition: "{{ record.get('original_record', {}).get('type', '').endswith('.deleted') }}"
+            condition: "{{ (record.get('original_record') or {}).get('type', '').endswith('.deleted') }}"
           - type: AddFields
             fields:
               - path:
                   - invoice_updated
-                value: "{{ (record['original_record'].get('updated') or record['original_record'].get('created') or record['original_record'].get('data', {}).get('object', {}).get('updated') or record['original_record'].get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int }}"
+                value: "{{ (((record.get('original_record') or {}).get('updated') or (record.get('original_record') or {}).get('created') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('updated') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if (record.get('original_record') or {}).get('type', '').endswith('.created') else 0) }}"
                 value_type: integer
               - path:
                   - invoice_id
-                value: "{{ record['original_record'].get('data', {}).get('object', {}).get('id') }}"
-            condition: "{{ record.get('original_record') }}"
+                value: "{{ (record.get('original_record') or {}).get('data', {}).get('object', {}).get('id') }}"
+            condition: "{{ (record.get('original_record') or {}) != {} }}"
           - type: RemoveFields
             field_pointers:
               - - original_record
@@ -1666,14 +1767,14 @@ definitions:
               - path:
                   - is_deleted
                 value: "{{ True }}"
-            condition: "{{ record.get('original_record', {}).get('type', '').endswith('.deleted') }}"
+            condition: "{{ (record.get('original_record') or {}).get('type', '').endswith('.deleted') }}"
           - type: AddFields
             fields:
               - path:
                   - subscription_updated
-                value: "{{ (record['original_record'].get('updated') or record['original_record'].get('created') or record['original_record'].get('data', {}).get('object', {}).get('updated') or record['original_record'].get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int }}"
+                value: "{{ (((record.get('original_record') or {}).get('updated') or (record.get('original_record') or {}).get('created') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('updated') or (record.get('original_record') or {}).get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if (record.get('original_record') or {}).get('type', '').endswith('.created') else 0) }}"
                 value_type: integer
-            condition: "{{ record.get('original_record') }}"
+            condition: "{{ (record.get('original_record') or {}) != {} }}"
           - type: RemoveFields
             field_pointers:
               - - original_record
@@ -1691,13 +1792,42 @@ definitions:
           type: SimpleRetriever
           requester:
             $ref: "#/definitions/base_requester"
-            path: customers/{{ stream_partition.customer_id }}/bank_accounts
+            path: customers
+            request_parameters:
+              expand[]: '{{["data.sources"]}}'
+            # this stream must not IGNORE HTTP 400, because an ignored 400 on a customers request would silently drop a whole created-date slice (400s here only come from malformed requests)
+            error_handler:
+              type: DefaultErrorHandler
+              response_filters:
+                - $ref: "#/definitions/ignore_403_filter"
+                - $ref: "#/definitions/ignore_404_filter"
           record_selector:
             type: RecordSelector
             extractor:
               type: DpathExtractor
               field_path:
                 - data
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field:
+                  - sources
+                  - data
+                truncation_indicator_path:
+                  - sources
+                  - has_more
+                truncated_list_retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: customers/{{ stream_slice['parent_record']['id'] }}/bank_accounts
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    $ref: "#/definitions/base_paginator"
             record_filter:
               condition: "{{ record['object'] == 'bank_account' }}"
             transform_before_filtering: true
@@ -1705,43 +1835,20 @@ definitions:
           paginator:
             $ref: "#/definitions/base_paginator"
           partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: customer_id
-                extra_fields:
-                  - ["id"]
-                lazy_read_pointer: ["sources"]
-                stream:
-                  type: StateDelegatingStream
-                  api_retention_period: "{{ 'P30D' if 'customers' in config.get('api_retention_streams', []) else '' }}"
-                  $parameters:
-                    name: customers
-                  full_refresh_stream:
-                    $ref: "#/definitions/entity_stream"
-                    retriever:
-                      $ref: "#/definitions/base_retriever"
-                      requester:
-                        $ref: "#/definitions/base_requester"
-                        request_parameters:
-                          expand[]: '{{["data.sources"]}}'
-                      $parameters:
-                        path: customers
-                  incremental_stream:
-                    $ref: "#/definitions/events_based_stream"
-                    retriever:
-                      $ref: "#/definitions/events_objects_retriever"
-                      $parameters:
-                        request_parameters:
-                          types[]: '{{["customer.created", "customer.updated", "customer.deleted"]}}'
+            # A single static partition makes the cursor a ConcurrentPerPartitionCursor in global mode:
+            # date slices still run in parallel, but no STATE is emitted until the walk completes,
+            # so a killed attempt restarts instead of switching to the events path.
+            type: ListPartitionRouter
+            cursor_field: bank_accounts_walk
+            values:
+              - all
         schema_loader:
           type: InlineSchemaLoader
           schema:
             $ref: "#/schemas/bank_accounts"
         incremental_sync:
-          $ref: "#/definitions/entity_single_slice_cursor"
-          cursor_field: updated
+          $ref: "#/definitions/entity_with_slice_cursor"
+          step: P30D
           global_substream_cursor: true
         transformations:
           - type: AddFields
@@ -1932,7 +2039,7 @@ spec:
         description: >-
           When set, the connector will always re-export data from the past N days,
           where N is the value set here. This is useful if your data is frequently updated
-          after creation. The Lookback Window only applies to streams that do not support event-based incremental syncs: Events,
+          after creation. The Lookback Window only applies to streams that do not support event-based incremental syncs: Accounts, Events,
           SetupAttempts, ShippingRates, BalanceTransactions, Files, FileLinks, Refunds. More info <a
           href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>
         order: 3
@@ -1973,6 +2080,7 @@ spec:
           Select streams where cursor age is validated against the Stripe API 30-day event retention period.
           When a selected stream's cursor is older than 30 days, the connector performs a full refresh
           to avoid missing data. Streams not selected here will always use incremental sync regardless of cursor age.
+          This setting has no effect on Accounts, which does not read the Events API.
         items:
           type: string
           enum:
@@ -2014,6 +2122,20 @@ spec:
         uniqueItems: true
         default: []
         order: 7
+      accounts_start_date:
+        type: string
+        title: Accounts start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format 2010-01-01T00:00:00Z. The Accounts stream reads the connected
+          accounts created on or after this date. Keep the default to read every connected account; a later
+          date leaves out the accounts created before it, on full refreshes too. The Persons stream reads its
+          accounts from this stream, so their persons are left out as well.
+        default: "2010-01-01T00:00:00Z"
+        examples:
+          - "2010-01-01T00:00:00Z"
+        format: date-time
+        order: 8
   config_normalization_rules:
     type: ConfigNormalizationRules
     config_migrations:

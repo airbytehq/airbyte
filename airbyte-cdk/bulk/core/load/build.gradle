@@ -15,7 +15,7 @@ dependencies {
     api("com.github.f4b6a3:uuid-creator:6.1.1")
     implementation 'commons-codec:commons-codec:1.16.0'
 
-    api "io.airbyte.bulk-cdk:bulk-cdk-core-base:1.0.3"
+    api "io.airbyte.bulk-cdk:bulk-cdk-core-base:1.0.8"
     implementation 'org.apache.commons:commons-lang3:3.17.0'
     implementation 'com.ethlo.time:itu:1.14.0'
 
@@ -24,16 +24,20 @@ dependencies {
 
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
 
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
-    testFixturesApi("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
-    testImplementation("io.mockk:mockk:1.13.12")
-    implementation "org.jetbrains.kotlin:kotlin-reflect:2.0.20"
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
+    testFixturesApi("org.jetbrains.kotlinx:kotlinx-coroutines-test")
+    // KGP >= 2.0.10 (KT-68278): testFixtures no longer inherits main's implementation deps.
+    testFixturesImplementation 'org.apache.commons:commons-lang3:3.17.0'
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
     testFixturesImplementation "uk.org.webcompere:system-stubs-jupiter:2.1.7"
 
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'com.fasterxml.jackson.module:jackson-module-afterburner'
 
     integrationTestImplementation testFixtures(project)
+    // KSP 2 does not apply the `ksp` configuration to this compilation (KSP 1 did).
+    kspIntegrationTest platform("io.micronaut:micronaut-core-bom:$micronautVersion")
+    kspIntegrationTest 'io.micronaut:micronaut-inject-kotlin'
 }
 
 def integrationTestTask = tasks.register('integrationTest', Test) {

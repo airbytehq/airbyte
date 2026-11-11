@@ -21,7 +21,7 @@ class MockRemoteObject(
     override val key: String,
     override val storageConfig: Int,
     val data: ByteArray,
-    val metadata: Map<String, String> = emptyMap()
+    val metadata: Map<String, String> = emptyMap(),
 ) : RemoteObject<Int>
 
 class MockObjectStreamingUpload(
@@ -30,6 +30,7 @@ class MockObjectStreamingUpload(
     private val metadata: Map<String, String>,
 ) : StreamingUpload<MockRemoteObject> {
     private val parts: MutableList<Pair<Int, ByteArray>> = mutableListOf()
+
     override suspend fun uploadPart(part: ByteArray, index: Int) {
         parts.add(index to part)
         updateRemoteStorage()
@@ -104,6 +105,6 @@ class MockObjectStorageClient : ObjectStorageClient<MockRemoteObject> {
 
     override suspend fun startStreamingUpload(
         key: String,
-        metadata: Map<String, String>
+        metadata: Map<String, String>,
     ): StreamingUpload<MockRemoteObject> = MockObjectStreamingUpload(this, key, metadata)
 }
