@@ -59,7 +59,8 @@ class TestBaseInsightsStream:
     @freeze_time("2026-11-10")
     @pytest.mark.parametrize("empty_results", [False, True], ids=["records", "empty"])
     @pytest.mark.parametrize("interrupted", [True, False], ids=["interrupted", "complete"])
-    def test_lookback_reread_preserves_cursor(self, mocker, api, async_manager_mock, empty_results, interrupted):
+    @pytest.mark.parametrize("has_saved_state", [True, False], ids=["saved-state", "first-sync"])
+    def test_lookback_reread_preserves_cursor(self, mocker, api, async_manager_mock, empty_results, interrupted, has_saved_state):
         account_id = "123"
         saved_cursor = date(2026, 10, 20)
         end_date = date(2026, 10, 22)
@@ -71,8 +72,12 @@ class TestBaseInsightsStream:
             insights_lookback_window=28,
         )
         saved_state = {account_id: {"date_start": saved_cursor.isoformat()}, "time_increment": 1}
-        first_date = saved_cursor - timedelta(days=28)
-        failure_date = saved_cursor - timedelta(days=10)
+        if has_saved_state:
+            first_date = saved_cursor - timedelta(days=28)
+        else:
+            saved_state = None
+            first_date = date(2026, 9, 1)
+        failure_date = first_date + timedelta(days=18)
 
         def completed_jobs():
             current_date = first_date
@@ -103,12 +108,12 @@ class TestBaseInsightsStream:
 
         expected_last_date = failure_date - timedelta(days=1) if interrupted else end_date
         expected_cursors = [
-            max(saved_cursor, first_date + timedelta(days=offset)).isoformat()
+            max(saved_cursor if has_saved_state else first_date, first_date + timedelta(days=offset)).isoformat()
             for offset in range((expected_last_date - first_date).days + 1)
         ]
         assert [state[account_id]["date_start"] for state in states] == expected_cursors
         assert states[-1] == {
-            account_id: {"date_start": (saved_cursor if interrupted else end_date).isoformat(), "slices": []},
+            account_id: {"date_start": expected_cursors[-1], "slices": []},
             "time_increment": 1,
         }
 
