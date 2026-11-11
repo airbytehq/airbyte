@@ -305,6 +305,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.3 | 2026-11-10 | [91518](https://github.com/airbytehq/airbyte/pull/91518) | Update dependencies |
 | 0.2.2 | 2026-11-03 | [90564](https://github.com/airbytehq/airbyte/pull/90564) | Update dependencies |
 | 0.2.1 | 2026-10-27 | [89909](https://github.com/airbytehq/airbyte/pull/89909) | Update dependencies |
 | 0.2.0 | 2026-10-24 | [89750](https://github.com/airbytehq/airbyte/pull/89750) | Drop workflow_job_steps and contributor_activity_weeks data; replace release_assets with download URLs |
