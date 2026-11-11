@@ -44,4 +44,3 @@ def clear_cache_before_each_test():
         for file_path in cache_dir.glob("*.sqlite*"):
             file_path.unlink()
     yield
-
