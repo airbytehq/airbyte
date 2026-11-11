@@ -19,3 +19,8 @@ requests-mock = "^1"
 filterwarnings = [
     "ignore:This class is experimental*",
 ]
+
+[dependency-groups]
+dev = [
+    "freezegun (>=1,<2)"
+]
