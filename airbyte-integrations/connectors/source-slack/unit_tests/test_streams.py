@@ -82,9 +82,7 @@ def test_message_reads_skip_archived_non_member_channels(requests_mock, token_co
     requests_mock.get("https://slack.com/api/conversations.replies", json={"ok": True, "messages": [{"ts": "1626984020"}]})
     output = _read_incremental(stream_name, token_config, {})
     requested_channels = {
-        request.qs["channel"][0].upper()
-        for request in requests_mock.request_history
-        if request.path.endswith("conversations.history")
+        request.qs["channel"][0].upper() for request in requests_mock.request_history if request.path.endswith("conversations.history")
     }
     assert requested_channels == {"C1", "C2", "C4"}
     assert {record.record.data["channel_id"] for record in output.records} == {"C1", "C2", "C4"}
