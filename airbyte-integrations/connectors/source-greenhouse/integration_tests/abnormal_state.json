@@ -317,5 +317,302 @@
         "updated_at": "2222-01-21T00:00:00.000Z"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "application_stages"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "applied_candidate_tags"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "attachments"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "candidate_attribute_types"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "candidate_educations"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "candidate_employments"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "prospect_details"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "referrers"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "rejection_details"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "interview_kits"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "interviewer_tags"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "interviewers"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "job_interviews"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "scorecard_candidate_attributes"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "scorecard_questions"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "approver_groups"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "approvers"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "job_hiring_managers"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "job_notes"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "job_owners"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "prospect_pool_stages"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "user_emails"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "scorecard_question_answers"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "scorecard_question_options"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "scorecard_question_answer_options"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "job_post_locations"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "job_candidate_attributes"
+      },
+      "stream_state": {
+        "updated_at": "2222-01-21T00:00:00.000Z"
+      }
+    }
   }
 ]

@@ -37,7 +37,7 @@ declarative connector patterns. Read this before making changes to the connector
 
 ## 1. HubspotAssociationsExtractor: Hidden API Calls Inside Record Extraction
 
-The CRM search streams (contacts, companies, deals, tickets, leads, engagements_*, deal_splits) use
+The CRM search streams (contacts, companies, deals, tickets, leads, listings, engagements_*, deal_splits) use
 `HubspotAssociationsExtractor` as their record extractor. This extractor does **not** simply parse the
 HTTP response -- it makes **additional batch POST requests** to the HubSpot Associations v4 API
 (`/crm/v4/associations/{entity}/{association}/batch/read`) for every page of results.
@@ -90,7 +90,7 @@ The custom pagination strategy works around this by:
 This is necessary because HubSpot's search endpoint was designed for filtered discovery, not bulk
 export. The 10,000 limit is intentional on HubSpot's side and cannot be increased.
 
-**Why this matters:** Without this workaround, any CRM object type with more than 10,000 modified records since the last sync would silently stop paginating and miss data. The pagination token is a dict with two possible shapes (`{"after": N}` or `{"after": N, "id": M}`), not a simple cursor string, so any code touching page tokens must handle both. This affects all CRM search streams: contacts, companies, deals, tickets, leads, all engagement subtypes, deal_splits, and custom objects.
+**Why this matters:** Without this workaround, any CRM object type with more than 10,000 modified records since the last sync would silently stop paginating and miss data. The pagination token is a dict with two possible shapes (`{"after": N}` or `{"after": N, "id": M}`), not a simple cursor string, so any code touching page tokens must handle both. This affects all CRM search streams: contacts, companies, deals, tickets, leads, listings, all engagement subtypes, deal_splits, and custom objects.
 
 ---
 
@@ -172,9 +172,10 @@ for partial failures (requiring separate partial-error handling), and flow count
 
 HubSpot's API uses inconsistent datetime formats across different endpoint versions:
 
-- **Legacy v1 endpoints** (engagements, campaigns, deal_pipelines, workflows, email_events,
+- **Legacy v1 endpoints** (engagements, campaigns, workflows, email_events,
   subscription_changes, form_submissions) return **millisecond Unix timestamps** (e.g.,
   `1672531200000`). The connector uses the `%ms` format string for these.
+- `deal_pipelines` calls Pipelines API 2026-09, and `DealPipelinesV1ShapeTransformation` converts the records back to the V1 shape (ms timestamps, `pipelineId`/`stageId`, `active`, constant `objectType`/`objectTypeId`, and `default` from `id == "default"`) to keep output stable.
 - **CRM v3 endpoints** (contacts, companies, deals, tickets, etc.) return **ISO 8601 strings** with
   varying precision:
   - `%Y-%m-%dT%H:%M:%S.%fZ` (with milliseconds, e.g., `2023-01-01T00:00:00.000Z`)

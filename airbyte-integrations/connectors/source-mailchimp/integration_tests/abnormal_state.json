@@ -3,7 +3,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "create_time": "2220-11-23T05:42:11+00:00"
+        "create_time": "2220-11-23T05:42:11.000000Z"
       },
       "stream_descriptor": {
         "name": "campaigns"
@@ -14,7 +14,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_created": "2220-09-25T04:47:31+00:00"
+        "date_created": "2220-09-25T04:47:31.000000Z"
       },
       "stream_descriptor": {
         "name": "lists"
@@ -25,7 +25,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "create_time": "2220-11-23T05:42:11+00:00"
+        "create_time": "2220-11-23T05:42:11.000000Z"
       },
       "stream_descriptor": {
         "name": "automations"
@@ -43,7 +43,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "timestamp": "2230-11-23T05:42:10+0000"
+              "timestamp": "2230-11-23T05:42:10Z"
             }
           },
           {
@@ -52,7 +52,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "timestamp": "2230-11-23T05:42:10+0000"
+              "timestamp": "2230-11-23T05:42:10Z"
             }
           },
           {
@@ -61,7 +61,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "timestamp": "2230-11-23T05:42:10+0000"
+              "timestamp": "2230-11-23T05:42:10Z"
             }
           },
           {
@@ -70,7 +70,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "timestamp": "2230-11-23T05:42:10+0000"
+              "timestamp": "2230-11-23T05:42:10Z"
             }
           },
           {
@@ -79,7 +79,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "timestamp": "2230-11-23T05:42:10+0000"
+              "timestamp": "2230-11-23T05:42:10Z"
             }
           },
           {
@@ -88,7 +88,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "timestamp": "2230-11-23T05:42:10+0000"
+              "timestamp": "2230-11-23T05:42:10Z"
             }
           },
           {
@@ -97,7 +97,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "timestamp": "2230-11-23T05:42:10+0000"
+              "timestamp": "2230-11-23T05:42:10Z"
             }
           }
         ]
@@ -132,7 +132,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "send_time": "2230-02-26T05:42:10+00:00"
+        "send_time": "2230-02-26T05:42:10.000000Z"
       },
       "stream_descriptor": {
         "name": "reports"
@@ -282,7 +282,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "updated_at": "2230-02-26T05:42:10Z"
+              "updated_at": "2230-02-26T05:42:10.000000Z"
             }
           }
         ]

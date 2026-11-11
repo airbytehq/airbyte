@@ -98,7 +98,9 @@ class TestDiscover(TestCase):
         assert notes.source_defined_primary_key == [["id"]]
 
         detailed_notes = streams["detailed_notes"]
-        assert detailed_notes.supported_sync_modes == [SyncMode.full_refresh]
+        assert set(detailed_notes.supported_sync_modes) == {SyncMode.full_refresh, SyncMode.incremental}
+        assert detailed_notes.source_defined_cursor is True
+        assert detailed_notes.default_cursor_field == ["updated_at"]
         assert detailed_notes.source_defined_primary_key == [["id"]]
 
         # Transcript segments carry no stable identifier, so the stream has no primary key.
