@@ -12,7 +12,7 @@ from unittest import TestCase
 import freezegun
 from source_facebook_marketing.streams.async_job import Status
 
-from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateMessageSerializer, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -452,6 +452,55 @@ class TestIncremental(TestCase):
             expecting_exception=expecting_exception,
             json_schema=json_schema,
         )
+
+    @HttpMocker()
+    def test_given_failure_during_lookback_when_read_then_cursor_does_not_move_backward(self, http_mocker: HttpMocker) -> None:
+        cursor_date = NOW - timedelta(days=1)
+        lookback_start = cursor_date - timedelta(days=28)
+        state = [
+            AirbyteStateMessageSerializer.load(
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_descriptor": {"name": _STREAM_NAME},
+                        "stream_state": {ACCOUNT_ID: {_CURSOR_FIELD: cursor_date.strftime(DATE_FORMAT)}, "time_increment": 1},
+                    },
+                }
+            )
+        ]
+        report_run_ids = [str(int(_REPORT_RUN_ID) + day) for day in range(29)]
+        job_ids = [str(int(_JOB_ID) + day) for day in range(29)]
+
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        for day, report_run_id in enumerate(report_run_ids):
+            slice_date = lookback_start + timedelta(days=day)
+            http_mocker.post(
+                _job_start_request(since=slice_date, until=slice_date).build(),
+                _job_start_response(report_run_id),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids))
+        http_mocker.get(
+            _get_insights_request(job_ids[0]).build(),
+            _insights_response()
+            .with_record(
+                _ads_insights_action_product_id_record().with_field(FieldPath(_CURSOR_FIELD), lookback_start.strftime(DATE_FORMAT))
+            )
+            .build(),
+        )
+        http_mocker.get(
+            _get_insights_request(job_ids[1]).build(),
+            build_response(
+                body={"error": {"message": "Invalid parameter", "type": "OAuthException", "code": 100}},
+                status_code=HTTPStatus.BAD_REQUEST,
+            ),
+        )
+
+        output = self._read(config().with_start_date(lookback_start).with_end_date(cursor_date), state=state, expecting_exception=True)
+
+        assert len(output.records) == 1
+        cursor_value = AirbyteStreamStateSerializer.dump(output.most_recent_state)["stream_state"][ACCOUNT_ID][_CURSOR_FIELD]
+        assert cursor_value == cursor_date.strftime(DATE_FORMAT)
 
     @HttpMocker()
     def test_when_read_then_state_message_produced_and_state_match_start_interval(self, http_mocker: HttpMocker) -> None:
