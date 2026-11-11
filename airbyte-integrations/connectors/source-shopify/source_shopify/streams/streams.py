@@ -440,7 +440,8 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
         return "transactions"
 
     def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
-        # transactions of offsite payments can predate their order, so they are first exported with the newly created order
+        # transactions of offsite payments can predate their order, so they are first exported with the newly created order;
+        # transactions have no `updatedAt`, so status changes (e.g. PENDING -> SUCCESS refunds) are detected via the order's `updatedAt`
         order_created_at = record.get("order_created_at")
         order_updated_at = record.get("order_updated_at")
         return (bool(order_created_at) and order_created_at >= state_value) or (bool(order_updated_at) and order_updated_at >= state_value)
