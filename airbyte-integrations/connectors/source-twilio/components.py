@@ -83,6 +83,55 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioMessagesStateMigration(StateMigration):
+    """
+    Move messages to a global cursor so inactive partitions cannot retain stale cursors.
+    Stored `use_global_cursor` overrides the manifest setting in the CDK.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [{"partition": {}, "cursor": {"date_sent": "2025-01-01T00:00:00Z"}}],
+        "state": {"date_sent": "2025-03-15T00:00:00Z"},
+        "lookback_window": 60
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": {"date_sent": "2025-03-15T00:00:00Z"},
+        "lookback_window": 60
+      }
+    """
+
+    def _cursor(self, stream_state: Mapping[str, Any]) -> Any:
+        global_cursor = stream_state.get("state", {}).get("date_sent")
+        if global_cursor:
+            return global_cursor
+        cursors = [
+            state["cursor"]["date_sent"]
+            for state in stream_state.get("states", [])
+            if state.get("cursor", {}).get("date_sent")
+        ]
+        return min(cursors, key=lambda value: datetime.fromisoformat(value.replace("Z", "+00:00"))) if cursors else None
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return not stream_state.get("use_global_cursor", False) and self._cursor(stream_state) is not None
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor = self._cursor(stream_state)
+        if cursor is None:
+            return stream_state
+        new_state = {
+            "use_global_cursor": True,
+            "state": {"date_sent": cursor},
+            "lookback_window": stream_state.get("lookback_window", 0),
+        }
+        if "parent_state" in stream_state:
+            new_state["parent_state"] = copy.deepcopy(stream_state["parent_state"])
+        return new_state
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.

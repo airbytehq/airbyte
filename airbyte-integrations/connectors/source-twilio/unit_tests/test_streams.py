@@ -158,6 +158,91 @@ class TestTwilioStream:
         assert records[0].record.data["date_updated"] == "2020-12-11T04:28:40Z"
 
 
+def _mock_message_accounts(requests_mock, records=None):
+    requests_mock.get(
+        f"{BASE}/Accounts.json",
+        json={
+            "accounts": [
+                {"sid": sid, "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"}}
+                for sid in ("AC1", "AC2")
+            ]
+        },
+    )
+    return {
+        sid: requests_mock.get(f"{BASE}/Accounts/{sid}/Messages.json", json={"messages": (records or {}).get(sid, [])})
+        for sid in ("AC1", "AC2")
+    }
+
+
+@freeze_time("2025-03-16 12:00:00+00:00")
+def test_messages_stale_partition_uses_global_cursor(requests_mock):
+    matchers = _mock_message_accounts(requests_mock)
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "messages",
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"subresource_uri": f"/2010-04-01/Accounts/{sid}/Messages.json", "parent_slice": {}},
+                        "cursor": {"date_sent": cursor},
+                    }
+                    for sid, cursor in (("AC1", "2025-01-01T00:00:00Z"), ("AC2", "2025-03-15T00:00:00Z"))
+                ],
+                "state": {"date_sent": "2025-03-15T00:00:00Z"},
+                "lookback_window": 60,
+            },
+        )
+        .build()
+    )
+
+    output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+    assert not output.errors
+    assert not output.records
+    for sid, matcher in matchers.items():
+        first_query = parse_qs(urlparse(matcher.request_history[0].url).query)
+        assert first_query["DateSent>"] == ["2025-03-14 23:59:00Z"], sid
+    final_state = output.most_recent_state.stream_state.__dict__
+    assert final_state["use_global_cursor"] is True
+    assert "states" not in final_state
+
+
+@freeze_time("2025-03-16 12:00:00+00:00")
+def test_messages_fresh_global_state_round_trip(requests_mock):
+    records = {
+        "AC1": [{"sid": "SM1", "date_sent": "2025-03-15T06:00:00Z"}],
+        "AC2": [{"sid": "SM2", "date_sent": "2025-03-15T12:00:00Z"}],
+    }
+    matchers = _mock_message_accounts(requests_mock, records)
+    config = {**TEST_CONFIG, "start_date": "2025-03-14T00:00:00Z"}
+    output = read_from_stream(config, "messages", SyncMode.incremental)
+
+    assert not output.errors
+    assert {record.record.data["sid"] for record in output.records} == {"SM1", "SM2"}
+    final_state = output.most_recent_state.stream_state.__dict__
+    assert final_state["use_global_cursor"] is True
+    assert "states" not in final_state
+    assert final_state["state"] == {"date_sent": "2025-03-15 12:00:00Z"}
+    for matcher in matchers.values():
+        assert parse_qs(urlparse(matcher.request_history[0].url).query)["DateSent>"] == ["2025-03-14 00:00:00Z"]
+
+    matchers = _mock_message_accounts(requests_mock)
+    state = StateBuilder().with_stream_state("messages", final_state).build()
+    resumed = read_from_stream(config, "messages", SyncMode.incremental, state)
+
+    assert not resumed.errors
+    assert not resumed.records
+    expected_start = datetime.fromisoformat(final_state["state"]["date_sent"].replace("Z", "+00:00")) - timedelta(
+        seconds=final_state["lookback_window"]
+    )
+    for matcher in matchers.values():
+        assert parse_qs(urlparse(matcher.request_history[0].url).query)["DateSent>"] == [expected_start.strftime("%Y-%m-%d %H:%M:%SZ")]
+    assert resumed.most_recent_state.stream_state.__dict__["use_global_cursor"] is True
+    assert "states" not in resumed.most_recent_state.stream_state.__dict__
+
+
 class TestIncrementalTwilioStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_calls_includes_date_window_params(self, requests_mock):
