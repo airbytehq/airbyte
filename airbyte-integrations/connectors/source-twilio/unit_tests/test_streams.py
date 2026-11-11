@@ -163,8 +163,7 @@ def _mock_message_accounts(requests_mock, records=None):
         f"{BASE}/Accounts.json",
         json={
             "accounts": [
-                {"sid": sid, "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"}}
-                for sid in ("AC1", "AC2")
+                {"sid": sid, "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"}} for sid in ("AC1", "AC2")
             ]
         },
     )
