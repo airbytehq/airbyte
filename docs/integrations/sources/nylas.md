@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.78-rc.1 | 2026-11-11 | TBD | Fixed events syncs failing when a calendar returns HTTP 404; unavailable calendars are skipped so other calendars continue syncing. |
+| 0.0.78-rc.1 | 2026-11-11 | [91966](https://github.com/airbytehq/airbyte/pull/91966) | Fixed events syncs failing when a calendar returns HTTP 404; unavailable calendars are skipped so other calendars continue syncing. |
 | 0.0.77 | 2026-11-10 | [91646](https://github.com/airbytehq/airbyte/pull/91646) | Update dependencies |
 | 0.0.76 | 2026-11-03 | [90678](https://github.com/airbytehq/airbyte/pull/90678) | Update dependencies |
 | 0.0.75 | 2026-10-27 | [90023](https://github.com/airbytehq/airbyte/pull/90023) | Update dependencies |
