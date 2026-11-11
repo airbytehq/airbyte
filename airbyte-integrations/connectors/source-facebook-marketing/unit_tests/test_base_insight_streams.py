@@ -56,6 +56,62 @@ def async_job_mock_fixture(mocker):
 
 
 class TestBaseInsightsStream:
+    @freeze_time("2026-11-10")
+    @pytest.mark.parametrize("empty_results", [False, True], ids=["records", "empty"])
+    @pytest.mark.parametrize("interrupted", [True, False], ids=["interrupted", "complete"])
+    def test_lookback_reread_preserves_cursor(self, mocker, api, async_manager_mock, empty_results, interrupted):
+        account_id = "123"
+        saved_cursor = date(2026, 10, 20)
+        end_date = date(2026, 10, 22)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 9, 1),
+            end_date=datetime.combine(end_date, datetime.min.time()),
+            insights_lookback_window=28,
+        )
+        saved_state = {account_id: {"date_start": saved_cursor.isoformat()}, "time_increment": 1}
+        first_date = saved_cursor - timedelta(days=28)
+        failure_date = saved_cursor - timedelta(days=10)
+
+        def completed_jobs():
+            current_date = first_date
+            while current_date <= end_date:
+                job = mocker.Mock(spec=InsightAsyncJob)
+                job.interval = DateInterval(current_date, current_date)
+                record = mocker.Mock()
+                record.export_all_data.return_value = {"date_start": current_date.isoformat()}
+                job.get_result.return_value = [] if empty_results else [record]
+                if interrupted and current_date == failure_date:
+                    job.get_result.side_effect = RuntimeError("interrupted insight job")
+                yield job
+                current_date += timedelta(days=1)
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        states = []
+
+        def read_slices():
+            for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=saved_state):
+                list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+                states.append(copy.deepcopy(stream.state))
+
+        if interrupted:
+            with pytest.raises(RuntimeError, match="interrupted insight job"):
+                read_slices()
+        else:
+            read_slices()
+
+        expected_last_date = failure_date - timedelta(days=1) if interrupted else end_date
+        expected_cursors = [
+            max(saved_cursor, first_date + timedelta(days=offset)).isoformat()
+            for offset in range((expected_last_date - first_date).days + 1)
+        ]
+        assert [state[account_id]["date_start"] for state in states] == expected_cursors
+        assert states[-1] == {
+            account_id: {"date_start": (saved_cursor if interrupted else end_date).isoformat(), "slices": []},
+            "time_increment": 1,
+        }
+
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,
