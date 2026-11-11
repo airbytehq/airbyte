@@ -380,6 +380,11 @@ jobs:
       - name: Install system dependencies
         if: matrix.connector
         run: |
+          # CI-only (airbyte-python-cdk#1270): azure.archive.ubuntu.com does not resolve on the runners,
+          # so point apt's mirror list at the main Ubuntu archive. Do not merge.
+          cat /etc/apt/apt-mirrors.txt || true
+          getent hosts archive.ubuntu.com || true
+          printf 'http://archive.ubuntu.com/ubuntu/\tpriority:1\n' | sudo tee /etc/apt/apt-mirrors.txt
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
@@ -569,6 +574,11 @@ jobs:
       - name: Install system dependencies
         if: matrix.connector
         run: |
+          # CI-only (airbyte-python-cdk#1270): azure.archive.ubuntu.com does not resolve on the runners,
+          # so point apt's mirror list at the main Ubuntu archive. Do not merge.
+          cat /etc/apt/apt-mirrors.txt || true
+          getent hosts archive.ubuntu.com || true
+          printf 'http://archive.ubuntu.com/ubuntu/\tpriority:1\n' | sudo tee /etc/apt/apt-mirrors.txt
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
