@@ -22,6 +22,10 @@ Keep comments in `manifest.yaml` to one to three lines that say what a definitio
 
 The GitHub REST and GraphQL APIs support `since` parameter on many list endpoints and `updated` sorting.
 
+`review_comments` requests 100 records per page to reduce GitHub timeouts on large repositories.
+It follows GitHub's `Link` pagination even when a page contains fewer than 100 records.
+The deprecated `page_size_for_large_streams` setting does not override this page size.
+
 **Connector type:** manifest-only — every stream in `manifest.yaml`, plus `components.py` for the custom components
 
 **Analysis status:** Every stream is in the manifest; the stream-by-stream table is in `AGENTS.md`.

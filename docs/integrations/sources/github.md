@@ -328,6 +328,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.7 | 2026-11-11 | [PR](https://github.com/airbytehq/airbyte/pulls) | Restore larger review comment pages to reduce GitHub timeouts on large repositories |
 | 2.8.6 | 2026-11-10 | [91494](https://github.com/airbytehq/airbyte/pull/91494) | Update dependencies |
 | 2.8.5 | 2026-11-04 | [90970](https://github.com/airbytehq/airbyte/pull/90970) | Shorten manifest comments and move the design rationale to the connector docs; no behavior change |
 | 2.8.4 | 2026-11-03 | [90166](https://github.com/airbytehq/airbyte/pull/90166) | Retry GitHub 5xx errors and timeouts with exponential backoff instead of waiting for the rate-limit reset |

@@ -77,9 +77,7 @@ definitions:
     $ref: "#/definitions/requester_base"
     http_method: GET
     request_parameters:
-      # constants.DEFAULT_PAGE_SIZE — none of these streams was a `large_stream`, so the
-      # reduced page size never applied to them. See `large_stream_page_size` for the streams
-      # that did carry it.
+      # constants.DEFAULT_PAGE_SIZE
       per_page: "100"
     error_handler:
       $ref: "#/definitions/skip_inaccessible_error_handler"
@@ -7107,7 +7105,7 @@ definitions:
     retriever:
       $ref: "#/definitions/repository_scoped_retriever"
       requester:
-        $ref: "#/definitions/large_stream_repository_scoped_requester"
+        $ref: "#/definitions/repository_scoped_requester"
         # `pulls/comments`, not `review_comments`; legacy overrode `ReviewComments.path` for it.
         path: "repos/{{ stream_partition.repository }}/pulls/comments"
         # No `use_cache` here, unlike `comments` and `issues`. `ReviewComments.use_cache = True`

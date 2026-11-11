@@ -261,22 +261,41 @@ def test_legacy_state_migrates_to_per_partition_state(stream_name, endpoint, rat
     ],
 )
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
-def test_page_size_is_the_large_stream_page_size(stream_name, endpoint, page_size_config, rate_limit_mock_response, requests_mock):
-    """All three were `large_stream = True`, so their `per_page` is
-    `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM` (10) rather than the 100 the full-refresh
-    group sends.
-
-    The deprecated `page_size_for_large_streams` no longer changes it. The key left the spec in
-    1.0.1, so a config still carrying it was set through the API or Terraform, and a null there
-    used to be the case that reached GitHub as `per_page=None`. Both are inert now."""
+def test_stream_page_size_is_used_on_initial_and_linked_requests(
+    stream_name, endpoint, page_size_config, rate_limit_mock_response, requests_mock
+):
+    """Review comments use 100 to avoid GitHub timeouts; the deprecated config key remains inert."""
     config = _config("docker/compose", **page_size_config)
     _mock_repository_resolution(requests_mock, "docker/compose")
-    requests_mock.get(f"https://api.github.com/repos/docker/compose/{endpoint}", json=[])
+    requests_mock.get(
+        f"https://api.github.com/repos/docker/compose/{endpoint}",
+        [
+            {
+                "json": [{"id": 1, "updated_at": "2022-03-01T00:00:00Z"}],
+                "headers": _next_link(f"https://api.github.com/repos/docker/compose/{endpoint}?page=2"),
+            },
+            {"json": [{"id": 2, "updated_at": "2022-03-02T00:00:00Z"}]},
+        ],
+    )
 
-    _, _, _, error = _read(config, stream_name)
+    records, statuses, states, error = _read(config, stream_name)
 
     assert error is None
-    assert [request.qs["per_page"] for request in _listings(requests_mock, endpoint)] == [["10"]]
+    assert [record["id"] for record in records] == [1, 2]
+    assert statuses[-1] == "COMPLETE"
+    listings = _listings(requests_mock, endpoint)
+    assert [request.path for request in listings] == [f"/repos/docker/compose/{endpoint}"] * 2
+    page_size = "100" if stream_name == "review_comments" else "10"
+    query = {"per_page": [page_size], "since": [_START_DATE.lower()]}
+    if stream_name == "issues":
+        query.update(state=["all"], sort=["updated"], direction=["asc"])
+    assert [request.qs for request in listings] == [
+        query,
+        {**query, "page": ["2"]},
+    ]
+    assert states[-1].stream.stream_state.states == [
+        {"partition": {"repository": "docker/compose"}, "cursor": {"updated_at": "2022-03-02T00:00:00Z"}}
+    ]
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
@@ -313,9 +332,10 @@ def test_pagination_follows_next_link_with_after_cursor(stream_name, endpoint, r
     The whole next URL must be followed, with `after` decoded exactly once."""
     config = _config("docker/compose")
     _mock_repository_resolution(requests_mock, "docker/compose")
+    page_size = "100" if stream_name == "review_comments" else "10"
     next_url = (
         f"https://api.github.com/repositories/1/{endpoint}"
-        "?per_page=10&state=all&sort=updated&direction=asc&since=2022-02-02T10%3A10%3A01Z"
+        f"?per_page={page_size}&state=all&sort=updated&direction=asc&since=2022-02-02T10%3A10%3A01Z"
         "&page={page}&after={cursor}"
     )
     after_cursors = {
@@ -363,7 +383,7 @@ def test_pagination_follows_next_link_with_after_cursor(stream_name, endpoint, r
         assert set(query["state"]) == {"all"}
         assert set(query["sort"]) == {"updated"}
         assert set(query["direction"]) == {"asc"}
-        assert set(query["per_page"]) == {"10"}
+        assert set(query["per_page"]) == {page_size}
 
 
 def test_issues_sends_the_legacy_base_params(rate_limit_mock_response, requests_mock):
