@@ -5,7 +5,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 ## Upgrading to 1.0.0
 
 :::danger Risk of permanent data loss for `calls`
-Aircall's API returns only the last six months of calls. Clearing `calls`, or switching it from an append mode to any Overwrite mode, deletes every older call for good: a re-sync can't restore it. Aircall Support can provide a one-time export of older calls. Copy the `calls` table before you do either.
+Aircall's API returns only the last six months of calls. Clearing `calls`, or switching it from an append mode to any Overwrite mode, deletes every older call for good: a re-sync can't restore it. Copy the `calls` table before you do either.
 :::
 
 Version 1.0.0 adds primary keys for deduplication, makes `numbers` and `teams` full refresh only, and declares the types the [Aircall API reference](https://developers.aircall.io/api-references/) documents. The values Aircall returns don't change.
@@ -37,7 +37,7 @@ On **ClickHouse**, converting an existing `users.created_at` column to a timesta
 
 1. Upgrade the connector to 1.0.0.
 2. In the connection, open **Schema** and select **Refresh source schema**, then review and save. If Airbyte recommends clearing or refreshing streams when you save, save without clearing `calls` when it uses an append mode: a refresh re-reads six months of calls into the table. Connections that propagate field changes automatically apply the type changes on their own, but pause until you review the schema if a deduplicated stream's primary key changes.
-3. `numbers` and `teams` that used an Incremental mode (after the refresh they can show `Full Refresh | Append`): select `Full Refresh | Overwrite` or `Full Refresh | Overwrite + Deduped`. The next sync replaces the table, duplicates included.
+3. `numbers` and `teams` that used an Incremental mode (after the refresh they can show `Full Refresh | Append`): select `Full Refresh | Overwrite` or `Full Refresh | Overwrite + Deduped`. The next sync replaces the table, duplicates included, and drops numbers and teams that were deleted in Aircall: copy the table first if you need them. If `numbers` or `teams` already used `Full Refresh | Append` to keep snapshots, you can leave them there; switching them to an Overwrite mode deletes the earlier snapshots.
 4. Streams in `Full Refresh | Overwrite` or `Full Refresh | Overwrite + Deduped`: nothing else to do. The next sync rebuilds the table with the new keys and types. On MSSQL the columns are changed in place instead; see the MSSQL note below.
 5. `calls` in any append mode (`Full Refresh | Append`, `Incremental | Append` or `Incremental | Append + Deduped`): the table can hold calls older than six months. Follow [If you keep an append-mode calls table](#if-you-keep-an-append-mode-calls-table) for your destination.
 6. To deduplicate `calls` with the new key, select `Incremental | Append + Deduped`: it keeps every row. Don't switch an append-mode `calls` table to an Overwrite mode (see the warning above). For `contacts` and `webhooks`, `Full Refresh | Overwrite + Deduped` deduplicates; on an append-mode table it also drops records that were deleted in Aircall.
