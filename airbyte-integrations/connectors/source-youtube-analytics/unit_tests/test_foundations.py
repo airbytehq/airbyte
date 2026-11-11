@@ -294,6 +294,34 @@ def test_expired_refresh_token_tells_the_user_to_re_authenticate(config):
     assert "Refresh token is invalid or expired" in status.message
 
 
+@pytest.mark.parametrize("csv_body", ["date,channel_id,views\n20261016,channel-1,3\n", "date,channel_id,views\n"])
+def test_check_uses_available_basic_reports_instead_of_unavailable_annotations(config, csv_body: str):
+    with requests_mock.Mocker(case_sensitive=True) as mocker:
+        _register_token(mocker)
+        mocker.get(
+            f"{_API}/jobs",
+            json={
+                "jobs": [
+                    {"id": "annotations-job", "reportTypeId": "channel_annotations_a1"},
+                    {"id": _JOB_ID, "reportTypeId": _STREAM},
+                ]
+            },
+        )
+        annotations = mocker.get(f"{_API}/jobs/annotations-job/reports", json={})
+        basic = mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-18T00:00:00Z")]})
+        download = mocker.get(_download_url("r1"), text=csv_body)
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+
+    assert status.status == Status.SUCCEEDED, status.message
+    assert basic.call_count == 1
+    assert basic.last_request.qs == {"createdAfter": ["1990-01-01T00:00:00.000000Z"]}
+    assert download.call_count == 1
+    assert download.last_request.qs == {"alt": ["media"]}
+    assert not annotations.called
+    assert not any(request.method == "POST" and request.path == "/v1/jobs" for request in mocker.request_history)
+
+
 @pytest.mark.parametrize("stream", _EMPTY_STREAMS)
 def test_empty_stream_with_header_only_report_reads_cleanly(config, stream):
     """These streams have no rows for the CI channel; a header-only report file yields no records and no error."""
