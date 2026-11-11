@@ -23,11 +23,7 @@ _REQUEST = HttpRequest(
 def test_rate_limit_retry_contract(monkeypatch: pytest.MonkeyPatch, recovers: bool) -> None:
     monkeypatch.setattr("time.sleep", lambda seconds: None)
     rate_limited = HttpResponse(body=json.dumps({"error": "Too Many Requests"}), status_code=429)
-    responses = (
-        [rate_limited, HttpResponse(body=json.dumps({"data": [{"id": 101}]}), status_code=200)]
-        if recovers
-        else rate_limited
-    )
+    responses = [rate_limited, HttpResponse(body=json.dumps({"data": [{"id": 101}]}), status_code=200)] if recovers else rate_limited
     catalog = CatalogBuilder().with_stream("public_credentials", SyncMode.full_refresh).build()
 
     with HttpMocker() as http_mocker:
