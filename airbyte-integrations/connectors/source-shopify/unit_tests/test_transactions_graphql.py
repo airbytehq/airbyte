@@ -12,9 +12,12 @@ from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(
+    order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str, order_updated_at: str = None
+) -> str:
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
+        f'"order_updated_at":{json.dumps(order_updated_at)},'
         f'"order_created_at":"{order_created_at}","transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
         f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
@@ -85,7 +88,34 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
         stream_state_cache.cached_state.pop("transactions", None)
 
     assert all("order_created_at" not in record for record in records)
+    assert all("order_updated_at" not in record for record in records)
     return stream, records
+
+
+@pytest.mark.parametrize(
+    "order_updated_at, expected_ids",
+    [
+        ("2026-09-11T06:27:00Z", [1001]),
+        ("2026-09-11T05:49:43Z", [1001]),
+        ("2026-09-11T04:30:00Z", []),
+        (None, []),
+    ],
+)
+def test_transactions_graphql_emits_existing_refund_status_updates(
+    requests_mock, bulk_job_completed_response, auth_config, order_updated_at, expected_ids
+) -> None:
+    order = json.loads(_order_jsonl(1, "2026-09-11T04:00:00Z", 1001, "2026-09-11T05:07:00Z", order_updated_at))
+    order["transactions"][0]["kind"] = "REFUND"
+    _, records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [json.dumps(order)],
+        state_value="2026-09-11T05:49:43+00:00",
+    )
+
+    assert [record["id"] for record in records] == expected_ids
+    assert all(record["kind"] == "REFUND" and record["status"] == "SUCCESS" for record in records)
 
 
 @pytest.mark.parametrize(
@@ -136,14 +166,14 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
     auth_config,
 ) -> None:
     # the transaction predates both the saved state and its order, the order is newer than the saved state
-    predating_order = _order_jsonl(1, "2026-09-11T06:27:00Z", 1001, "2026-09-11T05:07:00Z")
+    predating_order = _order_jsonl(1, "2026-09-11T06:27:00Z", 1001, "2026-09-11T05:07:00Z", "2026-09-11T06:27:00Z")
     # a later transaction on another order, created after the first order
-    newer_order = _order_jsonl(2, "2026-09-11T06:30:00Z", 1002, "2026-09-11T06:31:00Z")
+    newer_order = _order_jsonl(2, "2026-09-11T06:30:00Z", 1002, "2026-09-11T06:31:00Z", "2026-09-11T06:31:00Z")
     syncs = [
         ([predating_order], [1001]),
         # the cursor has not moved past the first order's createdAt yet -> re-emitted
         ([predating_order, newer_order], [1001, 1002]),
-        # the cursor moved past the first order's createdAt -> no longer emitted
+        # the cursor moved past the first order's createdAt and updatedAt -> no longer emitted
         ([predating_order, newer_order], [1002]),
     ]
 
