@@ -1,0 +1,34 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-dc-hub
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.27.0@sha256:b68768a6ef880500de7b3b228f60045126e45b0f336e0bc6ff8a361d95162f69
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 69d50e97-19af-4a70-8e51-a6730100bc2a
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-dc-hub
+  githubIssueLabel: source-dc-hub
+  icon: icon.svg
+  license: ELv2
+  name: DC Hub
+  releaseDate: 2026-11-11
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dc-hub
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
