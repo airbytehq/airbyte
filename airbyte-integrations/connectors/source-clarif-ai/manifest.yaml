@@ -57,6 +57,8 @@ definitions:
             page_size: 20
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -128,6 +130,8 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -198,6 +202,8 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -507,6 +513,14 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/app_concepts"
+  truncate_modified_at_to_microseconds:
+    type: AddFields
+    condition: "{{ (record.get('modified_at') or '') | length > 27 }}"
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - modified_at
+        value: "{{ (record.get('modified_at') or '')[:26] ~ 'Z' }}"
   base_requester:
     type: HttpRequester
     url_base: https://api.clarifai.com
