@@ -31,11 +31,12 @@ Connections syncing `accounts`, `issues`, `issue_messages` or `custom_fields` ar
 
 ### Upgrade steps
 
-1. Upgrade the connector to 1.0.0.
-2. Refresh the source schema and accept the changes.
-3. Destinations that can't change a column's type in place, such as S3 Data Lake and other Iceberg destinations, must clear the affected streams. Back up the affected tables first, before clearing. Before clearing `issues` or `issue_messages`, set **Start Date** (`start_date`) early enough to cover the history you need. The default only re-reads the last 30 days.
-4. If your destination is ClickHouse, existing values in the changed timestamp columns may be set to null during the upgrade, depending on your ClickHouse version. With **Full Refresh | Overwrite**, `accounts` and `custom_fields` are fully rewritten on the next sync. For `issues` and `issue_messages`, after upgrading: back up the tables, set **Start Date** (`start_date`) early enough to cover the history you need, then clear `issues` and `issue_messages` and sync again. Optionally, before upgrading, check your server by running `SELECT CAST('2026-01-10T12:00:00Z' AS Nullable(DateTime64(3)))`. If it returns NULL, your server is affected.
-5. Sync the connection.
+1. If your destination is ClickHouse, you can check your server before upgrading by running `SELECT CAST('2026-01-10T12:00:00Z' AS Nullable(DateTime64(3)))`. If it returns NULL, your server is affected, and you'll need the ClickHouse step below.
+2. Upgrade the connector to 1.0.0.
+3. Refresh the source schema and accept the changes.
+4. Destinations that can't change a column's type in place, such as S3 Data Lake and other Iceberg destinations, must clear the affected streams. Back up the affected tables first, before clearing. Before clearing `issues` or `issue_messages`, set **Start Date** (`start_date`) early enough to cover the history you need. The default only re-reads the last 30 days.
+5. If your destination is ClickHouse, existing values in the changed timestamp columns may be set to null during the upgrade, depending on your ClickHouse version. With **Full Refresh | Overwrite**, `accounts` and `custom_fields` are fully rewritten on the next sync. For `issues` and `issue_messages`, after upgrading: back up the tables, set **Start Date** (`start_date`) early enough to cover the history you need, then clear `issues` and `issue_messages` and sync again.
+6. Sync the connection.
 
 With **Full Refresh | Overwrite**, `accounts` and `custom_fields` are fully rewritten on the next sync. With **Full Refresh | Append**, rows synced before the upgrade stay next to the new ones until you clear the stream. `issue_messages` uses full refresh but only re-reads messages for issues updated since **Start Date**, so it is limited like `issues`. `issues` is incremental. Rows synced before the upgrade keep nulled tags until the stream is cleared and synced again. To replace those tags, back up the table, set **Start Date** before the history you need, then clear `issues` and sync again.
 
