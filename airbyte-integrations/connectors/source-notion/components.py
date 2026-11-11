@@ -59,10 +59,12 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            if self._incremental_record_filter is None or next(
-                self._incremental_record_filter.filter_records(
-                    [stream_data.data], stream_state=self.state, stream_slice=stream_slice
-                ),
-                None,
-            ) is not None:
+            if (
+                self._incremental_record_filter is None
+                or next(
+                    self._incremental_record_filter.filter_records([stream_data.data], stream_state=self.state, stream_slice=stream_slice),
+                    None,
+                )
+                is not None
+            ):
                 yield stream_data
