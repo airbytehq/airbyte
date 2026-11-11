@@ -9,7 +9,8 @@ This page contains the setup guide and reference information for the [Google Cal
 ## Prerequisites
 
 - A Google account with access to the calendars you want to sync.
-- A Google Cloud project with the Google Calendar API enabled and OAuth credentials (Client ID, Client Secret, and a Refresh Token). See the setup steps below.
+- **Airbyte Cloud:** sign in with Google during setup using Airbyte's OAuth app, or use your own OAuth app as described below.
+- **Airbyte Open Source:** a Google Cloud project with the Google Calendar API enabled and OAuth credentials (Client ID, Client Secret, and a Refresh Token). See the setup steps below.
 - (Optional) A specific Calendar ID if you only want to sync `events`, `acl`, and `freebusy` from one calendar.
 - (Optional) A Start Date to limit event modification times on Full Refresh, initial Incremental syncs, and full re-reads.
 
@@ -17,7 +18,9 @@ This page contains the setup guide and reference information for the [Google Cal
 
 ### Step 1: Obtain Google credentials
 
-To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Refresh Token** from your own Google Cloud project:
+On Airbyte Cloud, choose **Authenticate via Google (OAuth)** in Step 2 to sign in using Airbyte's OAuth app; you do not need to create your own project. That flow requests these six scopes: `calendar.calendarlist.readonly`, `calendar.calendars.readonly`, `calendar.events.readonly`, `calendar.settings.readonly`, `calendar.freebusy`, and `calendar.acls.readonly` (each prefixed with `https://www.googleapis.com/auth/`). Google lists each permission separately on its consent screen: allow all of them. A stream whose permission was left unchecked fails with a missing-scope error until you re-authenticate and allow it.
+
+For Airbyte Open Source, or to use **Authenticate with custom app (client ID / secret)** on Cloud, obtain a **Client ID**, **Client secret**, and **Refresh token** from your own Google Cloud project:
 
 1. Enable the Google Calendar API for your project in the [API Library](https://console.cloud.google.com/apis/library/calendar-json.googleapis.com).
 2. Configure the [OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent); Google does not create an OAuth client until the project has one. For a Google Workspace account in a Google Cloud organization, choose **Internal**. Otherwise choose **External** and set the publishing status to **In production**: Google expires refresh tokens issued to an External app in **Testing** after 7 days, and syncs then fail with an authentication error. Because the Calendar scopes are sensitive, an unverified app in production shows a "Google hasn't verified this app" warning when you authorize it; you can continue past it for your own account. Add the `calendar.readonly` and `calendar.acls.readonly` scopes.
@@ -36,7 +39,7 @@ To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Re
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Google Calendar** from the Source type dropdown.
 4. Enter a name for the connector.
-5. Enter the **Client ID**, **Client secret**, and **Refresh token** you obtained in Step 1.
+5. Under **Authentication**, choose **Authenticate via Google (OAuth)** and authorize your Google account. Alternatively, choose **Authenticate with custom app (client ID / secret)** and enter your own app's **Client ID**, **Client secret**, and **Refresh token** from Step 1.
 6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync `events`, `acl`, and `freebusy` from only that calendar; `calendarlist` and `calendars` ignore this setting. The calendar does not need to appear in the account's calendar list; it is read directly. The value `primary` is accepted for the account's primary calendar. Leave empty to sync every calendar in the account's calendar list, hidden calendars included.
 7. (Optional) For **Start Date**, enter the earliest event `updated` timestamp in the format `YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`. When unset, the cursor starts at `2000-01-01T00:00:00Z`. On an initial sync or full re-read, the connector sends the filter server-side only for a date within the last 21 days; otherwise it reads the calendar and drops older events itself (see [Events sync behavior](#events-sync-behavior)).
 8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
@@ -52,7 +55,7 @@ To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Re
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Google Calendar** from the Source type dropdown.
 4. Enter a name for the connector.
-5. Enter the **Client ID**, **Client secret**, and **Refresh token** you obtained in Step 1 — a refresh token issued by *your own* Google Cloud OAuth app with the `calendar.readonly` and `calendar.acls.readonly` scopes, plus that app's client ID and client secret. Without `calendar.acls.readonly`, the `acl` stream fails with a configuration error — generate a new refresh token that includes the scope, or deselect the stream.
+5. Under **Authentication**, choose **Authenticate with custom app (client ID / secret)** and enter the **Client ID**, **Client secret**, and **Refresh token** from Step 1 — a refresh token issued by *your own* Google Cloud OAuth app with the `calendar.readonly` and `calendar.acls.readonly` scopes, plus that app's client ID and client secret. Without `calendar.acls.readonly`, the `acl` stream fails with a configuration error — generate a new refresh token that includes the scope, or deselect the stream.
 6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync `events`, `acl`, and `freebusy` from only that calendar, or `primary` for the account's primary calendar; `calendarlist` and `calendars` ignore this setting. The calendar does not need to appear in the account's calendar list; it is read directly. Leave empty to sync every calendar in the account's calendar list, hidden calendars included.
 7. (Optional) For **Start Date**, enter the earliest event `updated` timestamp (`YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`). When unset, the cursor starts at `2000-01-01T00:00:00Z`. On an initial sync or full re-read, the connector sends the filter server-side only for a date within the last 21 days; otherwise it reads the calendar and drops older events itself (see [Events sync behavior](#events-sync-behavior)).
 8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
@@ -60,7 +63,7 @@ To authenticate with OAuth you need a **Client ID**, **Client Secret**, and **Re
 
 <!-- /env:oss -->
 
-For configuration files, the required fields are `client_id`, `client_secret`, and `client_refresh_token_2`. The optional fields are `calendarid`, `start_date`, and `num_workers` (default 3, range 1–10).
+For configuration files, `credentials` is required and contains `auth_type` (`oauth2.0` or `manual`), `client_id`, `client_secret`, and `refresh_token`. The field paths are `credentials.client_id`, `credentials.client_secret`, and `credentials.refresh_token`; the OAuth flow fills these fields for the Google option. Custom-app refresh tokens can use the six granular scopes listed above instead of `calendar.readonly` plus `calendar.acls.readonly`; the ACL scope is needed only for `acl`. Saved flat `client_id`/`client_secret`/`client_refresh_token_2` configurations are rewritten to `credentials` with `auth_type: manual` on their first run on version 1.1.0 or later. The rewrite happens inside the connector, while the Airbyte API and Terraform check new and updated configurations against the 1.1.0 spec before saving them, so configurations sent that way (including the next `apply` of an existing Terraform resource) must use the `credentials` fields. Downgrading a connection below 1.1.0 after that first run requires restoring the flat fields by hand. The optional fields remain `calendarid`, `start_date`, and `num_workers` (default 3, range 1–10).
 
 <HideInUI>
 
@@ -103,7 +106,7 @@ Expand to see details about Google Calendar connector limitations and troublesho
 - **API quota:** the connector uses a moving-window budget of 500 requests/minute, including POST requests, and retries `rateLimitExceeded` / `userRateLimitExceeded` responses and HTTP 429 with exponential backoff. `quotaExceeded` / `dailyLimitExceeded` errors other than HTTP 429 fail the sync as transient errors until the quota resets; they do not require a configuration change. Project quotas can vary; see [Google's quota documentation](https://developers.google.com/calendar/api/guides/quota).
 - **Stale cursor:** Google rejects an `updatedMin` that is too far in the past (measured at 29 days; the limit is undocumented). When the saved cursor is older than 21 days, the connector clears it and re-reads every event (bounded by Start Date when set) instead of failing. Should Google still return `410 updatedMinTooLongAgo`, it is treated as a transient error: the connector re-reads automatically once the saved cursor is more than 21 days old, and you can clear the `events` stream to re-read sooner; a `410` for a deleted calendar or `fullSyncRequired` is a configuration error.
 - **`calendars` returns calendar resources, not list entries:** it returns each listed calendar the account can read (`minAccessRole=reader`), hidden calendars included, with fields such as `kind`, `etag`, `id`, `summary`, `description`, `location`, `timeZone`, `conferenceProperties`, `dataOwner`, `autoAcceptInvitations` and `labelProperties`. The per-user list fields (`accessRole`, colors, reminders, `primary`, `selected`) stay in `calendarlist`. This stream reads the calendar list regardless of **Calendar Id**.
-- **`acl` scope and ownership:** the `acl` stream lists a calendar's sharing rules and needs the `calendar.acls.readonly` OAuth scope (or `calendar.acls` / `calendar`); without it the stream fails with a configuration error, so generate a new refresh token for your OAuth client that includes the scope and paste it into **Refresh token**, or deselect the stream. If your connection adds new streams automatically, deselect `acl` until the token has the scope. Google shows sharing rules only to a calendar's owner, so calendars the account does not own are skipped.
+- **`acl` scope and ownership:** the `acl` stream lists a calendar's sharing rules and needs the `calendar.acls.readonly` OAuth scope (or `calendar.acls` / `calendar`); without it the stream fails with a configuration error, so re-authenticate and allow every requested permission, or generate a new refresh token for your OAuth client that includes the scope and paste it into **Refresh token**, or deselect the stream. If your connection adds new streams automatically, deselect `acl` until the token has the scope. Google shows sharing rules only to a calendar's owner, so calendars the account does not own are skipped.
 - **`freebusy` is a point-in-time window:** it lists busy blocks from 30 days ago to 45 days ahead, recomputed on every sync; `start_date` does not apply to it. A calendar Google cannot compute free/busy for is logged and contributes no rows, so it looks the same as a free calendar in the destination. It is a snapshot, not a historical record.
 - **`settings.value` is always a string**, including for numeric-looking settings.
 - **`colors` is a singleton:** it returns a single record containing `calendar` and `event` color-palette objects.
@@ -112,6 +115,7 @@ Expand to see details about Google Calendar connector limitations and troublesho
 ### Troubleshooting
 
 - If syncs start failing with a rejected refresh token (`invalid_grant`) about a week after setup, the OAuth app's consent screen is probably an **External** app in **Testing**, whose refresh tokens expire after 7 days. Set its publishing status to **In production**, generate a new refresh token, and paste it into **Refresh token**.
+- If a sync fails with a missing OAuth scope error, a permission was left unchecked on Google's consent screen, or the refresh token was issued without one of the scopes in Step 1. Re-authenticate and allow every requested permission, generate a new refresh token with the required scopes, or deselect the stream.
 - Check out common troubleshooting issues for the Google Calendar source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
@@ -147,6 +151,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 1.1.0 | 2026-11-10 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative Google OAuth with granular read-only scopes and a custom-app authentication option; automatically migrate saved flat credentials (downgrading below 1.1.0 then needs them restored by hand); report a missing OAuth scope as a configuration error. |
 | 1.0.1 | 2026-11-10 | [91570](https://github.com/airbytehq/airbyte/pull/91570) | Update dependencies |
 | 1.0.0 | 2026-11-06 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, read `events`/`acl`/`freebusy` from every calendar when `calendarid` is empty, change the `events` primary key to `[calendar_id, id]`, return calendar resources from `calendars`, change the `colors` primary key to `kind`, and type date and date-time fields (breaking, see the [migration guide](/integrations/sources/google-calendar-migrations)) |
 | 0.1.4 | 2026-11-03 | [90589](https://github.com/airbytehq/airbyte/pull/90589) | Update dependencies |

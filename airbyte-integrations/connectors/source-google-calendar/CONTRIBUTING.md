@@ -4,7 +4,7 @@ Manifest-only declarative connector built on `source-declarative-manifest`. All 
 
 ## Authentication
 
-Required flat OAuth fields (`client_id`, `client_secret`, `client_refresh_token_2`) — a refresh token issued by your own Google Cloud OAuth app with the `calendar.readonly` and `calendar.acls.readonly` scopes, plus that app's client ID and secret. Without `calendar.acls.readonly` the `acl` stream fails with a configuration error; generate a new refresh token with the scope or deselect `acl`. There is no built-in OAuth sign-in button.
+Two options under `credentials`: `auth_type: oauth2.0` ("Authenticate via Google (OAuth)" — backed by `advanced_auth` for Airbyte Cloud) and `auth_type: manual` ("Authenticate with custom app (client ID / secret)" — your own Google Cloud OAuth app). Both require `credentials.client_id`, `credentials.client_secret`, and `credentials.refresh_token`. Advanced auth requests `calendar.calendarlist.readonly`, `calendar.calendars.readonly`, `calendar.events.readonly`, `calendar.settings.readonly`, `calendar.freebusy`, and `calendar.acls.readonly`. Custom-app tokens may use the broader `calendar.readonly` instead of the five non-ACL scopes; `calendar.acls.readonly` is needed only for `acl`. Without it, `acl` fails with a configuration error; generate a scoped refresh token or deselect `acl`. `config_normalization_rules` migrates flat `client_id`/`client_secret`/`client_refresh_token_2` into the custom-app option (`auth_type: manual`), preserving the original issuing app.
 
 ## Design choices
 
