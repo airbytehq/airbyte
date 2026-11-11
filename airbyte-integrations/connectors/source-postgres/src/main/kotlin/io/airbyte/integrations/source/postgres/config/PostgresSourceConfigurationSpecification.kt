@@ -307,57 +307,114 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
 }
 
 /**
- * The options of `tunnel_method` as the connection section shows them: the first choice of the
- * form, "Direct connection" or an SSH tunnel, on radio tiles.
+ * `tunnel_method` as the connection section shows it, the first choice of the form: two radio
+ * tiles, "Direct connection" and "SSH tunnel", the second holding an "SSH authentication" choice
+ * between an SSH key and a password.
  *
- * The JSON is the CDK's [SshTunnelMethodConfiguration], untouched: same key, same three
- * discriminator values, same fields, so stored configurations stay valid. Only the title and the
- * description of each option are replaced with the wording of the form. This copy belongs on the
- * CDK type, shared by every database connector, once the form design is settled.
+ * The saved configuration does not change. The CDK's [SshTunnelMethodConfiguration] is a flat union
+ * of three objects told apart by `tunnel_method` (`NO_TUNNEL`, `SSH_KEY_AUTH`,
+ * `SSH_PASSWORD_AUTH`), and this schema accepts exactly those three objects; it only describes them
+ * in two levels:
+ * - the "SSH tunnel" option declares what both SSH objects share, the jump server's host, port and
+ *   user, and `tunnel_method` as one of the two SSH values, titled "SSH authentication";
+ * - its nested `oneOf` has one branch per value, each adding the field only that value needs:
+ *   `ssh_key` or `tunnel_user_password`.
  *
- * The form mock shows a single "SSH tunnel" tile with an "SSH authentication" toggle inside. The
- * two SSH options differ in their last field only (`ssh_key` or `tunnel_user_password`), so they
- * stay two options here and folding them into one tile is up to the form.
+ * Everything is derived from the schema the CDK generates for the type, so a field added there
+ * shows up here: what the two SSH objects have in common goes to the tile, the rest to the branch.
+ * The wording of the tiles belongs on the CDK type, shared by every database connector, once the
+ * form design is settled.
  */
 class ConnectionMethodOptionsSupplier : Supplier<JsonNode> {
     override fun get(): JsonNode {
-        val options: JsonNode =
+        val cdkOptions: Map<String, ObjectNode> =
             ValidatedJsonUtils.generateAirbyteJsonSchema(SshTunnelMethodConfiguration::class.java)
                 .deepCopy<JsonNode>()["oneOf"]
-        for (option in options) {
-            val method: String = option["properties"]["tunnel_method"]["enum"].single().asText()
-            val copy: OptionCopy = COPY.getValue(method)
-            (option as ObjectNode).put("title", copy.title).put("description", copy.description)
-        }
-        return Jsons.objectNode().set("oneOf", options)
+                .associate { discriminator(it).single() to it as ObjectNode }
+        val direct: ObjectNode = cdkOptions.getValue(NO_TUNNEL)
+        direct.put("title", "Direct connection")
+        direct.put(
+            "description",
+            "Airbyte connects to the database host directly. On Airbyte Cloud, allow Airbyte's " +
+                "IP addresses in your database firewall.",
+        )
+        val sshTunnel: ObjectNode =
+            sshTunnel(
+                Branch(
+                    cdkOptions.getValue(SSH_KEY_AUTH),
+                    "SSH key",
+                    "Airbyte logs into the jump server with an SSH private key.",
+                ),
+                Branch(
+                    cdkOptions.getValue(SSH_PASSWORD_AUTH),
+                    "Password",
+                    "Airbyte logs into the jump server with the SSH user's password.",
+                ),
+            )
+        return Jsons.objectNode().set("oneOf", Jsons.arrayNode().add(direct).add(sshTunnel))
     }
 
-    private data class OptionCopy(val title: String, val description: String)
+    /** One CDK option which becomes a branch of the "SSH authentication" choice. */
+    private data class Branch(val cdkOption: ObjectNode, val title: String, val description: String)
+
+    private fun sshTunnel(vararg branches: Branch): ObjectNode {
+        val first: ObjectNode = branches.first().cdkOption
+        // A field belongs to the tile when every SSH object declares it, identically.
+        val shared: List<String> =
+            first["properties"].fieldNames().asSequence().toList().filter { name: String ->
+                name != DISCRIMINATOR &&
+                    branches.all { it.cdkOption["properties"][name] == first["properties"][name] }
+            }
+        val tile: ObjectNode = Jsons.objectNode()
+        tile.put("title", "SSH tunnel")
+        tile.put("type", "object")
+        tile.put("additionalProperties", true)
+        tile.put(
+            "description",
+            "Your database is in a private network. Airbyte connects through a jump server it " +
+                "can reach, as an SSH user of that server.",
+        )
+        val tileProperties: ObjectNode = tile.putObject("properties")
+        val authentication: ObjectNode = tileProperties.putObject(DISCRIMINATOR)
+        authentication.put("type", "string")
+        authentication.put("title", "SSH authentication")
+        authentication.put("description", "How Airbyte logs into the jump server.")
+        val methods: List<String> = branches.map { discriminator(it.cdkOption).single() }
+        val methodValues = authentication.putArray("enum")
+        methods.forEach { methodValues.add(it) }
+        authentication.put("default", methods.first())
+        authentication.put("order", 0)
+        shared.forEach { tileProperties.set<JsonNode>(it, first["properties"][it]) }
+        val tileRequired = tile.putArray("required").add(DISCRIMINATOR)
+        required(first).filter { it in shared }.forEach { tileRequired.add(it) }
+        val choice = tile.putArray("oneOf")
+        for (branch in branches) {
+            val option: ObjectNode = choice.addObject()
+            option.put("title", branch.title)
+            option.put("type", "object")
+            option.put("additionalProperties", true)
+            option.put("description", branch.description)
+            val properties: ObjectNode = option.putObject("properties")
+            branch.cdkOption["properties"].properties().forEach { (name: String, schema: JsonNode)
+                ->
+                if (name !in shared) properties.set<JsonNode>(name, schema)
+            }
+            val optionRequired = option.putArray("required")
+            required(branch.cdkOption).filterNot { it in shared }.forEach { optionRequired.add(it) }
+        }
+        return tile
+    }
+
+    private fun discriminator(option: JsonNode): List<String> =
+        option["properties"][DISCRIMINATOR]["enum"].map { it.asText() }
+
+    private fun required(option: JsonNode): List<String> = option["required"].map { it.asText() }
 
     companion object {
-        private const val SSH_TUNNEL =
-            "Your database is in a private network. Airbyte connects through a jump server " +
-                "it can reach"
-
-        private val COPY: Map<String, OptionCopy> =
-            mapOf(
-                "NO_TUNNEL" to
-                    OptionCopy(
-                        "Direct connection",
-                        "Airbyte connects to the database host directly. On Airbyte Cloud, " +
-                            "allow Airbyte's IP addresses in your database firewall.",
-                    ),
-                "SSH_KEY_AUTH" to
-                    OptionCopy(
-                        "SSH tunnel with key authentication",
-                        "$SSH_TUNNEL, and logs into it with an SSH key.",
-                    ),
-                "SSH_PASSWORD_AUTH" to
-                    OptionCopy(
-                        "SSH tunnel with password authentication",
-                        "$SSH_TUNNEL, and logs into it with a password.",
-                    ),
-            )
+        private const val DISCRIMINATOR = "tunnel_method"
+        private const val NO_TUNNEL = "NO_TUNNEL"
+        private const val SSH_KEY_AUTH = "SSH_KEY_AUTH"
+        private const val SSH_PASSWORD_AUTH = "SSH_PASSWORD_AUTH"
     }
 }
 

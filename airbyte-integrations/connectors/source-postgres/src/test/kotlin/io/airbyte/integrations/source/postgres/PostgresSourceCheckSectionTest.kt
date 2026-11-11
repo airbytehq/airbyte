@@ -5,10 +5,16 @@
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.networknt.schema.JsonSchema
+import com.networknt.schema.JsonSchemaFactory
+import com.networknt.schema.SpecVersion
 import io.airbyte.cdk.check.CloudHostCheck
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.command.FeatureFlag
+import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import java.net.ServerSocket
 import org.junit.jupiter.api.Assertions
@@ -87,31 +93,57 @@ class PostgresSourceCheckSectionTest {
         val method: JsonNode = spec["properties"]["tunnel_method"]
         Assertions.assertEquals("Connection method", method["title"].asText())
         Assertions.assertEquals("radio", method["display_type"].asText())
-        // The tiles carry the wording of the form; the JSON under them is the CDK's, unchanged.
+        // Two tiles, as in the form mock.
         Assertions.assertEquals(
-            listOf(
-                "Direct connection" to "NO_TUNNEL",
-                "SSH tunnel with key authentication" to "SSH_KEY_AUTH",
-                "SSH tunnel with password authentication" to "SSH_PASSWORD_AUTH",
-            ),
-            method["oneOf"].map {
-                it["title"].asText() to it["properties"]["tunnel_method"]["enum"].single().asText()
-            },
+            listOf("Direct connection", "SSH tunnel"),
+            method["oneOf"].map { it["title"].asText() },
+        )
+        val direct: JsonNode = method["oneOf"][0]
+        val sshTunnel: JsonNode = method["oneOf"][1]
+        Assertions.assertEquals(listOf("NO_TUNNEL"), tunnelMethods(direct))
+        Assertions.assertEquals(listOf("tunnel_method"), names(direct["properties"]))
+        // The SSH tunnel tile: the authentication choice first, then what both SSH methods share.
+        Assertions.assertEquals(
+            listOf("tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user"),
+            names(sshTunnel["properties"]),
         )
         Assertions.assertEquals(
+            listOf("tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user"),
+            sshTunnel["required"].map(JsonNode::asText),
+        )
+        val authentication: JsonNode = sshTunnel["properties"]["tunnel_method"]
+        Assertions.assertEquals("SSH authentication", authentication["title"].asText())
+        Assertions.assertEquals(
+            listOf("SSH_KEY_AUTH", "SSH_PASSWORD_AUTH"),
+            tunnelMethods(sshTunnel),
+        )
+        Assertions.assertEquals("SSH_KEY_AUTH", authentication["default"].asText())
+        // One branch per authentication, each with the one field only it needs, still a secret.
+        Assertions.assertEquals(
             listOf(
-                listOf("tunnel_method"),
-                listOf("tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "ssh_key"),
-                listOf(
-                    "tunnel_method",
-                    "tunnel_host",
-                    "tunnel_port",
-                    "tunnel_user",
-                    "tunnel_user_password",
+                Triple("SSH key", listOf("SSH_KEY_AUTH"), listOf("tunnel_method", "ssh_key")),
+                Triple(
+                    "Password",
+                    listOf("SSH_PASSWORD_AUTH"),
+                    listOf("tunnel_method", "tunnel_user_password"),
                 ),
             ),
-            method["oneOf"].map { it["required"].map(JsonNode::asText) },
+            sshTunnel["oneOf"].map {
+                Triple(
+                    it["title"].asText(),
+                    tunnelMethods(it),
+                    it["required"].map(JsonNode::asText),
+                )
+            },
         )
+        for (branch in sshTunnel["oneOf"]) {
+            Assertions.assertEquals(
+                branch["required"].map(JsonNode::asText),
+                names(branch["properties"]),
+            )
+            val secret: JsonNode = branch["properties"][branch["required"].last().asText()]
+            Assertions.assertTrue(secret["airbyte_secret"].asBoolean(), secret.toString())
+        }
         // The database host and port are fields of the section, next to the tiles and not inside
         // one: an SSH tunnel needs them as much as a direct connection does.
         val required: List<String> = spec["required"].map(JsonNode::asText)
@@ -119,6 +151,48 @@ class PostgresSourceCheckSectionTest {
         Assertions.assertTrue(
             method["oneOf"].none { it["properties"].has("host") || it["properties"].has("port") },
         )
+    }
+
+    /**
+     * The two tiles are a new description of the same saved configuration: whatever the CDK's flat
+     * three-option schema accepts or rejects, this one accepts or rejects too.
+     */
+    @Test
+    fun testSpecConnectionMethodKeepsTheSavedConfigurationFormat() {
+        val tiles: JsonSchema = schema(spec()["properties"]["tunnel_method"])
+        val flat: JsonSchema =
+            schema(
+                ValidatedJsonUtils.generateAirbyteJsonSchema(
+                    SshTunnelMethodConfiguration::class.java,
+                ),
+            )
+        val jump = """"tunnel_host":"jump.example.com","tunnel_port":22,"tunnel_user":"sshuser""""
+        val saved: List<String> =
+            listOf(
+                """{"tunnel_method":"NO_TUNNEL"}""",
+                """{"tunnel_method":"SSH_KEY_AUTH",$jump,"ssh_key":"-----BEGIN RSA PRIVATE KEY-----"}""",
+                """{"tunnel_method":"SSH_PASSWORD_AUTH",$jump,"tunnel_user_password":"secret"}""",
+            )
+        val broken: List<String> =
+            listOf(
+                """{}""",
+                """{"tunnel_method":"SSH_CERTIFICATE_AUTH",$jump}""",
+                // No secret, or the other method's secret.
+                """{"tunnel_method":"SSH_KEY_AUTH",$jump}""",
+                """{"tunnel_method":"SSH_KEY_AUTH",$jump,"tunnel_user_password":"secret"}""",
+                """{"tunnel_method":"SSH_PASSWORD_AUTH",$jump,"ssh_key":"key"}""",
+                // No jump server.
+                """{"tunnel_method":"SSH_KEY_AUTH","ssh_key":"key"}""",
+                """{"tunnel_method":"SSH_PASSWORD_AUTH","tunnel_user_password":"secret"}""",
+            )
+        for (config in saved) {
+            Assertions.assertTrue(flat.validate(Jsons.readTree(config)).isEmpty(), config)
+            Assertions.assertTrue(tiles.validate(Jsons.readTree(config)).isEmpty(), config)
+        }
+        for (config in broken) {
+            Assertions.assertFalse(flat.validate(Jsons.readTree(config)).isEmpty(), config)
+            Assertions.assertFalse(tiles.validate(Jsons.readTree(config)).isEmpty(), config)
+        }
     }
 
     @Test
@@ -239,6 +313,16 @@ class PostgresSourceCheckSectionTest {
 
     private fun spec(): JsonNode =
         CliRunner.source("spec").run().specs().single().connectionSpecification
+
+    /** The schema as the platform validates a configuration against it: JSON Schema draft-07. */
+    private fun schema(node: JsonNode): JsonSchema =
+        JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7).getSchema(node)
+
+    private fun names(properties: JsonNode): List<String> =
+        properties.fieldNames().asSequence().toList()
+
+    private fun tunnelMethods(option: JsonNode): List<String> =
+        option["properties"]["tunnel_method"]["enum"].map(JsonNode::asText)
 
     private fun check(
         configJson: String,
