@@ -8,6 +8,8 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 The Twilio REST API supports `DateCreated` filtering on many resource list endpoints. Every stream is declared in `manifest.yaml`; `components.py` only holds the schema-normalization type transformer and the state migrations.
 
+Account-nested incremental streams drop incoming per-partition cursor entries strictly older than the global cursor, falling back to the global cursor with its lookback. Equal, newer, and unparseable cursors are preserved.
+
 **Connector type:** Manifest-only, with custom components in `components.py`
 
 **Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.

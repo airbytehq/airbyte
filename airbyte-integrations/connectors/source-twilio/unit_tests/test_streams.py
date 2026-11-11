@@ -160,6 +160,46 @@ class TestTwilioStream:
 
 class TestIncrementalTwilioStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "partition_cursor,expected_lower",
+        [
+            ("2022-01-20 00:00:00Z", "2022-11-14 00:00:00Z"),
+            ("2022-11-15 00:00:00Z", "2022-11-15 00:00:00Z"),
+        ],
+        ids=["stale-partition", "newer-partition"],
+    )
+    def test_messages_partition_cursor_respects_global_state(self, requests_mock, partition_cursor, expected_lower):
+        partition = {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}}
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "states": [{"partition": partition, "cursor": {"date_sent": partition_cursor}}],
+                    "state": {"date_sent": "2022-11-14 00:00:00Z"},
+                    "use_global_cursor": False,
+                    "lookback_window": 0,
+                },
+            )
+            .build()
+        )
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        messages = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Messages.json",
+            json={"messages": [{"sid": "SM1", "date_sent": "2022-11-16T10:00:00Z"}]},
+        )
+
+        output = read_from_stream({**TEST_CONFIG, "slice_step_duration": "P1Y"}, "messages", SyncMode.incremental, state)
+
+        lower_bounds = [parse_qs(urlparse(request.url).query)["DateSent>"][0] for request in messages.request_history]
+        assert lower_bounds[0] == expected_lower
+        assert all(lower >= expected_lower for lower in lower_bounds)
+        assert [record.record.data["sid"] for record in output.records] == ["SM1"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        partition_state = next(entry for entry in final_state["states"] if entry["partition"] == partition)
+        assert partition_state["cursor"]["date_sent"] == "2022-11-16 10:00:00Z"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_calls_includes_date_window_params(self, requests_mock):
         requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
 

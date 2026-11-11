@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +81,51 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Drop partition cursors older than the global cursor so they use the global fallback.
+
+    Initial:
+      {
+        "states": [
+          {
+            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+            "cursor": {"date_sent": "2022-01-20 00:00:00Z"}
+          }
+        ],
+        "state": {"date_sent": "2022-11-14 00:00:00Z"},
+        "use_global_cursor": false,
+        "lookback_window": 0
+      }
+
+    Final:
+      {
+        "states": [],
+        "state": {"date_sent": "2022-11-14 00:00:00Z"},
+        "use_global_cursor": false,
+        "lookback_window": 0
+      }
+    """
+
+    @staticmethod
+    def _is_stale(partition_state: Mapping[str, Any], global_state: Mapping[str, Any]) -> bool:
+        for cursor_key, global_value in global_state.items():
+            global_cursor = ab_datetime_try_parse(global_value)
+            partition_cursor = ab_datetime_try_parse(partition_state.get("cursor", {}).get(cursor_key))
+            if global_cursor is not None and partition_cursor is not None and partition_cursor < global_cursor:
+                return True
+        return False
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return any(self._is_stale(state, stream_state.get("state", {})) for state in stream_state.get("states", []))
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            **stream_state,
+            "states": [state for state in stream_state.get("states", []) if not self._is_stale(state, stream_state.get("state", {}))],
+        }
 
 
 class TwilioAlertsStateMigration(StateMigration):
