@@ -15,6 +15,42 @@ api_budget:
     - type: MovingWindowCallRatePolicy
       rates:
         - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: ^/audit-logs$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: ^/macro-groups$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: ^/surveys$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
+          limit: 300
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: ^/training-data$
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - type: Rate
           limit: 30
           interval: PT1M
       matchers:
@@ -160,6 +196,104 @@ check:
 
 definitions:
   streams:
+    audit_logs:
+      type: DeclarativeStream
+      name: audit_logs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: audit-logs
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/audit_logs_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audit_logs"
+
+    macro_groups:
+      type: DeclarativeStream
+      name: macro_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: macro-groups
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/macro_groups"
+
+    surveys:
+      type: DeclarativeStream
+      name: surveys
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: surveys
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/surveys"
+
+    training_data:
+      type: DeclarativeStream
+      name: training_data
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: training-data
+          http_method: GET
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/training_data"
+
     accounts:
       type: DeclarativeStream
       name: accounts
@@ -703,6 +837,24 @@ definitions:
         http_codes: [500, 502, 503, 504]
         error_message: The Pylon API is temporarily unavailable.
 
+  audit_logs_error_handler:
+    $ref: "#/definitions/error_handler"
+    response_filters:
+      - $ref: "#/definitions/error_handler/response_filters/0"
+      - $ref: "#/definitions/error_handler/response_filters/1"
+      - $ref: "#/definitions/error_handler/response_filters/2"
+      - $ref: "#/definitions/error_handler/response_filters/3"
+      - $ref: "#/definitions/error_handler/response_filters/4"
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes: [403]
+        error_message: >-
+          Pylon returned 403 for Audit Logs. This stream requires an API token with the Admin role,
+          and your Pylon plan must include audit log access. Use an Admin-role token, or deselect the Audit Logs stream.
+      - $ref: "#/definitions/error_handler/response_filters/6"
+      - $ref: "#/definitions/error_handler/response_filters/7"
+
   issue_threads_error_handler:
     $ref: "#/definitions/error_handler"
     response_filters:
@@ -758,6 +910,10 @@ definitions:
       stop_condition: "{{ not response.get('pagination', {}).get('has_next_page', False) }}"
 
 streams:
+  - $ref: "#/definitions/streams/audit_logs"
+  - $ref: "#/definitions/streams/macro_groups"
+  - $ref: "#/definitions/streams/surveys"
+  - $ref: "#/definitions/streams/training_data"
   - $ref: "#/definitions/streams/accounts"
   - $ref: "#/definitions/streams/contacts"
   - $ref: "#/definitions/streams/issues"
@@ -833,6 +989,193 @@ spec:
     additionalProperties: true
 
 schemas:
+  audit_logs:
+    type: object
+    additionalProperties: true
+    properties:
+      action:
+        type:
+          - "null"
+          - string
+      action_happened_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      actor_contact_id:
+        type:
+          - "null"
+          - string
+      actor_user_id:
+        type:
+          - "null"
+          - string
+      attributes:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type: string
+      link:
+        type:
+          - "null"
+          - string
+      metadata:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      object_id:
+        type:
+          - "null"
+          - string
+      object_type:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+    $schema: http://json-schema.org/draft-07/schema#
+  macro_groups:
+    type: object
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type: string
+      title:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+    $schema: http://json-schema.org/draft-07/schema#
+  surveys:
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+    $schema: http://json-schema.org/draft-07/schema#
+  training_data:
+    type: object
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      documents:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            external_id:
+              type:
+                - "null"
+                - string
+            file_name:
+              type:
+                - "null"
+                - string
+            file_size:
+              type:
+                - "null"
+                - integer
+            file_type:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            s3_key:
+              type:
+                - "null"
+                - string
+      exclude_from_kb_search:
+        type:
+          - "null"
+          - boolean
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      scrape_status:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          last_scraped_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          pages_scraped:
+            type:
+              - "null"
+              - integer
+          status:
+            type:
+              - "null"
+              - string
+          total_pages:
+            type:
+              - "null"
+              - integer
+      type:
+        type:
+          - "null"
+          - string
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      visibility:
+        type:
+          - "null"
+          - string
+    $schema: http://json-schema.org/draft-07/schema#
+
   accounts:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1665,6 +2008,10 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      delivery_mode:
+        type:
+          - "null"
+          - string
       id:
         type: string
       name:
