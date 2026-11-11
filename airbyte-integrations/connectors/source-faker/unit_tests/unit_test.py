@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 from pathlib import Path
 
 import jsonschema
@@ -304,3 +305,37 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+@pytest.mark.parametrize("count, records_per_slice, parallelism", [(1000, 1000, 4), (10, 4, 1)])
+def test_read_users_restarts_after_completed_sync(mocker, count: int, records_per_slice: int, parallelism: int) -> None:
+    config = {
+        "count": count,
+        "seed": -1,
+        "records_per_slice": records_per_slice,
+        "always_updated": True,
+        "parallelism": parallelism,
+    }
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+        "cursor_field": ["updated_at"],
+        "primary_key": [["id"]],
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    clock = mocker.patch("source_faker.user_generator.datetime")
+    state = []
+
+    for day in range(1, 4):
+        clock.datetime.now.return_value = datetime.datetime(2024, 1, day)
+        updated_at = f"2024-01-{day:02d}T00:00:00+00:00"
+        messages = list(SourceFaker().read(logger, config, catalog, state))
+        records = [message.record.data for message in messages if message.type is Type.RECORD]
+        state = [message.state for message in messages if message.type is Type.STATE][-1:]
+        estimates = [message.trace.estimate for message in messages if message.type is Type.TRACE and message.trace.estimate]
+
+        assert [record["id"] for record in records] == list(range(1, count + 1))
+        assert {record["updated_at"] for record in records} == {updated_at}
+        assert state[-1].stream.stream_state.__dict__ == {"seed": -1, "updated_at": updated_at, "loop_offset": count}
+        assert [estimate.row_estimate for estimate in estimates] == [count]
