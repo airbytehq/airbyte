@@ -251,16 +251,25 @@ def test_404_for_a_call_is_ignored_with_the_url(stream_name: str) -> None:
 
 
 @pytest.mark.parametrize("stream_name", _STREAM_NAMES)
-def test_404_with_another_body_fails_instead_of_skipping_the_call(stream_name: str) -> None:
+@pytest.mark.parametrize(
+    "response",
+    [_json({"message": "Not Found"}, 404), _app_error(404, "call_id not found")],
+    ids=["gateway_body", "documented_body"],
+)
+def test_404_with_another_body_fails_instead_of_skipping_the_call(stream_name: str, response: HttpResponse) -> None:
     # A retired or renamed route answers 404 without Aircall's NotFound body; skipping it would hide the outage.
     with freeze_time(_NOW), HttpMocker() as http_mocker:
         _mock_calls(http_mocker, [{"id": 812, "started_at": _epoch(_NOW) - _DAY}])
-        http_mocker.get(_child_request(stream_name, 812), _json({"message": "Not Found"}, 404))
+        child_request = _child_request(stream_name, 812)
+        http_mocker.get(child_request, response)
 
         output = _read(stream_name, expecting_exception=True)
 
-        assert output.errors
+        http_mocker.assert_number_of_calls(child_request, 1)
         assert output.records == []
+        error = output.errors[0].trace.error
+        assert error.failure_type == FailureType.system_error
+        assert "404" in error.message
 
 
 @pytest.mark.parametrize("stream_name", _STREAM_NAMES)
@@ -291,16 +300,18 @@ def test_401_keeps_the_api_key_message(stream_name: str) -> None:
         assert error.message.startswith("Aircall rejected the API ID and API token (HTTP 401).")
 
 
-def test_gateway_403_keeps_the_credentials_message() -> None:
+@pytest.mark.parametrize("stream_name", _STREAM_NAMES)
+def test_gateway_403_keeps_the_credentials_message(stream_name: str) -> None:
     with freeze_time(_NOW), HttpMocker() as http_mocker:
         _mock_calls(http_mocker, [{"id": 812, "started_at": _epoch(_NOW) - _DAY}])
-        http_mocker.get(_child_request("call_summaries", 812), _json({"message": "Forbidden"}, 403))
+        http_mocker.get(_child_request(stream_name, 812), _json({"message": "Forbidden"}, 403))
 
-        output = _read("call_summaries", expecting_exception=True)
+        output = _read(stream_name, expecting_exception=True)
 
         error = output.errors[0].trace.error
         assert error.failure_type == FailureType.config_error
-        assert error.message.startswith(f"Aircall returned HTTP 403 for {_BASE_URL}/calls/812/summary. Check that the API ID and API token")
+        url = f"{_BASE_URL}/calls/812/{_STREAMS[stream_name][0]}"
+        assert error.message.startswith(f"Aircall returned HTTP 403 for {url}. Check that the API ID and API token")
 
 
 def _summary(call_id: int) -> HttpResponse:
