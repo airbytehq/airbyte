@@ -209,12 +209,18 @@ definitions:
           request_parameters:
             count: "100"
             sort: start_time:desc
+            min_start_time: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
               - collection
+          # Events updated after the sync started wait for the next sync, so the cursor never passes an
+          # update written to an already-read page during the scan.
+          record_filter:
+            type: RecordFilter
+            condition: "{{ timestamp(record['updated_at']) <= timestamp(stream_interval['end_time']) }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -243,19 +249,18 @@ definitions:
           type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: start_time
-        lookback_window: "P{{ [config.get('lookback_days') or 0, 0] | max }}D"
+        cursor_field: updated_at
+        is_client_side_incremental: true
+        lookback_window: "P{{ [config.get('lookback_days') or 0, 0] | max }}DT5M"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        # The request already starts at start_date (min_start_time); a start_date floor on updated_at
+        # would drop events booked before start_date for meetings after it.
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          field_name: min_start_time
-          inject_into: request_parameter
+          datetime: "1970-01-01"
+          datetime_format: "%Y-%m-%d"
       transformations:
         - type: AddFields
           fields:
@@ -438,6 +443,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /group_relationships
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/group_relationships_error_handler"
           request_parameters:
             count: "100"
         record_selector:
@@ -462,14 +469,14 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: current_organization
+              parent_key: uri
               request_option:
                 type: RequestOption
-                field_name: organization
+                field_name: group
                 inject_into: request_parameter
-              partition_field: organization_uri
+              partition_field: group_uri
               stream:
-                $ref: "#/definitions/streams/api_user"
+                $ref: "#/definitions/streams/groups"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -663,6 +670,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /routing_forms
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/plan_gated_error_handler"
           request_parameters:
             count: "100"
         record_selector:
@@ -967,6 +976,16 @@ definitions:
         action: IGNORE
         error_message: "Skipping submissions of a routing form that Calendly no longer returns (404)."
       - $ref: "#/definitions/error_filters/server_error"
+  group_relationships_error_handler:
+    $ref: "#/definitions/base_error_handler"
+    response_filters:
+      - $ref: "#/definitions/error_filters/unauthorized"
+      - $ref: "#/definitions/error_filters/forbidden"
+      - type: HttpResponseFilter
+        http_codes: [404]
+        action: IGNORE
+        error_message: "Skipping relationships of a group that Calendly no longer returns (404): {{ request_url }}"
+      - $ref: "#/definitions/error_filters/server_error"
   plan_gated_error_handler:
     $ref: "#/definitions/base_error_handler"
     response_filters:
@@ -974,6 +993,7 @@ definitions:
         predicate: >-
           {{ response is mapping and 'required_scopes' not in response and (response.get('message') or '').rstrip('.') in [
             'Please upgrade your Calendly account to Enterprise',
+            'Please upgrade your Calendly account to Teams',
             'Please upgrade to a paid Calendly account',
             'Meeting recap access is not available. Required features are not enabled for your account',
             'Contact creation is not available. Required features are not enabled for your account'
@@ -981,7 +1001,7 @@ definitions:
         action: IGNORE
         error_message: >-
           Calendly skipped this stream: outgoing communications and activity logs require Enterprise;
-          contacts require a paid plan; meeting recaps require a paid plan with Notetaker enabled.
+          routing forms require Teams; contacts require a paid plan; meeting recaps require a paid plan with Notetaker enabled.
           Upgrade the Calendly plan or deselect the stream.
           Calendly response: {{ response.get('message') }}
       - $ref: "#/definitions/error_filters/unauthorized"
@@ -1091,10 +1111,9 @@ spec:
       lookback_days:
         type: number
         description: >-
-          Incremental syncs of scheduled_events resume from the start time of the latest event
-          already synced minus this many days, so events in that range are read again with their
-          latest status, such as a cancellation. Set it to at least how far in advance invitees can
-          book so that new bookings for earlier times are not missed.
+          Incremental syncs of scheduled_events re-emit events whose updated_at falls within this many
+          days before the last synced update, plus a fixed five minutes. Every sync pages through all
+          events from the start date, so 0 is right for most connections.
         title: Lookback window (days)
         default: 0
         order: 2
@@ -1191,6 +1210,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       custom_questions:
         type:
           - array
@@ -1226,7 +1246,7 @@ schemas:
                 - "null"
             position:
               type:
-                - number
+                - integer
                 - "null"
             required:
               type:
@@ -1248,6 +1268,8 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type: integer
       deleted_at:
         type: [string, "null"]
         format: date-time
@@ -1292,7 +1314,7 @@ schemas:
           - "null"
       position:
         type:
-          - number
+          - integer
           - "null"
       profile:
         type:
@@ -1325,6 +1347,7 @@ schemas:
           - "null"
       updated_at:
         type: string
+        format: date-time
       uri:
         type: string
     required:
@@ -1342,6 +1365,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       current_organization:
         type:
           - string
@@ -1382,6 +1406,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       uri:
         type: string
     required:
@@ -1395,6 +1420,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       member_count:
         type:
           - number
@@ -1411,6 +1437,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       uri:
         type: string
     required:
@@ -1424,6 +1451,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       organization:
         type:
           - string
@@ -1436,6 +1464,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       uri:
         type: string
       user:
@@ -1451,6 +1480,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           email:
             type:
               - string
@@ -1483,6 +1513,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           uri:
             type:
               - string
@@ -1524,6 +1555,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           reason:
             type:
               - string
@@ -1532,10 +1564,12 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       end_time:
         type:
           - string
           - "null"
+        format: date-time
       event_guests:
         type:
           - array
@@ -1549,6 +1583,7 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
             email:
               type:
                 - string
@@ -1557,6 +1592,7 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
       event_memberships:
         type:
           - array
@@ -1570,10 +1606,12 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
             buffered_start_time:
               type:
                 - string
                 - "null"
+              format: date-time
             user:
               type:
                 - string
@@ -1646,6 +1684,7 @@ schemas:
           - "null"
       start_time:
         type: string
+        format: date-time
       status:
         type:
           - string
@@ -1654,6 +1693,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       uri:
         type: string
     required:
@@ -1685,10 +1725,12 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           reason:
             type: [string, "null"]
       created_at:
         type: string
+        format: date-time
       email:
         type:
           - string
@@ -1773,7 +1815,7 @@ schemas:
                 - "null"
             position:
               type:
-                - number
+                - integer
                 - "null"
             question:
               type:
@@ -1824,6 +1866,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       uri:
         type: string
     required:
