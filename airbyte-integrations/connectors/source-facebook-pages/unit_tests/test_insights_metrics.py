@@ -20,13 +20,13 @@ INSIGHT = {"name": "m", "period": "lifetime", "values": [{"value": 1}], "id": "1
 
 def _requested(stream, path, param, edge, config):
     catalog = CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build()
-    url = f"https://graph.facebook.com/v24.0/1/{path}"
+    url = f"https://graph.facebook.com/v26.0/1/{path}"
     body = {"data": [INSIGHT]} if edge is None else {"data": [{"id": "9", edge: {"data": [INSIGHT]}}], "paging": {}}
     with rm.Mocker() as m:
         m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
         m.get(url, json=body)
         output = read(SourceFacebookPages(catalog=catalog, config=config), config, catalog)
-        request = next(r for r in m.request_history if urlparse(r.url).path == f"/v24.0/1/{path}")
+        request = next(r for r in m.request_history if urlparse(r.url).path == f"/v26.0/1/{path}")
     assert len(output.records) == 1
     return parse_qs(urlparse(request.url).query)[param][0]
 
