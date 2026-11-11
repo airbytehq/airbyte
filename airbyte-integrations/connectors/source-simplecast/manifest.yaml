@@ -35,11 +35,12 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('href') }}"
-            stop_condition: "{{ not response.get('pages', {}).get('next') }}"
+            type: OffsetIncrement
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -64,11 +65,12 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('href') }}"
-            stop_condition: "{{ not response.get('pages', {}).get('next') }}"
+            type: OffsetIncrement
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -95,6 +97,15 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -186,6 +197,15 @@ definitions:
             type: DpathExtractor
             field_path:
               - collection
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -205,6 +225,16 @@ definitions:
             type: DpathExtractor
             field_path:
               - collection
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -247,14 +277,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - collection
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestPath
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.get('pages', {}).get('next', {}).get('href') }}"
-            stop_condition: "{{ not response.get('pages', {}).get('next') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
