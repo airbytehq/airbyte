@@ -534,6 +534,94 @@ class TestIncrementalTwilioStream:
         # The partition whose second child failed is never checkpointed, so the state stays at the start date.
         assert _alert_state_date(output) == "2022-11-15T00:00:00Z"
 
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "account_sids,input_state,expected_lower_bound",
+        [
+            pytest.param(
+                ["AC123"],
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2021-12-01 00:00:00Z"},
+                        }
+                    ],
+                    "state": {"date_sent": "2022-11-13 12:11:10Z"},
+                    "lookback_window": 0,
+                },
+                "2022-11-13 12:11:10Z",
+                id="stale_partition_cursor_with_newer_global_cursor",
+            ),
+            pytest.param(
+                ["AC123", "AC456"],
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-11-14 00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json"},
+                            "cursor": {"date_sent": "2021-12-01T00:00:00Z"},
+                        },
+                    ],
+                    "state": {"date_sent": "2022-11-13 12:11:10Z"},
+                },
+                "2022-11-13 12:11:10Z",
+                id="multiple_accounts_with_stale_legacy_partition",
+            ),
+            pytest.param(
+                ["AC123", "AC456"],
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-14T00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-13T12:11:10Z"},
+                        },
+                    ]
+                },
+                "2022-11-13 12:11:10Z",
+                id="partition_cursors_without_global_cursor_resume_from_oldest",
+            ),
+        ],
+    )
+    def test_messages_incremental_resumes_from_global_cursor(self, account_sids, input_state, expected_lower_bound, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {"sid": sid, "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"}} for sid in account_sids
+            ]
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+
+        message_requests = []
+        requests_lock = Lock()
+        for sid in account_sids:
+
+            def _messages(request, context, sid=sid):
+                query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+                with requests_lock:
+                    message_requests.append((sid, query["DateSent>"][0], query["DateSent<"][0]))
+                return {"messages": [{"sid": f"SM-{sid}", "account_sid": sid, "date_sent": "Tue, 15 Nov 2022 10:00:00 +0000"}]}
+
+            requests_mock.get(f"{BASE}/Accounts/{sid}/Messages.json", json=_messages)
+
+        state = StateBuilder().with_stream_state("messages", input_state).build()
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2000-11-15T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+        assert sorted(message_requests) == [(sid, expected_lower_bound, "2022-11-16 12:03:11Z") for sid in account_sids]
+        assert sorted(record.record.data["sid"] for record in output.records) == [f"SM-{sid}" for sid in account_sids]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert final_state["state"] == {"date_sent": "2022-11-15 10:00:00Z"}
+        assert "states" not in final_state
+
 
 class TestConferenceParticipantsStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
