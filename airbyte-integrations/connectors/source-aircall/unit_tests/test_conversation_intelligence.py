@@ -254,7 +254,7 @@ def test_404_for_a_call_is_ignored_with_the_url(stream_name: str) -> None:
 @pytest.mark.parametrize(
     "response",
     [_json({"message": "Not Found"}, 404), _app_error(404, "call_id not found")],
-    ids=["gateway_body", "documented_body"],
+    ids=["gateway_body", "spaced_not_found_body"],
 )
 def test_404_with_another_body_fails_instead_of_skipping_the_call(stream_name: str, response: HttpResponse) -> None:
     # A retired or renamed route answers 404 without Aircall's NotFound body; skipping it would hide the outage.
