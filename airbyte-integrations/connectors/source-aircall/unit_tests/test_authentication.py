@@ -7,9 +7,13 @@ from pathlib import Path
 
 import pytest
 import yaml
+from freezegun import freeze_time
 from unit_tests.conftest import _YAML_FILE_PATH, get_source
+from unit_tests.test_conversation_intelligence import _BASE_URL, _DAY, _NOW, _STREAMS, _epoch
 
-from airbyte_cdk.models import Status
+from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
@@ -140,7 +144,7 @@ def test_credentials_configs_are_not_migrated(config: dict, tmp_path: Path, caps
 
 @pytest.mark.parametrize("config", [_API_KEY_CONFIG, _OAUTH_CONFIG], ids=["api_key", "oauth"])
 def test_top_level_api_key_is_removed_once_credentials_are_set(config: dict) -> None:
-    # An Airbyte API PATCH merges new credentials into a config saved before 1.1.0.
+    # An Airbyte API PATCH merges new credentials into a config saved before 1.2.0.
     source = get_source(config={**json.loads(json.dumps(config)), "api_id": "old-id", "api_token": "old-token"})
 
     assert source._config == config
@@ -156,3 +160,49 @@ def test_api_key_credentials_authenticate_with_basic_auth() -> None:
 
 def test_oauth_credentials_authenticate_with_bearer_access_token() -> None:
     _check_with_authorization(_OAUTH_CONFIG, "Bearer oauth-access-token")
+
+
+_BEARER = {"Authorization": "Bearer oauth-access-token"}
+
+
+def _read_with_oauth(stream_name: str, config: dict):
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
+    return read(get_source(config), config=config, catalog=catalog)
+
+
+# The conversation intelligence requester and user_numbers override parts of the base requester; each must keep its authenticator.
+@pytest.mark.parametrize("stream_name", list(_STREAMS))
+def test_conversation_intelligence_requests_send_the_oauth_bearer_token(stream_name: str) -> None:
+    config = {**_OAUTH_CONFIG, "window_in_days": 365, "include_conversation_intelligence": True}
+    suffix, query, body, _ = _STREAMS[stream_name]
+    end = _epoch(_NOW)
+    calls_query = {"from": str(end - 365 * _DAY), "to": str(end), "per_page": "50", "fetch_call_timeline": "true"}
+    child = HttpRequest(f"{_BASE_URL}/calls/812/{suffix}", query_params=query, headers=_BEARER)
+    with freeze_time(_NOW), HttpMocker() as http_mocker:
+        http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/calls", query_params=calls_query, headers=_BEARER),
+            HttpResponse(body=json.dumps({"calls": [{"id": 812, "started_at": end - _DAY}]}), status_code=200),
+        )
+        http_mocker.get(child, HttpResponse(body=json.dumps(body), status_code=200))
+
+        output = _read_with_oauth(stream_name, config)
+
+        assert output.errors == []
+        assert output.records
+        http_mocker.assert_number_of_calls(child, 1)
+
+
+def test_user_numbers_requests_send_the_oauth_bearer_token() -> None:
+    numbers = HttpRequest("https://api.aircall.io/v2/users/7/numbers", query_params={"per_page": "50"}, headers=_BEARER)
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            HttpRequest("https://api.aircall.io/v2/users", query_params={"per_page": "50"}, headers=_BEARER),
+            HttpResponse(body=json.dumps({"users": [{"id": 7}], "meta": {}}), status_code=200),
+        )
+        http_mocker.get(numbers, HttpResponse(body=json.dumps({"numbers": [{"id": 1}], "meta": {}}), status_code=200))
+
+        output = _read_with_oauth("user_numbers", _OAUTH_CONFIG)
+
+        assert output.errors == []
+        assert [record.record.data for record in output.records] == [{"id": 1, "user_id": 7}]
+        http_mocker.assert_number_of_calls(numbers, 1)

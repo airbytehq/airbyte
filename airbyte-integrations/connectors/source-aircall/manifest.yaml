@@ -122,6 +122,42 @@ definitions:
       error_message: >-
         Ignoring {{ request_url }}: this number is not registered for WhatsApp
         or no longer belongs to the company (HTTP 403).
+    # A revoked key gets the gateway body {"message": "Forbidden"} on every endpoint. On the
+    # conversation intelligence endpoints it keeps the credentials message instead of blaming AI Assist.
+    gateway_forbidden:
+      $ref: "#/definitions/response_filters/forbidden"
+      http_codes: []
+      predicate: "{{ response == {'message': 'Forbidden'} }}"
+    conversation_intelligence_not_enabled:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      http_codes: [403]
+      error_message: >-
+        Aircall returned HTTP 403 for {{ request_url }}. Conversation
+        intelligence needs the AI Assist or AI Assist Pro package and an
+        active, verified Aircall company. Add the package to your Aircall plan,
+        or deselect this stream. To drop all six conversation intelligence
+        streams, turn off Sync conversation intelligence (AI Assist) and refresh
+        the source schema.
+    # Playbook results need AI Assist Pro, so a company with AI Assist only deselects this one stream.
+    playbook_results_not_enabled:
+      $ref: "#/definitions/response_filters/conversation_intelligence_not_enabled"
+      error_message: >-
+        Aircall returned HTTP 403 for {{ request_url }}. Playbook results need
+        the AI Assist Pro package and an active, verified Aircall company. Add
+        AI Assist Pro to your Aircall plan, or deselect the
+        call_playbook_results stream.
+    # A call without a result (a missed call, a call before the package was enabled) answers 404 with
+    # {"error": "NotFound", "troubleshoot": "<result> not found"} on all six routes (checked live
+    # 2026-11-11). Matching the body keeps a retired or renamed route from being skipped silently.
+    call_result_not_found:
+      type: HttpResponseFilter
+      action: IGNORE
+      predicate: "{{ response is mapping and response.get('error') == 'NotFound' }}"
+      error_message: >-
+        Ignoring {{ request_url }}: Aircall has no result of this type for
+        this call (HTTP 404).
   error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -159,6 +195,63 @@ definitions:
       page_size: 50
       cursor_value: "{{ response.get('meta', {}).get('next_cursor') }}"
       stop_condition: "{{ not response.get('meta', {}).get('next_cursor') }}"
+  # Shared parts of the conversation intelligence streams: one request per call of the calls read.
+  conversation_intelligence:
+    requester:
+      $ref: "#/definitions/base_requester"
+      http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        backoff_strategies:
+          - $ref: "#/definitions/backoff_strategy"
+        response_filters:
+          - $ref: "#/definitions/response_filters/gateway_forbidden"
+          - $ref: "#/definitions/response_filters/conversation_intelligence_not_enabled"
+          - $ref: "#/definitions/response_filters/call_result_not_found"
+          - $ref: "#/definitions/response_filters/unauthorized"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: id
+          partition_field: call_id
+          incremental_dependency: true
+          extra_fields:
+            - - started_at
+          stream:
+            $ref: "#/definitions/streams/calls"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: call_started_at
+      global_substream_cursor: true
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "1388534400"
+        datetime_format: "%s"
+      # The slices are never sent (no request options); a far end keeps a call dated in the future
+      # from leaving later syncs with an empty slice for every call.
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "4102444800"
+        datetime_format: "%s"
+    # call_id comes from the partition: action items do not carry it, and the reference types it as a
+    # string while its samples show integers.
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - call_id
+            value: "{{ stream_partition['call_id'] }}"
+            value_type: integer
+          # No value_type: it turns a missing started_at into the string "None"; without it the field is left out.
+          - type: AddedFieldDefinition
+            path:
+              - call_started_at
+            value: "{{ stream_slice.extra_fields['started_at'] }}"
   streams:
     calls:
       type: DeclarativeStream
@@ -171,6 +264,9 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /calls
           http_method: GET
+          # Adds ivr_options_selected to each call.
+          request_parameters:
+            fetch_call_timeline: "true"
           error_handler:
             $ref: "#/definitions/error_handler"
             response_filters:
@@ -725,6 +821,212 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/whatsapp_templates"
+    user_numbers:
+      type: DeclarativeStream
+      name: user_numbers
+      primary_key:
+        - user_id
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url_base: https://api.aircall.io/v2
+          path: /users/{{ stream_partition['user_id'] }}/numbers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - numbers
+        paginator:
+          $ref: "#/definitions/paginator"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: user_id
+              stream:
+                $ref: "#/definitions/streams/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - user_id
+              value: "{{ stream_partition['user_id'] }}"
+              value_type: integer
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_numbers"
+    call_transcriptions:
+      type: DeclarativeStream
+      name: call_transcriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/conversation_intelligence/requester"
+          path: /calls/{{ stream_partition['call_id'] }}/transcription
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - transcription
+        partition_router:
+          $ref: "#/definitions/conversation_intelligence/partition_router"
+      incremental_sync:
+        $ref: "#/definitions/conversation_intelligence/incremental_sync"
+      transformations:
+        $ref: "#/definitions/conversation_intelligence/transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_transcriptions"
+    call_sentiments:
+      type: DeclarativeStream
+      name: call_sentiments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/conversation_intelligence/requester"
+          path: /calls/{{ stream_partition['call_id'] }}/sentiments
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - sentiment
+        partition_router:
+          $ref: "#/definitions/conversation_intelligence/partition_router"
+      incremental_sync:
+        $ref: "#/definitions/conversation_intelligence/incremental_sync"
+      transformations:
+        $ref: "#/definitions/conversation_intelligence/transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_sentiments"
+    call_topics:
+      type: DeclarativeStream
+      name: call_topics
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/conversation_intelligence/requester"
+          path: /calls/{{ stream_partition['call_id'] }}/topics
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - topic
+        partition_router:
+          $ref: "#/definitions/conversation_intelligence/partition_router"
+      incremental_sync:
+        $ref: "#/definitions/conversation_intelligence/incremental_sync"
+      transformations:
+        $ref: "#/definitions/conversation_intelligence/transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_topics"
+    call_summaries:
+      type: DeclarativeStream
+      name: call_summaries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/conversation_intelligence/requester"
+          path: /calls/{{ stream_partition['call_id'] }}/summary
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - summary
+        partition_router:
+          $ref: "#/definitions/conversation_intelligence/partition_router"
+      incremental_sync:
+        $ref: "#/definitions/conversation_intelligence/incremental_sync"
+      transformations:
+        $ref: "#/definitions/conversation_intelligence/transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_summaries"
+    call_action_items:
+      type: DeclarativeStream
+      name: call_action_items
+      primary_key:
+        - call_id
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/conversation_intelligence/requester"
+          path: /calls/{{ stream_partition['call_id'] }}/action_items
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - action_items
+        partition_router:
+          $ref: "#/definitions/conversation_intelligence/partition_router"
+      incremental_sync:
+        $ref: "#/definitions/conversation_intelligence/incremental_sync"
+      transformations:
+        $ref: "#/definitions/conversation_intelligence/transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_action_items"
+    call_playbook_results:
+      type: DeclarativeStream
+      name: call_playbook_results
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/conversation_intelligence/requester"
+          path: /calls/{{ stream_partition['call_id'] }}/playbook_result
+          request_parameters:
+            fetch_playbook: "true"
+          error_handler:
+            $ref: "#/definitions/conversation_intelligence/requester/error_handler"
+            response_filters:
+              - $ref: "#/definitions/response_filters/gateway_forbidden"
+              - $ref: "#/definitions/response_filters/playbook_results_not_enabled"
+              - $ref: "#/definitions/response_filters/call_result_not_found"
+              - $ref: "#/definitions/response_filters/unauthorized"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          $ref: "#/definitions/conversation_intelligence/partition_router"
+      incremental_sync:
+        $ref: "#/definitions/conversation_intelligence/incremental_sync"
+      transformations:
+        $ref: "#/definitions/conversation_intelligence/transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_playbook_results"
 streams:
   - $ref: "#/definitions/streams/calls"
   - $ref: "#/definitions/streams/company"
@@ -742,6 +1044,16 @@ streams:
   - $ref: "#/definitions/streams/trackers"
   - $ref: "#/definitions/streams/sms_templates"
   - $ref: "#/definitions/streams/whatsapp_templates"
+  - $ref: "#/definitions/streams/user_numbers"
+  - type: ConditionalStreams
+    condition: "{{ config.get('include_conversation_intelligence', false) }}"
+    streams:
+      - $ref: "#/definitions/streams/call_transcriptions"
+      - $ref: "#/definitions/streams/call_sentiments"
+      - $ref: "#/definitions/streams/call_topics"
+      - $ref: "#/definitions/streams/call_summaries"
+      - $ref: "#/definitions/streams/call_action_items"
+      - $ref: "#/definitions/streams/call_playbook_results"
 
 spec:
   type: Spec
@@ -838,23 +1150,24 @@ spec:
         type: integer
         minimum: 1
         maximum: 365
+        default: 1
         title: Window size (days)
         description: >-
           Days of calls requested per window, read in pages of 50. Aircall
           returns at most 10,000 records per window, and a calls window above
           that is split and read again, so larger windows save requests only for
-          companies with few calls. Leave empty for 1 day.
+          companies with few calls.
         order: 2
       contacts_window_in_days:
         type: integer
         minimum: 1
         maximum: 365
+        default: 30
         title: Contacts window size (days)
         description: >-
           Days of new contacts requested per window, read in pages of 50.
           Aircall returns at most 10,000 records per window; lower this if a
-          contacts sync fails with the 10,000-results error. Leave empty for 30
-          days.
+          contacts sync fails with the 10,000-results error.
         order: 3
       num_workers:
         type: integer
@@ -866,6 +1179,16 @@ spec:
           Parallel requests. All workers share one budget of 100 requests per
           minute, below Aircall's limit of 120 per company.
         order: 4
+      include_conversation_intelligence:
+        type: boolean
+        default: false
+        title: Sync conversation intelligence (AI Assist)
+        description: >-
+          Adds the call transcription, sentiment, topic, summary, action item
+          and playbook result streams. They need the AI Assist or AI Assist Pro
+          package, and each selected stream costs one request per call on every
+          sync, re-reading the last three days of calls.
+        order: 5
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
@@ -920,7 +1243,7 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
-  # Moves the top-level API key of configs saved before 1.1.0 into `credentials`. ConfigAddFields
+  # Moves the top-level API key of configs saved before 1.2.0 into `credentials`. ConfigAddFields
   # evaluates its condition before each field on the config it is changing, so `auth_type` stays last.
   config_normalization_rules:
     type: ConfigNormalizationRules
@@ -973,6 +1296,13 @@ metadata:
     trackers: false
     sms_templates: false
     whatsapp_templates: false
+    user_numbers: false
+    call_transcriptions: false
+    call_sentiments: false
+    call_topics: false
+    call_summaries: false
+    call_action_items: false
+    call_playbook_results: false
   testedStreams: {}
   assist: {}
 
@@ -1112,6 +1442,46 @@ schemas:
         type:
           - "null"
           - number
+      ivr_options_selected:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            title:
+              type:
+                - "null"
+                - string
+            key:
+              type:
+                - "null"
+                - string
+            branch:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            transition_started_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            transition_ended_at:
+              type:
+                - "null"
+                - string
+              format: date-time
       missed_call_reason:
         type:
           - "null"
@@ -2289,3 +2659,387 @@ schemas:
           - object
         additionalProperties: true
     title: WhatsApp Templates Schema
+  user_numbers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      user_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - number
+      direct_link:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      digits:
+        type:
+          - "null"
+          - string
+      country:
+        type:
+          - "null"
+          - string
+      time_zone:
+        type:
+          - "null"
+          - string
+      open:
+        type:
+          - "null"
+          - boolean
+      availability_status:
+        type:
+          - "null"
+          - string
+      is_ivr:
+        type:
+          - "null"
+          - boolean
+      live_recording_activated:
+        type:
+          - "null"
+          - boolean
+      priority:
+        type:
+          - "null"
+          - integer
+      messages:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          welcome:
+            type:
+              - "null"
+              - string
+          waiting:
+            type:
+              - "null"
+              - string
+          ivr:
+            type:
+              - "null"
+              - string
+          voicemail:
+            type:
+              - "null"
+              - string
+          closed:
+            type:
+              - "null"
+              - string
+          callback_later:
+            type:
+              - "null"
+              - string
+          unanswered_call:
+            type:
+              - "null"
+              - string
+          after_hours:
+            type:
+              - "null"
+              - string
+          ringing_tone:
+            type:
+              - "null"
+              - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+    title: User Numbers Schema
+  call_transcriptions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      call_id:
+        type:
+          - "null"
+          - integer
+      call_started_at:
+        type:
+          - "null"
+          - number
+      call_created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      type:
+        type:
+          - "null"
+          - string
+      content:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          language:
+            type:
+              - "null"
+              - string
+          utterances:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties:
+                start_time:
+                  type:
+                    - "null"
+                    - number
+                end_time:
+                  type:
+                    - "null"
+                    - number
+                text:
+                  type:
+                    - "null"
+                    - string
+                participant_type:
+                  type:
+                    - "null"
+                    - string
+                phone_number:
+                  type:
+                    - "null"
+                    - string
+                user_id:
+                  type:
+                    - "null"
+                    - integer
+    title: Call Transcriptions Schema
+  call_sentiments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      call_id:
+        type:
+          - "null"
+          - integer
+      call_started_at:
+        type:
+          - "null"
+          - number
+      participants:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            phone_number:
+              type:
+                - "null"
+                - string
+            value:
+              type:
+                - "null"
+                - string
+            type:
+              type:
+                - "null"
+                - string
+    title: Call Sentiments Schema
+  call_topics:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      call_id:
+        type:
+          - "null"
+          - integer
+      call_started_at:
+        type:
+          - "null"
+          - number
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      content:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+    title: Call Topics Schema
+  call_summaries:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      call_id:
+        type:
+          - "null"
+          - integer
+      call_started_at:
+        type:
+          - "null"
+          - number
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      content:
+        type:
+          - "null"
+          - string
+    title: Call Summaries Schema
+  call_action_items:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      call_id:
+        type:
+          - "null"
+          - integer
+      call_started_at:
+        type:
+          - "null"
+          - number
+      content:
+        type:
+          - "null"
+          - string
+      ai_generated:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      created_by:
+        type:
+          - "null"
+          - integer
+      updated_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updated_by:
+        type:
+          - "null"
+          - integer
+    title: Call Action Items Schema
+  call_playbook_results:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      call_id:
+        type:
+          - "null"
+          - integer
+      call_started_at:
+        type:
+          - "null"
+          - number
+      user_id:
+        type:
+          - "null"
+          - integer
+      number_id:
+        type:
+          - "null"
+          - integer
+      adherence_score:
+        type:
+          - "null"
+          - number
+      playbook_result_topics:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            name:
+              type:
+                - "null"
+                - string
+            result:
+              type:
+                - "null"
+                - string
+      created_at:
+        type:
+          - "null"
+          - number
+      playbook:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          name:
+            type:
+              - "null"
+              - string
+          language:
+            type:
+              - "null"
+              - string
+    title: Call Playbook Results Schema

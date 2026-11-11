@@ -70,6 +70,10 @@ def test_numbers_and_teams_are_full_refresh_only(streams: dict, stream_name: str
         ("calls", "teams.[].created_at"),
         ("calls", "comments.[].posted_by.created_at"),
         ("calls", "tags.[].tagged_by.created_at"),
+        ("calls", "ivr_options_selected.[].created_at"),
+        ("calls", "ivr_options_selected.[].transition_started_at"),
+        ("calls", "ivr_options_selected.[].transition_ended_at"),
+        ("user_numbers", "created_at"),
     ],
 )
 def test_iso_datetime_strings_declare_date_time_format(streams: dict, stream_name: str, path: str) -> None:
@@ -87,6 +91,11 @@ def test_iso_datetime_strings_declare_date_time_format(streams: dict, stream_nam
         ("calls", "transferred_to", ["null", "object"]),
         ("calls", "number.priority", ["null", "integer"]),
         ("numbers", "priority", ["null", "integer"]),
+        ("user_numbers", "priority", ["null", "integer"]),
+        ("calls", "ivr_options_selected", ["null", "array"]),
+        ("calls", "ivr_options_selected.[].id", ["null", "string"]),
+        ("calls", "ivr_options_selected.[].key", ["null", "string"]),
+        ("calls", "ivr_options_selected.[].branch", ["null", "string"]),
     ],
 )
 def test_declared_types_match_the_aircall_reference(streams: dict, stream_name: str, path: str, expected_type: list) -> None:
@@ -103,6 +112,17 @@ _REFERENCE_CALL = {
     "transferred_by": {"id": 457, "name": "Amy Rudd"},
     "transferred_to": {"id": 458, "name": "Jeff Curtis"},
     "number": {"id": 1234, "priority": 1, "created_at": "2020-01-02T11:41:01.000Z"},
+    "ivr_options_selected": [
+        {
+            "id": "5cb41cde-aed2-4357-a98c-e1b33d68851a",
+            "title": "",
+            "key": "1",
+            "branch": "Default",
+            "created_at": "2024-10-01T06:54:45.556Z",
+            "transition_started_at": "2024-10-01T06:54:35.332Z",
+            "transition_ended_at": "2024-10-01T06:54:45.513Z",
+        }
+    ],
 }
 
 
