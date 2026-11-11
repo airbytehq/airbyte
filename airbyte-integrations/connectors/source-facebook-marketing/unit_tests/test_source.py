@@ -193,6 +193,27 @@ class TestSourceFacebookMarketing:
         assert stream.primary_key == ["date_start", "account_id", "ad_id", *breakdowns]
         assert stream.fields() == ["ad_id", "account_id", "spend"]
 
+    @pytest.mark.parametrize(
+        "top_level,per_insight,expected_windows",
+        [
+            (True, None, ["1d_click", "7d_click", "28d_click", "1d_view", "incrementality"]),
+            (False, None, ["1d_click", "7d_click", "28d_click", "1d_view"]),
+            (False, False, ["1d_click", "7d_click", "28d_click", "1d_view"]),
+            (True, False, ["1d_click", "7d_click", "28d_click", "1d_view", "incrementality"]),
+            (False, True, ["1d_click", "7d_click", "28d_click", "1d_view", "incrementality"]),
+        ],
+    )
+    def test_custom_insights_incrementality_request_params(self, api, config, fb_marketing, top_level, per_insight, expected_windows):
+        config["include_incrementality"] = top_level
+        insight = {"name": "incrementality", "fields": ["account_id", "actions"], "breakdowns": [], "action_breakdowns": []}
+        if per_insight is not None:
+            insight["include_incrementality"] = per_insight
+        config["custom_insights"] = [insight]
+
+        stream = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))[0]
+
+        assert stream.request_params()["action_attribution_windows"] == expected_windows
+
     def test_get_custom_insights_streams_preserves_fields_order(self, api, config, fb_marketing):
         config["custom_insights"] = [
             {
