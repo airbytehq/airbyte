@@ -28,7 +28,7 @@ from unit_tests.conftest import get_source
 
 
 BASE_URL = "https://api.zoom.us/v2"
-PAGE_SIZE = "30"
+PAGE_SIZE = "300"
 USER_ID = "u1"
 
 CONFIG = {

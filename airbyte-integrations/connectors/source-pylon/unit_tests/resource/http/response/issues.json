@@ -1,0 +1,90 @@
+{
+  "account": {
+    "external_ids": [],
+    "id": "synthetic-id"
+  },
+  "active_time_by_user": [],
+  "active_time_seconds": 1,
+  "assignee": {
+    "email": "synthetic@example.test",
+    "id": "synthetic-id"
+  },
+  "attachment_urls": [],
+  "author_unverified": false,
+  "body_html": "synthetic-body_html",
+  "business_hours_active_time_seconds": 1,
+  "business_hours_first_response_seconds": 1,
+  "business_hours_resolution_seconds": 1,
+  "business_hours_time_in_status_seconds": {},
+  "chat_widget_info": {
+    "page_url": "https://example.test/synthetic"
+  },
+  "child_issues": [],
+  "created_at": "2026-01-10T12:00:00Z",
+  "csat_responses": [],
+  "custom_fields": {},
+  "customer_portal_visible": false,
+  "external_incidents": [],
+  "external_issues": [],
+  "first_resolution_time": "2026-01-10T12:00:00Z",
+  "first_response_assignee_id_at_breach": "synthetic-first_response_assignee_id_at_breach",
+  "first_response_breach_time": "2026-01-10T12:00:00Z",
+  "first_response_resolving_user_id": "synthetic-first_response_resolving_user_id",
+  "first_response_seconds": 1,
+  "first_response_time": "2026-01-10T12:00:00Z",
+  "follow_up": {
+    "assignee_id_at_breach": "synthetic-assignee_id_at_breach",
+    "breach_time": "2026-01-10T12:00:00Z",
+    "business_hours_seconds": 1,
+    "resolving_user_id": "synthetic-resolving_user_id",
+    "seconds": 1,
+    "time": "2026-01-10T12:00:00Z"
+  },
+  "id": "synthetic-id",
+  "is_issue_group": false,
+  "latest_message_time": "2026-01-10T12:00:00Z",
+  "link": "synthetic-link",
+  "next_reply": {
+    "assignee_id_at_breach": "synthetic-assignee_id_at_breach",
+    "breach_time": "2026-01-10T12:00:00Z",
+    "business_hours_seconds": 1,
+    "resolving_user_id": "synthetic-resolving_user_id",
+    "seconds": 1,
+    "time": "2026-01-10T12:00:00Z"
+  },
+  "number": 1,
+  "number_of_touches": 1,
+  "parent_issue_group": {
+    "id": "synthetic-id",
+    "number": 1,
+    "title": "synthetic-title"
+  },
+  "requester": {
+    "email": "synthetic@example.test",
+    "id": "synthetic-id"
+  },
+  "resolution_assignee_id_at_breach": "synthetic-resolution_assignee_id_at_breach",
+  "resolution_breach_time": "2026-01-10T12:00:00Z",
+  "resolution_resolving_user_id": "synthetic-resolution_resolving_user_id",
+  "resolution_seconds": 1,
+  "resolution_time": "2026-01-10T12:00:00Z",
+  "slack": {
+    "channel_id": "synthetic-channel_id",
+    "message_ts": "synthetic-message_ts",
+    "workspace_id": "synthetic-workspace_id"
+  },
+  "snoozed_until_time": "2026-01-10T12:00:00Z",
+  "source": "synthetic-source",
+  "state": "synthetic-state",
+  "tags": [],
+  "team": {
+    "id": "synthetic-id"
+  },
+  "team_slas": [],
+  "time_in_status_seconds": {},
+  "title": "synthetic-title",
+  "type": "synthetic-type",
+  "updated_at": "2026-01-10T12:00:00Z",
+  "workspace_email": "synthetic@example.test",
+  "workspace_phone_number": "synthetic-workspace_phone_number"
+}

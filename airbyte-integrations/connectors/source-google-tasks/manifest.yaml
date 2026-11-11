@@ -37,19 +37,17 @@ definitions:
           path: users/@me/lists
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limit hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
           request_parameters:
             maxResults: "{{ config['records_limit'] }}"
         record_selector:
@@ -98,19 +96,17 @@ definitions:
           path: lists/{{ stream_partition.tasklist_id }}/tasks
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 5
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    http_codes:
-                      - 429
-                    error_message: Rate limit hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
+            type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+                error_message: Rate limit hit
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 2
           request_parameters:
             maxResults: "{{ config['records_limit'] }}"
         record_selector:

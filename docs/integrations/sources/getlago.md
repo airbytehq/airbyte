@@ -2,19 +2,32 @@
 
 ## Sync overview
 
-This source can sync data from the [Lago API](https://doc.getlago.com/docs/guide/intro/welcome). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
+This source syncs billing data from the [Lago API](https://getlago.com/docs/api-reference/intro). The connector supports full refresh syncs only, so each sync reads all available records again. For large datasets, account for the API requests needed to read the data on every sync.
 
-## This Source Supports the Following Streams
+## Supported streams
 
-- billable_metrics
-- plans
-- coupons
-- add_ons
-- invoices
-- customers
-- subscriptions
-- customer_usage
-- customer_usage_past
+| Stream | Data synced |
+| :----- | :---------- |
+| `billable_metrics` | Billable metric definitions |
+| `plans` | Pricing plans |
+| `coupons` | Coupons |
+| `add_ons` | Add-ons |
+| `invoices` | Invoices |
+| `customers` | Customers |
+| `subscriptions` | Subscriptions for each customer |
+| `wallets` | Prepaid credit wallets for each customer |
+| `customer_usage` | Usage for each subscription's current open billing period |
+| `fees` | Fees |
+| `customer_usage_past` | Usage for each subscription's closed billing periods |
+
+### Usage streams
+
+The connector retrieves subscriptions for each customer, then requests usage for each subscription. You don't need to enter customer or subscription IDs in the connector configuration.
+
+- [`customer_usage`](https://getlago.com/docs/api-reference/customer-usage/get-current) contains usage for the current open billing period. Amounts can change while the period is still open.
+- [`customer_usage_past`](https://getlago.com/docs/api-reference/customer-usage/get-past) contains usage for closed billing periods.
+
+Both usage streams skip a request when Lago returns a `405` response with the code `no_active_subscription`. That request produces no usage records, and the sync continues. Other `405` errors aren't ignored.
 
 ### Features
 
@@ -25,10 +38,26 @@ This source can sync data from the [Lago API](https://doc.getlago.com/docs/guide
 
 ## Getting started
 
-### Requirements
+### Prerequisites
 
-- Lago API URL
-- Lago API KEY
+- A Lago API key for the organization you want to sync. In Lago, go to **Developers > API keys**, click **Reveal**, and copy the key. See [Lago's API key documentation](https://getlago.com/docs/guide/security/api-keys).
+- Your Lago API base URL, including `/api/v1`. Use `https://api.getlago.com/api/v1` for US Lago Cloud, `https://api.eu.getlago.com/api/v1` for EU Lago Cloud, or your self-hosted Lago API URL followed by `/api/v1`. See [Lago's regions and endpoints](https://getlago.com/docs/guide/lago-cloud#regions-and-endpoints).
+
+If your organization restricts [API key permissions](https://getlago.com/docs/guide/security/api-keys#set-api-key-permissions), grant read access to the resources you plan to sync. The connection check reads `billable_metrics`, so the key must be able to list billable metrics. The `subscriptions` and `wallets` streams also read customers, and both usage streams read customers and subscriptions.
+
+### Set up the source in Airbyte
+
+1. Create a source and select **Lago**.
+2. Enter a name for the source.
+3. Set **API Url** to your Lago API base URL. The default is `https://api.getlago.com/api/v1`; change it for an EU or self-hosted deployment.
+4. Set **API Key** to the key you copied from Lago. Enter the key without the `Bearer` prefix; the connector adds it to the authorization header.
+5. Save the source and complete the connection check.
+
+## Rate limits and troubleshooting
+
+Lago applies [REST API rate limits](https://getlago.com/docs/api-reference/rate-limits) per organization, shared across API keys. Full refresh syncs and the requests needed to read customers, subscriptions, and usage can consume this shared budget. If you repeatedly encounter `429 Too Many Requests` errors, reduce competing API traffic or contact Lago about increasing your limits.
+
+If you receive `401 Unauthorized`, check that the API key is valid and the API URL matches your organization's region or self-hosted deployment. For `403 Forbidden`, check the key's permissions and whether your organization can access the requested feature. A successful connection check verifies access to `billable_metrics`; it doesn't verify access to every selected stream.
 
 ## IP allow list
 
@@ -38,6 +67,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                   |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------- |
+| 0.7.73 | 2026-11-10 | [90361](https://github.com/airbytehq/airbyte/pull/90361) | Simplify error handling configuration for the `customer_usage` and `customer_usage_past` streams; no behavior change |
+| 0.7.72 | 2026-11-10 | [91516](https://github.com/airbytehq/airbyte/pull/91516) | Update dependencies |
 | 0.7.71 | 2026-11-03 | [90549](https://github.com/airbytehq/airbyte/pull/90549) | Update dependencies |
 | 0.7.70 | 2026-10-27 | [89877](https://github.com/airbytehq/airbyte/pull/89877) | Update dependencies |
 | 0.7.69 | 2026-10-20 | [89208](https://github.com/airbytehq/airbyte/pull/89208) | Update dependencies |

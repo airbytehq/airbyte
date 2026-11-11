@@ -12,7 +12,7 @@ The connector implements only the token half of that flow. The `credentials` one
 
 `realm_id` is a company identifier rather than a credential, but it keeps `airbyte_secret: true`. Existing configs persisted it into the secret store, and dropping the flag leaves the platform with a stored secret coordinate for a field it no longer hydrates, so un-secreting it needs a platform-side migration rather than a spec edit.
 
-`access_token` and `token_expiry_date` are therefore **not** required inputs — the connector derives and maintains them. They remain in the spec because `refresh_token_updater` writes them there.
+`access_token` and `token_expiry_date` are marked `airbyte_hidden: true` in the own-app option because the connector derives and maintains them. They remain in the spec because `refresh_token_updater` writes them to `credentials.*`, which the platform persists. The platform splits secrets using the spec's `airbyte_secret` paths; dropping `access_token` from the spec would store live access tokens in plaintext in the config and return them unmasked from the API. Existing configs also already hold `access_token` as a secret coordinate, so removing it from the spec would strand that coordinate (the same issue described for `realm_id` above). In the Airbyte OAuth option, the webapp already hides these fields because they are paths in `complete_oauth_output_specification` and the `oauth2.0` predicate matches.
 
 Cloud shows an "Authenticate" button for the `oauth2.0` option, driven by `spec.advanced_auth` and the platform's built-in `QuickbooksOAuthFlow`, which captures `realmId` from the consent redirect. Its predicate targets `credentials.auth_type`; the `client_credentials` option instead keeps the customer's own app credentials. Declarative OAuth (`oauth_connector_input_specification`) is deliberately not used: it can only extract fields from the token response, `realmId` arrives on the redirect query params instead, and the platform prefers the declarative flow whenever the spec declares one — adding it would silently drop `realm_id` from generated configs.
 
@@ -77,6 +77,8 @@ Intuit documents [throttling](https://developer.intuit.com/app/developer/qbo/doc
 ## Config shape history
 
 `4.0.0` flattened the config: `credentials.client_id` and siblings moved to the root. It shipped no migration. `4.2.0` added `spec.config_normalization_rules.config_migrations` to move pre-4.0.0 credentials to the root and set missing `auth_type` to `oauth2.0`. In 5.0.0, authentication fields move into a `credentials` oneOf, and all config migrations are removed; existing flat configs fail until each source is reconfigured. The `oauth2.0` option matches `advanced_auth.predicate_key: [credentials, auth_type]`, so the platform supplies Airbyte's app credentials; `client_credentials` preserves the user's app credentials. Sandbox routing is only enabled for `client_credentials` because Airbyte's app is production-only. In 5.1.0, `config_normalization_rules` returns with one migration: a stored `max_results` of 200, the previous default, is raised to the new default of 1,000. It cannot tell an explicit 200 from the old default and runs on every sync, so a user who deliberately wants a smaller page must choose a value other than 200 (for example 199).
+
+In 5.4.0, a migration defaults a missing `credentials.sandbox` to `false` for `client_credentials` configs so existing own-app configs pass validation after Sandbox becomes required.
 
 ## Acceptance tests
 
