@@ -167,7 +167,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.1.11 | 2026-11-10 | TBD | Fixed `messages` incremental syncs re-reading old history when stale per-account state existed; the stream now uses a single stream-level `date_sent` cursor. |
+| 1.1.11 | 2026-11-10 | [91945](https://github.com/airbytehq/airbyte/pull/91945) | Fixed `messages` incremental syncs re-reading old history when stale per-account state existed; the stream now uses a single stream-level `date_sent` cursor. |
 | 1.1.10 | 2026-11-10 | [91752](https://github.com/airbytehq/airbyte/pull/91752) | Update dependencies |
 | 1.1.9 | 2026-11-03 | [90752](https://github.com/airbytehq/airbyte/pull/90752) | Update dependencies |
 | 1.1.8 | 2026-10-27 | [90064](https://github.com/airbytehq/airbyte/pull/90064) | Update dependencies |
