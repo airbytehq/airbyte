@@ -470,6 +470,14 @@ When the connector creates report requests, the Amazon SP-API may return HTTP 42
 - **Report Creation 429 Max Retries** (`creation_requester_429_max_retries`, hidden from UI): Maximum number of retry attempts for 429 errors during report creation. Default is `5`. Reduce this value to avoid exhausting rate limits on retrying requests. Set to `0` to disable 429 retries entirely. Set this via the connector config API.
 - **Max Done Report Age (Hours)** (`max_done_report_age_hours`, available in the UI): When set to a value between `1` and `72`, the connector reuses recently completed reports instead of creating new ones. This reduces the number of `createReport` API calls and helps avoid hitting rate limits.
 
+### Report downloads failing with 429 rate limit errors
+
+After Amazon finishes generating a report, the connector calls `getReportDocument` to get the download URL. Amazon limits this operation to about one request per minute per seller and application, shared by every report stream in the sync. See [Reports API rate limits](https://developer-docs.amazon.com/sp-api/docs/reports-api-rate-limits).
+
+From 7.0.2, the connector retries a 429 response on this call up to 30 times within one hour, using the wait time from Amazon's `x-amzn-RateLimit-Limit` header. Other errors on this call, such as 403, 5xx, and connection errors, are still retried up to 5 times within 10 minutes. Before 7.0.2, 429 responses were also capped at 5 retries within 10 minutes, so syncs with many report streams or partitions could fail with `API rate limit exceeded.` When that happened to the Flat File V2 Settlement Report stream, the next attempt downloaded the same settlement reports again, which could add duplicate rows to an append-only destination table.
+
+If downloads still exhaust the retry window, reduce how many report streams sync at the same time, for example by moving some of them to a separate connection that runs at a different time.
+
 ### ListFinancialEvents stream incompatible with deduplication on BigQuery
 
 The `ListFinancialEvents` stream does not define a primary key because the Amazon SP-API returns aggregated event lists per time range rather than individual events with unique identifiers. All top-level fields in this stream are arrays, such as `ShipmentEventList` and `RefundEventList`.
@@ -521,7 +529,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 7.0.3 | 2026-11-12 | [77742](https://github.com/airbytehq/airbyte/pull/77742) | Add `createdBefore` to the `VendorOrdersStatus` schema so it matches the stream's cursor, unblocking `Incremental \| Append + Deduped`. |
-| 7.0.2 | 2026-11-09 | [89626](https://github.com/airbytehq/airbyte/pull/89626) | Retry rate-limited (429) report document lookups for longer (30 retries / 1 hour) so report downloads no longer fail when Amazon throttles `getReportDocument`; other errors keep 5 retries / 10 minutes. |
+| 7.0.2 | 2026-11-11 | [89626](https://github.com/airbytehq/airbyte/pull/89626) | Retry rate-limited (429) report document lookups for longer (30 retries / 1 hour) so report downloads no longer fail when Amazon throttles `getReportDocument`; other errors keep 5 retries / 10 minutes. |
 | 7.0.1 | 2026-10-27 | [89783](https://github.com/airbytehq/airbyte/pull/89783) | Update dependencies |
 | 7.0.0 | 2026-10-22 | [74065](https://github.com/airbytehq/airbyte/pull/74065) | Replace `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon removes on November 11, 2026, with `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` |
 | 6.1.3 | 2026-10-20 | [89131](https://github.com/airbytehq/airbyte/pull/89131) | Update dependencies |
