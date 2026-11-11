@@ -825,7 +825,7 @@ def collection_products_jsonl_content_example():
 
 @pytest.fixture
 def transactions_jsonl_content_example():
-    return """{"__typename":"Order","id":"gid:\/\/shopify\/Order\/4554821468349","currency":"USD","order_created_at":"2022-01-01T00:00:00Z","transactions":[{"id":"gid:\/\/shopify\/OrderTransaction\/5721110872253","errorCode":null,"test":true,"kind":"SALE","amount":"57.23","createdAt":"2023-06-15T12:16:52Z","status":"SUCCESS","processedAt":"2023-06-15T12:16:52Z","gateway":"bogus","paymentId":"c25048437719229.1","accountNumber":"•••• •••• •••• 1","formattedGateway":"(For Testing) Bogus Gateway","manuallyCapturable":false,"receipt":"{}","parentTransaction":null,"authorization":"53433","totalUnsettledSet":{"presentmentMoney":{"amount":"0.0","currency":"USD"},"shopMoney":{"amount":"0.0","currency":"USD"}},"amountSet":{"shop_money":{"amount":"57.23","currency":"USD"}},"fees":[],"paymentDetails":{"avsResultCode":null,"cvvResultCode":null,"creditCardBin":"1","creditCardCompany":"Bogus","creditCardNumber":"•••• •••• •••• 1","creditCardName":"Bogus Gateway","creditCardWallet":null,"creditCardExpirationYear":2025,"creditCardExpirationMonth":2}},{"id":"gid:\/\/shopify\/OrderTransaction\/5721170968765","errorCode":null,"test":true,"kind":"REFUND","amount":"57.23","createdAt":"2022-06-15T13:25:42Z","status":"SUCCESS","processedAt":"2022-06-15T13:25:42Z","gateway":"bogus","paymentId":"c25048437719229.2","accountNumber":"•••• •••• •••• 1","formattedGateway":"(For Testing) Bogus Gateway","manuallyCapturable":false,"receipt":"{}","parentTransaction":{"parentId":"gid:\/\/shopify\/OrderTransaction\/5721110872253"},"authorization":null,"totalUnsettledSet":{"presentmentMoney":{"amount":"0.0","currency":"USD"},"shopMoney":{"amount":"0.0","currency":"USD"}},"amountSet":{"shop_money":{"amount":"57.23","currency":"USD"}},"fees":[],"paymentDetails":{"avsResultCode":null,"cvvResultCode":null,"creditCardBin":"1","creditCardCompany":"Bogus","creditCardNumber":"•••• •••• •••• 1","creditCardName":"Bogus Gateway","creditCardWallet":null,"creditCardExpirationYear":2025,"creditCardExpirationMonth":2}}]}\n"""
+    return """{"__typename":"Order","id":"gid:\/\/shopify\/Order\/4554821468349","currency":"USD","transactions":[{"id":"gid:\/\/shopify\/OrderTransaction\/5721110872253","errorCode":null,"test":true,"kind":"SALE","amount":"57.23","createdAt":"2023-06-15T12:16:52Z","status":"SUCCESS","processedAt":"2023-06-15T12:16:52Z","gateway":"bogus","paymentId":"c25048437719229.1","accountNumber":"•••• •••• •••• 1","formattedGateway":"(For Testing) Bogus Gateway","manuallyCapturable":false,"receipt":"{}","parentTransaction":null,"authorization":"53433","totalUnsettledSet":{"presentmentMoney":{"amount":"0.0","currency":"USD"},"shopMoney":{"amount":"0.0","currency":"USD"}},"amountSet":{"shop_money":{"amount":"57.23","currency":"USD"}},"fees":[],"paymentDetails":{"avsResultCode":null,"cvvResultCode":null,"creditCardBin":"1","creditCardCompany":"Bogus","creditCardNumber":"•••• •••• •••• 1","creditCardName":"Bogus Gateway","creditCardWallet":null,"creditCardExpirationYear":2025,"creditCardExpirationMonth":2}},{"id":"gid:\/\/shopify\/OrderTransaction\/5721170968765","errorCode":null,"test":true,"kind":"REFUND","amount":"57.23","createdAt":"2022-06-15T13:25:42Z","status":"SUCCESS","processedAt":"2022-06-15T13:25:42Z","gateway":"bogus","paymentId":"c25048437719229.2","accountNumber":"•••• •••• •••• 1","formattedGateway":"(For Testing) Bogus Gateway","manuallyCapturable":false,"receipt":"{}","parentTransaction":{"parentId":"gid:\/\/shopify\/OrderTransaction\/5721110872253"},"authorization":null,"totalUnsettledSet":{"presentmentMoney":{"amount":"0.0","currency":"USD"},"shopMoney":{"amount":"0.0","currency":"USD"}},"amountSet":{"shop_money":{"amount":"57.23","currency":"USD"}},"fees":[],"paymentDetails":{"avsResultCode":null,"cvvResultCode":null,"creditCardBin":"1","creditCardCompany":"Bogus","creditCardNumber":"•••• •••• •••• 1","creditCardName":"Bogus Gateway","creditCardWallet":null,"creditCardExpirationYear":2025,"creditCardExpirationMonth":2}}]}\n"""
 
 
 @pytest.fixture
@@ -1626,7 +1626,7 @@ def collection_products_response_expected_result():
 
 @pytest.fixture
 def transactions_response_expected_result():
-    return {
+    sale = {
         "id": 5721110872253,
         "error_code": None,
         "test": True,
@@ -1665,6 +1665,19 @@ def transactions_response_expected_result():
         "parent_id": None,
         "shop_url": "test-shop",
     }
+    # the refund predates the `start_date`, it is emitted because its order is part of the BULK job result
+    refund = {
+        **sale,
+        "id": 5721170968765,
+        "kind": "REFUND",
+        "created_at": "2022-06-15T13:25:42+00:00",
+        "processed_at": "2022-06-15T13:25:42+00:00",
+        "payment_id": "c25048437719229.2",
+        "authorization": None,
+        "admin_graphql_api_id": "gid://shopify/OrderTransaction/5721170968765",
+        "parent_id": 5721110872253,
+    }
+    return [refund, sale]
 
 
 @pytest.fixture
