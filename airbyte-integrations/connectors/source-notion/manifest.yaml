@@ -280,7 +280,9 @@ streams:
         $ref: "#/definitions/record_selector"
         record_filter:
           type: RecordFilter
-          condition: '{{ record["type"] not in ["child_page", "child_database", "ai_block"] }}'
+          condition: >-
+            {{ record["type"] not in ["child_page", "child_database", "ai_block"]
+               and str_to_datetime(record["last_edited_time"]) >= str_to_datetime(stream_slice["start_time"]) }}
       paginator:
         $ref: "#/definitions/request_parameter_paginator"
         $parameters:
