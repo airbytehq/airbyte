@@ -14,17 +14,18 @@ is held and no prompt is written, so the next sweep tries again. This is a filte
 
 Scores, reasons, and digests never go to stdout: airbytehq/airbyte's Actions logs are public, and exact scores
 would let anyone tune text against the screen. They go to --details-file, which the workflow copies only into
-the private oncall ticket.
+the private Slack alert.
 
 Usage:
   intake_snapshot.uv canary
       Screens a fixed benign sentence. Fails if Jev errors, rejects it, or flags it, so a broken or changed API
       fails the run once instead of holding every item.
-  intake_snapshot.uv select --since YYYY-MM-DD --limit N
+  intake_snapshot.uv select --since YYYY-MM-DD --limit N [--stuck-since ISO-TIME]
       Prints {"numbers": [...], "stale": [...]}. `numbers`: open community items created in the last SWEEP_DAYS
       (and not before --since) with no intake/* or ai-intake-started label, oldest first, with items labeled
       ai-intake-screen-error after the rest. `stale`: items labeled ai-intake-started more than STALE_HOURS ago
-      that got no intake/* label since.
+      that got no intake/* label since; with --stuck-since, only those that crossed STALE_HOURS after that time
+      (the previous sweep), so each is reported once.
   intake_snapshot.uv build NUMBER --dry-run true|false --prompt-file PATH --details-file PATH
       Prints {"url", "flagged", "error", "skipped", "holds"} and, only when neither flagged nor error, writes the
       prompt. The details file lists `holds`: the submission when it is flagged, otherwise any flagged linked
@@ -192,8 +193,8 @@ def days_ago(days: int) -> str:
     return (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days)).date().isoformat()
 
 
-def select(since: str, limit: int) -> dict:
-    return {"numbers": pick(since, limit), "stale": stale_started()}
+def select(since: str, limit: int, stuck_since: str = "") -> dict:
+    return {"numbers": pick(since, limit), "stale": stale_started(stuck_since)}
 
 
 def pick(since: str, limit: int) -> list[int]:
@@ -238,7 +239,7 @@ def links_of(item: dict) -> set[int]:
         return set()
 
 
-def stale_started() -> list[int]:
+def stale_started(stuck_since: str = "") -> list[int]:
     """Items whose session started STALE_HOURS ago or more and set no intake/* label since: the session failed
     or died. The sweep doesn't retry them (that could loop on a session that always fails), it reports them.
     Covers `/ai-intake` runs too: items created before SWEEP_SINCE, and items that already had an intake/*
@@ -249,6 +250,10 @@ def stale_started() -> list[int]:
     for item in search(f'repo:{REPO} is:open label:"{STARTED_LABEL}" updated:>={days_ago(STALE_DAYS)}'):
         candidates.setdefault(item["number"], item)
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=STALE_HOURS)
+    # Items that were already stuck at the previous sweep were reported by it.
+    reported_before = None
+    if stuck_since:
+        reported_before = datetime.datetime.fromisoformat(stuck_since.replace("Z", "+00:00")) - datetime.timedelta(hours=STALE_HOURS)
     stale = []
     for number in sorted(candidates):
         try:
@@ -258,7 +263,8 @@ def stale_started() -> list[int]:
             continue
         labeled = [(e["created_at"], (e.get("label") or {}).get("name") or "") for e in events if e.get("event") == "labeled"]
         started = [at for at, name in labeled if name == STARTED_LABEL]
-        if not started or datetime.datetime.fromisoformat(started[-1].replace("Z", "+00:00")) >= cutoff:
+        started_at = datetime.datetime.fromisoformat(started[-1].replace("Z", "+00:00")) if started else None
+        if not started_at or started_at >= cutoff or (reported_before and started_at < reported_before):
             continue
         # ISO timestamps in the same format compare as strings.
         if not any(name.startswith("intake/") and at >= started[-1] for at, name in labeled):
@@ -577,6 +583,7 @@ def main() -> None:
     p_select = sub.add_parser("select")
     p_select.add_argument("--since", required=True)
     p_select.add_argument("--limit", type=int, required=True)
+    p_select.add_argument("--stuck-since", default="", help="start of the previous sweep: report only sessions that got stuck after it")
     p_build = sub.add_parser("build")
     p_build.add_argument("number", type=int)
     p_build.add_argument("--dry-run", choices=["true", "false"], required=True)
@@ -595,7 +602,7 @@ def main() -> None:
             sys.exit(str(e))
         print("Jev canary passed")
     elif args.command == "select":
-        print(json.dumps(select(args.since, args.limit)))
+        print(json.dumps(select(args.since, args.limit, args.stuck_since)))
     else:
         print(json.dumps(build(args.number, args.dry_run == "true", args.prompt_file, args.details_file, args.override, args.skip_labeled)))
 
