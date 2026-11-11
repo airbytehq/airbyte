@@ -22,7 +22,10 @@ def test_alert_read_sends_bearer_token_and_emits_alerts(http_mocker: HttpMocker)
     account_request = HttpRequest(url=f"{BASE_URL}/accounts/me", headers=BEARER_HEADERS)
     alerts_request = HttpRequest(url=f"{BASE_URL}/accounts/acc-1/alerts", query_params={"limit": "100"}, headers=BEARER_HEADERS)
     http_mocker.get(account_request, HttpResponse(json.dumps({"account": {"id": "acc-1", "name": "Acme"}}), 200))
-    http_mocker.get(alerts_request, HttpResponse(json.dumps({"alerts": [{"id": 11, "name": "Brand"}, {"id": 12, "name": "Competitor"}], "_links": {}}), 200))
+    http_mocker.get(
+        alerts_request,
+        HttpResponse(json.dumps({"alerts": [{"id": 11, "name": "Brand"}, {"id": 12, "name": "Competitor"}], "_links": {}}), 200),
+    )
 
     catalog = CatalogBuilder().with_stream("alert", SyncMode.full_refresh).build()
     output = read(get_source(CONFIG), CONFIG, catalog)
