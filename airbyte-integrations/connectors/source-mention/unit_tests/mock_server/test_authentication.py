@@ -3,7 +3,7 @@
 """
 Mention authenticates with an OAuth-style bearer token: `Authorization: Bearer <token>`.
 A raw token without the `Bearer` prefix is answered with 401 `invalid_token`.
-See https://dev.mention.com/current/src/guide/authentication.html
+API reference: https://dev.mention.com/
 """
 
 import json
