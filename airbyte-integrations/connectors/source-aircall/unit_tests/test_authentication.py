@@ -162,46 +162,54 @@ def test_oauth_credentials_authenticate_with_bearer_access_token() -> None:
     _check_with_authorization(_OAUTH_CONFIG, "Bearer oauth-access-token")
 
 
-_BEARER = {"Authorization": "Bearer oauth-access-token"}
+_MODES = [
+    pytest.param(_OAUTH_CONFIG, "Bearer oauth-access-token", id="oauth"),
+    pytest.param(_API_KEY_CONFIG, _basic("test-id", "test-token"), id="api_key"),
+]
 
 
-def _read_with_oauth(stream_name: str, config: dict):
+def _read(stream_name: str, config: dict):
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
     return read(get_source(config), config=config, catalog=catalog)
 
 
-# The conversation intelligence requester and user_numbers override parts of the base requester; each must keep its authenticator.
+# The conversation intelligence requester and user_numbers override parts of the base requester; each must keep its
+# SelectiveAuthenticator, so both modes are checked.
+@pytest.mark.parametrize("base_config, authorization", _MODES)
 @pytest.mark.parametrize("stream_name", list(_STREAMS))
-def test_conversation_intelligence_requests_send_the_oauth_bearer_token(stream_name: str) -> None:
-    config = {**_OAUTH_CONFIG, "window_in_days": 365, "include_conversation_intelligence": True}
+def test_conversation_intelligence_requests_send_the_selected_credentials(stream_name: str, base_config: dict, authorization: str) -> None:
+    config = {**base_config, "window_in_days": 365, "include_conversation_intelligence": True}
+    headers = {"Authorization": authorization}
     suffix, query, body, _ = _STREAMS[stream_name]
     end = _epoch(_NOW)
     calls_query = {"from": str(end - 365 * _DAY), "to": str(end), "per_page": "50", "fetch_call_timeline": "true"}
-    child = HttpRequest(f"{_BASE_URL}/calls/812/{suffix}", query_params=query, headers=_BEARER)
+    child = HttpRequest(f"{_BASE_URL}/calls/812/{suffix}", query_params=query, headers=headers)
     with freeze_time(_NOW), HttpMocker() as http_mocker:
         http_mocker.get(
-            HttpRequest(f"{_BASE_URL}/calls", query_params=calls_query, headers=_BEARER),
+            HttpRequest(f"{_BASE_URL}/calls", query_params=calls_query, headers=headers),
             HttpResponse(body=json.dumps({"calls": [{"id": 812, "started_at": end - _DAY}]}), status_code=200),
         )
         http_mocker.get(child, HttpResponse(body=json.dumps(body), status_code=200))
 
-        output = _read_with_oauth(stream_name, config)
+        output = _read(stream_name, config)
 
         assert output.errors == []
         assert output.records
         http_mocker.assert_number_of_calls(child, 1)
 
 
-def test_user_numbers_requests_send_the_oauth_bearer_token() -> None:
-    numbers = HttpRequest("https://api.aircall.io/v2/users/7/numbers", query_params={"per_page": "50"}, headers=_BEARER)
+@pytest.mark.parametrize("config, authorization", _MODES)
+def test_user_numbers_requests_send_the_selected_credentials(config: dict, authorization: str) -> None:
+    headers = {"Authorization": authorization}
+    numbers = HttpRequest("https://api.aircall.io/v2/users/7/numbers", query_params={"per_page": "50"}, headers=headers)
     with HttpMocker() as http_mocker:
         http_mocker.get(
-            HttpRequest("https://api.aircall.io/v2/users", query_params={"per_page": "50"}, headers=_BEARER),
+            HttpRequest("https://api.aircall.io/v2/users", query_params={"per_page": "50"}, headers=headers),
             HttpResponse(body=json.dumps({"users": [{"id": 7}], "meta": {}}), status_code=200),
         )
         http_mocker.get(numbers, HttpResponse(body=json.dumps({"numbers": [{"id": 1}], "meta": {}}), status_code=200))
 
-        output = _read_with_oauth("user_numbers", _OAUTH_CONFIG)
+        output = _read("user_numbers", config)
 
         assert output.errors == []
         assert [record.record.data for record in output.records] == [{"id": 1, "user_id": 7}]
