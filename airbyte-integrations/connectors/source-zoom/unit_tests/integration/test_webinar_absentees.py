@@ -3,7 +3,7 @@
 """Mock-server tests for the `webinar_absentees` stream (`acceptance-test-config.yml` `empty_streams`).
 
 `GET /past_webinars/{webinarUUID}/absentees` for every webinar returned by `GET /users/{userId}/webinars`.
-Keyed on the webinar `uuid` (double URL-encoded in the path), paginated with `page_size=30` and
+Keyed on the webinar `uuid` (double URL-encoded in the path), paginated with `page_size=300` and
 `next_page_token`, records under `registrants`, injects `webinar_uuid`.
 """
 
