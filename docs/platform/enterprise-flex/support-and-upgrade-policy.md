@@ -5,35 +5,46 @@ sidebar_label: Support and upgrade policy
 
 # Enterprise Flex support and upgrade policy
 
-In Enterprise Flex, Airbyte manages and upgrades the control plane and any Airbyte-managed data planes for you. You manage the self-managed data planes that run in your own infrastructure, including when you upgrade them. This policy explains how Airbyte releases new data plane versions, which versions Airbyte supports, and how often you need to upgrade.
+In Enterprise Flex, Airbyte manages and upgrades the control plane and any Airbyte-managed data planes for you. You manage the self-managed data planes that run in your own infrastructure, including when you upgrade them. This policy explains how Airbyte publishes new data plane versions and how long Airbyte supports each one, so you can plan your upgrades.
 
 This policy applies only to self-managed data planes you deploy with the `airbyte-data-plane` Helm chart.
 
 ## Release cadence
 
-Airbyte releases a new minor version of its self-managed Helm charts, like 2.3 or 2.4, approximately every two months. Airbyte may also release patch versions, like 2.4.1, between minor versions to fix bugs and security issues.
+Airbyte aims to publish a new minor version of the data plane, like 2.4 or 2.5, approximately every two months, or about six times per year. Between minor versions, Airbyte may publish patch versions, like 2.4.1, for security issues and urgent bug fixes.
 
-Each version has [release notes](/release_notes/) that describe what's new and any action you need to take before you upgrade.
+Each version has [release notes](/release_notes/) that describe what's new and anything you need to know before you upgrade.
+
+## Support window
+
+Airbyte supports each minor version for 14 months after it's released. The end-of-support date is known the day a version is released, and it doesn't change when Airbyte publishes patch versions for that minor version.
+
+Fourteen months is one year plus one release interval. If you upgrade to the latest version, you have at least a year before you need to upgrade again, no matter where you are in the release cycle. Because Airbyte releases a new minor version about every two months, about seven minor versions are supported at any time.
+
+If your data plane runs a version that's past its end-of-support date, Airbyte Support may ask you to upgrade to a supported version before it can help you troubleshoot an issue.
+
+## Compatibility and breaking changes
+
+Airbyte only ships changes that break data plane compatibility in a major version, like 3.0. Minor and patch versions don't break compatibility, so if you're on any supported version, you can upgrade to the latest minor version of the same major version without planning for breaking changes.
+
+Airbyte documents breaking changes in the release notes for the major version that introduces them and in the [breaking change list](/release_notes/self-managed/breaking-changes). Review both before you upgrade to a new major version.
+
+## Security patches
+
+Airbyte publishes security patches only for the latest minor version of each supported major version. For example, if Airbyte supports 3.1, 2.8, and 2.7, Airbyte publishes security patches for 3.1 and 2.8. To get a security patch on 2.7, upgrade to the latest patch of 2.8.
 
 ## Supported versions
 
-Airbyte supports the three most recent minor versions of the data plane chart. When Airbyte releases a new minor version, the oldest of the three leaves the support window. For example, when Airbyte releases 2.5, 2.2 is no longer supported and the supported versions are 2.3, 2.4, and 2.5.
+| Version | Release date       | End of support     |
+| ------- | ------------------ | ------------------ |
+| 2.5     | November 6, 2026   | January 6, 2028    |
+| 2.4     | October 9, 2026    | December 9, 2027   |
+| 2.3     | September 15, 2026 | November 15, 2027  |
+| 2.2     | August 10, 2026    | October 10, 2027   |
+| 2.1     | April 3, 2026      | June 3, 2027       |
+| 2.0     | October 14, 2025   | December 14, 2026  |
 
-Within each supported minor version, Airbyte supports the latest patch version. If a fix you need is in a patch version, upgrade to that patch version.
-
-If your data plane runs a version that Airbyte no longer supports, Airbyte Support may ask you to upgrade to a supported version before it can help you troubleshoot an issue.
-
-## Breaking changes
-
-Airbyte limits breaking changes to two releases per year. A breaking change is one that requires you to take action before or during an upgrade, like updating your `values.yaml` file, your Kubernetes resources, or your network configuration.
-
-Airbyte documents breaking changes in the release notes for the version that introduces them and in the [breaking change list](/release_notes/self-managed/breaking-changes). If you skip versions when you upgrade, complete the steps for every version you skip.
-
-## Your upgrade commitment
-
-To stay within the support window, you commit to upgrading each of your self-managed data planes at least twice per year. Because Airbyte releases a new minor version approximately every two months, a data plane that you upgrade less often falls outside the support window.
-
-Plan your upgrades as routine maintenance. Before each upgrade, review the release notes and the breaking change list for the versions you're upgrading through.
+Versions earlier than 2.0 are no longer supported.
 
 ## Check your data plane version
 
@@ -43,7 +54,7 @@ To see which chart version and app version a data plane runs, list your Helm rel
 helm list -n <NAMESPACE>
 ```
 
-The `CHART` column shows the chart version, for example `airbyte-data-plane-2.4.0`, and the `APP VERSION` column shows the Airbyte version.
+The `CHART` column shows the chart version, for example `airbyte-data-plane-2.5.0`, and the `APP VERSION` column shows the Airbyte version.
 
 ## Upgrade a data plane
 
