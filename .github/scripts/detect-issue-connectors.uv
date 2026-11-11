@@ -76,6 +76,11 @@ def longest_connector_match(candidate: str, connectors: Iterable[str]) -> str | 
     return None
 
 
+def label_for(connector: str) -> str:
+    connector_type, name = connector.split("-", 1)
+    return f"connectors/{connector_type}/{name}"[:50]
+
+
 def detect_connectors(title: str, body: str, connectors: set[str]) -> list[str]:
     matches: set[str] = set()
     field = FORM_FIELD_PATTERN.search(body)
@@ -123,7 +128,7 @@ def main() -> None:
         )
     result = {
         "connectors": [] if too_many_connectors else detected,
-        "labels": [] if too_many_connectors else [f"connectors/{name.split('-', 1)[0]}/{name}" for name in detected],
+        "labels": [] if too_many_connectors else [label_for(name) for name in detected],
     }
     print(json.dumps(result, sort_keys=True))
 

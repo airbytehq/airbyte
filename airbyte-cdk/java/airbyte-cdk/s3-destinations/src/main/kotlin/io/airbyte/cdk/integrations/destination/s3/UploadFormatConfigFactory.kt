@@ -20,7 +20,7 @@ object UploadFormatConfigFactory {
         LOGGER.info { "File upload format config: $formatConfig" }
         val formatType =
             FileUploadFormat.valueOf(
-                formatConfig["format_type"].asText().uppercase(Locale.getDefault())
+                formatConfig["format_type"].asText().uppercase(Locale.getDefault()),
             )
 
         return when (formatType) {

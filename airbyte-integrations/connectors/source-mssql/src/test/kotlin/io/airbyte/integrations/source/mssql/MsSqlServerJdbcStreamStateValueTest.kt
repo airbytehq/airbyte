@@ -84,7 +84,7 @@ class MsSqlServerJdbcStreamStateValueTest {
             MsSqlServerJdbcStreamStateValue.snapshotWithCursorCheckpoint(
                 primaryKey,
                 checkpoint,
-                cursor
+                cursor,
             )
 
         // Verify pk value is stored as JsonNode and incremental state is embedded
@@ -100,7 +100,7 @@ class MsSqlServerJdbcStreamStateValueTest {
         val incrementalState =
             Jsons.treeToValue(
                 deserialized.incrementalState,
-                MsSqlServerJdbcStreamStateValue::class.java
+                MsSqlServerJdbcStreamStateValue::class.java,
             )
         assertEquals(listOf("updated_at"), incrementalState.cursorField)
     }

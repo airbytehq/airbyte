@@ -48,31 +48,53 @@ def test_check_succeeds_via_report_types_without_reporting_job(config):
     assert not any("/jobs" in request.path for request in mocker.request_history)
 
 
-def test_check_fails_when_report_types_is_unauthorized(config):
-    """`check` reports FAILED when `GET /reportTypes` rejects the credentials.
-
-    A 401 from the Reporting API means the token refresh already succeeded, so the credentials
-    are valid but unusable -- in practice the account has no YouTube channel. The manifest's
-    `error_message` must reach the user instead of the CDK's generic 401 text, which requires
-    `action: FAIL` on the response filter.
-    """
+def _check_with_401_body(config, body: dict):
     source = get_source(config=config)
 
     with requests_mock.Mocker() as mocker:
         mocker.post("https://oauth2.googleapis.com/token", json={"access_token": "test_access_token", "expires_in": 3600})
-        report_types_mock = mocker.get(
-            f"{_REPORTING_API}/reportTypes",
-            status_code=401,
-            json={"error": {"code": 401, "message": "Request had invalid authentication credentials.", "status": "UNAUTHENTICATED"}},
-        )
+        report_types_mock = mocker.get(f"{_REPORTING_API}/reportTypes", status_code=401, json=body)
 
         status = source.check(logging.getLogger("test"), config)
 
-    assert status.status == Status.FAILED
     assert report_types_mock.called
+    return status
+
+
+def test_check_fails_when_report_types_rejects_the_access_token(config):
+    """An UNAUTHENTICATED 401 ("invalid authentication credentials") tells the user to re-authenticate.
+
+    The body is the real one Google returns for a rejected bearer token. The message still
+    mentions the no-channel cause, since it is the usual reason re-authenticating does not help.
+    """
+    status = _check_with_401_body(
+        config,
+        {
+            "error": {
+                "code": 401,
+                "message": "Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential.",
+                "status": "UNAUTHENTICATED",
+            }
+        },
+    )
+
+    assert status.status == Status.FAILED
+    assert "report_types" in status.message
+    assert "Google rejected the YouTube Reporting API credentials: Request had invalid authentication credentials." in status.message
+    assert "Re-authenticate the source." in status.message
+    assert "does not have an associated YouTube channel" in status.message
+    # The CDK's generic fallback means the filter was skipped (usually a missing `action`).
+    assert "Please ensure you are authenticated correctly" not in status.message
+
+
+def test_check_fails_with_no_channel_message_for_other_401s(config):
+    """Any other 401 after a successful token refresh means the account has no YouTube channel."""
+    status = _check_with_401_body(config, {"error": {"code": 401, "message": "Unauthorized", "status": "UNAUTHENTICATED"}})
+
+    assert status.status == Status.FAILED
     assert "report_types" in status.message
     assert "does not appear to have an associated YouTube channel" in status.message
-    # The CDK's generic fallback means the filter was skipped (usually a missing `action`).
+    assert "Google rejected the YouTube Reporting API credentials" not in status.message
     assert "Please ensure you are authenticated correctly" not in status.message
 
 

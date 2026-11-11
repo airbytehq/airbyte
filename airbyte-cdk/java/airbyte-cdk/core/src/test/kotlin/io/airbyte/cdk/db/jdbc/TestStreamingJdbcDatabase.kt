@@ -47,8 +47,8 @@ internal class TestStreamingJdbcDatabase {
                     DatabaseDriver.POSTGRESQL.urlFormatString,
                     config[JdbcUtils.HOST_KEY].asText(),
                     config[JdbcUtils.PORT_KEY].asInt(),
-                    config[JdbcUtils.DATABASE_KEY].asText()
-                )
+                    config[JdbcUtils.DATABASE_KEY].asText(),
+                ),
             )
 
         defaultJdbcDatabase = Mockito.spy(DefaultJdbcDatabase(connectionPool))
@@ -67,11 +67,12 @@ internal class TestStreamingJdbcDatabase {
                 .createStatement()
                 .execute(
                     """
-          DROP TABLE IF EXISTS id_and_name;
-          CREATE TABLE id_and_name (id INTEGER, name VARCHAR(200));
-          INSERT INTO id_and_name (id, name) VALUES (1, 'picard'),  (2, 'crusher'), (3, 'vash');
-          
-          """.trimIndent()
+                    DROP TABLE IF EXISTS id_and_name;
+                    CREATE TABLE id_and_name (id INTEGER, name VARCHAR(200));
+                    INSERT INTO id_and_name (id, name) VALUES (1, 'picard'),  (2, 'crusher'), (3, 'vash');
+
+                    """
+                        .trimIndent(),
                 )
         }
 
@@ -88,13 +89,13 @@ internal class TestStreamingJdbcDatabase {
                     ps1.set(ps)
                     ps
                 },
-                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) }
+                { queryContext: ResultSet -> sourceOperations.rowToJson(queryContext) },
             )
         val expectedRecords: List<JsonNode> =
             Lists.newArrayList(
                 Jsons.jsonNode(Map.of("id", 1, "name", "picard")),
                 Jsons.jsonNode(Map.of("id", 2, "name", "crusher")),
-                Jsons.jsonNode(Map.of("id", 3, "name", "vash"))
+                Jsons.jsonNode(Map.of("id", 3, "name", "vash")),
             )
         Assertions.assertEquals(expectedRecords, actual)
     }
@@ -113,11 +114,12 @@ internal class TestStreamingJdbcDatabase {
                 .createStatement()
                 .execute(
                     """
-            DROP TABLE IF EXISTS id_and_name;
-            CREATE TABLE id_and_name (id INTEGER, name TEXT);
-            INSERT INTO id_and_name SELECT id, repeat('a', 10485760) as name from generate_series(1, 20) as id;
-            
-            """.trimIndent()
+                    DROP TABLE IF EXISTS id_and_name;
+                    CREATE TABLE id_and_name (id INTEGER, name TEXT);
+                    INSERT INTO id_and_name SELECT id, repeat('a', 10485760) as name from generate_series(1, 20) as id;
+
+                    """
+                        .trimIndent(),
                 )
         }
 
@@ -135,7 +137,7 @@ internal class TestStreamingJdbcDatabase {
                 { resultSet: ResultSet ->
                     fetchSizes.add(resultSet.fetchSize)
                     sourceOperations.rowToJson(resultSet)
-                }
+                },
             )
         Assertions.assertEquals(20, actual.size)
 
@@ -157,7 +159,7 @@ internal class TestStreamingJdbcDatabase {
                 .put(JdbcUtils.DATABASE_KEY, dbName)
                 .put(JdbcUtils.USERNAME_KEY, psqlDb.username)
                 .put(JdbcUtils.PASSWORD_KEY, psqlDb.password)
-                .build()
+                .build(),
         )
     }
 

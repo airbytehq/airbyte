@@ -43,7 +43,7 @@ class ProtocolMessageDeserializer(
                     }
 
                 throw RuntimeException(
-                    "Failed to deserialize airbyte message (type=$type; length=${serialized.length}; reason=${t.javaClass})"
+                    "Failed to deserialize airbyte message (type=$type; length=${serialized.length}; reason=${t.javaClass})",
                 )
             }
 

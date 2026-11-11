@@ -23,7 +23,7 @@ internal class TimeStringUtilityTest {
         val localDate = TimeStringUtility.toLocalDate(localDateString)
         assertEquals(
             LocalDate.parse(localDateString, AirbyteValueCoercer.DATE_TIME_FORMATTER),
-            localDate
+            localDate,
         )
     }
 
@@ -41,7 +41,7 @@ internal class TimeStringUtilityTest {
         val localDateTime = TimeStringUtility.toLocalDateTime(localDateTimeString)
         assertEquals(
             LocalDateTime.parse(localDateTimeString, AirbyteValueCoercer.DATE_TIME_FORMATTER),
-            localDateTime
+            localDateTime,
         )
     }
 
@@ -52,7 +52,7 @@ internal class TimeStringUtilityTest {
         assertEquals(
             OffsetTime.parse(offsetWithTimezoneString, AirbyteValueCoercer.TIME_FORMATTER)
                 .toLocalTime(),
-            offsetWithTimezone
+            offsetWithTimezone,
         )
     }
 
@@ -62,7 +62,7 @@ internal class TimeStringUtilityTest {
         val offsetWithoutTimezone = TimeStringUtility.toOffset(offsetWithoutTimezoneString)
         assertEquals(
             LocalTime.parse(offsetWithoutTimezoneString, AirbyteValueCoercer.TIME_FORMATTER),
-            offsetWithoutTimezone
+            offsetWithoutTimezone,
         )
     }
 
@@ -73,7 +73,7 @@ internal class TimeStringUtilityTest {
         assertEquals(
             ZonedDateTime.parse(offsetWithTimezoneString, AirbyteValueCoercer.DATE_TIME_FORMATTER)
                 .toOffsetDateTime(),
-            offsetWithTimezone
+            offsetWithTimezone,
         )
     }
 
@@ -84,10 +84,10 @@ internal class TimeStringUtilityTest {
         assertEquals(
             LocalDateTime.parse(
                     offsetWithoutTimezoneString,
-                    AirbyteValueCoercer.DATE_TIME_FORMATTER
+                    AirbyteValueCoercer.DATE_TIME_FORMATTER,
                 )
                 .atOffset(ZoneOffset.UTC),
-            offsetWithoutTimezone
+            offsetWithoutTimezone,
         )
     }
 

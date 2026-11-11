@@ -8,6 +8,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * Protocol types are ordered by precedence in the case of a Union that contains multiple types.
  * Priority is given to wider scope types over narrower ones. (Note that because of dedup logic in
@@ -77,7 +78,7 @@ enum class AirbyteProtocolType : AirbyteType {
                         airbyteType == null ||
                             AirbyteType.Companion.nodeMatches(
                                 airbyteType,
-                                "timestamp_with_timezone"
+                                "timestamp_with_timezone",
                             )
                     ) {
                         return TIMESTAMP_WITH_TIMEZONE

@@ -30,13 +30,14 @@ private val log = KotlinLogging.logger {}
  */
 object SerialFlush {
     val RANDOM_CONNECTION_ID: UUID = UUID.randomUUID()
+
     /**
      * Logic handling how destinations with staging areas (aka bucket storages) will flush their
      * buffer
      *
      * @param database database used for syncing
      * @param stagingOperations collection of SQL queries necessary for writing data into a staging
-     * area
+     *   area
      * @param writeConfigs configuration settings for all destination connectors needed to write
      * @param catalog collection of configured streams (e.g. API endpoints or database tables)
      * @return
@@ -70,7 +71,7 @@ object SerialFlush {
                     "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
                     conflictingStreams.joinToString(", ") { config: WriteConfig ->
                         config.namespace + "." + config.streamName
-                    }
+                    },
                 )
             throw ConfigErrorException(message)
         }
@@ -83,7 +84,7 @@ object SerialFlush {
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
                     "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
-                    Jsons.serialize(catalog)
+                    Jsons.serialize(catalog),
                 )
             }
 
@@ -96,7 +97,7 @@ object SerialFlush {
                     schemaName,
                     writeConfig.streamName,
                     writeConfig.rawTableName,
-                    writeConfig.writeDatetime
+                    writeConfig.writeDatetime,
                 )
             try {
                 writer.use {
@@ -107,7 +108,7 @@ object SerialFlush {
                             writer,
                             schemaName,
                             stageName,
-                            stagingPath
+                            stagingPath,
                         )
                     GeneralStagingFunctions.copyIntoTableFromStage(
                         database,
@@ -125,7 +126,7 @@ object SerialFlush {
                 }
                 throw RuntimeException(
                     "Failed to upload buffer to stage and commit to destination",
-                    e
+                    e,
                 )
             }
         }

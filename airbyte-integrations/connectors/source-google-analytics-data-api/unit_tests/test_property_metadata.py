@@ -4,6 +4,7 @@
 
 from pathlib import Path
 
+import pytest
 import requests_mock
 import yaml
 
@@ -96,7 +97,16 @@ def test_property_metadata_reads_properties(requests_mock: requests_mock.Mocker,
     ]
 
 
-def test_property_metadata_coexists_with_dynamic_report_streams(requests_mock: requests_mock.Mocker, manifest_path: Path) -> None:
+@pytest.mark.parametrize(
+    "single_stream_per_report",
+    [
+        pytest.param(False, id="one_stream_per_property"),
+        pytest.param(True, id="one_stream_per_report"),
+    ],
+)
+def test_property_metadata_coexists_with_dynamic_report_streams(
+    requests_mock: requests_mock.Mocker, manifest_path: Path, single_stream_per_report: bool
+) -> None:
     config = _get_config()
     config["property_ids"] = ["123"]
     config["custom_reports_array"] = [
@@ -106,6 +116,8 @@ def test_property_metadata_coexists_with_dynamic_report_streams(requests_mock: r
             "metrics": ["activeUsers"],
         }
     ]
+    if single_stream_per_report:
+        config["single_stream_per_report"] = True
     _mock_token(requests_mock)
     for property_id in ("123", "456"):
         requests_mock.get(
@@ -117,6 +129,9 @@ def test_property_metadata_coexists_with_dynamic_report_streams(requests_mock: r
     stream_names = [stream.name for stream in source.streams(config)]
 
     assert "property_metadata" in stream_names
-    assert "metadata_coexistence_report" in stream_names
+    # Consolidated report streams carry a `Consolidated` suffix so they never collide with the
+    # per-property stream names. `property_metadata` is static and named the same either way.
+    expected_report = "metadata_coexistence_reportConsolidated" if single_stream_per_report else "metadata_coexistence_report"
+    assert expected_report in stream_names
     assert len(stream_names) > 1
     assert len(stream_names) == len(set(stream_names))

@@ -8929,6 +8929,8 @@ definitions:
           url_base: https://api.themoviedb.org/3/
           path: /trending/all/day
           http_method: GET
+          request_parameters:
+            api_key: "{{ config['api_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -18811,6 +18813,8 @@ streams:
         url_base: https://api.themoviedb.org/3/
         path: /trending/all/day
         http_method: GET
+        request_parameters:
+          api_key: "{{ config['api_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:

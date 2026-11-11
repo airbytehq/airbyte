@@ -23,6 +23,7 @@ class ConfigBuilder:
         self._disable_fetching_predictive_analytics: bool = False
         self._num_workers: int = 10
         self._event_metric_ids: Optional[str] = None
+        self._reporting_lookback_window: Optional[int] = None
 
     def with_api_key(self, api_key: str) -> "ConfigBuilder":
         """Set the Klaviyo API key."""
@@ -49,6 +50,11 @@ class ConfigBuilder:
         self._event_metric_ids = event_metric_ids
         return self
 
+    def with_reporting_lookback_window(self, days: int) -> "ConfigBuilder":
+        """Set the number of days the flow_series_reports stream re-syncs on every incremental run."""
+        self._reporting_lookback_window = days
+        return self
+
     def with_num_workers(self, num_workers: int) -> "ConfigBuilder":
         """Set the number of concurrent threads."""
         self._num_workers = num_workers
@@ -67,5 +73,8 @@ class ConfigBuilder:
 
         if self._event_metric_ids is not None:
             config["event_metric_ids"] = self._event_metric_ids
+
+        if self._reporting_lookback_window is not None:
+            config["reporting_lookback_window"] = self._reporting_lookback_window
 
         return config

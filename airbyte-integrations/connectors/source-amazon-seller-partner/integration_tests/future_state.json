@@ -391,7 +391,7 @@
         "dataEndTime": "2121-07-01T00:00:00Z"
       },
       "stream_descriptor": {
-        "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
+        "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2"
       }
     }
   },
@@ -454,7 +454,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "LastUpdatedDate": "2121-07-01T00:00:00+00:00"
+        "LastUpdatedDate": "2121-07-01T00:00:00Z"
       },
       "stream_descriptor": {
         "name": "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
@@ -524,6 +524,28 @@
       },
       "stream_descriptor": {
         "name": "VendorDirectFulfillmentShipping"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_SALES_AND_TRAFFIC_REPORT_BY_DATE"
+      },
+      "stream_state": {
+        "queryEndDate": "2121-11-04T12:18:50Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH"
+      },
+      "stream_state": {
+        "queryEndDate": "2121-11-04T12:18:51Z"
       }
     }
   }

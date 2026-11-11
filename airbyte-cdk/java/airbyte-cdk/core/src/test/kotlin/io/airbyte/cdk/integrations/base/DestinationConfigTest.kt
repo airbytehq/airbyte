@@ -47,11 +47,11 @@ class DestinationConfigTest {
 
         Assertions.assertEquals(
             Jsons.deserialize("\"bar\""),
-            DestinationConfig.instance!!.getNodeValue("foo")
+            DestinationConfig.instance!!.getNodeValue("foo"),
         )
         Assertions.assertEquals(
             Jsons.deserialize("true"),
-            DestinationConfig.instance!!.getNodeValue("baz")
+            DestinationConfig.instance!!.getNodeValue("baz"),
         )
         Assertions.assertNull(DestinationConfig.instance!!.getNodeValue("blah"))
 
@@ -61,12 +61,13 @@ class DestinationConfigTest {
     companion object {
         private val JSON =
             """
-                                     {
-                                       "foo": "bar",
-                                       "baz": true
-                                     }
-                                     
-                                     """.trimIndent()
+            {
+              "foo": "bar",
+              "baz": true
+            }
+
+            """
+                .trimIndent()
 
         private val NODE: JsonNode = Jsons.deserialize(JSON)
     }

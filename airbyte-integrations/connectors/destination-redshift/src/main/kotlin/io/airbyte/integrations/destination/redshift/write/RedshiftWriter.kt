@@ -120,7 +120,7 @@ class RedshiftWriter(
                 throw SystemErrorException(
                     "Cannot execute a hybrid refresh - " +
                         "current generation ${stream.generationId}; " +
-                        "minimum generation ${stream.minimumGenerationId}"
+                        "minimum generation ${stream.minimumGenerationId}",
                 )
         }
     }

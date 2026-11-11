@@ -1,0 +1,675 @@
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
+
+import json
+import re
+from collections import Counter
+from datetime import datetime, timedelta, timezone
+from functools import lru_cache
+from queue import Queue
+from typing import Any, Dict, List, Optional, Tuple
+from unittest import TestCase
+from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
+
+import freezegun
+import pytest
+from unit_tests.conftest import get_source
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.concurrent_source import concurrent_source
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import (
+    FieldPath,
+    HttpResponseBuilder,
+    NestedPath,
+    RecordBuilder,
+    create_record_builder,
+    create_response_builder,
+    find_template,
+)
+from airbyte_cdk.test.state_builder import StateBuilder
+from integration.config import ConfigBuilder
+from integration.pagination import StripePaginationStrategy
+from integration.request_builder import StripeRequestBuilder
+
+
+_STREAM_NAME = "customer_balance_transactions"
+_CUSTOMER_STREAM = "customers"
+_EVENT_STREAM = "cbt_customer_events"
+_NOW = datetime.now(timezone.utc)
+_START_DATE = _NOW - timedelta(days=20)
+_ACCOUNT_ID = ConfigBuilder().build()["account_id"]
+_CLIENT_SECRET = ConfigBuilder().build()["client_secret"]
+_EVENT_OBJECT = NestedPath(["data", "object"])
+_WINDOW_DAYS = 7
+_CBT_EVENT_TYPES = ["customer.updated", "customer.deleted"]
+
+
+def _config(start_date: datetime = _START_DATE) -> ConfigBuilder:
+    return ConfigBuilder().with_start_date(start_date).with_slice_range_in_days(365)
+
+
+def _catalog(sync_mode: SyncMode = SyncMode.incremental) -> ConfiguredAirbyteCatalog:
+    return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
+
+
+def _read(
+    config_builder: ConfigBuilder,
+    state: Optional[List[Any]] = None,
+    expecting_exception: bool = False,
+    sync_mode: SyncMode = SyncMode.incremental,
+) -> EntrypointOutput:
+    config = config_builder.build()
+    return read(
+        get_source(config, state),
+        config,
+        _catalog(sync_mode),
+        state,
+        expecting_exception,
+    )
+
+
+def _stream_state(output: EntrypointOutput) -> Dict[str, Any]:
+    return vars(output.state_messages[-1].state.stream.stream_state)
+
+
+def _resume_state(output: EntrypointOutput, input_state: Optional[List[Any]]) -> Optional[List[Any]]:
+    return [output.state_messages[-1].state] if output.state_messages else input_state
+
+
+def _state(stream_state: Dict[str, Any]) -> List[Any]:
+    return StateBuilder().with_stream_state(_STREAM_NAME, stream_state).build()
+
+
+def _customer_request(start: datetime, end: datetime) -> HttpRequest:
+    return (
+        StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
+        .with_created_gte(start)
+        .with_created_lte(end)
+        .with_limit(100)
+        .build()
+    )
+
+
+@lru_cache(maxsize=None)
+def _child_request(customer_id: str) -> HttpRequest:
+    return (
+        StripeRequestBuilder._for_endpoint(f"customers/{customer_id}/balance_transactions", _ACCOUNT_ID, _CLIENT_SECRET)
+        .with_any_query_params()
+        .build()
+    )
+
+
+def _events_request(created_gte: datetime, created_lte: datetime = _NOW) -> HttpRequest:
+    return _cached_events_request(created_gte, created_lte)
+
+
+@lru_cache(maxsize=None)
+def _cached_events_request(created_gte: datetime, created_lte: datetime) -> HttpRequest:
+    return (
+        StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
+        .with_types(_CBT_EVENT_TYPES)
+        .with_limit(100)
+        .with_created_gte(created_gte)
+        .with_created_lte(created_lte)
+        .build()
+    )
+
+
+def _created_windows(start: datetime, end: datetime) -> List[Tuple[datetime, datetime]]:
+    windows = []
+    window_start = start
+    while window_start <= end:
+        window_end = min(window_start + timedelta(days=_WINDOW_DAYS) - timedelta(seconds=1), end)
+        windows.append((window_start, window_end))
+        window_start = window_end + timedelta(seconds=1)
+    return windows
+
+
+def _customer_record(customer_id: str, created: datetime) -> RecordBuilder:
+    return (
+        create_record_builder(
+            find_template("customer_balance_transactions_customers", __file__),
+            FieldPath("data"),
+            record_id_path=FieldPath("id"),
+            record_cursor_path=FieldPath("created"),
+        )
+        .with_id(customer_id)
+        .with_field(FieldPath("created"), int(created.timestamp()))
+    )
+
+
+def _customers_response(customers: List[Tuple[str, datetime]]) -> HttpResponseBuilder:
+    response = create_response_builder(
+        find_template("customer_balance_transactions_customers", __file__),
+        FieldPath("data"),
+        pagination_strategy=StripePaginationStrategy(),
+    )
+    for customer_id, created in sorted(customers, key=lambda item: item[1], reverse=True):
+        response.with_record(_customer_record(customer_id, created))
+    return response
+
+
+def _transaction_record(transaction_id: str = "synthetic-transaction") -> RecordBuilder:
+    return create_record_builder(
+        find_template("customer_balance_transactions", __file__),
+        FieldPath("data"),
+        record_id_path=FieldPath("id"),
+        record_cursor_path=FieldPath("created"),
+    ).with_id(transaction_id)
+
+
+def _transactions_response(transaction_id: str = "synthetic-transaction") -> HttpResponseBuilder:
+    return create_response_builder(
+        find_template("customer_balance_transactions", __file__),
+        FieldPath("data"),
+        pagination_strategy=StripePaginationStrategy(),
+    ).with_record(_transaction_record(transaction_id))
+
+
+def _events_response() -> HttpResponseBuilder:
+    return create_response_builder(
+        find_template("customer_balance_transactions_events", __file__),
+        FieldPath("data"),
+        pagination_strategy=StripePaginationStrategy(),
+    )
+
+
+def _event_record(customer_id: str, customer_created: datetime, event_created: datetime) -> RecordBuilder:
+    return (
+        create_record_builder(
+            find_template("customer_balance_transactions_events", __file__),
+            FieldPath("data"),
+            record_id_path=FieldPath("id"),
+            record_cursor_path=FieldPath("created"),
+        )
+        .with_id("synthetic-event")
+        .with_field(FieldPath("type"), "customer.updated")
+        .with_field(FieldPath("created"), int(event_created.timestamp()))
+        .with_field(
+            _EVENT_OBJECT,
+            _customer_record(customer_id, customer_created).build(),
+        )
+    )
+
+
+def _register_events(
+    http_mocker: HttpMocker,
+    response: Optional[HttpResponseBuilder] = None,
+    created_gte: datetime = _NOW,
+    created_lte: datetime = _NOW,
+) -> None:
+    http_mocker.get(_events_request(created_gte, created_lte), (response or _events_response()).build())
+
+
+def _register_events_by_window(http_mocker: HttpMocker, older_window_response: HttpResponseBuilder) -> List[str]:
+    request_urls: List[str] = []
+    empty_response = _events_response().build()
+    older_response = older_window_response.build()
+
+    def respond_to_request(request: Any, context: Any) -> str:
+        request_urls.append(request.url)
+        created_gte = int(parse_qs(urlparse(request.url).query)["created[gte]"][0])
+        context.status_code = 200
+        return empty_response.body if created_gte == int(_NOW.timestamp()) else older_response.body
+
+    http_mocker._mocker.get(re.compile(r"https://api\.stripe\.com/v1/events(?:\?.*)?$"), text=respond_to_request)
+    return request_urls
+
+
+def _status_response(status_code: int) -> HttpResponse:
+    return HttpResponse(
+        json.dumps({"error": {"type": "invalid_request_error", "message": "Synthetic request failure"}}),
+        status_code,
+    )
+
+
+def _register_customer_windows(
+    http_mocker: HttpMocker,
+    start: datetime,
+    customers_by_window: Dict[int, List[Tuple[str, datetime]]],
+    end: datetime = _NOW,
+) -> None:
+    for index, (window_start, window_end) in enumerate(_created_windows(start, end)):
+        http_mocker.get(
+            _customer_request(window_start, window_end),
+            _customers_response(customers_by_window.get(index, [])).build(),
+        )
+
+
+def _register_children(http_mocker: HttpMocker, customer_ids: List[str], reads: int = 1) -> None:
+    for customer_id in customer_ids:
+        transaction_id = f"synthetic-transaction-{customer_id}"
+        responses = [_transactions_response(transaction_id).build() for _ in range(reads)]
+        http_mocker.get(_child_request(customer_id), responses)
+
+
+def _placeholder_state(customers_updated: datetime) -> Dict[str, Any]:
+    return {
+        "use_global_cursor": True,
+        "lookback_window": 0,
+        "parent_state": {_CUSTOMER_STREAM: {"updated": int(customers_updated.timestamp())}},
+    }
+
+
+def _walk_state(customers_updated: datetime, events_updated: datetime) -> Dict[str, Any]:
+    return {
+        "use_global_cursor": True,
+        "lookback_window": 0,
+        "state": {"created": int(customers_updated.timestamp())},
+        "parent_state": {
+            _CUSTOMER_STREAM: {"updated": int(customers_updated.timestamp())},
+            _EVENT_STREAM: {"updated": int(events_updated.timestamp())},
+        },
+    }
+
+
+def _legacy_post_events_state(customers_updated: datetime) -> Dict[str, Any]:
+    return {
+        "use_global_cursor": True,
+        "lookback_window": 0,
+        "state": {"created": int(customers_updated.timestamp())},
+        "parent_state": {_CUSTOMER_STREAM: {"updated": int(customers_updated.timestamp())}},
+    }
+
+
+@freezegun.freeze_time(_NOW.isoformat())
+class CustomerBalanceTransactionsTest(TestCase):
+    def _assert_cold_read(
+        self, http_mocker: HttpMocker, sync_mode: SyncMode, config_builder: Optional[ConfigBuilder] = None
+    ) -> EntrypointOutput:
+        windows = _created_windows(_START_DATE, _NOW)
+        customers = [
+            ("synthetic-1", windows[0][0] + timedelta(hours=1)),
+            ("synthetic-2", windows[1][0] + timedelta(hours=1)),
+            ("synthetic-3", windows[2][0] + timedelta(hours=1)),
+        ]
+        _register_customer_windows(http_mocker, _START_DATE, {i: [record] for i, record in enumerate(customers)})
+        _register_events(http_mocker)
+        _register_children(http_mocker, [customer_id for customer_id, _ in customers])
+
+        output = _read(config_builder or _config(), sync_mode=sync_mode)
+
+        assert not output.errors
+        assert len(output.records) == len(customers)
+        state = _stream_state(output)
+        assert {"customers", "cbt_customer_events"}.issubset(state["parent_state"])
+        assert int(state["parent_state"][_EVENT_STREAM]["updated"]) == int(_NOW.timestamp())
+        expected_record_ids = Counter({f"synthetic-transaction-{customer_id}": 1 for customer_id, _ in customers})
+        assert Counter(record.record.data["id"] for record in output.records) == expected_record_ids
+        http_mocker.assert_number_of_calls(_events_request(_NOW, _NOW), 1)
+        for customer_id, _ in customers:
+            http_mocker.assert_number_of_calls(_child_request(customer_id), 1)
+        return output
+
+    @HttpMocker()
+    def test_given_no_state_when_read_then_walk_each_customer_once_and_start_events_at_now(self, http_mocker: HttpMocker) -> None:
+        self._assert_cold_read(http_mocker, SyncMode.incremental)
+
+    @HttpMocker()
+    def test_given_full_refresh_cold_read_when_read_then_walk_each_customer_once_and_start_events_at_now(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        output = self._assert_cold_read(
+            http_mocker,
+            SyncMode.full_refresh,
+            _config().with_lookback_window_in_days(7),
+        )
+        assert int(_stream_state(output)["parent_state"][_EVENT_STREAM]["updated"]) == int(_NOW.timestamp())
+
+    @HttpMocker()
+    def test_given_large_cold_read_with_lookback_when_read_then_each_customer_is_read_once(self, http_mocker: HttpMocker) -> None:
+        customers = [(f"synthetic-large-{index}", _START_DATE + timedelta(hours=index)) for index in range(16)]
+        events = _events_response()
+        for customer_id, customer_created in customers[8:]:
+            events.with_record(_event_record(customer_id, customer_created, _NOW - timedelta(hours=1)))
+
+        _register_customer_windows(http_mocker, _START_DATE, {0: customers})
+        event_request_urls = _register_events_by_window(http_mocker, events)
+        _register_children(http_mocker, [customer_id for customer_id, _ in customers])
+
+        with patch.object(concurrent_source, "Queue", side_effect=lambda maxsize: Queue(maxsize=5)):
+            output = _read(_config().with_lookback_window_in_days(30))
+
+        assert not output.errors
+        assert len(event_request_urls) == 1
+        expected_record_ids = Counter({f"synthetic-transaction-{customer_id}": 1 for customer_id, _ in customers})
+        assert Counter(record.record.data["id"] for record in output.records) == expected_record_ids
+        for customer_id, _ in customers:
+            http_mocker.assert_number_of_calls(_child_request(customer_id), 1)
+
+    @HttpMocker()
+    def test_given_placeholder_upgrade_when_read_then_walk_once_and_start_events_at_now(self, http_mocker: HttpMocker) -> None:
+        windows = _created_windows(_START_DATE, _NOW)
+        customers = [(f"synthetic-{index + 1}", window[0] + timedelta(hours=1)) for index, window in enumerate(windows)]
+        start_epoch = int(_START_DATE.timestamp())
+        initial_state = _state(
+            {
+                "use_global_cursor": True,
+                "lookback_window": 0,
+                "state": {"created": start_epoch},
+                "parent_state": {_CUSTOMER_STREAM: {"updated": start_epoch}},
+            }
+        )
+        _register_customer_windows(http_mocker, _START_DATE, {i: [record] for i, record in enumerate(customers)})
+        _register_events(http_mocker)
+        _register_children(http_mocker, [customer_id for customer_id, _ in customers])
+
+        output = _read(_config(), initial_state)
+
+        assert not output.errors
+        state = _stream_state(output)
+        assert int(state["parent_state"][_EVENT_STREAM]["updated"]) == int(_NOW.timestamp())
+        http_mocker.assert_number_of_calls(_events_request(_NOW, _NOW), 1)
+        expected_record_ids = Counter({f"synthetic-transaction-{customer_id}": 1 for customer_id, _ in customers})
+        assert Counter(record.record.data["id"] for record in output.records) == expected_record_ids
+        for customer_id, _ in customers:
+            http_mocker.assert_number_of_calls(_child_request(customer_id), 1)
+
+    @HttpMocker()
+    def test_given_cold_final_state_and_new_update_event_when_read_then_resume_events_at_persisted_now(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        windows = _created_windows(_START_DATE, _NOW)
+        walked_customer = ("synthetic-cold-walk", windows[0][0] + timedelta(hours=1))
+        _register_customer_windows(http_mocker, _START_DATE, {0: [walked_customer]})
+        _register_events(http_mocker)
+        _register_children(http_mocker, [walked_customer[0]], reads=2)
+
+        cold_output = _read(_config())
+
+        assert not cold_output.errors
+        cold_state = _resume_state(cold_output, None)
+        assert cold_state is not None
+        persisted_now = int(_stream_state(cold_output)["parent_state"][_EVENT_STREAM]["updated"])
+        assert persisted_now == int(_NOW.timestamp())
+        persisted_now_datetime = datetime.fromtimestamp(persisted_now, timezone.utc)
+        customer_mark = datetime.fromtimestamp(
+            int(_stream_state(cold_output)["parent_state"][_CUSTOMER_STREAM]["updated"]),
+            timezone.utc,
+        )
+        http_mocker.assert_number_of_calls(_child_request(walked_customer[0]), 1)
+
+        second_now = _NOW + timedelta(days=1)
+        updated_customer = walked_customer[0]
+        updated_customer_created = walked_customer[1]
+        with freezegun.freeze_time(second_now.isoformat()):
+            _register_customer_windows(http_mocker, customer_mark, {}, end=second_now)
+            update_event = _events_response().with_record(
+                _event_record(updated_customer, updated_customer_created, second_now - timedelta(hours=1))
+            )
+            _register_events(http_mocker, update_event, created_gte=persisted_now_datetime, created_lte=second_now)
+            warm_output = _read(_config(), cold_state)
+
+        assert not warm_output.errors
+        http_mocker.assert_number_of_calls(_events_request(persisted_now_datetime, second_now), 1)
+        http_mocker.assert_number_of_calls(_child_request(updated_customer), 2)
+        assert Counter(record.record.data["id"] for record in warm_output.records) == Counter(
+            {f"synthetic-transaction-{updated_customer}": 1}
+        )
+        warm_state = _stream_state(warm_output)
+        assert int(warm_state["parent_state"][_EVENT_STREAM]["updated"]) == int((second_now - timedelta(hours=1)).timestamp())
+
+    @HttpMocker()
+    def test_given_completed_hdp_state_when_read_then_walk_from_mark_and_read_events(self, http_mocker: HttpMocker) -> None:
+        mark = _START_DATE + timedelta(days=10)
+        windows = _created_windows(mark, _NOW)
+        eligible = [("synthetic-2", windows[0][0] + timedelta(hours=1)), ("synthetic-3", windows[-1][0] + timedelta(hours=1))]
+        initial_state = _state(_walk_state(mark, _NOW - timedelta(days=1)))
+        _register_customer_windows(http_mocker, mark, {0: [eligible[0]], len(windows) - 1: [eligible[1]]})
+        _register_events(http_mocker, created_gte=_NOW - timedelta(days=1))
+        _register_children(http_mocker, [customer_id for customer_id, _ in eligible])
+
+        output = _read(_config(), initial_state)
+
+        assert not output.errors
+        assert len(output.records) == len(eligible)
+        for customer_id, _ in eligible:
+            http_mocker.assert_number_of_calls(_child_request(customer_id), 1)
+
+    @HttpMocker()
+    def test_given_703_post_events_state_when_read_then_resume_from_customer_mark(self, http_mocker: HttpMocker) -> None:
+        mark = _NOW - timedelta(days=2)
+        old_customer_created = _START_DATE - timedelta(days=100)
+        initial_state = _state(_legacy_post_events_state(mark))
+        _register_customer_windows(http_mocker, mark, {})
+        update_event = _events_response().with_record(
+            _event_record("synthetic-updated-old", old_customer_created, _NOW - timedelta(days=1))
+        )
+        _register_events(http_mocker, update_event, created_gte=mark)
+        _register_children(http_mocker, ["synthetic-updated-old"])
+
+        output = _read(_config(), initial_state)
+
+        assert not output.errors
+        http_mocker.assert_number_of_calls(_events_request(mark, _NOW), 1)
+        http_mocker.assert_number_of_calls(_child_request("synthetic-updated-old"), 1)
+        assert Counter(record.record.data["id"] for record in output.records) == Counter({"synthetic-transaction-synthetic-updated-old": 1})
+        state = _stream_state(output)
+        assert {"customers", "cbt_customer_events"}.issubset(state["parent_state"])
+
+    @HttpMocker()
+    def test_given_703_post_events_state_older_than_retention_when_read_then_resume_from_retention_floor(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        mark = _NOW - timedelta(days=45)
+        retention_floor = _NOW - timedelta(days=30)
+        config_start = _NOW - timedelta(days=90)
+        old_customer_created = _NOW - timedelta(days=150)
+        initial_state = _state(_legacy_post_events_state(mark))
+        _register_customer_windows(http_mocker, mark, {})
+        update_event = _events_response().with_record(
+            _event_record("synthetic-retained-old", old_customer_created, _NOW - timedelta(days=1))
+        )
+        _register_events(http_mocker, update_event, created_gte=retention_floor)
+        _register_children(http_mocker, ["synthetic-retained-old"])
+
+        output = _read(_config(config_start), initial_state)
+
+        assert not output.errors
+        http_mocker.assert_number_of_calls(_events_request(retention_floor, _NOW), 1)
+        http_mocker.assert_number_of_calls(_child_request("synthetic-retained-old"), 1)
+        assert {"customers", "cbt_customer_events"}.issubset(_stream_state(output)["parent_state"])
+
+    @HttpMocker()
+    def test_given_customer_created_and_updated_between_syncs_when_read_then_each_parent_may_read_child(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        mark = _NOW - timedelta(days=1)
+        customer = ("synthetic-known-overlap", mark + timedelta(hours=1))
+        initial_state = _state(_walk_state(mark, mark))
+        _register_customer_windows(http_mocker, mark, {0: [customer]})
+        update_event = _events_response().with_record(_event_record(customer[0], customer[1], _NOW - timedelta(hours=1)))
+        _register_events(http_mocker, update_event, created_gte=mark)
+        _register_children(http_mocker, [customer[0]])
+
+        output = _read(_config(), initial_state)
+
+        assert not output.errors
+        # Both parents return this customer. In mocks, `concurrent_partition_cursor.py`'s
+        # `_semaphore_per_partition` dedup skips the second partition while the first is in flight;
+        # on a real account, the events parent follows the walk and may read the child once per parent (2).
+        http_mocker.assert_number_of_calls(_child_request(customer[0]), 1)
+        assert Counter(record.record.data["id"] for record in output.records) == Counter({f"synthetic-transaction-{customer[0]}": 1})
+
+    @HttpMocker()
+    def test_given_mid_walk_state_when_read_then_resume_from_customer_cursor(self, http_mocker: HttpMocker) -> None:
+        mark = _START_DATE + timedelta(days=9)
+        windows = _created_windows(mark, _NOW)
+        boundary_customer = ("synthetic-boundary", mark)
+        later_customer = ("synthetic-later", windows[0][0] + timedelta(days=2))
+        initial_state = _state(_walk_state(mark, _START_DATE + timedelta(days=8)))
+        _register_customer_windows(http_mocker, mark, {0: [boundary_customer, later_customer]})
+        _register_events(http_mocker, created_gte=_START_DATE + timedelta(days=8))
+        _register_children(http_mocker, ["synthetic-boundary", "synthetic-later"])
+
+        output = _read(_config(), initial_state)
+
+        assert not output.errors
+        http_mocker.assert_number_of_calls(_child_request("synthetic-boundary"), 1)
+        http_mocker.assert_number_of_calls(_child_request("synthetic-later"), 1)
+
+    def _assert_failed_walk_does_not_read_oldest_customer(self, status_code: int) -> None:
+        windows = _created_windows(_START_DATE, _NOW)
+        newest = ("synthetic-newest", windows[0][0] + timedelta(days=5))
+        oldest = ("synthetic-oldest", windows[0][0] + timedelta(days=1))
+        input_state = _state(_placeholder_state(_START_DATE))
+
+        with HttpMocker() as http_mocker:
+            http_mocker.get(_customer_request(*windows[0]), _customers_response([newest, oldest]).build())
+            http_mocker.get(_customer_request(*windows[1]), _status_response(status_code))
+            for window in windows[2:]:
+                http_mocker.get(_customer_request(*window), _customers_response([]).build())
+            _register_events(http_mocker)
+            _register_children(http_mocker, ["synthetic-newest", "synthetic-oldest"])
+
+            attempt_a = _read(_config(), input_state, expecting_exception=True)
+
+            assert attempt_a.errors
+            assert any(f"status code '{status_code}'" in error.trace.error.message for error in attempt_a.errors)
+            http_mocker.assert_number_of_calls(_child_request("synthetic-oldest"), 0)
+
+    def _assert_failed_walk_resumes_oldest_customer(self, status_code: int) -> None:
+        windows = _created_windows(_START_DATE, _NOW)
+        newest = ("synthetic-newest", windows[0][0] + timedelta(days=5))
+        oldest = ("synthetic-oldest", windows[0][0] + timedelta(days=1))
+        input_state = _state(_placeholder_state(_START_DATE))
+        error_state: Optional[List[Any]] = None
+
+        with HttpMocker() as http_mocker:
+            http_mocker.get(_customer_request(*windows[0]), _customers_response([newest, oldest]).build())
+            http_mocker.get(_customer_request(*windows[1]), _status_response(status_code))
+            for window in windows[2:]:
+                http_mocker.get(_customer_request(*window), _customers_response([]).build())
+            _register_events(http_mocker)
+            _register_children(http_mocker, ["synthetic-newest"])
+            attempt_a = _read(_config(), input_state, expecting_exception=True)
+            assert attempt_a.errors
+            assert any(f"status code '{status_code}'" in error.trace.error.message for error in attempt_a.errors)
+            state_a = _stream_state(attempt_a)
+            assert int(state_a["parent_state"]["customers"]["updated"]) < int(oldest[1].timestamp())
+            assert _EVENT_STREAM in state_a["parent_state"]
+            events_updated = int(state_a["parent_state"][_EVENT_STREAM]["updated"])
+            assert events_updated == int(_NOW.timestamp())
+            error_state = _resume_state(attempt_a, input_state)
+            events_start = datetime.fromtimestamp(events_updated, timezone.utc)
+
+        with HttpMocker() as http_mocker:
+            _register_customer_windows(http_mocker, _START_DATE, {0: [newest, oldest]})
+            _register_events(http_mocker, created_gte=events_start)
+            _register_children(http_mocker, ["synthetic-newest", "synthetic-oldest"])
+            attempt_b = _read(_config(), error_state)
+            assert not attempt_b.errors
+            http_mocker.assert_number_of_calls(_child_request("synthetic-oldest"), 1)
+
+    def test_given_second_customer_window_returns_400_when_read_then_sync_fails(self) -> None:
+        self._assert_failed_walk_does_not_read_oldest_customer(400)
+
+    def test_given_second_customer_window_returns_400_when_resume_then_oldest_customer_is_read(self) -> None:
+        self._assert_failed_walk_resumes_oldest_customer(400)
+
+    def test_given_second_customer_window_returns_403_when_read_then_sync_fails(self) -> None:
+        self._assert_failed_walk_does_not_read_oldest_customer(403)
+
+    def test_given_second_customer_window_returns_403_when_resume_then_oldest_customer_is_read(self) -> None:
+        self._assert_failed_walk_resumes_oldest_customer(403)
+
+    @HttpMocker()
+    def test_given_events_parent_returns_400_when_read_then_sync_fails(self, http_mocker: HttpMocker) -> None:
+        state = _state(
+            {
+                "use_global_cursor": True,
+                "lookback_window": 0,
+                "state": {"created": int(_NOW.timestamp())},
+                "parent_state": {
+                    "customers": {"updated": int((_NOW + timedelta(days=1)).timestamp())},
+                    "cbt_customer_events": {"updated": int((_NOW - timedelta(days=1)).timestamp())},
+                },
+            }
+        )
+        http_mocker.get(_events_request(_NOW - timedelta(days=1)), _status_response(400))
+
+        output = _read(_config(), state, expecting_exception=True)
+
+        assert output.errors
+
+    @HttpMocker()
+    def test_given_events_parent_returns_403_when_read_then_sync_fails(self, http_mocker: HttpMocker) -> None:
+        state = _state(
+            {
+                "use_global_cursor": True,
+                "lookback_window": 0,
+                "state": {"created": int(_NOW.timestamp())},
+                "parent_state": {
+                    "customers": {"updated": int((_NOW + timedelta(days=1)).timestamp())},
+                    "cbt_customer_events": {"updated": int((_NOW - timedelta(days=1)).timestamp())},
+                },
+            }
+        )
+        http_mocker.get(_events_request(_NOW - timedelta(days=1)), _status_response(403))
+
+        output = _read(_config(), state, expecting_exception=True)
+
+        assert output.errors
+
+    @HttpMocker()
+    def test_given_child_returns_404_when_read_then_other_customers_are_emitted(self, http_mocker: HttpMocker) -> None:
+        window = _created_windows(_START_DATE, _NOW)[0]
+        customers = [("synthetic-missing", window[0] + timedelta(hours=1)), ("synthetic-present", window[0] + timedelta(hours=2))]
+        _register_customer_windows(http_mocker, _START_DATE, {0: customers})
+        _register_events(http_mocker)
+        http_mocker.get(_child_request("synthetic-missing"), _status_response(404))
+        http_mocker.get(_child_request("synthetic-present"), _transactions_response().build())
+
+        output = _read(_config())
+
+        assert not output.errors
+        assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_given_child_returns_403_when_read_then_sync_fails(self, http_mocker: HttpMocker) -> None:
+        start_date = _NOW - timedelta(days=1)
+        window = _created_windows(start_date, _NOW)[0]
+        customer = ("synthetic-customer", window[0] + timedelta(hours=1))
+        initial_state = _state(
+            {
+                "use_global_cursor": True,
+                "lookback_window": 0,
+                "state": {"created": int(start_date.timestamp())},
+                "parent_state": {
+                    "customers": {"updated": int(start_date.timestamp())},
+                    "cbt_customer_events": {"updated": int((_NOW + timedelta(days=1)).timestamp())},
+                },
+            }
+        )
+        _register_customer_windows(http_mocker, start_date, {0: [customer]})
+        http_mocker.get(_child_request(customer[0]), _status_response(403))
+
+        output = _read(_config(start_date), initial_state, expecting_exception=True)
+
+        assert output.errors
+
+    @HttpMocker()
+    def test_given_completed_state_and_old_customer_updated_event_when_read_then_request_customer_child(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        mark = _NOW - timedelta(days=1)
+        old_customer_created = _START_DATE - timedelta(days=100)
+        initial_state = _state(_walk_state(mark, mark))
+        _register_customer_windows(http_mocker, mark, {})
+        _register_events(
+            http_mocker,
+            _events_response().with_record(_event_record("synthetic-old", old_customer_created, _NOW - timedelta(hours=1))),
+            created_gte=mark,
+        )
+        _register_children(http_mocker, ["synthetic-old"])
+
+        output = _read(_config(), initial_state)
+
+        assert not output.errors
+        http_mocker.assert_number_of_calls(_child_request("synthetic-old"), 1)
+        assert Counter(record.record.data["id"] for record in output.records) == Counter({"synthetic-transaction-synthetic-old": 1})
