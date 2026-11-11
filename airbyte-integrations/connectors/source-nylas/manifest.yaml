@@ -267,7 +267,6 @@ definitions:
                 action: IGNORE
                 error_message: >-
                   This calendar's events were skipped because Nylas returned 404 for it.
-              - type: HttpResponseFilter
         record_selector:
           type: RecordSelector
           extractor:
