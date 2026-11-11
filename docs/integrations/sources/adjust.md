@@ -33,7 +33,7 @@ curl --header 'Authorization: Bearer API_TOKEN' 'https://automate.adjust.com/rep
 
 ## Supported streams
 
-The connector syncs one stream, `AdjustReport`, from Adjust's [JSON report endpoint](https://dev.adjust.com/en/api/rs-api/reports/). It reads the response's `rows` array, not `totals` or `warnings`. Metrics are grouped by `day` and your selected dimensions. The discovered schema includes `day`, the selected predefined metrics and dimensions, and any additional metrics.
+The connector syncs one stream, `AdjustReport`, from the Adjust [JSON report endpoint](https://dev.adjust.com/en/api/rs-api/reports/). It reads the response's `rows` array, not `totals` or `warnings`. Metrics are grouped by `day` and your selected dimensions. The discovered schema includes `day`, the selected predefined metrics and dimensions, and any additional metrics.
 
 ## Supported sync modes
 
