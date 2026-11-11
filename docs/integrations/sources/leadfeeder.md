@@ -1,5 +1,20 @@
 # Leadfeeder
 
+This page contains the setup guide and reference information for the Leadfeeder source connector. The connector uses the [Leadfeeder legacy API](https://docs.leadfeeder.com/api/) to sync the accounts you can access, along with the leads and website visits for each account.
+
+## Prerequisites
+
+- A Leadfeeder legacy API token. Leadfeeder no longer issues new tokens for the legacy API, so you need a token from an existing integration. If you have one, find it in Leadfeeder under **Settings** > **Personal** > **API Keys**.
+- A Leadfeeder Premium subscription for each account you want to sync leads and visits from. See [Limitations](#limitations).
+
+## Set up the Leadfeeder connector in Airbyte
+
+1. In Airbyte, go to **Sources** and select **Leadfeeder**.
+2. Enter a **Source name**.
+3. In **Api Token**, enter your Leadfeeder legacy API token.
+4. In **Start date**, enter the date and time in UTC from which to start syncing leads and visits, in the format `YYYY-MM-DDTHH:MM:SSZ`. For example, `2024-01-01T00:00:00Z`.
+5. Click **Set up source**.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -8,11 +23,24 @@
 | `start_date` | `string` | Start date for incremental syncs. Records that were updated before that date will not be synced.  |  |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | `accounts` | `id` | No pagination | ✅ |  ❌  |
 | `leads` | `id` | DefaultPaginator | ✅ |  ✅  |
 | `visits` | `id` | DefaultPaginator | ✅ |  ✅  |
+
+- `accounts`: All Leadfeeder accounts that the API token's user can access.
+- `leads`: Companies that visited your website, synced for each account. The incremental cursor is `last_visit_date`. The connector adds an `account_id` field to each record.
+- `visits`: Individual website visits, synced for each account. The incremental cursor is `started_at`. The connector adds an `account_id` field to each record.
+
+The connector requests leads and visits in one-month windows, starting from the configured start date.
+
+## Limitations
+
+- **Premium subscription required:** The Leadfeeder API returns `402 Premium required` for accounts without a Leadfeeder Premium subscription. The connector skips those responses without failing the sync, so leads and visits from those accounts are silently missing.
+- **Rate limits:** The Leadfeeder API allows 100 requests per minute, per API token for the `accounts` endpoint and per account for the `leads` and `visits` endpoints. When the connector receives a `429 Too Many Requests`, `408`, or `5xx` response, it waits 60 seconds and retries, up to five times.
+- **Lead result cap:** The Leadfeeder API returns at most the first 10,000 leads for each request time interval. Because the connector requests one month at a time, an account with more than 10,000 leads in a single month may not sync all of them.
 
 ## IP allow list
 
@@ -25,6 +53,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.75 | 2026-11-10 | [90335](https://github.com/airbytehq/airbyte/pull/90335) | Consolidate duplicated error handling into a single shared handler with no behavior change |
+| 0.0.74 | 2026-11-10 | [91630](https://github.com/airbytehq/airbyte/pull/91630) | Update dependencies |
+| 0.0.73 | 2026-11-03 | [90658](https://github.com/airbytehq/airbyte/pull/90658) | Update dependencies |
+| 0.0.72 | 2026-10-27 | [89994](https://github.com/airbytehq/airbyte/pull/89994) | Update dependencies |
 | 0.0.71 | 2026-10-20 | [89297](https://github.com/airbytehq/airbyte/pull/89297) | Update dependencies |
 | 0.0.70 | 2026-10-13 | [88700](https://github.com/airbytehq/airbyte/pull/88700) | Update dependencies |
 | 0.0.69 | 2026-10-06 | [87923](https://github.com/airbytehq/airbyte/pull/87923) | Update dependencies |

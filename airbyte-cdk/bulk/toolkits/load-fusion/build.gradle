@@ -4,7 +4,10 @@ plugins {
 
 dependencies {
     api 'com.fasterxml.jackson.core:jackson-databind'
-    implementation platform('software.amazon.awssdk:bom:2.31.54')
+    // Floor for the netty that netty-nio-client pulls in: CVE-2026-75595 (netty-handler, critical 9.1)
+    // and the 4.1.135/136 codec fixes. Micronaut's BOM resolves higher (4.2.x) when it is on the graph.
+    api platform('io.netty:netty-bom:4.1.139.Final')
+    implementation platform('software.amazon.awssdk:bom:2.57.2')
     implementation 'software.amazon.awssdk:s3'
     implementation 'software.amazon.awssdk:sts'
     implementation 'software.amazon.awssdk:url-connection-client'
