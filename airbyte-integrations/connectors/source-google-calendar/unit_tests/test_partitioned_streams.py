@@ -32,7 +32,7 @@ _TOKEN_REQUEST = HttpRequest(
     "https://oauth2.googleapis.com/token",
     body="grant_type=refresh_token&client_id=id&client_secret=secret&refresh_token=rt",
 )
-_TOKEN_RESPONSE = HttpResponse(json.dumps({"access_token": "at", "expires_in": 3600}))
+_TOKEN_RESPONSE = HttpResponse(json.dumps({"access_token": "test-access-token", "expires_in": 3600}))
 _CONFIG = {"client_id": "id", "client_secret": "secret", "client_refresh_token_2": "rt"}
 _EVENTS_PARAMS = {"showDeleted": "true", "maxResults": "2500", "singleEvents": "false"}
 _DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"

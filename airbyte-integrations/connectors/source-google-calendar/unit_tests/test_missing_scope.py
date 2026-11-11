@@ -28,7 +28,7 @@ _TOKEN_REQUEST = HttpRequest(
     "https://oauth2.googleapis.com/token",
     body="grant_type=refresh_token&client_id=id&client_secret=secret&refresh_token=rt",
 )
-_TOKEN_RESPONSE = HttpResponse(json.dumps({"access_token": "at", "expires_in": 3600}))
+_TOKEN_RESPONSE = HttpResponse(json.dumps({"access_token": "test-access-token", "expires_in": 3600}))
 
 
 def _google_error(status_code: int, reason: str = "", details_reason: str = "") -> HttpResponse:

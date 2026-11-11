@@ -45,7 +45,7 @@ def test_list_page_sizes_and_tombstones(stream: str, path: str, empty: bool) -> 
             HttpRequest(
                 "https://oauth2.googleapis.com/token", body="grant_type=refresh_token&client_id=id&client_secret=secret&refresh_token=rt"
             ),
-            HttpResponse('{"access_token":"at","expires_in":3600}'),
+            HttpResponse('{"access_token":"test-access-token","expires_in":3600}'),
         )
         first = HttpRequest(f"{_BASE_URL}/users/me/{path}", query_params=params)
         http_mocker.get(first, HttpResponse('{"items":[]}' if empty else '{"items":[{"id":"active"}],"nextPageToken":"p2"}'))

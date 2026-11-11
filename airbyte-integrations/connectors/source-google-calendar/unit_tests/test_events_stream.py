@@ -29,7 +29,6 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 
 _CONFIG = {
@@ -44,7 +43,7 @@ _TOKEN_REQUEST = HttpRequest(
     _TOKEN_URL,
     body="grant_type=refresh_token&client_id=id&client_secret=secret&refresh_token=rt",
 )
-_TOKEN_RESPONSE = HttpResponse(json.dumps({"access_token": "at", "expires_in": 3600}))
+_TOKEN_RESPONSE = HttpResponse(json.dumps({"access_token": "test-access-token", "expires_in": 3600}))
 _EVENTS_URL = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
 _CALENDAR_URL = "https://www.googleapis.com/calendar/v3/calendars/primary"
 _BASE_PARAMS = {"showDeleted": "true", "maxResults": "2500", "singleEvents": "false"}
@@ -548,7 +547,7 @@ def test_410_updated_min_too_long_ago_is_transient():
 
         error = _error_trace(output)
         assert error.failure_type == FailureType.transient_error
-        assert error.message == filter_secrets(
+        assert error.message == (
             "Google Calendar rejected the saved sync position of the events stream as too old. "
             "Reset the events stream to re-read it now; otherwise syncs re-read automatically "
             "once the saved position is more than 21 days old."

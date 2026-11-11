@@ -187,9 +187,11 @@ def test_credentials_reach_the_token_endpoint(config, client_id, client_secret, 
             _TOKEN_URL,
             body=f"grant_type=refresh_token&client_id={client_id}&client_secret={client_secret}&refresh_token={refresh_token}",
         )
-        http_mocker.post(token_request, HttpResponse(json.dumps({"access_token": "at", "expires_in": 3600})))
+        http_mocker.post(token_request, HttpResponse(json.dumps({"access_token": "test-access-token", "expires_in": 3600})))
         calendar_list_request = HttpRequest(
-            _CALENDAR_LIST_URL, headers={"Authorization": "Bearer at"}, query_params={"maxResults": "250", "showDeleted": "true"}
+            _CALENDAR_LIST_URL,
+            headers={"Authorization": "Bearer test-access-token"},
+            query_params={"maxResults": "250", "showDeleted": "true"},
         )
         http_mocker.get(calendar_list_request, HttpResponse(json.dumps({"items": [{"id": "primary"}]})))
 
