@@ -63,12 +63,17 @@ def _error(status_code: int, reason: str) -> HttpResponse:
     return _json({"error": {"code": status_code, "message": "error", "errors": [{"reason": reason, "domain": "global"}]}}, status_code)
 
 
-def _mock_calendar_list(http_mocker: HttpMocker, *calendar_ids: str, min_access_role: Optional[str] = None) -> HttpRequest:
-    params = {"showHidden": "true"}
+def _mock_calendar_list(
+    http_mocker: HttpMocker, *calendar_ids: str, min_access_role: Optional[str] = None, include_deleted: bool = False
+) -> HttpRequest:
+    params = {"showHidden": "true", "maxResults": "250", "showDeleted": "true"}
     if min_access_role:
         params["minAccessRole"] = min_access_role
     request = HttpRequest(f"{_BASE_URL}/users/me/calendarList", query_params=params)
-    http_mocker.get(request, _json({"kind": "calendar#calendarList", "items": [{"id": c} for c in calendar_ids]}))
+    items = [{"id": c} for c in calendar_ids]
+    if include_deleted:
+        items.append({"id": "removed-calendar", "deleted": True})
+    http_mocker.get(request, _json({"kind": "calendar#calendarList", "items": items}))
     return request
 
 
@@ -90,6 +95,34 @@ def _stream_state(output) -> Mapping[str, Any]:
 
 
 # --- partitions ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("stream,role", [("calendars", "reader"), ("events", "reader"), ("acl", "owner"), ("freebusy", None)])
+@pytest.mark.parametrize("only_deleted", [False, True])
+@freezegun.freeze_time("2026-10-07T12:00:00Z")
+def test_deleted_calendars_are_not_used_as_partitions(stream: str, role: Optional[str], only_deleted: bool) -> None:
+    with HttpMocker() as http_mocker:
+        _mock_calendar_list(http_mocker, *([] if only_deleted else [_ME]), min_access_role=role, include_deleted=True)
+        if not only_deleted:
+            if stream == "calendars":
+                http_mocker.get(HttpRequest(f"{_BASE_URL}/calendars/{_ENCODED[_ME]}"), _json({"id": _ME}))
+            elif stream == "events":
+                http_mocker.get(_events_request(_ME), _json({"items": [{"id": "event", "updated": _days_ago(1)}]}))
+            elif stream == "acl":
+                http_mocker.get(_acl_request(_ME), _json({"items": [{"id": "user:a", "role": "reader"}]}))
+            else:
+                http_mocker.post(
+                    _freebusy_request(_ME),
+                    _json({"calendars": {_ME: {"busy": [{"start": "2026-10-08T09:00:00Z", "end": "2026-10-08T10:00:00Z"}]}}}),
+                )
+
+        output = _read(http_mocker, stream, SyncMode.full_refresh, _config())
+
+        assert output.errors == []
+        assert len(output.records) == (0 if only_deleted else 1)
+        if output.records:
+            record = output.records[0].record.data
+            assert record["id" if stream == "calendars" else "calendar_id"] == _ME
 
 
 def test_events_read_every_calendar_when_calendarid_is_unset():
@@ -164,7 +197,7 @@ def test_configured_calendar_ignores_the_access_role_filter():
 
 
 def _acl_request(calendar_id: str, page_token: Optional[str] = None) -> HttpRequest:
-    params = {"maxResults": "250"}
+    params = {"maxResults": "250", "showDeleted": "true"}
     if page_token:
         params["pageToken"] = page_token
     return HttpRequest(f"{_BASE_URL}/calendars/{_ENCODED[calendar_id]}/acl", query_params=params)
@@ -180,6 +213,17 @@ def test_acl_paginates_and_adds_calendar_id():
 
         assert output.errors == []
         assert [(r.record.data["calendar_id"], r.record.data["id"]) for r in output.records] == [(_ME, "user:a"), (_ME, "user:b")]
+
+
+def test_acl_emits_deleted_rules() -> None:
+    with HttpMocker() as http_mocker:
+        _mock_calendar_list(http_mocker, _ME, min_access_role="owner")
+        http_mocker.get(_acl_request(_ME), _json({"items": [{"id": "user:a", "role": "none"}]}))
+
+        output = _read(http_mocker, "acl", SyncMode.full_refresh, _config())
+
+        assert output.errors == []
+        assert [r.record.data for r in output.records] == [{"id": "user:a", "role": "none", "calendar_id": _ME}]
 
 
 @pytest.mark.parametrize(("status_code", "reason"), [(403, "forbidden"), (404, "notFound")])
@@ -277,7 +321,10 @@ def test_calendars_reads_the_calendar_resource_of_every_readable_listed_calendar
     with HttpMocker() as http_mocker:
         # Every listed calendar, hidden ones included, narrowed to ones the account can read.
         http_mocker.get(
-            HttpRequest(f"{_BASE_URL}/users/me/calendarList", query_params={"showHidden": "true", "minAccessRole": "reader"}),
+            HttpRequest(
+                f"{_BASE_URL}/users/me/calendarList",
+                query_params={"showHidden": "true", "minAccessRole": "reader", "maxResults": "250", "showDeleted": "true"},
+            ),
             _json(
                 {"kind": "calendar#calendarList", "items": [{"id": _ME, "accessRole": "owner"}, {"id": _HOLIDAYS, "accessRole": "reader"}]}
             ),
