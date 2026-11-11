@@ -27,3 +27,7 @@ Pages and blocks that are not shared with the integration therefore drop out sil
 All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal, see above).
 
 `pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. `users` is full refresh only.
+
+For `pages`, `data_sources` and `comments` the CDK applies that filter in the record selector. For `blocks` it does not: the CDK only wires the client-side incremental filter into the record selector of a `SimpleRetriever` it builds itself, and the `CustomRetriever` kwargs passthrough does not carry it (verified on CDK 7.47.0 and 7.48.0). `BlocksRetriever` therefore declares a `cursor` field, which the CDK fills with the stream's cursor, and drops records for which `cursor.should_be_synced()` is false. It does this after recursing into a block's children, so an edited block nested under an unchanged block is still found. Do not remove the `cursor` field or move the check before the recursion. `unit_tests/mock_server/test_blocks.py` pins this with two consecutive reads.
+
+The unit tests must run on the same CDK version as the base image in `metadata.yaml` (`unit_tests/poetry.lock`); this regression was invisible while the lock file pinned an older CDK.
