@@ -1225,8 +1225,11 @@ definitions:
             sort: asc
           error_handler:
             type: DefaultErrorHandler
-            max_retries: 3
+            max_retries: 10
             backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: x-sib-ratelimit-reset
+                max_waiting_time_in_seconds: 7200
               - type: ExponentialBackoffStrategy
                 factor: 2
             response_filters:
@@ -1354,6 +1357,9 @@ definitions:
                 factor: 2
             response_filters:
               - type: HttpResponseFilter
+                action: IGNORE
+                error_message_contains: eCommerce section is not yet activated
+              - type: HttpResponseFilter
                 action: RATE_LIMITED
                 http_codes:
                   - 429
@@ -1421,6 +1427,9 @@ definitions:
               - type: ExponentialBackoffStrategy
                 factor: 2
             response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                error_message_contains: eCommerce section is not yet activated
               - type: HttpResponseFilter
                 action: RATE_LIMITED
                 http_codes:

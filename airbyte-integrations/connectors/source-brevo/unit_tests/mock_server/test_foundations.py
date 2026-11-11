@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import logging
+from unittest.mock import call, patch
 
 import pytest
 from conftest import get_source
@@ -352,5 +353,49 @@ def test_new_stream_empty_and_error_responses(
         output = run_read(name, SyncMode.incremental if cursor else SyncMode.full_refresh, expect_error=unauthorized)
         assert output.records == []
         if unauthorized:
+            assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+        assert_calls(mocker, [request])
+
+
+@pytest.mark.parametrize(
+    "headers,retries,delays",
+    [({"x-sib-ratelimit-reset": "45"}, 1, [46]), ({"x-sib-ratelimit-reset": "45"}, 4, [46] * 4), ({}, 1, [5])],
+    ids=["reset-header", "extended-retry-budget", "exponential-fallback"],
+)
+@freeze_time(NOW)
+def test_transactional_events_retry_rate_limits(headers: dict[str, str], retries: int, delays: list[int]) -> None:
+    name = "transactional_email_events"
+    request = BrevoRequestBuilder("smtp/statistics/events").with_query_params(limit=5000, offset=0, sort="asc", **event_query(name)).build()
+    with HttpMocker() as mocker, patch("airbyte_cdk.sources.streams.http.rate_limiting.time") as clock:
+        mocker.get(
+            request,
+            [HttpResponse(body='{"message":"Rate limits hit"}', status_code=429, headers=headers)] * retries
+            + [BrevoResponseBuilder("events").with_records([{"messageId": "event-1", "date": UPDATED}]).build()],
+        )
+        output = run_read(name, SyncMode.incremental)
+        assert [r.record.data["messageId"] for r in output.records] == ["event-1"]
+        assert output.most_recent_state.stream_state.__dict__ == {"date": "2023-11-14"}
+        assert clock.sleep.call_args_list == [call(delay) for delay in delays]
+        mocker.assert_number_of_calls(request, retries + 1)
+
+
+@pytest.mark.parametrize("name,size", [("products", 1000), ("categories", 100)])
+@pytest.mark.parametrize(
+    "body,ignored",
+    [
+        ("Your eCommerce section is not yet activated.", True),
+        ('{"message":"Your eCommerce section is not yet activated."}', True),
+        ('{"message":"Access forbidden"}', False),
+    ],
+    ids=["inactive-plain-text", "inactive-json", "different-forbidden"],
+)
+@freeze_time(NOW)
+def test_ecommerce_activation_errors(name: str, size: int, body: str, ignored: bool) -> None:
+    request = BrevoRequestBuilder(name).with_query_params(limit=size, offset=0, sort="asc", **event_query(name)).build()
+    with HttpMocker() as mocker:
+        mocker.get(request, HttpResponse(body=body, status_code=403))
+        output = run_read(name, SyncMode.incremental, expect_error=not ignored)
+        assert output.records == []
+        if not ignored:
             assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
         assert_calls(mocker, [request])
