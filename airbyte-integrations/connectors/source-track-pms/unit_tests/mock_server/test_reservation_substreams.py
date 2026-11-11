@@ -7,7 +7,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from .helpers import discovered_primary_keys, mock_reservations, read_stream, request, response
 
 
-@pytest.mark.parametrize("suffix,key", [("booking_fees", "fees"), ("fees", "fees"), ("logs", "logs"), ("notes", "notes"), ("tags", "tags")])
+@pytest.mark.parametrize("suffix,key", [("fees", "fees"), ("tags", "tags")])
 @pytest.mark.parametrize("scenario", ["paginated", "empty", "invalid_page"])
 def test_reservation_children(suffix: str, key: str, scenario: str) -> None:
     with HttpMocker() as http_mocker:
@@ -43,5 +43,5 @@ def test_reservation_children(suffix: str, key: str, scenario: str) -> None:
 
 def test_reservation_children_primary_key() -> None:
     primary_keys = discovered_primary_keys()
-    for suffix in ("booking_fees", "fees", "logs", "notes", "tags"):
+    for suffix in ("fees", "tags"):
         assert primary_keys[f"reservations_{suffix}"] == [["reservation_id"], ["id"]]

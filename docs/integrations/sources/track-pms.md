@@ -31,7 +31,7 @@ Streams marked as incremental in the table below use `updatedAt` as their cursor
 
 Track's [API rate limit](https://developer.trackhs.com/docs/rate-limits) is 10,000 requests per 5 minutes per IP address. Connections that send requests from the same IP address share this limit. After a rate-limit response (HTTP 429), the connector waits 305 seconds before retrying, with up to three retries.
 
-The `reservations_booking_fees`, `reservations_fees`, `reservations_logs`, `reservations_notes` and `reservations_tags` streams support full refresh only. On every sync, each of these streams reads the full `reservations` history and then sends at least one request for each reservation, even if you sync `reservations` incrementally. For example, enabling all five streams for an account with 20,000 reservations requires at least 100,000 child-stream requests, plus requests to list reservations and paginate results. Enable only the reservation streams that you need.
+The `reservations_fees` and `reservations_tags` streams support full refresh only. On every sync, each of these streams reads the full `reservations` history and then sends at least one request for each reservation, even if you sync `reservations` incrementally. For example, enabling both streams for an account with 20,000 reservations requires at least 40,000 child-stream requests, plus requests to list reservations and paginate results. Enable only the reservation streams that you need.
 
 ### Daily pricing
 
@@ -90,14 +90,11 @@ The `units_daily_pricing_v2` and `units_types_daily_pricing_v2` streams read pri
 | quotes | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getquotescollectionv2) |
 | rate_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getallratetypes) |
 | reservations | id | Elastic Search PIT | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservations) |
-| reservations_booking_fees | reservation_id.id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | reservations_cancellation_policies | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcancellationpolicies) |
 | reservations_cancellation_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getcancellationreasons) |
 | reservations_discount_reasons | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getdiscountreasons) |
 | reservations_fees | reservation_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getreservationfees) |
 | reservations_guarantee_policies | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/get-pms-reservations-policies-guaranties) |
-| reservations_logs | reservation_id.id | DefaultPaginator | ✅ |  ❌  | Undocumented |
-| reservations_notes | reservation_id.id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | reservations_tags | reservation_id.id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getv1reservationtags) |
 | reservations_types | id | DefaultPaginator | ✅ |  ❌  | [Link](https://developer.trackhs.com/reference/getreservationtypes) |
 | reservations_v2 | id | Elastic Search PIT | ✅ |  ✅  | [Link](https://developer.trackhs.com/reference/getreservationsv2) |
@@ -125,8 +122,6 @@ The `units_daily_pricing_v2` and `units_types_daily_pricing_v2` streams read pri
 | users | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 | users_pii_redacted | id | DefaultPaginator | ✅ |  ❌  | Undocumented |
 
-The reservation booking fees, logs, and notes endpoints are not documented in Track's published API reference. Their paths and response formats have not been verified against the live API.
-
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -138,7 +133,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Subject |
 | ------------------ | ------------ | ---------------- |
-| 4.4.0 | 2026-11-11 | [91833](https://github.com/airbytehq/airbyte/pull/91833): Added housekeeping zones and reservation booking fees, fees, logs, notes and tags streams. `units_daily_pricing_parent` and `units_types_daily_pricing_parent` no longer drop units and unit types without a lodging type, so they now emit the same records as `units` and `units_types`; `units_daily_pricing_v2` and `units_types_daily_pricing_v2` now include those units' rates. |
+| 4.4.0 | 2026-11-11 | [91833](https://github.com/airbytehq/airbyte/pull/91833): Added housekeeping zones and reservation fees and tags streams. `units_daily_pricing_parent` and `units_types_daily_pricing_parent` no longer drop units and unit types without a lodging type, so they now emit the same records as `units` and `units_types`; `units_daily_pricing_v2` and `units_types_daily_pricing_v2` now include those units' rates. |
 | 4.3.22 | 2026-10-20 | Update dependencies |
 | 4.3.21 | 2026-10-13 | Update dependencies |
 | 4.3.20 | 2026-10-12 | Mark `api_key` as `airbyte_secret` |
