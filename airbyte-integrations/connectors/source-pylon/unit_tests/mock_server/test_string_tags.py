@@ -1,5 +1,11 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+"""Smoke-test that string tags pass through unchanged in emitted records.
+
+This also passes on the old schema because the CDK does not validate output
+against the schema. The schema-level guard is in test_schema_conformance.py.
+"""
+
 import pytest
 from freezegun import freeze_time
 
