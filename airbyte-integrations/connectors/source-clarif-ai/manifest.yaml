@@ -57,6 +57,17 @@ definitions:
             page_size: 20
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        # Clarifai returns modified_at with nanosecond precision (e.g. 2026-10-02T17:05:11.904417302Z), but
+        # Python's %f only parses up to 6 fractional digits. Truncate to microseconds so the cursor can parse it.
+        # The value is evaluated before the condition, so it must not fail on records without modified_at.
+        - type: AddFields
+          condition: "{{ record.get('modified_at') is string and record['modified_at'] | length > 27 and record['modified_at'].endswith('Z') }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ ((record.get('modified_at') or '') | string)[:26] ~ 'Z' }}"
+              value_type: string
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -128,6 +139,17 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        # Clarifai returns modified_at with nanosecond precision (e.g. 2026-10-02T17:05:11.904417302Z), but
+        # Python's %f only parses up to 6 fractional digits. Truncate to microseconds so the cursor can parse it.
+        # The value is evaluated before the condition, so it must not fail on records without modified_at.
+        - type: AddFields
+          condition: "{{ record.get('modified_at') is string and record['modified_at'] | length > 27 and record['modified_at'].endswith('Z') }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ ((record.get('modified_at') or '') | string)[:26] ~ 'Z' }}"
+              value_type: string
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -198,6 +220,17 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        # Clarifai returns modified_at with nanosecond precision (e.g. 2026-10-02T17:05:11.904417302Z), but
+        # Python's %f only parses up to 6 fractional digits. Truncate to microseconds so the cursor can parse it.
+        # The value is evaluated before the condition, so it must not fail on records without modified_at.
+        - type: AddFields
+          condition: "{{ record.get('modified_at') is string and record['modified_at'] | length > 27 and record['modified_at'].endswith('Z') }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ ((record.get('modified_at') or '') | string)[:26] ~ 'Z' }}"
+              value_type: string
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
