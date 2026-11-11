@@ -240,6 +240,32 @@ def test_accounts_edge_cases_match_legacy(resource: dict) -> None:
 
 
 @pytest.mark.parametrize(
+    "resource, expected",
+    [
+        pytest.param({"id": 1, "type": "accounts", "attributes": None}, {"id": 1}, id="attributes-null"),
+        pytest.param({"id": 1, "type": "accounts"}, {"id": 1}, id="attributes-absent"),
+        pytest.param(
+            {
+                "id": 1,
+                "type": "accounts",
+                "attributes": {"updatedAt": "2021-01-01T00:00:00.000Z"},
+                "relationships": {"null": None, "list": [1], "owner": {"data": {"id": 7}}},
+            },
+            {"updatedAt": "2021-01-01T00:00:00.000Z", "id": 1, "owner": [7]},
+            id="relationship-value-not-an-object",
+        ),
+    ],
+)
+def test_accounts_tolerates_null_attributes_and_non_object_relationships(resource: dict, expected: dict) -> None:
+    # The legacy extractor raised on these inputs, so they are asserted against explicit records instead of the oracle.
+    with HttpMocker() as http_mocker:
+        output = _read(http_mocker, "accounts", _response([resource]))
+
+    assert not output.errors
+    assert [record.record.data for record in output.records] == [expected]
+
+
+@pytest.mark.parametrize(
     "response",
     [
         pytest.param(_response([]), id="empty-data-array"),

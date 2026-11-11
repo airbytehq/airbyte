@@ -33,13 +33,16 @@ Copy your key and secret and paste them into the respective fields.
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | carriers | shippingProviderId | No pagination | ✅ |  ❌  |
+| carrier_packages | carrierCode.code | No pagination | ✅ |  ❌  |
+| carrier_services | carrierCode.code.domestic.international | No pagination | ✅ |  ❌  |
 | customers | customerId | DefaultPaginator | ✅ |  ❌  |
-| fulfillments | fulfillmentId | DefaultPaginator | ✅ |  ❌  |
-| orders | orderId | DefaultPaginator | ✅ |  ❌  |
+| fulfillments | fulfillmentId | DefaultPaginator | ✅ |  ✅  |
+| orders | orderId | DefaultPaginator | ✅ |  ✅  |
 | products | productId | DefaultPaginator | ✅ |  ❌  |
-| shipments | shipmentId | DefaultPaginator | ✅ |  ❌  |
+| shipments | shipmentId | DefaultPaginator | ✅ |  ✅  |
 | marketplaces | name.marketplaceId | No pagination | ✅ |  ❌  |
 | stores | storeId | No pagination | ✅ |  ❌  |
+| tags | tagId | No pagination | ✅ |  ❌  |
 | users | userId | No pagination | ✅ |  ❌  |
 | warehouses | warehouseId | No pagination | ✅ |  ❌  |
 | webhooks | WebHookID | No pagination | ✅ |  ❌  |
@@ -55,6 +58,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.0 | 2026-11-09 | [91538](https://github.com/airbytehq/airbyte/pull/91538) | Add `tags`, `carrier_packages` and `carrier_services` streams, declare additional `orders`, `products` and `fulfillments` fields, and set heartbeat and suggested-streams metadata |
 | 0.2.54 | 2026-11-10 | [91707](https://github.com/airbytehq/airbyte/pull/91707) | Update dependencies |
 | 0.2.53 | 2026-11-04 | [90360](https://github.com/airbytehq/airbyte/pull/90360) | Simplify rate-limit error handling configuration with no change in retry behavior |
 | 0.2.52 | 2026-11-03 | [90739](https://github.com/airbytehq/airbyte/pull/90739) | Update dependencies |
