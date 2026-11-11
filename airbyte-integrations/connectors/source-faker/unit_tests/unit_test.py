@@ -10,7 +10,14 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
@@ -94,6 +101,15 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+@pytest.mark.parametrize("setting", ["count", "records_per_slice", "parallelism"])
+@pytest.mark.parametrize("value", [0, -1, None, True, False, "10"])
+def test_check_rejects_explicit_invalid_settings(setting, value):
+    result = SourceFaker().check(logger, {setting: value})
+
+    assert result.status == Status.FAILED
+    assert result.message == repr(f"`{setting}` must be a number greater than or equal to 1, got {value!r}")
 
 
 def test_read_small_random_data():
@@ -295,3 +311,28 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+@pytest.mark.parametrize(
+    "config, expected_count",
+    [
+        ({"sourceType": "faker", "count": 5000, "seed": 42}, 5000),
+        ({"count": 10, "seed": 42, "records_per_slice": 5}, 10),
+        ({"count": 10, "seed": 42, "parallelism": 1}, 10),
+        ({"seed": 42, "records_per_slice": 100, "parallelism": 1}, 1000),
+        ({}, 1000),
+    ],
+)
+def test_check_and_read_with_omitted_settings(config, expected_count):
+    source = SourceFaker()
+    assert source.check(logger, config).status == Status.SUCCEEDED
+
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    records = [message.record.data for message in source.read(logger, config, catalog, {}) if message.type == Type.RECORD]
+
+    assert sorted(record["id"] for record in records) == list(range(1, expected_count + 1))
