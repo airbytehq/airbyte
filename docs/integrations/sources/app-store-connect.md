@@ -223,7 +223,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
-| 0.1.0 | 2026-11-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Added 15 streams: eight App Store Analytics reports, four Sales and Trends reports, the finance detail report, app store versions, and in-app purchases. |
+| 0.1.0 | 2026-11-11 | [92041](https://github.com/airbytehq/airbyte/pull/92041) | Added 15 streams: eight App Store Analytics reports, four Sales and Trends reports, the finance detail report, app store versions, and in-app purchases. |
 | 0.0.10 | 2026-11-10 | [91545](https://github.com/airbytehq/airbyte/pull/91545) | Request 200 records per page for apps and analytics report listings, and declare the analytics segment fields in the segments stream schemas |
 | 0.0.9 | 2026-11-10 | [91343](https://github.com/airbytehq/airbyte/pull/91343) | Update dependencies |
 | 0.0.8 | 2026-11-03 | [90446](https://github.com/airbytehq/airbyte/pull/90446) | Update dependencies |
