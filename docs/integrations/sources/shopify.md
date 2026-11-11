@@ -380,7 +380,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 4.3.7 | 2026-11-11 |  | Capture status updates to existing transactions when their orders are updated within the incremental sync window. |
+| 4.3.7 | 2026-11-11 | [91994](https://github.com/airbytehq/airbyte/pull/91994) | Capture status updates to existing transactions when their orders are updated within the incremental sync window. |
 | 4.3.6 | 2026-11-10 | [91709](https://github.com/airbytehq/airbyte/pull/91709) | Update dependencies |
 | 4.3.5 | 2026-11-03 | [90900](https://github.com/airbytehq/airbyte/pull/90900) | Require Python 3.11 or newer, retaining support through Python 3.13 |
 | 4.3.3 | 2026-11-03 | [90723](https://github.com/airbytehq/airbyte/pull/90723) | Update dependencies |
