@@ -40,12 +40,10 @@ definitions:
           path: reviews
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 2
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 2
           request_parameters:
             shop_domain: "{{ config['shop_domain'] }}"
         record_selector:

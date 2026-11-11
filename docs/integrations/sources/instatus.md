@@ -71,7 +71,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
-| 0.2.20 | 2026-11-04 | [90356](https://github.com/airbytehq/airbyte/pull/90356) | Consolidate error handling into a single shared handler per stream; no change in retry or skip behavior |
+| 0.2.21 | 2026-11-11 | [90356](https://github.com/airbytehq/airbyte/pull/90356) | Consolidate error handling into a single shared handler per stream; no change in retry or skip behavior |
+| 0.2.20 | 2026-11-10 | [91571](https://github.com/airbytehq/airbyte/pull/91571) | Update dependencies |
 | 0.2.19 | 2026-11-03 | [90602](https://github.com/airbytehq/airbyte/pull/90602) | Update dependencies |
 | 0.2.18 | 2026-10-27 | [89961](https://github.com/airbytehq/airbyte/pull/89961) | Update dependencies |
 | 0.2.17 | 2026-10-20 | [78787](https://github.com/airbytehq/airbyte/pull/78787) | Update dependencies |
