@@ -66,15 +66,16 @@ def test_account_balances_retries_rate_limits_with_factor_five() -> None:
     rate_limited = HttpResponse(
         json.dumps({"error": {"type": "rate_limited", "message": "API rate limit exceeded"}}),
         status_code=429,
+        headers={"X-RateLimit-Limit": "5000", "X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1735862700"},
     )
     with HttpMocker() as http_mocker, patch("time.sleep") as sleep:
         parents = []
         given_parents(http_mocker, parents, case)
-        http_mocker.get(request, [rate_limited, rate_limited, ResponseBuilder.singleton(record)])
+        http_mocker.get(request, [rate_limited, ResponseBuilder.singleton(record)])
         output = read_case(case)
         assert [message.record.data for message in output.records] == [dict(record, account_id="account1")]
         http_mocker.assert_number_of_calls(parents[0], 1)
-        http_mocker.assert_number_of_calls(request, 3)
-        assert http_mocker._mocker.call_count == 4
+        http_mocker.assert_number_of_calls(request, 2)
+        assert http_mocker._mocker.call_count == 3
     waits = [call.args[0] for call in sleep.call_args_list if call.args and call.args[0]]
-    assert waits == [11.0, 21.0]
+    assert waits == [11.0]

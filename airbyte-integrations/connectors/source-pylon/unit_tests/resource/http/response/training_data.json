@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-01-01T00:00:00Z",
+  "documents": [
+    {
+      "external_id": "synthetic-value",
+      "file_name": "synthetic-value",
+      "file_size": 1,
+      "file_type": "synthetic-value",
+      "id": "synthetic-value",
+      "s3_key": "synthetic-value"
+    }
+  ],
+  "exclude_from_kb_search": false,
+  "id": "synthetic-value",
+  "name": "synthetic-value",
+  "scrape_status": {
+    "last_scraped_at": "2026-01-01T00:00:00Z",
+    "pages_scraped": 1,
+    "status": "synthetic-value",
+    "total_pages": 1
+  },
+  "type": "synthetic-value",
+  "updated_at": "2026-01-01T00:00:00Z",
+  "visibility": "synthetic-value"
+}

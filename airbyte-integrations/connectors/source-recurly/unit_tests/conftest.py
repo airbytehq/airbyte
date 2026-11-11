@@ -11,25 +11,43 @@ from freezegun import freeze_time
 
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
-CONNECTOR_DIR = Path(__file__).resolve().parent.parent
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
+
+SOURCE_FOLDER = Path("/airbyte/integration_code/source_declarative_manifest")
+if not SOURCE_FOLDER.exists():
+    SOURCE_FOLDER = Path(__file__).parent.parent
+sys.path.append(str(SOURCE_FOLDER))
 
 
-def get_source(
-    config: Mapping[str, Any], state: list[AirbyteStateMessage] | None = None, catalog: ConfiguredAirbyteCatalog | None = None
-) -> YamlDeclarativeSource:
+def _load_components() -> None:
     module_name = "source_declarative_manifest.components"
-    spec = importlib.util.spec_from_file_location(module_name, CONNECTOR_DIR / "components.py")
+    spec = importlib.util.spec_from_file_location(module_name, SOURCE_FOLDER / "components.py")
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     sys.modules[module_name] = module
-    return YamlDeclarativeSource(path_to_yaml=str(CONNECTOR_DIR / "manifest.yaml"), config=config, state=state, catalog=catalog)
+
+
+def get_source(
+    config: Mapping[str, Any],
+    state: list[AirbyteStateMessage] | None = None,
+    catalog: ConfiguredAirbyteCatalog | None = None,
+) -> YamlDeclarativeSource:
+    _load_components()
+    return YamlDeclarativeSource(
+        path_to_yaml=str(SOURCE_FOLDER / "manifest.yaml"),
+        catalog=catalog or CatalogBuilder().build(),
+        config=config,
+        state=state or StateBuilder().build(),
+    )
 
 
 @pytest.fixture(autouse=True)
-def isolated_sync(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterator[None]:
+def isolate_request_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     monkeypatch.setenv("REQUEST_CACHE_PATH", str(tmp_path))
     with freeze_time("2025-01-03T00:00:00Z"):
         yield
