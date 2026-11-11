@@ -75,6 +75,26 @@ data:
       url: https://status.calendly.com/
       type: status_page
   releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          Version 1.0.0 fixes incremental syncs of scheduled_events and event_invitees, which stopped picking up new
+          bookings and cancellations, and declares timestamp and integer types on existing fields of six streams. The
+          first sync re-reads events from your start date, so the cursor change needs no clear. Refresh the source
+          schema. Only ClickHouse and S3/GCS Data Lake need some streams cleared, and Postgres/Redshift views on
+          retyped columns must be dropped first. See
+          https://docs.airbyte.com/integrations/sources/calendly-migrations#upgrading-to-100.
+        upgradeDeadline: "2026-12-01"
+        deadlineAction: disable
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - scheduled_events
+              - event_invitees
+              - api_user
+              - event_types
+              - groups
+              - organization_memberships
     unsafeDowngrades:
       1.1.0:
         message: >-
