@@ -68,8 +68,8 @@ metadata:
   name: airbyte-config-secrets
 type: Opaque
 stringData:
-  azure-key-vault-client-id: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
-  azure-key-vault-client-secret: ## KWP6egqixiQeQoKqFZuZq2weRbYoVxMH
+  AB_AZURE_KEY_VAULT_CLIENT_ID: ## e.g. 3fc863e9-4740-4871-bdd4-456903a04d4e
+  AB_AZURE_KEY_VAULT_CLIENT_SECRET: ## e.g. KWP6egqixiQeQoKqFZuZq2weRbYoVxMH
 ```
 
 </TabItem>
@@ -126,24 +126,26 @@ global:
 
 <TabItem label="Azure Key Vault" value="Azure">
 
+Ensure you've already created a Kubernetes secret containing your Azure client ID and client secret. By default, Airbyte reads them from the secret you name in `secretName`, under the `AB_AZURE_KEY_VAULT_CLIENT_ID` and `AB_AZURE_KEY_VAULT_CLIENT_SECRET` keys. Steps to configure these are in the preceding [prerequisites](#secrets). If your secret uses different key names, set `clientIdSecretKey` and `clientSecretSecretKey` to those names.
+
 ```yaml title="values.yaml"
 global:
   secretsManager:
     type: AZURE_KEY_VAULT
     secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     azureKeyVault:
-      vaultUrl: ## https://my-vault.vault.azure.net/
-      tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
-      clientId: ""
-      clientIdSecretKey: ""
-      clientSecret: ""
-      clientSecretSecretKey: ""
-      tags: ## Optional - You may add tags to new secrets created by Airbyte.
-        - key: ## e.g. team
-          value: ## e.g. deployments
-        - key: business-unit
-          value: engineering
+      vaultUrl: ## e.g. https://my-vault.vault.azure.net/
+      tenantId: ## e.g. 3fc863e9-4740-4871-bdd4-456903a04d4e
+      clientIdSecretKey: "" ## Optional - Defaults to AB_AZURE_KEY_VAULT_CLIENT_ID.
+      clientSecretSecretKey: "" ## Optional - Defaults to AB_AZURE_KEY_VAULT_CLIENT_SECRET.
+      tags: "" ## Optional - e.g. team=deployments,business-unit=engineering
 ```
+
+Airbyte passes the same secret name and keys to connector job pods, so they need no extra configuration.
+
+The `tags` value adds tags to new secrets that Airbyte creates. Set it as a single string of comma-separated `key=value` pairs. Airbyte can't write secrets if `tags` uses any other format, such as a YAML list.
+
+Don't set `clientId` and `clientSecret` in `values.yaml` if you use `secretName`. The chart writes inline values to the `<release-name>-airbyte-secrets` secret that it generates, but pods read credentials from `global.secretsManager.secretName`, or from `global.secretName` if that isn't set. Inline values take effect only when neither is set.
 
 </TabItem>
 <TabItem label="HashiCorp Vault" value="Vault">
