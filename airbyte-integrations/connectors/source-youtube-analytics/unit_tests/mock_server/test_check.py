@@ -38,7 +38,13 @@ def test_check_succeeds_when_annotations_report_type_is_retired() -> None:
             HttpResponse(
                 status_code=400,
                 body=json.dumps(
-                    {"error": {"code": 400, "status": "INVALID_ARGUMENT", "message": "Report type channel_annotations_a1 is not available."}}
+                    {
+                        "error": {
+                            "code": 400,
+                            "status": "INVALID_ARGUMENT",
+                            "message": "Report type channel_annotations_a1 is not available.",
+                        }
+                    }
                 ),
             ),
         )
