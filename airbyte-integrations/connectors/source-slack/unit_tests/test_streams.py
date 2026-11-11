@@ -6,9 +6,10 @@ from copy import deepcopy
 from unittest.mock import MagicMock, Mock
 
 import pytest
+from freezegun import freeze_time
 from requests import Response
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType
+from airbyte_cdk.models import AirbyteStreamStateSerializer, ConfiguredAirbyteCatalogSerializer, FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -19,6 +20,74 @@ from unit_tests.conftest import get_retriever, get_source, get_stream_by_name
 @pytest.fixture
 def authenticator(token_config):
     return TokenAuthenticator(token_config["credentials"]["api_token"])
+
+
+def _read_incremental(stream_name, config, stream_state):
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": stream_name, "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state(stream_name, stream_state).build()
+    output = read(get_source(config, stream_name, state), config=config, catalog=catalog, state=state)
+    output.raise_if_errors()
+    return output
+
+
+@freeze_time("2021-08-01T00:00:00Z")
+def test_threads_read_resumes_per_channel_parent_state(requests_mock, token_config):
+    cursors = {"airbyte-for-beginners": 1627516800.0, "good-reads": 1627603200.0}
+
+    def history(request, context):
+        return {"ok": True, "messages": [{"ts": str(cursors[request.qs["channel"][0]])}]}
+
+    requests_mock.get("https://slack.com/api/conversations.history", json=history)
+    requests_mock.get("https://slack.com/api/conversations.replies", json={"ok": True, "messages": []})
+    output = _read_incremental("threads", token_config, {})
+    parent_state = AirbyteStreamStateSerializer.dump(output.most_recent_state)["stream_state"]["parent_state"]["channel_messages"]
+    print("Emitted channel_messages state:", parent_state)
+    assert {entry["partition"]["channel"] for entry in parent_state["states"]} == set(cursors)
+    requests_mock.reset_mock()
+    requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
+    _read_incremental("threads", token_config, {"parent_state": {"channel_messages": parent_state}})
+    oldest_by_channel = {
+        request.qs["channel"][0]: float(request.qs["oldest"][0])
+        for request in requests_mock.request_history
+        if request.path.endswith("conversations.history")
+    }
+    assert oldest_by_channel == {channel: cursor - 86400 for channel, cursor in cursors.items()}
+
+
+@pytest.mark.parametrize("stream_name", ["channel_messages", "threads"])
+@freeze_time("2021-07-24T00:00:00Z")
+def test_message_reads_skip_archived_non_member_channels(requests_mock, token_config, stream_name):
+    token_config.update({"channel_filter": [], "include_archived_channels": True, "join_channels": True})
+    channels = [
+        {"id": "C1", "name": "member", "is_member": True, "is_archived": False},
+        {"id": "C2", "name": "joinable", "is_member": False, "is_archived": False},
+        {"id": "C3", "name": "archived-non-member", "is_member": False, "is_archived": True},
+        {"id": "C4", "name": "archived-member", "is_member": True, "is_archived": True},
+    ]
+    requests_mock.get("https://slack.com/api/conversations.list", json={"ok": True, "channels": channels})
+    requests_mock.post("https://slack.com/api/conversations.join", json={"ok": True, "channel": {}})
+    requests_mock.get(
+        "https://slack.com/api/conversations.history", json={"ok": True, "messages": [{"ts": "1626984010", "reply_count": 1}]}
+    )
+    requests_mock.get("https://slack.com/api/conversations.replies", json={"ok": True, "messages": [{"ts": "1626984020"}]})
+    output = _read_incremental(stream_name, token_config, {})
+    requested_channels = {
+        request.qs["channel"][0].upper()
+        for request in requests_mock.request_history
+        if request.path.endswith("conversations.history")
+    }
+    assert requested_channels == {"C1", "C2", "C4"}
+    assert {record.record.data["channel_id"] for record in output.records} == {"C1", "C2", "C4"}
 
 
 @pytest.mark.parametrize(

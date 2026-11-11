@@ -162,6 +162,21 @@ def test_threads_state_migration(token_config, threads_stream_state, expected_pa
     assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
 
 
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        ({}, False),
+        ({"float_ts": "1627603200"}, True),
+        ({"parent_state": {}}, True),
+        ({"parent_state": {"other_stream": {}}}, True),
+        ({"parent_state": {"channel_messages": {}}}, False),
+        ({"parent_state": {"channel_messages": {"states": []}}}, False),
+    ],
+)
+def test_threads_state_migration_only_migrates_legacy_state(token_config, components_module, stream_state, expected):
+    assert components_module.ThreadsStateMigration(token_config).should_migrate(stream_state) is expected
+
+
 def test_read_records_yields_all_channels_when_join_disabled(token_config, requests_mock, components_module):
     """
     The retriever itself does not filter by membership. Filtering for streams that
