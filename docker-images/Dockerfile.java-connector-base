@@ -8,6 +8,8 @@ RUN set -o xtrace && \
     dnf makecache --refresh && \
     dnf install -y shadow-utils tar openssl findutils && \
     dnf update --releasever=latest -y --security && \
+    dnf upgrade --releasever=latest -y ca-certificates libbrotli && \
+    update-ca-trust extract && \
     dnf clean all && \
     rm -rf /var/cache/dnf
 

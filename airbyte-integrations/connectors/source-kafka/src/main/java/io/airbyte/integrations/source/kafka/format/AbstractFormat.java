@@ -16,8 +16,8 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler;
 import org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule;
-import org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.msk.auth.iam.IAMClientCallbackHandler;
@@ -49,7 +49,8 @@ public abstract class AbstractFormat implements KafkaFormat {
     props.putAll(propertiesByProtocol(config));
     props.put(ConsumerConfig.CLIENT_ID_CONFIG,
         config.has("client_id") ? config.get("client_id").asText() : null);
-    props.put(ConsumerConfig.CLIENT_DNS_LOOKUP_CONFIG, config.get("client_dns_lookup").asText());
+    final String dnsLookup = config.get("client_dns_lookup").asText();
+    props.put(ConsumerConfig.CLIENT_DNS_LOOKUP_CONFIG, "default".equals(dnsLookup) ? "use_all_dns_ips" : dnsLookup);
     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, config.get("enable_auto_commit").booleanValue());
     props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG,
         config.has("auto_commit_interval_ms") ? config.get("auto_commit_interval_ms").intValue() : null);
@@ -72,8 +73,8 @@ public abstract class AbstractFormat implements KafkaFormat {
 
   private Map<String, Object> propertiesByProtocol(final JsonNode config) {
     final JsonNode protocolConfig = config.get("protocol");
-    LOGGER.info("Kafka protocol config: {}", protocolConfig.toString());
     final KafkaProtocol protocol = KafkaProtocol.valueOf(protocolConfig.get("security_protocol").asText().toUpperCase());
+    LOGGER.info("Kafka protocol: {}", protocol);
     final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
         .put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, protocol.toString());
 

@@ -35,7 +35,7 @@ Check the [issue list](https://github.com/airbytehq/airbyte/issues) first in cas
 
 ## Community Slack
 
-[Join the Slack community](https://slack.airbyte.com) for help from other users and Airbyte team members. Popular channels include:
+[Join the Slack community](https://join.slack.com/t/airbytehq/shared_invite/zt-497lmcwfo-rVj8NkG94vnVZV9H6wIkkg) for help from other users and Airbyte team members. Popular channels include:
 
 - `#ask-ai`
 - `#ask-community-for-troubleshooting`

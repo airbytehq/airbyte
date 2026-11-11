@@ -25,17 +25,18 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    drops every custom field. Lead custom fields arrive as top-level hash keys (API v1), the only
    undeclared fields a read returns, hence `fail_on_extra_columns: false`. `components.py` is gone;
    plain `DpathExtractor` on `data` is correct. Details in AGENTS.md section 2.
-3. **Date Fields Are Typed to Their Actual Shape** -- RFC3339 values (API v2, `leads`, `lead_labels`)
-   are `date-time` + `timestamp_with_timezone`; `YYYY-MM-DD HH:MM:SS` values (API v1) are `date-time` +
+3. **Date Fields Are Typed to Their Actual Shape** -- RFC3339 values (API v2, `leads`, `lead_labels`,
+   `mailThreads`, `call_logs`) are `date-time` + `timestamp_with_timezone`; `YYYY-MM-DD HH:MM:SS` values (API v1) are `date-time` +
    `timestamp_without_timezone`; `HH:MM` fields such as `activities.due_time`, and
    `deal_flow.old_value`/`new_value` (they take the type of whichever field changed), stay untyped.
-   Adding or changing a `format` is a breaking change, so the date-like fields listed in AGENTS.md
-   wait for the next major release. Declared JSON types follow Pipedrive's OpenAPI; the differences
-   kept on purpose (whole-value `integer` flags and epoch milliseconds, five `goals` ids declared
-   `number`, two arrays without `items`, `deal_fields.show_in_pipelines`) and the three fields whose
+   Adding or changing a `format` is a breaking change; 5.0.0 typed the last date-like fields.
+   Declared JSON types follow Pipedrive's OpenAPI; the differences kept on purpose (whole-value
+   `integer` flags, epoch milliseconds and `mailThreads.version`, `goals.expected_outcome.target`
+   kept `number` for currency amounts) and the three fields whose
    values really vary in kind (`deal_fields.mandatory_flag`, `deal_flow.additional_data`,
-   `options[].id`) are listed with their reasons there. A type change is a breaking change. Details
-   in AGENTS.md section 3.
+   `options[].id`) are listed with their reasons there. Undocumented plan-dependent keys
+   (`restriction_settings`, `deal_fields.user_restrictions`, `goals.seasonality`) stay untyped until a
+   sample shows their shape. A type change is a breaking change. Details in AGENTS.md section 3.
 4. **OAuth Is the Default, the API Token Travels in a Header, Old Configs Are Migrated** -- a
    `SelectiveAuthenticator` on `base_requester`: OAuth (Declarative OAuth, requests to the company
    host from `credentials.api_domain`) or the API token in the `x-api-token` header; never put the

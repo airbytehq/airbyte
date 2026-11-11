@@ -51,7 +51,12 @@ class TestWebinarQnaResults(TestCase):
 
         assert_completed_without_errors(output, _STREAM)
         assert sorted(records_data(output), key=lambda r: r["email"]) == [
-            {**_qna(webinar["id"]), "webinar_uuid": webinar["uuid"]} for webinar in WEBINARS
+            {
+                **_qna(webinar["id"]),
+                "webinar_uuid": webinar["uuid"],
+                "webinar_id": webinar["id"],
+            }
+            for webinar in WEBINARS
         ]
         for webinar in WEBINARS:
             http_mocker.assert_number_of_calls(_QNA_REQUESTS[webinar["uuid"]], 1)

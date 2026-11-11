@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-calendly
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.39.1@sha256:dc2fc3c346aee695a7967db5c1a0701732a2d075f0c67856934eb1f4b360f06d
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0
   connectorSubtype: api
   connectorType: source
   definitionId: b8f2cbee-b073-4dd8-9b80-97d7bae967a4
-  dockerImageTag: 0.1.57
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-calendly
   githubIssueLabel: source-calendly
   icon: icon.svg
@@ -26,8 +26,22 @@ data:
   releaseDate: 2025-01-27
   releaseStage: alpha
   supportLevel: community
+  maxSecondsBetweenMessages: 3600
+  suggestedStreams:
+    streams:
+      - scheduled_events
+      - event_invitees
+      - event_types
+      - organization_memberships
+      - api_user
   connectorTestSuitesOptions:
     - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-CALENDLY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   documentationUrl: https://docs.airbyte.com/integrations/sources/calendly
   tags:
     - language:manifest-only
@@ -36,15 +50,55 @@ data:
     ql: 100
     sl: 100
   externalDocumentationUrls:
+    - title: Calendly OpenAPI specification
+      url: https://developer.calendly.com/openapi/calendly-api.yaml
+      type: openapi_spec
     - title: Calendly API reference
-      url: https://developer.calendly.com/api-docs
+      url: https://developer.calendly.com/api-docs/overview/api/reference
       type: api_reference
     - title: Calendly authentication
-      url: https://developer.calendly.com/getting-started
+      url: https://developer.calendly.com/docs/authentication/overview
       type: authentication_guide
+    - title: Calendly personal access tokens
+      url: https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens
+      type: authentication_guide
+    - title: Calendly authorization scopes
+      url: https://developer.calendly.com/docs/authentication/scopes
+      type: permissions_scopes
+    - title: Calendly API release notes
+      url: https://developer.calendly.com/release-notes
+      type: api_release_history
     - title: Calendly API rate limits
-      url: https://developer.calendly.com/api-docs/ZG9jOjM2MzE2MDM4-api-conventions#rate-limiting
+      url: https://developer.calendly.com/api-docs/overview/rate-limits
       type: rate_limits
     - title: Calendly Status
       url: https://status.calendly.com/
       type: status_page
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          Version 1.0.0 fixes incremental syncs of scheduled_events and event_invitees, which stopped picking up new
+          bookings and cancellations, and declares timestamp and integer types on existing fields of six streams. The
+          first sync re-reads events from your start date, so the cursor change needs no clear. Refresh the source
+          schema. Only ClickHouse and S3/GCS Data Lake need some streams cleared, and Postgres/Redshift views on
+          retyped columns must be dropped first. See
+          https://docs.airbyte.com/integrations/sources/calendly-migrations#upgrading-to-100.
+        upgradeDeadline: "2026-12-01"
+        deadlineAction: disable
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - scheduled_events
+              - event_invitees
+              - api_user
+              - event_types
+              - groups
+              - organization_memberships
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
