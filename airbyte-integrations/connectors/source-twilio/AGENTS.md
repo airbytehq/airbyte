@@ -12,6 +12,8 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 **Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.
 
+The `messages` stream uses a global substream cursor. `TwilioMessagesStateMigration` drops legacy per-account state, preferring the top-level stream cursor or falling back to the earliest partition cursor to avoid gaps. The global state envelope uses `state.date_sent` and `use_global_cursor: true`, without `states`.
+
 ### Future incremental stream candidates
 
 None identified yet.
