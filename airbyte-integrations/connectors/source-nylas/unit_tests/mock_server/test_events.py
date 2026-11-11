@@ -63,11 +63,13 @@ def test_calendar_404_does_not_abort_other_calendars(config: dict, requests_mock
     output = read(get_source(config, catalog), config, catalog)
 
     assert not output.errors
-    assert {record.record.data["id"] for record in output.records} == {"event-1", "event-2"}
+    assert {record.record.data["id"] for record in output.records if record.record is not None} == {"event-1", "event-2"}
     assert len(output.records) == 2
     assert unavailable.call_count == first_page.call_count == second_page.call_count == 1
     assert any(
-        log.log.message == "Calendar events are unavailable (HTTP 404). Skipping this calendar and continuing with the remaining calendars."
+        log.log is not None
+        and log.log.message
+        == "Calendar events are unavailable (HTTP 404). Skipping this calendar and continuing with the remaining calendars."
         for log in output.logs
     )
-    assert not any(log.log.level == "ERROR" for log in output.logs)
+    assert not any(log.log is not None and log.log.level == "ERROR" for log in output.logs)
