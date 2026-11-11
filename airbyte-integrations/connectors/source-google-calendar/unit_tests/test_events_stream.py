@@ -547,7 +547,10 @@ def test_410_updated_min_too_long_ago_is_transient():
 
         error = _error_trace(output)
         assert error.failure_type == FailureType.transient_error
-        assert "re-reads the calendar automatically" in error.message
+        assert error.message == (
+            "Google Calendar rejects the saved events sync position as too old. "
+            "Automatic re-reading requires a sync position older than 21 days."
+        )
 
 
 @pytest.mark.parametrize("reason", ["deleted", "fullSyncRequired"])

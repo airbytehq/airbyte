@@ -32,11 +32,11 @@ data:
       enabled: false
       packageName: airbyte-source-google-calendar
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.48.0@sha256:cf202b16aef3395e0bdbaa1a2e66ff6aaf123f8836e6324743ded50c4b8d6586
   connectorSubtype: api
   connectorType: source
   definitionId: c01b6259-bdf4-45ff-bcd5-66424cd2f18b
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.2.0
   dockerRepository: airbyte/source-google-calendar
   githubIssueLabel: source-google-calendar
   icon: icon.svg
@@ -65,3 +65,18 @@ data:
     - title: Google Workspace Status
       url: https://www.google.com/appsstatus/
       type: status_page
+    - title: Google Calendar release notes
+      url: https://developers.google.com/workspace/calendar/release-notes
+      type: api_release_history
+    - title: Google Calendar errors
+      url: https://developers.google.com/workspace/calendar/api/guides/errors
+      type: other
+    - title: Google Calendar authorization scopes
+      url: https://developers.google.com/workspace/calendar/api/auth
+      type: permissions_scopes
+    - title: Google Calendar Discovery definition
+      url: https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest
+      type: other
+    - title: Google API Discovery definitions repository
+      url: https://github.com/googleapis/discovery-artifact-manager
+      type: other
