@@ -53,8 +53,9 @@ REPO = os.environ.get("GITHUB_REPOSITORY", "airbytehq/airbyte")
 JEV_MODEL = "jev-1.13.0"
 JEV_URL = "https://api.typesafe.ai/v1/systemone"
 FLAG_AT = 0.5
-# Sized in UTF-8 bytes, not characters: Jev allows 32k tokens per question, and CJK or emoji text
-# takes about a token per character, so 60k characters could be twice that.
+# Sized in UTF-8 bytes, not characters: a token is at least one byte, so a 28k-byte chunk is at most
+# 28k tokens, under Jev's 32k per question with room for the questions. A character count gives no
+# such bound (one emoji can be several tokens).
 CHUNK_BYTES = 28_000
 CHUNK_OVERLAP = 2_000  # so text cut at a chunk edge is still seen whole in one chunk
 MAX_CHUNKS = 30
