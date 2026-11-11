@@ -120,6 +120,22 @@ def test_incomplete_config_is_left_for_spec_validation(capsys, config):
         _assert_valid_against_spec(source)
 
 
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param({**LEGACY_CONFIG, "credentials": {"client_secret": "s", "refresh_token": "r"}}, id="no_client_id"),
+        pytest.param({**LEGACY_CONFIG, "credentials": {"client_id": "i", "refresh_token": "r"}}, id="no_client_secret"),
+        pytest.param(
+            {"client_secret": "x", "client_refresh_token_2": "y", "credentials": {"client_id": "i", "client_secret": "s"}},
+            id="no_refresh_token",
+        ),
+    ],
+)
+def test_flat_keys_kept_while_credentials_lack_one_field(config):
+    # Each case lacks exactly one `credentials` field, so every clause of the remove condition is exercised on its own.
+    assert get_source(json.loads(json.dumps(config)))._config == config
+
+
 def test_advanced_auth_targets_the_oauth_option():
     spec = get_source(dict(LEGACY_CONFIG)).spec(logging.getLogger("test"))
     oauth = spec.advanced_auth
