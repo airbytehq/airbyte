@@ -26,10 +26,11 @@ import java.sql.SQLException
  * Section checks for the stepped setup form, see the `sections` declared by
  * [PostgresSourceConfigurationSpecification]. Each check validates the fields of its section and of
  * the sections before it, and nothing beyond:
- * - [SECTION_CONNECTION]: the server is reachable at host:port, through the SSH tunnel and with the
- *   SSL mode configured. No credentials are involved.
+ * - [SECTION_CONNECTION]: the server is reachable at host:port, directly or through the SSH tunnel,
+ *   whichever connection method is chosen, and with the SSL mode configured. Neither a database nor
+ *   credentials are involved.
  * - [SECTION_CREDENTIALS]: the user can log into the database, which proves the server reachable
- *   once more, and the connector's check queries run.
+ *   once more, the connector's check queries run, and the schemas listed exist and are usable.
  * - [SECTION_SYNC_METHOD]: the credentials check, plus the replication method's prerequisites on
  *   the server, the same ones the full check applies.
  * - The review section is the last one, so the CDK runs the full check for it.
@@ -56,12 +57,12 @@ class PostgresSourceCheckSectionHandler(
     }
 
     /**
-     * The server must be reachable at host:port, through the SSH tunnel if one is configured, and
-     * accept the SSL mode. Credentials belong to the next section, so the probe logs in with
-     * placeholder ones and takes an authentication failure as proof that the server was reached:
-     * Postgres only rejects credentials once the TCP connection and the SSL negotiation succeeded.
-     * The database name is part of this section as well but the server validates it after
-     * authentication only; the credentials check covers it.
+     * The server must be reachable at host:port, directly or through the SSH tunnel when that is
+     * the connection method, and accept the SSL mode. The database and the credentials belong to
+     * the next section, so the probe logs into a placeholder database with placeholder credentials
+     * and takes the server's refusal as proof that it was reached: Postgres only rejects them once
+     * the TCP connection and the SSL negotiation succeeded. Through a tunnel this also proves the
+     * jump server accepted the SSH login and forwards to host:port.
      */
     private fun checkConnection(pojo: PostgresSourceConfigurationSpecification) {
         val host: String = required(SECTION_CONNECTION, "host") { pojo.host }
@@ -103,8 +104,9 @@ class PostgresSourceCheckSectionHandler(
     }
 
     /**
-     * Everything the connection check needs, plus the database name and a user who can log into it.
-     * The login proves the server reachable, so the placeholder probe is not repeated.
+     * Everything the connection check needs, plus the fields of this section: the database, the
+     * schemas to read in it and a user who can log into it. The login proves the server reachable,
+     * so the placeholder probe is not repeated.
      */
     private fun checkCredentials(pojo: PostgresSourceConfigurationSpecification) {
         requireCredentials(SECTION_CREDENTIALS, pojo)
@@ -113,9 +115,7 @@ class PostgresSourceCheckSectionHandler(
         log.info {
             "Logging into database '${config.database}' as '${config.jdbcProperties["user"]}'."
         }
-        JdbcConnectionFactory(config).get().use { conn: Connection ->
-            checkQueries.executeAll(conn)
-        }
+        JdbcConnectionFactory(config).get().use { conn: Connection -> checkLogin(conn, config) }
     }
 
     /**
@@ -134,10 +134,48 @@ class PostgresSourceCheckSectionHandler(
         val config: PostgresSourceConfiguration = configFactory.make(pojo)
         validateNetworkSettings(config)
         JdbcConnectionFactory(config).get().use { conn: Connection ->
-            checkQueries.executeAll(conn)
+            checkLogin(conn, config)
             PostgresSourceMetadataQuerier.validateReplicationMethod(conn, config)
         }
     }
+
+    /** What the credentials section promises once the user is logged into the database. */
+    private fun checkLogin(conn: Connection, config: PostgresSourceConfiguration) {
+        checkQueries.executeAll(conn)
+        validateSchemas(conn, config)
+    }
+
+    /**
+     * Every schema listed in `schemas` must exist in the database, under that exact name, and the
+     * user must hold USAGE on it. Otherwise the mistake only shows at the last step, as a full
+     * check that discovers no table. An empty list means all schemas; there is nothing to verify.
+     */
+    private fun validateSchemas(conn: Connection, config: PostgresSourceConfiguration) {
+        if (config.namespaces.isEmpty()) return
+        val usable = mutableMapOf<String, Boolean>()
+        conn.prepareStatement(SCHEMAS_QUERY).use { stmt ->
+            stmt.setArray(1, conn.createArrayOf("text", config.namespaces.toTypedArray()))
+            stmt.executeQuery().use { rs ->
+                while (rs.next()) usable[rs.getString(1)] = rs.getBoolean(2)
+            }
+        }
+        val missing: List<String> = config.namespaces.filterNot { it in usable }
+        if (missing.isNotEmpty()) {
+            throw ConfigErrorException(
+                "Schema ${quoted(missing)} does not exist in database '${config.database}'. " +
+                    "Schema names are case sensitive.",
+            )
+        }
+        val denied: List<String> = config.namespaces.filter { usable[it] == false }
+        if (denied.isNotEmpty()) {
+            throw ConfigErrorException(
+                "User '${config.jdbcProperties["user"]}' lacks the USAGE privilege " +
+                    "on schema ${quoted(denied)}.",
+            )
+        }
+    }
+
+    private fun quoted(names: List<String>): String = names.joinToString(", ") { "'$it'" }
 
     /** The Cloud-only rules on the host and the encryption, which the full check applies too. */
     private fun validateNetworkSettings(config: PostgresSourceConfiguration) {
@@ -182,6 +220,11 @@ class PostgresSourceCheckSectionHandler(
         const val PROBE_USERNAME = "airbyte_connection_check"
         const val PROBE_PASSWORD = "airbyte_connection_check"
         const val PROBE_DATABASE = "postgres"
+
+        /** The schemas among the names given which exist, and whether the user may use each. */
+        const val SCHEMAS_QUERY =
+            "SELECT nspname, pg_catalog.has_schema_privilege(nspname, 'USAGE') " +
+                "FROM pg_catalog.pg_namespace WHERE nspname = ANY (?)"
 
         /** SQLSTATE class 28: invalid_authorization_specification, invalid_password. */
         const val SQLSTATE_CLASS_INVALID_AUTHORIZATION = "28"

@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.postgres
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.ssh.SshBastionContainer
+import io.airbyte.cdk.testcontainers.DOCKER_HOST_FROM_WITHIN_CONTAINER
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.config.SECTION_CONNECTION
 import io.airbyte.integrations.source.postgres.config.SECTION_CREDENTIALS
@@ -44,8 +46,60 @@ class PostgresSourceCheckSectionIntegrationTest {
     }
 
     @Test
+    fun testConnectionSectionThroughAnSshTunnel() {
+        val dbPort: Int = testdb.container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)
+        SshBastionContainer(tunnelingToHostPort = dbPort).use { ssh: SshBastionContainer ->
+            // Still no database, user or password; `host` and `port` are now the database as the
+            // jump server reaches it.
+            assertSucceeded(check(tunnelled(ssh, dbPort, "SSH_KEY_AUTH", "ssh_key", ssh.key)))
+            assertSucceeded(
+                check(tunnelled(ssh, dbPort, PASSWORD_AUTH, PASSWORD_FIELD, SSH_SECRET)),
+            )
+            // The jump server turns the login down.
+            assertFailed(check(tunnelled(ssh, dbPort, PASSWORD_AUTH, PASSWORD_FIELD, "wrong")))
+            // The jump server lets Airbyte in, but nothing listens where it forwards to.
+            assertFailed(
+                check(tunnelled(ssh, unusedPort(), PASSWORD_AUTH, PASSWORD_FIELD, SSH_SECRET)),
+            )
+        }
+    }
+
+    @Test
     fun testCredentialsSection() {
         assertSucceeded(check(credentials()))
+    }
+
+    @Test
+    fun testCredentialsSectionWithSchemas() {
+        val config: ObjectNode = credentials()
+        config.putArray("schemas").add("public")
+        assertSucceeded(check(config))
+    }
+
+    @Test
+    fun testCredentialsSectionWithAMissingSchema() {
+        val config: ObjectNode = credentials()
+        config.putArray("schemas").add("public").add("Public")
+        assertFailedWith(
+            check(config),
+            "Schema 'Public' does not exist in database '${testdb.databaseName}'. " +
+                "Schema names are case sensitive.",
+        )
+    }
+
+    @Test
+    fun testCredentialsSectionWithASchemaTheUserCannotUse() {
+        // The fixture's user is a superuser; this one may log in and nothing more.
+        val role: String = testdb.withNamespace("no_usage")
+        val schema: String = testdb.withNamespace("locked")
+        testdb.with("CREATE ROLE \"$role\" LOGIN PASSWORD 'no_usage'")
+        testdb.with("CREATE SCHEMA \"$schema\"")
+        val config: ObjectNode = credentials().put("username", role).put("password", "no_usage")
+        config.putArray("schemas").add(schema)
+        assertFailedWith(
+            check(config),
+            "User '$role' lacks the USAGE privilege on schema '$schema'.",
+        )
     }
 
     @Test
@@ -166,6 +220,29 @@ class PostgresSourceCheckSectionIntegrationTest {
             set<ObjectNode>("replication_method", replicationMethod)
         }
 
+    /**
+     * The connection section through an SSH tunnel. The bastion container reaches the database on
+     * the Docker host, at the port the database container is mapped to.
+     */
+    private fun tunnelled(
+        ssh: SshBastionContainer,
+        dbPort: Int,
+        tunnelMethod: String,
+        secretField: String,
+        secret: String,
+    ): ObjectNode =
+        connection().apply {
+            put("host", DOCKER_HOST_FROM_WITHIN_CONTAINER)
+            put("port", dbPort)
+            putObject("tunnel_method").apply {
+                put("tunnel_method", tunnelMethod)
+                put("tunnel_host", ssh.outerKeyAuthTunnelMethod.host)
+                put("tunnel_port", ssh.outerKeyAuthTunnelMethod.port)
+                put("tunnel_user", SshBastionContainer.SSH_USER)
+                put(secretField, secret)
+            }
+        }
+
     /** The complete configuration, as the review section or a plain CHECK sends it. */
     private fun complete(replication: ObjectNode = replicationMethod("Standard")): ObjectNode =
         syncMethod(replication).apply {
@@ -191,6 +268,11 @@ class PostgresSourceCheckSectionIntegrationTest {
         )
     }
 
+    private fun assertFailed(output: BufferingOutputConsumer) {
+        val status: AirbyteConnectionStatus = output.statuses().single()
+        Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.status)
+    }
+
     private fun assertFailedWith(output: BufferingOutputConsumer, message: String) {
         val status: AirbyteConnectionStatus = output.statuses().single()
         Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.status)
@@ -209,6 +291,10 @@ class PostgresSourceCheckSectionIntegrationTest {
     private fun unusedPort(): Int = ServerSocket(0).use { it.localPort }
 
     companion object {
+        private const val PASSWORD_AUTH = "SSH_PASSWORD_AUTH"
+        private const val PASSWORD_FIELD = "tunnel_user_password"
+        private const val SSH_SECRET = SshBastionContainer.SSH_PASSWORD
+
         private lateinit var testdb: PostgresTestDatabase
 
         @JvmStatic
