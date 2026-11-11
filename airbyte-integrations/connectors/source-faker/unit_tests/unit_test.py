@@ -284,6 +284,29 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+def test_read_users_after_completed_sync_emits_all_users():
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    first_sync = list(source.read(logger, config, catalog, []))
+    first_sync_ids = [row.record.data["id"] for row in first_sync if row.type is Type.RECORD]
+    final_state = [row.state for row in first_sync if row.type is Type.STATE][-1]
+    assert first_sync_ids == list(range(1, 11))
+    assert final_state.stream.stream_state.loop_offset == 10
+
+    second_sync = list(source.read(logger, config, catalog, [final_state]))
+    second_sync_ids = [row.record.data["id"] for row in second_sync if row.type is Type.RECORD]
+    second_final_state = [row.state for row in second_sync if row.type is Type.STATE][-1]
+    assert second_sync_ids == list(range(1, 11))
+    assert second_final_state.stream.stream_state.loop_offset == 10
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
