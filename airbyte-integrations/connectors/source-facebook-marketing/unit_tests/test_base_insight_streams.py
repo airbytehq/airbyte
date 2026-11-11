@@ -260,6 +260,64 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @pytest.mark.parametrize("completion_order", [(0, 1, 2, 3, 4), (2, 1, 4, 0, 3)], ids=["in_order", "out_of_order"])
+    @pytest.mark.parametrize("stale_slices", [[], ["2026-09-16", "2026-09-18"]], ids=["empty_slices", "stale_slices"])
+    @pytest.mark.parametrize("empty_result", [False, True], ids=["records", "empty_result"])
+    @freeze_time("2026-09-25")
+    def test_lookback_cursor_is_monotonic(self, mocker, api, some_config, async_manager_mock, completion_order, stale_slices, empty_result):
+        account_id = some_config["account_ids"][0]
+        saved_cursor = "2026-09-20"
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 9, 1),
+            end_date=datetime(2026, 9, 23),
+            insights_lookback_window=3,
+        )
+        stream.state = {"date_start": saved_cursor, "slices": stale_slices}
+        record = mocker.Mock()
+        record.export_all_data.return_value = {}
+        mocker.patch(
+            "source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob",
+            side_effect=lambda **kwargs: mocker.Mock(interval=kwargs["interval"], get_result=lambda: [] if empty_result else [record]),
+        )
+        async_manager_mock.completed_jobs.side_effect = lambda: list(async_manager_mock.call_args.kwargs["jobs"])
+        slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
+        assert slices[0]["insight_job"].interval.start == date(2026, 9, 17)
+
+        for index, slice_index in enumerate(completion_order):
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=slices[slice_index]))
+            state = stream.state[account_id]
+            assert state["date_start"] >= saved_cursor
+            assert state["date_start"] == ("2026-09-21" if index == 4 else saved_cursor)
+            assert all(slice_date > state["date_start"] for slice_date in state["slices"])
+            if index == 1:
+                interrupted_state = copy.deepcopy(stream.state)
+                stream.state = interrupted_state
+                assert stream._next_cursor_values[account_id] == date(2026, 9, 17)
+                # Re-read the interrupted attempt's lookback before continuing.
+                for completed_index in completion_order[:2]:
+                    list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=slices[completed_index]))
+                    assert stream.state[account_id]["date_start"] >= saved_cursor
+
+        assert stream.state[account_id] == {"date_start": "2026-09-21", "slices": []}
+
+    @pytest.mark.parametrize("saved_cursor", [None, "2026-09-20"])
+    def test_state_filters_redundant_slices_without_removing_them(self, api, some_config, saved_cursor):
+        account_id = some_config["account_ids"][0]
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 9, 1),
+            end_date=datetime(2026, 9, 23),
+            insights_lookback_window=3,
+        )
+        slices = ["2026-09-18", "2026-09-20", "2026-09-22"]
+        stream.state = {account_id: {"date_start": saved_cursor, "slices": slices}}
+
+        assert stream.state[account_id]["slices"] == (["2026-09-22"] if saved_cursor else slices)
+        assert stream._completed_slices[account_id] == {date.fromisoformat(value) for value in slices}
+
     def test_read_records_add_account_id(self, mocker, api, some_config):
         rec_without_account = mocker.Mock()
         rec_without_account.export_all_data.return_value = {}
@@ -397,6 +455,9 @@ class TestBaseInsightsStream:
 
         result_state = state if not result_state else result_state
         result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
+        account_state = result_state[some_config["account_ids"][0]]
+        if account_state.get(AdsInsights.cursor_field):
+            account_state["slices"] = [value for value in account_state["slices"] if value > account_state[AdsInsights.cursor_field]]
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
