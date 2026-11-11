@@ -1,4 +1,4 @@
-import MigrationGuide from '@site/static/\_migration_guides_upgrade_guide.md';
+import MigrationGuide from "@site/static/_migration_guides_upgrade_guide.md";
 
 # Recurly Migration Guide
 
