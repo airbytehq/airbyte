@@ -18,10 +18,13 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
 
@@ -29,6 +32,26 @@ logger = logging.getLogger(__name__)
 
 
 PARENT_SLICE_KEY: str = "parent_slice"
+
+
+@dataclass
+class BingAdsDownloadErrorHandler(DefaultErrorHandler):
+    expired_link_filter: Optional[HttpResponseFilter] = None
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if (
+            isinstance(response_or_exception, requests.Response)
+            and response_or_exception.status_code == 403
+            and (
+                "AuthenticationFailed" in response_or_exception.text
+                or "Signature not valid in the specified time frame" in response_or_exception.text
+            )
+            and self.expired_link_filter
+        ):
+            resolution = self.expired_link_filter.matches(response_or_exception)
+            if resolution:
+                return resolution
+        return super().interpret_response(response_or_exception)
 
 
 @dataclass
