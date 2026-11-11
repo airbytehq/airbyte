@@ -40,6 +40,11 @@ Connections syncing `accounts`, `issues`, `issue_messages` or `custom_fields` ar
 
 With **Full Refresh | Overwrite**, `accounts` and `custom_fields` are fully rewritten on the next sync. With **Full Refresh | Append**, rows synced before the upgrade stay next to the new ones until you clear the stream. `issue_messages` uses full refresh but only re-reads messages for issues updated since **Start Date**, so it is limited like `issues`. `issues` is incremental. Rows synced before the upgrade keep nulled tags until the stream is cleared and synced again. To replace those tags, back up the table, set **Start Date** before the history you need, then clear `issues` and sync again.
 
+### Update downstream queries
+
+- The 8 timestamp columns in the preceding table are now timestamp columns instead of text. Update SQL, `dbt` models and dashboards that treat them as text, for example string comparisons, `LIKE`, substrings or casts from strings.
+- `tags` on `accounts` and `issues` is now an array of strings. Update anything that expects objects, such as `tags[0]:name`, or that worked around the old null values.
+
 ## Connector upgrade guide
 
 <MigrationGuide />
