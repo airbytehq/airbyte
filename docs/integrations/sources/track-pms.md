@@ -1,4 +1,5 @@
 # Track PMS
+
 An Airbyte source for the Track Property Management System (PMS)  
 Enterprise-class property management solutions for vacation rental companies  
 
@@ -20,11 +21,11 @@ To use this connector, you need your Track PMS account's domain and an API key a
 
 The connector uses HTTP Basic authentication, sending `api_key` as the username and `api_secret` as the password. If authentication fails, verify that you have provided both values correctly.
 
-In Airbyte, select **Track PMS** as your source and enter **Customer Domain**, **API Key**, and **API Secret** using the values above.
+In Airbyte, select **Track PMS** as your source and enter **Customer Domain**, **API Key**, and **API Secret** using your Track credentials.
 
 ## Sync behavior
 
-Streams marked as incremental in the table below use `updatedAt` as their cursor and send an `updatedSince` filter to Track. The first incremental sync reads historical records from January 1, 1900; subsequent syncs use the saved cursor. There is no configurable start date. The `units`, `units_daily_pricing_parent`, and `units_taxes_parent` streams support full refresh only.
+Streams marked as incremental in the table below use `updatedAt` as their cursor and send an `updatedSince` filter to Track. The first incremental sync reads historical records from January 1, 1900; subsequent syncs use the saved cursor. You can't configure the start date. The `units`, `units_daily_pricing_parent`, and `units_taxes_parent` streams support full refresh only.
 
 ### Rate limits and reservation substreams
 
@@ -169,4 +170,5 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.0.0 | 2025-01-16 | Fix housekeeping_work_orders incremental field; add reservations endpoint |
 | 0.1.0 | 2025-01-16 | Move kebab case streams to snake case; alphabetize streams |
 | 0.0.1 | 2024-10-18 | Initial release by [@blakeflei](https://github.com/blakeflei) via Connector Builder|
+
 </details>
