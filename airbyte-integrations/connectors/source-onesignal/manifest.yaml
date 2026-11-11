@@ -41,8 +41,6 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: FAIL
-                    http_codes:
-                      - 400
                     error_message_contains: deprecated v1 user token
                     failure_type: config_error
                     error_message: >-
