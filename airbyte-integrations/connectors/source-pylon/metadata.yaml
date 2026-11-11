@@ -64,7 +64,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: "Tags on accounts and issues are now arrays of strings instead of objects; typed destinations previously nulled these tags. Eight timestamp fields are now typed as date-time. Refresh the source schema after upgrading. See the migration guide: https://docs.airbyte.com/integrations/sources/pylon-migrations#upgrading-to-100"
+        message: "Tags on accounts and issues are now arrays of strings instead of objects; typed destinations previously nulled these tags. Eight timestamp fields are now typed as date-time. Refresh the source schema after upgrading. S3 Data Lake and other Iceberg destinations must also clear the affected streams, and ClickHouse destinations may need to clear issues and issue_messages, depending on the server version. Before clearing, back up and set Start Date early enough, because issues and issue_messages only re-read from Start Date. See the migration guide: https://docs.airbyte.com/integrations/sources/pylon-migrations#upgrading-to-100"
         upgradeDeadline: "2026-12-03"
         deadlineAction: "disable"
         scopedImpact:
