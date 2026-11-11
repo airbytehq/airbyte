@@ -28,6 +28,9 @@ class DefaultJdbcSharedState(
     override val maxSampleSize: Int
         get() = constants.maxSampleSize
 
+    override val withSparserSampling: Boolean
+        get() = constants.withSparserSampling
+
     val maxPartitionThroughputBytesPerSecond: Long =
         constants.expectedThroughputBytesPerSecond / configuration.maxConcurrency
 
