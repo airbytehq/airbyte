@@ -47,8 +47,8 @@ def fixture_response(
     return json_response(payload)
 
 
-def tabular_response(stream_name: str) -> HttpResponse:
-    body = load_fixture(stream_name)["body"]
+def tabular_response(stream_name: str, body: str | None = None) -> HttpResponse:
+    body = load_fixture(stream_name)["body"] if body is None else body
     return HttpResponse(
         body=gzip.compress(body.encode()),
         status_code=HTTPStatus.OK.value,

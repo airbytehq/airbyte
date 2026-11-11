@@ -102,6 +102,8 @@ Create a new request to resume.
 | --- | --- | --- |
 | `list_id_apps` | Full refresh | Apps visible to the API key. Parent stream for every other stream that's scoped to an app. |
 | `customer_reviews_per_app` | Incremental | Customer reviews for each app, flattened to include `rating`, `title`, `body`, `reviewerNickname`, `territory`, `createdDate`, and `app_id`. Cursor: `createdDate`. Each sync re-reads the last seven days to pick up late-arriving reviews. |
+| `app_store_versions` | Full refresh | App Store versions for each app, including version, platform, release state, and `app_id`. |
+| `in_app_purchases` | Full refresh | In-app purchases for each app, including product identifiers, purchase type, state, and `app_id`. |
 
 ### Sales and Trends reports
 
@@ -116,23 +118,29 @@ for incremental state.
 | `subscriber_report` | Incremental | `SUBSCRIBER`, `DETAILED`, version `1_3` | Daily subscriber detail. The most recent report date requested is two days before the sync. |
 | `subscription_report` | Incremental | `SUBSCRIPTION`, `SUMMARY`, version `1_3` | Daily subscription summary. The most recent report date requested is two days before the sync. |
 | `subscription_event_report` | Incremental | `SUBSCRIPTION_EVENT`, `SUMMARY`, version `1_3` | Daily subscription event summary. The most recent report date requested is three days before the sync, because Apple finalizes event data later than other reports. |
+| `pre_order_report` | Incremental | `PRE_ORDER`, `SUMMARY`, version `1_0` | Daily pre-order summary. |
+| `subscription_offer_code_redemption_report` | Incremental | `SUBSCRIPTION_OFFER_CODE_REDEMPTION`, `SUMMARY`, version `1_0` | Daily subscription offer code redemptions. |
+| `first_annual_report` | Incremental | `FIRST_ANNUAL`, `DETAILED`, version `1_0` | Daily first annual installs. No primary key is declared because the exact report columns are unverified. |
+| `win_back_eligibility_report` | Incremental | `WIN_BACK_ELIGIBILITY`, `SUMMARY`, version `1_0` | Daily subscription win-back eligibility. |
 
 ### Finance reports
 
 | Stream | Sync mode | Description |
 | --- | --- | --- |
 | `finance_report` | Incremental | Monthly `FINANCIAL` report for region `ZZ` (all regions, consolidated). Syncs through the month that ended at least 35 days ago, which is when Apple has typically published it. Requires the Finance or Admin role. |
+| `finance_detail_report` | Incremental | Monthly `FINANCE_DETAIL` report for region `Z1`. Uses the same availability window as `finance_report` and requires the Finance or Admin role. |
 
 ### App Store Analytics reports
 
 Apple produces analytics data through a hierarchy: report request > report >
-instance > segment > downloaded file. The connector exposes each level so you
-can audit what Apple generated. The streams ending in `_historical` read
+instance > segment > downloaded file. For installations and downloads, the
+connector exposes each level so you can audit what Apple generated. The eight
+additional ongoing reports expose only the downloaded rows. The streams ending in `_historical` read
 `ONE_TIME_SNAPSHOT` requests; the others read `ONGOING` requests.
 
-The connector reads two Apple reports: **App Store Installation and Deletion
-Standard** and **App Downloads Standard**, both at `DAILY` granularity. Other
-analytics reports aren't supported.
+The connector reads ten Apple analytics reports at `DAILY` granularity,
+including **App Store Installation and Deletion Standard**, **App Downloads
+Standard**, and the eight ongoing reports listed below.
 
 | Stream | Sync mode | Description |
 | --- | --- | --- |
@@ -147,6 +155,14 @@ analytics reports aren't supported.
 | `analytics_app_download_segments` | Incremental | Segments for each instance. Cursor: `processing_date`. |
 | `analytics_app_download_segment_details` | Full refresh | Metadata for each segment, including the pre-signed `download_url`. |
 | `app_download` | Incremental | Rows from the downloaded App Downloads report files. Cursor: `processing_date`. |
+| `app_sessions` | Incremental | Ongoing App Sessions Standard report rows. Cursor: `processing_date`. |
+| `app_crashes` | Incremental | Ongoing App Crashes report rows. Cursor: `processing_date`. |
+| `app_store_discovery_and_engagement` | Incremental | Ongoing App Store Discovery and Engagement Standard report rows. Cursor: `processing_date`. |
+| `app_store_purchases` | Incremental | Ongoing App Store Purchases Standard report rows. Cursor: `processing_date`. |
+| `app_store_pre_orders` | Incremental | Ongoing App Store Pre-orders Standard report rows. Cursor: `processing_date`. |
+| `app_store_retention_messaging` | Incremental | Ongoing App Store Retention Messaging report rows. Cursor: `processing_date`. |
+| `browser_choice_screen_selection` | Incremental | Ongoing Browser Choice Screen Selection report rows. Cursor: `processing_date`. |
+| `browser_choice_screen_engagement` | Incremental | Ongoing Browser Choice Screen Engagement report rows for iOS versions before 18.2. Cursor: `processing_date`. |
 | `analytics_report_requests_historical` | Full refresh | `ONE_TIME_SNAPSHOT` report requests for each app. |
 | `analytics_installations_reports_historical` | Full refresh | The Installation and Deletion report for each snapshot request. |
 | `analytics_installations_instances_historical` | Full refresh | Instances of the historical Installation and Deletion report. |
@@ -161,8 +177,7 @@ analytics reports aren't supported.
 
 Incremental analytics streams read every processing date from
 `analytics_reports_start_date` (or the saved cursor) up to two days before the
-sync. The
-`app_download` and `app_store_installations_and_deletions` streams download
+sync. The final report streams download
 each segment's gzip TSV file from Apple's short-lived pre-signed Amazon S3 URL
 and emit one record per row.
 
@@ -208,6 +223,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.1.0 | 2026-11-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Added 15 streams: eight App Store Analytics reports, four Sales and Trends reports, the finance detail report, app store versions, and in-app purchases. |
 | 0.0.10 | 2026-11-10 | [91545](https://github.com/airbytehq/airbyte/pull/91545) | Request 200 records per page for apps and analytics report listings, and declare the analytics segment fields in the segments stream schemas |
 | 0.0.9 | 2026-11-10 | [91343](https://github.com/airbytehq/airbyte/pull/91343) | Update dependencies |
 | 0.0.8 | 2026-11-03 | [90446](https://github.com/airbytehq/airbyte/pull/90446) | Update dependencies |

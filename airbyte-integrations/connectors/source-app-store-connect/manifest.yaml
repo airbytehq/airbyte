@@ -19,6 +19,47 @@ check:
     - list_id_apps
 
 definitions:
+  analytics_standard_reports:
+    $ref: "#/streams/19"
+    name: analytics_standard_reports
+    retriever:
+      $ref: "#/streams/19/retriever"
+      requester:
+        $ref: "#/streams/19/retriever/requester"
+        request_parameters:
+          filter[name]: "{{ parameters['report_name'] }}"
+  analytics_standard_instances:
+    $ref: "#/streams/20"
+    name: analytics_standard_instances
+    retriever:
+      $ref: "#/streams/20/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - $ref: "#/streams/20/retriever/partition_router/parent_stream_configs/0"
+            stream:
+              $ref: "#/definitions/analytics_standard_reports"
+  analytics_standard_segments:
+    $ref: "#/streams/21"
+    name: analytics_standard_segments
+    retriever:
+      $ref: "#/streams/21/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - $ref: "#/streams/21/retriever/partition_router/parent_stream_configs/0"
+            stream:
+              $ref: "#/definitions/analytics_standard_instances"
+  analytics_standard_download:
+    $ref: "#/streams/23"
+    retriever:
+      $ref: "#/streams/23/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - $ref: "#/streams/23/retriever/partition_router/parent_stream_configs/0"
+            stream:
+              $ref: "#/definitions/analytics_standard_segments"
   linked:
     HttpRequester:
       authenticator:
@@ -4838,6 +4879,1752 @@ streams:
             value: ONE_TIME_SNAPSHOT
             value_type: string
 
+  - type: DeclarativeStream
+    name: pre_order_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        $ref: "#/definitions/linked/SalesReportCsvDecoder"
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/salesReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          filter[version]: "1_0"
+          filter[frequency]: DAILY
+          filter[reportDate]: "{{ stream_interval.start_time }}"
+          filter[reportType]: PRE_ORDER
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+          filter[reportSubType]: SUMMARY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - report_date
+      - Apple Identifier
+      - Country Code
+      - Device
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Provider:
+            type:
+              - string
+              - "null"
+          Provider Country:
+            type:
+              - string
+              - "null"
+          SKU:
+            type:
+              - string
+              - "null"
+          Developer:
+            type:
+              - string
+              - "null"
+          Title:
+            type:
+              - string
+              - "null"
+          Pre-Order Start Date:
+            type:
+              - string
+              - "null"
+          Pre-Order End Date:
+            type:
+              - string
+              - "null"
+          Ordered:
+            type:
+              - string
+              - "null"
+          Canceled:
+            type:
+              - string
+              - "null"
+          Cumulative Ordered:
+            type:
+              - string
+              - "null"
+          Cumulative Canceled:
+            type:
+              - string
+              - "null"
+          Start Date:
+            type:
+              - string
+              - "null"
+          End Date:
+            type:
+              - string
+              - "null"
+          Country Code:
+            type:
+              - string
+              - "null"
+          Apple Identifier:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Supported Platforms:
+            type:
+              - string
+              - "null"
+          Category:
+            type:
+              - string
+              - "null"
+          Client:
+            type:
+              - string
+              - "null"
+          report_date:
+            type:
+              - string
+              - "null"
+          _sync_cursor:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - report_date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - _sync_cursor
+            value: >-
+              {{
+              format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+              duration('P1D'), '%Y-%m-%d') }}
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'sales_reports_start_date' in config and
+          config['sales_reports_start_date'] and
+          config['sales_reports_start_date'] != 'None' -%} {{-
+          config['sales_reports_start_date'] -}} {%- else -%} {{- (today_utc() -
+          duration('P365D')).strftime('%Y-%m-%d') -}} {%- endif -%}
+        min_datetime: "{{ (today_utc() - duration('P365D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: subscription_offer_code_redemption_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        $ref: "#/definitions/linked/SalesReportCsvDecoder"
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/salesReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          filter[version]: "1_0"
+          filter[frequency]: DAILY
+          filter[reportDate]: "{{ stream_interval.start_time }}"
+          filter[reportType]: SUBSCRIPTION_OFFER_CODE_REDEMPTION
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+          filter[reportSubType]: SUMMARY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - report_date
+      - Subscription Apple ID
+      - Offer Reference Name
+      - Offer Code
+      - Territory
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          App Apple ID:
+            type:
+              - string
+              - "null"
+          Subscription Name:
+            type:
+              - string
+              - "null"
+          Subscription Apple ID:
+            type:
+              - string
+              - "null"
+          Offer Reference Name:
+            type:
+              - string
+              - "null"
+          Offer Code:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          Redemptions:
+            type:
+              - string
+              - "null"
+          report_date:
+            type:
+              - string
+              - "null"
+          _sync_cursor:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - report_date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - _sync_cursor
+            value: >-
+              {{
+              format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+              duration('P1D'), '%Y-%m-%d') }}
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'sales_reports_start_date' in config and
+          config['sales_reports_start_date'] and
+          config['sales_reports_start_date'] != 'None' -%} {{-
+          config['sales_reports_start_date'] -}} {%- else -%} {{- (today_utc() -
+          duration('P365D')).strftime('%Y-%m-%d') -}} {%- endif -%}
+        min_datetime: "{{ (today_utc() - duration('P365D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: first_annual_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        $ref: "#/definitions/linked/SalesReportCsvDecoder"
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/salesReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          filter[version]: "1_0"
+          filter[frequency]: DAILY
+          filter[reportDate]: "{{ stream_interval.start_time }}"
+          filter[reportType]: FIRST_ANNUAL
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+          filter[reportSubType]: DETAILED
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          App Name:
+            type:
+              - string
+              - "null"
+          Apple Identifier:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          First Annual Installs:
+            type:
+              - string
+              - "null"
+          report_date:
+            type:
+              - string
+              - "null"
+          _sync_cursor:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - report_date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - _sync_cursor
+            value: >-
+              {{
+              format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+              duration('P1D'), '%Y-%m-%d') }}
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'sales_reports_start_date' in config and
+          config['sales_reports_start_date'] and
+          config['sales_reports_start_date'] != 'None' -%} {{-
+          config['sales_reports_start_date'] -}} {%- else -%} {{- (today_utc() -
+          duration('P365D')).strftime('%Y-%m-%d') -}} {%- endif -%}
+        min_datetime: "{{ (today_utc() - duration('P365D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: win_back_eligibility_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        $ref: "#/definitions/linked/SalesReportCsvDecoder"
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/salesReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          filter[version]: "1_0"
+          filter[frequency]: DAILY
+          filter[reportDate]: "{{ stream_interval.start_time }}"
+          filter[reportType]: WIN_BACK_ELIGIBILITY
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+          filter[reportSubType]: SUMMARY
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - report_date
+      - Subscription Apple ID
+      - Territory
+      - Paid Subscription Tenure
+      - Time Since Last Subscribed
+      - Has Previously Redeemed Win-Back Offer
+      - Time Since Last Win-Back Offer
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          App Name:
+            type:
+              - string
+              - "null"
+          App Apple ID:
+            type:
+              - string
+              - "null"
+          Subscription Name:
+            type:
+              - string
+              - "null"
+          Subscription Apple ID:
+            type:
+              - string
+              - "null"
+          Subscription Group ID:
+            type:
+              - string
+              - "null"
+          Standard Subscription Duration:
+            type:
+              - string
+              - "null"
+          Paid Subscription Tenure:
+            type:
+              - string
+              - "null"
+          Time Since Last Subscribed:
+            type:
+              - string
+              - "null"
+          Has Previously Redeemed Win-Back Offer:
+            type:
+              - string
+              - "null"
+          Time Since Last Win-Back Offer:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          Churned Subscription Count:
+            type:
+              - string
+              - "null"
+          report_date:
+            type:
+              - string
+              - "null"
+          _sync_cursor:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - report_date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - _sync_cursor
+            value: >-
+              {{
+              format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+              duration('P1D'), '%Y-%m-%d') }}
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P1D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'sales_reports_start_date' in config and
+          config['sales_reports_start_date'] and
+          config['sales_reports_start_date'] != 'None' -%} {{-
+          config['sales_reports_start_date'] -}} {%- else -%} {{- (today_utc() -
+          duration('P365D')).strftime('%Y-%m-%d') -}} {%- endif -%}
+        min_datetime: "{{ (today_utc() - duration('P365D')).strftime('%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+  - type: DeclarativeStream
+    name: finance_detail_report
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        $ref: "#/definitions/linked/SalesReportCsvDecoder"
+      requester:
+        type: HttpRequester
+        url: https://api.appstoreconnect.apple.com/v1/financeReports
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          filter[regionCode]: Z1
+          filter[reportDate]: "{{ stream_interval.start_time[:7] }}"
+          filter[reportType]: FINANCE_DETAIL
+          filter[vendorNumber]: "{{ config['vendorID'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - report_date
+      - Apple Identifier
+      - Country of Sale
+      - Settlement Date
+      - Transaction Date
+      - SKU
+      - Customer Currency
+      - Sale or Return
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Vendor Name:
+            type:
+              - string
+              - "null"
+          Start Date:
+            type:
+              - string
+              - "null"
+          End Date:
+            type:
+              - string
+              - "null"
+          Transaction Date:
+            type:
+              - string
+              - "null"
+          Settlement Date:
+            type:
+              - string
+              - "null"
+          Apple Identifier:
+            type:
+              - string
+              - "null"
+          SKU:
+            type:
+              - string
+              - "null"
+          Title:
+            type:
+              - string
+              - "null"
+          Developer Name:
+            type:
+              - string
+              - "null"
+          Product Type Identifier:
+            type:
+              - string
+              - "null"
+          Country of Sale:
+            type:
+              - string
+              - "null"
+          Quantity:
+            type:
+              - string
+              - "null"
+          Partner Share:
+            type:
+              - string
+              - "null"
+          Extended Partner Share:
+            type:
+              - string
+              - "null"
+          Partner Share Currency:
+            type:
+              - string
+              - "null"
+          Customer Price:
+            type:
+              - string
+              - "null"
+          Customer Currency:
+            type:
+              - string
+              - "null"
+          Sale or Return:
+            type:
+              - string
+              - "null"
+          Promo Code:
+            type:
+              - string
+              - "null"
+          Order Type:
+            type:
+              - string
+              - "null"
+          Region:
+            type:
+              - string
+              - "null"
+          report_date:
+            type:
+              - string
+              - "null"
+          _sync_cursor:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - report_date
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - _sync_cursor
+            value: >-
+              {{
+              format_datetime(str_to_datetime(stream_interval.start_time[:10]) +
+              duration('P1M'), '%Y-%m-%d') }}
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1M
+      cursor_field: _sync_cursor
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ (today_utc() - duration('P35D')).strftime('%Y-%m') }}-01"
+        datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: >-
+          {%- if 'finance_reports_start_date' in config and
+          config['finance_reports_start_date'] and
+          config['finance_reports_start_date'] != 'None' -%} {{-
+          config['finance_reports_start_date'] ~ '-01' -}} {%- else -%} {{-
+          (today_utc() - duration('P11M')).strftime('%Y-%m') ~ '-01' -}} {%-
+          endif -%}
+        min_datetime: "{{ (today_utc() - duration('P11M')).strftime('%Y-%m') }}-01"
+        datetime_format: "%Y-%m-%d"
+        min_datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: P1M
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+        - "%Y-%m"
+  - type: DeclarativeStream
+    name: app_store_versions
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/apps/{{
+          stream_partition.app_id }}/appStoreVersions
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/streams/list_id_apps"
+            parent_key: id
+            partition_field: app_id
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          versionString:
+            type:
+              - string
+              - "null"
+          platform:
+            type:
+              - string
+              - "null"
+          appStoreState:
+            type:
+              - string
+              - "null"
+          appVersionState:
+            type:
+              - string
+              - "null"
+          copyright:
+            type:
+              - string
+              - "null"
+          reviewType:
+            type:
+              - string
+              - "null"
+          releaseType:
+            type:
+              - string
+              - "null"
+          earliestReleaseDate:
+            format: date-time
+            type:
+              - string
+              - "null"
+          createdDate:
+            format: date-time
+            type:
+              - string
+              - "null"
+          usesIdfa:
+            type:
+              - boolean
+              - "null"
+          downloadable:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - versionString
+            value: "{{ (record.get('attributes') or {}).get('versionString') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - platform
+            value: "{{ (record.get('attributes') or {}).get('platform') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - appStoreState
+            value: "{{ (record.get('attributes') or {}).get('appStoreState') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - appVersionState
+            value: "{{ (record.get('attributes') or {}).get('appVersionState') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - copyright
+            value: "{{ (record.get('attributes') or {}).get('copyright') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - reviewType
+            value: "{{ (record.get('attributes') or {}).get('reviewType') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - releaseType
+            value: "{{ (record.get('attributes') or {}).get('releaseType') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - earliestReleaseDate
+            value: "{{ (record.get('attributes') or {}).get('earliestReleaseDate') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - createdDate
+            value: "{{ (record.get('attributes') or {}).get('createdDate') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - usesIdfa
+            value: "{{ (record.get('attributes') or {}).get('usesIdfa') }}"
+            value_type: boolean
+          - type: AddedFieldDefinition
+            path:
+              - downloadable
+            value: "{{ (record.get('attributes') or {}).get('downloadable') }}"
+            value_type: boolean
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_partition.app_id }}"
+            value_type: string
+      - type: RemoveFields
+        field_pointers:
+          - - attributes
+          - - relationships
+          - - links
+  - type: DeclarativeStream
+    name: in_app_purchases
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.appstoreconnect.apple.com/v1/apps/{{
+          stream_partition.app_id }}/inAppPurchasesV2
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/streams/list_id_apps"
+            parent_key: id
+            partition_field: app_id
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          productId:
+            type:
+              - string
+              - "null"
+          inAppPurchaseType:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          reviewNote:
+            type:
+              - string
+              - "null"
+          familySharable:
+            type:
+              - boolean
+              - "null"
+          contentHosting:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - name
+            value: "{{ (record.get('attributes') or {}).get('name') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - productId
+            value: "{{ (record.get('attributes') or {}).get('productId') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - inAppPurchaseType
+            value: "{{ (record.get('attributes') or {}).get('inAppPurchaseType') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - state
+            value: "{{ (record.get('attributes') or {}).get('state') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - reviewNote
+            value: "{{ (record.get('attributes') or {}).get('reviewNote') }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - familySharable
+            value: "{{ (record.get('attributes') or {}).get('familySharable') }}"
+            value_type: boolean
+          - type: AddedFieldDefinition
+            path:
+              - contentHosting
+            value: "{{ (record.get('attributes') or {}).get('contentHosting') }}"
+            value_type: boolean
+          - type: AddedFieldDefinition
+            path:
+              - app_id
+            value: "{{ stream_partition.app_id }}"
+            value_type: string
+      - type: RemoveFields
+        field_pointers:
+          - - attributes
+          - - relationships
+          - - links
+  - $ref: "#/definitions/analytics_standard_download"
+    name: app_sessions
+    $parameters:
+      stream_name: app_sessions
+      report_name: "App Sessions Standard"
+    primary_key:
+      - app_id
+      - processing_date
+      - App Version
+      - Device
+      - Platform Version
+      - Source Type
+      - Page Type
+      - App Download Date
+      - Territory
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          App Apple Identifier:
+            type:
+              - string
+              - "null"
+          App Version:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Platform Version:
+            type:
+              - string
+              - "null"
+          Source Type:
+            type:
+              - string
+              - "null"
+          Page Type:
+            type:
+              - string
+              - "null"
+          App Download Date:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          Sessions:
+            type:
+              - string
+              - "null"
+          Total Session Duration:
+            type:
+              - string
+              - "null"
+          Unique Devices:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - $ref: "#/definitions/analytics_standard_download"
+    name: app_crashes
+    $parameters:
+      stream_name: app_crashes
+      report_name: "App Crashes"
+    primary_key:
+      - app_id
+      - processing_date
+      - App Version
+      - Device
+      - Platform Version
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          App Apple Identifier:
+            type:
+              - string
+              - "null"
+          App Version:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Platform Version:
+            type:
+              - string
+              - "null"
+          Crashes:
+            type:
+              - string
+              - "null"
+          Unique Devices:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - $ref: "#/definitions/analytics_standard_download"
+    name: app_store_discovery_and_engagement
+    $parameters:
+      stream_name: app_store_discovery_and_engagement
+      report_name: "App Store Discovery and Engagement Standard"
+    primary_key:
+      - app_id
+      - processing_date
+      - Event
+      - Page Type
+      - Source Type
+      - Engagement Type
+      - Device
+      - Platform Version
+      - Territory
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          App Apple Identifier:
+            type:
+              - string
+              - "null"
+          Event:
+            type:
+              - string
+              - "null"
+          Page Type:
+            type:
+              - string
+              - "null"
+          Source Type:
+            type:
+              - string
+              - "null"
+          Engagement Type:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Platform Version:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          Counts:
+            type:
+              - string
+              - "null"
+          Unique Counts:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - $ref: "#/definitions/analytics_standard_download"
+    name: app_store_purchases
+    $parameters:
+      stream_name: app_store_purchases
+      report_name: "App Store Purchases Standard"
+    primary_key:
+      - app_id
+      - processing_date
+      - Purchase Type
+      - Content Name
+      - Content Apple Identifier
+      - Payment Method
+      - Device
+      - Platform Version
+      - Source Type
+      - Page Type
+      - App Download Date
+      - Pre-Order
+      - Territory
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          App Apple Identifier:
+            type:
+              - string
+              - "null"
+          Purchase Type:
+            type:
+              - string
+              - "null"
+          Content Name:
+            type:
+              - string
+              - "null"
+          Content Apple Identifier:
+            type:
+              - string
+              - "null"
+          Payment Method:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Platform Version:
+            type:
+              - string
+              - "null"
+          Source Type:
+            type:
+              - string
+              - "null"
+          Page Type:
+            type:
+              - string
+              - "null"
+          App Download Date:
+            type:
+              - string
+              - "null"
+          Pre-Order:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          Purchases:
+            type:
+              - string
+              - "null"
+          Proceeds in USD:
+            type:
+              - string
+              - "null"
+          Sales in USD:
+            type:
+              - string
+              - "null"
+          Paying Users:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - $ref: "#/definitions/analytics_standard_download"
+    name: app_store_pre_orders
+    $parameters:
+      stream_name: app_store_pre_orders
+      report_name: "App Store Pre-orders Standard"
+    primary_key:
+      - app_id
+      - processing_date
+      - Device
+      - Platform Version
+      - Source Type
+      - Page Type
+      - Territory
+      - Pre-Order Start Date
+      - Pre-Order End Date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          App Apple Identifier:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Platform Version:
+            type:
+              - string
+              - "null"
+          Source Type:
+            type:
+              - string
+              - "null"
+          Page Type:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          Pre-Order Start Date:
+            type:
+              - string
+              - "null"
+          Pre-Order End Date:
+            type:
+              - string
+              - "null"
+          Pre-Orders Placed:
+            type:
+              - string
+              - "null"
+          Pre-Orders Canceled:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - $ref: "#/definitions/analytics_standard_download"
+    name: app_store_retention_messaging
+    $parameters:
+      stream_name: app_store_retention_messaging
+      report_name: "App Store Retention Messaging"
+    primary_key:
+      - app_id
+      - processing_date
+      - Current Subscription Group
+      - Current Subscription Group Identifier
+      - Current Subscription
+      - Current Subscription Identifier
+      - Event
+      - Page
+      - Retention Message Type
+      - Retention Message Selection Type
+      - Retention Message Name
+      - Retention Message Identifier
+      - Offer Name
+      - Offer Identifier
+      - Suggested Subscription
+      - Suggested Subscription Identifier
+      - Save Type
+      - Device
+      - Platform Version
+      - Territory
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          App Apple Identifier:
+            type:
+              - string
+              - "null"
+          Current Subscription Group:
+            type:
+              - string
+              - "null"
+          Current Subscription Group Identifier:
+            type:
+              - string
+              - "null"
+          Current Subscription:
+            type:
+              - string
+              - "null"
+          Current Subscription Identifier:
+            type:
+              - string
+              - "null"
+          Event:
+            type:
+              - string
+              - "null"
+          Page:
+            type:
+              - string
+              - "null"
+          Retention Message Type:
+            type:
+              - string
+              - "null"
+          Retention Message Selection Type:
+            type:
+              - string
+              - "null"
+          Retention Message Name:
+            type:
+              - string
+              - "null"
+          Retention Message Identifier:
+            type:
+              - string
+              - "null"
+          Offer Name:
+            type:
+              - string
+              - "null"
+          Offer Identifier:
+            type:
+              - string
+              - "null"
+          Suggested Subscription:
+            type:
+              - string
+              - "null"
+          Suggested Subscription Identifier:
+            type:
+              - string
+              - "null"
+          Save Type:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Platform Version:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          Counts:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - $ref: "#/definitions/analytics_standard_download"
+    name: browser_choice_screen_selection
+    $parameters:
+      stream_name: browser_choice_screen_selection
+      report_name: "Browser Choice Screen Selection"
+    primary_key:
+      - app_id
+      - processing_date
+      - Territory
+      - Platform
+      - Device
+      - Build
+      - Release Type
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Territory:
+            type:
+              - string
+              - "null"
+          Date:
+            type:
+              - string
+              - "null"
+          Platform:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Build:
+            type:
+              - string
+              - "null"
+          Release Type:
+            type:
+              - string
+              - "null"
+          Selection Rate:
+            type:
+              - string
+              - "null"
+          New Install Rate:
+            type:
+              - string
+              - "null"
+          Existing Install Rate:
+            type:
+              - string
+              - "null"
+          Product Page Conversion Rate:
+            type:
+              - string
+              - "null"
+          Informed Selection Rate:
+            type:
+              - string
+              - "null"
+          Direct Selection Rate:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - $ref: "#/definitions/analytics_standard_download"
+    name: browser_choice_screen_engagement
+    $parameters:
+      stream_name: browser_choice_screen_engagement
+      report_name: "Browser Choice Screen Engagement (iOS versions before 18.2)"
+    primary_key:
+      - app_id
+      - processing_date
+      - Event
+      - Device
+      - Platform Version
+      - Territory
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          Date:
+            type:
+              - string
+              - "null"
+          App Name:
+            type:
+              - string
+              - "null"
+          App Apple Identifier:
+            type:
+              - string
+              - "null"
+          Event:
+            type:
+              - string
+              - "null"
+          Device:
+            type:
+              - string
+              - "null"
+          Platform Version:
+            type:
+              - string
+              - "null"
+          Territory:
+            type:
+              - string
+              - "null"
+          Counts:
+            type:
+              - string
+              - "null"
+          Unique Devices:
+            type:
+              - string
+              - "null"
+          app_id:
+            type:
+              - string
+              - "null"
+          report_id:
+            type:
+              - string
+              - "null"
+          processing_date:
+            type:
+              - string
+              - "null"
+          instance_id:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
 spec:
   type: Spec
   documentation_url: >-
@@ -4949,4 +6736,3 @@ spec:
         examples:
           - "2025-07-01"
     additionalProperties: true
-

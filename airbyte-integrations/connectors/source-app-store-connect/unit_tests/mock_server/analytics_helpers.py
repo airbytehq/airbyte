@@ -125,8 +125,9 @@ def mock_analytics_stream(
     stream_name: str,
     paginate_target: bool = False,
     target_response: Optional[HttpResponse] = None,
+    report_name: Optional[str] = None,
 ) -> None:
-    spec = ANALYTICS_SPECS[stream_name]
+    spec = AnalyticsSpec("download", "downloads", False) if report_name is not None else ANALYTICS_SPECS[stream_name]
     access_type = _access_type(spec)
 
     http_mocker.get(
@@ -146,7 +147,9 @@ def mock_analytics_stream(
     if spec.stage == "request":
         return
 
-    request_builder = RequestBuilder.analytics_reports_endpoint(REQUEST_ID).with_query_param("filter[name]", _report_name(spec))
+    request_builder = RequestBuilder.analytics_reports_endpoint(REQUEST_ID).with_query_param(
+        "filter[name]", report_name or _report_name(spec)
+    )
     _register_collection(
         http_mocker,
         request_builder,
@@ -221,12 +224,19 @@ def read_analytics_stream(
     paginate: bool = False,
     incremental: bool = False,
     ignored_error: bool = False,
+    report_name: Optional[str] = None,
+    tsv_body: Optional[str] = None,
 ) -> EntrypointOutput:
+    if ignored_error:
+        response = error_response(HTTPStatus.NOT_FOUND) if report_name is not None else ignored_analytics_response(stream_name)
+    else:
+        response = tabular_response(stream_name, tsv_body) if tsv_body is not None else None
     mock_analytics_stream(
         http_mocker,
         stream_name,
         paginate_target=paginate,
-        target_response=ignored_analytics_response(stream_name) if ignored_error else None,
+        target_response=response,
+        report_name=report_name,
     )
     return read_output(
         analytics_config(),
