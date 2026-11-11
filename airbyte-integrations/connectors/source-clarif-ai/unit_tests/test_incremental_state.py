@@ -26,9 +26,7 @@ def _catalog(stream_name):
 
 def _stream_state(output, stream_name):
     states = [
-        message.state.stream.stream_state
-        for message in output.state_messages
-        if message.state.stream.stream_descriptor.name == stream_name
+        message.state.stream.stream_state for message in output.state_messages if message.state.stream.stream_descriptor.name == stream_name
     ]
     return states[-1].__dict__
 
