@@ -68,7 +68,7 @@ Since March 2026, Calendly grants newly created tokens no API access until you s
 | `organization_memberships` | `users:read`, `organizations:read` |
 | `scheduled_events` | `users:read`, `scheduled_events:read` |
 | `event_invitees` | `users:read`, `scheduled_events:read` |
-| `teams` | `organizations:read` |
+| `teams` | `users:read`, `organizations:read` |
 | `event_type_memberships` | `users:read`, `event_types:read` |
 | `group_relationships` | `users:read`, `groups:read` |
 | `user_availability_schedules` | `users:read`, `organizations:read`, `availability:read` |
