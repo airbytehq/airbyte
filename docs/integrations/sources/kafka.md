@@ -23,8 +23,8 @@ You'll need the following information to configure the Kafka source:
     - Schema Registry URL - Host/port to connect to the schema registry server
     - Username and password, optional to authenticate to the schema registry server
 - **Protocol** - The Protocol used to communicate with brokers. If using SASL, this includes how to authenticate to the brokers.
-  - **PLAINTEXT** - no authentication and no encryption
-  - **SASL PLAINTEXT** - no encryption; a `SASL JAAS Config` is needed to authenticate
+  - **PLAINTEXT** - no authentication and no encryption; available only on Airbyte Open Source
+  - **SASL PLAINTEXT** - no encryption; a `SASL JAAS Config` is needed to authenticate; available only on Airbyte Open Source
   - **SASL SSL** - encrypted
     - **SASL JAAS Config** configures authentication to the brokers
     - **SASL Mechanism** appropriate to your brokers' auth mechanism
@@ -38,6 +38,39 @@ Some optional fields that are recommended to set according to your use
 - **Group ID** - The Group ID is how you distinguish different consumer groups. (e.g. group.id)
 - **Test Topic** - The Topic to test whether Airbyte can consume messages. (e.g. test.topic)
 - **Polling Time** - Amount of time in milliseconds Kafka connector should try to poll for messages, per sync
+
+#### Secure connections on Airbyte Cloud
+
+Airbyte Cloud requires TLS encryption for Kafka broker connections. The **Protocol** field offers only **SASL SSL** (`SASL_SSL`). Connection checks, discovery, and reads reject other protocols before connecting to Kafka, including configurations submitted through the API. The Kafka client uses TLS for the broker connection and does not fall back to plaintext if the TLS handshake fails.
+
+On Airbyte Cloud, **SASL JAAS Config** must contain exactly one of these supported login modules:
+
+- `org.apache.kafka.common.security.plain.PlainLoginModule`
+- `org.apache.kafka.common.security.scram.ScramLoginModule`
+- `org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule`
+- `com.sun.security.auth.module.Krb5LoginModule`
+- `software.amazon.msk.auth.iam.IAMLoginModule`
+
+Use a login module that matches your selected **SASL Mechanism**. Missing, malformed, or unsupported JAAS configurations are rejected before connecting to Kafka.
+
+When using `OAUTHBEARER` on Airbyte Cloud, set **OAUTHBEARER token endpoint URL** to an HTTPS URL without embedded credentials or a fragment. HTTP URLs, local-file URLs, and missing endpoints are rejected before connecting. Any OAuth endpoint allowlist configured by the operator remains enforced.
+
+Airbyte Open Source continues to support **PLAINTEXT**, **SASL PLAINTEXT**, and **SASL SSL**, without these Cloud-only restrictions.
+
+##### Confluent Cloud API-key authentication
+
+To configure authentication to a Confluent Cloud Kafka cluster:
+
+1. Set **Bootstrap Servers** to your cluster's bootstrap endpoint.
+2. Set **Protocol** to **SASL SSL**.
+3. Set **SASL Mechanism** to `PLAIN`.
+4. Set **SASL JAAS Config** to the following, replacing the placeholders with your Kafka API key and secret:
+
+   ```text
+   org.apache.kafka.common.security.plain.PlainLoginModule required username="YOUR_KAFKA_API_KEY" password="YOUR_KAFKA_API_SECRET";
+   ```
+
+The API key must have permission to read the configured topics. These settings configure Kafka broker authentication; configure Schema Registry authentication separately when using Avro.
 
 #### For Airbyte Open Source
 
@@ -72,6 +105,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                                                       | Subject                                                              |
 | :------ | :--------- |:---------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------|
+| 0.4.4 | 2026-11-04 | [91018](https://github.com/airbytehq/airbyte/pull/91018) | Update Java CDK, Kafka/Confluent libraries and security dependencies. |
+| 0.4.3 | 2026-11-04 | [90996](https://github.com/airbytehq/airbyte/pull/90996) | Enable on Airbyte Cloud with TLS-only Kafka broker connections; avoid logging SASL credentials. |
 | 0.4.2 | 2025-07-10 | [62919](https://github.com/airbytehq/airbyte/pull/62919) | Convert to new gradle build flow |
 | 0.4.1 | 2025-04-30 | [59171](https://github.com/airbytehq/airbyte/pull/59171) | Fixing vulnerabilities in dependencies. |
 | 0.4.0   | 2025-03-18 | [55828](https://github.com/airbytehq/airbyte/pull/55828)                                           | Add configurations for AWS MSK IAM and fix JSON format               |

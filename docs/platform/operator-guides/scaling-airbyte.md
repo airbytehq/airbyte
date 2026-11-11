@@ -4,7 +4,7 @@ products: enterprise-flex
 
 # Scaling Airbyte
 
-Airbyte's most scalable self-managed option is [Enterprise Flex](../enterprise-flex/readme.md). Airbyte runs the control plane for you in Airbyte Cloud, and you run one or more data planes in your own infrastructure. Scaling Airbyte means scaling those data planes: giving them enough compute, running enough of them in the right places, and tuning how many jobs they run at once.
+Airbyte's most scalable self-managed option is [Enterprise Flex](/platform/hybrid-deployment). Airbyte runs the control plane for you in Airbyte Cloud, and you run one or more data planes in your own infrastructure. Scaling Airbyte means scaling those data planes: giving them enough compute, running enough of them in the right places, and tuning how many jobs they run at once.
 
 This guide explains what to scale and how. It assumes you already have a data plane running. If you don't, see [Deploy a data plane with Helm](../enterprise-flex/data-plane.md).
 
