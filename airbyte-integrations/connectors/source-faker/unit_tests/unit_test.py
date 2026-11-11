@@ -261,12 +261,30 @@ def test_read_with_seed():
     assert records[0].record.data["email"] == "alleged2069+1@example.com"
 
 
+@pytest.mark.parametrize("count", [0, 10])
+def test_read_users_restarts_after_completed_sync(count):
+    config = {"count": count, "records_per_slice": 5, "parallelism": 4, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    state = {}
+    for _ in range(2):
+        rows = list(SourceFaker().read(logger, config, catalog, state))
+        assert [row.record.data["id"] for row in rows if row.type is Type.RECORD] == list(range(1, count + 1))
+        estimates = [row.trace.estimate.row_estimate for row in rows if row.type is Type.TRACE and row.trace.estimate]
+        assert estimates == [count]
+        state = [row.state for row in rows if row.type is Type.STATE][-1:]
+
+
 def test_read_users_resumes_from_checkpoint():
     from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
     from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
 
     source = SourceFaker()
-    config = {"count": 10, "records_per_slice": 5, "parallelism": 1}
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
     stream_dict = {
         "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
         "sync_mode": "incremental",
@@ -280,8 +298,11 @@ def test_read_users_resumes_from_checkpoint():
     state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
     iterator = source.read(logger, config, catalog, state)
 
-    records = [row.record.data for row in iterator if row.type is Type.RECORD]
+    rows = list(iterator)
+    records = [row.record.data for row in rows if row.type is Type.RECORD]
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
+    estimates = [row.trace.estimate.row_estimate for row in rows if row.type is Type.TRACE and row.trace.estimate]
+    assert estimates == [5]
 
 
 def test_ensure_no_purchases_without_users():
