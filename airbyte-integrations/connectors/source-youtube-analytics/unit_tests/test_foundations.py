@@ -10,6 +10,7 @@ fails the test rather than passing silently.
 import logging
 import time
 from typing import Any, Dict, List, Optional
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 import requests_mock
@@ -292,6 +293,37 @@ def test_expired_refresh_token_tells_the_user_to_re_authenticate(config):
 
     assert status.status == Status.FAILED
     assert "Refresh token is invalid or expired" in status.message
+
+
+def test_check_succeeds_when_youtube_no_longer_generates_retired_annotations_reports(config):
+    """YouTube retired `channel_annotations_a1` on 2025-10-31, so its job has no reports left to list.
+
+    The check must not depend on that report type: it lists `channel_basic_a3` reports instead and
+    reads the first row of the first one.
+    """
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        mocker.get(
+            f"{_API}/jobs",
+            json={
+                "jobs": [
+                    {"id": "annotations-job", "reportTypeId": "channel_annotations_a1"},
+                    {"id": _JOB_ID, "reportTypeId": _STREAM},
+                ]
+            },
+        )
+        create_job = mocker.post(f"{_API}/jobs", json={})
+        mocker.get(f"{_API}/jobs/annotations-job/reports", json={})
+        basic_reports = mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-01T00:00:00Z")]})
+        download = mocker.get(_download_url("r1"), text="date,channel_id,views\n20261001,channel-1,3\n")
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+
+    assert status.status == Status.SUCCEEDED, status.message
+    assert not create_job.called
+    assert basic_reports.call_count == 1
+    assert parse_qs(urlparse(basic_reports.last_request.url).query) == {"createdAfter": ["1990-01-01T00:00:00.000000Z"]}
+    assert download.call_count == 1
 
 
 @pytest.mark.parametrize("stream", _EMPTY_STREAMS)
