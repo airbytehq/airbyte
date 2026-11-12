@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
-  dockerImageTag: 1.1.1
+  dockerImageTag: 1.1.2
   dockerRepository: airbyte/source-aircall
   githubIssueLabel: source-aircall
   icon: aircall.svg
@@ -17,7 +17,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
+  releaseStage: generally_available
   releases:
     rolloutConfiguration:
       defaultRolloutMode: autopilot
@@ -54,9 +54,9 @@ data:
     - cdk:low-code
     - language:manifest-only
   ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+    sl: 200
+    ql: 300
+  supportLevel: certified
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
