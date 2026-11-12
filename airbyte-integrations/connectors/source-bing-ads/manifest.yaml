@@ -2614,6 +2614,15 @@ definitions:
       - type: LegacyToPerPartitionStateMigration
 
   # base retrievers
+  download_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.BingAdsDownloadErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        predicate: "{{ 'AuthenticationFailed' in (headers.get('x-ms-error-code') or '') }}"
+        action: FAIL
+        failure_type: transient_error
+        error_message: Bing Ads file download URL is expired.
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -2660,6 +2669,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2726,6 +2737,8 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
