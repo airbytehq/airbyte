@@ -259,6 +259,15 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v3/grants/{{ stream_partition['grant_id'] }}/events
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes: [404]
+                action: IGNORE
+                error_message: >-
+                  Events request returned 404 Not Found. The calendar identified
+                  by the request's calendar_id is skipped.
         record_selector:
           type: RecordSelector
           extractor:
