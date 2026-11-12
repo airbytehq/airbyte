@@ -105,8 +105,13 @@ class Users(Stream, IncrementalMixin):
 
         # Resume from the last checkpoint: users before `loop_offset` were
         # already emitted, so an interrupted sync continues where it stopped
-        # instead of regenerating them.
+        # instead of regenerating them. A state left by a sync that finished
+        # is not a checkpoint to resume from: the next sync starts a new pass
+        # over all users. States written before `completed` existed are
+        # recognized by an offset that already covers every user.
         loop_offset = self.state.get("loop_offset", 0)
+        if self.state.get("completed") or loop_offset >= self.count:
+            loop_offset = 0
 
         median_record_byte_size = 450
         yield generate_estimate(self.name, self.count - loop_offset, median_record_byte_size)
@@ -125,7 +130,7 @@ class Users(Stream, IncrementalMixin):
 
                 self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
 
-            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
+            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset, "completed": True}
 
 
 class Purchases(Stream, IncrementalMixin):

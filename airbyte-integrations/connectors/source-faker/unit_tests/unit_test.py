@@ -284,6 +284,75 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+USERS_INCREMENTAL_STREAM = {
+    "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+    "sync_mode": "incremental",
+    "destination_sync_mode": "append_dedup",
+}
+
+
+def _read_users(config, state):
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(USERS_INCREMENTAL_STREAM)])
+    messages = list(SourceFaker().read(logger, config, catalog, state))
+    user_ids = [message.record.data["id"] for message in messages if message.type is Type.RECORD]
+    state_messages = [message.state for message in messages if message.type is Type.STATE]
+    return user_ids, state_messages
+
+
+def test_users_are_all_emitted_again_on_syncs_after_a_completed_sync():
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    all_user_ids = list(range(1, 11))
+
+    first_ids, first_states = _read_users(config, [])
+    assert first_ids == all_user_ids
+
+    second_ids, second_states = _read_users(config, [first_states[-1]])
+    assert second_ids == all_user_ids
+
+    third_ids, third_states = _read_users(config, [second_states[-1]])
+    assert third_ids == all_user_ids
+
+    for final_state in (first_states[-1], second_states[-1], third_states[-1]):
+        stream_state = final_state.stream.stream_state
+        assert stream_state.loop_offset == 10
+        assert stream_state.completed is True
+
+
+@pytest.mark.parametrize(
+    "saved_state, count, expected_ids",
+    [
+        pytest.param(
+            {"seed": -1, "updated_at": "2024-01-01T00:00:00+00:00", "loop_offset": 10},
+            10,
+            list(range(1, 11)),
+            id="state_of_a_completed_sync_saved_by_an_earlier_version",
+        ),
+        pytest.param(
+            {"seed": -1, "updated_at": "2024-01-01T00:00:00+00:00", "loop_offset": 10, "completed": True},
+            20,
+            list(range(1, 21)),
+            id="count_raised_after_a_completed_sync",
+        ),
+    ],
+)
+def test_users_read_with_saved_state(saved_state, count, expected_ids):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    config = {"count": count, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users", namespace=None), stream_state=AirbyteStateBlob(**saved_state)
+    )
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+
+    user_ids, state_messages = _read_users(config, state)
+
+    assert user_ids == expected_ids
+    final_state = state_messages[-1].stream.stream_state
+    assert final_state.loop_offset == count
+    assert final_state.completed is True
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
