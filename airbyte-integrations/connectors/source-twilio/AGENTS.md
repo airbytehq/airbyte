@@ -10,6 +10,8 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 **Connector type:** Manifest-only, with custom components in `components.py`
 
+- `TwilioStateMigration` drops partition cursors older than the completed global cursor so incremental substreams resume from global state minus lookback; equal/newer, missing, and unparseable cursors are retained.
+
 **Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.
 
 ### Future incremental stream candidates

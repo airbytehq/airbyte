@@ -7,7 +7,7 @@ from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
-from components import TwilioConferencesStateMigration
+from components import TwilioConferencesStateMigration, TwilioStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
@@ -159,6 +159,75 @@ class TestTwilioStream:
 
 
 class TestIncrementalTwilioStream:
+    @pytest.mark.parametrize(
+        "global_state,partition_cursor,stale",
+        [
+            ({"date_sent": "2022-11-15T00:00:00Z"}, {"date_sent": "2022-01-05"}, True),
+            ({"date_sent": "2022-11-15"}, {"date_sent": "2022-11-15 00:00:00Z"}, False),
+            ({"date_sent": "2022-11-15"}, {"date_sent": "2022-11-16T00:00:00Z"}, False),
+            ({"date_sent": "2022-11-15"}, {}, False),
+            ({}, {"date_sent": "2022-01-05"}, False),
+            ({"date_sent": "invalid"}, {"date_sent": "2022-01-05"}, False),
+            ({"date_sent": "2022-11-15"}, {"date_sent": "invalid"}, False),
+            ({"date_sent": "2022-11-15"}, {"date_sent": None}, False),
+        ],
+    )
+    def test_partition_state_migration(self, global_state, partition_cursor, stale):
+        partition = {"partition": {"subresource_uri": "Messages.json", "parent_slice": {}}, "cursor": partition_cursor}
+        state = {"states": [partition], "state": global_state, "lookback_window": 3600}
+        migration = TwilioStateMigration()
+
+        assert migration.should_migrate(state) is stale
+        assert migration.migrate(state) == {
+            "states": [] if stale else [partition],
+            "state": global_state,
+            "lookback_window": 3600,
+        }
+
+    def test_empty_partition_state_migration(self):
+        migration = TwilioStateMigration()
+        assert not migration.should_migrate({})
+        assert migration.migrate({}) == {}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "partition_cursor,expected_start",
+        [
+            ("2022-01-05T00:00:00Z", "2022-11-15 00:00:00Z"),
+            ("2022-11-16T00:00:00Z", "2022-11-16 00:00:00Z"),
+        ],
+    )
+    def test_messages_partition_cursor_with_global_state(self, requests_mock, partition_cursor, expected_start):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        messages = requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json={"messages": []})
+        partition = {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}}
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "use_global_cursor": False,
+                    "state": {"date_sent": "2022-11-15T00:00:00Z"},
+                    "lookback_window": 0,
+                    "states": [{"partition": partition, "cursor": {"date_sent": partition_cursor}}],
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        windows = [
+            (query["DateSent>"], query["DateSent<"])
+            for query in (parse_qs(urlparse(request.url).query) for request in messages.request_history)
+        ]
+        assert windows == [([expected_start], ["2022-11-16 12:03:11Z"])]
+        final_state = output.most_recent_state.stream_state.__dict__
+        if partition_cursor == "2022-01-05T00:00:00Z":
+            expected_cursor = {"date_sent": "2022-11-15 00:00:00Z"}
+            assert final_state["state"] == expected_cursor
+            assert final_state["states"] == [{"partition": partition, "cursor": expected_cursor}]
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_calls_includes_date_window_params(self, requests_mock):
         requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
