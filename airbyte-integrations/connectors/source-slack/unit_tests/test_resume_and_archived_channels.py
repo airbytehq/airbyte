@@ -77,7 +77,9 @@ def _read(requests_mock, stream_name, config, state=None):
         output = read(get_source(config, stream_name, state), config=config, catalog=_catalog(stream_name), state=state)
 
     def queries(method):
-        return [parse_qs(urlparse(r.url).query) for r in requests_mock.request_history if r.url.startswith(f"https://slack.com/api/{method}")]
+        return [
+            parse_qs(urlparse(r.url).query) for r in requests_mock.request_history if r.url.startswith(f"https://slack.com/api/{method}")
+        ]
 
     history = sorted((q["channel"][0], float(q["oldest"][0]), float(q["latest"][0])) for q in queries("conversations.history"))
     replies = sorted((q["channel"][0], float(q["ts"][0])) for q in queries("conversations.replies"))
@@ -115,7 +117,14 @@ def test_threads_resume_each_channel_from_its_own_saved_cursor(requests_mock, to
     first_output, first_history, _ = _read(requests_mock, "threads", config)
 
     assert first_history == [("A", START_DATE_TS, NOW_TS), ("B", START_DATE_TS, NOW_TS)]
-    assert _thread_records(first_output) == [("A", JUL_03), ("A", JUL_03 + 60), ("A", JUL_20), ("A", JUL_20 + 60), ("B", JUL_10), ("B", JUL_10 + 60)]
+    assert _thread_records(first_output) == [
+        ("A", JUL_03),
+        ("A", JUL_03 + 60),
+        ("A", JUL_20),
+        ("A", JUL_20 + 60),
+        ("B", JUL_10),
+        ("B", JUL_10 + 60),
+    ]
     assert _channel_cursors(first_output) == {"A": JUL_20, "B": JUL_10}
 
     saved_state = prepare_state(first_output.most_recent_state.stream_state.__dict__)
