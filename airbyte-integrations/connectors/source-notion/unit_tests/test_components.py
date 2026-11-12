@@ -279,3 +279,76 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+def _block(block_id, last_edited_time, parent_id, has_children=False):
+    return {
+        "object": "block",
+        "id": block_id,
+        "type": "toggle" if has_children else "paragraph",
+        "has_children": has_children,
+        "last_edited_time": last_edited_time,
+        "parent": {"type": "page_id", "page_id": parent_id},
+    }
+
+
+def test_blocks_incremental_read_emits_only_blocks_edited_since_state(requests_mock):
+    requests_mock.register_uri(
+        "POST",
+        "https://api.notion.com/v1/search",
+        json={
+            "object": "list",
+            "results": [{"object": "page", "id": "page-1", "last_edited_time": "2023-07-01T00:00:00.000Z", "properties": {}}],
+            "next_cursor": None,
+            "has_more": False,
+        },
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://api.notion.com/v1/blocks/page-1/children",
+        json={
+            "object": "list",
+            "results": [
+                _block("block-old", "2023-01-01T00:00:00.000Z", "page-1"),
+                _block("toggle-old", "2023-01-01T00:00:00.000Z", "page-1", has_children=True),
+                _block("block-new", "2023-07-01T00:00:00.000Z", "page-1"),
+            ],
+            "next_cursor": None,
+            "has_more": False,
+        },
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://api.notion.com/v1/blocks/toggle-old/children",
+        json={
+            "object": "list",
+            "results": [
+                _block("child-old", "2023-01-01T00:00:00.000Z", "toggle-old"),
+                _block("child-new", "2023-07-02T00:00:00.000Z", "toggle-old"),
+            ],
+            "next_cursor": None,
+            "has_more": False,
+        },
+    )
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = (
+        StateBuilder()
+        .with_stream_state("blocks", {"use_global_cursor": True, "state": {"last_edited_time": "2023-06-01T00:00:00.000Z"}})
+        .build()
+    )
+
+    output = read(get_source(config=config, state=state), config, catalog, state)
+
+    assert [record.record.data["id"] for record in output.records] == ["child-new", "block-new"]
+    assert output.most_recent_state.stream_state.state == {"last_edited_time": "2023-07-02T00:00:00.000000Z"}
