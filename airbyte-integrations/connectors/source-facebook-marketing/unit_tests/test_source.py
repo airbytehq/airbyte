@@ -152,6 +152,31 @@ class TestSourceFacebookMarketing:
 
         assert len(streams) == 31
 
+    @pytest.mark.parametrize(
+        "top_level, custom, expected",
+        [
+            pytest.param(True, None, True, id="top-level-enabled-custom-omitted"),
+            pytest.param(False, True, True, id="custom-enabled"),
+            pytest.param(True, False, True, id="top-level-enabled-custom-false"),
+            pytest.param(True, True, True, id="both-enabled"),
+            pytest.param(False, None, False, id="both-default-disabled"),
+            pytest.param(False, False, False, id="both-disabled"),
+        ],
+    )
+    def test_custom_insights_incrementality_request_params(self, config, api, fb_marketing, top_level, custom, expected):
+        config["include_incrementality"] = top_level
+        config["start_date"] = "2026-11-01T00:00:00Z"
+        config["end_date"] = "2026-11-02T00:00:00Z"
+        insight = {"name": "IncrementalityTest", "fields": ["account_id", "spend"]}
+        if custom is not None:
+            insight["include_incrementality"] = custom
+        config["custom_insights"] = [insight]
+
+        streams = fb_marketing.streams(config)
+        stream = next(stream for stream in streams if stream.name == "custom_incrementality_test")
+
+        assert ("incrementality" in stream.request_params()["action_attribution_windows"]) is expected
+
     def test_spec(self, fb_marketing):
         spec = fb_marketing.spec()
 
