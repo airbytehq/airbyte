@@ -802,6 +802,19 @@ definitions:
       refresh_token: "{{ config['refresh_token'] }}"
       token_refresh_endpoint: https://api.outreach.io/oauth/token
       grant_type: refresh_token
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        # Outreach access tokens are short-lived (~2h) and the API can reject a token
+        # as expired before the locally tracked expiry is reached (e.g. long syncs,
+        # clock skew). Force a token refresh and retry once instead of failing the sync.
+        - type: HttpResponseFilter
+          action: REFRESH_TOKEN_THEN_RETRY
+          http_codes:
+            - 401
+          error_message: >-
+            The Outreach access token expired during the sync. The connector will refresh
+            the token and retry; if this issue persists, re-authenticate the connector.
 
 streams:
   - $ref: "#/definitions/streams/accounts"
