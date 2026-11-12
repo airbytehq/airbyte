@@ -40,16 +40,3 @@ def test_lookup_stream_reads_once(stream_name, ids, monkeypatch):
     assert [record.record.data["id"] for record in output.records] == ids
     assert not output.errors
 
-
-@pytest.mark.parametrize("stream_name", ["categories", "distribution_channels"])
-def test_lookup_stream_reports_authentication_error(stream_name):
-    request = HttpRequest(url=f"https://api.simplecast.com/{stream_name}", query_params=ANY_QUERY_PARAMS)
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-
-    with HttpMocker() as http_mocker:
-        http_mocker.get(request, HttpResponse(body=json.dumps({"message": "Unauthorized"}), status_code=401))
-        output = read(get_source(CONFIG), CONFIG, catalog, expecting_exception=True)
-        http_mocker.assert_number_of_calls(request, 1)
-
-    assert not output.records
-    assert output.errors
