@@ -2613,6 +2613,22 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  # Report and bulk files are downloaded from Azure Blob Storage through a pre-signed (SAS) URL issued by Bing Ads; the
+  # request carries no user credentials. When that URL is used outside its validity window, Azure answers
+  # 403 AuthenticationFailed. This is unrelated to the user's credentials or permissions, and retrying the same URL can
+  # not succeed, so the request fails right away as a transient error and the next sync attempt requests a new link.
+  # The filter matches on the status code only: a `predicate` would make the CDK read the response body of every
+  # response, including successful ones, and drain the streamed file before the decoder reads it.
+  download_link_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        http_codes:
+          - 403
+        error_message: "Bing Ads file download link is rejected by Microsoft file storage. The pre-signed link is expired or no longer valid."
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2660,6 +2676,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/download_link_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2726,6 +2744,8 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        $ref: "#/definitions/download_link_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
