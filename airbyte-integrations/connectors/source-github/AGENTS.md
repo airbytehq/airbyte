@@ -335,7 +335,7 @@ grouped by the definition the comment sits on. Read the matching section before 
 
 - `large_stream_page_size` (10) is `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM`, the per-page
   size of the REST streams legacy marked `large_stream = True`: `pull_requests`, `comments`,
-  `issues` and `review_comments` (which now overrides it with 100; see `review_comments_stream`).
+  `issues` and `review_comments`.
   It is written out because `page_size_for_large_streams` was removed from the spec in 1.0.1 and
   cannot be set from the UI since; a config that still carries the key through the API or
   Terraform no longer steers these streams. 10 costs roughly 10x the requests and several times

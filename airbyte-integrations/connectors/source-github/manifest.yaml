@@ -7108,11 +7108,6 @@ definitions:
       $ref: "#/definitions/repository_scoped_retriever"
       requester:
         $ref: "#/definitions/large_stream_repository_scoped_requester"
-        # GitHub's `pulls/comments` listing times out (HTTP 500 after ~8s) on very large
-        # repositories at small page sizes when no `page` is given; `per_page=100` answered in
-        # ~1–1.6s. This stream is the exception to `large_stream_page_size`.
-        request_parameters:
-          per_page: "100"
         # `pulls/comments`, not `review_comments`; legacy overrode `ReviewComments.path` for it.
         path: "repos/{{ stream_partition.repository }}/pulls/comments"
         # No `use_cache` here, unlike `comments` and `issues`. `ReviewComments.use_cache = True`
