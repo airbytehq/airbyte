@@ -2,6 +2,10 @@
 
 This page contains the setup guide and reference information for the YouTube Analytics source connector.
 
+## Upgrading
+
+Before upgrading from a version earlier than 2.0.0, review the [migration guide](/integrations/sources/youtube-analytics-migrations#upgrading-to-200). Version 2.0.0 changes metric field types in seven report streams. Preserve historical data before clearing or rebuilding affected streams: reports older than YouTube's retention window cannot be downloaded again.
+
 ## Prerequisites
 
 The Google account you authorize must own or manage a YouTube channel. An account without an associated channel cannot access YouTube Reporting API data.
@@ -100,7 +104,7 @@ This connector uses [YouTube API Services](https://developers.google.com/youtube
 
 YouTube API Services are provided by Google. For information about how Google handles data, review the [Google Privacy Policy](https://www.google.com/policies/privacy).
 
-When using OAuth 2.0 authentication, this connector accesses authorized user data. You can revoke the connector's access to your Google account at any time through the [Google security settings page](https://myaccount.google.com/connections?filters=3,4&hl=en). To delete stored data that was previously synced, remove the relevant connection in your Airbyte workspace or delete the data from your configured destination.
+When using OAuth 2.0 authentication, this connector accesses authorized user data. You can revoke the connector's access to your Google account at any time through the [Google security settings page](https://myaccount.google.com/connections?filters=3,4&hl=en). To delete YouTube data that was previously synced, delete it from your configured destination. Removing the Airbyte connection or revoking Google access does not delete data already stored in the destination.
 
 ## Rate limits and quotas
 
@@ -127,7 +131,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 - **Daily quota exhausted.** If the sync reports **Daily YouTube API project quota is exhausted.**, check your project's quota and try again after quota becomes available.
 - **No rows on the first sync.** YouTube may not have generated reports for newly created reporting jobs yet. Reports are typically available within 48 hours.
 - **Skipped report files.** If YouTube lists a report file but it can no longer be downloaded (HTTP 404), most likely because it passed its [retention period](#report-availability), the connector skips that file, records a message in the sync logs, and the rest of the sync continues. The rows in that file are not synced.
-- **Refresh token expires after 7 days.** This applies to External OAuth apps in Testing status. Add the channel's Google account as a test user, or publish the app according to Google's requirements.
+- **Refresh token expires after 7 days.** This applies to External OAuth apps in **Testing** status, even when the channel's Google account is a test user. For ongoing syncs, move the app to **In production** according to [Google's publishing requirements](https://support.google.com/cloud/answer/15549945), then generate a new refresh token and update the source. While the app remains in **Testing**, generate a new refresh token whenever it expires.
 - **Content-owner reports are not available as streams.** The available streams are channel and playlist reports. To retrieve YouTube Data API information, use the separate [YouTube Data connector](/integrations/sources/youtube-data).
 
 ## Changelog
@@ -137,6 +141,8 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 2.0.3 | 2026-11-05 | [91124](https://github.com/airbytehq/airbyte/pull/91124) | Promote the connector to Certified (Generally Available) support |
+| 2.0.2 | 2026-11-04 | [91024](https://github.com/airbytehq/airbyte/pull/91024) | Replace the icon with YouTube's official icon from brand.youtube and remove the added ANALYTICS wordmark |
 | 2.0.1 | 2026-11-04 | [90433](https://github.com/airbytehq/airbyte/pull/90433) | Merge the report download error handlers into one handler; no behaviour change |
 | 2.0.0 | 2026-11-04 | [89628](https://github.com/airbytehq/airbyte/pull/89628) | Correct the declared types of report metric fields to match YouTube's metric definitions |
 | 1.6.1 | 2026-11-03 | [90800](https://github.com/airbytehq/airbyte/pull/90800) | Update dependencies |
