@@ -292,6 +292,54 @@ class TestBaseInsightsStream:
         for record in records:
             assert record.get("account_id")
 
+    @freeze_time("2026-09-30")
+    @pytest.mark.parametrize("legacy_state", [False, True])
+    @pytest.mark.parametrize("time_increment", [1, 7])
+    @pytest.mark.parametrize("custom_stream", [False, True])
+    def test_interrupted_lookback_preserves_cursor(self, mocker, api, account_id, legacy_state, time_increment, custom_stream):
+        stream_options = {
+            "api": api,
+            "account_ids": [account_id],
+            "start_date": datetime(2026, 8, 1),
+            "end_date": datetime(2026, 9, 28),
+            "insights_lookback_window": 28,
+            "time_increment": time_increment,
+        }
+        if custom_stream:
+            stream_options.update(name="custom_ad_insights", fields=["impressions"])
+
+        stream = AdsInsights(**stream_options)
+        bookmark = {"date_start": "2026-09-20", "slices": []}
+        stream.state = (
+            {**bookmark, "time_increment": time_increment} if legacy_state else {account_id: bookmark, "time_increment": time_increment}
+        )
+        jobs = list(stream._generate_async_jobs(stream.request_params(), account_id))
+        assert jobs[0].interval.start == date(2026, 8, 23)
+
+        for job in (jobs[1], jobs[0]):
+            mocker.patch.object(job, "get_result", return_value=[])
+            list(stream.read_records(SyncMode.incremental, stream_slice={"insight_job": job, "account_id": account_id}))
+            assert stream.state[account_id]["date_start"] == "2026-09-20"
+
+        checkpoint = copy.deepcopy(stream.state)
+        mocker.patch.object(jobs[2], "get_result", side_effect=RuntimeError("interrupted report download"))
+        with pytest.raises(RuntimeError, match="interrupted report download"):
+            list(stream.read_records(SyncMode.incremental, stream_slice={"insight_job": jobs[2], "account_id": account_id}))
+        assert stream.state == checkpoint
+
+        resumed = AdsInsights(**stream_options)
+        resumed.state = checkpoint
+        resumed_jobs = list(resumed._generate_async_jobs(resumed.request_params(), account_id))
+        assert [(job.interval.start, job.interval.end) for job in resumed_jobs] == [(job.interval.start, job.interval.end) for job in jobs]
+
+        expected_cursor = date(2026, 9, 20)
+        for job in resumed_jobs:
+            mocker.patch.object(job, "get_result", return_value=[])
+            list(resumed.read_records(SyncMode.incremental, stream_slice={"insight_job": job, "account_id": account_id}))
+            expected_cursor = max(expected_cursor, job.interval.start)
+            assert resumed.state[account_id]["date_start"] == expected_cursor.isoformat()
+        assert resumed.state[account_id] == {"date_start": jobs[-1].interval.start.isoformat(), "slices": []}
+
     @pytest.mark.parametrize(
         "state,result_state",
         [

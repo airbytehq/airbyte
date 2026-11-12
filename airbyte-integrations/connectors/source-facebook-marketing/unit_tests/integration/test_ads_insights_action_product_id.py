@@ -454,6 +454,43 @@ class TestIncremental(TestCase):
         )
 
     @HttpMocker()
+    def test_lookback_checkpoints_preserve_committed_cursor(self, http_mocker: HttpMocker) -> None:
+        days = [NOW - timedelta(days=2), NOW - timedelta(days=1), NOW]
+        report_ids = [f"report_{i}" for i in range(3)]
+        job_ids = [f"job_{i}" for i in range(3)]
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        for day, report_id, job_id in zip(days, report_ids, job_ids):
+            http_mocker.post(_job_start_request(since=day, until=day).build(), _job_start_response(report_id))
+            http_mocker.get(
+                _get_insights_request(job_id).build(),
+                build_response(
+                    body={
+                        "data": [{"date_start": day.strftime(DATE_FORMAT), "account_id": ACCOUNT_ID, "ad_id": job_id, "product_id": "p1"}]
+                    },
+                    status_code=HTTPStatus.OK,
+                ),
+            )
+        http_mocker.post(_job_status_request(report_ids[:2]).build(), _job_status_response(job_ids[:2]))
+        http_mocker.post(_job_status_request(report_ids).build(), _job_status_response(job_ids))
+
+        config_builder = config().with_start_date(days[0]).with_end_date(days[1])
+        config_builder.build()["insights_lookback_window"] = 1
+        initial = self._read(config_builder)
+        assert AirbyteStreamStateSerializer.dump(initial.most_recent_state)["stream_state"][ACCOUNT_ID]["date_start"] == "2023-01-09"
+
+        resumed = self._read(config_builder.with_end_date(days[2]), state=[initial.state_messages[-1].state])
+        assert [record.record.data["ad_id"] for record in resumed.records] == job_ids
+        assert [record.record.data["date_start"] for record in resumed.records] == [day.strftime(DATE_FORMAT) for day in days]
+        checkpoints = [
+            AirbyteStreamStateSerializer.dump(message.state.stream)["stream_state"][ACCOUNT_ID]["date_start"]
+            for message in resumed.state_messages
+        ]
+        assert checkpoints[0] == "2023-01-09"
+        assert all(cursor >= "2023-01-09" for cursor in checkpoints)
+        assert checkpoints[-1] == "2023-01-10"
+
+    @HttpMocker()
     def test_when_read_then_state_message_produced_and_state_match_start_interval(self, http_mocker: HttpMocker) -> None:
         account_id = "123123123"
         start_date = NOW.replace(hour=0, minute=0, second=0)
