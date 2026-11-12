@@ -9,13 +9,8 @@ check:
 
 definitions:
   download_error_handler:
-    type: DefaultErrorHandler
-    response_filters:
-      - type: HttpResponseFilter
-        predicate: "{{ (headers.get('x-ms-error-code') or '') == 'AuthenticationFailed' }}"
-        action: FAIL
-        failure_type: transient_error
-        error_message: Bing Ads file download URL is expired.
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.BingAdsDownloadErrorHandler
   authenticator:
     type: OAuthAuthenticator
     refresh_request_body:
