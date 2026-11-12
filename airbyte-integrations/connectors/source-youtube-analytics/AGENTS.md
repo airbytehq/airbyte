@@ -62,3 +62,11 @@ The migrations in the manifest run in order. `ReportsStateMigration` converts pr
 The new parent value can only move the cursor backward relative to the file's actual `createTime`: the old value represents a data day or earlier timestamp, while the report file is generated later. That can cause a one-time re-listing, but cannot skip a report. Legacy values that cannot be parsed, such as `99999999` in `unit_tests/test_state_migration.py`, are dropped from the parent cursor, so the stream falls back to its configured start time. `integration_tests/abnormal_state.json` uses the parseable future date `20991231`, which migrates to a 2099 `createTime` so the future-state acceptance test reads no records. The migration tests are in `unit_tests/test_state_migration.py`; end-to-end cursor and correction coverage is in `unit_tests/mock_server/test_incremental_reports.py`.
 
 **Why this matters:** The migration order preserves both old state formats and per-partition cursors while moving incremental tracking to report creation time. Reordering or changing the conversions can cause unnecessary re-reads or make the source skip corrected report files.
+
+## 7. Connection Check Reads `report_types`, Not a Report Stream
+
+`check` reads the `report_types` stream (`GET /v1/reportTypes`). It does not read a report stream, because a report stream gets its slices from the report files listed for its job. A job created moments ago has no files for up to 48 hours, and a job for a report type YouTube has retired never gets any, so the CDK reports `no stream slices were found` and the check fails for an account that is set up correctly. `reportTypes.list` goes through the same authenticator, `ContentOwnerRequester` and `base_error_handler`, so rejected credentials, a missing channel and a 403 still fail the check with their own messages. It also does not create a reporting job. `unit_tests/mock_server/test_report_types.py` covers the check and the stream.
+
+`report_types` is also a catalog stream (full refresh, primary key `id`). Its `deprecateTime` field is set on report types YouTube is retiring.
+
+**Why this matters:** Pointing `check` back at a report stream makes every new source setup fail until YouTube posts that stream's first report file.

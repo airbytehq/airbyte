@@ -2,10 +2,15 @@ version: 6.42.0
 
 type: DeclarativeSource
 
+# The check lists report types rather than reading a report stream. A report stream has no
+# slices until YouTube has posted a report file for its job, which takes up to 48 hours for a
+# new job and never happens for a retired report type, so checking one fails new setups with
+# "no stream slices were found". `reportTypes.list` needs the same credentials and channel
+# access, always answers, and does not create a reporting job.
 check:
   type: CheckStream
   stream_names:
-    - channel_annotations_a1
+    - report_types
 
 definitions:
   streams:
@@ -68,6 +73,29 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: createdAfter
+
+    report_types:
+      type: DeclarativeStream
+      name: report_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reportTypes
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reportTypes
+        paginator:
+          $ref: "#/definitions/next_page_token_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_types"
 
     base_report_stream:
       type: DeclarativeStream
@@ -628,6 +656,7 @@ streams:
   - $ref: "#/definitions/streams/playlist_playback_location_a2"
   - $ref: "#/definitions/streams/playlist_province_a2"
   - $ref: "#/definitions/streams/playlist_traffic_source_a2"
+  - $ref: "#/definitions/streams/report_types"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -2038,6 +2067,30 @@ schemas:
         type:
           - "null"
           - integer
+  report_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        description: Report type ID, as used to create a reporting job.
+        type: string
+      name:
+        description: Display name of the report type.
+        type:
+          - "null"
+          - string
+      deprecateTime:
+        description: When YouTube stops generating this report type. Absent while the report type is not deprecated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      systemManaged:
+        description: Whether YouTube generates the report automatically, without a reporting job.
+        type:
+          - "null"
+          - boolean
 
 api_budget:
   type: HTTPAPIBudget

@@ -86,10 +86,13 @@ The YouTube Analytics source connector supports the following [sync modes](https
 - [playlist_playback_location_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-playback-locations)
 - [playlist_province_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-province)
 - [playlist_traffic_source_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-traffic-sources)
+- [report_types](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/reportTypes/list) - The report types YouTube offers the authorized channel or content owner, with the deprecation time of any report type YouTube is retiring. Full refresh only.
 
-Each report stream provides one YouTube bulk report. Incremental syncs download only report files YouTube created since the previous sync and also pick up files YouTube re-issues with corrected data. A re-issued file replaces an earlier report for the same days, so use **Incremental | Append + Deduped** for report streams. With **Incremental | Append**, the original rows and the corrected rows are both kept in the destination.
+Every stream except `report_types` is a report stream. Each report stream provides one YouTube bulk report. Incremental syncs download only report files YouTube created since the previous sync and also pick up files YouTube re-issues with corrected data. A re-issued file replaces an earlier report for the same days, so use **Incremental | Append + Deduped** for report streams. With **Incremental | Append**, the original rows and the corrected rows are both kept in the destination.
 
 ## Report availability
+
+Setting up the source does not require any report to exist: the connection check only lists the report types available to the account.
 
 During the first sync, Airbyte creates a reporting job for each selected report if one does not already exist. YouTube begins generating reports after a job is created, and the first report is typically available within 48 hours. That report contains data for the day the job was scheduled. For example, if a job is scheduled on September 1, 2015, the report for September 1 is ready on September 3; the report for September 2 is posted on September 4.
 
@@ -140,6 +143,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 2.1.0 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix source setup failing with `no stream slices were found` before YouTube has generated a report; add the `report_types` stream |
 | 2.0.3 | 2026-11-05 | [91124](https://github.com/airbytehq/airbyte/pull/91124) | Promote the connector to Certified (Generally Available) support |
 | 2.0.2 | 2026-11-04 | [91024](https://github.com/airbytehq/airbyte/pull/91024) | Replace the icon with YouTube's official icon from brand.youtube and remove the added ANALYTICS wordmark |
 | 2.0.1 | 2026-11-04 | [90433](https://github.com/airbytehq/airbyte/pull/90433) | Merge the report download error handlers into one handler; no behaviour change |
