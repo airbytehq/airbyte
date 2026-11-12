@@ -14,6 +14,7 @@ python = ">=3.11,<3.13"
 airbyte-cdk = "7.47.0"
 pytest = "^8"
 freezegun = "^1.4.0"
+requests-mock = "^1.12.1"
 
 [tool.pytest.ini_options]
 testpaths = ["mock_server"]
