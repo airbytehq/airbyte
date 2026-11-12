@@ -134,8 +134,8 @@ class RequestBuilder:
                     field_filter.append(f'"{key}":{value}')
                 else:
                     field_filter.append(f'"{key}":"{value}"')
-            field_filters.append("{" + f'{",".join(field_filter)}' + "}")
+            field_filters.append("{" + f"{','.join(field_filter)}" + "}")
             field_filter = []
 
-        field_filters_str = f'[{",".join(field_filters)}]'
+        field_filters_str = f"[{','.join(field_filters)}]"
         return field_filters_str
