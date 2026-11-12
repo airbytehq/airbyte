@@ -160,7 +160,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
-| 1.1.0 | 2026-11-11 | [91296](https://github.com/airbytehq/airbyte/pull/91296) | Add OAuth authentication as the default; personal access tokens remain available and existing configurations keep working |
+| 1.1.0 | 2026-11-12 | [91296](https://github.com/airbytehq/airbyte/pull/91296) | Add OAuth authentication as the default; personal access tokens remain available and existing configurations keep working |
 | 1.0.0 | 2026-11-11 | [90864](https://github.com/airbytehq/airbyte/pull/90864) | Fix incremental syncs missing new bookings and cancellations by using updated_at as the scheduled_events cursor, and declare date-time and integer types on existing fields |
 | 0.4.2 | 2026-11-10 | [91376](https://github.com/airbytehq/airbyte/pull/91376) | Update dependencies |
 | 0.4.1 | 2026-11-09 | [91293](https://github.com/airbytehq/airbyte/pull/91293) | Fix syncs that failed on `routing_forms` and `routing_form_submissions` below the Calendly Teams plan, and on `group_relationships` in organizations without groups |
