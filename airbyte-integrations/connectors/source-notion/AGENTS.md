@@ -27,3 +27,5 @@ Pages and blocks that are not shared with the integration therefore drop out sil
 All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal, see above).
 
 `pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. `users` is full refresh only.
+
+The CDK applies that filter only to a `SimpleRetriever`'s record selector, so `BlocksRetriever` filters blocks against the stream cursor itself. It does so only once the stream has a saved state: full refresh and first incremental syncs still emit every block, including blocks last edited before `start_date`. Children of an unchanged parent block are still requested, because editing a child does not update its parent's `last_edited_time`. `test_blocks_incremental_read_emits_only_blocks_edited_since_state` pins this.
