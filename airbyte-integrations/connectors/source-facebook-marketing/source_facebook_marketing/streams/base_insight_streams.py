@@ -413,16 +413,24 @@ class AdsInsights(FBMarketingIncrementalStream):
                 current_date += timedelta(days=self.time_increment)
 
     def _advance_cursor(self, account_id: str):
-        """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
+        """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state.
+
+        The cursor only ever moves forward: slices completed before the current cursor (lookback re-reads) are
+        removed from the completed set but leave the cursor untouched.
+        """
         for ts_start in self._date_intervals(account_id):
             if ts_start not in self._completed_slices[account_id]:
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
-            if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
-            else:
-                self._cursor_values = {account_id: ts_start}
+            if self._cursor_values is None:
+                self._cursor_values = {}
+            # A sync resumed from state re-reads the lookback window, which starts before the saved cursor.
+            # The cursor must not follow those re-read slices backwards: if the sync is interrupted inside the
+            # window, a regressed cursor would be checkpointed and the next sync would re-read an even older
+            # window (cursor - lookback), drifting further back with every failure.
+            current_cursor = self._cursor_values.get(account_id)
+            self._cursor_values[account_id] = max(current_cursor, ts_start) if current_cursor else ts_start
 
     def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
         """Generator of async jobs

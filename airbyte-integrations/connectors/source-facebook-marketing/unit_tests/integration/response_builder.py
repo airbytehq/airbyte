@@ -31,3 +31,11 @@ def error_reduce_amount_of_data_response() -> HttpResponse:
         "error": {"code": 1, "message": "Please reduce the amount of data you're asking for, then retry your request"},
     }
     return build_response(body=response, status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+def error_invalid_parameter_response() -> HttpResponse:
+    """A non-retryable Graph API error, used to interrupt a sync part-way through."""
+    response = {
+        "error": {"code": 100, "type": "OAuthException", "message": "Invalid parameter"},
+    }
+    return build_response(body=response, status_code=HTTPStatus.BAD_REQUEST)

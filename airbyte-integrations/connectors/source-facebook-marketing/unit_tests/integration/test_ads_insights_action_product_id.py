@@ -15,6 +15,7 @@ from source_facebook_marketing.streams.async_job import Status
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponse,
@@ -29,7 +30,12 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
-from .response_builder import build_response, error_reduce_amount_of_data_response, get_account_response
+from .response_builder import (
+    build_response,
+    error_invalid_parameter_response,
+    error_reduce_amount_of_data_response,
+    get_account_response,
+)
 from .utils import config, encode_request_body, read_output
 
 
@@ -531,3 +537,51 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_sync_fails_inside_lookback_window_when_read_then_cursor_in_state_does_not_move_backwards(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        A sync that starts from saved state re-reads the lookback window (cursor - insights_lookback_window).
+        If it fails part-way through that window, the checkpointed cursor must stay at the saved value:
+        a cursor that follows the re-read days backwards makes the next sync re-read an even older window.
+        """
+        account_id = "123123123"
+        start_date = ab_datetime_parse("2023-01-01T00:00:00Z")
+        end_date = ab_datetime_parse("2023-01-09T23:59:59Z")
+        saved_cursor = "2023-01-08"
+        # lookback of 2 days: the sync re-reads 2023-01-06 and 2023-01-07 before reaching the saved cursor
+        days = [ab_datetime_parse(f"2023-01-0{day}T00:00:00Z") for day in (6, 7, 8, 9)]
+        report_run_ids = [f"157186006001950{i}" for i in range(len(days))]
+        job_ids = [f"104993737960160{i}" for i in range(len(days))]
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id in zip(days, report_run_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids, account_id=account_id))
+        # first day of the lookback window is read successfully, the second one fails and interrupts the sync
+        http_mocker.get(
+            _get_insights_request(job_ids[0]).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        http_mocker.get(_get_insights_request(job_ids[1]).build(), error_invalid_parameter_response())
+
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {account_id: {_CURSOR_FIELD: saved_cursor}, "time_increment": 1}).build()
+        output = self._read(
+            config().with_account_ids([account_id]).with_start_date(start_date).with_end_date(end_date).with_insights_lookback_window(2),
+            state=state,
+            expecting_exception=True,
+        )
+
+        assert output.errors[0].trace.error.message == "Error code 100: Invalid parameter."
+        assert len(output.records) == 1
+        stream_state = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state")
+        assert stream_state.get(account_id, {}).get(_CURSOR_FIELD) == saved_cursor
