@@ -16,7 +16,9 @@ Calendly personal access tokens created since March 2026 require explicit [autho
 
 ## 2. Rate-Limit Reset Headers Are Durations, Not Epoch Timestamps
 
-Calendly documents [per-user rate limits](https://developer.calendly.com/api-docs/overview/rate-limits) of 500 requests/minute on paid plans and 50 requests/minute on free plans. The connector uses one 500/minute `MovingWindowCallRatePolicy` matching `https://api.calendly.com`, and updates it from `X-RateLimit-Remaining`. This lets paid plans use their allowance while a free plan waits when its remaining count reaches zero after its 50 requests; the configured ceiling is not a promise of 500 requests for every account. Concurrency is a fixed 4 worker threads.
+Calendly documents [per-user rate limits](https://developer.calendly.com/api-docs/overview/rate-limits) of 500 requests/minute on paid plans and 50 requests/minute on free plans. The connector uses one 500/minute `MovingWindowCallRatePolicy` matching `https://api.calendly.com`, and updates it from `X-RateLimit-Remaining`. This lets paid plans use their allowance while a free plan waits when its remaining count reaches zero after its 50 requests; the configured ceiling is not a promise of 500 requests for every account. Optional `num_workers` selects 2–10 worker threads (default 4); templated `default_concurrency` requires `max_concurrency: 10`. Workers share the API budget.
+
+`activity_log_entries` keeps `count=100` although the OpenAPI spec allows 1000: Calendly checks the plan before validating parameters, so the larger page size cannot be read back with the Free-plan test credential. Until it is verified with an Enterprise credential, use 100, the documented maximum on the other paginated endpoints.
 
 Do not set the API budget's `ratelimit_reset_header` to `X-RateLimit-Reset`. CDK 7.45.0 parses that budget header as an epoch timestamp, but Calendly sends seconds until reset, typically 60. Leave the budget's default `ratelimit-reset` header unchanged: Calendly does not send it, so the moving-window policy applies the remaining count instead of skipping that update when a reset timestamp is present. A zero remaining count fills the window and blocks the next request until capacity is available.
 
@@ -42,6 +44,8 @@ Since 1.0.0, existing datetime fields on all streams declare `format: date-time`
 
 **Why this matters:** Typed destinations can reject or null values after a column type change. Keep the schema tests' exact retyped-field list in sync with the manifest, and do not make further existing-field retypes in a non-breaking release.
 
+`event_invitees.payment.amount` has conflicting evidence: OpenAPI `InviteePayment.amount` declares `type: string, title: float`, while the reference example is the number `1234.56`. Keep the existing `number` type. No record from the credentialed test account carries `payment`, so this conflict cannot yet be resolved from a live read.
+
 ## 5. Connection Check Tests Only Current-User Access
 
 The connection check reads `api_user` through `GET /users/me`, which requires `users:read` according to Calendly's [scope reference](https://developer.calendly.com/docs/authentication/scopes). It does not list event types or scheduled events and does not prove that the token has every scope needed by all selected streams, or that its owner is an organization owner or admin. Organization-scoped reads also obtain the current organization from this user response.
@@ -57,6 +61,25 @@ The connection check reads `api_user` through `GET /users/me`, which requires `u
 `teams` reads `GET /teams` once for the whole organization (the `user` parameter is an optional filter per Calendly's [OpenAPI spec](https://developer.calendly.com/openapi/calendly-api.yaml)); a per-member fan-out returned each team once per member under the same `uri`. `user_availability_schedules` and `locations` are not paginated, so their requests send only `user`. Location records have no identifier and Calendly's own example repeats a `kind` for one user, so `locations` has no primary key; the connector still adds `user` from the partition. `organization_invitations` uses the last path segment of `current_organization` as the organization UUID. `webhook_subscriptions` sends the required `scope` as `organization`, so user- and group-scoped subscriptions are not synced. Keep these streams out of `suggestedStreams`. New stream timestamps declare `format: date-time` (and `date` for availability rule dates); section 4 still governs existing streams.
 
 **Why this matters:** The member- and event-type-based streams multiply requests, and one stale partition must not fail a long sync. Do not add a primary key Calendly does not guarantee: changing a key after release is a breaking change.
+
+`event_type_availability_schedules` also partitions on `event_types.uri` and uses `fan_out_error_handler`. Send only `event_type`: the OpenAPI defines no pagination input, and live probes of both test event types returned one item with null next-page fields. Keep it unpaginated until there is evidence of a supported paging request. Each item has no `uri` of its own; `AddFields` copies `availability_rule.uri` to `availability_rule_uri`, and the key is `(event_type, availability_rule_uri)` so multiple hosts on an event type and a schedule reused by several event types remain distinct. This full-refresh stream is not suggested and needs `availability:read` in addition to its parents' scopes.
+
+### Why these streams use full refresh
+
+- `api_user`: a single current-user resource with no incremental list or update filter.
+- `groups`: mutable group snapshots with no documented update filter or ordered update feed.
+- `organization_memberships`: sorting by `updated_at` exists, but a partial membership scan would omit unchanged members needed by availability and location fan-out; no update filter is documented.
+- `teams`: mutable team snapshots with no documented update filter or update ordering.
+- `event_type_memberships`: host assignments have no documented update cursor or update filter.
+- `event_type_availability_schedules`: availability rules have no update cursor or update filter.
+- `group_relationships`: mutable group relationships have no documented update cursor or update filter.
+- `user_availability_schedules`: mutable schedule rules have no documented update cursor or update filter.
+- `locations`: mutable per-member location snapshots have no update cursor or update filter.
+- `organization_invitations`: no documented update filter or update ordering for invitation changes.
+- `webhook_subscriptions`: mutable subscription configuration has no documented update filter or update ordering.
+- `routing_forms`: mutable form definitions have no documented update filter or update ordering.
+- `routing_form_submissions`: only `created_at` sorting is available, and submissions can change after creation.
+- `contacts`: the API sorts by `updated_at`, but access is plan-gated and incremental behavior cannot be verified on the test account.
 
 ## 7. Plan-Gated Streams Skip Only Explicit Upgrade Messages
 
@@ -93,6 +116,8 @@ The OpenAPI email/SMS variants expose `created_at`, `event_uri`, `type`, `to`, a
 **Why this matters:** Declaring a nonexistent field breaks deduplication; inventing a composite can collapse distinct messages. Mock records must use the actual email/SMS shapes, not a fabricated URI.
 
 ## 10. OAuth Is the Default and Calendly Rotates Refresh Tokens
+
+Keep both `api.calendly.com` and `auth.calendly.com` in `metadata.yaml` allowed hosts. Reads use the former; the connector refreshes tokens at `https://auth.calendly.com/oauth/token`, so egress enforcement otherwise blocks the first refresh after the access token expires.
 
 `credentials` is a `oneOf`: OAuth (`auth_type: oauth2.0`) first, personal access token (`auth_type: api_key`) second, and `SelectiveAuthenticator` picks the authenticator from `credentials.auth_type`. Configs created before 1.1.0 have a top-level `api_key`; `config_normalization_rules` copies it into `credentials` (`value_type: string`, so a digit-only token stays a string) and then removes the top-level key. The platform saves the migrated config from the CONTROL message, and the new spec no longer marks a top-level `api_key` as a secret, so keeping it would store the token unmasked. Earlier versions cannot read the migrated config, which `releases.unsafeDowngrades` declares for 1.1.0. `ConfigAddFields` evaluates its condition per field on the mutating config, so `auth_type` must stay the last field written, and `ConfigRemoveFields` runs only once `credentials.auth_type` is set.
 
