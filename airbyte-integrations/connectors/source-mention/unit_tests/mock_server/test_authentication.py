@@ -1,7 +1,6 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import pytest
-
 from conftest import get_source
 
 from airbyte_cdk.models import SyncMode
