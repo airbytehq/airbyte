@@ -81,7 +81,7 @@ class ShopifyWrongShopNameError(AirbyteTracedException):
     """Raises the error when `Shopify Store` name is incorrect or couldn't be verified by the Shopify"""
 
     def __init__(self, url, **kwargs) -> None:
-        self.message = f"The `Shopify Store` name is invalid or missing for `input configuration`, make sure it's valid. Details: {url}"
+        self.message = "The Shopify Store name is invalid or missing. Enter the store handle or its myshopify.com domain, without paths, credentials, query strings, or fragments."
         super().__init__(message=self.message, internal_message=self.message, failure_type=FailureType.config_error, **kwargs)
 
 

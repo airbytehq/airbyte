@@ -1,29 +1,172 @@
 # Calendly
 
-Calendly source syncs your organization members, groups, available event types, and scheduled events from Calendly!
+The Calendly source syncs your organization members, groups, teams, invitations, event types and their hosts, availability schedules, meeting locations, webhook subscriptions, scheduled events, event invitees, routing forms and their submissions, contacts, outgoing communications, activity logs, and meeting recaps from the Calendly API v2.
+
+## Prerequisites
+
+- A Calendly account. [API access is available on all Calendly plans, including Free](https://developer.calendly.com/docs/getting-started/frequently-asked-questions#what-calendly-subscription-do-i-need-to-use-the-api), but routing forms and their submissions need Teams, outgoing communications and activity logs need Enterprise, meeting recaps need a plan with Notetaker, and Calendly can deny contacts with a paid-plan error (see [Plan-gated streams](#plan-gated-streams)).
+- An organization owner or administrator account to read organization-wide data such as scheduled events, webhook subscriptions, activity logs and outgoing communications. The connector reads the current organization associated with the authenticated user's profile; you don't need to enter an organization ID.
+- One of these credentials:
+  - **OAuth**: in Airbyte Cloud, you sign in to Calendly during setup. In Airbyte Open Source, OAuth needs the client ID and client secret of your own Calendly OAuth application.
+  - A [personal access token](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens#create-a-personal-access-token) with the [read scopes](https://developer.calendly.com/docs/authentication/scopes#scope-catalog) of every stream you sync, listed in [Token scopes](#token-scopes).
+- A start date in UTC. The connector reads scheduled events that start on or after it, and outgoing communications, activity log entries and meeting recaps from that time on.
+
+## Setup guide
+
+<!-- env:cloud -->
+
+### Authenticate with OAuth
+
+1. In Airbyte, create a Calendly source and select **OAuth** under **Authentication**.
+2. Select **Authenticate your Calendly account** and sign in to Calendly as an organization owner or administrator.
+3. Review the requested access and allow it. Calendly grants the read scopes set on Airbyte's Calendly OAuth application; you don't select scopes yourself.
+4. Enter a **Start date (UTC)** and, optionally, a **Lookback window (days)** as described below.
+
+Calendly rotates the OAuth refresh token every time Airbyte requests a new access token, and Airbyte stores the new token automatically. If Calendly rejects the refresh token, for example after you revoke Airbyte's access in Calendly, re-authenticate in the source settings.
+
+Every refresh spends the previous refresh token, so use one connection per OAuth source. Two connections that refresh the same source at the same time leave one of them asking you to re-authenticate; if several connections read the same Calendly account, use a personal access token.
+
+<!-- /env:cloud -->
+
+### Authenticate with a personal access token
+
+In Airbyte Open Source, use a personal access token unless you registered your own Calendly OAuth application.
+
+1. In Calendly, open the **Profile menu**, select **Developer**, then select **Personal access tokens**. If **Developer** isn't in your **Profile menu**, manage tokens from the [Integrations page](https://calendly.com/integrations) instead.
+2. Select **Create personal access token**, enter a name for the token, and select **Next**.
+3. Select the read scopes listed in [Token scopes](#token-scopes), then select **Create**.
+4. Enter the verification code that Calendly sends to your email, then copy the token. Calendly shows the token only once.
+5. In Airbyte, create a Calendly source, select **Personal access token** under **Authentication**, and enter the token in **Calendly personal access token**. Enter a **Start date (UTC)** and, optionally, a **Lookback window (days)** as described below.
+
+The connection check reads only the authenticated user's profile (`api_user`). A successful check confirms `users:read` access, not the permissions needed for every stream. Missing stream-specific scopes or organization permissions can still cause a sync to fail.
 
 ## Configuration
 
-| Input        | Type     | Description                                                                                                                  | Default Value |
-| ------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| `api_key`    | `string` | API Key. Go to Integrations → API &amp; Webhooks to obtain your bearer token. https://calendly.com/integrations/api_webhooks |               |
-| `start_date` | `string` | Start date to sync scheduled events from.                                                                                    |               |
+| Input | Type | Description | Default Value |
+| --- | --- | --- | --- |
+| `credentials.auth_type` | `string` | Required. `oauth2.0` for OAuth, or `api_key` for a personal access token. | |
+| `credentials.client_id` | `string` | Required for OAuth. Client ID of the Calendly OAuth application. Airbyte Cloud fills it in when you authenticate. | |
+| `credentials.client_secret` | `string` | Required for OAuth. Client secret of the Calendly OAuth application. Airbyte Cloud fills it in when you authenticate. | |
+| `credentials.refresh_token` | `string` | Required for OAuth. Refresh token returned by Calendly; the connector replaces it with the rotated token after every refresh. | |
+| `credentials.api_key` | `string` | Required for a personal access token. The personal access token created during setup. Configurations from versions before 1.1.0 that set a top-level `api_key` are moved here automatically. | |
+| `start_date` | `string` | Required. Read scheduled events starting on or after this time, and outgoing communications, activity log entries and meeting recaps from this time on. Use UTC in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2024-01-01T00:00:00Z`. It applies to event start times, not to when invitees booked. | |
+| `lookback_days` | `number` | Optional. Incremental `scheduled_events` syncs re-emit events whose `updated_at` falls within this many days before the last synced update, plus a fixed five minutes. Every sync pages through all events from the start date, so 0 is right for most connections. | 0 |
 
-## Streams
+When you create or update the source with the Airbyte API or Terraform, send the personal access token inside `credentials`, for example `{"auth_type": "api_key", "api_key": "<token>"}`; a top-level `api_key` is no longer read from the request. Sources saved before 1.1.0 move the token into `credentials` on their next check, schema refresh or sync. If you edit such a source in the Airbyte UI before that, enter the token again.
 
-:::note
+## Token scopes
 
-Incremental sync in `scheduled_events` uses `start_time` as a cursor. This may lead to situations where data gets stale if the event changes after it got synced. If you are running into this, periodic full refresh would resync all data.
+With OAuth, Calendly grants the scopes configured on Airbyte's Calendly OAuth application, which cover every stream below. The rest of this section applies to personal access tokens.
 
-:::
+Since March 2026, Calendly grants newly created tokens no API access until you select scopes for them; tokens created earlier keep their access. Select the scopes of every stream you sync; every token also needs `users:read`, which the connection check uses. When a scope is missing, the sync error lists it. Version 0.3.0 added `user_availability_schedules`, `locations` and `webhook_subscriptions`, which need `availability:read`, `locations:read` and `webhooks:read`, and version 0.4.0 added `routing_forms`, `routing_form_submissions`, `contacts`, `outgoing_communications`, `activity_log_entries` and `meeting_recaps`, which need `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read`. Calendly sets a token's scopes when you create it, so create a token with these scopes and update it in the source settings before you sync these streams. Connections set to propagate all field and stream changes add these streams automatically.
 
-| Stream Name              | Primary Key | Pagination       | Supports Full Sync | Supports Incremental |
-| ------------------------ | ----------- | ---------------- | ------------------ | -------------------- |
-| event_types              | uri         | DefaultPaginator | ✅                 | ✅                   |
-| api_user                 | uri         | No pagination    | ✅                 | ❌                   |
-| groups                   | uri         | DefaultPaginator | ✅                 | ❌                   |
-| organization_memberships | uri         | DefaultPaginator | ✅                 | ❌                   |
-| scheduled_events         | uri         | DefaultPaginator | ✅                 | ✅                   |
+| Stream | Required scopes |
+| --- | --- |
+| `api_user` | `users:read` |
+| `event_types` | `users:read`, `event_types:read` |
+| `groups` | `users:read`, `groups:read` |
+| `organization_memberships` | `users:read`, `organizations:read` |
+| `scheduled_events` | `users:read`, `scheduled_events:read` |
+| `event_invitees` | `users:read`, `scheduled_events:read` |
+| `teams` | `users:read`, `organizations:read` |
+| `event_type_memberships` | `users:read`, `event_types:read` |
+| `group_relationships` | `users:read`, `groups:read` |
+| `user_availability_schedules` | `users:read`, `organizations:read`, `availability:read` |
+| `locations` | `users:read`, `organizations:read`, `locations:read` |
+| `organization_invitations` | `users:read`, `organizations:read` |
+| `webhook_subscriptions` | `users:read`, `webhooks:read` |
+| `routing_forms` | `users:read`, `routing_forms:read` |
+| `routing_form_submissions` | `users:read`, `routing_forms:read` |
+| `contacts` | `contacts:read` |
+| `outgoing_communications` | `users:read`, `outgoing_communications:read` |
+| `activity_log_entries` | `users:read`, `activity_log:read` |
+| `meeting_recaps` | `meeting_recaps:read` |
+
+## Supported sync modes
+
+The Calendly source supports these sync modes:
+
+- Full refresh | Overwrite
+- Full refresh | Append
+- Incremental | Append
+- Incremental | Append + Deduped
+
+Incremental modes apply only to the streams marked incremental in [Supported streams](#supported-streams); the other streams sync in Full refresh. `locations` and `outgoing_communications` have no primary key, so deduplicated modes don't apply to them. See [Incremental sync behavior](#incremental-sync-behavior) for how incremental syncs of `scheduled_events` and `event_invitees` work and how `lookback_days` applies.
+
+## Supported streams
+
+| Stream | Data | Primary key | Full refresh | Incremental |
+| --- | --- | --- | --- | --- |
+| `event_types` | Event types in the organization, such as meeting names, durations, and scheduling URLs | `uri` | Yes | Yes, using `updated_at` |
+| `api_user` | The token owner's profile and current organization | `uri` | Yes | No |
+| `groups` | Groups in the organization | `uri` | Yes | No |
+| `organization_memberships` | Organization members, their roles, and user profiles | `uri` | Yes | No |
+| `scheduled_events` | Scheduled meetings, including their times, status, and location | `uri` | Yes | Yes, using `updated_at` |
+| `event_invitees` | Invitees for each scheduled event, including answers, tracking data, and cancellation information | `uri` | Yes | Yes, dependent on `scheduled_events` |
+| `teams` | Teams in the organization | `uri` | Yes | No |
+| `event_type_memberships` | Hosts assigned to each event type | `uri` | Yes | No |
+| `group_relationships` | Member and admin relationships between groups and organization members or invitees | `uri` | Yes | No |
+| `user_availability_schedules` | Each organization member's availability schedules, including time zones, weekly rules, and date-specific overrides | `uri` | Yes | No |
+| `locations` | Meeting location types available to each organization member | None | Yes | No |
+| `organization_invitations` | Invitations sent to join the organization | `uri` | Yes | No |
+| `webhook_subscriptions` | Configuration of organization-scoped webhook subscriptions, including callback URLs, subscribed event types, and state | `uri` | Yes | No |
+| `routing_forms` | Routing forms in the organization and their questions | `uri` | Yes | No |
+| `routing_form_submissions` | Submissions of each routing form, including answers, tracking data and the routing result | `uri` | Yes | No |
+| `contacts` | Contacts the token's user can access | `uri` | Yes | No |
+| `outgoing_communications` | Email and SMS messages Calendly sent for the organization | None | Yes | Yes, using `created_at` |
+| `activity_log_entries` | Audit log of actions in the organization | `uri` | Yes | Yes, using `occurred_at` |
+| `meeting_recaps` | Notetaker recaps of meetings the token's user can access | `uri` | Yes | Yes, using the meeting `start_time` |
+
+The connector reads `event_invitees` for each new or changed event in `scheduled_events`. It reads all invitees for those events and adds `scheduled_event_id` to each invitee record so you can join it to the `id` in `scheduled_events`. The invitee stream's state follows `scheduled_events`. `routing_form_submissions` reads the submissions of every routing form returned for the organization.
+
+`group_relationships` reads the relationships of each group returned by `groups`, so organizations without groups sync it without records. A group deleted during the sync is skipped; permission errors still fail the sync.
+
+Calendly's [OpenAPI specification](https://developer.calendly.com/openapi/calendly-api.yaml) marks `calendar_event` on `scheduled_events` as deprecated, and it can be null.
+
+The incremental `outgoing_communications`, `activity_log_entries` and `meeting_recaps` streams request a window that ends at the sync time, so their cursors never move past it, and they do not use `lookback_days`. Calendly returns a meeting recap only after processing finishes, so each sync reads recaps of meetings that started up to three days before the saved cursor again; recaps that become available or change later than that need a Full refresh.
+
+Calendly returns no unique identifier for outgoing communications, so this stream has no source-defined primary key, and no field combination is guaranteed unique. A primary key you select yourself can merge distinct messages, so use Full refresh | Overwrite or Incremental | Append for this stream.
+
+`user_availability_schedules` and `locations` send one request per organization member, and `event_type_memberships` sends one per event type, so they are not suggested by default. `locations` has no primary key because Calendly returns no identifier for a location and can list a location kind more than once. `webhook_subscriptions` lists organization-scoped subscriptions only; user- and group-scoped subscriptions are not synced.
+
+The scheduling-setup streams read configuration, not live availability or webhook deliveries:
+
+- `user_availability_schedules` returns [availability rules](https://developer.calendly.com/api-docs/calendly-api/availability/list-user-availability-schedules), not bookable time slots or calendar busy times.
+- `locations` lists the meeting location types configured for each member, not the locations of booked meetings. Read `scheduled_events` for meeting-specific locations.
+- `webhook_subscriptions` lists [existing subscriptions](https://developer.calendly.com/api-docs/calendly-api/webhooks/list-webhook-subscriptions). It doesn't create subscriptions or receive webhook event payloads. Read `scheduled_events` and `event_invitees` for bookings and cancellations.
+
+### Incremental sync behavior
+
+Every incremental sync requests `scheduled_events` from the configured start date and emits the events whose `updated_at` changed since the previous sync, including upcoming events, cancellations and reschedules. Each sync therefore pages through all events from the start date, as many `scheduled_events` requests as a Full refresh; on the Free plan, large histories need a later start date or less frequent syncs. `lookback_days` makes incremental syncs also re-emit the events whose `updated_at` falls within that many days before the last synced update, and read their invitees again. Because every sync already pages through all events from the start date, `0` is right for most connections. In every sync mode, an event updated after a sync starts is left out of that sync, with its invitees, and the next sync that reads it before it changes again emits it; in Full refresh | Overwrite its rows are missing from the destination until then.
+
+`event_invitees` follows the `scheduled_events` state and reads all invitees of each new or changed event again. Calendly does not document which invitee changes, such as a no-show or one invitee leaving a group event, update the event's `updated_at`; an invitee change that leaves the event unchanged reaches the destination with the next change to that event or a Full refresh of `event_invitees`.
+
+The first sync after upgrading to 1.0.0 ignores the state saved by earlier versions and reads every event from your start date again, with all of its invitees. In Incremental | Append mode this appends one more copy of each event and invitee. See the [1.0.0 migration guide](/integrations/sources/calendly-migrations#upgrading-to-100).
+
+## Limitations and troubleshooting
+
+### Plan-gated streams
+
+Routing forms and their submissions require Teams, outgoing communications and activity logs require an Enterprise subscription, meeting recaps require a paid plan with Notetaker enabled, and Calendly documents a paid-plan error for contacts. When Calendly reports that the plan or feature is unavailable, these streams complete without records and log a message explaining the requirement. Missing read scopes, owner or admin permission errors, and other forbidden responses still fail the sync.
+
+Calendly documents [activity log entries](https://developer.calendly.com/api-docs/calendly-api/activity-log/list-activity-log-entries) and [outgoing communications](https://developer.calendly.com/api-docs/calendly-api/outgoing-communications/list-outgoing-communications) as Enterprise endpoints.
+
+### Rate limits
+
+[Calendly limits API requests](https://developer.calendly.com/api-docs/overview/rate-limits#current-rate-limits) to 500 requests per user per minute on paid plans and 50 on the Free plan. Other applications using the same Calendly user share this allowance.
+
+The connector monitors `X-RateLimit-Remaining` and waits when the allowance is exhausted. If Calendly returns HTTP 429, the connector retries after the delay in `X-RateLimit-Reset`. Syncing invitees and routing form submissions requires requests for each scheduled event and form, so large histories can take longer to sync.
+
+### Troubleshooting
+
+| Symptom | Action |
+| --- | --- |
+| HTTP 401: invalid or revoked token | With OAuth, re-authenticate in the Airbyte source settings. With a personal access token, create a new token and update the Airbyte source settings. |
+| Calendly rejected the OAuth refresh token | The refresh token expired, was revoked or was already used. Re-authenticate in the Airbyte source settings. |
+| HTTP 403: insufficient scope or permission denied | Check the error for missing scopes. With a personal access token, create a token with the required read scopes. Authenticate with an organization owner or administrator account for organization-wide data such as scheduled events, webhook subscriptions, activity logs and outgoing communications. Update the credentials in Airbyte. |
+| A plan-gated stream syncs no records | Calendly reported that the plan or feature is unavailable; the sync log names the requirement. Routing forms require Teams; without access to forms, routing form submissions also complete empty. |
+| A scheduled event, event type, member, group or routing form disappears during a sync | The connector logs and skips that event's invitees, that event type's hosts, that member's availability schedules and locations, that group's relationships, or that form's submissions, then continues. A 404 on other endpoints fails the sync. |
+| New bookings or cancellations are missing | Upgrade to 1.0.0; its first sync reads every event from your start date again. See the [1.0.0 migration guide](/integrations/sources/calendly-migrations#upgrading-to-100). Confirm that the connection's start date covers the event. |
 
 ## IP allow list
 
@@ -31,11 +174,22 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Changelog
 
+Version 1.0.0 is a breaking change. Before you upgrade from 0.x, read the [1.0.0 migration guide](/integrations/sources/calendly-migrations#upgrading-to-100).
+
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
-| ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version | Date | Pull Request | Subject |
+| --- | --- | --- | --- |
+| 1.1.0 | 2026-11-12 | [91296](https://github.com/airbytehq/airbyte/pull/91296) | Add OAuth authentication as the default; personal access tokens remain available and existing configurations keep working |
+| 1.0.0 | 2026-11-11 | [90864](https://github.com/airbytehq/airbyte/pull/90864) | Fix incremental syncs missing new bookings and cancellations by using updated_at as the scheduled_events cursor, and declare date-time and integer types on existing fields |
+| 0.4.2 | 2026-11-10 | [91376](https://github.com/airbytehq/airbyte/pull/91376) | Update dependencies |
+| 0.4.1 | 2026-11-09 | [91293](https://github.com/airbytehq/airbyte/pull/91293) | Fix syncs that failed on `routing_forms` and `routing_form_submissions` below the Calendly Teams plan, and on `group_relationships` in organizations without groups |
+| 0.4.0 | 2026-11-04 | [90848](https://github.com/airbytehq/airbyte/pull/90848) | Add routing forms and submissions, contacts, outgoing communications, activity logs and meeting recaps streams; they need the new `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read` scopes |
+| 0.3.0 | 2026-11-04 | [90847](https://github.com/airbytehq/airbyte/pull/90847) | Add teams, event type memberships, group relationships, user availability schedules, locations, organization invitations and webhook subscriptions streams; user availability schedules, locations and webhook subscriptions need the new `availability:read`, `locations:read` and `webhooks:read` scopes |
+| 0.2.0 | 2026-11-03 | [90829](https://github.com/airbytehq/airbyte/pull/90829) | Handle rate limits and token errors, declare missing fields, fix the crash when `lookback_days` is unset, stop dropping event types updated before 2021 and invitees booked before the start date (refresh these streams to backfill) |
+| 0.1.58 | 2026-11-03 | [90473](https://github.com/airbytehq/airbyte/pull/90473) | Update dependencies |
+| 0.1.57 | 2026-10-27 | [89813](https://github.com/airbytehq/airbyte/pull/89813) | Update dependencies |
 | 0.1.56 | 2026-10-20 | [89122](https://github.com/airbytehq/airbyte/pull/89122) | Update dependencies |
 | 0.1.55 | 2026-10-13 | [88545](https://github.com/airbytehq/airbyte/pull/88545) | Update dependencies |
 | 0.1.54 | 2026-10-06 | [87778](https://github.com/airbytehq/airbyte/pull/87778) | Update dependencies |
@@ -100,6 +254,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.4 | 2024-12-11 | [49022](https://github.com/airbytehq/airbyte/pull/49022) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.3 | 2024-11-04 | [48279](https://github.com/airbytehq/airbyte/pull/48279) | Update dependencies |
 | 0.0.2 | 2024-10-28 | [47568](https://github.com/airbytehq/airbyte/pull/47568) | Update dependencies |
-| 0.0.1   | 2024-09-01 |                                                          | Initial release by [@natikgadzhi](https://github.com/natikgadzhi) via Connector Builder                                                                                |
+| 0.0.1 | 2024-09-01 | | Initial release by [@natikgadzhi](https://github.com/natikgadzhi) via Connector Builder |
 
 </details>

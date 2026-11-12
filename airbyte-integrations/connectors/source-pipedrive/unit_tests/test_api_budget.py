@@ -12,7 +12,7 @@ from airbyte_cdk.models import Status
 from airbyte_cdk.sources.streams.call_rate import CallRateLimitHit, HttpAPIBudget, MovingWindowCallRatePolicy
 
 
-_CONFIG = {"api_token": "t", "replication_start_date": "2024-01-01T00:00:00Z"}
+_CONFIG = {"credentials": {"auth_type": "api_token", "api_token": "t"}, "replication_start_date": "2024-01-01T00:00:00Z"}
 
 
 def _get_api_budget(config=_CONFIG):

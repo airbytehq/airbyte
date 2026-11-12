@@ -17,12 +17,16 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 The Zendesk Support source connector supports three authentication methods:
 
-- OAuth 2.0 with refresh token (recommended for Airbyte Cloud)
-- API token (recommended for Airbyte Open Source)
+- OAuth 2.0 with refresh token (recommended)
+- API token (Zendesk disables new API token creation on October 27, 2026, see the following caution)
 - OAuth 2.0 Legacy (for existing OAuth connections that haven't migrated to the refresh token flow)
 
 :::note
 Zendesk [requires the refresh token flow](https://support.zendesk.com/hc/en-us/articles/9182123625370) for all customers as of April 30, 2026. Legacy OAuth access tokens don't expire and can't be refreshed, so migrate existing connections to **OAuth 2.0 with Refresh Token**.
+:::
+
+:::caution
+Zendesk is [removing API tokens as an authentication method](https://support.zendesk.com/hc/en-us/articles/10851263566234). Starting October 27, 2026, Zendesk accounts can't create new API tokens, so you can only use **API Token** authentication with an active token you already have. Zendesk also deactivates any token that goes unused for 30 days. On April 30, 2027, Zendesk permanently deactivates all remaining API tokens, and sources that use them stop syncing. Set up new sources with **OAuth 2.0 with Refresh Token**, and switch existing API token sources to OAuth before April 30, 2027.
 :::
 
 <!-- env:cloud -->
@@ -37,13 +41,13 @@ We highly recommend using OAuth to authenticate your Zendesk Support account, as
 
 **For Airbyte Open Source:**
 
-We recommend using an API token to authenticate your Zendesk Support account. Please follow the steps below to generate this key.
-
-:::note
-If you prefer to authenticate with OAuth, see [Generate OAuth credentials](#generate-oauth-credentials).
-:::
+We recommend using OAuth to authenticate your Zendesk Support account. See [Generate OAuth credentials](#generate-oauth-credentials).
 
 ### Generate an API token
+
+:::note
+Zendesk disables API token creation on October 27, 2026. After that date, you can't create a new token with these steps. Tokens created before then keep working until April 30, 2027, when Zendesk deactivates all API tokens. If you can't create a token, [generate OAuth credentials](#generate-oauth-credentials) instead.
+:::
 
 1. Log in to your Zendesk account.
 2. Click the **Zendesk Products** icon (four squares) in the top-right corner, then select **Admin Center**.
@@ -98,7 +102,7 @@ Zendesk refresh tokens are single-use. Every refresh returns a new refresh token
 - **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0 with Refresh Token** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
   <!-- /env:cloud -->
   <!-- env:oss -->
-- **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account. To authenticate using OAuth instead, select **OAuth2.0 with Refresh Token** and enter the client ID, client secret, and refresh token you generated.
+- **For Airbyte Open Source**: To authenticate using OAuth, select **OAuth2.0 with Refresh Token** from the Authentication dropdown and enter the client ID, client secret, and refresh token you generated. To authenticate with an existing API token instead, select **API Token** and enter the token, as well as the email address associated with your Zendesk Support account. API tokens stop working on April 30, 2027.
 <!-- /env:oss -->
 
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
@@ -162,6 +166,7 @@ The Zendesk Support source connector supports the following streams:
 - [Deleted Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/deleted_tickets/#list-deleted-tickets) \(Full Refresh\)
 - [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/#list-activities) \(Client-Side Incremental\)
 - [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
+- [Ticket Audits per Ticket](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-audits-for-a-ticket) \(Incremental\) \(Opt-in\)
 - [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
 - [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Client-Side Incremental\)
 - [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Client-Side Incremental\) \(Enterprise only\)
@@ -205,6 +210,26 @@ The former Export Search Results behavior is preserved as the **`tickets_search`
 
 `tickets_search` isn't enabled by default. To use it, enable it on your connection's **Schema** tab. Enabling both `tickets` and `tickets_search` syncs the same tickets twice, so most people should enable only one of them.
 
+### Ticket audits for archived tickets
+
+Zendesk [automatically archives](https://support.zendesk.com/hc/en-us/articles/4408887617050-About-ticket-archiving) tickets about 120 days after they close. The `ticket_audits` stream reads the [List All Ticket Audits](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-all-ticket-audits) endpoint, which Zendesk documents as excluding archived tickets. So `ticket_audits` returns no audits for archived tickets, including audits added after a ticket was archived, for example by a bulk update.
+
+The `ticket_audits_per_ticket` stream reads [List Audits for a Ticket](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/#list-audits-for-a-ticket) for every ticket the `tickets` stream's incremental export returns, and that endpoint includes archived tickets. Its records have the same fields as `ticket_audits`, plus an `_ab_updated_at` cursor that holds the parent ticket's `generated_timestamp`.
+
+`ticket_audits_per_ticket` isn't selected by default. To use it, select it on your connection's **Schema** tab. Before you do, consider its cost:
+
+- Each sync makes one request for every ticket created or updated since the previous sync, plus one more for every 100 audits on a ticket. A bulk update that touches 100,000 tickets costs 100,000 requests on the next sync.
+- The first sync reads every ticket updated since **Start Date** (or in the last two years if it's blank), one request each. To recover audits for archived tickets changed since a given date, set **Start Date** to that date before you select the stream.
+- These requests count against your Zendesk plan's account-wide rate limit, which the connector's other streams and your other Zendesk integrations share. The connector doesn't throttle this stream below that limit. It sends requests as fast as **Number of concurrent threads** allows, and when Zendesk responds with 429 (Too Many Requests) it waits for the time in the `Retry-After` header before retrying. On a plan that allows 200 requests per minute, 100,000 tickets take at least 8 hours, and other integrations on the account can be rate limited while the stream syncs.
+- The stream reads its parent tickets with a separate pass over the incremental ticket export, which shares the 10 requests per minute limit with the `tickets` stream.
+- Whenever a ticket changes, the stream emits all of that ticket's audits again. Use **Incremental | Append + Deduped** to keep one row per audit `id`.
+
+:::warning
+If your connection's schema change setting is **Propagate all field and stream changes**, the connection starts syncing `ticket_audits_per_ticket` automatically after you upgrade to version 5.7.0, with the costs above. If you don't need audits for archived tickets, deselect `ticket_audits_per_ticket` on the connection's **Schema** tab.
+:::
+
+`ticket_audits` is unchanged, so you can keep using it, switch to `ticket_audits_per_ticket`, or sync both. Both streams share audit `id` values, so you can combine them downstream.
+
 ## Limitations & Troubleshooting
 
 <details>
@@ -227,7 +252,7 @@ Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introd
 
 The connector's **Number of concurrent threads** setting (default: 4) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The minimum is 2 and the maximum is 40. A single thread leaves no other stream emitting while the `tickets` stream reads, so a saved value of 1 is treated as 2 from the first sync after upgrading to 5.6.0, and the stored configuration is updated to match. If the source settings form flags the field before that first sync, set it to 2 or more.
 
-Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The opt-in `tickets_search` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
+Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The opt-in `tickets_search` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits. The opt-in `ticket_audits_per_ticket` stream makes one request per ticket against your plan's account-wide limit, which your other Zendesk integrations share, and the API budget doesn't throttle it. See [Ticket audits for archived tickets](#ticket-audits-for-archived-tickets).
 
 If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying. The `ticket_comments` stream also retries on 504 (Gateway Timeout) errors with exponential backoff, which can occur on large Zendesk instances.
 
@@ -284,6 +309,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.7.0 | 2026-10-20 | [89571](https://github.com/airbytehq/airbyte/pull/89571) | Add the `ticket_audits_per_ticket` stream, which reads audits ticket by ticket so archived tickets are included. It makes one request per created or updated ticket and isn't selected by default; connections that propagate new streams automatically start syncing it. `ticket_audits` is unchanged |
 | 5.6.3 | 2026-10-13 | [87513](https://github.com/airbytehq/airbyte/pull/87513) | Refresh the OAuth access token and retry when Zendesk rejects it with `401 invalid_token`, so OAuth connections no longer intermittently fail on `ticket_metrics` and other streams during token rotation |
 | 5.6.2 | 2026-10-13 | [88867](https://github.com/airbytehq/airbyte/pull/88867) | Update dependencies |
 | 5.6.1 | 2026-10-06 | [84185](https://github.com/airbytehq/airbyte/pull/84185) | Update dependencies |
@@ -434,6 +460,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.1.1 | 2023-08-29 | [29904](https://github.com/airbytehq/airbyte/pull/29904) | Make `Organizations` stream incremental |
 | 1.1.0 | 2023-08-28 | [29891](https://github.com/airbytehq/airbyte/pull/29891) | Add stream `UserFields` |
 | 1.0.0 | 2023-07-27 | [28774](https://github.com/airbytehq/airbyte/pull/28774) | Fix retry logic & update cursor for `Tickets` stream |
+| 0.12.0 | 2023-08-22 | [29697](https://github.com/airbytehq/airbyte/pull/29697) | Add `manage_team_members` field to the `Custom Roles` stream |
 | 0.11.0 | 2023-08-10 | [27208](https://github.com/airbytehq/airbyte/pull/27208) | Add stream `Topics` |
 | 0.10.7 | 2023-08-09 | [29256](https://github.com/airbytehq/airbyte/pull/29256) | Update tooltip descriptions in spec |
 | 0.10.6 | 2023-08-04 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes |
