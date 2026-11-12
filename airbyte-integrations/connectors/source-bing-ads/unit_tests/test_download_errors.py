@@ -38,8 +38,8 @@ def test_download_forbidden(stream_name, expired, config, mock_auth_token, mock_
     )
     body = (
         '<?xml version="1.0" encoding="utf-8"?><Error><Code>AuthenticationFailed</Code>'
-        '<Message>Server failed to authenticate the request.</Message>'
-        '<AuthenticationErrorDetail>Signature not valid in the specified time frame.</AuthenticationErrorDetail></Error>'
+        "<Message>Server failed to authenticate the request.</Message>"
+        "<AuthenticationErrorDetail>Signature not valid in the specified time frame.</AuthenticationErrorDetail></Error>"
         if expired
         else "<Error><Code>AuthorizationFailure</Code><Message>Forbidden</Message></Error>"
     )
