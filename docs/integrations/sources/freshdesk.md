@@ -90,7 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| 3.3.15 | 2026-11-12 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Cast `sla_policies` string ids and numeric fields back to integers to match the declared schema |
+| 3.3.15 | 2026-11-12 | [92113](https://github.com/airbytehq/airbyte/pull/92113) | Cast `sla_policies` string ids and numeric fields back to integers to match the declared schema |
 | 3.3.14 | 2026-11-10 | [91495](https://github.com/airbytehq/airbyte/pull/91495) | Update dependencies |
 | 3.3.13 | 2026-11-03 | [90355](https://github.com/airbytehq/airbyte/pull/90355) | Show the stream-specific error message when Freshdesk returns 401 Unauthorized. |
 | 3.3.12 | 2026-11-03 | [90556](https://github.com/airbytehq/airbyte/pull/90556) | Update dependencies |
