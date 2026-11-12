@@ -339,3 +339,31 @@ def test_spec_declares_google_oauth_and_optional_num_workers(config):
         "credentials",
         "client_id",
     ]
+
+
+def test_check_succeeds_when_youtube_rejects_retired_report_types(config):
+    """A new account has no jobs, and YouTube refuses to create jobs for retired report types
+    (e.g. `channel_annotations_a1`). `check` must use a supported report type so setup succeeds."""
+    retired = {"channel_annotations_a1", "channel_end_screens_a1", "channel_sharing_service_a1"}
+    jobs: List[Dict[str, Any]] = []
+
+    def create_job(request, context):
+        report_type = request.json()["reportTypeId"]
+        if report_type in retired:
+            context.status_code = 400
+            return {"error": {"code": 400, "message": "Request contains an invalid argument.", "status": "INVALID_ARGUMENT"}}
+        jobs.append({"id": _JOB_ID, "reportTypeId": report_type})
+        return jobs[-1]
+
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        mocker.get(f"{_API}/jobs", json=lambda request, context: {"jobs": jobs} if jobs else {})
+        create = mocker.post(f"{_API}/jobs", json=create_job)
+        mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-01T00:00:00Z")]})
+        mocker.get(_download_url("r1"), text="date,channel_id,views\n20261001,channel-1,3\n")
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+        created_report_types = [request.json()["reportTypeId"] for request in create.request_history]
+
+    assert status.status == Status.SUCCEEDED, status.message
+    assert created_report_types == ["channel_basic_a3"]
