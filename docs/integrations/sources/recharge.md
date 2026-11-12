@@ -109,7 +109,7 @@ The connector supports a configurable **Lookback Window (in days)** (`lookback_w
 
 To successfully sync data from specific streams, your Recharge API Access Token must have the corresponding read permissions (scopes). Additionally, some streams are only available if your Recharge account is on a specific plan.
 
-### **Error Handling for Permissions & Plans:**
+### Error handling for permissions and plans
 > 403 - The request was authenticated but not authorized for the requested resource (permission scope error)
 
 
@@ -126,7 +126,7 @@ The following table lists the required read scopes and plan requirements for eac
 | Bundle Selections  | `read_subscriptions`                                                                                                                                  | Pro or Custom plans only |
 | Charges            | `read_orders`                                                                                                                                         | Standard Plan            |
 | Collections        | `read_products`                                                                                                                                       | Standard Plan            |
-| Credit Adjustments | `read_credit_adjustments`                                                                                                                             | Pro and Custom only      |
+| Credit Adjustments | `read_credit_adjustments`                                                                                                                             | Pro or Custom plans only |
 | Customers          | `read_customers`                                                                                                                                      | Standard Plan            |
 | Discounts          | `read_discounts`                                                                                                                                      | Standard Plan            |
 | Events             | `read_events`                                                                                                                                         | Standard Plan            |
@@ -223,7 +223,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 2.4.3 | 2024-08-12 | [43837](https://github.com/airbytehq/airbyte/pull/43837) | Update dependencies |
 | 2.4.2 | 2024-08-10 | [43703](https://github.com/airbytehq/airbyte/pull/43703) | Update dependencies |
 | 2.4.1 | 2024-08-03 | [43171](https://github.com/airbytehq/airbyte/pull/43171) | Update dependencies |
-| 2.4.0 | 2024-08-02 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate to CDK v4.3.0 |
+| 2.4.0 | 2024-08-02 | [42975](https://github.com/airbytehq/airbyte/pull/42975) | Migrate to CDK v4.3.0 |
 | 2.3.2 | 2024-07-27 | [42723](https://github.com/airbytehq/airbyte/pull/42723) | Update dependencies |
 | 2.3.1 | 2024-07-20 | [42336](https://github.com/airbytehq/airbyte/pull/42336) | Update dependencies |
 | 2.3.0 | 2024-07-17 | [42076](https://github.com/airbytehq/airbyte/pull/42076) | Migrate to CDK v3.7.0 |
