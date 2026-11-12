@@ -39,9 +39,7 @@ def test_nanosecond_cursor_advances(stream_name, newest, expected):
     if stream_name == "applications":
         initial_state = initial_cursor
     else:
-        initial_state = {
-            "states": [{"partition": {"app_id": app_id}, "cursor": initial_cursor} for app_id in ["app1", "app2"]]
-        }
+        initial_state = {"states": [{"partition": {"app_id": app_id}, "cursor": initial_cursor} for app_id in ["app1", "app2"]]}
     state = StateBuilder().with_stream_state(stream_name, initial_state).build()
 
     with HttpMocker() as mocker:
@@ -77,4 +75,3 @@ def test_nanosecond_cursor_advances(stream_name, newest, expected):
         assert {entry["partition"]["app_id"]: entry["cursor"] for entry in final_state["states"]} == {
             app_id: {"modified_at": expected_state} for app_id in ["app1", "app2"]
         }
-
