@@ -184,6 +184,8 @@ definitions:
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TwilioStateMigration
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioStalePartitionStateMigration
 
   base_pricing_country_stream:
     $ref: "#/definitions/base_stream"
@@ -434,6 +436,8 @@ definitions:
         class_name: source_declarative_manifest.components.TwilioStateMigration
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TwilioConferencesStateMigration
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioStalePartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -801,6 +805,8 @@ definitions:
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TwilioUsageRecordsStateMigration
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioStalePartitionStateMigration
     $parameters:
       name: usage_records
       cursor_field: start_date

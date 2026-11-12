@@ -1003,3 +1003,153 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+def _uri_partitions(resource):
+    return lambda account: [{"subresource_uri": f"/2010-04-01/Accounts/{account}/{resource}.json", "parent_slice": {}}]
+
+
+def _conference_partitions(account):
+    return [
+        {"conference_status": status, "subresource_uri": f"/2010-04-01/Accounts/{account}/Conferences.json", "parent_slice": {}}
+        for status in ("init", "in-progress", "completed")
+    ]
+
+
+@freeze_time("2022-11-16 12:03:11+00:00")
+@pytest.mark.parametrize(
+    "stream_name,path,lower_key,upper_key,cursor_field,partitions,stale,global_cursor,ahead,now",
+    [
+        pytest.param(
+            "messages",
+            "Messages.json",
+            "DateSent>",
+            "DateSent<",
+            "date_sent",
+            _uri_partitions("Messages"),
+            "2022-03-01 00:00:00Z",
+            "2022-11-15 10:00:00Z",
+            "2022-11-16 08:00:00Z",
+            "2022-11-16 12:03:11Z",
+            id="messages",
+        ),
+        pytest.param(
+            "recordings",
+            "Recordings.json",
+            "DateCreated>",
+            "DateCreated<",
+            "date_created",
+            _uri_partitions("Recordings"),
+            "2022-03-01 00:00:00Z",
+            "2022-11-15 10:00:00Z",
+            "2022-11-16 08:00:00Z",
+            "2022-11-16 12:03:11Z",
+            id="recordings",
+        ),
+        pytest.param(
+            "calls",
+            "Calls.json",
+            "EndTime>",
+            "EndTime<",
+            "end_time",
+            _uri_partitions("Calls"),
+            "2022-03-01",
+            "2022-11-14",
+            "2022-11-15",
+            "2022-11-16",
+            id="calls",
+        ),
+        pytest.param(
+            "conferences",
+            "Conferences.json",
+            "DateCreated>",
+            "DateCreated<",
+            "date_created",
+            _conference_partitions,
+            "2022-03-01",
+            "2022-11-14",
+            "2022-11-15",
+            "2022-11-16",
+            id="conferences",
+        ),
+        pytest.param(
+            "usage_records",
+            "Usage/Records/Daily.json",
+            "StartDate",
+            "EndDate",
+            "start_date",
+            lambda account: [{"account_sid": account, "parent_slice": {}}],
+            "2022-03-01",
+            "2022-11-14",
+            "2022-11-15",
+            "2022-11-16",
+            id="usage_records",
+        ),
+    ],
+)
+def test_partition_state_older_than_global_cursor_resumes_from_global_cursor(
+    stream_name, path, lower_key, upper_key, cursor_field, partitions, stale, global_cursor, ahead, now, requests_mock
+):
+    """
+    AC_STALE holds a per-partition cursor older than the global cursor, AC_CURRENT one equal to it and AC_AHEAD one ahead of
+    it (a checkpoint of an interrupted sync). Only AC_STALE must change: it resumes from the global cursor instead of
+    re-reading its history. The mock serves a historical record for every window that starts before the global cursor.
+    """
+    cursors = {"AC_STALE": stale, "AC_CURRENT": global_cursor, "AC_AHEAD": ahead}
+    subresources = ("calls", "conferences", "messages", "recordings")
+    accounts = [
+        {"sid": account, "subresource_uris": {name: f"/2010-04-01/Accounts/{account}/{name.capitalize()}.json" for name in subresources}}
+        for account in cursors
+    ]
+    requests_mock.get(f"{BASE}/Accounts.json", json={"accounts": accounts})
+
+    requests = []
+    requests_lock = Lock()
+
+    def _callback(request, context):
+        query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+        account = urlparse(request.url).path.split("/")[3]
+        lower = query[lower_key][0]
+        with requests_lock:
+            requests.append((account, query.get("Status", [None])[0], lower, query[upper_key][0]))
+        historical = [{"sid": f"{account}-{lower}", "account_sid": account, "category": "sms", cursor_field: lower}]
+        return {stream_name: historical if lower < global_cursor else []}
+
+    for account in cursors:
+        requests_mock.get(f"{BASE}/Accounts/{account}/{path}", json=_callback)
+
+    input_state = {
+        "use_global_cursor": False,
+        "state": {cursor_field: global_cursor},
+        "states": [
+            {"partition": partition, "cursor": {cursor_field: cursor}}
+            for account, cursor in cursors.items()
+            for partition in partitions(account)
+        ],
+        "lookback_window": 0,
+    }
+    state = StateBuilder().with_stream_state(stream_name, input_state).build()
+
+    output = read_from_stream({**TEST_CONFIG, "start_date": "2022-01-01T00:00:00Z"}, stream_name, SyncMode.incremental, state)
+
+    expected_lower = {"AC_STALE": global_cursor, "AC_CURRENT": global_cursor, "AC_AHEAD": ahead}
+    assert sorted(requests, key=str) == sorted(
+        [
+            (account, partition.get("conference_status"), lower, now)
+            for account, lower in expected_lower.items()
+            for partition in partitions(account)
+        ],
+        key=str,
+    )
+    assert output.records == []
+
+    final_state = output.most_recent_state.stream_state.__dict__
+    assert final_state["state"] == {cursor_field: global_cursor}
+    assert sorted(final_state["states"], key=str) == sorted(
+        [
+            {"partition": partition, "cursor": {cursor_field: lower}}
+            for account, lower in expected_lower.items()
+            for partition in partitions(account)
+        ],
+        key=str,
+    )

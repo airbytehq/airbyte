@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -307,4 +307,73 @@ class TwilioConferencesStateMigration(StateMigration):
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         if stream_state and any("conference_status" not in state.get("partition", {}) for state in stream_state.get("states", [])):
             return True
+        return False
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Drop per-partition cursors that are older than the stream's global cursor.
+
+    The global cursor (`state`) only advances once a sync has read every partition, so every partition has
+    already been read up to it. A partition entry that is older than the global cursor is therefore stale, and
+    because a partition's own cursor takes precedence over the global cursor, keeping it makes the connector
+    re-read (and re-emit) that partition's history. Once the entry is dropped, the partition resumes from the
+    global cursor.
+
+    Entries at or ahead of the global cursor are kept: they are checkpoints of a sync that did not complete.
+    Entries whose cursor value cannot be compared with the global cursor are kept as well.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2025-06-01 00:00:00Z" }
+          },
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2026-05-20 10:00:00Z" }
+          }
+        ]
+      }
+
+    Final:
+      {
+        "use_global_cursor": false,
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2026-05-20 10:00:00Z" }
+          }
+        ]
+      }
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {**stream_state, "states": [state for state in stream_state["states"] if not self._is_stale(state, stream_state["state"])]}
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state:
+            return False
+        global_cursor = stream_state.get("state")
+        if not isinstance(global_cursor, Mapping):
+            return False
+        return any(self._is_stale(state, global_cursor) for state in stream_state.get("states") or [])
+
+    @staticmethod
+    def _is_stale(partition_state: Mapping[str, Any], global_cursor: Mapping[str, Any]) -> bool:
+        partition_cursor = partition_state.get("cursor")
+        if not isinstance(partition_cursor, Mapping):
+            return False
+        for cursor_field, global_value in global_cursor.items():
+            partition_value = partition_cursor.get(cursor_field)
+            if not isinstance(partition_value, str) or not isinstance(global_value, str):
+                continue
+            partition_datetime = ab_datetime_try_parse(partition_value)
+            global_datetime = ab_datetime_try_parse(global_value)
+            if partition_datetime and global_datetime and partition_datetime < global_datetime:
+                return True
         return False
