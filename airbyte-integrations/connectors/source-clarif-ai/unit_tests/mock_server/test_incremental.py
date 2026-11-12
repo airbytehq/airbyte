@@ -26,11 +26,7 @@ def test_nanosecond_cursor_advances_state(stream_name, nanoseconds):
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
     initial_state = {"modified_at": _INITIAL}
     if stream_name != "applications":
-        initial_state = {
-            "states": [
-                {"partition": {"app_id": app_id}, "cursor": {"modified_at": _INITIAL}} for app_id in ["app1", "app2"]
-            ]
-        }
+        initial_state = {"states": [{"partition": {"app_id": app_id}, "cursor": {"modified_at": _INITIAL}} for app_id in ["app1", "app2"]]}
     state = StateBuilder().with_stream_state(stream_name, initial_state).build()
     records = [
         {"id": "newest", "modified_at": _NEWEST if nanoseconds else _EXPECTED},
@@ -46,9 +42,7 @@ def test_nanosecond_cursor_advances_state(stream_name, nanoseconds):
     with HttpMocker() as mocker:
         mocker.get(
             HttpRequest(_BASE_URL, query_params=ANY_QUERY_PARAMS),
-            HttpResponse(
-                json.dumps({"apps": records if stream_name == "applications" else [{"id": "app1"}, {"id": "app2"}]})
-            ),
+            HttpResponse(json.dumps({"apps": records if stream_name == "applications" else [{"id": "app1"}, {"id": "app2"}]})),
         )
         if stream_name != "applications":
             for app_id in ["app1", "app2"]:
@@ -63,9 +57,7 @@ def test_nanosecond_cursor_advances_state(stream_name, nanoseconds):
     if stream_name == "applications":
         assert final_state["modified_at"] == _EXPECTED
     else:
-        assert {
-            entry["partition"]["app_id"]: entry["cursor"]["modified_at"] for entry in final_state["states"]
-        } == {
+        assert {entry["partition"]["app_id"]: entry["cursor"]["modified_at"] for entry in final_state["states"]} == {
             "app1": _EXPECTED,
             "app2": _EXPECTED,
         }
