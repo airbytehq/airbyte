@@ -13,7 +13,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
-  dockerImageTag: 3.3.15
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-freshdesk
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
   externalDocumentationUrls:
@@ -35,6 +35,20 @@ data:
     oss:
       enabled: true
   releases:
+    breakingChanges:
+      4.0.0:
+        message: >
+          The sla_policies stream now emits its primary key id as an integer rather than
+          the digit string emitted since version 3.3.6. Connections syncing sla_policies
+          must refresh the source schema and refresh that stream. If your destination
+          widened the id column to a string, back up any data you need to retain and
+          clear the stream's destination data before re-syncing to rebuild the column
+          as an integer. See the Freshdesk migration guide for details.
+        upgradeDeadline: "2026-12-14"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - sla_policies
     rolloutConfiguration:
       enableProgressiveRollout: true
       defaultRolloutMode: autopilot
