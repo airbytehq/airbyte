@@ -15,6 +15,7 @@ from source_facebook_marketing.streams.async_job import Status
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponse,
@@ -531,3 +532,110 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @staticmethod
+    def _state_with_cursor(account_id: str, cursor_value: str) -> List[AirbyteStateMessage]:
+        return (
+            StateBuilder()
+            .with_stream_state(_STREAM_NAME, {account_id: {_CURSOR_FIELD: cursor_value, "slices": []}, "time_increment": 1})
+            .build()
+        )
+
+    @HttpMocker()
+    def test_given_state_when_lookback_slice_completes_then_cursor_does_not_move_backwards(self, http_mocker: HttpMocker) -> None:
+        """
+        Every incremental sync re-reads the lookback window that ends at the saved cursor. Completing the oldest
+        lookback slice must not checkpoint a cursor older than the one the sync started from.
+        """
+        account_id = "123123123"
+        lookback_slice = datetime(2023, 1, 3)
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(_update_api_throttle_limit_request().with_account_id(account_id).build(), _update_api_throttle_limit_response())
+        http_mocker.post(
+            _job_start_request(since=lookback_slice, until=lookback_slice).with_account_id(account_id).build(),
+            _job_start_response(_REPORT_RUN_ID),
+        )
+        http_mocker.post(_job_status_request(_REPORT_RUN_ID).build(), _job_status_response(_JOB_ID, account_id=account_id))
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+
+        output = self._read(
+            config()
+            .with_account_ids([account_id])
+            .with_start_date(datetime(2023, 1, 1))
+            .with_end_date(datetime(2023, 1, 3, 23, 59, 59))
+            .with_insights_lookback_window(2),
+            state=self._state_with_cursor(account_id, "2023-01-05"),
+        )
+
+        assert len(output.records) == 1
+        cursor_values = [
+            AirbyteStreamStateSerializer.dump(state_message.state.stream).get("stream_state").get(account_id, {}).get(_CURSOR_FIELD)
+            for state_message in output.state_messages
+        ]
+        assert cursor_values
+        assert set(cursor_values) == {"2023-01-05"}
+
+    @HttpMocker()
+    def test_given_state_when_sync_fails_inside_lookback_window_then_checkpointed_cursor_does_not_move_backwards(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        Reproduces cursor backtracking after an interrupted sync: the first lookback slice succeeds, the next one fails.
+        The checkpoint emitted before the failure must keep the cursor from the incoming state; otherwise each failed
+        sync moves the cursor back by up to the lookback window and the next sync re-reads an ever wider date range.
+        """
+        account_id = "123123123"
+        first_slice = datetime(2023, 1, 3)
+        second_slice = datetime(2023, 1, 4)
+        report_run_id_1 = "1571860060019500"
+        report_run_id_2 = "1571860060019501"
+        job_id_1 = "1049937379601600"
+        job_id_2 = "1049937379601601"
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(_update_api_throttle_limit_request().with_account_id(account_id).build(), _update_api_throttle_limit_response())
+        http_mocker.post(
+            _job_start_request(since=first_slice, until=first_slice).with_account_id(account_id).build(),
+            _job_start_response(report_run_id_1),
+        )
+        http_mocker.post(
+            _job_start_request(since=second_slice, until=second_slice).with_account_id(account_id).build(),
+            _job_start_response(report_run_id_2),
+        )
+        http_mocker.post(
+            _job_status_request([report_run_id_1, report_run_id_2]).build(),
+            _job_status_response([job_id_1, job_id_2], account_id=account_id),
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_1).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_2).build(),
+            build_response(
+                body={"error": {"code": 100, "message": "Invalid parameter", "type": "OAuthException"}},
+                status_code=HTTPStatus.BAD_REQUEST,
+            ),
+        )
+
+        output = self._read(
+            config()
+            .with_account_ids([account_id])
+            .with_start_date(datetime(2023, 1, 1))
+            .with_end_date(datetime(2023, 1, 4, 23, 59, 59))
+            .with_insights_lookback_window(2),
+            state=self._state_with_cursor(account_id, "2023-01-05"),
+            expecting_exception=True,
+        )
+
+        assert len(output.records) == 1
+        assert output.errors
+        cursor_values = [
+            AirbyteStreamStateSerializer.dump(state_message.state.stream).get("stream_state").get(account_id, {}).get(_CURSOR_FIELD)
+            for state_message in output.state_messages
+        ]
+        assert cursor_values
+        assert set(cursor_values) == {"2023-01-05"}
