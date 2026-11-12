@@ -16,6 +16,10 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 None identified yet.
 
+## Cursor granularity must match the datetime format
+
+`messages` and `recordings` format request windows with second precision (`%Y-%m-%d %H:%M:%SZ`), so their `cursor_granularity` must be `PT1S`. A finer granularity leaves a one-second gap between consecutive windows once the boundaries are formatted; the CDK then never merges the windows and each account's per-partition cursor stays at the first window instead of advancing, so every sync re-reads the full history.
+
 ## Alerts request window splitting
 
 The `alerts` stream handles Twilio's 10,000-result cap with a `SPLIT_REQUEST_WINDOW` response filter plus `request_window_splitting`:
