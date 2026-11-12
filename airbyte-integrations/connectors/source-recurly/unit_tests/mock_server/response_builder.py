@@ -29,7 +29,3 @@ class ResponseBuilder:
 
     def build(self) -> HttpResponse:
         return HttpResponse(json.dumps({"data": self._records, "next": self._next, "has_more": self._has_more}), status_code=200)
-
-    @staticmethod
-    def singleton(record: dict[str, Any]) -> HttpResponse:
-        return HttpResponse(json.dumps(record), status_code=200)

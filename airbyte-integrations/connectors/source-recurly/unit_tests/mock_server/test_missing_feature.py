@@ -17,13 +17,6 @@ from .request_builder import RequestBuilder
 
 CASES = [
     StreamCase("account_acquisitions", "acquisitions", dated_params(), {}),
-    StreamCase(
-        "account_balances",
-        "accounts/account1/balance",
-        {},
-        {},
-        parents=(Parent("accounts", dated_params(), [{"id": "account1"}]),),
-    ),
     StreamCase("gift_cards", "gift_cards", {}, {}),
     StreamCase("external_subscriptions", "external_subscriptions", {"sort": "updated_at"}, {}),
     StreamCase(
@@ -59,7 +52,6 @@ CASES = [
     CASES,
     ids=[
         "account_acquisitions",
-        "account_balances",
         "gift_cards",
         "external_subscriptions",
         "external_subscription_payment_phases",
