@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Report and Bulk Files Are Downloaded from Short-Lived Microsoft Storage Links
+
+Report and bulk streams download their files from pre-signed Azure Blob Storage links that Microsoft returns once the file is ready. Azure rejects a link outside its validity window with `403` and the header `x-ms-error-code: AuthenticationFailed`. The download requesters fail that response as a `transient_error` that names the stream, because the link is issued by Microsoft and never reflects the user's permissions. The stream name reaches the message through the `stream_name` parameter that each dynamic stream template sets.
+
+**Why this matters:** The CDK default for `403` is a `config_error` telling the user they lack permission, which stops retries and points them at credentials that are fine. Report downloads re-poll for a new link before downloading; bulk downloads do not, so a slow bulk download can still hit this error.
