@@ -45,7 +45,9 @@ Every stream except `events` and `duties` sends `sort=updatedAt` and follows the
 Existing tokens without these scopes hit the shared 403 `config_error` filter.
 Re-authenticate with the required scopes or deselect the affected streams.
 
-- `events` is incremental on `eventAt`, with `sort=eventAt` and `filter[eventAt][gte]`.
+- `events` is incremental on `createdAt`, with `sort=createdAt` and `filter[createdAt][gte]`.
+  Events are immutable, and `createdAt` is the read-only insertion time. `eventAt` is the writable occurrence time;
+  using it as the cursor could miss an event recorded after the last sync but occurring before the saved state.
   `/events` has no `updatedAt`; filtering on it returns 400 `filterParameter.unknownFilter`.
 - `duties` is full refresh because it has no timestamps. It sends neither a cursor filter nor
   a sort: `sort=updatedAt` returns 400 `sortParameter.unknownAttribute`.
@@ -103,7 +105,7 @@ The backoff strategies run in order:
   every access token and a refresh token stays active for 14 days
   ([Token availability](https://developers.outreach.io/api/getting-started/)). A local run that refreshes the token
   receives a refresh token the stored secret does not have, so prefer CI for credentialed runs.
-- `sequence_states`, `teams`, `roles` and `mail_aliases` have no records in the test account; mock-server tests cover their reads.
+- `sequence_states` and `mail_aliases` have no records in the test account; mock-server tests cover their reads.
 - `snippets` and `templates` are listed in `empty_streams` although the test account has records for both. Their
   schemas type `tags` (and, on `templates`, `toRecipients`, `ccRecipients` and `bccRecipients`) as strings, but the API
   returns arrays of strings, so the records fail schema validation. Retyping a top-level field is a breaking change and

@@ -193,7 +193,7 @@
         "name": "events"
       },
       "stream_state": {
-        "eventAt": "2040-11-16T00:00:00.000Z"
+        "createdAt": "2040-11-16T00:00:00.000Z"
       }
     }
   },

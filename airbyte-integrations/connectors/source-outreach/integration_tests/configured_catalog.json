@@ -256,11 +256,11 @@
       "sync_mode": "full_refresh"
     },
     {
-      "cursor_field": ["eventAt"],
+      "cursor_field": ["createdAt"],
       "destination_sync_mode": "append",
       "primary_key": null,
       "stream": {
-        "default_cursor_field": ["eventAt"],
+        "default_cursor_field": ["createdAt"],
         "json_schema": {},
         "name": "events",
         "namespace": null,

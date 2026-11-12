@@ -876,7 +876,7 @@ definitions:
           http_method: GET
           request_parameters:
             count: "false"
-            sort: eventAt
+            sort: createdAt
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
@@ -897,7 +897,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
           - "%Y-%m-%dT%H:%M:%SZ"
-        cursor_field: eventAt
+        cursor_field: createdAt
         is_data_feed: true
         start_datetime:
           type: MinMaxDatetime
@@ -905,7 +905,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          field_name: "filter[eventAt][gte]"
+          field_name: "filter[createdAt][gte]"
           inject_into: "request_parameter"
       schema_loader:
         type: InlineSchemaLoader
@@ -7114,8 +7114,6 @@ schemas:
         type:
           - "null"
           - string
-          - object
-        additionalProperties: true
       call:
         type:
           - "null"
@@ -7168,7 +7166,6 @@ schemas:
         type:
           - "null"
           - object
-          - string
         additionalProperties: true
       plugin:
         type:
