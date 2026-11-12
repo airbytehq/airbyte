@@ -56,6 +56,66 @@ def async_job_mock_fixture(mocker):
 
 
 class TestBaseInsightsStream:
+    @freeze_time("2026-01-15")
+    @pytest.mark.parametrize("name", [None, "custom_insights"])
+    @pytest.mark.parametrize("has_records", [False, True])
+    @pytest.mark.parametrize("completion", ["interrupted", "failed", "complete"])
+    def test_lookback_cursor_never_regresses(self, mocker, api, async_manager_mock, name, has_records, completion):
+        account_id = "first_account"
+        other_account_id = "other_account"
+        cursor = "2026-01-01"
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id, other_account_id],
+            start_date=datetime(2025, 12, 1),
+            end_date=datetime(2026, 1, 3),
+            insights_lookback_window=28,
+            name=name,
+        )
+        stream.state = {
+            account_id: {stream.cursor_field: cursor},
+            other_account_id: {stream.cursor_field: "2026-01-02"},
+            "time_increment": 1,
+        }
+        record = mocker.Mock()
+        record.export_all_data.return_value = {"date_start": "2025-12-04"}
+
+        def make_job(**kwargs):
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = kwargs["interval"]
+            job.get_result.return_value = [record] if has_records else []
+            return job
+
+        mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob", side_effect=make_job)
+
+        def completed_jobs():
+            jobs = list(async_manager_mock.call_args.kwargs["jobs"])
+            expected_start = date(2025, 12, 4) if async_manager_mock.call_args.kwargs["account_id"] == account_id else date(2025, 12, 5)
+            assert jobs[0].interval.start == expected_start
+            if completion == "failed":
+                jobs[1].get_result.side_effect = RuntimeError("sync interrupted")
+            return iter(jobs if completion == "complete" else jobs[:2])
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        slices = stream.stream_slices(sync_mode=SyncMode.incremental)
+        first_slice = next(slices)
+        assert len(list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=first_slice))) == int(has_records)
+        assert stream.state[account_id][stream.cursor_field] >= cursor
+        assert stream.state[other_account_id][stream.cursor_field] == "2026-01-02"
+
+        if completion == "failed":
+            with pytest.raises(RuntimeError, match="sync interrupted"):
+                list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=next(slices)))
+            assert stream.state[account_id][stream.cursor_field] == cursor
+        elif completion == "complete":
+            for stream_slice in slices:
+                list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+            assert stream.state[account_id][stream.cursor_field] == "2026-01-03"
+            assert stream.state[other_account_id][stream.cursor_field] == "2026-01-03"
+        else:
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=next(slices)))
+            assert stream.state[account_id][stream.cursor_field] == cursor
+
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,
