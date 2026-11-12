@@ -284,6 +284,54 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+def _read_users(config, stream_state=None):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    state = []
+    if stream_state is not None:
+        state = [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name="users", namespace=None),
+                    stream_state=AirbyteStateBlob(**stream_state),
+                ),
+            )
+        ]
+    messages = list(SourceFaker().read(logger, config, catalog, state))
+    ids = [message.record.data["id"] for message in messages if message.type is Type.RECORD]
+    states = [message.state.stream.stream_state.__dict__ for message in messages if message.type is Type.STATE]
+    return ids, states
+
+
+def test_read_users_always_updated_reemits_all_users_on_every_sync_after_the_first():
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+
+    ids, states = _read_users(config)
+    assert ids == list(range(1, 11))
+
+    for _ in range(2):
+        ids, states = _read_users(config, states[-1])
+        assert ids == list(range(1, 11))
+        assert states[-1]["loop_offset"] == 0
+
+
+@pytest.mark.parametrize("loop_offset", [10, 15], ids=["completed_pass", "count_reduced_below_checkpoint"])
+def test_read_users_starts_new_pass_when_state_is_past_the_last_user(loop_offset):
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+
+    ids, _ = _read_users(config, {"seed": -1, "updated_at": "2024-01-01T00:00:00+00:00", "loop_offset": loop_offset})
+
+    assert ids == list(range(1, 11))
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
