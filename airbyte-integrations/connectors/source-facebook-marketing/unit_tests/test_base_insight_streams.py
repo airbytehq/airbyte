@@ -2001,7 +2001,9 @@ class TestInsightsCursorDoesNotBacktrack:
             return manager
 
         mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJobManager", side_effect=manager_factory)
-        mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob", side_effect=lambda **kwargs: mocker.Mock(**kwargs))
+        mocker.patch(
+            "source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob", side_effect=lambda **kwargs: mocker.Mock(**kwargs)
+        )
 
         stream = AdsInsights(
             api=api,
