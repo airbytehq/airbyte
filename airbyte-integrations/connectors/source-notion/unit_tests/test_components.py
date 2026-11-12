@@ -3,6 +3,8 @@
 #
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
@@ -16,6 +18,77 @@ state_test_records = [
     {"id": "2", "last_edited_time": "2022-01-03T00:00:00.000Z"},
     {"id": "3", "last_edited_time": "2022-01-04T00:00:00.000Z"},
 ]
+
+
+@pytest.mark.parametrize(
+    "stream_state,start_date,expected_ids",
+    [
+        (
+            {"use_global_cursor": True, "state": {"last_edited_time": "2022-01-03T00:00:00.000Z"}},
+            "2022-01-01T00:00:00.000Z",
+            ["new-child", "boundary", "new"],
+        ),
+        ({}, "2022-01-01T00:00:00.000Z", ["old", "new-child", "old-parent", "boundary", "new"]),
+        ({}, "2022-01-03T00:00:00.000Z", ["new-child", "boundary", "new"]),
+        (
+            {"use_global_cursor": True, "state": {"last_edited_time": "2022-01-05T00:00:00.000Z"}},
+            "2022-01-01T00:00:00.000Z",
+            [],
+        ),
+    ],
+)
+def test_blocks_incremental_read(requests_mock, stream_state, start_date, expected_ids):
+    def block(block_id, edited, has_children=False):
+        return {
+            "object": "block",
+            "id": block_id,
+            "type": "paragraph",
+            "parent": {"type": "page_id", "page_id": "page-1"},
+            "last_edited_time": edited,
+            "has_children": has_children,
+        }
+
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json={"results": [{"object": "page", "id": "page-1", "last_edited_time": "2022-01-04T00:00:00.000Z"}], "has_more": False},
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        json={
+            "results": [
+                block("old", "2022-01-02T00:00:00.000Z"),
+                block("old-parent", "2022-01-02T00:00:00.000Z", True),
+                block("boundary", "2022-01-03T00:00:00.000Z"),
+                block("new", "2022-01-04T00:00:00.000Z"),
+            ],
+            "has_more": False,
+        },
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/old-parent/children?page_size=100",
+        json={"results": [block("new-child", "2022-01-04T00:00:00.000Z")], "has_more": False},
+    )
+    config = {"start_date": start_date, "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state("blocks", stream_state).build()
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == expected_ids
+    final_state = vars(output.state_messages[-1].state.stream.stream_state)
+    assert final_state["use_global_cursor"] is True
+    assert final_state["state"]["last_edited_time"] == (
+        "2022-01-04T00:00:00.000000Z" if expected_ids else "2022-01-05T00:00:00.000000Z"
+    )
 
 
 def test_blocks_retriever_depth_restored_after_children(components_module):
