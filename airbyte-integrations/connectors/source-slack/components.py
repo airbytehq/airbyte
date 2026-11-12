@@ -176,7 +176,9 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        # States written by the current connector already carry per-channel parent cursors; rewriting them
+        # would collapse those cursors into one value and restart every channel from the same point.
+        return not stream_state.get("parent_state", {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
