@@ -278,7 +278,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = self._completed_slices_after_cursor(account_id)
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -286,7 +286,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._completed_slices:
             for account_id in self._account_ids:
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = self._completed_slices_after_cursor(account_id)
 
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
@@ -294,6 +294,11 @@ class AdsInsights(FBMarketingIncrementalStream):
             return new_state
 
         return {}
+
+    def _completed_slices_after_cursor(self, account_id: str) -> List[str]:
+        """Completed slices to persist: the ones at or before the cursor are already covered by the cursor itself."""
+        cursor_value = self._cursor_values.get(account_id) if self._cursor_values else None
+        return sorted(d.isoformat() for d in self._completed_slices[account_id] if not cursor_value or d > cursor_value)
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -419,6 +424,12 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
+            # The sync starts `insights_lookback_window` days before the saved cursor, so the first slices that complete
+            # are older than it. The cursor is checkpointed after every slice: it must not move backwards, otherwise an
+            # interrupted attempt persists the lower value and the next attempt subtracts the lookback window again.
+            current_cursor = self._cursor_values.get(account_id) if self._cursor_values else None
+            if current_cursor and current_cursor >= ts_start:
+                continue
             if self._cursor_values:
                 self._cursor_values[account_id] = ts_start
             else:

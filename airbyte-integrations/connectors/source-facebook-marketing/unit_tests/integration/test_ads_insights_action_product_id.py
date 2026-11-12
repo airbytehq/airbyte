@@ -24,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -531,3 +532,68 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_state_when_lookback_window_is_reread_then_checkpointed_cursor_never_goes_below_input_state(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        The platform persists the last checkpoint of an interrupted attempt and feeds it to the next attempt. While the
+        lookback window is being re-read every checkpoint must therefore keep the cursor at (or above) the input cursor;
+        otherwise each interruption widens the next attempt's read window by up to one lookback window.
+        """
+        account_id = "123123123"
+        start_date = ab_datetime_parse("2023-01-01T00:00:00Z")
+        end_date = ab_datetime_parse("2023-01-08T23:59:59Z")
+        input_cursor = "2023-01-05"
+        # lookback window of 2 days => the sync re-reads 2023-01-03 and 2023-01-04 and then reads up to the end date
+        days = [ab_datetime_parse(f"2023-01-0{day}T00:00:00Z") for day in range(3, 9)]
+        report_run_ids = [f"157186006001950{i}" for i in range(len(days))]
+        job_ids = [f"104993737960160{i}" for i in range(len(days))]
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id, job_id in zip(days, report_run_ids, job_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+            http_mocker.get(
+                _get_insights_request(job_id).build(),
+                _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids, account_id=account_id))
+
+        def _state(stream_state: Dict[str, any]) -> List[AirbyteStateMessage]:
+            return StateBuilder().with_stream_state(_STREAM_NAME, stream_state).build()
+
+        def _checkpoints(output: EntrypointOutput) -> List[Dict[str, any]]:
+            return [
+                AirbyteStreamStateSerializer.dump(message.state.stream)["stream_state"][account_id] for message in output.state_messages
+            ]
+
+        config_ = (
+            config().with_account_ids([account_id]).with_start_date(start_date).with_end_date(end_date).with_insights_lookback_window(2)
+        )
+        expected_checkpoints = [
+            {"date_start": "2023-01-05", "slices": []},  # 2023-01-03 re-read
+            {"date_start": "2023-01-05", "slices": []},  # 2023-01-04 re-read
+            {"date_start": "2023-01-05", "slices": []},
+            {"date_start": "2023-01-06", "slices": []},
+            {"date_start": "2023-01-07", "slices": []},
+            {"date_start": "2023-01-08", "slices": []},
+        ]
+
+        first_attempt = self._read(config_, state=_state({account_id: {"date_start": input_cursor, "slices": []}, "time_increment": 1}))
+        assert len(first_attempt.records) == len(days)
+        assert _checkpoints(first_attempt) == expected_checkpoints
+
+        # The first attempt is interrupted right after its first checkpoint: the next attempt starts from that checkpoint
+        # and must request exactly the same days again. HttpMocker fails the read on any request for an earlier day.
+        interrupted_state = AirbyteStreamStateSerializer.dump(first_attempt.state_messages[0].state.stream)["stream_state"]
+        second_attempt = self._read(config_, state=_state(interrupted_state))
+        assert len(second_attempt.records) == len(days)
+        assert _checkpoints(second_attempt) == expected_checkpoints

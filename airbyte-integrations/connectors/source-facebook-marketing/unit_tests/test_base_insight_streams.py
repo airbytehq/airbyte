@@ -300,8 +300,8 @@ class TestBaseInsightsStream:
                 {
                     AdsInsights.cursor_field: "2010-10-03",
                     "slices": [
-                        "2010-01-01",
-                        "2010-01-02",
+                        "2010-10-05",
+                        "2010-10-07",
                     ],
                     "time_increment": 1,
                 },
@@ -309,8 +309,8 @@ class TestBaseInsightsStream:
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
                         "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-05",
+                            "2010-10-07",
                         ],
                     },
                     "time_increment": 1,
@@ -348,8 +348,8 @@ class TestBaseInsightsStream:
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
                         "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-05",
+                            "2010-10-07",
                         ],
                     },
                     "time_increment": 1,
@@ -374,6 +374,23 @@ class TestBaseInsightsStream:
                     }
                 },
                 None,
+            ),
+            # Completed slices at or before the cursor are already covered by the cursor and are not persisted again
+            (
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": ["2010-09-05", "2010-10-03", "2010-10-05"],
+                    },
+                    "time_increment": 1,
+                },
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": ["2010-10-05"],
+                    },
+                    "time_increment": 1,
+                },
             ),
         ],
     )
@@ -400,6 +417,36 @@ class TestBaseInsightsStream:
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
+
+    @freeze_time("2010-02-01")
+    def test_cursor_does_not_go_backwards_when_lookback_slices_complete_out_of_order(self, mocker, api, some_config):
+        """Every checkpoint taken while the lookback window is re-read keeps the cursor loaded from state."""
+        account_id = some_config["account_ids"][0]
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2010, 1, 12),
+            insights_lookback_window=3,
+        )
+        stream.state = {account_id: {AdsInsights.cursor_field: "2010-01-10", "slices": []}, "time_increment": 1}
+
+        def read_slice_and_checkpoint(day: int) -> dict:
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.get_result.return_value = []
+            job.interval = DateInterval(date(2010, 1, day), date(2010, 1, day))
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice={"insight_job": job, "account_id": account_id}))
+            return stream.state[account_id]
+
+        # the sync covers 2010-01-07..2010-01-12; jobs complete in the order 8, 11, 7, 9, 10, 12
+        assert [read_slice_and_checkpoint(day) for day in (8, 11, 7, 9, 10, 12)] == [
+            {"date_start": "2010-01-10", "slices": []},
+            {"date_start": "2010-01-10", "slices": ["2010-01-11"]},
+            {"date_start": "2010-01-10", "slices": ["2010-01-11"]},
+            {"date_start": "2010-01-10", "slices": ["2010-01-11"]},
+            {"date_start": "2010-01-11", "slices": []},
+            {"date_start": "2010-01-12", "slices": []},
+        ]
 
     def test_stream_slices_no_state(self, api, async_manager_mock, start_date, some_config):
         """Stream will use start_date when there is not state"""

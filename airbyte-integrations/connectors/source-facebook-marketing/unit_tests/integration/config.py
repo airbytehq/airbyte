@@ -58,6 +58,10 @@ class ConfigBuilder:
         self._config["end_date"] = end_date.strftime(DATE_TIME_FORMAT)
         return self
 
+    def with_insights_lookback_window(self, insights_lookback_window: int) -> ConfigBuilder:
+        self._config["insights_lookback_window"] = insights_lookback_window
+        return self
+
     def with_ad_statuses(self, statuses: List[str]) -> ConfigBuilder:
         self._config["ad_statuses"] = statuses
         return self
