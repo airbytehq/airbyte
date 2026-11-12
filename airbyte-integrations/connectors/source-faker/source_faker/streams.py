@@ -101,12 +101,16 @@ class Users(Stream, IncrementalMixin):
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
 
-        updated_at = ""
+        updated_at = self.state.get("updated_at", "")
+
+        # Resume from the last checkpoint: users before `loop_offset` were
+        # already emitted, so an interrupted sync continues where it stopped
+        # instead of regenerating them.
+        loop_offset = self.state.get("loop_offset", 0)
 
         median_record_byte_size = 450
-        yield generate_estimate(self.name, self.count, median_record_byte_size)
+        yield generate_estimate(self.name, self.count - loop_offset, median_record_byte_size)
 
-        loop_offset = 0
         with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
             while loop_offset < self.count:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
