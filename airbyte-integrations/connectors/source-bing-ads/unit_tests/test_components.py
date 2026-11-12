@@ -971,21 +971,32 @@ def test_decoder_logs_error_and_yields_empty_on_bad_data(components_module):
 @pytest.mark.parametrize("poll_result", [{"ResultFileUrl": "fresh"}, {}, {"ResultFileUrl": None}])
 def test_download_repoll_cleans_context(components_module, poll_result):
     polling = components_module.BingAdsPollingRequester(
-        name="poll", url_base="https://example.com/poll", config={}, parameters={},
+        name="poll",
+        url_base="https://example.com/poll",
+        config={},
+        parameters={},
         download_url_fields=["ResultFileUrl"],
     )
     download = components_module.BingAdsReportDownloadRequester(
-        name="download", url_base="{{download_target}}", config={}, parameters={},
+        name="download",
+        url_base="{{download_target}}",
+        config={},
+        parameters={},
     )
     polling_slice = StreamSlice(
-        partition={"account_id": "123"}, cursor_slice={},
+        partition={"account_id": "123"},
+        cursor_slice={},
         extra_fields={"creation_response": {"DownloadRequestId": "request-id"}},
     )
     download_slice = StreamSlice(partition={}, cursor_slice={}, extra_fields={"download_target": "stale"})
     with rm.Mocker() as mock:
-        mock.get("https://example.com/poll", [
-            {"json": {"ResultFileUrl": "stale"}}, {"json": poll_result},
-        ])
+        mock.get(
+            "https://example.com/poll",
+            [
+                {"json": {"ResultFileUrl": "stale"}},
+                {"json": poll_result},
+            ],
+        )
         polling.send_request(stream_slice=polling_slice)
         assert "stale" in components_module._DOWNLOAD_POLL_CONTEXTS
         assert download._get_fresh_download_url(download_slice) == poll_result.get("ResultFileUrl")
@@ -995,11 +1006,17 @@ def test_download_repoll_cleans_context(components_module, poll_result):
 @pytest.mark.parametrize("failure", ["connection", "invalid_json", "missing_context"])
 def test_download_repoll_falls_back(components_module, failure):
     polling = components_module.BingAdsPollingRequester(
-        name="poll", url_base="https://example.com/poll", config={}, parameters={},
+        name="poll",
+        url_base="https://example.com/poll",
+        config={},
+        parameters={},
         download_url_fields=["ResultFileUrl"],
     )
     download = components_module.BingAdsReportDownloadRequester(
-        name="download", url_base="{{download_target}}", config={}, parameters={},
+        name="download",
+        url_base="{{download_target}}",
+        config={},
+        parameters={},
     )
     stream_slice = StreamSlice(partition={}, cursor_slice={}, extra_fields={"download_target": "stale"})
     if failure != "missing_context":

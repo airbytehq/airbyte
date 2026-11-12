@@ -44,9 +44,11 @@ def mock_job(harness, stream, responses):
             response_template="accounts_search_for_report",
         )
         harness.mock_bulk_download_request()
-        request = RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk").with_body(
-            '{"RequestId": "TestDownloadRequestId"}'
-        ).build()
+        request = (
+            RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk")
+            .with_body('{"RequestId": "TestDownloadRequestId"}')
+            .build()
+        )
     else:
         report = report_tests.TestProductDimensionPerformanceReportDailyStream()
         report._http_mocker = harness.http_mocker
@@ -58,9 +60,11 @@ def mock_job(harness, stream, responses):
 
         with patch.object(report, "mock_generate_report_api", side_effect=mock_generate_report):
             report.mock_report_apis()
-        request = RequestBuilder(resource="GenerateReport/Poll", api="reporting").with_body(
-            '{"ReportRequestId": "thisisthereport_requestid"}'
-        ).build()
+        request = (
+            RequestBuilder(resource="GenerateReport/Poll", api="reporting")
+            .with_body('{"ReportRequestId": "thisisthereport_requestid"}')
+            .build()
+        )
     harness.http_mocker.post(request, responses)
 
 
@@ -83,8 +87,7 @@ def test_download_uses_fresh_url(harness, stream, count):
     mock_job(harness, stream, [HttpResponse(json.dumps(original)), HttpResponse(json.dumps(fresh))])
     download = HttpRequest(url=fresh_url)
     content = (
-        (Path(__file__).parent.parent / "resource/response/budget.csv").read_bytes()
-        if stream == "budget" else create_zip_from_csv(stream)
+        (Path(__file__).parent.parent / "resource/response/budget.csv").read_bytes() if stream == "budget" else create_zip_from_csv(stream)
     )
     harness.http_mocker.get(download, HttpResponse(content))
 
@@ -119,6 +122,4 @@ def test_download_xml_error(harness, stream):
     errors = [trace.trace.error for trace in output.errors]
     assert errors
     assert errors[0].failure_type == FailureType.transient_error
-    assert errors[0].message == (
-        "The Bing Ads download link expired before the file could be downloaded. The sync will retry."
-    )
+    assert errors[0].message == ("The Bing Ads download link expired before the file could be downloaded. The sync will retry.")
