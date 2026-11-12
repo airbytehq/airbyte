@@ -183,6 +183,8 @@ definitions:
         inject_into: request_parameter
     state_migrations:
       - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioGlobalCursorStateMigration
+      - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TwilioStateMigration
 
   base_pricing_country_stream:
@@ -431,6 +433,8 @@ definitions:
         - $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/partition_router"
     state_migrations:
       - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioGlobalCursorStateMigration
+      - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TwilioStateMigration
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TwilioConferencesStateMigration
@@ -623,6 +627,8 @@ definitions:
         datetime_format: "%Y-%m-%d"
     state_migrations:
       - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioGlobalCursorStateMigration
+      - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TwilioMessageMediaStateMigration
     schema_loader:
       type: InlineSchemaLoader
@@ -799,6 +805,8 @@ definitions:
       schema:
         $ref: "#/schemas/usage_records"
     state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioGlobalCursorStateMigration
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TwilioUsageRecordsStateMigration
     $parameters:

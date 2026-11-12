@@ -44,6 +44,47 @@ class TwilioDateTimeTypeTransformer(TypeTransformer):
         return custom_transform_function
 
 
+class TwilioGlobalCursorStateMigration(StateMigration):
+    """
+    Drop leftover per-partition states from a state that is already in global-cursor mode.
+
+    With `use_global_cursor: true` the stream no longer tracks partitions individually and resumes every
+    partition from the global `state` cursor. Per-partition `states` that are still present in such a state
+    are never updated again, yet the cursor prefers them over the global cursor for any partition they match,
+    so the stream re-reads everything since the stale partition cursor.
+
+    The migration only runs when a global `state` cursor is present, so there is always a cursor to resume from.
+
+    Initial:
+      {
+        "use_global_cursor": true,
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2025-07-01 00:00:00Z" }
+          }
+        ],
+        "lookback_window": 0
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "lookback_window": 0
+      }
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {key: value for key, value in stream_state.items() if key != "states"}
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state or stream_state.get("use_global_cursor") is not True:
+            return False
+        return bool(stream_state.get("state")) and bool(stream_state.get("states"))
+
+
 class TwilioStateMigration(StateMigration):
     """
     Ensure legacy partitions include an empty `parent_slice` required by the SubstreamPartitionRouter.
