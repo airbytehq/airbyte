@@ -12,6 +12,10 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 **Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.
 
+### Cursor granularity must match `datetime_format` precision
+
+`messages` and `recordings` format slice boundaries with `%Y-%m-%d %H:%M:%SZ` (second precision), so their `cursor_granularity` is `PT1S`. A finer granularity (e.g. `PT0.000001S`) leaves a sub-second gap between the stringified end of one slice and the start of the next, so the CDK never merges completed slices and the per-partition cursor stays stuck at the first slice while the global cursor advances. Every sync then re-reads (and re-emits) everything after the stuck cursor.
+
 ### Future incremental stream candidates
 
 None identified yet.

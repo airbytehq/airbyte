@@ -254,6 +254,75 @@ class TestIncrementalTwilioStream:
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
+    @pytest.mark.parametrize(
+        "stream_name,path,cursor_field,lower_key,upper_key",
+        [
+            ("messages", "/Accounts/AC123/Messages.json", "date_sent", "DateSent>", "DateSent<"),
+            ("recordings", "/Accounts/AC123/Recordings.json", "date_created", "DateCreated>", "DateCreated<"),
+        ],
+    )
+    def test_per_partition_cursor_advances_across_monthly_slices(self, stream_name, path, cursor_field, lower_key, upper_key, requests_mock):
+        """
+        A per-partition cursor older than the global cursor must advance to the latest record once the
+        partition is re-read, so the next sync resumes from it instead of re-reading the same history again.
+        """
+        partition = {"subresource_uri": f"/2010-04-01{path}", "parent_slice": {}}
+        # Twilio returns RFC 2822 datetimes; the schema normalization turns them into ISO 8601.
+        server_records = [
+            {"sid": "OLD", cursor_field: "Mon, 15 Dec 2025 08:00:00 +0000"},
+            {"sid": "NEW", cursor_field: "Wed, 11 Nov 2026 10:00:00 +0000"},
+        ]
+        requested_windows = []
+
+        def _callback(request, context):
+            query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+            lower = datetime.strptime(query[lower_key][0], "%Y-%m-%d %H:%M:%SZ")
+            upper = datetime.strptime(query[upper_key][0], "%Y-%m-%d %H:%M:%SZ")
+            requested_windows.append((query[lower_key][0], query[upper_key][0]))
+            # Twilio's `>` / `<` date filters are inclusive at second precision.
+            matching = [
+                record
+                for record in server_records
+                if lower <= datetime.strptime(record[cursor_field], "%a, %d %b %Y %H:%M:%S %z").replace(tzinfo=None) <= upper
+            ]
+            return {stream_name: matching}
+
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        requests_mock.get(f"{BASE}{path}", json=_callback, status_code=200)
+
+        stale_state = {
+            "use_global_cursor": False,
+            "states": [{"partition": partition, "cursor": {cursor_field: "2025-12-01 00:00:00Z"}}],
+            "state": {cursor_field: "2026-11-10 00:00:00Z"},
+            "lookback_window": 0,
+        }
+        with freeze_time("2026-11-12 12:00:00+00:00"):
+            first = read_from_stream(
+                TEST_CONFIG, stream_name, SyncMode.incremental, StateBuilder().with_stream_state(stream_name, stale_state).build()
+            )
+
+        assert sorted(record.record.data["sid"] for record in first.records) == ["NEW", "OLD"]
+        requested_windows.sort()
+        assert len(requested_windows) == 12
+        assert requested_windows[0] == ("2025-12-01 00:00:00Z", "2025-12-31 23:59:59Z")
+        assert requested_windows[-1] == ("2026-11-01 00:00:00Z", "2026-11-12 12:00:00Z")
+        first_state = first.most_recent_state.stream_state.__dict__
+        assert first_state["states"] == [{"partition": partition, "cursor": {cursor_field: "2026-11-11 10:00:00Z"}}]
+        assert first_state["state"] == {cursor_field: "2026-11-11 10:00:00Z"}
+
+        requested_windows.clear()
+        with freeze_time("2026-11-12 13:00:00+00:00"):
+            second = read_from_stream(
+                TEST_CONFIG, stream_name, SyncMode.incremental, StateBuilder().with_stream_state(stream_name, first_state).build()
+            )
+
+        # The next sync resumes from the advanced cursor; only the record at the inclusive boundary is re-emitted.
+        assert requested_windows == [("2026-11-11 10:00:00Z", "2026-11-12 13:00:00Z")]
+        assert [record.record.data["sid"] for record in second.records] == ["NEW"]
+        assert second.most_recent_state.stream_state.__dict__["states"] == [
+            {"partition": partition, "cursor": {cursor_field: "2026-11-11 10:00:00Z"}}
+        ]
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
