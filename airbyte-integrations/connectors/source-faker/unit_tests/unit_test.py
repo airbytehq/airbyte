@@ -10,7 +10,18 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    StreamDescriptor,
+    Type,
+)
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
 
 
 class MockLogger:
@@ -304,3 +315,43 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+def read_users_with_state(state):
+    config = {"count": 5, "records_per_slice": 2, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    return list(SourceFaker().read(logger, config, catalog, state))
+
+
+def test_read_users_after_completed_sync():
+    first_read = read_users_with_state({})
+    first_ids = [row.record.data["id"] for row in first_read if row.type is Type.RECORD]
+    assert len(first_ids) == 5
+    assert set(first_ids) == {1, 2, 3, 4, 5}
+
+    final_state = [row.state for row in first_read if row.type is Type.STATE][-1]
+    second_read = read_users_with_state([final_state])
+    second_ids = [row.record.data["id"] for row in second_read if row.type is Type.RECORD]
+    assert len(second_ids) == 5
+    assert set(second_ids) == {1, 2, 3, 4, 5}
+
+
+@pytest.mark.parametrize("loop_offset", [2, 6])
+def test_read_users_from_saved_offset(loop_offset):
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="users"),
+                stream_state=AirbyteStateBlob(updated_at="2026-01-01T00:00:00Z", loop_offset=loop_offset),
+            ),
+        )
+    ]
+    messages = read_users_with_state(state)
+    ids = [row.record.data["id"] for row in messages if row.type is Type.RECORD]
+    assert ids == ([3, 4, 5] if loop_offset == 2 else [1, 2, 3, 4, 5])
