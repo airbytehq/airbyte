@@ -25,9 +25,7 @@ def _read_policies(policies: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     catalog = CatalogBuilder().with_stream("sla_policies", SyncMode.full_refresh).build()
     config = ConfigBuilder().domain(_DOMAIN).build()
     state = StateBuilder().build()
-    source = YamlDeclarativeSource(
-        path_to_yaml=str(_SOURCE_FOLDER_PATH / "manifest.yaml"), catalog=catalog, config=config, state=state
-    )
+    source = YamlDeclarativeSource(path_to_yaml=str(_SOURCE_FOLDER_PATH / "manifest.yaml"), catalog=catalog, config=config, state=state)
     request = HttpRequest(f"https://{_DOMAIN}/api/v2/sla_policies", query_params=ANY_QUERY_PARAMS)
     with HttpMocker() as http_mocker:
         http_mocker.get(request, HttpResponse(json.dumps(policies), 200))
