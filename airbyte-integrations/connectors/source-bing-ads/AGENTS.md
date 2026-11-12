@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. File Download Errors Must Be Matched by Status Code Only
+
+Report and bulk files are downloaded from short-lived pre-signed Azure Blob (SAS) URLs. When a URL expires, Azure returns `403 AuthenticationFailed` ("Signature not valid in the specified time frame"). The shared `download_error_handler` reports any 403 on these downloads as a `transient_error` instead of the CDK default "You don't have permission" `config_error`, because the download carries no user credentials. It matches on `http_codes` only. `predicate` and `error_message_contains` are evaluated on every response, including successful ones, and reading the body there consumes the streamed file before `BingAdsGzipCsvDecoder` / `BingAdsReportZipCsvDecoder` can read it, so streams silently emit zero records.
+
+**Why this matters:** Adding a body- or predicate-based filter to a download requester looks harmless but makes every successful download yield no records, with no error.
