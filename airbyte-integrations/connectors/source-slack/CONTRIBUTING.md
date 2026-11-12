@@ -6,11 +6,19 @@ When `join_channels` is enabled in the config, the `ChannelsRetriever` automatic
 
 **Why this matters:** The channels stream is not read-only when `join_channels` is enabled. It actively modifies the workspace by joining channels, which is a side effect that no other connector stream produces. The Slack API only returns messages from channels the bot has joined, so this behavior exists to ensure the messages and threads streams can actually retrieve data. If the bot lacks permission to join a channel, it logs a warning but does not fail the sync.
 
+The `channel_messages` and `threads` streams only build partitions for channels the bot can read: channels it is already a member of (archived or not), plus, when `join_channels` is enabled, non-archived channels it can join. Archived channels the bot is not a member of are skipped by these two streams even with `include_archived_channels` enabled, because they can never be joined; the `channels` and `channel_members` streams still see them.
+
 ## 2. Dynamic Rate Limit Policy Switching on First 429
 
 The `MessagesAndThreadsApiBudget` starts with an `UnlimitedCallRatePolicy` (no rate limiting) and dynamically switches to a `MovingWindowCallRatePolicy` of 1 request per 60 seconds after the first 429 response. This switch is permanent for the duration of the sync and only applies to OAuth connections (API token connections do not use this budget).
 
 **Why this matters:** The connector starts fast with no rate limiting and then abruptly drops to 1 request per minute after hitting its first 429. This dramatic slowdown is intentional but can make syncs appear to stall. The rate limit policy is not reset between stream reads within the same sync, so hitting a 429 on the messages stream will also throttle the threads stream.
+
+## 3. Threads State Migration Only Seeds a Missing Parent State
+
+`ThreadsStateMigration` converts legacy `threads` state into a `parent_state.channel_messages` cursor (latest thread cursor minus the lookback window). It only runs when the incoming state has no `parent_state.channel_messages`. Once the CDK has checkpointed per-channel `channel_messages` cursors there, the migration leaves them untouched and the lookback window is applied by the `channel_messages` cursor itself.
+
+**Why this matters:** Running the migration on every sync replaces the per-channel cursors with one derived value (or the start date when no thread partition has a cursor yet), so an interrupted `threads` sync would request `conversations.history` for every channel from the beginning again.
 
 ## Incremental Stream Considerations
 

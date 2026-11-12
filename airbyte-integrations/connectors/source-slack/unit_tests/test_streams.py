@@ -5,6 +5,7 @@
 from copy import deepcopy
 from unittest.mock import MagicMock, Mock
 
+import freezegun
 import pytest
 from requests import Response
 
@@ -1022,3 +1023,143 @@ def test_channel_members_error_handler_response_action(token_config, status_code
     mocked_response.headers = {"Content-Type": "application/json"}
     mocked_response.json.return_value = response_json
     assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
+
+
+def _incremental_catalog(stream_name):
+    return ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": stream_name, "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+
+
+def _requests_to(requests_mock, path):
+    """Query params of every request sent to the given Slack method, sorted by channel."""
+    return sorted(
+        ({key: values[0] for key, values in request.qs.items()} for request in requests_mock.request_history if request.path == path),
+        key=lambda params: params["channel"],
+    )
+
+
+@freezegun.freeze_time("2021-07-30T00:00:00Z")
+def test_threads_resumed_read_requests_history_from_each_channel_cursor(requests_mock, token_config):
+    """
+    A threads read that starts from the state of a previous attempt must request conversations.history
+    from each channel's own cursor (minus the 1 day lookback), not from start_date again.
+    """
+    token_config.pop("end_date")
+    token_config["channel_filter"] = []
+    start_date_ts = "1626984000.0"  # config start_date 2021-07-22T20:00:00Z
+    now_ts = "1627603200.0"
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list",
+        json={"channels": [{"id": "C1", "name": "c1", "is_member": True}, {"id": "C2", "name": "c2", "is_member": True}]},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?channel=C1",
+        json={"messages": [{"ts": "1627200000.000100", "thread_ts": "1627200000.000100", "reply_count": 1}]},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?channel=C2",
+        json={"messages": [{"ts": "1627300000.000100", "thread_ts": "1627300000.000100", "reply_count": 1}]},
+    )
+    requests_mock.register_uri(
+        "GET", "https://slack.com/api/conversations.replies?channel=C1", json={"messages": [{"ts": "1627200001.000100"}]}
+    )
+    requests_mock.register_uri(
+        "GET", "https://slack.com/api/conversations.replies?channel=C2", json={"messages": [{"ts": "1627300001.000100"}]}
+    )
+    catalog = _incremental_catalog("threads")
+
+    first_read = read(get_source(token_config, "threads"), config=token_config, catalog=catalog)
+
+    assert _requests_to(requests_mock, "/api/conversations.history") == [
+        {"channel": "c1", "inclusive": "true", "limit": "1000", "oldest": start_date_ts, "latest": now_ts},
+        {"channel": "c2", "inclusive": "true", "limit": "1000", "oldest": start_date_ts, "latest": now_ts},
+    ]
+    first_state = first_read.most_recent_state.stream_state.__dict__
+    expected_parent_cursors = [
+        {"partition": {"channel": "C1", "parent_slice": {}}, "cursor": {"float_ts": "1627200000.0001"}},
+        {"partition": {"channel": "C2", "parent_slice": {}}, "cursor": {"float_ts": "1627300000.0001"}},
+    ]
+    assert first_state["parent_state"]["channel_messages"]["states"] == expected_parent_cursors
+
+    requests_mock.reset_mock()
+    state = StateBuilder().with_stream_state("threads", first_state).build()
+    second_read = read(get_source(token_config, "threads", state), config=token_config, catalog=catalog, state=state)
+
+    # oldest = the channel's cursor minus the 1 day lookback_window
+    assert _requests_to(requests_mock, "/api/conversations.history") == [
+        {"channel": "c1", "inclusive": "true", "limit": "1000", "oldest": "1627113600.0001", "latest": now_ts},
+        {"channel": "c2", "inclusive": "true", "limit": "1000", "oldest": "1627213600.0001", "latest": now_ts},
+    ]
+    # the lookback overlap re-reads the two threads, nothing else
+    assert sorted((record.record.data["channel_id"], record.record.data["ts"]) for record in second_read.records) == [
+        ("C1", "1627200001.000100"),
+        ("C2", "1627300001.000100"),
+    ]
+    assert second_read.most_recent_state.stream_state.__dict__["parent_state"]["channel_messages"]["states"] == expected_parent_cursors
+
+
+@pytest.mark.parametrize(
+    "stream_name, expected_records",
+    (
+        (
+            "channel_messages",
+            [("C_ARCHIVED_MEMBER", "1627200000.000300"), ("C_MEMBER", "1627200000.000100"), ("C_OPEN", "1627200000.000200")],
+        ),
+        ("threads", [("C_ARCHIVED_MEMBER", "1627200001.000000"), ("C_MEMBER", "1627200001.000000"), ("C_OPEN", "1627200001.000000")]),
+    ),
+)
+@freezegun.freeze_time("2021-07-30T00:00:00Z")
+def test_archived_channels_the_bot_cannot_join_are_not_read(requests_mock, token_config, stream_name, expected_records):
+    """
+    With join_channels and include_archived_channels enabled, messages and threads are requested for channels
+    the bot is in or can join. An archived channel the bot is not a member of cannot be joined, so it is skipped.
+    """
+    token_config.pop("end_date")
+    token_config["channel_filter"] = []
+    token_config["join_channels"] = True
+    token_config["include_archived_channels"] = True
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list",
+        json={
+            "channels": [
+                {"id": "C_MEMBER", "name": "member", "is_member": True, "is_archived": False},
+                {"id": "C_OPEN", "name": "open", "is_member": False, "is_archived": False},
+                {"id": "C_ARCHIVED_MEMBER", "name": "archived-member", "is_member": True, "is_archived": True},
+                {"id": "C_ARCHIVED", "name": "archived", "is_member": False, "is_archived": True},
+            ]
+        },
+    )
+    requests_mock.register_uri("POST", "https://slack.com/api/conversations.join", json={"ok": True})
+    for message_ts, channel in enumerate(("C_MEMBER", "C_OPEN", "C_ARCHIVED_MEMBER"), start=1):
+        ts = f"1627200000.000{message_ts}00"
+        requests_mock.register_uri(
+            "GET",
+            f"https://slack.com/api/conversations.history?channel={channel}",
+            json={"messages": [{"ts": ts, "thread_ts": ts, "reply_count": 1}]},
+        )
+    requests_mock.register_uri(
+        "GET", "https://slack.com/api/conversations.history?channel=C_ARCHIVED", json={"ok": False, "error": "not_in_channel"}
+    )
+    requests_mock.register_uri("GET", "https://slack.com/api/conversations.replies", json={"messages": [{"ts": "1627200001.000000"}]})
+
+    output = read(get_source(token_config, stream_name), config=token_config, catalog=_incremental_catalog(stream_name))
+
+    assert [params["channel"] for params in _requests_to(requests_mock, "/api/conversations.history")] == [
+        "c_archived_member",
+        "c_member",
+        "c_open",
+    ]
+    assert sorted((record.record.data["channel_id"], record.record.data["ts"]) for record in output.records) == expected_records

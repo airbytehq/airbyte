@@ -176,7 +176,11 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        # Only seed the parent state when it is missing (legacy state shapes). Once the CDK has checkpointed
+        # per-channel `channel_messages` cursors under `parent_state`, they must be kept as is: replacing them
+        # makes a resumed sync request conversations.history for every channel all over again. The configured
+        # lookback is still applied to those cursors by the `channel_messages` cursor itself.
+        return not (stream_state.get("parent_state") or {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
