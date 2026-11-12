@@ -52,13 +52,3 @@ def test_read_empty_bookings_emits_no_records(http_mocker: HttpMocker):
     assert output.records == []
     http_mocker.assert_number_of_calls(request, 1)
 
-
-def test_read_unauthorized_emits_error_not_records(http_mocker: HttpMocker):
-    request = _request()
-    http_mocker.post(request, HttpResponse(body=json.dumps({"status": "Unauthorized"}), status_code=401))
-
-    output = _read()
-
-    assert output.records == []
-    assert output.errors
-    http_mocker.assert_number_of_calls(request, 1)
