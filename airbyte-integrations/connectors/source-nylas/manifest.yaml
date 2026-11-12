@@ -259,6 +259,20 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v3/grants/{{ stream_partition['grant_id'] }}/events
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+              # Some calendars returned by the calendars endpoint (e.g. subscribed
+              # calendars such as public holidays on Google grants) cannot be
+              # queried for events and return 404. Skip only that calendar
+              # partition instead of failing the whole events stream.
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 404
+                error_message: >-
+                  Skipping events for a calendar that the Nylas events endpoint
+                  returned 404 Not Found for (for example, a subscribed calendar).
         record_selector:
           type: RecordSelector
           extractor:
