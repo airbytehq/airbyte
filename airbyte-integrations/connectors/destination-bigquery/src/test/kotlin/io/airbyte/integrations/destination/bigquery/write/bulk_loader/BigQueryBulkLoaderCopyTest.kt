@@ -45,7 +45,7 @@ class BigQueryBulkLoaderCopyTest {
     @ParameterizedTest
     @EnumSource(GcsFilePostProcessing::class)
     fun `successful BigQuery job waits for archive before postprocessing and return`(
-        postProcessing: GcsFilePostProcessing
+        postProcessing: GcsFilePostProcessing,
     ) = runTest {
         val fixture = BigQueryCopyLoadFixture(postProcessing)
         val load = async { fixture.loader.load(fixture.blob) }
@@ -182,13 +182,8 @@ internal class BigQueryCopyLoadFixture(
                 archiveEntered.complete(Unit)
                 archiveResult.await()
                 events.add("archive")
-                Unit
             }
-        coEvery { storage.delete(blob) } coAnswers
-            {
-                events.add("delete")
-                Unit
-            }
+        coEvery { storage.delete(blob) } coAnswers { events.add("delete") }
     }
 
     val loader = newLoader()

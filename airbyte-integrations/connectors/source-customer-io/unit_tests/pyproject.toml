@@ -11,7 +11,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "7.33.0"
+airbyte-cdk = "7.35.0"
 pytest = "^9"
 requests-mock = "^1"
 

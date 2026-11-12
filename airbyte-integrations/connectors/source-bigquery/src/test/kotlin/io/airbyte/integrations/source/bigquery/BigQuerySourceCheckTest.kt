@@ -11,7 +11,7 @@ class BigQuerySourceCheckTest {
     @Test
     fun testCheckSucceedsWithDataset() {
         SyncsTestFixture.testCheck(
-            BigQueryEmulatorTestFixture.config(datasetId = BigQueryEmulatorTestFixture.DATASET)
+            BigQueryEmulatorTestFixture.config(datasetId = BigQueryEmulatorTestFixture.DATASET),
         )
     }
 
@@ -30,7 +30,7 @@ class BigQuerySourceCheckTest {
                 datasetId = BigQueryEmulatorTestFixture.DATASET,
                 jobProjectId = BigQueryEmulatorTestFixture.PROJECT_ID,
                 maxDbConnections = 4,
-            )
+            ),
         )
     }
 
@@ -39,7 +39,7 @@ class BigQuerySourceCheckTest {
         SyncsTestFixture.testCheck(
             BigQueryEmulatorTestFixture.config(
                 datasetId = BigQueryEmulatorTestFixture.DATASET,
-                maxDbConnections = 0
+                maxDbConnections = 0,
             ),
             expectedFailure = "'max_db_connections' must be a positive integer",
         )
@@ -65,7 +65,7 @@ class BigQuerySourceCheckTest {
     fun testCheckFailsWithDatasetWithoutTables() {
         SyncsTestFixture.testCheck(
             BigQueryEmulatorTestFixture.config(
-                datasetId = BigQueryEmulatorTestFixture.EMPTY_DATASET
+                datasetId = BigQueryEmulatorTestFixture.EMPTY_DATASET,
             ),
             expectedFailure = "Discovered zero tables",
         )

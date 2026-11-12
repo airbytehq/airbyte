@@ -252,7 +252,7 @@ class BigQueryReadApiPartitionsCreatorFactory(
                     if (bound == null || snapshotTime == null || bound.cursor != cursor?.id) {
                         return BigQueryReadApiPlan.Fresh(
                             "a Storage Read API state without a snapshot time and an upper " +
-                                "bound for cursor '${cursor?.id}'"
+                                "bound for cursor '${cursor?.id}'",
                         )
                     }
                     BigQueryReadApiSnapshotSpec(snapshotTime, bound, fromExpiredSession = true)
@@ -272,7 +272,7 @@ class BigQueryReadApiPartitionsCreatorFactory(
             return if (incremental) {
                 BigQueryReadApiPlan.Decline(
                     "a state persisted by the legacy source-bigquery connector; the query API " +
-                        "resumes after its cursor"
+                        "resumes after its cursor",
                 )
             } else BigQueryReadApiPlan.Fresh("legacy state")
         }
@@ -289,7 +289,7 @@ class BigQueryReadApiPartitionsCreatorFactory(
             }
             if (!cursorsEmpty) {
                 return BigQueryReadApiPlan.Decline(
-                    "a cursor checkpoint exists; the query API reads the deltas"
+                    "a cursor checkpoint exists; the query API reads the deltas",
                 )
             }
             if (!pkEmpty) {
@@ -364,15 +364,14 @@ class BigQueryReadApiAvailabilityProbe(
                 tableTypes.typeOf(StreamIdentifier.from(configured.stream)) ==
                     TableDefinition.Type.TABLE
             }
-        val table: TableId? =
-            candidate?.let {
-                val streamID: StreamIdentifier = StreamIdentifier.from(it.stream)
-                TableId.of(
-                    config.projectId,
-                    streamID.namespace ?: config.datasetId ?: config.projectId,
-                    streamID.name,
-                )
-            }
+        val table: TableId? = candidate?.let {
+            val streamID: StreamIdentifier = StreamIdentifier.from(it.stream)
+            TableId.of(
+                config.projectId,
+                streamID.namespace ?: config.datasetId ?: config.projectId,
+                streamID.name,
+            )
+        }
         val firstColumn: String? =
             candidate
                 ?.stream

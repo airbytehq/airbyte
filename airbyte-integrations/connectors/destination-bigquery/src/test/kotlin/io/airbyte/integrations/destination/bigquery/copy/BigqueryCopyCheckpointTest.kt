@@ -89,7 +89,7 @@ class BigqueryCopyCheckpointTest {
     @ParameterizedTest
     @EnumSource(DataChannelMedium::class)
     fun `EOF partial batch cannot emit covering state while archive is pending`(
-        medium: DataChannelMedium
+        medium: DataChannelMedium,
     ) = runTest {
         val h = Harness(this, medium, finishAtEof = true)
         h.start()
@@ -136,7 +136,7 @@ class BigqueryCopyCheckpointTest {
     @ParameterizedTest
     @EnumSource(DataChannelMedium::class)
     fun `archive failure during finish cannot emit a covering checkpoint`(
-        medium: DataChannelMedium
+        medium: DataChannelMedium,
     ) = runTest {
         val h = Harness(this, medium, finishAtEof = true)
         val failure = IllegalStateException("S3 completion failed")
@@ -158,7 +158,7 @@ class BigqueryCopyCheckpointTest {
     @ParameterizedTest
     @EnumSource(DataChannelMedium::class)
     fun `BigQuery failure during finish cannot emit a covering checkpoint`(
-        medium: DataChannelMedium
+        medium: DataChannelMedium,
     ) = runTest {
         val h = Harness(this, medium, finishAtEof = true)
         h.fixture().failBigQuery()
@@ -175,7 +175,7 @@ class BigqueryCopyCheckpointTest {
     @ParameterizedTest
     @EnumSource(DataChannelMedium::class)
     fun `independent stream checkpoint can emit while another stream archive fails`(
-        medium: DataChannelMedium
+        medium: DataChannelMedium,
     ) = runTest {
         val h = Harness(this, medium, finishAtEof = false, streamCount = 2)
         h.fixture(0).archiveResult.complete(Unit)
@@ -283,10 +283,7 @@ class BigqueryCopyCheckpointTest {
             CheckpointManager(
                 catalog,
                 sync,
-                { reservation, _, _, _ ->
-                    emitted.add(reservation.value)
-                    Unit
-                },
+                { reservation, _, _, _ -> emitted.add(reservation.value) },
                 mockk { every { currentTimeMillis() } returns 0L },
                 medium == DataChannelMedium.SOCKET,
                 NamespaceMapper(),
@@ -359,7 +356,7 @@ class BigqueryCopyCheckpointTest {
 
         private fun finalPart(state: ObjectLoaderPartFormatter.State<ByteArrayOutputStream>) =
             ObjectLoaderPartFormatter.FormattedPart(
-                state.partFactory.nextPart(byteArrayOf(1), true)
+                state.partFactory.nextPart(byteArrayOf(1), true),
             )
 
         suspend fun start() {
@@ -391,14 +388,15 @@ class BigqueryCopyCheckpointTest {
                     launchTask(
                         taskFactory.createOnlyStep<
                             BigQueryBulkOneShotUploader.BigQueryOneShotUploaderState<
-                                ByteArrayOutputStream>,
+                                ByteArrayOutputStream,
+                            >,
                             StreamKey,
                             BulkLoaderTableLoader.LoadResult,
                         >(
                             uploader,
                             part,
                             partitions,
-                        )
+                        ),
                     )
                 }
             } else {
@@ -406,10 +404,11 @@ class BigqueryCopyCheckpointTest {
                     partitioned<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>()
                 val uploaded =
                     partitioned<
-                        PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<GcsBlob>>>()
+                        PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<GcsBlob>>,
+                    >()
                 val completed =
                     partitioned<
-                        PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<GcsBlob>>
+                        PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<GcsBlob>>,
                     >()
                 launchTask(
                     taskFactory.createFirstStep(
@@ -418,8 +417,10 @@ class BigqueryCopyCheckpointTest {
                         parts,
                         0,
                         1,
-                    )
-                ) { parts.close() }
+                    ),
+                ) {
+                    parts.close()
+                }
                 launchTask(
                     taskFactory.createIntermediateStep(
                         partLoader,
@@ -429,8 +430,10 @@ class BigqueryCopyCheckpointTest {
                         0,
                         1,
                         "upload",
-                    )
-                ) { uploaded.close() }
+                    ),
+                ) {
+                    uploaded.close()
+                }
                 val partitioner =
                     object :
                         OutputPartitioner<
@@ -456,10 +459,17 @@ class BigqueryCopyCheckpointTest {
                         0,
                         1,
                         "complete-upload",
-                    )
-                ) { completed.close() }
+                    ),
+                ) {
+                    completed.close()
+                }
                 launchTask(
-                    taskFactory.createFinalStep(BulkLoaderTableLoader(bulkFactory), completed, 0, 1)
+                    taskFactory.createFinalStep(
+                        BulkLoaderTableLoader(bulkFactory),
+                        completed,
+                        0,
+                        1,
+                    ),
                 )
             }
         }
@@ -492,8 +502,8 @@ class BigqueryCopyCheckpointTest {
                         serializedSizeBytes = 10L,
                         checkpointId = checkpointKey()?.checkpointId,
                         airbyteRawId = UUID.randomUUID(),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
@@ -507,8 +517,8 @@ class BigqueryCopyCheckpointTest {
                             "{}",
                             recordCount,
                             checkpointKey = checkpointKey(),
-                        )
-                )
+                        ),
+                ),
             )
         }
 
@@ -522,8 +532,8 @@ class BigqueryCopyCheckpointTest {
                             additionalProperties = emptyMap(),
                             serializedSizeBytes = 0L,
                             checkpointKey = checkpointKey(),
-                        )
-                )
+                        ),
+                ),
             )
         }
 
@@ -531,7 +541,7 @@ class BigqueryCopyCheckpointTest {
             repeat(partitions) { partition ->
                 streams.forEach { stream ->
                     input[partition].publish(
-                        router.handleStreamMessage(DestinationRecordStreamComplete(stream, 0L))
+                        router.handleStreamMessage(DestinationRecordStreamComplete(stream, 0L)),
                     )
                 }
                 input[partition].close()

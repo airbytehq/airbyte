@@ -32,7 +32,7 @@ import java.util.*
     "resourceRequirements",
     "isSourceCustomConnector",
     "isDestinationCustomConnector",
-    "workspaceId"
+    "workspaceId",
 )
 class JobSyncConfig : Serializable {
     /**
@@ -60,6 +60,7 @@ class JobSyncConfig : Serializable {
     @set:JsonProperty("namespaceFormat")
     @JsonProperty("namespaceFormat")
     var namespaceFormat: String? = null
+
     /**
      * Prefix that will be prepended to the name of each stream when it is written to the
      * destination.
@@ -76,9 +77,10 @@ class JobSyncConfig : Serializable {
     @set:JsonProperty("prefix")
     @JsonProperty("prefix")
     @JsonPropertyDescription(
-        "Prefix that will be prepended to the name of each stream when it is written to the destination."
+        "Prefix that will be prepended to the name of each stream when it is written to the destination.",
     )
     var prefix: String? = null
+
     /** the configured airbyte catalog (Required) */
     /** the configured airbyte catalog (Required) */
     /** the configured airbyte catalog (Required) */
@@ -87,6 +89,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("configuredAirbyteCatalog")
     @JsonPropertyDescription("the configured airbyte catalog")
     var configuredAirbyteCatalog: ConfiguredAirbyteCatalog? = null
+
     /** Image name of the source with tag. (Required) */
     /** Image name of the source with tag. (Required) */
     /** Image name of the source with tag. (Required) */
@@ -95,6 +98,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("sourceDockerImage")
     @JsonPropertyDescription("Image name of the source with tag.")
     var sourceDockerImage: String? = null
+
     /** Airbyte Protocol Version of the source */
     /** Airbyte Protocol Version of the source */
     /** Airbyte Protocol Version of the source */
@@ -103,6 +107,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("sourceProtocolVersion")
     @JsonPropertyDescription("Airbyte Protocol Version of the source")
     var sourceProtocolVersion: Version? = null
+
     /** Image name of the destination with tag. (Required) */
     /** Image name of the destination with tag. (Required) */
     /** Image name of the destination with tag. (Required) */
@@ -111,6 +116,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("destinationDockerImage")
     @JsonPropertyDescription("Image name of the destination with tag.")
     var destinationDockerImage: String? = null
+
     /** Airbyte Protocol Version of the destination */
     /** Airbyte Protocol Version of the destination */
     /** Airbyte Protocol Version of the destination */
@@ -119,6 +125,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("destinationProtocolVersion")
     @JsonPropertyDescription("Airbyte Protocol Version of the destination")
     var destinationProtocolVersion: Version? = null
+
     /**
      * optional resource requirements to use in source container - this is used instead of
      * `resourceRequirements` for the source container
@@ -135,9 +142,10 @@ class JobSyncConfig : Serializable {
     @set:JsonProperty("sourceResourceRequirements")
     @JsonProperty("sourceResourceRequirements")
     @JsonPropertyDescription(
-        "optional resource requirements to use in source container - this is used instead of `resourceRequirements` for the source container"
+        "optional resource requirements to use in source container - this is used instead of `resourceRequirements` for the source container",
     )
     var sourceResourceRequirements: ResourceRequirements? = null
+
     /**
      * optional resource requirements to use in dest container - this is used instead of
      * `resourceRequirements` for the dest container
@@ -154,9 +162,10 @@ class JobSyncConfig : Serializable {
     @set:JsonProperty("destinationResourceRequirements")
     @JsonProperty("destinationResourceRequirements")
     @JsonPropertyDescription(
-        "optional resource requirements to use in dest container - this is used instead of `resourceRequirements` for the dest container"
+        "optional resource requirements to use in dest container - this is used instead of `resourceRequirements` for the dest container",
     )
     var destinationResourceRequirements: ResourceRequirements? = null
+
     /** Sequence of configurations of operations to apply as part of the sync */
     /** Sequence of configurations of operations to apply as part of the sync */
     /** Sequence of configurations of operations to apply as part of the sync */
@@ -164,9 +173,10 @@ class JobSyncConfig : Serializable {
     @set:JsonProperty("operationSequence")
     @JsonProperty("operationSequence")
     @JsonPropertyDescription(
-        "Sequence of configurations of operations to apply as part of the sync"
+        "Sequence of configurations of operations to apply as part of the sync",
     )
     var operationSequence: List<StandardSyncOperation>? = ArrayList()
+
     /**
      * The webhook operation configs belonging to this workspace. Must conform to
      * WebhookOperationConfigs.yaml.
@@ -183,9 +193,10 @@ class JobSyncConfig : Serializable {
     @set:JsonProperty("webhookOperationConfigs")
     @JsonProperty("webhookOperationConfigs")
     @JsonPropertyDescription(
-        "The webhook operation configs belonging to this workspace. Must conform to WebhookOperationConfigs.yaml."
+        "The webhook operation configs belonging to this workspace. Must conform to WebhookOperationConfigs.yaml.",
     )
     var webhookOperationConfigs: JsonNode? = null
+
     /**
      * optional resource requirements to run sync workers - this is used for containers other than
      * the source/dest containers
@@ -202,9 +213,10 @@ class JobSyncConfig : Serializable {
     @set:JsonProperty("resourceRequirements")
     @JsonProperty("resourceRequirements")
     @JsonPropertyDescription(
-        "optional resource requirements to run sync workers - this is used for containers other than the source/dest containers"
+        "optional resource requirements to run sync workers - this is used for containers other than the source/dest containers",
     )
     var resourceRequirements: ResourceRequirements? = null
+
     /** determine if the source running image is a custom connector. */
     /** determine if the source running image is a custom connector. */
     /** determine if the source running image is a custom connector. */
@@ -213,6 +225,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("isSourceCustomConnector")
     @JsonPropertyDescription("determine if the source running image is a custom connector.")
     var isSourceCustomConnector: Boolean? = null
+
     /** determine if the destination running image is a custom connector. */
     /** determine if the destination running image is a custom connector. */
     /** determine if the destination running image is a custom connector. */
@@ -221,6 +234,7 @@ class JobSyncConfig : Serializable {
     @JsonProperty("isDestinationCustomConnector")
     @JsonPropertyDescription("determine if the destination running image is a custom connector.")
     var isDestinationCustomConnector: Boolean? = null
+
     /** The id of the workspace associated with the sync */
     /** The id of the workspace associated with the sync */
     /** The id of the workspace associated with the sync */
@@ -246,7 +260,7 @@ class JobSyncConfig : Serializable {
     }
 
     fun withConfiguredAirbyteCatalog(
-        configuredAirbyteCatalog: ConfiguredAirbyteCatalog?
+        configuredAirbyteCatalog: ConfiguredAirbyteCatalog?,
     ): JobSyncConfig {
         this.configuredAirbyteCatalog = configuredAirbyteCatalog
         return this
@@ -273,14 +287,14 @@ class JobSyncConfig : Serializable {
     }
 
     fun withSourceResourceRequirements(
-        sourceResourceRequirements: ResourceRequirements?
+        sourceResourceRequirements: ResourceRequirements?,
     ): JobSyncConfig {
         this.sourceResourceRequirements = sourceResourceRequirements
         return this
     }
 
     fun withDestinationResourceRequirements(
-        destinationResourceRequirements: ResourceRequirements?
+        destinationResourceRequirements: ResourceRequirements?,
     ): JobSyncConfig {
         this.destinationResourceRequirements = destinationResourceRequirements
         return this
@@ -338,7 +352,7 @@ class JobSyncConfig : Serializable {
         sb.append('=')
         sb.append(
             (if ((this.configuredAirbyteCatalog == null)) "<null>"
-            else this.configuredAirbyteCatalog)
+            else this.configuredAirbyteCatalog),
         )
         sb.append(',')
         sb.append("sourceDockerImage")
@@ -348,34 +362,34 @@ class JobSyncConfig : Serializable {
         sb.append("sourceProtocolVersion")
         sb.append('=')
         sb.append(
-            (if ((this.sourceProtocolVersion == null)) "<null>" else this.sourceProtocolVersion)
+            (if ((this.sourceProtocolVersion == null)) "<null>" else this.sourceProtocolVersion),
         )
         sb.append(',')
         sb.append("destinationDockerImage")
         sb.append('=')
         sb.append(
-            (if ((this.destinationDockerImage == null)) "<null>" else this.destinationDockerImage)
+            (if ((this.destinationDockerImage == null)) "<null>" else this.destinationDockerImage),
         )
         sb.append(',')
         sb.append("destinationProtocolVersion")
         sb.append('=')
         sb.append(
             (if ((this.destinationProtocolVersion == null)) "<null>"
-            else this.destinationProtocolVersion)
+            else this.destinationProtocolVersion),
         )
         sb.append(',')
         sb.append("sourceResourceRequirements")
         sb.append('=')
         sb.append(
             (if ((this.sourceResourceRequirements == null)) "<null>"
-            else this.sourceResourceRequirements)
+            else this.sourceResourceRequirements),
         )
         sb.append(',')
         sb.append("destinationResourceRequirements")
         sb.append('=')
         sb.append(
             (if ((this.destinationResourceRequirements == null)) "<null>"
-            else this.destinationResourceRequirements)
+            else this.destinationResourceRequirements),
         )
         sb.append(',')
         sb.append("operationSequence")
@@ -385,26 +399,28 @@ class JobSyncConfig : Serializable {
         sb.append("webhookOperationConfigs")
         sb.append('=')
         sb.append(
-            (if ((this.webhookOperationConfigs == null)) "<null>" else this.webhookOperationConfigs)
+            (if ((this.webhookOperationConfigs == null)) "<null>"
+            else this.webhookOperationConfigs),
         )
         sb.append(',')
         sb.append("resourceRequirements")
         sb.append('=')
         sb.append(
-            (if ((this.resourceRequirements == null)) "<null>" else this.resourceRequirements)
+            (if ((this.resourceRequirements == null)) "<null>" else this.resourceRequirements),
         )
         sb.append(',')
         sb.append("isSourceCustomConnector")
         sb.append('=')
         sb.append(
-            (if ((this.isSourceCustomConnector == null)) "<null>" else this.isSourceCustomConnector)
+            (if ((this.isSourceCustomConnector == null)) "<null>"
+            else this.isSourceCustomConnector),
         )
         sb.append(',')
         sb.append("isDestinationCustomConnector")
         sb.append('=')
         sb.append(
             (if ((this.isDestinationCustomConnector == null)) "<null>"
-            else this.isDestinationCustomConnector)
+            else this.isDestinationCustomConnector),
         )
         sb.append(',')
         sb.append("workspaceId")

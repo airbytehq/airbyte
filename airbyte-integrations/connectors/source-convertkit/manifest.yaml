@@ -603,19 +603,17 @@ definitions:
           path: /purchases
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: FAIL
-                    http_codes:
-                      - 401
-                    error_message: >-
-                      The purchases endpoint requires the use of OAuth
-                      authentication and isn't available when using API Key
-                      auth. Please switch to OAuth or disable this stream.
-                    error_message_contains: OAuth authentication required
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                error_message: >-
+                  The purchases endpoint requires the use of OAuth
+                  authentication and isn't available when using API Key
+                  auth. Please switch to OAuth or disable this stream.
+                error_message_contains: OAuth authentication required
         record_selector:
           type: RecordSelector
           extractor:
@@ -859,8 +857,9 @@ spec:
         title: Authentication Type
       api_secret:
         type: string
+        airbyte_secret: true
         order: 2
-        title: Legacy Start Date
+        title: Legacy API Secret
         airbyte_hidden: true
     additionalProperties: true
 

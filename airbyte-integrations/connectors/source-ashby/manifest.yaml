@@ -38,6 +38,39 @@ definitions:
       error_message: >-
         Ashby refused the request (HTTP 403 Forbidden). The API key may be deactivated or
         lack access; generate a new key in Ashby under Admin > API Keys.
+    incremental_sync_too_large:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      predicate: >-
+        {%- set info = response.get('errorInfo') or {} -%}
+        {%- set errors = response.get('errors') or [] -%}
+        {%- set codes = [info.get('code')] + (errors | select('string') | list)
+        + (errors | select('mapping') | map(attribute='code') | list) -%}
+        {{ response.get('success', true) == false and 'incremental_sync_too_large' in codes }}
+      error_message: >-
+        Ashby refused this stream's incremental sync (incremental_sync_too_large) because more
+        than 10,000 records changed since the last sync. Switch this stream to Full Refresh, or
+        refresh the stream and then sync the connection more often, at least daily, so fewer
+        records change between syncs.
+    sync_token_rejected:
+      type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      predicate: >-
+        {%- set info = response.get('errorInfo') or {} -%}
+        {%- set errors = response.get('errors') or [] -%}
+        {%- set codes = [info.get('code')] + (errors | select('string') | list)
+        + (errors | select('mapping') | map(attribute='code') | list) -%}
+        {{ response.get('success', true) == false and (codes | select('in', [
+        'sync_token_expired', 'sync_token_invalid'
+        ]) | list | length > 0) }}
+      error_message: >-
+        {%- set info = response.get('errorInfo') or {} -%}
+        {%- set first = (response.get('errors') or [{}])[0] -%}
+        Ashby rejected the stream's stored sync token
+        ({{ info.get('code') or (first.get('code') if first is mapping else first) or 'unknown' }}).
+        Refresh this stream in the connection to clear its state and re-read it in full.
     success_false:
       type: HttpResponseFilter
       action: FAIL
@@ -67,6 +100,14 @@ definitions:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     lookback_window: P1D
+  sync_token_cursor:
+    type: SyncTokenCursor
+    token_path: ["syncToken"]
+    token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: syncToken
+    completion_condition: "{{ response.get('success', true) and not response.get('moreDataAvailable', true) }}"
   error_handler:
     type: DefaultErrorHandler
     max_retries: 6
@@ -78,6 +119,8 @@ definitions:
     response_filters:
       - $ref: "#/definitions/response_filters/rate_limited"
       - $ref: "#/definitions/response_filters/server_error"
+      - $ref: "#/definitions/response_filters/incremental_sync_too_large"
+      - $ref: "#/definitions/response_filters/sync_token_rejected"
       - $ref: "#/definitions/response_filters/unauthorized"
       - $ref: "#/definitions/response_filters/missing_endpoint_permission"
       - $ref: "#/definitions/response_filters/forbidden"
@@ -124,6 +167,9 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.nextCursor }}"
             stop_condition: "{{ not response.moreDataAvailable }}"
+      incremental_sync:
+        $ref: "#/definitions/sync_token_cursor"
+        cursor_field: updatedAt
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -236,7 +282,60 @@ streams:
           archiveReason:
             type:
               - "null"
-              - string
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              text:
+                type:
+                  - "null"
+                  - string
+              reasonType:
+                type:
+                  - "null"
+                  - string
+              isArchived:
+                type:
+                  - "null"
+                  - boolean
+              customFields:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    isPrivate:
+                      type:
+                        - "null"
+                        - boolean
+                    referenceIdentifier:
+                      type:
+                        - "null"
+                        - string
+                    title:
+                      type:
+                        - "null"
+                        - string
+                    valueLabel:
+                      type:
+                        - "null"
+                        - string
+                        - array
+                    value:
+                      type:
+                        - "null"
+                        - boolean
+                        - number
+                        - string
+                        - array
+                        - object
           archivedAt:
             type:
               - "null"
@@ -458,6 +557,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -739,6 +841,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -795,6 +900,10 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
+      cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1107,6 +1216,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1207,6 +1319,10 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
+      cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1287,6 +1403,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1368,6 +1487,10 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
+      cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1583,6 +1706,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1591,10 +1717,6 @@ streams:
         additionalProperties: true
         properties:
           id:
-            type:
-              - "null"
-              - string
-          applicationId:
             type:
               - "null"
               - string
@@ -1642,56 +1764,7 @@ streams:
             type:
               - "null"
               - string
-          interviewScheduleId:
-            type:
-              - "null"
-              - string
-          interviewStageId:
-            type:
-              - "null"
-              - string
-          status:
-            type:
-              - "null"
-              - string
-          createdAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          updatedAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          cancelledAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          startTime:
-            type:
-              - "null"
-              - string
-            format: date-time
-          endTime:
-            type:
-              - "null"
-              - string
-            format: date-time
-          feedbackLink:
-            type:
-              - "null"
-              - string
-          interviewerUserIds:
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - string
-          meetingLink:
+          ownership:
             type:
               - "null"
               - string
@@ -1886,7 +1959,7 @@ streams:
             type:
               - "null"
               - string
-            format: date-time
+            format: date
           shouldDisplayCompensationOnJobBoard:
             type:
               - "null"
@@ -1949,6 +2022,10 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
+      cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2126,6 +2203,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2215,6 +2295,9 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2414,6 +2497,10 @@ streams:
           type: CursorPagination
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
+      cursor_field: updatedAt
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2462,7 +2549,9 @@ streams:
             format: date-time
   - type: DeclarativeStream
     name: application_criteria_evaluations
-    primary_key: []
+    primary_key:
+      - application_id
+      - id
     retriever:
       type: SimpleRetriever
       requester:
@@ -2591,10 +2680,6 @@ streams:
             type:
               - "null"
               - string
-          assessmentType:
-            type:
-              - "null"
-              - string
           criterion:
             type:
               - "null"
@@ -2624,20 +2709,12 @@ streams:
                 type:
                   - "null"
                   - string
-          criterionName:
-            type:
-              - "null"
-              - string
           evaluatedAt:
             type:
               - "null"
               - string
             format: date-time
           id:
-            type:
-              - "null"
-              - string
-          jobId:
             type:
               - "null"
               - string
@@ -2962,6 +3039,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3138,6 +3217,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3303,6 +3384,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3368,6 +3451,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3568,6 +3653,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3699,6 +3786,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3830,6 +3919,8 @@ streams:
           page_size: 100
           cursor_value: "{{ response.nextCursor }}"
           stop_condition: "{{ not response.moreDataAvailable }}"
+    incremental_sync:
+      $ref: "#/definitions/sync_token_cursor"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3928,6 +4019,7 @@ spec:
       start_date:
         type: string
         title: Start date
+        format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         description: >-
           Only applications, application feedback, and interview schedules

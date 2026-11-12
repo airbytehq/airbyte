@@ -31,9 +31,9 @@ The following table shows approximate data worker consumption based on current d
 | Source type | Default data workers per sync |
 | ----------- | ----------------------------- |
 | Database    | ~0.5                          |
-| File        | ~0.2                          |
+| File        | ~0.25                         |
 | API         | ~0.2                          |
-| Custom      | ~0.2                          |
+| Custom      | ~0.25                         |
 
 ## Open the Usage page
 
@@ -67,13 +67,13 @@ Moving capacity changes each region's limit, not the syncs already running. Airb
 
 ## How to interpret the usage chart
 
-The **Peak data worker usage** chart shows maximum concurrent data worker usage, from all workspaces in one region, over a period of time. Each bar represents one interval in the selected time range, for example one day. The chart stacks all workspaces in that region so you can see which workspace uses the most data workers. A dashed **Contracted capacity** line shows the region's current allocation.
+The **Peak data worker usage** chart shows maximum concurrent data worker usage, from all workspaces in one region, over a period of time. Each bar represents one interval in the selected time range, for example one day, and its height is the region's peak usage during that interval. A dashed **Allocated capacity** line shows the region's current allocation.
 
-![Chart showing peak data worker usage in one region over a quarter, with a dashed Contracted capacity line](assets/data-worker-usage.png)
+![Chart showing peak data worker usage in one region over a quarter, with a dashed Allocated capacity line](assets/data-worker-usage.png)
 
-Hover on a bar to see more details about it.
+Hover on a bar to see the region's peak and a per-workspace breakdown of the workspaces that used the most data workers during that interval. Each workspace's peak can occur at a different time, so the per-workspace values can add up to more than the region's peak.
 
-Usage that came from on-demand capacity isn't shown separately. If a connection with on-demand capacity ran when the region was full, the bar for that day can rise above the **Contracted capacity** line. To see which connections use on-demand capacity, filter the Connections page by the [Burst tag](#on-demand-capacity).
+Usage that came from on-demand capacity isn't shown separately. If a connection with on-demand capacity ran when the region was full, the bar for that day can rise above the **Allocated capacity** line. To see which connections use on-demand capacity, filter the Connections page by the [On-demand tag](#on-demand-capacity).
 
 ## Filter the chart
 
@@ -89,7 +89,7 @@ On capacity-based plans with data worker entitlements, the workspace Usage page 
 
 1. Click **Workspace Settings** > **Usage**.
 
-2. Review the line graph, which shows hourly data worker usage over a 7-day period for the current workspace.
+2. Review the **Peak data worker usage** chart. It works like the organization chart, but shows only the current workspace's usage: each bar is the workspace's peak usage in one interval, the header shows the workspace's region and that region's allocated capacity, and you can change the time range (**1D**, **1W**, **1M**, **1Q**, or **1Y**) or turn on **Compare to previous period**.
 
 This helps you understand your workspace's contribution to overall organization capacity usage.
 
@@ -111,7 +111,7 @@ On connections with a manual schedule type, syncs that remain queued for 8 hours
 
 ### How queued syncs start
 
-Syncs have no queue order. Each queued sync independently checks about once per minute whether its region has enough free capacity for it. The first sync whose check succeeds starts. A sync that needs less capacity can start ahead of a sync that has been waiting longer. Queued syncs don't consume capacity while they wait.
+Syncs have no queue order. Each queued sync independently checks about once per minute whether its region has enough free capacity for it. The first sync whose check succeeds starts. A sync that needs less capacity can start ahead of a sync that has been waiting longer. Queued syncs don't run, so they don't use data workers while they wait.
 
 ### Manually queue a sync when capacity is exhausted
 

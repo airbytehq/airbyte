@@ -59,6 +59,18 @@ def test_apply_lookback_window_with_empty_state_value():
     assert stream._apply_lookback_window("") == ""
 
 
+def test_apply_lookback_window_clamps_to_naive_start_date():
+    stream = _make_stream(_base_config(lookback_window_in_days=10, start_date="2025-03-10"))
+
+    assert stream._apply_lookback_window("2025-03-15T00:00:00+00:00") == "2025-03-10T00:00:00Z"
+
+
+def test_apply_lookback_window_preserves_state_offset():
+    stream = _make_stream(_base_config(lookback_window_in_days=1, start_date="2023-01-01"))
+
+    assert stream._apply_lookback_window("2025-03-15T00:00:00-07:00") == "2025-03-14T00:00:00-07:00"
+
+
 @pytest.mark.parametrize(
     "lookback_days,stream_state,expected_filter_substring",
     [

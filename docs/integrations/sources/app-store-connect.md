@@ -149,12 +149,12 @@ pages (CPP).
 | `analytics_report_requests_ongoing` | Full refresh | `ONGOING` report requests for each app. |
 | `analytics_installations_reports` | Full refresh | The Installation and Deletion report for each ongoing request. |
 | `analytics_installations_instances` | Incremental | Daily instances of the Installation and Deletion report. Cursor: `processing_date`. |
-| `analytics_installations_segments` | Incremental | Segments for each instance. Cursor: `processing_date`. |
+| `analytics_installations_segments` | Incremental | Segments for each instance, with each segment's `checksum`, `sizeInBytes`, and `url`. Cursor: `processing_date`. |
 | `analytics_installations_segment_details` | Full refresh | Metadata for each segment, including the pre-signed `download_url`. |
 | `app_store_installations_and_deletions` | Incremental | Rows from the downloaded Installation and Deletion report files. Cursor: `processing_date`. |
 | `analytics_app_download_reports` | Full refresh | The App Downloads report for each ongoing request. |
 | `analytics_app_download_instances` | Incremental | Daily instances of the App Downloads report. Cursor: `processing_date`. |
-| `analytics_app_download_segments` | Incremental | Segments for each instance. Cursor: `processing_date`. |
+| `analytics_app_download_segments` | Incremental | Segments for each instance, with each segment's `checksum`, `sizeInBytes`, and `url`. Cursor: `processing_date`. |
 | `analytics_app_download_segment_details` | Full refresh | Metadata for each segment, including the pre-signed `download_url`. |
 | `app_download` | Incremental | Rows from the downloaded App Downloads **Detailed** report files. Cursor: `processing_date`. |
 | `analytics_app_store_discovery_and_engagement_reports` | Full refresh | Discovery and Engagement report for each ongoing request. |
@@ -250,7 +250,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
-| 0.0.5 | 2026-11-12 | | Add App Downloads Detailed, Discovery & Engagement, and App Sessions analytics streams |
+| 0.0.11 | 2026-11-12 | [92648](https://github.com/airbytehq/airbyte/pull/92648) | Add App Downloads Detailed, Discovery & Engagement, and App Sessions analytics streams |
+| 0.0.10 | 2026-11-11 | [91545](https://github.com/airbytehq/airbyte/pull/91545) | Request 200 records per page for apps and analytics report listings, and declare the analytics segment fields in the segments stream schemas |
+| 0.0.9 | 2026-11-10 | [91343](https://github.com/airbytehq/airbyte/pull/91343) | Update dependencies |
+| 0.0.8 | 2026-11-03 | [90446](https://github.com/airbytehq/airbyte/pull/90446) | Update dependencies |
+| 0.0.7 | 2026-10-27 | [89802](https://github.com/airbytehq/airbyte/pull/89802) | Update dependencies |
+| 0.0.6 | 2026-10-20 | [89119](https://github.com/airbytehq/airbyte/pull/89119) | Update dependencies |
+| 0.0.5 | 2026-10-13 | [88542](https://github.com/airbytehq/airbyte/pull/88542) | Update dependencies |
 | 0.0.4 | 2026-10-06 | [87756](https://github.com/airbytehq/airbyte/pull/87756) | Update dependencies |
 | 0.0.3 | 2026-09-29 | [87078](https://github.com/airbytehq/airbyte/pull/87078) | Update dependencies |
 | 0.0.2 | 2026-09-22 | [86549](https://github.com/airbytehq/airbyte/pull/86549) | Update dependencies |

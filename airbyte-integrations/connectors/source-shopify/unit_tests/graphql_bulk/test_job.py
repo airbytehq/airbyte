@@ -586,6 +586,63 @@ def test_job_self_canceled_on_checkpoint_with_url_resumes_only_from_checkpoint_c
         assert stream.job_manager.get_adjusted_job_end(slice_start, slice_end, None, None) == slice_end
 
 
+@pytest.mark.parametrize(
+    "checkpointed_cursor, filter_checkpointed_cursor, last_checkpoint_cursor, expected_end, checkpoint_disabled",
+    [
+        ("2024-01-01T12:00:00+00:00", None, None, None, True),
+        ("2024-01-02T00:00:00+00:00", None, None, None, True),
+        ("2024-01-01T12:00:00+00:00", None, "2024-01-01T12:00:00+00:00", None, True),
+        ("2024-01-02T12:00:00+00:00", None, None, "2024-01-02T12:00:00+00:00", False),
+        (123, "2024-01-01T12:00:00+00:00", None, None, True),
+        (123, "2024-01-02T12:00:00+00:00", None, "2024-01-02T12:00:00+00:00", False),
+    ],
+    ids=[
+        "stale_string_cursor",
+        "cursor_at_slice_start",
+        "stale_cursor_matching_last_checkpoint",
+        "string_cursor_within_slice",
+        "stale_filter_cursor_for_integer_cursor",
+        "filter_cursor_within_slice_for_integer_cursor",
+    ],
+)
+def test_job_self_canceled_checkpoint_only_resumes_from_cursor_within_slice(
+    auth_config, checkpointed_cursor, filter_checkpointed_cursor, last_checkpoint_cursor, expected_end, checkpoint_disabled
+) -> None:
+    job_manager = MetafieldOrders(auth_config).job_manager
+    slice_start, slice_end = pdm.parse("2024-01-02T00:00:00Z"), pdm.parse("2024-01-03T00:00:00Z")
+    job_manager._job_adjust_slice_from_checkpoint = True
+    job_manager._job_checkpoint_from_self_cancel = True
+    job_manager._job_last_checkpoint_cursor_value = last_checkpoint_cursor
+
+    adjusted_end = job_manager.get_adjusted_job_end(slice_start, slice_end, checkpointed_cursor, filter_checkpointed_cursor)
+
+    assert adjusted_end == (pdm.parse(expected_end) if expected_end else slice_start)
+    assert job_manager._job_checkpoint_disabled is checkpoint_disabled
+    assert job_manager._job_checkpoint_from_self_cancel is False
+
+
+@pytest.mark.parametrize(
+    "checkpointed_cursor, expected_end",
+    [
+        ("2024-01-01T12:00:00+00:00", None),
+        ("2024-01-02T12:00:00+00:00", "2024-01-02T12:00:00+00:00"),
+    ],
+    ids=["stale_cursor_has_no_records_to_resume", "cursor_within_slice_resumes"],
+)
+def test_job_failed_checkpoint_only_resumes_from_cursor_within_slice(auth_config, checkpointed_cursor, expected_end) -> None:
+    job_manager = MetafieldOrders(auth_config).job_manager
+    slice_start, slice_end = pdm.parse("2024-01-02T00:00:00Z"), pdm.parse("2024-01-03T00:00:00Z")
+    job_manager._job_adjust_slice_from_checkpoint = True
+    job_manager._job_checkpoint_from_failed_job = True
+
+    if expected_end:
+        assert job_manager.get_adjusted_job_end(slice_start, slice_end, checkpointed_cursor) == pdm.parse(expected_end)
+    else:
+        with pytest.raises(ShopifyBulkExceptions.BulkJobFailed) as error:
+            job_manager.get_adjusted_job_end(slice_start, slice_end, checkpointed_cursor)
+        assert "has no records" in repr(error.value)
+
+
 @pytest.mark.parametrize("object_count", ["0", "20000"], ids=["no_rows_collected", "rows_collected_above_checkpoint"])
 def test_job_failed_with_no_partial_url_for_stream_with_bulk_checkpointing(request, requests_mock, auth_config, object_count) -> None:
     stream = MetafieldOrders(auth_config)

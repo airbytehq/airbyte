@@ -28,7 +28,7 @@ from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, 
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from source_s3.v4.config import Config
+from source_s3.v4.config import Config, IAMRoleCredentials, IAMUserCredentials
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
 
@@ -74,15 +74,18 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             if self.config.region_name:
                 client_kv_args["region_name"] = self.config.region_name
 
-            if self.config.role_arn:
+            credentials = self.config.credentials
+            if isinstance(credentials, IAMRoleCredentials):
                 self._s3_client = self._get_iam_s3_client(client_kv_args)
-            else:
+            elif isinstance(credentials, IAMUserCredentials):
                 self._s3_client = boto3.client(
                     "s3",
-                    aws_access_key_id=self.config.aws_access_key_id,
-                    aws_secret_access_key=self.config.aws_secret_access_key,
+                    aws_access_key_id=credentials.aws_access_key_id,
+                    aws_secret_access_key=credentials.aws_secret_access_key,
                     **client_kv_args,
                 )
+            else:
+                self._s3_client = boto3.client("s3", **client_kv_args)
 
         return self._s3_client
 
@@ -95,21 +98,22 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         :param client_kv_args: A dictionary of key-value pairs for the boto3 S3 client constructor.
         :return: An instance of a boto3 S3 client with the assumed role credentials.
 
-        The method assumes a role specified in the `self.config.role_arn` and creates a session with the S3 service.
+        The method assumes the role specified in `self.config.credentials.role_arn` and creates a session with the S3 service.
         If `AWS_ASSUME_ROLE_EXTERNAL_ID` environment variable is set, it will be used during the role assumption for additional security.
         """
+        role_arn = self.config.credentials.role_arn
 
         def refresh():
             client = boto3.client("sts")
             if AWS_EXTERNAL_ID:
                 role = client.assume_role(
-                    RoleArn=self.config.role_arn,
+                    RoleArn=role_arn,
                     RoleSessionName="airbyte-source-s3",
                     ExternalId=AWS_EXTERNAL_ID,
                 )
             else:
                 role = client.assume_role(
-                    RoleArn=self.config.role_arn,
+                    RoleArn=role_arn,
                     RoleSessionName="airbyte-source-s3",
                 )
 
@@ -132,6 +136,30 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         autorefresh_session = boto3.Session(botocore_session=session)
 
         return autorefresh_session.client("s3", **client_kv_args)
+
+    def check_bucket_access(self, logger: logging.Logger) -> None:
+        """
+        Checks that the configured bucket can be listed with the configured credentials, endpoint and region, by listing a
+        single object. Nothing about streams is involved. Raises a config error naming the cause otherwise.
+        """
+        bucket = self.config.bucket
+        logger.info(f"Listing one object of bucket '{bucket}' to check access.")
+        try:
+            self.s3_client.list_objects_v2(Bucket=bucket, MaxKeys=1)
+        except ClientError as exc:
+            error = exc.response.get("Error", {})
+            code = error.get("Code", "")
+            if code == "NoSuchBucket":
+                message = f"The bucket {bucket} does not exist."
+            else:
+                message = (
+                    f"Airbyte cannot list the bucket '{bucket}' with the configured credentials: {code} {error.get('Message', '')}".strip()
+                )
+            raise CustomFileBasedException(message=message, internal_message=str(exc), failure_type=FailureType.config_error, exception=exc)
+        except Exception as exc:
+            message = f"Airbyte could not reach the bucket '{bucket}': {exc}"
+            raise CustomFileBasedException(message=message, internal_message=message, failure_type=FailureType.config_error, exception=exc)
+        logger.info(f"The bucket '{bucket}' is accessible.")
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
@@ -201,6 +229,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
                 f"Check whether key {file.uri} exists in `{self.config.bucket}` bucket and/or has proper ACL permissions"
             )
+            raise
 
         # we can simply return the result here as it is a context manager itself that will release all resources
         return result

@@ -12,6 +12,7 @@ import java.util.concurrent.*
 import java.util.function.Supplier
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * This class has the logic for shutting down Debezium Engine in graceful manner. We made it Generic
  * to allow us to write tests easily.
@@ -19,7 +20,7 @@ private val LOGGER = KotlinLogging.logger {}
 class DebeziumShutdownProcedure<T>(
     private val sourceQueue: LinkedBlockingQueue<T>,
     private val debeziumThreadRequestClose: VoidCallable,
-    private val publisherStatusSupplier: Supplier<Boolean>
+    private val publisherStatusSupplier: Supplier<Boolean>,
 ) {
     private val targetQueue = LinkedBlockingQueue<T>()
     private val executorService: ExecutorService
@@ -28,13 +29,14 @@ class DebeziumShutdownProcedure<T>(
 
     init {
         this.hasTransferThreadShutdown = false
-        this.executorService =
-            Executors.newSingleThreadExecutor { r: Runnable ->
-                val thread = Thread(r, "queue-data-transfer-thread")
-                thread.uncaughtExceptionHandler =
-                    Thread.UncaughtExceptionHandler { _: Thread, e: Throwable -> exception = e }
-                thread
-            }
+        this.executorService = Executors.newSingleThreadExecutor { r: Runnable ->
+            val thread = Thread(r, "queue-data-transfer-thread")
+            thread.uncaughtExceptionHandler =
+                Thread.UncaughtExceptionHandler { _: Thread, e: Throwable ->
+                    exception = e
+                }
+            thread
+        }
     }
 
     private fun transfer(): Runnable {

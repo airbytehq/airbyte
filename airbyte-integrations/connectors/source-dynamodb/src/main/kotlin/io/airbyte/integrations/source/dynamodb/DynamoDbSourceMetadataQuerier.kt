@@ -280,13 +280,13 @@ class DynamoDbSourceMetadataQuerier(
                         EmittedField(
                             name,
                             DynamoDbFieldType.fromJsonSchema(
-                                schema as? ObjectNode ?: Jsons.objectNode()
+                                schema as? ObjectNode ?: Jsons.objectNode(),
                             ),
                         )
-                    }
-                        ?: emptyList()
+                    } ?: emptyList()
                 StreamIdentifier.from(configuredStream.stream) to fields
             }
+
         /**
          * Fragment of the service's AccessDeniedException message, as matched by the legacy
          * connector.

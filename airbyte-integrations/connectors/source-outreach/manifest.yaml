@@ -7,7 +7,45 @@ check:
   stream_names:
     - accounts
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_remaining_header: X-RateLimit-Remaining
+  # A Unix epoch on every response. The fixed window resets when Outreach does, so a used-up quota waits
+  # only until this time rather than a full hour.
+  ratelimit_reset_header: X-RateLimit-Reset
+  status_codes_for_ratelimit_hit:
+    - 429
+  policies:
+    # Outreach allows 10,000 requests per hour per user.
+    - type: FixedWindowCallRatePolicy
+      period: PT1H
+      call_limit: 10000
+      matchers: []
+
 definitions:
+  jsonapi_record_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+  jsonapi_flatten_transformations:
+    - type: AddFields
+      fields:
+        - type: AddedFieldDefinition
+          path: ["_flat"]
+          value: >-
+            {%- set ns = namespace(out=dict(record['attributes'] or {}, id=record['id'])) -%}
+            {%- for name, rel in (record.get('relationships') or {}).items() if rel is mapping and rel.get('data') -%}
+            {%- set ns.out = dict(ns.out, **{name: (([rel['data']] if rel['data'] is mapping else rel['data']) | map(attribute='id') | map('default', none) | list)}) -%}
+            {%- endfor -%}{{ ns.out }}
+    - type: DpathFlattenFields
+      field_path: ["_flat"]
+      replace_record: true
   streams:
     accounts:
       type: DeclarativeStream
@@ -26,10 +64,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -38,9 +73,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -72,10 +112,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -84,9 +121,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -118,10 +160,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -130,9 +169,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -164,10 +208,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -176,9 +217,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -210,10 +256,7 @@ definitions:
             page[size]: "100"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -222,9 +265,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -256,10 +304,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -268,9 +313,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -302,10 +352,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -314,9 +361,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -348,10 +400,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -360,9 +409,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -394,10 +448,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -406,9 +457,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -440,10 +496,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -452,9 +505,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -486,10 +544,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -498,9 +553,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -532,10 +592,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -544,9 +601,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -578,10 +640,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -590,9 +649,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -624,10 +688,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -636,9 +697,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -670,10 +736,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -682,9 +745,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -716,10 +784,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -728,9 +793,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -762,10 +832,7 @@ definitions:
             page[size]: "1000"
             newFilterSyntax: "true"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.CustomExtractor
+          $ref: "#/definitions/jsonapi_record_selector"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -774,9 +841,14 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
             stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
       incremental_sync:
         type: DatetimeBasedCursor
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         cursor_field: updatedAt
         is_data_feed: true
         start_datetime:
@@ -801,6 +873,48 @@ definitions:
       refresh_token: "{{ config['refresh_token'] }}"
       token_refresh_endpoint: https://api.outreach.io/oauth/token
       grant_type: refresh_token
+      refresh_token_updater:
+        refresh_token_name: refresh_token
+        access_token_config_path:
+          - access_token
+        refresh_token_config_path:
+          - refresh_token
+        token_expiry_date_config_path:
+          - token_expiry_date
+      refresh_token_error_status_codes:
+        - 400
+        - 401
+      refresh_token_error_key: error
+      refresh_token_error_values:
+        - invalid_grant
+        - invalid_permissions
+        - invalid_client
+        - unauthorized_client
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        # On a 429, Retry-After is documented as an alias of X-RateLimit-Reset, a Unix epoch. A maintenance 503
+        # sends an ISO-8601 Retry-After, which this strategy cannot read, so it falls through to the
+        # exponential strategy. Do not set min_wait: it would be returned whenever the header is missing
+        # and the exponential strategy would never run.
+        - type: WaitUntilTimeFromHeader
+          header: Retry-After
+          max_waiting_time_in_seconds: 3600
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: REFRESH_TOKEN_THEN_RETRY
+        - type: HttpResponseFilter
+          http_codes:
+            - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Outreach denied access: {{ ((response.get('errors') or [{}])[0].get('detail') or 'the token lacks a required OAuth scope.')[:300] }}
+            Re-authenticate the source and grant the missing scope, or deselect this stream.
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -853,23 +967,50 @@ spec:
       redirect_uri:
         type: string
         description: >-
-          A Redirect URI is the location where the authorization server sends
-          the user once the app has been successfully authorized and granted an
-          authorization code or access token.
+          The redirect URI registered on your Outreach OAuth app. It must match
+          the app's setting exactly.
         title: Redirect URI
         order: 3
       start_date:
         type: string
         description: >-
-          The date from which you'd like to replicate data for Outreach API, in
-          the format YYYY-MM-DDT00:00:00.000Z. All data generated after this date
-          will be replicated.
+          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Records updated
+          before this are not replicated.
         title: Start Date
         format: date-time
         examples:
-          - "2020-11-16T00:00:00.000Z"
+          - "2020-11-16T00:00:00Z"
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         order: 4
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: >-
+          The number of streams read at the same time. Outreach allows 10,000
+          requests per hour per user, shared by every worker, so a higher value
+          finishes sooner but reaches that limit faster.
+        default: 3
+        minimum: 2
+        maximum: 10
+        order: 5
+      access_token:
+        type: string
+        title: Access Token
+        description: >-
+          The access token that Outreach returns when the connector refreshes
+          your OAuth credentials. Leave this field out; the connector fills it in.
+        airbyte_secret: true
+        airbyte_hidden: true
+        order: 6
+      token_expiry_date:
+        type: string
+        title: Token Expiry Date
+        description: >-
+          The date and time when the current access token expires. Leave this
+          field out; the connector fills it in.
+        format: date-time
+        airbyte_hidden: true
+        order: 7
     additionalProperties: true
 
 metadata:
@@ -956,6 +1097,10 @@ schemas:
     additionalProperties: true
     properties:
       description:
+        type:
+          - "null"
+          - string
+      annualRevenueRange:
         type:
           - "null"
           - string
@@ -1608,6 +1753,10 @@ schemas:
         type:
           - "null"
           - string
+      enrichable:
+        type:
+          - "null"
+          - boolean
       externalSource:
         type:
           - "null"
@@ -1643,6 +1792,14 @@ schemas:
         type:
           - "null"
           - string
+      naicsCodes:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
       name:
         type:
           - "null"
@@ -1679,6 +1836,14 @@ schemas:
         type:
           - "null"
           - string
+      sicCodes:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
       tags:
         type:
           - "null"
@@ -1695,6 +1860,10 @@ schemas:
           type:
             - "null"
             - integer
+      tickerSymbol:
+        type:
+          - "null"
+          - string
       touchedAt:
         type:
           - "null"
@@ -2045,6 +2214,10 @@ schemas:
           - string
         format: date-time
       calendar:
+        type:
+          - "null"
+          - array
+      classification:
         type:
           - "null"
           - array
@@ -2496,6 +2669,10 @@ schemas:
         type:
           - "null"
           - boolean
+      sendState:
+        type:
+          - "null"
+          - string
       sendSuccessAt:
         type:
           - "null"
@@ -2560,6 +2737,10 @@ schemas:
           - "null"
           - string
         format: date-time
+      syncState:
+        type:
+          - "null"
+          - string
       syncSuccessAt:
         type:
           - "null"
@@ -2615,6 +2796,10 @@ schemas:
         type:
           - "null"
           - integer
+      amountPrecise:
+        type:
+          - "null"
+          - string
       assignedTeams:
         type:
           - "null"
@@ -3249,6 +3434,10 @@ schemas:
         type:
           - "null"
           - string
+      customId:
+        type:
+          - "null"
+          - string
       defaultPluginMapping:
         type:
           - "null"
@@ -3262,10 +3451,19 @@ schemas:
         type:
           - "null"
           - array
+      externalUpdatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       favorites:
         type:
           - "null"
           - array
+      forecastCategory:
+        type:
+          - "null"
+          - string
       healthCategory:
         type:
           - "null"
@@ -3276,6 +3474,14 @@ schemas:
           - integer
       id:
         type: integer
+      leadSource:
+        type:
+          - "null"
+          - string
+      lostReason:
+        type:
+          - "null"
+          - string
       mapLink:
         type:
           - "null"
@@ -3348,6 +3554,10 @@ schemas:
           type:
             - "null"
             - integer
+      recordType:
+        type:
+          - "null"
+          - string
       sharingTeamId:
         type:
           - "null"
@@ -3360,6 +3570,10 @@ schemas:
           type:
             - "null"
             - integer
+      state:
+        type:
+          - "null"
+          - string
       tags:
         type:
           - "null"
@@ -3369,6 +3583,11 @@ schemas:
             - "null"
             - string
       touchedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      trashedAt:
         type:
           - "null"
           - string
@@ -3498,6 +3717,10 @@ schemas:
         type:
           - "null"
           - array
+        items:
+          type:
+            - "null"
+            - integer
       callOptedOut:
         type:
           - "null"
@@ -4303,6 +4526,10 @@ schemas:
         type:
           - "null"
           - number
+      enrichable:
+        type:
+          - "null"
+          - boolean
       eventName:
         type:
           - "null"
@@ -4496,6 +4723,14 @@ schemas:
         type:
           - "null"
           - string
+      realCreatorId:
+        type:
+          - "null"
+          - integer
+      realCreatorType:
+        type:
+          - "null"
+          - string
       region:
         type:
           - "null"
@@ -4672,6 +4907,10 @@ schemas:
         type:
           - "null"
           - string
+      aiTemplatePowered:
+        type:
+          - "null"
+          - boolean
       automationPercentage:
         type:
           - "null"
@@ -4814,6 +5053,26 @@ schemas:
         type:
           - "null"
           - integer
+      prospectClickCount:
+        type:
+          - "null"
+          - integer
+      prospectContactedCount:
+        type:
+          - "null"
+          - integer
+      prospectDeliverCount:
+        type:
+          - "null"
+          - integer
+      prospectOpenCount:
+        type:
+          - "null"
+          - integer
+      prospectReplyCount:
+        type:
+          - "null"
+          - integer
       replyCount:
         type:
           - "null"
@@ -4826,6 +5085,10 @@ schemas:
           type:
             - "null"
             - integer
+      salesMotion:
+        type:
+          - "null"
+          - string
       schedule:
         type:
           - "null"
@@ -5126,6 +5389,14 @@ schemas:
         type:
           - "null"
           - integer
+      callCompletedCount:
+        type:
+          - "null"
+          - integer
+      callNoAnswerCount:
+        type:
+          - "null"
+          - integer
       callPurpose:
         type:
           - "null"
@@ -5212,6 +5483,14 @@ schemas:
         type:
           - "null"
           - integer
+      schedule:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
       scheduleCount:
         type:
           - "null"
@@ -5233,6 +5512,14 @@ schemas:
           - "null"
           - string
       taskAutoDisplay:
+        type:
+          - "null"
+          - string
+      taskAutoskipDelay:
+        type:
+          - "null"
+          - integer
+      taskNote:
         type:
           - "null"
           - string
@@ -5272,6 +5559,10 @@ schemas:
         type:
           - "null"
           - string
+      containsCustomHtml:
+        type:
+          - "null"
+          - boolean
       contentCategoryMemberships:
         type:
           - "null"
@@ -5701,6 +5992,10 @@ schemas:
         type:
           - "null"
           - integer
+      containsCustomHtml:
+        type:
+          - "null"
+          - boolean
       contentCategoryMemberships:
         type:
           - "null"
@@ -5730,6 +6025,14 @@ schemas:
         type:
           - "null"
           - integer
+      hasAiContent:
+        type:
+          - "null"
+          - boolean
+      hasAiSubjectLine:
+        type:
+          - "null"
+          - boolean
       id:
         type: integer
       lastUsedAt:
@@ -5765,6 +6068,10 @@ schemas:
           type:
             - "null"
             - integer
+      personalizationIds:
+        type:
+          - "null"
+          - array
       positiveReplyCount:
         type:
           - "null"
@@ -5851,6 +6158,10 @@ schemas:
         type:
           - "null"
           - array
+        items:
+          type:
+            - "null"
+            - integer
       batchesViewId:
         type:
           - "null"
@@ -5996,6 +6307,10 @@ schemas:
         type:
           - "null"
           - string
+      guest:
+        type:
+          - "null"
+          - boolean
       id:
         type: integer
       importsViewId:
@@ -6032,6 +6347,10 @@ schemas:
         type:
           - "null"
           - array
+      jobTitleExtractionNotificationEnabled:
+        type:
+          - "null"
+          - boolean
       kaiaRecordingsViewId:
         type:
           - "null"

@@ -55,6 +55,29 @@ def test_break_down_results_transformation(components_module):
     assert record_transformation_result == expected_breakdown_record_transformed
 
 
+@pytest.mark.parametrize(
+    "dimension_values, expected_key",
+    [
+        pytest.param(["25-34", None], "25-34,", id="null_dimension_value"),
+        pytest.param([25, "F"], "25,F", id="numeric_dimension_value"),
+        pytest.param(None, "", id="null_dimension_values"),
+    ],
+)
+def test_break_down_results_transformation_coerces_non_string_dimension_values(components_module, dimension_values, expected_key):
+    """Dimension values that are not strings should be coerced into the key instead of failing the sync."""
+    record = {
+        "total_value": {
+            "breakdowns": [
+                {"dimension_keys": ["age", "gender"], "results": [{"dimension_values": dimension_values, "value": 3}]},
+            ]
+        }
+    }
+
+    record_transformation_result = components_module.InstagramBreakDownResultsTransformation().transform(record)
+
+    assert record_transformation_result == {"value": {expected_key: 3}}
+
+
 def test_instagram_insights_transformation(components_module, config):
     record_transformation = components_module.InstagramInsightsTransformation().transform(insights_record)
     assert record_transformation == insights_record_transformed

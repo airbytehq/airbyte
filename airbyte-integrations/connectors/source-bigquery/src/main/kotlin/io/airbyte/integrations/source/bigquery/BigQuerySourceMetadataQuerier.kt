@@ -105,7 +105,7 @@ class BigQuerySourceMetadataQuerier(
                 .sorted()
                 .map { tableName: String ->
                     StreamIdentifier.from(
-                        StreamDescriptor().withName(tableName).withNamespace(dataset)
+                        StreamDescriptor().withName(tableName).withNamespace(dataset),
                     )
                 }
         }

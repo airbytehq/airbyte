@@ -18,6 +18,7 @@ import io.airbyte.integrations.destination.snowflake.copy.EnabledSnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
+import io.airbyte.integrations.destination.snowflake.spec.ProgrammaticAccessTokenAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
@@ -76,10 +77,9 @@ class SnowflakeBeanFactory {
                     it,
                     columnManager,
                     snowflakeConfiguration,
-                    configuredCatalog = configuredCatalog
+                    configuredCatalog = configuredCatalog,
                 )
-            }
-            ?: DisabledSnowflakeS3Copy
+            } ?: DisabledSnowflakeS3Copy
     }
 
     @Singleton
@@ -109,15 +109,23 @@ class SnowflakeBeanFactory {
     fun emptySnowflakeDataSource(): DataSource {
         return object : DataSource {
             override fun getConnection(): Connection? = null
+
             override fun getConnection(username: String, password: String): Connection? =
                 getConnection()
+
             override fun getLogWriter(): PrintWriter =
                 PrintWriter(System.out.writer(StandardCharsets.UTF_8))
+
             override fun setLogWriter(out: PrintWriter) {}
+
             override fun setLoginTimeout(seconds: Int) {}
+
             override fun getLoginTimeout(): Int = 0
+
             override fun getParentLogger(): Logger = Logger.getGlobal()
+
             override fun <T : Any> unwrap(iface: Class<T>): T? = null
+
             override fun isWrapperFor(iface: Class<*>): Boolean = false
         }
     }
@@ -151,16 +159,16 @@ class SnowflakeBeanFactory {
                         privateKeyFile.deleteOnExit()
                         privateKeyFile.writeText(
                             snowflakeConfiguration.authType.privateKey,
-                            StandardCharsets.UTF_8
+                            StandardCharsets.UTF_8,
                         )
                         addDataSourceProperty(
                             DATA_SOURCE_PROPERTY_PRIVATE_KEY_FILE,
-                            privateKeyFile.absolutePath
+                            privateKeyFile.absolutePath,
                         )
                         snowflakeConfiguration.authType.privateKeyPassword?.let { password ->
                             addDataSourceProperty(
                                 DATA_SOURCE_PROPERTY_PRIVATE_KEY_PASSWORD,
-                                password
+                                password,
                             )
                         }
                         username = snowflakeConfiguration.username
@@ -169,28 +177,34 @@ class SnowflakeBeanFactory {
                         username = snowflakeConfiguration.username
                         password = snowflakeConfiguration.authType.password
                     }
+                    is ProgrammaticAccessTokenAuthConfiguration -> {
+                        // Snowflake accepts a programmatic access token in place of a password:
+                        // https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#using-a-programmatic-access-token-as-a-password
+                        username = snowflakeConfiguration.username
+                        password = snowflakeConfiguration.authType.programmaticAccessToken
+                    }
                 }
 
                 // https://docs.snowflake.com/en/developer-guide/jdbc/jdbc-parameters#tracing
                 addDataSourceProperty(DATA_SOURCE_PROPERTY_TRACING, Level.SEVERE.name)
                 addDataSourceProperty(
                     DATA_SOURCE_PROPERTY_WAREHOUSE,
-                    snowflakeConfiguration.warehouse
+                    snowflakeConfiguration.warehouse,
                 )
                 addDataSourceProperty(
                     DATA_SOURCE_PROPERTY_DATABASE,
-                    snowflakeConfiguration.database
+                    snowflakeConfiguration.database,
                 )
                 addDataSourceProperty(DATA_SOURCE_PROPERTY_ROLE, snowflakeConfiguration.role)
                 addDataSourceProperty(
                     DATA_SOURCE_PROPERTY_SCHEMA,
-                    snowflakeConfiguration.schema.toSnowflakeCompatibleName()
+                    snowflakeConfiguration.schema.toSnowflakeCompatibleName(),
                 )
                 addDataSourceProperty(
                     DATA_SOURCE_PROPERTY_NETWORK_TIMEOUT,
                     Math.toIntExact(
-                        NETWORK_TIMEOUT_MINUTES.toDuration(DurationUnit.MINUTES).inWholeSeconds
-                    )
+                        NETWORK_TIMEOUT_MINUTES.toDuration(DurationUnit.MINUTES).inWholeSeconds,
+                    ),
                 )
                 // allows queries to contain any number of statements.
                 addDataSourceProperty(DATA_SOURCE_PROPERTY_MULTI_STATEMENT_COUNT, 0)
@@ -199,7 +213,7 @@ class SnowflakeBeanFactory {
                 // opportunities
                 addDataSourceProperty(
                     DATA_SOURCE_PROPERTY_APPLICATION,
-                    "airbyte_${airbyteEdition.lowercase()}"
+                    "airbyte_${airbyteEdition.lowercase()}",
                 )
                 // Needed for JDK17 - see
                 // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
@@ -215,7 +229,7 @@ class SnowflakeBeanFactory {
 
     @Singleton
     fun snowflakeRecordFormatter(
-        snowflakeConfiguration: SnowflakeConfiguration
+        snowflakeConfiguration: SnowflakeConfiguration,
     ): SnowflakeRecordFormatter {
         return if (snowflakeConfiguration.legacyRawTablesOnly) {
             SnowflakeRawRecordFormatter()

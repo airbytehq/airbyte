@@ -50,7 +50,7 @@ class BigQueryTableMetadataTest {
                 .setTableConstraints(
                     TableConstraints.newBuilder()
                         .setPrimaryKey(PrimaryKey.newBuilder().setColumns(listOf("id")).build())
-                        .build()
+                        .build(),
                 )
                 .build()
 

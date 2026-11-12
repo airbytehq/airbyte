@@ -58,7 +58,7 @@ class DynamoDbSourceReadTest {
         )
         Assertions.assertEquals(
             3.0,
-            result.stateMessages("all_types").last().sourceStats.recordCount
+            result.stateMessages("all_types").last().sourceStats.recordCount,
         )
     }
 
@@ -214,8 +214,8 @@ class DynamoDbSourceReadTest {
                 .withName("empty_table")
                 .withJsonSchema(
                     Jsons.readTree(
-                        """{"type":"object","properties":{"id":{"type":["null","string"]}}}"""
-                    )
+                        """{"type":"object","properties":{"id":{"type":["null","string"]}}}""",
+                    ),
                 )
                 .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
                 .withSourceDefinedPrimaryKey(listOf(listOf("id")))
@@ -239,7 +239,7 @@ class DynamoDbSourceReadTest {
         Assertions.assertEquals(
             Jsons.readTree(
                 """{"id":"r1","name":"first","status":"active","data":{"inner":"payload"},
-                    "field.name":"dotted","field-name":"dashed","count":5}"""
+                    "field.name":"dotted","field-name":"dashed","count":5}""",
             ),
             r1,
         )
@@ -252,8 +252,8 @@ class DynamoDbSourceReadTest {
                 .withName("does_not_exist")
                 .withJsonSchema(
                     Jsons.readTree(
-                        """{"type":"object","properties":{"id":{"type":["null","string"]}}}"""
-                    )
+                        """{"type":"object","properties":{"id":{"type":["null","string"]}}}""",
+                    ),
                 )
                 .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
         val result: ReadResult =
@@ -310,7 +310,7 @@ class DynamoDbSourceReadTest {
         )
         Assertions.assertEquals(
             listOf(
-                Jsons.readTree("""{"cursor_field":["v"],"cursor":"310","cursor_record_count":1}""")
+                Jsons.readTree("""{"cursor_field":["v"],"cursor":"310","cursor_record_count":1}"""),
             ),
             third.states("orders"),
         )
@@ -345,8 +345,8 @@ class DynamoDbSourceReadTest {
         Assertions.assertEquals(
             listOf(
                 Jsons.readTree(
-                    """{"cursor_field":["str"],"cursor":"world","cursor_record_count":1}"""
-                )
+                    """{"cursor_field":["str"],"cursor":"world","cursor_record_count":1}""",
+                ),
             ),
             result.states("all_types"),
         )
@@ -360,7 +360,7 @@ class DynamoDbSourceReadTest {
                 catalog(configured("events", SyncMode.INCREMENTAL, cursor = "d")),
                 state =
                     listOf(
-                        streamState("events", """{"cursor_field":["d"],"cursor":"2024-01-02"}""")
+                        streamState("events", """{"cursor_field":["d"],"cursor":"2024-01-02"}"""),
                     ),
             )
         result.assertNoErrors()
@@ -372,8 +372,8 @@ class DynamoDbSourceReadTest {
         Assertions.assertEquals(
             listOf(
                 Jsons.readTree(
-                    """{"cursor_field":["d"],"cursor":"2024-01-03","cursor_record_count":2}"""
-                )
+                    """{"cursor_field":["d"],"cursor":"2024-01-03","cursor_record_count":2}""",
+                ),
             ),
             result.states("events"),
         )
@@ -389,8 +389,8 @@ class DynamoDbSourceReadTest {
         Assertions.assertEquals(
             listOf(
                 Jsons.readTree(
-                    """{"cursor_field":["ts"],"cursor":"2024-01-03T00:00:00Z","cursor_record_count":2}"""
-                )
+                    """{"cursor_field":["ts"],"cursor":"2024-01-03T00:00:00Z","cursor_record_count":2}""",
+                ),
             ),
             result.states("events"),
         )
@@ -410,14 +410,16 @@ class DynamoDbSourceReadTest {
                 catalog(configured("many_items", SyncMode.INCREMENTAL, cursor = "v")),
                 state =
                     listOf(
-                        streamState("many_items", """{"cursor_field":["other"],"cursor":"1100"}""")
+                        streamState("many_items", """{"cursor_field":["other"],"cursor":"1100"}"""),
                     ),
             )
         result.assertNoErrors()
         Assertions.assertEquals(1200, result.records("many_items").size)
         Assertions.assertEquals(
             listOf(
-                Jsons.readTree("""{"cursor_field":["v"],"cursor":"1200","cursor_record_count":1}""")
+                Jsons.readTree(
+                    """{"cursor_field":["v"],"cursor":"1200","cursor_record_count":1}""",
+                ),
             ),
             result.states("many_items"),
         )
@@ -452,7 +454,9 @@ class DynamoDbSourceReadTest {
         // The running maximum from the interrupted scan is higher than anything in the table.
         Assertions.assertEquals(
             listOf(
-                Jsons.readTree("""{"cursor_field":["v"],"cursor":"5000","cursor_record_count":1}""")
+                Jsons.readTree(
+                    """{"cursor_field":["v"],"cursor":"5000","cursor_record_count":1}""",
+                ),
             ),
             result.states("many_items"),
         )
@@ -467,7 +471,7 @@ class DynamoDbSourceReadTest {
                     catalog(configured("wide", SyncMode.INCREMENTAL, cursor = "id")),
                     state =
                         listOf(
-                            streamState("wide", """{"cursor_field":["id"],"cursor":"w-0100"}""")
+                            streamState("wide", """{"cursor_field":["id"],"cursor":"w-0100"}"""),
                         ),
                     extraConfig = mapOf("checkpoint_target_interval_seconds" to 1),
                 )
@@ -529,11 +533,10 @@ class DynamoDbSourceReadTest {
         assertSegmentStatesAreConsistent(states.filter { it.has("scan") }, totalSegments = 8)
         // No record of the stream follows the state that declares it complete.
         val messages = segmented.output.messages()
-        val terminalIndex: Int =
-            messages.indexOfLast {
-                it.state?.stream?.streamDescriptor?.name == "many_items" &&
-                    it.state.stream.streamState == states.last()
-            }
+        val terminalIndex: Int = messages.indexOfLast {
+            it.state?.stream?.streamDescriptor?.name == "many_items" &&
+                it.state.stream.streamState == states.last()
+        }
         Assertions.assertTrue(terminalIndex >= 0)
         Assertions.assertTrue(
             messages.drop(terminalIndex + 1).none { it.record?.stream == "many_items" },
@@ -572,11 +575,10 @@ class DynamoDbSourceReadTest {
         }
         assertSegmentStatesAreConsistent(inProgress, totalSegments = 8)
         val messages = first.output.messages()
-        val terminalIndex: Int =
-            messages.indexOfFirst {
-                it.state?.stream?.streamDescriptor?.name == "many_items" &&
-                    it.state.stream.streamState == states.last()
-            }
+        val terminalIndex: Int = messages.indexOfFirst {
+            it.state?.stream?.streamDescriptor?.name == "many_items" &&
+                it.state.stream.streamState == states.last()
+        }
         Assertions.assertTrue(terminalIndex >= 0)
         Assertions.assertTrue(
             messages.drop(terminalIndex + 1).none { it.record?.stream == "many_items" },
@@ -612,7 +614,7 @@ class DynamoDbSourceReadTest {
         Assertions.assertEquals(5, byTimestamp.records("events").size)
         Assertions.assertEquals(
             Jsons.readTree(
-                """{"cursor_field":["ts"],"cursor":"2024-01-03T00:00:00Z","cursor_record_count":2}"""
+                """{"cursor_field":["ts"],"cursor":"2024-01-03T00:00:00Z","cursor_record_count":2}""",
             ),
             byTimestamp.states("events").last(),
         )
@@ -624,8 +626,8 @@ class DynamoDbSourceReadTest {
                         listOf(
                             streamState(
                                 "events",
-                                """{"cursor_field":["d"],"cursor":"2024-01-02"}"""
-                            )
+                                """{"cursor_field":["d"],"cursor":"2024-01-02"}""",
+                            ),
                         ),
                     cloud = true,
                 )
@@ -637,7 +639,7 @@ class DynamoDbSourceReadTest {
         )
         Assertions.assertEquals(
             Jsons.readTree(
-                """{"cursor_field":["d"],"cursor":"2024-01-03","cursor_record_count":2}"""
+                """{"cursor_field":["d"],"cursor":"2024-01-03","cursor_record_count":2}""",
             ),
             byDate.states("events").last(),
         )
@@ -726,9 +728,11 @@ class DynamoDbSourceReadTest {
         Assertions.assertTrue(states.isNotEmpty())
         for (state in states) {
             val parsed: DynamoDbStreamStateValue = DynamoDbStreamStateValue.parse(streamID, state)!!
-            Assertions.assertEquals(totalSegments, parsed.scan!!.totalSegments, state.toString())
-            Assertions.assertEquals(totalSegments, parsed.scan!!.segments!!.size, state.toString())
-            for (segment in parsed.scan!!.segments!!) {
+            val scan = parsed.scan!!
+            Assertions.assertEquals(totalSegments, scan.totalSegments, state.toString())
+            val segments = scan.segments!!
+            Assertions.assertEquals(totalSegments, segments.size, state.toString())
+            for (segment in segments) {
                 Assertions.assertFalse(
                     segment.complete == true && segment.exclusiveStartKey != null,
                     "complete segment with a key: $state",
@@ -743,11 +747,10 @@ class DynamoDbSourceReadTest {
         for (segment in segments) {
             var key: Map<String, AttributeValue>? = null
             while (true) {
-                val response =
-                    client.scan {
-                        it.tableName(table).segment(segment).totalSegments(totalSegments)
-                        if (key != null) it.exclusiveStartKey(key)
-                    }
+                val response = client.scan {
+                    it.tableName(table).segment(segment).totalSegments(totalSegments)
+                    if (key != null) it.exclusiveStartKey(key)
+                }
                 response.items().forEach { item -> ids.add(item["id"]!!.s()) }
                 if (!response.hasLastEvaluatedKey() || response.lastEvaluatedKey().isEmpty()) break
                 key = response.lastEvaluatedKey()
@@ -808,9 +811,9 @@ class DynamoDbSourceReadTest {
                         "all_types",
                         SyncMode.INCREMENTAL,
                         cursor = "int",
-                        stream = legacyStream
-                    )
-                )
+                        stream = legacyStream,
+                    ),
+                ),
             )
         incremental.assertNoErrors()
         Assertions.assertEquals(
@@ -865,7 +868,7 @@ class DynamoDbSourceReadTest {
         val airbyteStream: AirbyteStream =
             stream
                 ?: discoveredCatalog.streams.firstOrNull { it.name == name }
-                    ?: discovered().streams.first { it.name == name }
+                ?: discovered().streams.first { it.name == name }
         return ConfiguredAirbyteStream()
             .withStream(airbyteStream)
             .withSyncMode(syncMode)
@@ -991,7 +994,7 @@ class DynamoDbSourceReadTest {
                 ScalarAttributeType.N -> AttributeValue.fromN(value.asText())
                 ScalarAttributeType.B ->
                     AttributeValue.fromB(
-                        software.amazon.awssdk.core.SdkBytes.fromByteArray(value.binaryValue())
+                        software.amazon.awssdk.core.SdkBytes.fromByteArray(value.binaryValue()),
                     )
                 else -> AttributeValue.fromS(value.asText())
             }

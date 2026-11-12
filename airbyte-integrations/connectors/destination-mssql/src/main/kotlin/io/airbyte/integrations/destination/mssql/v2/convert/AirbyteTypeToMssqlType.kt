@@ -33,8 +33,7 @@ enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
     DATE(Types.DATE),
     TIME(Types.TIME),
     DATETIME(Types.TIMESTAMP),
-    DATETIMEOFFSET(Types.TIMESTAMP_WITH_TIMEZONE),
-    ;
+    DATETIMEOFFSET(Types.TIMESTAMP_WITH_TIMEZONE);
 
     val sqlString: String = sqlStringOverride ?: name
 }

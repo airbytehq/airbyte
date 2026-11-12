@@ -2,6 +2,13 @@
 
 This page contains the setup guide and reference information for the Zendesk Chat source connector.
 
+:::warning Zendesk ends incremental exports for third-party integrations (announced 2026-09-22)
+Zendesk [stops serving its Incremental Exports API to third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498) such as Airbyte between December 2, 2026 and January 19, 2027. Blocked requests return HTTP 403.
+
+- The `chats` stream no longer uses incremental exports as of connector version 2.0.0 and keeps working. See the [migration guide](zendesk-chat-migrations.md#upgrading-to-200).
+- The `agent_timeline` stream has no replacement endpoint and still reads the incremental export. Zendesk has not said whether agent timeline exports are included in the shutdown. If the stream fails with a 403 error, request the 60-day partner extension in Zendesk Admin Center under **Apps and integrations > APIs > API configuration**, or deselect the stream.
+:::
+
 ## Prerequisites
 
 - A Zendesk account with the [Chat module](https://www.zendesk.com/chat/) enabled.
@@ -53,8 +60,8 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 
 - [Accounts](https://developer.zendesk.com/api-reference/live-chat/chat-api/accounts/#show-account)
 - [Agents](https://developer.zendesk.com/api-reference/live-chat/chat-api/agents/#list-agents) \(Incremental\)
-- [Agent Timelines](https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-agent-timeline-export) \(Incremental\)
-- [Chats](https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#list-chats) \(Incremental\)
+- [Agent Timelines](https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-agent-timeline-export) \(Incremental\). Still read from the incremental export; see the notice at the top of this page.
+- [Chats](https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#list-chats) \(Incremental\). Chats are found with [Search Chats](https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#search-chats) in 30-day windows of their last update time, then fetched in full 50 chats per request. The cursor field is `timestamp`. The fields `deleted`, `update_timestamp` and `engagements` are not available from these endpoints, and deleted chats are not reported.
 - [Shortcuts](https://developer.zendesk.com/api-reference/live-chat/chat-api/shortcuts/#list-shortcuts)
 - [Triggers](https://developer.zendesk.com/api-reference/live-chat/chat-api/triggers/#list-triggers)
 - [Bans](https://developer.zendesk.com/api-reference/live-chat/chat-api/bans/#list-bans) \(Incremental\)
@@ -68,6 +75,10 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 
 The Zendesk Chat API enforces a rate limit of [200 requests per minute](https://developer.zendesk.com/api-reference/live-chat/introduction/) per endpoint. The connector handles rate limiting automatically by respecting the `Retry-After` header when a 429 response is returned.
 
+Each sync of the `chats` stream sends one search request per 30-day window between the end of the last window in which earlier syncs found chats (minus a one-day lookback) or the configured start date and now, plus one extra request per 40 results in a window, plus one request per 50 chats found. The first sync of an account with a start date several years back therefore sends a few dozen search requests (about 75 for six years) before the chats themselves, with records arriving in batches of 50 as chats are found, and an account without new or updated chats repeats one search per 30 days of range since the last window that returned chats on every sync. Because of the one-day lookback, every sync also sends again the chats that were updated during the day before the end of that window; a chat that is not updated again is repeated for the last time by the first sync that starts more than a day after its last update. These repeats are deduplicated by the primary key in destinations that deduplicate, and arrive as additional rows in destinations that append. The rate limit applies to each endpoint and is shared with every other integration that calls the same endpoints, so these searches can slow down other integrations while the sync runs. Zendesk returns at most 10,000 results per search; when a window holds more updated chats than that, the connector splits it into shorter windows until each one fits.
+
+Search results are read page by page, newest chat first. When a chat on a page that was already read is updated while the sync is still reading the pages of the same search, it leaves the results, the remaining results move up by one, and one chat is not read in that sync. The next sync reads that chat only if its last update is within one day before the end of that search, which is the case for connections that sync at least once a day. With less frequent syncs, in a first sync and in the first sync after upgrading to 2.0.0, such a chat can stay missing or out of date until it is updated again.
+
 ## Troubleshooting
 
 ### Zendesk Chat access token is invalid, expired, or missing the required read and chat scopes
@@ -79,7 +90,19 @@ Zendesk Chat returned a `401 Unauthorized` response, so the connector stops the 
 
 ### Requests that return 404
 
-When Zendesk Chat returns a `404 Not Found` response to any request, the connector ignores that response and continues the sync instead of failing. No records from that request are emitted. This most often happens when a record has been deleted, but it applies to every stream and every request, so a 404 on a list request drops that page of results.
+When Zendesk Chat returns a `404 Not Found` response, the connector ignores that response and continues the sync instead of failing. No records from that request are emitted. This most often happens when a record has been deleted, but it applies to every stream and every request except the two requests of the `chats` stream, so a 404 on a list request drops that page of results.
+
+A `404 Not Found` response to a search request of the `chats` stream fails the sync with the message `Zendesk Search Chats request returned HTTP 404. Chats updated in the requested window cannot be read.` Skipping the search would skip every chat updated in that window, so the next sync retries it from the saved state.
+
+A `404 Not Found` response to a request that fetches chats by id fails the sync with the message `Zendesk List Chats request returned HTTP 404. The chats requested by id cannot be read.` Zendesk answers a chat id it no longer has with an empty entry, not with a 404, so a 404 means none of the requested chats was read. The next sync searches and fetches them again from the saved state.
+
+### Zendesk rejected the incremental export request for stream agent_timeline with HTTP 403
+
+Zendesk [is withdrawing incremental exports from third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498) such as Airbyte, and the `agent_timeline` stream has no other endpoint to read from. The export also requires the authorizing user to have the Owner or Administrator role, so a 403 can also mean that the user who authorized Airbyte lost that role. Request the 60-day partner extension in Zendesk Admin Center under **Apps and integrations > APIs > API configuration**, check the role of the authorizing user, or deselect the `agent_timeline` stream in the connection.
+
+### Zendesk returns at most 10,000 chats per search
+
+The `chats` stream finds chats with the Search Chats endpoint 30 days at a time, and Zendesk returns at most 10,000 results per search. When a window holds 10,000 or more updated chats, the connector splits it into shorter windows (down to about 42 minutes) until each one fits, so the sync continues. The sync only fails with this message when 10,000 or more chats were updated within one such short window, which cannot be read completely. Contact Airbyte support if you hit this limit.
 
 ## Data type map
 
@@ -101,6 +124,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.0 | 2026-11-11 | [90874](https://github.com/airbytehq/airbyte/pull/90874) | Breaking: read `chats` through Search Chats and List Chats instead of the incremental export Zendesk ends for third-party integrations on 2026-12-02; cursor becomes `timestamp` with state migration; drop `deleted`, `update_timestamp` and `engagements` from the `chats` schema; fail the sync when a `chats` search or fetch by id returns 404; report a configuration error when the incremental export behind `agent_timeline` returns 403 |
+| 1.3.34 | 2026-11-10 | [91778](https://github.com/airbytehq/airbyte/pull/91778) | Update dependencies |
+| 1.3.33 | 2026-11-03 | [90807](https://github.com/airbytehq/airbyte/pull/90807) | Update dependencies |
+| 1.3.32 | 2026-10-27 | [90082](https://github.com/airbytehq/airbyte/pull/90082) | Update dependencies |
+| 1.3.31 | 2026-10-20 | [89485](https://github.com/airbytehq/airbyte/pull/89485) | Update dependencies |
+| 1.3.30 | 2026-10-13 | [88886](https://github.com/airbytehq/airbyte/pull/88886) | Update dependencies |
 | 1.3.29 | 2026-10-06 | [88112](https://github.com/airbytehq/airbyte/pull/88112) | Update dependencies |
 | 1.3.28 | 2026-09-29 | [87433](https://github.com/airbytehq/airbyte/pull/87433) | Update dependencies |
 | 1.3.27 | 2026-09-22 | [86888](https://github.com/airbytehq/airbyte/pull/86888) | Update dependencies |

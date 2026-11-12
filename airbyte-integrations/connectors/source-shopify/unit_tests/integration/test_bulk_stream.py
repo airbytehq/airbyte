@@ -325,29 +325,12 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         assert output.most_recent_state.stream_state.updated_at > _INCREMENTAL_JOB_START_DATE_ISO
         assert any("checkpointing is disabled for the rest of this sync" in log.log.message for log in output.logs)
 
-    def test_when_read_with_updated_at_field_before_bulk_request_window_start_date(self) -> None:
-        """ "
-        The motivation of this test is https://github.com/airbytehq/oncall/issues/6874
+    def test_when_read_with_stale_updated_at_checkpoint_before_slice_start_reruns_slice(self) -> None:
+        """
+        See https://github.com/airbytehq/oncall/issues/6874
 
-        In this scenario we end having stream_slices method to generate same slice N times.
-        Our checkpointing logic will trigger when job_checkpoint_interval is passed, but there may be the case that such checkpoint
-        has the same value as the current slice start date so we would end requesting same job.
-
-        In this test:
-        1. First job requires to checkpoint as we pass the 1500 limit, it cancels the bulk job and checkpoints from last cursor value.
-        2. Next job just goes "fine".
-        3. Now in the third and N job is where the behavior described above occurs, I just set it to happen a fixed N times as the
-        test depends on we keep feeding responses in the order of status running/canceled, but you can observe the repeated slices in the
-        logging.
-
-        e.g.
-
-        {"type":"LOG","log":{"level":"INFO","message":"Stream: `metafield_orders` requesting BULK Job for period: 2024-05-02T17:30:00+00:00 -- 2024-05-03T17:30:00+00:00. Slice size: `P1D`. The BULK checkpoint after `15000` lines."}}
-        ...
-        {"type":"LOG","log":{"level":"INFO","message":"Stream metafield_orders, continue from checkpoint: `2024-05-02T17:30:00+00:00`."}}
-        {"type":"LOG","log":{"level":"INFO","message":"Stream: `metafield_orders` requesting BULK Job for period: 2024-05-02T17:30:00+00:00 -- 2024-05-03T17:30:00+00:00. Slice size: `P1D`. The BULK checkpoint after `15000` lines."}}
-        {"type":"LOG","log":{"level":"INFO","message":"Stream: `metafield_orders`, the BULK Job: `gid://shopify/BulkOperation/4472588009771` is CREATED"}}
-        ...
+        A checkpoint cursor at or before the slice start (stale, from an earlier slice) must not rewind the slice.
+        The slice is re-run with the checkpointing disabled instead of raising the checkpoint collision error.
         """
 
         def add_n_records(builder, n, record_date: Optional[str] = None):
@@ -373,6 +356,7 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
                 JobStatusResponseBuilder().with_running_status(_BULK_OPERATION_ID, object_count="16000").build(),
                 # this will complete the job
                 JobStatusResponseBuilder().with_canceled_status(_BULK_OPERATION_ID, _JOB_RESULT_URL, object_count="1700").build(),
+                JobStatusResponseBuilder().with_completed_status(_BULK_OPERATION_ID, _JOB_RESULT_URL).build(),
             ],
         )
         # mock the cancel operation request as we passed the 15000 rows
@@ -470,11 +454,8 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
             _get_config(config_start_date, job_checkpoint_interval=15000), sync_mode=SyncMode.incremental, state=stream_state
         )
 
-        expected_error_message = "The stream: `metafield_orders` checkpoint collision is detected."
-        result = output.errors[0].trace.error.internal_message
-
-        # The result of the test should be the `ShopifyBulkExceptions.BulkJobCheckpointCollisionError`
-        assert result is not None and expected_error_message in result
+        assert output.errors == []
+        assert any("checkpointing is disabled for the rest of this sync" in log.log.message for log in output.logs)
 
     def _read(self, config, sync_mode=SyncMode.full_refresh, state: Optional[List[AirbyteStateMessage]] = None):
         catalog = CatalogBuilder().with_stream(_BULK_STREAM, sync_mode).build()
@@ -486,10 +467,11 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         output = read(SourceShopify(), config, catalog, state=state)
         return output
 
-    def test_when_read_with_updated_at_field_before_bulk_request_window_start_date_customer_address(self):
+    def test_customer_address_with_stale_filter_checkpoint_before_slice_start_reruns_slice(self):
         """
-        The test logic is identical to the test above but with the another stream type, where cursor field is ID
-        and filter_checkpointed_cursor value should be used as the value to adjust slice end.
+        See https://github.com/airbytehq/oncall/issues/6874
+
+        Same as above, for the stream with the ID cursor, where `filter_checkpointed_cursor` is compared to the slice start.
         """
 
         def add_n_records(builder, n, record_date: Optional[str] = None):
@@ -515,6 +497,7 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
                 JobStatusResponseBuilder().with_running_status(_BULK_OPERATION_ID, object_count="16000").build(),
                 # this will complete the job
                 JobStatusResponseBuilder().with_canceled_status(_BULK_OPERATION_ID, _JOB_RESULT_URL, object_count="1700").build(),
+                JobStatusResponseBuilder().with_completed_status(_BULK_OPERATION_ID, _JOB_RESULT_URL).build(),
             ],
         )
         # mock the cancel operation request as we passed the 15000 rows
@@ -609,8 +592,5 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
             _get_config(config_start_date, job_checkpoint_interval=15000), sync_mode=SyncMode.incremental, state=stream_state
         )
 
-        expected_error_message = "The stream: `customer_address` checkpoint collision is detected."
-        result = output.errors[0].trace.error.internal_message
-
-        # The result of the test should be the `ShopifyBulkExceptions.BulkJobCheckpointCollisionError`
-        assert result is not None and expected_error_message in result
+        assert output.errors == []
+        assert any("checkpointing is disabled for the rest of this sync" in log.log.message for log in output.logs)

@@ -28,6 +28,22 @@ if str(_CONNECTOR_DIR) not in sys.path:
 
 def base_config(**overrides: Any) -> dict[str, Any]:
     config: dict[str, Any] = {
+        "credentials": {
+            "auth_type": "OwnApp",
+            "client_id": "test-client-id",
+            "client_secret": "test-client-secret",
+            "refresh_token": "test-refresh-token",
+        },
+        "user_agent": "airbyte:reddit-ads-sync:v1.0 (by /u/airbyte)",
+        "ad_account_id": "a2_abc123",
+        "start_time": "2026-09-23T00:00:00Z",
+    }
+    config.update(overrides)
+    return config
+
+
+def legacy_flat_config(**overrides: Any) -> dict[str, Any]:
+    config: dict[str, Any] = {
         "client_id": "test-client-id",
         "client_secret": "test-client-secret",
         "refresh_token": "test-refresh-token",

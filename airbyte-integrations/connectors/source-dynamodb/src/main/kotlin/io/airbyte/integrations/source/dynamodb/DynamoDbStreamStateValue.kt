@@ -21,13 +21,13 @@ import io.airbyte.cdk.util.Jsons
  *
  * Two properties are new:
  * - [scan] is present while a table scan is in progress and is the point to resume it from: for
- * each parallel-scan segment of the table its DynamoDB `LastEvaluatedKey` (or a `complete` marker)
- * and, for an incremental stream, the highest cursor value the segment has seen so far. [cursor]
- * then still holds the lower bound the scan filters on, so that an interrupted incremental scan
- * resumes with the same filter;
+ *   each parallel-scan segment of the table its DynamoDB `LastEvaluatedKey` (or a `complete`
+ *   marker) and, for an incremental stream, the highest cursor value the segment has seen so far.
+ *   [cursor] then still holds the lower bound the scan filters on, so that an interrupted
+ *   incremental scan resumes with the same filter;
  * - [scanComplete] marks a finished full refresh (the legacy connector emitted no state at all for
- * full refresh streams). The platform clears it after a successful sync; when it is passed back,
- * i.e. after a failed attempt in which this stream completed, the stream is not read again.
+ *   full refresh streams). The platform clears it after a successful sync; when it is passed back,
+ *   i.e. after a failed attempt in which this stream completed, the stream is not read again.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -65,7 +65,13 @@ data class DynamoDbStreamStateValue(
                 segments != null -> segments
                 exclusiveStartKey != null ->
                     listOf(
-                        SegmentProgress(0, exclusiveStartKey, null, maxCursor, maxCursorRecordCount)
+                        SegmentProgress(
+                            0,
+                            exclusiveStartKey,
+                            null,
+                            maxCursor,
+                            maxCursorRecordCount,
+                        ),
                     )
                 else -> null
             }

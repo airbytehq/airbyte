@@ -77,9 +77,9 @@ def test_concurrency_level_resolves_from_config(config_override, expected_worker
 def test_global_budget_throttles_past_60_calls_per_minute(virtual_clock: list[float]) -> None:
     """61 pages of one stream must fit under the 60/min budget: the 61st acquire waits for the
     first window slot to expire instead of raising CallRateLimitHit."""
-    page_request = HttpRequest(f"{_BASE_URL}/api/v2.15/servicegroups/", query_params=ANY_QUERY_PARAMS)
+    page_request = HttpRequest(f"{_BASE_URL}/api/v2.16/servicegroups/", query_params=ANY_QUERY_PARAMS)
     pages = [
-        _service_group_page(page_number, f"{_BASE_URL}/api/v2.15/servicegroups/?page={page_number + 1}" if page_number < 61 else None)
+        _service_group_page(page_number, f"{_BASE_URL}/api/v2.16/servicegroups/?page={page_number + 1}" if page_number < 61 else None)
         for page_number in range(1, 62)
     ]
 
@@ -104,9 +104,9 @@ def test_global_budget_throttles_past_60_calls_per_minute(virtual_clock: list[fl
 def test_higher_configured_limit_does_not_wait_for_61_calls(virtual_clock: list[float]) -> None:
     """With `max_requests_per_minute` raised to 120, the same 61-page read fits inside one
     window: every page is served without a budget wait."""
-    page_request = HttpRequest(f"{_BASE_URL}/api/v2.15/servicegroups/", query_params=ANY_QUERY_PARAMS)
+    page_request = HttpRequest(f"{_BASE_URL}/api/v2.16/servicegroups/", query_params=ANY_QUERY_PARAMS)
     pages = [
-        _service_group_page(page_number, f"{_BASE_URL}/api/v2.15/servicegroups/?page={page_number + 1}" if page_number < 61 else None)
+        _service_group_page(page_number, f"{_BASE_URL}/api/v2.16/servicegroups/?page={page_number + 1}" if page_number < 61 else None)
         for page_number in range(1, 62)
     ]
 

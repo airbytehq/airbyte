@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 """Unit tests for the trimmed App API key, the 401/403 messages, `Retry-After` backoff, 30 retries, the 10 requests per second
-`api_budget`, the `campaigns_actions` 404 skip, the Start Date cap at now and the one-hour lookback."""
+`api_budget`, `num_workers`, the `campaigns_actions` 404 skip, the Start Date cap at now and the one-hour lookback."""
 
 import logging
 import time
@@ -184,7 +184,7 @@ def test_404_on_deleted_automation_actions_is_skipped():
 
 
 def test_401_on_campaigns_actions_child_request_names_the_fix():
-    """The `campaigns_actions` composite handler still ends a 401 on the shared message."""
+    """The `campaigns_actions` handler fails a 401 with the shared configuration message."""
     with requests_mock.Mocker() as mocker:
         _serve_two_campaigns(mocker, [{"status_code": 401, "json": _errors(401, "unauthorized")}])
         output = _read("campaigns_actions", _BASE_CONFIG, expecting_exception=True)
@@ -197,8 +197,22 @@ def test_401_on_campaigns_actions_child_request_names_the_fix():
     assert output.get_stream_statuses("campaigns_actions")[-1] == AirbyteStreamStatus.INCOMPLETE
 
 
+def test_403_on_campaigns_actions_child_request_names_the_fix():
+    """A child request denied access fails with the shared 403 configuration message."""
+    with requests_mock.Mocker() as mocker:
+        _serve_two_campaigns(mocker, [{"status_code": 403, "json": _errors(403, "forbidden")}])
+        output = _read("campaigns_actions", _BASE_CONFIG, expecting_exception=True)
+
+    errors = [error_message.trace.error for error_message in output.errors]
+    assert {error.failure_type for error in errors} == {FailureType.config_error}
+    assert _FORBIDDEN_MESSAGE in [
+        error.message for error in errors if error.stream_descriptor and error.stream_descriptor.name == "campaigns_actions"
+    ]
+    assert output.get_stream_statuses("campaigns_actions")[-1] == AirbyteStreamStatus.INCOMPLETE
+
+
 def test_429_on_campaigns_actions_child_request_waits_for_retry_after():
-    """Child requests keep the shared `Retry-After` backoff through the composite handler."""
+    """Child requests keep the shared `Retry-After` backoff."""
     with requests_mock.Mocker() as mocker, mock.patch("airbyte_cdk.sources.streams.http.rate_limiting.time") as patched_time:
         _serve_two_campaigns(
             mocker,
@@ -216,7 +230,7 @@ def test_429_on_campaigns_actions_child_request_waits_for_retry_after():
 
 
 def test_campaigns_actions_child_request_keeps_30_retries():
-    """The composite takes max_retries from its first handler, so six 503s in a row still end in records (the default allows 5)."""
+    """The child handler allows 30 retries, so six 503s still end in records (the default allows 5)."""
     responses = [{"status_code": 503, "json": _errors(503, "unavailable")}] * 6
     responses.append({"status_code": 200, "json": {"actions": [_action(101, 1, _PRIOR_CURSOR)], "next": None}})
     with requests_mock.Mocker() as mocker, mock.patch("airbyte_cdk.sources.streams.http.rate_limiting.time"):
@@ -277,6 +291,14 @@ def test_api_budget_holds_the_eleventh_request_of_a_second(region, host):
     assert len(output.records) == 10
     assert mocker.call_count == 11
     assert budget_time.sleep.called, "expected the api_budget to hold the 11th request"
+
+
+@pytest.mark.parametrize("num_workers, expected", [(None, 3), (2, 2), (10, 10)], ids=["default", "2", "10"])
+def test_num_workers_sets_the_concurrency_level(num_workers, expected):
+    """`num_workers` sets how many streams are read at the same time; without it the connector keeps 3 workers."""
+    config = _BASE_CONFIG if num_workers is None else {**_BASE_CONFIG, "num_workers": num_workers}
+    # The concurrency level is the size of the concurrent source's thread pool.
+    assert get_source(config)._concurrent_source._threadpool._threadpool._max_workers == expected
 
 
 def test_pasted_key_with_whitespace_is_trimmed():

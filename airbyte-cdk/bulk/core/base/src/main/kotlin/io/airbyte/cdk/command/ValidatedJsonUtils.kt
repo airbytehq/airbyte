@@ -132,7 +132,7 @@ object ValidatedJsonUtils {
                     }
                     if (!node.contains("\$ref")) {
                         // Nothing to inline here, just recurse over all object field values.
-                        for (pair in node.fields()) {
+                        for (pair in node.properties()) {
                             walk(pair.value, *visitedRefs)
                         }
                         return
@@ -147,7 +147,7 @@ object ValidatedJsonUtils {
                             ?: throw ConfigErrorException(
                                 "Undefined \$ref '$ref' found in JSON schema",
                             )
-                    for (pair in definition.fields()) {
+                    for (pair in definition.properties()) {
                         // Inline the definition in the current object.
                         // When a key is already present, keep the existing value.
                         if (!node.contains(pair.key)) {
@@ -157,7 +157,7 @@ object ValidatedJsonUtils {
                     node.remove("\$ref")
                     // Recurse over the object field values, including those which have just been
                     // inlined.
-                    for (pair in node.fields()) {
+                    for (pair in node.properties()) {
                         walk(pair.value, ref, *visitedRefs)
                     }
                 }

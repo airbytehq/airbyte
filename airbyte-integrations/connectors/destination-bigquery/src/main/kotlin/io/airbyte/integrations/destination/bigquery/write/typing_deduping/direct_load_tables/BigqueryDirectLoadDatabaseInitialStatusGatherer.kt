@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables
 
 import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryException
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
@@ -13,6 +14,7 @@ import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
+import io.airbyte.integrations.destination.bigquery.toConfigExceptionIfNeeded
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import java.math.BigInteger
 import java.util.concurrent.ConcurrentHashMap
@@ -44,7 +46,12 @@ class BigqueryDirectLoadDatabaseInitialStatusGatherer(
     }
 
     private fun getTableStatus(tableName: TableName): DirectLoadTableStatus? {
-        val table = bigquery.getTable(tableName.toTableId())
+        val table =
+            try {
+                bigquery.getTable(tableName.toTableId())
+            } catch (e: BigQueryException) {
+                throw e.toConfigExceptionIfNeeded()
+            }
         return table?.let { DirectLoadTableStatus(isEmpty = table.numRows == BigInteger.ZERO) }
     }
 }

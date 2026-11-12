@@ -89,7 +89,7 @@
           "title" : "Username and Password (Deprecated)",
           "type" : "object",
           "additionalProperties" : true,
-          "description" : "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details.",
+          "description" : "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication or a programmatic access token instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details.",
           "properties" : {
             "auth_type" : {
               "type" : "string",
@@ -105,6 +105,26 @@
             }
           },
           "required" : [ "auth_type", "password" ]
+        }, {
+          "title" : "Programmatic Access Token",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for authenticating with a Snowflake programmatic access token (PAT) generated for the username above.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "Programmatic Access Token" ],
+              "default" : "Programmatic Access Token"
+            },
+            "programmatic_access_token" : {
+              "type" : "string",
+              "description" : "The programmatic access token generated for the Snowflake user. See the <a\n href=\"https://docs.airbyte.com/integrations/destinations/snowflake#programmatic-access-token-authentication\">docs</a> for more\n information on how to generate a token.",
+              "title" : "Programmatic Access Token",
+              "order" : 0,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "auth_type", "programmatic_access_token" ]
         } ],
         "description" : "Determines the type of authentication that should be used.",
         "title" : "Authorization Method",
