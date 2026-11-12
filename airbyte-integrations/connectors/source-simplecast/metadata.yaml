@@ -26,7 +26,8 @@ data:
   releaseDate: 2024-10-03
   releaseStage: alpha
   releases:
-    enableProgressiveRollout: true
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/simplecast
   tags:
