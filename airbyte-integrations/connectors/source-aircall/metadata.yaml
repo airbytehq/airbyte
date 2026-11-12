@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.1.1
   dockerRepository: airbyte/source-aircall
   githubIssueLabel: source-aircall
   icon: aircall.svg
@@ -70,7 +70,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.48.0@sha256:cf202b16aef3395e0bdbaa1a2e66ff6aaf123f8836e6324743ded50c4b8d6586
   allowedHosts:
     hosts:
       - api.aircall.io
