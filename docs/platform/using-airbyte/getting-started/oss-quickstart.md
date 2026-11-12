@@ -196,7 +196,7 @@ Use [Homebrew](https://brew.sh/) to install abctl.
 
 1. Open Docker Desktop, [which you installed previously](#part-1-install-docker-desktop).
 
-2. Install Airbyte. By default, abctl creates an ingress rule that matches any host. To restrict the rule to the specified hostnames, use the `--host` flag.
+2. Install Airbyte. By default, abctl creates an ingress rule that matches any host. To restrict the ingress rules to the hostnames you specify, use the `--host` flag. abctl also adds rules for `localhost` and `host.docker.internal`.
 
     ```bash
     abctl local install --host example.com

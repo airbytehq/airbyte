@@ -42,7 +42,7 @@ curl -LsfS https://get.airbyte.com | bash -
 
 6. Run the `abctl` command and install Airbyte:
    :::tip
-   By default, `abctl` creates an ingress rule that matches any host. Use the `--host` flag to restrict the rule to the specified hostnames. For example, `abctl local install --host airbyte.company.example`.
+   By default, `abctl` creates an ingress rule that matches any host. Use the `--host` flag to restrict the ingress rules to the hostnames you specify. `abctl` also adds rules for `localhost` and `host.docker.internal`. For example, `abctl local install --host airbyte.company.example`.
    :::
 
 By default, `abctl` will listen on port 8000. If port 8000 is already in used or you require a different port, you can specify this by passing the `--port` flag to the `local install` command. For example, `abctl local install --port 6598`
