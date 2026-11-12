@@ -23,20 +23,25 @@ definitions:
             else 'organizations/' ~ stream_partition['organization_id'] }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  {% if config.get('organization_ids') %}Snapchat could not find one or more of the configured organizations ({{ config['organization_ids'] | join(', ') }}). Verify the values in the Organization IDs field and that the authenticated user has access to these organizations.{% else %}Snapchat could not find the organizations for the authenticated user. Verify that the authenticated user has access to at least one Snapchat organization.{% endif %}
         record_selector:
           type: RecordSelector
           extractor:
@@ -95,20 +100,25 @@ definitions:
             'adaccounts/' ~ stream_partition['ad_account_id'] }}
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
+              - type: HttpResponseFilter
+                action: FAIL
+                failure_type: config_error
+                http_codes:
+                  - 404
+                error_message: >-
+                  {% if config.get('ad_account_ids') %}Snapchat could not find one or more of the configured ad accounts ({{ config['ad_account_ids'] | join(', ') }}). Verify the values in the Ad Account IDs field and that the authenticated user has access to these ad accounts.{% else %}Snapchat could not find the ad accounts for one of the organizations. Verify the values in the Organization IDs field and that the authenticated user has access to these organizations.{% endif %}
         record_selector:
           type: RecordSelector
           extractor:
@@ -137,7 +147,7 @@ definitions:
                 parent_key: id
                 partition_field: organization_id
                 stream:
-                  $ref: "#/definitions/streams/organizations"
+                  $ref: "#/definitions/parent_streams/organizations"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -170,20 +180,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/creatives
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -207,7 +215,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -240,20 +248,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/ads
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -277,7 +283,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -310,20 +316,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/adsquads
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -347,7 +351,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -380,20 +384,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/segments
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -417,7 +419,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -450,20 +452,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/media
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -487,7 +487,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -520,20 +520,18 @@ definitions:
           path: adaccounts/{{ stream_slice['adaccount_id'] }}/campaigns
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -557,7 +555,7 @@ definitions:
               parent_key: id
               partition_field: adaccount_id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -598,20 +596,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -637,7 +633,7 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P1W
@@ -712,20 +708,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -751,7 +745,7 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P1M
@@ -825,20 +819,18 @@ definitions:
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -862,7 +854,7 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: "#/definitions/streams/adaccounts"
+                $ref: "#/definitions/parent_streams/adaccounts"
       transformations:
         - type: AddFields
           fields:
@@ -891,26 +883,24 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,coupon_used_local,coupon_used_usd
             granularity: HOUR
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1307,6 +1297,16 @@ definitions:
             - path:
                 - story_completes
               value: "{{ record.get('stats', {}).get('story_completes') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -1329,26 +1329,24 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: DAY
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1775,6 +1773,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -1796,26 +1804,24 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: LIFETIME
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2199,6 +2205,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -2221,26 +2237,24 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,coupon_used_local,coupon_used_usd
             granularity: HOUR
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -2637,6 +2651,16 @@ definitions:
             - path:
                 - story_completes
               value: "{{ record.get('stats', {}).get('story_completes') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -2659,26 +2683,24 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: DAY
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3105,6 +3127,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -3126,26 +3158,24 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: LIFETIME
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3529,6 +3559,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -3551,26 +3591,24 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,coupon_used_local,coupon_used_usd
             granularity: HOUR
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -3967,6 +4005,16 @@ definitions:
             - path:
                 - story_completes
               value: "{{ record.get('stats', {}).get('story_completes') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -3989,26 +4037,24 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: DAY
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4435,6 +4481,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -4456,26 +4512,24 @@ definitions:
           http_method: GET
           request_parameters:
             fields: >-
-              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach
+              android_installs,attachment_avg_view_time_millis,attachment_impressions,attachment_quartile_1,attachment_quartile_2,attachment_quartile_3,attachment_total_view_time_millis,attachment_view_completion,avg_screen_time_millis,avg_view_time_millis,impressions,ios_installs,quartile_1,quartile_2,quartile_3,screen_time_millis,spend,swipe_up_percent,swipes,total_installs,video_views,video_views_time_based,video_views_15s,view_completion,view_time_millis,paid_impressions,earned_impressions,total_impressions,play_time_millis,shares,saves,native_leads,conversion_purchases,conversion_purchases_value,conversion_save,conversion_start_checkout,conversion_add_cart,conversion_view_content,conversion_add_billing,conversion_searches,conversion_level_completes,conversion_app_opens,conversion_page_views,conversion_subscribe,conversion_ad_click,conversion_ad_view,conversion_complete_tutorial,conversion_invite,conversion_login,conversion_share,conversion_reserve,conversion_achievement_unlocked,conversion_add_to_wishlist,conversion_spend_credits,conversion_rate,conversion_start_trial,conversion_list_view,custom_event_1,custom_event_2,custom_event_3,custom_event_4,custom_event_5,story_opens,story_completes,attachment_frequency,attachment_uniques,frequency,uniques,total_reach,earned_reach,coupon_used_local,coupon_used_usd
             granularity: LIFETIME
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
             swipe_up_attribution_window: "{{ config[\"swipe_up_attribution_window\"] }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 1
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 403
-                    error_message: >-
-                      Got permission error when accessing URL. Skipping
-                      {{self.name}} stream.
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 1
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 403
+                error_message: >-
+                  Got permission error when accessing URL. Skipping
+                  {{self.name}} stream.
         record_selector:
           type: RecordSelector
           extractor:
@@ -4859,6 +4913,16 @@ definitions:
             - path:
                 - earned_reach
               value: "{{ record.get('stats', {}).get('earned_reach') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_local
+              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
+        - type: AddFields
+          fields:
+            - path:
+                - coupon_used_usd
+              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -4866,6 +4930,29 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/campaigns_stats_lifetime"
+  # Parent-only copies of organizations and adaccounts, without incremental_sync. The client-side
+  # start_date/end_date filter would otherwise drop an organization or ad account last updated outside the
+  # sync window, along with every stream under it. The two streams themselves keep the filter.
+  # Keep each name equal to its stream's: the CDK shares the parent response cache by name.
+  parent_streams:
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        $ref: "#/definitions/streams/organizations/retriever"
+      schema_loader:
+        $ref: "#/definitions/streams/organizations/schema_loader"
+    adaccounts:
+      type: DeclarativeStream
+      name: adaccounts
+      primary_key:
+        - id
+      retriever:
+        $ref: "#/definitions/streams/adaccounts/retriever"
+      schema_loader:
+        $ref: "#/definitions/streams/adaccounts/schema_loader"
   base_requester:
     type: HttpRequester
     url_base: https://adsapi.snapchat.com/v1/
@@ -7571,6 +7658,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -7951,6 +8048,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -8331,6 +8438,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -8711,6 +8828,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -9091,6 +9218,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -9471,6 +9608,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -9851,6 +9998,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -10231,6 +10388,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -10611,6 +10778,16 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
+      coupon_used_local:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in the ad account's currency (micro-currency).
+      coupon_used_usd:
+        type:
+          - "null"
+          - number
+        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"

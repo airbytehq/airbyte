@@ -125,7 +125,7 @@ class GcsV2CheckTest :
         private fun mutateCredentialField(
             baseConfig: String,
             field: String,
-            value: String
+            value: String,
         ): String {
             val config = mapper.readTree(baseConfig) as ObjectNode
             val credential = config.get("credential") as ObjectNode

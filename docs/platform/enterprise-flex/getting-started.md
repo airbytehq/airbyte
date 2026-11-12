@@ -33,9 +33,7 @@ Managed data planes need no additional infrastructure. Begin adding sources, des
 
 ## Self-managed data planes
 
-The following diagram illustrates a typical Enterprise Flex deployment running a self-managed data plane.
-
-![Airbyte Enterprise Flex Architecture Diagram](./img/enterprise-flex-architecture.png)
+See the [architecture diagram](/platform/hybrid-deployment#control-plane-and-data-plane) for an overview of a hybrid deployment.
 
 You can deploy a self-managed data plane in Airbyte two ways.
 

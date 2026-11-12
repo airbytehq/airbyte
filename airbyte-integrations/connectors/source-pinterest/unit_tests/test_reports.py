@@ -285,7 +285,8 @@ def test_custom_reports_status_filters(requests_mock, test_config, status_fields
             "PIN_PROMOTION_ID",
             "SPEND_IN_DOLLAR",
         ],
-        **status_fields,
+        # StatusChunkPartitionRouter sorts status values for deterministic partition keys.
+        **{field_name: sorted(values) for field_name, values in status_fields.items()},
     }
 
     def match_json_body(request):
@@ -308,30 +309,282 @@ def test_custom_reports_status_filters(requests_mock, test_config, status_fields
     assert records == [{"spend": 1}]
 
 
+@freeze_time("2026-05-21 12:00:00+00:00")
+def test_custom_reports_status_filters_chunk_over_limit_values(requests_mock, test_config):
+    report_download_url = "https://download.report/custom"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    campaign_statuses = ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"]
+    ad_group_statuses = ["RUNNING", "PAUSED"]
+    ad_statuses = ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"]
+    config = copy.deepcopy(test_config)
+    config["custom_reports"] = [
+        {
+            "name": "ad_performance_report",
+            "level": "PIN_PROMOTION",
+            "granularity": "DAY",
+            "columns": [
+                "ADVERTISER_ID",
+                "AD_ACCOUNT_ID",
+                "AD_ID",
+                "PIN_PROMOTION_ID",
+                "SPEND_IN_DOLLAR",
+            ],
+            "click_window_days": 30,
+            "engagement_window_days": 30,
+            "view_window_days": 30,
+            "conversion_report_time": "TIME_OF_AD_ACTION",
+            "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+            "start_date": "2026-05-19",
+            "campaign_statuses": campaign_statuses,
+            "ad_group_statuses": ad_group_statuses,
+            "ad_statuses": ad_statuses,
+        }
+    ]
+    expected_body_base = {
+        "start_date": "2026-05-20",
+        "end_date": "2026-05-21",
+        "level": "PIN_PROMOTION",
+        "granularity": "DAY",
+        "click_window_days": 30,
+        "engagement_window_days": 30,
+        "view_window_days": 30,
+        "conversion_report_time": "TIME_OF_AD_ACTION",
+        "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+        "columns": [
+            "ADVERTISER_ID",
+            "AD_ACCOUNT_ID",
+            "AD_ID",
+            "PIN_PROMOTION_ID",
+            "SPEND_IN_DOLLAR",
+        ],
+    }
+    actual_bodies = []
+
+    def match_json_body(request):
+        raw = request.body.decode() if isinstance(request.body, (bytes, bytearray)) else request.body
+        actual_body = json.loads(raw)
+        actual_bodies.append(actual_body)
+        assert {key: value for key, value in actual_body.items() if not key.endswith("_statuses")} == expected_body_base
+        assert 1 <= len(actual_body["campaign_statuses"]) <= 6
+        assert 1 <= len(actual_body["ad_group_statuses"]) <= 6
+        assert 1 <= len(actual_body["ad_statuses"]) <= 6
+        return True
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    requests_mock.post(
+        report_request_url,
+        json={"report_status": "IN_PROGRESS", "token": "token", "message": ""},
+        additional_matcher=match_json_body,
+    )
+    requests_mock.get(report_request_url, json={"report_status": "FINISHED", "url": report_download_url})
+    requests_mock.get(report_download_url, json={"ad_id": [{"spend": 1}]})
+
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "custom_ad_performance_report",
+            {
+                "DATE": "2026-05-20",
+            },
+        )
+        .build()
+    )
+
+    records = [
+        record.record.data for record in read_from_stream(config, "custom_ad_performance_report", SyncMode.incremental, state=state).records
+    ]
+
+    assert records == [{"spend": 1}, {"spend": 1}, {"spend": 1}, {"spend": 1}]
+    assert len(actual_bodies) == 4
+    # Chunks are built from sorted status values (deterministic partition keys); assert
+    # the full cartesian pairing so a repeated/dropped combination cannot pass.
+    campaign_chunks = (tuple(sorted(campaign_statuses)[:6]), tuple(sorted(campaign_statuses)[6:]))
+    ad_chunks = (tuple(sorted(ad_statuses)[:6]), tuple(sorted(ad_statuses)[6:]))
+    assert {(tuple(body["campaign_statuses"]), tuple(body["ad_group_statuses"]), tuple(body["ad_statuses"])) for body in actual_bodies} == {
+        (campaign_chunk, tuple(sorted(ad_group_statuses)), ad_chunk) for campaign_chunk in campaign_chunks for ad_chunk in ad_chunks
+    }
+
+
+@freeze_time("2026-05-21 12:00:00+00:00")
+def test_custom_reports_honor_pre_chunking_per_partition_state(requests_mock, test_config):
+    report_download_url = "https://download.report/custom"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    campaign_statuses = ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"]
+    config = copy.deepcopy(test_config)
+    config["custom_reports"] = [
+        {
+            "name": "ad_performance_report",
+            "level": "PIN_PROMOTION",
+            "granularity": "DAY",
+            "columns": ["ADVERTISER_ID", "AD_ACCOUNT_ID", "AD_ID", "PIN_PROMOTION_ID", "SPEND_IN_DOLLAR"],
+            "click_window_days": 30,
+            "engagement_window_days": 30,
+            "view_window_days": 30,
+            "conversion_report_time": "TIME_OF_AD_ACTION",
+            "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+            "start_date": "2026-05-01",
+            "campaign_statuses": campaign_statuses,
+        }
+    ]
+    actual_bodies = []
+
+    def match_json_body(request):
+        raw = request.body.decode() if isinstance(request.body, (bytes, bytearray)) else request.body
+        actual_body = json.loads(raw)
+        actual_bodies.append(actual_body)
+        return True
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    requests_mock.post(
+        report_request_url,
+        json={"report_status": "IN_PROGRESS", "token": "token", "message": ""},
+        additional_matcher=match_json_body,
+    )
+    requests_mock.get(report_request_url, json={"report_status": "FINISHED", "url": report_download_url})
+    requests_mock.get(report_download_url, json={"ad_id": [{"spend": 1}]})
+
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "custom_ad_performance_report",
+            {
+                "states": [
+                    {"partition": {"id": 123, "parent_slice": {}}, "cursor": {"DATE": "2026-05-20"}},
+                ]
+            },
+        )
+        .build()
+    )
+
+    records = [
+        record.record.data for record in read_from_stream(config, "custom_ad_performance_report", SyncMode.incremental, state=state).records
+    ]
+
+    assert records == [{"spend": 1}, {"spend": 1}]
+    assert {body["start_date"] for body in actual_bodies} == {"2026-05-20"}
+    assert {tuple(body["campaign_statuses"]) for body in actual_bodies} == {
+        tuple(sorted(campaign_statuses)[:6]),
+        tuple(sorted(campaign_statuses)[6:]),
+    }
+
+
+@freeze_time("2026-05-21 12:00:00+00:00")
+def test_custom_reports_migrate_state_for_at_or_under_limit_statuses(requests_mock, test_config):
+    """The only migration path reachable in production: master's spec capped every field at
+    6 values, so real legacy users have <=6 statuses - the partition key still changes shape
+    (gains a single-chunk key), and their cursor must be carried over, not reset."""
+    report_download_url = "https://download.report/custom"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    campaign_statuses = ["RUNNING", "PAUSED"]
+    config = copy.deepcopy(test_config)
+    config["custom_reports"] = [
+        {
+            "name": "ad_performance_report",
+            "level": "PIN_PROMOTION",
+            "granularity": "DAY",
+            "columns": ["ADVERTISER_ID", "AD_ACCOUNT_ID", "AD_ID", "PIN_PROMOTION_ID", "SPEND_IN_DOLLAR"],
+            "click_window_days": 30,
+            "engagement_window_days": 30,
+            "view_window_days": 30,
+            "conversion_report_time": "TIME_OF_AD_ACTION",
+            "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+            "start_date": "2026-05-01",
+            "campaign_statuses": campaign_statuses,
+        }
+    ]
+    actual_bodies = []
+
+    def match_json_body(request):
+        raw = request.body.decode() if isinstance(request.body, (bytes, bytearray)) else request.body
+        actual_bodies.append(json.loads(raw))
+        return True
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    requests_mock.post(
+        report_request_url,
+        json={"report_status": "IN_PROGRESS", "token": "token", "message": ""},
+        additional_matcher=match_json_body,
+    )
+    requests_mock.get(report_request_url, json={"report_status": "FINISHED", "url": report_download_url})
+    requests_mock.get(report_download_url, json={"ad_id": [{"spend": 1}]})
+
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "custom_ad_performance_report",
+            {
+                "states": [
+                    {"partition": {"id": 123, "parent_slice": {}}, "cursor": {"DATE": "2026-05-20"}},
+                ]
+            },
+        )
+        .build()
+    )
+
+    records = [
+        record.record.data for record in read_from_stream(config, "custom_ad_performance_report", SyncMode.incremental, state=state).records
+    ]
+
+    assert records == [{"spend": 1}]
+    assert len(actual_bodies) == 1
+    assert actual_bodies[0]["start_date"] == "2026-05-20"
+    assert actual_bodies[0]["campaign_statuses"] == sorted(campaign_statuses)
+
+
+@freeze_time("2026-05-21 12:00:00+00:00")
+def test_custom_reports_reject_over_limit_statuses_above_report_level(requests_mock, test_config):
+    """Chunking a filter finer than the report level would return the same aggregated row
+    from several chunks with partial sums - the connector must fail with a config error."""
+    config = copy.deepcopy(test_config)
+    config["custom_reports"] = [
+        {
+            "name": "ad_performance_report",
+            "level": "CAMPAIGN",
+            "granularity": "DAY",
+            "columns": ["ADVERTISER_ID", "AD_ACCOUNT_ID", "CAMPAIGN_ID", "SPEND_IN_DOLLAR"],
+            "click_window_days": 30,
+            "engagement_window_days": 30,
+            "view_window_days": 30,
+            "conversion_report_time": "TIME_OF_AD_ACTION",
+            "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+            "start_date": "2026-05-20",
+            "ad_statuses": ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+        }
+    ]
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+
+    output = read_from_stream(config, "custom_ad_performance_report", SyncMode.incremental, expecting_exception=True)
+
+    assert output.errors
+    error_messages = " ".join((error.trace.error.internal_message or "") + (error.trace.error.message or "") for error in output.errors)
+    assert "ad_statuses" in error_messages
+
+
 @pytest.mark.parametrize(
     "field_name,valid_statuses,invalid_statuses",
     [
         pytest.param(
             "campaign_statuses",
-            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED"],
-            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT", "DELETED_DRAFT"],
+            ["RUNNING", "RUNNING"],
             id="campaign_statuses",
         ),
         pytest.param(
             "ad_group_statuses",
-            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED"],
-            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT", "DELETED_DRAFT"],
+            ["RUNNING", "RUNNING"],
             id="ad_group_statuses",
         ),
         pytest.param(
             "ad_statuses",
-            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED"],
-            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT", "DELETED_DRAFT"],
+            ["APPROVED", "APPROVED"],
             id="ad_statuses",
         ),
     ],
 )
-def test_custom_report_status_filters_allow_at_most_six_values(test_config, field_name, valid_statuses, invalid_statuses):
+def test_custom_report_status_filters_allow_more_than_six_values(test_config, field_name, valid_statuses, invalid_statuses):
     status_schema = (
         get_source(test_config).spec(None).connectionSpecification["properties"]["custom_reports"]["items"]["properties"][field_name]
     )

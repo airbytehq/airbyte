@@ -35,7 +35,7 @@ class AllowedHosts : Serializable {
     @set:JsonProperty("hosts")
     @JsonProperty("hosts")
     @JsonPropertyDescription(
-        "An array of hosts that this connector can connect to.  AllowedHosts not being present for the source or destination means that access to all hosts is allowed.  An empty list here means that no network access is granted."
+        "An array of hosts that this connector can connect to.  AllowedHosts not being present for the source or destination means that access to all hosts is allowed.  An empty list here means that no network access is granted.",
     )
     var hosts: List<String>? = ArrayList()
 
@@ -74,7 +74,7 @@ class AllowedHosts : Serializable {
         sb.append("additionalProperties")
         sb.append('=')
         sb.append(
-            (if ((this.additionalProperties == null)) "<null>" else this.additionalProperties)
+            (if ((this.additionalProperties == null)) "<null>" else this.additionalProperties),
         )
         sb.append(',')
         if (sb[sb.length - 1] == ',') {

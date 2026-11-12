@@ -42,8 +42,8 @@ data class MySqlSourceJdbcStreamStateValue(
                             cursorField = listOf(cursor.id),
                             cursors = cursorCheckpoint.asText(),
                             streamName = stream.name,
-                            streamNamespace = stream.namespace!!
-                        )
+                            streamNamespace = stream.namespace!!,
+                        ),
                     )
             }
         }
@@ -62,7 +62,7 @@ data class MySqlSourceJdbcStreamStateValue(
                             pkName = primaryKeyField.id,
                             pkValue = primaryKeyCheckpoint.first().asText(),
                             stateType = StateType.PRIMARY_KEY.serialized,
-                        )
+                        ),
                     )
             }
         }
@@ -72,7 +72,7 @@ data class MySqlSourceJdbcStreamStateValue(
             primaryKey: List<EmittedField>,
             primaryKeyCheckpoint: List<JsonNode>,
             cursor: EmittedField,
-            stream: Stream
+            stream: Stream,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
             return when (primaryKeyCheckpoint.first().isNull) {
@@ -88,10 +88,10 @@ data class MySqlSourceJdbcStreamStateValue(
                                     MySqlSourceJdbcStreamStateValue(
                                         cursorField = listOf(cursor.id),
                                         streamName = stream.name,
-                                        streamNamespace = stream.namespace!!
-                                    )
+                                        streamNamespace = stream.namespace!!,
+                                    ),
                                 ),
-                        )
+                        ),
                     )
             }
         }
@@ -99,8 +99,7 @@ data class MySqlSourceJdbcStreamStateValue(
 
     enum class StateType {
         PRIMARY_KEY,
-        CURSOR_BASED,
-        ;
+        CURSOR_BASED;
 
         val serialized: String = name.lowercase()
     }

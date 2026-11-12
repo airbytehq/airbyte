@@ -193,8 +193,8 @@ The following example will set the "created[gte]" request parameter value to the
 ```yaml
 incremental_sync:
   type: DatetimeBasedCursor
-  start_datetime: "2021-02-01T00:00:00.000000+0000",
-  end_datetime: "2021-03-01T00:00:00.000000+0000",
+  start_datetime: "2021-02-01T00:00:00.000000+0000"
+  end_datetime: "2021-03-01T00:00:00.000000+0000"
   step: "P1D"
   start_time_option:
     type: "RequestOption"

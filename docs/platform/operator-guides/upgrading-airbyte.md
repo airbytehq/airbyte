@@ -4,6 +4,8 @@ products: oss-*
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import MinioImagePre23Helm from '@site/static/_minio_image_pre_2_3_helm.md';
+import MinioImagePre23Abctl from '@site/static/_minio_image_pre_2_3_abctl.md';
 
 # Upgrading Airbyte
 
@@ -17,13 +19,19 @@ Refer to [Managing Connector Updates](/platform/managing-airbyte/connector-updat
 
 ## Upgrading Airbyte deployed on Kubernetes with Helm
 
+<MinioImagePre23Helm />
+
 Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're not using a `values.yaml` to deploy Airbyte using Helm, you can jump directly to step `4`.
 
 1. If you're not sure which chart versions you're running, run `helm list -n <NAMESPACE>`.
 
-2. Check the [release notes](/release_notes/) to see what versions are available and review any requirements to upgrade. You can also see which Helm chart versions are available in the [Airbyte ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte).
+2. Check the [release notes](/release_notes/) to see what versions are available and review any requirements to upgrade. You can also see which Helm chart versions are available in the [Airbyte ArtifactHub](https://artifacthub.io/packages/helm/airbyte-v2/airbyte).
 
 3. Update your `values.yaml` file if necessary. In most cases, you only need to do this if you want to implement a new feature from the new version.
+
+   :::note
+   Pass your custom values file with `--values <your values file>` when you upgrade. Don't use `--reuse-values`: it reuses the old release's values instead of the new chart's defaults. This can omit new settings, such as `temporal.adminTools`, or retain outdated default images. Keep only your custom overrides in your values file, rather than copying all defaults from an older chart.
+   :::
 
 4. Run the following command to upgrade.
 
@@ -44,6 +52,8 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
    ```
 
 ## Upgrading Airbyte deployed with abctl
+
+<MinioImagePre23Abctl />
 
 `abctl` streamlines the way you manage a local installation of Airbyte Core.
 

@@ -1,63 +1,98 @@
 # Recurly
 
-## Overview
+This page contains the setup guide and reference information for the Recurly source connector. The connector reads data from the [Recurly v3 API](https://recurly.com/developers/api/v2021-02-25/index.html) (version `v2021-02-25`).
 
-The Recurly source supports _Full Refresh_ as well as _Incremental_ syncs.
+## Prerequisites
 
-_Full Refresh_ sync means every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
-_Incremental_ syn means only changed resources are copied from Recurly. For the first run, it will be a Full Refresh sync.
+- A Recurly site
+- A Recurly user with a role that includes the Integration permission, so you can view API credentials
+- A private API key for the site you want to sync
 
-### Output schema
+## Setup guide
 
-Several output streams are available from this source:
+### Step 1: Get a Recurly API key
+
+1. Sign in to Recurly as a user with the Integration permission.
+2. Go to **Integrations** > **API Credentials**.
+3. Copy an existing private API key, or add a new private key for Airbyte.
+
+Recurly private API keys grant full access to your site's data, and Recurly doesn't offer read-only keys. Creating a dedicated key for Airbyte lets you revoke its access without affecting other integrations. For more information, see [Recurly API keys](https://docs.recurly.com/docs/api-keys).
+
+### Step 2: Set up the Recurly connector in Airbyte
+
+1. In Airbyte, go to **Sources** and add a new source. Select **Recurly**.
+2. For **API Key**, paste the private API key from Step 1.
+3. (Optional) For **Start Date**, enter the UTC date and time to start replicating data from, in the format `YYYY-MM-DDTHH:mm:ssZ`. If you leave it empty, the connector replicates the last five years of data.
+4. (Optional) For **End Date**, enter the UTC date and time to stop replicating data at, in the format `YYYY-MM-DDTHH:mm:ssZ`. Records updated after this time aren't replicated. If you leave it empty, the connector replicates data up to the time of the sync.
+5. (Optional) For **Number of concurrent threads**, enter the number of requests the connector sends to Recurly in parallel, from 1 to 20. The default is 10.
+6. (Optional) For **Days in length for each API call to get data**, enter the number of days of data the connector requests at a time from the accounts stream, from 1 to 365. The default is 30. Smaller values result in more API calls but better concurrency.
+7. (Optional) Turn on **Use Sandbox Environment** if the API key belongs to a Recurly sandbox site. Sandbox sites have a lower rate limit than production sites.
+8. Click **Set up source**.
+
+## Supported sync modes
+
+The Recurly source connector supports the following sync modes:
+
+- Full Refresh
+- Incremental
+
+The Export Dates, Gift Cards, External Subscriptions, External Subscription Payment Phases, and Usage Records streams support Full Refresh only. All other streams support incremental syncs. Most incremental streams use `updated_at` as the cursor. The Account Notes stream uses `created_at`.
+
+## Supported streams
 
 - [Accounts](https://docs.recurly.com/docs/accounts)
-- [Account Notes](https://docs.recurly.com/docs/accounts#account-notes)
+- [Account Acquisitions](https://recurly.com/developers/api/v2021-02-25/index.html#tag/account_acquisition)
 - [Account Coupon Redemptions](https://docs.recurly.com/docs/coupons#redemptions)
+- [Account Notes](https://docs.recurly.com/docs/accounts#account-notes)
 - [Add Ons](https://docs.recurly.com/docs/plans#add-ons-1)
 - [Billing Infos](https://docs.recurly.com/docs/accounts#billing-info)
 - [Coupons](https://docs.recurly.com/docs/coupons)
-- [Unique Coupons](https://docs.recurly.com/docs/bulk-unique-coupons)
 - [Credit Payments](https://docs.recurly.com/docs/invoices)
-- [Automated Exports](https://docs.recurly.com/docs/export-overview)
+- [Export Dates](https://docs.recurly.com/docs/export-overview) (Full Refresh only)
+- [External Subscriptions](https://developers.recurly.com/api/v2021-02-25/index.html#operation/list_external_subscriptions)
+- [External Subscription Payment Phases](https://developers.recurly.com/api/v2021-02-25/index.html#operation/list_external_subscription_external_payment_phases)
+- [Gift Cards](https://docs.recurly.com/docs/gift-cards)
 - [Invoices](https://docs.recurly.com/docs/invoices)
-- [Measured Units](https://developers.recurly.com/api/v2021-02-25/index.html#tag/measured_unit)
+- [Items](https://developers.recurly.com/api/v2021-02-25/index.html#operation/list_items)
 - [Line Items](https://docs.recurly.com/docs/invoices#line-items)
+- [Measured Units](https://recurly.com/developers/api/v2021-02-25/index.html#tag/measured_unit)
 - [Plans](https://docs.recurly.com/docs/plans)
 - [Shipping Addresses](https://docs.recurly.com/docs/shipping-addresses)
 - [Shipping Methods](https://docs.recurly.com/docs/shipping#shipping-methods)
 - [Subscriptions](https://docs.recurly.com/docs/subscriptions)
-- [Subscription Changes](https://docs.recurly.com/docs/change-subscription#subscription-changes)
 - [Transactions](https://docs.recurly.com/docs/transactions)
+- [Unique Coupons](https://docs.recurly.com/docs/bulk-unique-coupons)
+- Unique Coupons Parent
+- [Usage Records](https://docs.recurly.com/docs/usage-based-billing)
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+The Usage Records stream includes both billed and unbilled usage.
 
-### Features
+Some streams only return data when the matching feature is enabled on your Recurly site:
 
-| Feature                       | Supported?  |
-| :---------------------------- | :---------- |
-| Full Refresh Sync             | Yes         |
-| Incremental Sync              | Yes         |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection                | Yes         |
-| Namespaces                    | No          |
+| Stream | Required Recurly feature |
+| :----- | :----------------------- |
+| Gift Cards | Gift cards |
+| External Subscriptions, External Subscription Payment Phases | External subscriptions |
+| Usage Records | Usage-based billing |
+| Items | Item catalog, which also requires Credit Invoices |
 
-### Performance considerations
+If Recurly reports that your site lacks the required feature for one of these streams or for Account Acquisitions, the connector logs a message, skips the stream, and the sync continues.
 
-The Recurly connector should not run into Recurly API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Account Coupon Redemptions, Account Notes, Billing Infos, and Shipping Addresses streams make one request per account, so they can take longer to sync on sites with many accounts.
 
-## Getting started
+## Limitations and troubleshooting
 
-### Requirements
+### Rate limits
 
-- Recurly Account
-- Recurly API Key
+Recurly limits API requests over a sliding five-minute window. By default, production sites allow 5,000 GET requests and sandbox sites allow 2,000 requests in that window. The connector paces its requests to stay within the limit for the site type you select with **Use Sandbox Environment**. See [Recurly API limits](https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits).
 
-### Setup guide
+Recurly applies the limit to the whole site, but the connector only tracks its own requests. If other connections or integrations use the same Recurly site, the connector can still receive HTTP 429 responses. The connector retries rate-limited and server error responses up to five times with exponential backoff.
 
-Generate a API key using the [Recurly documentation](https://docs.recurly.com/docs/api-keys#section-find-or-generate-your-api-key)
+The Usage Records stream reads every subscription on every sync, then makes one API request per subscription add-on. On large sites, it can be slow and use a large share of the rate limit. Enable this stream only when you need usage records. If your connection automatically propagates new streams after a schema refresh, check that Usage Records wasn't selected unintentionally.
 
-We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+### Authentication errors
+
+If Recurly returns HTTP 401 or 403, the sync fails with a configuration error. Make sure the API key is an active private key for the site you want to sync, then update the **API Key** field.
 
 ## IP allow list
 
@@ -70,6 +105,22 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.4.0 | 2026-11-12 | [91305](https://github.com/airbytehq/airbyte/pull/91305) | Add account_acquisitions, gift_cards, external_subscriptions, external_subscription_payment_phases, usage_records and items streams |
+| 1.3.71 | 2026-11-10 | [91303](https://github.com/airbytehq/airbyte/pull/91303) | Pace requests to Recurly's published rate limits, retry rate-limited and server error responses with exponential backoff, show actionable API key errors, and accept start and end dates saved without the trailing `Z` |
+| 1.3.70 | 2026-11-10 | [91708](https://github.com/airbytehq/airbyte/pull/91708) | Update dependencies |
+| 1.3.69 | 2026-11-03 | [90721](https://github.com/airbytehq/airbyte/pull/90721) | Update dependencies |
+| 1.3.68 | 2026-10-20 | [89408](https://github.com/airbytehq/airbyte/pull/89408) | Update dependencies |
+| 1.3.67 | 2026-10-13 | [88767](https://github.com/airbytehq/airbyte/pull/88767) | Update dependencies |
+| 1.3.66 | 2026-10-06 | [88013](https://github.com/airbytehq/airbyte/pull/88013) | Update dependencies |
+| 1.3.65 | 2026-09-29 | [87315](https://github.com/airbytehq/airbyte/pull/87315) | Update dependencies |
+| 1.3.64 | 2026-09-22 | [86794](https://github.com/airbytehq/airbyte/pull/86794) | Update dependencies |
+| 1.3.63 | 2026-09-15 | [86212](https://github.com/airbytehq/airbyte/pull/86212) | Update dependencies |
+| 1.3.62 | 2026-09-08 | [85632](https://github.com/airbytehq/airbyte/pull/85632) | Update dependencies |
+| 1.3.61 | 2026-08-18 | [84729](https://github.com/airbytehq/airbyte/pull/84729) | Update dependencies |
+| 1.3.60 | 2026-08-11 | [84098](https://github.com/airbytehq/airbyte/pull/84098) | Update dependencies |
+| 1.3.59 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 1.3.58 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 1.3.56 — 1.3.57 is built on SDM 7.23.7, which breaks bundled custom components |
+| 1.3.57 | 2026-07-28 | [83069](https://github.com/airbytehq/airbyte/pull/83069) | Update dependencies |
 | 1.3.56 | 2026-07-21 | [82560](https://github.com/airbytehq/airbyte/pull/82560) | Update dependencies |
 | 1.3.55 | 2026-07-14 | [81973](https://github.com/airbytehq/airbyte/pull/81973) | Update dependencies |
 | 1.3.54 | 2026-06-30 | [81209](https://github.com/airbytehq/airbyte/pull/81209) | Update dependencies |

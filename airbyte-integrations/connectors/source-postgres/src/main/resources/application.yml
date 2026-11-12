@@ -38,10 +38,18 @@ airbyte:
 
     exception-classifiers:
       regex:
+        # Run the regex rules ahead of the DefaultExceptionClassifier (order 1), which maps any
+        # ConfigErrorException / TransientErrorException / SystemErrorException to its raw message
+        # and would otherwise shadow them. This lets the rules below refine ConfigErrorExceptions
+        # the CDK throws, such as "Discovered zero tables.". Typed exceptions that match no rule
+        # still fall through to the default classifier unchanged.
+        order: 0
+
         # The following rules are for the RegexExceptionClassifier [0] which are applied
         # sequentially on a Throwable's message [1] and its nested messages by cause [2].
         #
-        # This classifier's rules are applied ahead of the JdbcExceptionClassifier's further down.
+        # This classifier's rules are applied ahead of the DefaultExceptionClassifier (see order
+        # above) and of the JdbcExceptionClassifier's further down.
         #
         # [0] https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/output/ExceptionClassifier.kt
         # [1] https://docs.oracle.com/javase/8/docs/api/java/lang/Throwable.html#getMessage--
@@ -147,6 +155,72 @@ airbyte:
             error: transient
             group: Postgres Debezium Connection Error
             output: The sync encountered an unexpected error in the change event producer and has stopped. Please check the logs for details and troubleshoot accordingly.
+
+          # Unreachable host rules. The same rule serves a failed connection test (CHECK) and a
+          # failed sync, so the wording must work for both. PgJDBC wraps every I/O failure during
+          # connect (unknown host, connect timeout, no route to host) in "The connection attempt
+          # failed." and a refused TCP connection in "Connection to host:port refused".
+          - pattern: (?i).*The connection attempt failed\..*
+            input-example: "org.postgresql.util.PSQLException: The connection attempt failed."
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that Postgres accepts remote connections (listen_addresses, pg_hba.conf),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
+              - https://docs.airbyte.com/integrations/sources/postgres
+
+          - pattern: (?i).*Connection to \S+ refused\. Check that the hostname and port are correct.*
+            input-example: "org.postgresql.util.PSQLException: Connection to localhost:5433 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections."
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that Postgres accepts remote connections (listen_addresses, pg_hba.conf),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
+              - https://docs.airbyte.com/integrations/sources/postgres
+
+          # Thrown by org.postgresql.Driver when a loginTimeout is set (e.g. via JDBC URL params)
+          # and the connection is not established within it.
+          - pattern: (?i).*Connection attempt timed out\..*
+            input-example: "org.postgresql.util.PSQLException: Connection attempt timed out."
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that Postgres accepts remote connections (listen_addresses, pg_hba.conf),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
+              - https://docs.airbyte.com/integrations/sources/postgres
+
+          # PgJDBC itself wraps an unresolvable host in "The connection attempt failed." (above);
+          # this rule catches the DNS failure when another layer surfaces it directly.
+          - pattern: (?i).*java\.net\.UnknownHostException.*
+            input-example: "java.lang.RuntimeException: java.net.UnknownHostException: nonexistent-host.invalid"
+            error: config
+            output: >-
+              Airbyte could not reach the database at the configured host and port.
+              Check the host and port, that Postgres accepts remote connections (listen_addresses, pg_hba.conf),
+              and that your firewall or security group allows Airbyte's IP addresses.
+            reference-links:
+              - https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist
+              - https://docs.airbyte.com/integrations/sources/postgres
+
+          # The CDK's CheckOperation throws ConfigErrorException("Discovered zero tables.") when the
+          # connection test finds no table in any discovered schema. The rule only sees that
+          # exception because this classifier runs ahead of the default one (order above).
+          - pattern: (?i)^Discovered zero tables\.?$
+            input-example: "Discovered zero tables."
+            error: config
+            output: >-
+              No tables are visible to the configured user in the selected database and schemas.
+              Grant USAGE on each schema and SELECT on the tables to sync
+              (GRANT USAGE ON SCHEMA <schema> TO <user>; GRANT SELECT ON ALL TABLES IN SCHEMA <schema> TO <user>),
+              check the database name and the Schemas setting, and check that no table filter excludes every table.
+            reference-links:
+              - https://docs.airbyte.com/integrations/sources/postgres#step-1-create-a-dedicated-read-only-postgres-user
 
       jdbc:
         # The following rules are for the JdbcExceptionClassifier [0] which are applied on a

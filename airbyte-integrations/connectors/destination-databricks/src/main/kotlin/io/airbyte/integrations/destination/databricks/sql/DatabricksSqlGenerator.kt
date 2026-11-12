@@ -34,7 +34,8 @@ class DatabricksSqlGenerator(
         |FROM ${config.database.quote()}.information_schema.schemata
         |WHERE catalog_name = ${config.database.toSqlLiteral()}
         |AND schema_name = ${namespace.toSqlLiteral()}
-        """.trimMargin()
+        """
+            .trimMargin()
 
     fun tableExists(tableName: TableName): String =
         """
@@ -43,7 +44,8 @@ class DatabricksSqlGenerator(
         |WHERE table_catalog = ${config.database.toSqlLiteral()}
         |AND table_schema = ${tableName.namespace.toSqlLiteral()}
         |AND table_name = ${tableName.name.toSqlLiteral()}
-        """.trimMargin()
+        """
+            .trimMargin()
 
     fun createTable(
         tableName: TableName,
@@ -52,18 +54,17 @@ class DatabricksSqlGenerator(
     ): String {
         val userColumns = tableSchema.columnSchema.finalSchema
 
-        val columnDeclarations =
-            buildList {
-                    metaColumns.forEach { (columnName, columnType) ->
-                        val nullability = if (columnType.nullable) "" else " NOT NULL"
-                        add("${columnName.quote()} ${columnType.type}$nullability")
-                    }
-                    userColumns.forEach { (columnName, columnType) ->
-                        val nullability = if (columnType.nullable) "" else " NOT NULL"
-                        add("${columnName.quote()} ${columnType.type}$nullability")
-                    }
-                }
-                .joinToString(",\n    ")
+        val columnDeclarations = buildList {
+            metaColumns.forEach { (columnName, columnType) ->
+                val nullability = if (columnType.nullable) "" else " NOT NULL"
+                add("${columnName.quote()} ${columnType.type}$nullability")
+            }
+            userColumns.forEach { (columnName, columnType) ->
+                val nullability = if (columnType.nullable) "" else " NOT NULL"
+                add("${columnName.quote()} ${columnType.type}$nullability")
+            }
+        }
+            .joinToString(",\n    ")
 
         val allColumnTypes = metaColumns.values + userColumns.values
         val tblProperties =
@@ -99,7 +100,8 @@ class DatabricksSqlGenerator(
             |INSERT INTO ${fullyQualifiedName(targetTableName)} ($columnList)
             |SELECT $columnList
             |FROM ${fullyQualifiedName(sourceTableName)}
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     fun upsertTable(
@@ -112,10 +114,17 @@ class DatabricksSqlGenerator(
             throw IllegalArgumentException("Cannot perform upsert without primary key")
         }
 
+        val stagingColumns = buildList {
+            addAll(metaColumns.keys)
+            addAll(tableSchema.columnSchema.finalSchema.keys)
+        }
+
         // Primary key matching
         val pkEquivalent =
             pks.joinToString(" AND ") { columnName ->
-                "final.${columnName.quote()} = staging.${columnName.quote()}"
+                val targetColumn = "final.${columnName.quote()}"
+                val sourceColumn = "staging.${columnName.quote()}"
+                "($targetColumn = $sourceColumn OR ($targetColumn IS NULL AND $sourceColumn IS NULL))"
             }
 
         // Cursor comparison to determine which record is newer
@@ -142,14 +151,25 @@ class DatabricksSqlGenerator(
         val cdcSkipInsertClause =
             if (cdcHardDeleteEnabled) "AND staging.${CDC_DELETED_AT_COLUMN.quote()} IS NULL" else ""
 
+        // UPDATE SET: assign only staging columns; retained columns keep their values
+        val updateSetClause =
+            stagingColumns.joinToString(", ") { col ->
+                "final.${col.quote()} = staging.${col.quote()}"
+            }
+
+        // INSERT: list only staging columns; retained columns get NULL/default
+        val insertColumns = stagingColumns.joinToString(", ") { it.quote() }
+        val insertValues = stagingColumns.joinToString(", ") { "staging.${it.quote()}" }
+
         return """
             |MERGE INTO ${fullyQualifiedName(targetTableName)} AS final
             |USING ($selectSource) AS staging
             |ON $pkEquivalent
             |$cdcDeleteClause
-            |WHEN MATCHED AND $cursorComparison THEN UPDATE SET *
-            |WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT *
-        """.trimMargin()
+            |WHEN MATCHED AND $cursorComparison THEN UPDATE SET $updateSetClause
+            |WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT ($insertColumns) VALUES ($insertValues)
+        """
+            .trimMargin()
     }
 
     /** Returns a query that counts all rows in the table. */
@@ -162,7 +182,8 @@ class DatabricksSqlGenerator(
         |SELECT ${COLUMN_NAME_AB_GENERATION_ID.quote()}
         |FROM ${fullyQualifiedName(tableName)}
         |LIMIT 1
-        """.trimMargin()
+        """
+            .trimMargin()
 
     /** Uses three-part filtering (catalog, schema, table) for Unity Catalog */
     fun getTableSchema(tableName: TableName): String =
@@ -173,7 +194,8 @@ class DatabricksSqlGenerator(
         |AND table_schema = ${tableName.namespace.toSqlLiteral()}
         |AND table_name = ${tableName.name.toSqlLiteral()}
         |ORDER BY ordinal_position
-        """.trimMargin()
+        """
+            .trimMargin()
 
     fun alterTable(
         tableName: TableName,
@@ -188,7 +210,7 @@ class DatabricksSqlGenerator(
             return listOf(recreateTableWithCast(tableName, changeset))
         }
 
-        // No type changes — use standard ADD / DROP COLUMN statements.
+        // No type changes — use standard ADD COLUMN statements.
         val fqn = fullyQualifiedName(tableName)
         val statements = mutableListOf<String>()
 
@@ -201,16 +223,6 @@ class DatabricksSqlGenerator(
 
         changeset.columnsToAdd.forEach { (name, columnType) ->
             statements.add("ALTER TABLE $fqn ADD COLUMN ${name.quote()} ${columnType.type}")
-        }
-
-        if (changeset.columnsToDrop.isNotEmpty()) {
-            // Enable Column Mapping to support DROP COLUMN on Delta tables.
-            statements.add(
-                "ALTER TABLE $fqn SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name')",
-            )
-            changeset.columnsToDrop.forEach { (name, _) ->
-                statements.add("ALTER TABLE $fqn DROP COLUMN ${name.quote()}")
-            }
         }
 
         return statements
@@ -247,7 +259,8 @@ class DatabricksSqlGenerator(
                 add("CAST(NULL AS ${columnType.type}) AS ${name.quote()}")
             }
 
-            // Dropped columns — omitted from SELECT
+            // Previously-dropped columns — retained as-is
+            changeset.columnsToDrop.forEach { (name, _) -> add(name.quote()) }
         }
 
         return "CREATE OR REPLACE TABLE $fqn AS SELECT ${selectColumns.joinToString(", ")} FROM $fqn"
@@ -259,6 +272,10 @@ class DatabricksSqlGenerator(
     fun createStagingVolume(tableName: TableName): String =
         "CREATE VOLUME IF NOT EXISTS ${fullyQualifiedName(stagingVolumeName(tableName))}"
 
+    /** Drops the Unity Catalog Volume used for staging files for the given table. */
+    fun dropStagingVolume(tableName: TableName): String =
+        "DROP VOLUME IF EXISTS ${fullyQualifiedName(stagingVolumeName(tableName))}"
+
     /** load a staged Avro file from a Unity Catalog Volume into the target table */
     fun copyIntoFromVolume(
         tableName: TableName,
@@ -268,7 +285,8 @@ class DatabricksSqlGenerator(
         |COPY INTO ${fullyQualifiedName(tableName)}
         |FROM '$stagedFilePath'
         |FILEFORMAT = AVRO
-        """.trimMargin()
+        """
+            .trimMargin()
 
     /** Returns a [TableName] for the staging volume associated with the given table. */
     internal fun stagingVolumeName(tableName: TableName): TableName =
@@ -303,7 +321,8 @@ class DatabricksSqlGenerator(
             |    FROM ${fullyQualifiedName(sourceTableName)}
             |  ) AS deduplicated
             |  WHERE row_number = 1
-        """.trimMargin()
+        """
+            .trimMargin()
     }
 
     /** Builds a SQL comparison to determine if the source record is newer than the target */
@@ -319,7 +338,8 @@ class DatabricksSqlGenerator(
                 |OR ($targetCursor = $sourceCursor AND $targetExtracted < $sourceExtracted)
                 |OR ($targetCursor IS NULL AND $sourceCursor IS NOT NULL)
                 |OR ($targetCursor IS NULL AND $sourceCursor IS NULL AND $targetExtracted < $sourceExtracted))
-            """.trimMargin()
+            """
+                .trimMargin()
         }
         return "final.$extractedAt < staging.$extractedAt"
     }

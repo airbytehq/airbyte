@@ -33,7 +33,7 @@ class LegacyRecordDiffer
 constructor(
     private val rawRecordColumnNames: Map<String, String>,
     private val finalRecordColumnNames: Map<String, String>,
-    vararg identifyingColumns: Pair<ColumnId, AirbyteType>
+    vararg identifyingColumns: Pair<ColumnId, AirbyteType>,
 ) {
     private val rawRecordIdentityComparator: Comparator<JsonNode>
     private val rawRecordSortComparator: Comparator<JsonNode>
@@ -47,7 +47,7 @@ constructor(
      * @param rawRecordColumnNames
      * @param finalRecordColumnNames
      * @param identifyingColumns Which fields constitute a unique record (typically PK+cursor). Do
-     * _not_ include extracted_at; it is handled automatically.
+     *   _not_ include extracted_at; it is handled automatically.
      */
     init {
         val rawTableIdentifyingColumns: Array<Pair<String, AirbyteType>> =
@@ -83,11 +83,11 @@ constructor(
         expectedRawRecords: List<JsonNode>,
         actualRawRecords: List<JsonNode>,
         expectedFinalRecords: List<JsonNode>,
-        actualFinalRecords: List<JsonNode>
+        actualFinalRecords: List<JsonNode>,
     ) {
         Assertions.assertAll(
             Executable { diffRawTableRecords(expectedRawRecords, actualRawRecords) },
-            Executable { diffFinalTableRecords(expectedFinalRecords, actualFinalRecords) }
+            Executable { diffFinalTableRecords(expectedFinalRecords, actualFinalRecords) },
         )
     }
 
@@ -99,7 +99,7 @@ constructor(
                 rawRecordIdentityComparator,
                 rawRecordSortComparator,
                 rawRecordIdentityExtractor,
-                rawRecordColumnNames
+                rawRecordColumnNames,
             )
 
         if (!diff.isEmpty()) {
@@ -115,7 +115,7 @@ constructor(
                 finalRecordIdentityComparator,
                 finalRecordSortComparator,
                 finalRecordIdentityExtractor,
-                finalRecordColumnNames
+                finalRecordColumnNames,
             )
 
         if (!diff.isEmpty()) {
@@ -136,7 +136,7 @@ constructor(
         if (airbyteData.isTextual) {
             airbyteData = Jsons.deserializeExact(airbyteData.asText())
         }
-        Streams.stream(airbyteData.fields()).forEach { field: Map.Entry<String, JsonNode> ->
+        airbyteData.properties().forEach { field: Map.Entry<String, JsonNode> ->
             if (!copy.has(field.key)) {
                 copy.set<JsonNode>(field.key, field.value)
             } else {
@@ -144,7 +144,7 @@ constructor(
                 // _airbyte_raw_id)
                 // We don't support that in production, so we don't support it here either.
                 throw RuntimeException(
-                    "Cannot lift field " + field.key + " because it already exists in the record."
+                    "Cannot lift field " + field.key + " because it already exists in the record.",
                 )
             }
         }
@@ -164,26 +164,25 @@ constructor(
      */
     private fun buildIdentityComparator(
         identifyingColumns: Array<Pair<String, AirbyteType>>,
-        columnNames: Map<String, String>
+        columnNames: Map<String, String>,
     ): Comparator<JsonNode> {
         // Start with a noop comparator for convenience
         var comp: Comparator<JsonNode> = Comparator.comparing { record -> 0 }
         for (column in identifyingColumns) {
             comp = comp.thenComparing { record -> extract(record!!, column.first, column.second) }
         }
-        comp =
-            comp.thenComparing { record ->
-                asTimestampWithTimezone(
-                    record!![getMetadataColumnName(columnNames, "_airbyte_extracted_at")]
-                )
-            }
+        comp = comp.thenComparing { record ->
+            asTimestampWithTimezone(
+                record!![getMetadataColumnName(columnNames, "_airbyte_extracted_at")],
+            )
+        }
         return comp
     }
 
     /** See [&lt;][.buildIdentityComparator] for an explanation of dataExtractor. */
     private fun buildIdentityExtractor(
         identifyingColumns: Array<Pair<String, AirbyteType>>,
-        columnNames: Map<String, String>
+        columnNames: Map<String, String>,
     ): Function<JsonNode, String> {
         return Function { record: JsonNode ->
             (Arrays.stream(identifyingColumns)
@@ -193,7 +192,7 @@ constructor(
                 .collect(Collectors.joining(", ")) +
                 getPrintableFieldIfPresent(
                     record,
-                    getMetadataColumnName(columnNames, "_airbyte_extracted_at")
+                    getMetadataColumnName(columnNames, "_airbyte_extracted_at"),
                 ))
         }
     }
@@ -209,11 +208,11 @@ constructor(
      * expected to be present.
      *
      * @param identityComparator Returns 0 iff two records are the "same" record (i.e. have the same
-     * PK+cursor+extracted_at)
+     *   PK+cursor+extracted_at)
      * @param sortComparator Behaves identically to identityComparator, but if two records are the
-     * same, breaks that tie using _airbyte_raw_id
+     *   same, breaks that tie using _airbyte_raw_id
      * @param recordIdExtractor Dump the record's PK+cursor+extracted_at into a human-readable
-     * string
+     *   string
      * @return The diff, or empty string if there were no differences
      */
     private fun diffRecords(
@@ -222,7 +221,7 @@ constructor(
         identityComparator: Comparator<JsonNode>,
         sortComparator: Comparator<JsonNode>,
         recordIdExtractor: Function<JsonNode, String>,
-        columnNames: Map<String, String>
+        columnNames: Map<String, String>,
     ): String {
         val expectedRecords = originalExpectedRecords.sortedWith(sortComparator)
         val actualRecords = originalActualRecords.sortedWith(sortComparator)
@@ -279,7 +278,7 @@ constructor(
         recordIdExtractor: Function<JsonNode, String>,
         expectedRecord: JsonNode,
         actualRecord: JsonNode,
-        columnNames: Map<String, String>
+        columnNames: Map<String, String>,
     ): String {
         var foundMismatch = false
         var mismatchedRecordMessage =
@@ -323,7 +322,7 @@ constructor(
     private fun checkForExtraOrNonNullFields(
         expectedRecord: JsonNode,
         actualRecord: JsonNode,
-        columnNames: Map<String, String>
+        columnNames: Map<String, String>,
     ): LinkedHashMap<String, JsonNode> {
         val extraFields = LinkedHashMap<String, JsonNode>()
         for (column in Streams.stream<String>(actualRecord.fieldNames()).sorted()) {
@@ -340,7 +339,7 @@ constructor(
 
     private fun getMetadataColumnName(
         columnNames: Map<String, String>,
-        columnName: String
+        columnName: String,
     ): String {
         return columnNames.getOrDefault(columnName, columnName)
     }
@@ -356,7 +355,7 @@ constructor(
 
         private fun areJsonNodesEquivalent(
             expectedValue: JsonNode?,
-            actualValue: JsonNode?
+            actualValue: JsonNode?,
         ): Boolean {
             return if (expectedValue == null || actualValue == null) {
                 // If one of the values is null, then we expect both of them to be null.
@@ -395,7 +394,7 @@ constructor(
         private fun generateFieldError(
             fieldname: String,
             expectedValue: JsonNode?,
-            actualValue: JsonNode?
+            actualValue: JsonNode?,
         ): String {
             val expectedString = expectedValue?.toString() ?: "SQL NULL (i.e. no value)"
             val actualString = actualValue?.toString() ?: "SQL NULL (i.e. no value)"
@@ -507,6 +506,7 @@ constructor(
         private class Field(f: Comparable<*>) : Comparable<Field> {
             private val stringValue = f.toString()
             private val realType: Class<*> = f.javaClass
+
             override fun compareTo(o: Field): Int {
                 if (realType.canonicalName == o.realType.canonicalName) {
                     return stringValue.compareTo(o.stringValue)
@@ -536,7 +536,7 @@ constructor(
                     }
                 } else {
                     node.toString()
-                }
+                },
             )
         }
     }

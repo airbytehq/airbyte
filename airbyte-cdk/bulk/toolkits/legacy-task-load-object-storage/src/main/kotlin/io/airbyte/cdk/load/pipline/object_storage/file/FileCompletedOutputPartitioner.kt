@@ -19,7 +19,7 @@ class FileCompletedOutputPartitioner<K : WithStream, T : RemoteObject<*>> :
     ObjectLoaderCompletedUploadPartitioner<K, ObjectLoaderPartLoader.PartResult<T>, StreamKey, T> {
     override fun getOutputKey(
         inputKey: K,
-        output: ObjectLoaderUploadCompleter.UploadResult<T>
+        output: ObjectLoaderUploadCompleter.UploadResult<T>,
     ): StreamKey {
         return StreamKey(inputKey.stream)
     }

@@ -8,7 +8,7 @@ class NoOpDestinationV1V2Migrator : DestinationV1V2Migrator {
     override fun migrateIfNecessary(
         sqlGenerator: SqlGenerator,
         destinationHandler: DestinationHandler<*>,
-        streamConfig: StreamConfig
+        streamConfig: StreamConfig,
     ) {
         // Do nothing
     }

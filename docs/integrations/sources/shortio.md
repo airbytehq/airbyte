@@ -48,7 +48,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
-| 0.3.59 | 2026-07-22 | [82692](https://github.com/airbytehq/airbyte/pull/82692) | Migrate `clicks` stream to the `statistics.short.io` `last_clicks` endpoint (old `api-v2.short.cm` host decommissioned) and fix its pagination |
+| 0.3.61 | 2026-11-12 | [82692](https://github.com/airbytehq/airbyte/pull/82692) | Migrate `clicks` stream to the `statistics.short.io` `last_clicks` endpoint (old `api-v2.short.cm` host decommissioned) and fix its pagination |
+| 0.3.60 | 2026-08-04 | [83600](https://github.com/airbytehq/airbyte/pull/83600) | Update dependencies |
+| 0.3.59 | 2026-07-28 | [83084](https://github.com/airbytehq/airbyte/pull/83084) | Update dependencies |
 | 0.3.58 | 2026-07-21 | [82577](https://github.com/airbytehq/airbyte/pull/82577) | Update dependencies |
 | 0.3.57 | 2026-07-14 | [81993](https://github.com/airbytehq/airbyte/pull/81993) | Update dependencies |
 | 0.3.56 | 2026-06-30 | [81245](https://github.com/airbytehq/airbyte/pull/81245) | Update dependencies |

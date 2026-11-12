@@ -21,7 +21,7 @@ class ConfigErrorException : RuntimeException {
     constructor(
         displayMessage: String,
         exception: Throwable?,
-        internalMessage: String = ""
+        internalMessage: String = "",
     ) : super(displayMessage, exception) {
         this.displayMessage = displayMessage
         this.internalMessage = internalMessage

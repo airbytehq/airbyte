@@ -47,8 +47,9 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
             page_size: 200
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -84,8 +85,9 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
             page_size: 200
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -121,8 +123,9 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
             page_size: 200
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -158,8 +161,9 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
             page_size: 200
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -195,8 +199,9 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
             page_size: 200
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -232,8 +237,9 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
             page_size: 200
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -269,8 +275,9 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
             page_size: 200
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -306,8 +313,9 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
             page_size: 200
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
@@ -343,9 +351,10 @@ definitions:
             field_name: per_page
             inject_into: request_parameter
           pagination_strategy:
-            type: OffsetIncrement
+            type: PageIncrement
             page_size: 200
-            inject_on_first_request: false
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -360,7 +369,7 @@ definitions:
       client_secret: "{{ config[\"client_secret\"] }}"
       refresh_token: "{{ config[\"client_refresh_token\"] }}"
       refresh_request_body: {}
-      token_refresh_endpoint: https://accounts.zoho.in/oauth/v2/token
+      token_refresh_endpoint: https://accounts.zoho{{ 'cloud' if config['region'] == 'ca' else '' }}.{{ config['region'] }}/oauth/v2/token
 
 streams:
   - $ref: "#/definitions/streams/items"
@@ -406,6 +415,12 @@ spec:
         title: Organization ID
       region:
         type: string
+        description: >-
+          Zoho data center your organization is hosted on. Use the domain suffix
+          of your Zoho Invoice URL (e.g. `com` for invoice.zoho.com, `eu` for
+          invoice.zoho.eu, `in` for invoice.zoho.in). The same region is used for
+          both the API (www.zohoapis.<region>) and the OAuth token endpoint
+          (accounts.zoho.<region>; accounts.zohocloud.ca for `ca`).
         enum:
           - com
           - eu

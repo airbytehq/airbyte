@@ -3,7 +3,9 @@ package io.airbyte.integrations.source.mssql
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.check.CloudHostCheck
 import io.airbyte.cdk.check.JdbcCheckQueries
+import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -79,18 +81,18 @@ class MsSqlSourceMetadataQuerier(
             base.conn.createStatement().use { stmt: Statement ->
                 stmt
                     .executeQuery(
-                        "SELECT servicename, status_desc FROM sys.dm_server_services WHERE servicename LIKE '%SQL Server Agent%' OR servicename LIKE '%SQL Server 代理%'"
+                        "SELECT servicename, status_desc FROM sys.dm_server_services WHERE servicename LIKE '%SQL Server Agent%' OR servicename LIKE '%SQL Server 代理%'",
                     )
                     .use { rs: ResultSet ->
                         if (!rs.next()) {
                             throw ConfigErrorException(
-                                "SQL Server Agent service is not found. CDC requires SQL Server Agent to be running."
+                                "SQL Server Agent service is not found. CDC requires SQL Server Agent to be running.",
                             )
                         }
                         val status = rs.getString("status_desc")
                         if (status != "Running") {
                             throw ConfigErrorException(
-                                "SQL Server Agent is not running (status: $status). CDC requires SQL Server Agent to be running."
+                                "SQL Server Agent is not running (status: $status). CDC requires SQL Server Agent to be running.",
                             )
                         }
                     }
@@ -110,13 +112,13 @@ class MsSqlSourceMetadataQuerier(
                     .use { rs: ResultSet ->
                         if (!rs.next()) {
                             throw ConfigErrorException(
-                                "Could not determine CDC status for current database"
+                                "Could not determine CDC status for current database",
                             )
                         }
                         val cdcEnabled = rs.getBoolean("is_cdc_enabled")
                         if (!cdcEnabled) {
                             throw ConfigErrorException(
-                                "CDC is not enabled for the database. Please enable CDC with: EXEC sys.sp_cdc_enable_db"
+                                "CDC is not enabled for the database. Please enable CDC with: EXEC sys.sp_cdc_enable_db",
                             )
                         }
                     }
@@ -198,8 +200,9 @@ class MsSqlSourceMetadataQuerier(
     }
 
     val memoizedColumnMetadata: Map<TableName, List<JdbcMetadataQuerier.ColumnMetadata>> by lazy {
-        val joinMap: Map<TableName, TableName> =
-            memoizedTableNames.associateBy { it.copy(type = "") }
+        val joinMap: Map<TableName, TableName> = memoizedTableNames.associateBy {
+            it.copy(type = "")
+        }
         val results = mutableListOf<Pair<TableName, JdbcMetadataQuerier.ColumnMetadata>>()
         log.info { "Querying SQL Server column names for catalog discovery." }
         try {
@@ -210,7 +213,7 @@ class MsSqlSourceMetadataQuerier(
                 catalog: String?,
                 schema: String?,
                 tablePattern: String?,
-                isPseudoColumn: Boolean
+                isPseudoColumn: Boolean,
             ) {
                 val rsMethod = if (isPseudoColumn) dbmd::getPseudoColumns else dbmd::getColumns
                 rsMethod(catalog, schema, tablePattern, null).use { rs ->
@@ -256,8 +259,9 @@ class MsSqlSourceMetadataQuerier(
 
     fun findTableName(
         streamID: StreamIdentifier,
-    ): TableName? =
-        memoizedTableNames.find { it.name == streamID.name && it.schema == streamID.namespace }
+    ): TableName? = memoizedTableNames.find {
+        it.name == streamID.name && it.schema == streamID.namespace
+    }
 
     val memoizedClusteredIndexKeys: Map<TableName, List<List<String>>> by lazy {
         val results = mutableListOf<AllClusteredIndexKeysRow>()
@@ -302,8 +306,7 @@ class MsSqlSourceMetadataQuerier(
                                 rowsByIndex.all { it.keyOrdinal != null && it.columnName != null }
                             }
                             .values
-                            .firstOrNull()
-                            ?: return@mapNotNull null
+                            .firstOrNull() ?: return@mapNotNull null
                     val clusteredIndexColumnNames: List<List<String>> =
                         clusteredIndexRows
                             .sortedBy { it.keyOrdinal }
@@ -315,7 +318,7 @@ class MsSqlSourceMetadataQuerier(
         } catch (e: Exception) {
             throw RuntimeException(
                 "SQL Server clustered index discovery query failed: ${e.message}",
-                e
+                e,
             )
         }
     }
@@ -476,8 +479,7 @@ class MsSqlSourceMetadataQuerier(
                                 rowsByPK.all { it.position != null && it.columnName != null }
                             }
                             .values
-                            .firstOrNull()
-                            ?: return@mapNotNull null
+                            .firstOrNull() ?: return@mapNotNull null
                     val pkColumnNames: List<List<String>> =
                         pkRows
                             .sortedBy { it.position }
@@ -544,7 +546,7 @@ class MsSqlSourceMetadataQuerier(
                 "spt_values",
 
                 // Replication system schema
-                "MSreplication_options"
+                "MSreplication_options",
             )
 
         /**
@@ -611,10 +613,13 @@ class MsSqlSourceMetadataQuerier(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
         val checkQueries: JdbcCheckQueries,
+        val featureFlags: Set<FeatureFlag>,
         val configuredCatalog: ConfiguredAirbyteCatalog? = null,
     ) : MetadataQuerier.Factory<MsSqlServerSourceConfiguration> {
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: MsSqlServerSourceConfiguration): MetadataQuerier {
+            // Before the connection opens: with an unreachable host the network error would win.
+            CloudHostCheck.validate(config.realHost, config.sshTunnel, featureFlags)
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
             val base =
                 JdbcMetadataQuerier(

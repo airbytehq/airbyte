@@ -56,7 +56,8 @@ class MSSQLTimestampValidationIntegrationTest {
                         BEGIN
                             EXEC ('CREATE SCHEMA [$TEST_SCHEMA]');
                         END
-                        """.trimIndent(),
+                        """
+                            .trimIndent(),
                     )
                 }
             }
@@ -75,7 +76,8 @@ class MSSQLTimestampValidationIntegrationTest {
                         JOIN sys.tables t ON s.schema_id = t.schema_id
                         WHERE s.name = '$TEST_SCHEMA';
                         EXEC sp_executesql @sql;
-                        """.trimIndent(),
+                        """
+                            .trimIndent(),
                     )
                     stmt.execute("DROP SCHEMA IF EXISTS [$TEST_SCHEMA]")
                 }

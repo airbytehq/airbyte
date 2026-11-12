@@ -8,6 +8,19 @@ check:
     - accounts
 
 definitions:
+  missing_feature_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        predicate: "{{ response.get('error', {}).get('type') == 'missing_feature' }}"
+        action: IGNORE
+        error_message: "Skipping feature-gated Recurly stream because this site lacks the required feature: {{ response.get('error', {}).get('message', '') }}"
+      - $ref: "#/definitions/base_requester/error_handler/response_filters/0"
+      - $ref: "#/definitions/base_requester/error_handler/response_filters/1"
+    max_retries:
+      $ref: "#/definitions/base_requester/error_handler/max_retries"
+    backoff_strategies:
+      $ref: "#/definitions/base_requester/error_handler/backoff_strategies"
   streams:
     accounts:
       type: DeclarativeStream
@@ -1218,12 +1231,415 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/unique_coupons_parent"
+    account_acquisitions:
+      type: DeclarativeStream
+      name: account_acquisitions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /acquisitions
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            order: asc
+          request_headers:
+            Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['begin_time'] if config['begin_time'] else (now_utc() -
+            duration('P5Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: begin_time
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_time'] if config['end_time'] else
+            now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account_acquisitions"
+    gift_cards:
+      type: DeclarativeStream
+      name: gift_cards
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /gift_cards
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
+          http_method: GET
+          request_headers:
+            Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/gift_cards"
+    external_subscriptions:
+      type: DeclarativeStream
+      name: external_subscriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /external_subscriptions
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+          request_headers:
+            Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/external_subscriptions"
+    external_subscription_payment_phases:
+      type: DeclarativeStream
+      name: external_subscription_payment_phases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /external_subscriptions/{{ stream_partition['external_subscription_id'] }}/external_payment_phases
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            order: asc
+          request_headers:
+            Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: external_subscription_id
+              stream:
+                $ref: "#/definitions/streams/external_subscriptions"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/external_subscription_payment_phases"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - external_subscription_id
+              value: "{{ stream_partition['external_subscription_id'] }}"
+    subscription_add_ons_parent:
+      type: DeclarativeStream
+      name: subscription_add_ons_parent
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: subscriptions
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            order: asc
+          request_headers:
+            Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - add_ons
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscription_add_ons_parent"
+    usage_records:
+      type: DeclarativeStream
+      name: usage_records
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /subscriptions/{{ stream_slice.extra_fields['subscription_id'] }}/add_ons/{{ stream_partition['add_on_id'] }}/usage
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
+          http_method: GET
+          request_parameters:
+            billing_status: all
+            sort: usage_timestamp
+            order: asc
+          request_headers:
+            Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: add_on/id
+              partition_field: add_on_id
+              stream:
+                $ref: "#/definitions/streams/subscription_add_ons_parent"
+              extra_fields:
+                - - subscription_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/usage_records"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - subscription_id
+              value: "{{ stream_slice.extra_fields['subscription_id'] }}"
+            - path:
+                - add_on_id
+              value: "{{ stream_partition['add_on_id'] }}"
+    items:
+      type: DeclarativeStream
+      name: items
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /items
+          error_handler:
+            $ref: "#/definitions/missing_feature_error_handler"
+          http_method: GET
+          request_parameters:
+            sort: updated_at
+            order: asc
+          request_headers:
+            Accept: application/vnd.recurly.v2021-02-25
+            User-Agent: USER_AGENT
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 200
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['begin_time'] if config['begin_time'] else (now_utc() -
+            duration('P5Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: begin_time
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end_time
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_time'] if config['end_time'] else
+            now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/items"
   base_requester:
     type: HttpRequester
     url_base: https://v3.recurly.com
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          http_codes:
+            - 401
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Recurly rejected the API key (HTTP 401). In Recurly, open
+            Integrations > API Credentials, copy an active private API key for
+            this site, and paste it into the API Key field of this source.
+        - type: HttpResponseFilter
+          http_codes:
+            - 403
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Recurly denied access (HTTP 403). Use a private API key from the site
+            you want to sync, and make sure the key is enabled and allowed to
+            read data in Recurly under Integrations > API Credentials.
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -1245,6 +1661,13 @@ streams:
   - $ref: "#/definitions/streams/unique_coupons"
   - $ref: "#/definitions/streams/unique_coupons_parent"
 
+  - $ref: "#/definitions/streams/account_acquisitions"
+  - $ref: "#/definitions/streams/gift_cards"
+  - $ref: "#/definitions/streams/external_subscriptions"
+  - $ref: "#/definitions/streams/external_subscription_payment_phases"
+  - $ref: "#/definitions/streams/usage_records"
+  - $ref: "#/definitions/streams/items"
+
 spec:
   type: Spec
   connection_specification:
@@ -1256,28 +1679,32 @@ spec:
       api_key:
         type: string
         description: >-
-          Recurly API Key. See the  <a
-          href="https://docs.airbyte.com/integrations/sources/recurly">docs</a>
-          for more information on how to generate this key.
+          A private API key for your Recurly site. In Recurly, open Integrations >
+          API Credentials, then copy an existing private key or add a new one.
         order: 0
         title: API Key
         airbyte_secret: true
       begin_time:
         type: string
+        title: Start Date
         description: >-
-          ISO8601 timestamp from which the replication from Recurly API will
-          start from.
+          UTC date and time to start replicating data from, in the format
+          YYYY-MM-DDTHH:mm:ssZ. Leave empty to replicate the last five years.
         order: 1
         pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
         examples:
           - "2021-12-01T00:00:00Z"
       end_time:
         type: string
+        title: End Date
         description: >-
-          ISO8601 timestamp to which the replication from Recurly API will stop.
-          Records after that date won't be imported.
+          UTC date and time to stop replicating data at, in the format
+          YYYY-MM-DDTHH:mm:ssZ. Records updated after this time are not
+          replicated. Leave empty to replicate up to the time of the sync.
         order: 2
         pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
         examples:
           - "2021-12-01T00:00:00Z"
       num_workers:
@@ -1291,7 +1718,8 @@ spec:
         - 1
         - 2
         - 3
-        description: The number of worker threads to use for the sync.
+        description: >-
+          The number of requests the connector sends to Recurly in parallel.
       accounts_step_days:
         type: integer
         title: Days in length for each API call to get data
@@ -1307,15 +1735,40 @@ spec:
       is_sandbox:
         type: boolean
         description: >-
-          Set to true for sandbox accounts (400 requests/min, all types). Defaults to false for production accounts (1,000 GET requests/min).
+          Turn on for Recurly sandbox sites, which allow fewer requests (2,000
+          per five minutes) than production sites (5,000 GET requests per five
+          minutes). The connector paces its requests to stay within the limit.
         default: false
         order: 5
         title: Use Sandbox Environment
-    
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Appends the UTC suffix to dates saved before it was required.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["begin_time"]
+                value: "{{ config['begin_time'] }}Z"
+            condition: "{{ config.get('begin_time') and not config['begin_time'].endswith('Z') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["end_time"]
+                value: "{{ config['end_time'] }}Z"
+            condition: "{{ config.get('end_time') and not config['end_time'].endswith('Z') }}"
 
 metadata:
   autoImportSchema:
+    account_acquisitions: false
+    gift_cards: false
+    external_subscriptions: false
+    external_subscription_payment_phases: false
+    usage_records: false
+    items: false
     accounts: false
     account_coupon_redemptions: false
     account_notes: false
@@ -1397,16 +1850,6 @@ metadata:
 # Rate Limits: https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits
 #
 # In order to provide a fast response time to all our customers, we may rate limit excessive requests. By default, new Recurly sites have the following API rate limits:
-#
-# Sandbox sites: 400 requests/min (all request types count), or 2,000 requests over a 5-minute sliding window.
-# Production sites: 1,000 GET requests/min, or 5,000 GET requests over a 5-minute sliding window. POST, PUT, DELETE requests are not rate-limited in production.
-#
-# The rate limit is calculated over a 5-minute sliding window. A production site could make 4,000 GET requests in one minute without hitting the limit if prior minutes have fewer than 1,000 requests.
-#
-# If an API request exceeds the rate limit, the API returns a 429 Too Many Requests HTTP status. The rate limit is indicated by X-RateLimit-Limit, remaining requests by X-RateLimit-Remaining, and reset time by X-RateLimit-Reset (UNIX epoch seconds).
-#
-# We set default_concurrency to 10, assuming ~250ms per request (4 requests/sec per stream), resulting in 10 streams × 4 requests/sec = 2,400 requests/min. This exceeds the sandbox limit (400 requests/min) and production limit (1,000 GET requests/min),
-# but the api_budget throttles requests to stay within the 400 (sandbox) or 1,000 (production) requests per 5-minute window, with backoff handling for 429 errors.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 10) }}"
@@ -1414,18 +1857,19 @@ concurrency_level:
 
 api_budget:
   type: HTTPAPIBudget
-  ratelimit_reset_header: "X-RateLimit-Reset"
-  ratelimit_remaining_header: "X-RateLimit-Remaining"
+  ratelimit_reset_header: X-RateLimit-Reset
+  ratelimit_remaining_header: X-RateLimit-Remaining
   status_codes_for_ratelimit_hit: [429]
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ 400 if config.get('is_sandbox', false) else 1000 }}"
-          interval: "PT5M"  # 5-minute sliding window
+        - limit: "{{ 2000 if config.get('is_sandbox', false) else 5000 }}"
+          interval: "PT5M"
       matchers:
-        - method: "GET"
-          url_base: "{{ config['subdomain'] }}"
-          url_path_pattern: ".*"  # Match all paths
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_base: https://v3.recurly.com
+          url_path_pattern: ".*"
 schemas:
   accounts:
     type: object
@@ -2517,6 +2961,571 @@ schemas:
             type:
               - "null"
               - string
+  account_acquisitions:
+    type: object
+    additionalProperties: true
+    properties:
+      "cost":
+        type: ["null", "object"]
+        additionalProperties: true
+        properties:
+          "currency":
+            type: ["null", "string"]
+          "amount":
+            type: ["null", "number"]
+      "channel":
+        type: ["null", "string"]
+      "subchannel":
+        type: ["null", "string"]
+      "campaign":
+        type: ["null", "string"]
+      "acquired_at":
+        type: ["null", "string"]
+        format: date-time
+      "id":
+        type: ["null", "string"]
+      "object":
+        type: ["null", "string"]
+      "account":
+        type: ["null", "object"]
+        additionalProperties: true
+        properties:
+          "id":
+            type: ["null", "string"]
+          "object":
+            type: ["null", "string"]
+          "code":
+            type: ["null", "string"]
+          "email":
+            type: ["null", "string"]
+          "first_name":
+            type: ["null", "string"]
+          "last_name":
+            type: ["null", "string"]
+          "company":
+            type: ["null", "string"]
+          "parent_account_id":
+            type: ["null", "string"]
+          "bill_to":
+            type: ["null", "string"]
+          "dunning_campaign_id":
+            type: ["null", "string"]
+      "created_at":
+        type: ["null", "string"]
+        format: date-time
+      "updated_at":
+        type: ["null", "string"]
+        format: date-time
+    $schema: http://json-schema.org/schema#
+  gift_cards:
+    type: object
+    additionalProperties: true
+    properties:
+      "id":
+        type: ["null", "string"]
+      "object":
+        type: ["null", "string"]
+      "gifter_account_id":
+        type: ["null", "string"]
+      "recipient_account_id":
+        type: ["null", "string"]
+      "purchase_invoice_id":
+        type: ["null", "string"]
+      "redemption_invoice_id":
+        type: ["null", "string"]
+      "redemption_code":
+        type: ["null", "string"]
+      "balance":
+        type: ["null", "number"]
+      "product_code":
+        type: ["null", "string"]
+      "unit_amount":
+        type: ["null", "number"]
+      "currency":
+        type: ["null", "string"]
+      "delivery":
+        type: ["null", "object"]
+        additionalProperties: true
+        properties:
+          "method":
+            type: ["null", "string"]
+          "email_address":
+            type: ["null", "string"]
+          "deliver_at":
+            type: ["null", "string"]
+            format: date-time
+          "first_name":
+            type: ["null", "string"]
+          "last_name":
+            type: ["null", "string"]
+          "recipient_address":
+            type: ["null", "object"]
+            additionalProperties: true
+            properties:
+              "phone":
+                type: ["null", "string"]
+              street1:
+                type: ["null", "string"]
+              street2:
+                type: ["null", "string"]
+              "city":
+                type: ["null", "string"]
+              "region":
+                type: ["null", "string"]
+              "postal_code":
+                type: ["null", "string"]
+              "country":
+                type: ["null", "string"]
+              "geo_code":
+                type: ["null", "string"]
+          "gifter_name":
+            type: ["null", "string"]
+          "personal_message":
+            type: ["null", "string"]
+      "performance_obligation_id":
+        type: ["null", "string"]
+      "liability_gl_account_id":
+        type: ["null", "string"]
+      "revenue_gl_account_id":
+        type: ["null", "string"]
+      "created_at":
+        type: ["null", "string"]
+        format: date-time
+      "updated_at":
+        type: ["null", "string"]
+        format: date-time
+      "delivered_at":
+        type: ["null", "string"]
+        format: date-time
+      "redeemed_at":
+        type: ["null", "string"]
+        format: date-time
+      "canceled_at":
+        type: ["null", "string"]
+        format: date-time
+    $schema: http://json-schema.org/schema#
+  external_subscriptions:
+    type: object
+    additionalProperties: true
+    properties:
+      "id":
+        type: ["null", "string"]
+      "object":
+        type: ["null", "string"]
+      "account":
+        type: ["null", "object"]
+        additionalProperties: true
+        properties:
+          "id":
+            type: ["null", "string"]
+          "object":
+            type: ["null", "string"]
+          "code":
+            type: ["null", "string"]
+          "email":
+            type: ["null", "string"]
+          "first_name":
+            type: ["null", "string"]
+          "last_name":
+            type: ["null", "string"]
+          "company":
+            type: ["null", "string"]
+          "parent_account_id":
+            type: ["null", "string"]
+          "bill_to":
+            type: ["null", "string"]
+          "dunning_campaign_id":
+            type: ["null", "string"]
+      "external_product_reference":
+        type: ["null", "object"]
+        additionalProperties: true
+        properties:
+          "id":
+            type: ["null", "string"]
+          "object":
+            type: ["null", "string"]
+          "reference_code":
+            type: ["null", "string"]
+          "external_connection_type":
+            type: ["null", "string"]
+          "created_at":
+            type: ["null", "string"]
+            format: date-time
+          "updated_at":
+            type: ["null", "string"]
+            format: date-time
+      "external_product":
+        type: ["null", "object"]
+        additionalProperties: true
+        properties:
+          "id":
+            type: ["null", "string"]
+          "object":
+            type: ["null", "string"]
+          "name":
+            type: ["null", "string"]
+      "plan":
+        type: ["null", "object"]
+        additionalProperties: true
+        properties:
+          "id":
+            type: ["null", "string"]
+          "object":
+            type: ["null", "string"]
+          "code":
+            type: ["null", "string"]
+          "name":
+            type: ["null", "string"]
+      "external_payment_phases":
+        type: ["null", "array"]
+        items:
+          type: ["null", "object"]
+          additionalProperties: true
+          properties:
+            "id":
+              type: ["null", "string"]
+            "object":
+              type: ["null", "string"]
+            "started_at":
+              type: ["null", "string"]
+              format: date-time
+            "ends_at":
+              type: ["null", "string"]
+              format: date-time
+            "starting_billing_period_index":
+              type: ["null", "integer"]
+            "ending_billing_period_index":
+              type: ["null", "integer"]
+            "offer_type":
+              type: ["null", "string"]
+            "offer_name":
+              type: ["null", "string"]
+            "period_count":
+              type: ["null", "integer"]
+            "period_length":
+              type: ["null", "string"]
+            "amount":
+              type: ["null", "string"]
+            "currency":
+              type: ["null", "string"]
+            "created_at":
+              type: ["null", "string"]
+              format: date-time
+            "updated_at":
+              type: ["null", "string"]
+              format: date-time
+      "external_id":
+        type: ["null", "string"]
+      "uuid":
+        type: ["null", "string"]
+      "last_purchased":
+        type: ["null", "string"]
+        format: date-time
+      "auto_renew":
+        type: ["null", "boolean"]
+      "in_grace_period":
+        type: ["null", "boolean"]
+      "app_identifier":
+        type: ["null", "string"]
+      "quantity":
+        type: ["null", "integer"]
+      "state":
+        type: ["null", "string"]
+      "activated_at":
+        type: ["null", "string"]
+        format: date-time
+      "canceled_at":
+        type: ["null", "string"]
+        format: date-time
+      "expires_at":
+        type: ["null", "string"]
+        format: date-time
+      "trial_started_at":
+        type: ["null", "string"]
+        format: date-time
+      "trial_ends_at":
+        type: ["null", "string"]
+        format: date-time
+      "test":
+        type: ["null", "boolean"]
+      "imported":
+        type: ["null", "boolean"]
+      "created_at":
+        type: ["null", "string"]
+        format: date-time
+      "updated_at":
+        type: ["null", "string"]
+        format: date-time
+    $schema: http://json-schema.org/schema#
+  external_subscription_payment_phases:
+    type: object
+    additionalProperties: true
+    properties:
+      "id":
+        type: ["null", "string"]
+      "object":
+        type: ["null", "string"]
+      "started_at":
+        type: ["null", "string"]
+        format: date-time
+      "ends_at":
+        type: ["null", "string"]
+        format: date-time
+      "starting_billing_period_index":
+        type: ["null", "integer"]
+      "ending_billing_period_index":
+        type: ["null", "integer"]
+      "offer_type":
+        type: ["null", "string"]
+      "offer_name":
+        type: ["null", "string"]
+      "period_count":
+        type: ["null", "integer"]
+      "period_length":
+        type: ["null", "string"]
+      "amount":
+        type: ["null", "string"]
+      "currency":
+        type: ["null", "string"]
+      "created_at":
+        type: ["null", "string"]
+        format: date-time
+      "updated_at":
+        type: ["null", "string"]
+        format: date-time
+      "external_subscription_id":
+        type: ["null", "string"]
+    $schema: http://json-schema.org/schema#
+  usage_records:
+    type: object
+    additionalProperties: true
+    properties:
+      "id":
+        type: ["null", "string"]
+      "object":
+        type: ["null", "string"]
+      "merchant_tag":
+        type: ["null", "string"]
+      "amount":
+        type: ["null", "number"]
+      "usage_type":
+        type: ["null", "string"]
+      "tier_type":
+        type: ["null", "string"]
+      "tiers":
+        type: ["null", "array"]
+        items:
+          type: ["null", "object"]
+          additionalProperties: true
+          properties:
+            "ending_quantity":
+              type: ["null", "integer"]
+            "unit_amount":
+              type: ["null", "number"]
+            "unit_amount_decimal":
+              type: ["null", "string"]
+            "usage_percentage":
+              type: ["null", "string"]
+      "percentage_tiers":
+        type: ["null", "array"]
+        items:
+          type: ["null", "object"]
+          additionalProperties: true
+          properties:
+            "ending_amount":
+              type: ["null", "number"]
+            "usage_percentage":
+              type: ["null", "string"]
+      "measured_unit_id":
+        type: ["null", "string"]
+      "recording_timestamp":
+        type: ["null", "string"]
+        format: date-time
+      "usage_timestamp":
+        type: ["null", "string"]
+        format: date-time
+      "usage_percentage":
+        type: ["null", "number"]
+      "unit_amount":
+        type: ["null", "number"]
+      "unit_amount_decimal":
+        type: ["null", "string"]
+      "billed_at":
+        type: ["null", "string"]
+        format: date-time
+      "created_at":
+        type: ["null", "string"]
+        format: date-time
+      "updated_at":
+        type: ["null", "string"]
+        format: date-time
+      "subscription_id":
+        type: ["null", "string"]
+      "add_on_id":
+        type: ["null", "string"]
+    $schema: http://json-schema.org/schema#
+  items:
+    type: object
+    additionalProperties: true
+    properties:
+      "id":
+        type: ["null", "string"]
+      "object":
+        type: ["null", "string"]
+      "code":
+        type: ["null", "string"]
+      "state":
+        type: ["null", "string"]
+      "name":
+        type: ["null", "string"]
+      "description":
+        type: ["null", "string"]
+      "external_sku":
+        type: ["null", "string"]
+      "accounting_code":
+        type: ["null", "string"]
+      "revenue_schedule_type":
+        type: ["null", "string"]
+      "performance_obligation_id":
+        type: ["null", "string"]
+      "liability_gl_account_id":
+        type: ["null", "string"]
+      "revenue_gl_account_id":
+        type: ["null", "string"]
+      "avalara_transaction_type":
+        type: ["null", "integer"]
+      "avalara_service_type":
+        type: ["null", "integer"]
+      "tax_code":
+        type: ["null", "string"]
+      "harmonized_system_code":
+        type: ["null", "string"]
+      "tax_exempt":
+        type: ["null", "boolean"]
+      "custom_fields":
+        type: ["null", "array"]
+        items:
+          type: ["null", "object"]
+          additionalProperties: true
+          properties:
+            "name":
+              type: ["null", "string"]
+            "value":
+              type: ["null", "string"]
+            "source_record_type":
+              type: ["null", "string"]
+            "source_record_id":
+              type: ["null", "string"]
+      "currencies":
+        type: ["null", "array"]
+        items:
+          type: ["null", "object"]
+          additionalProperties: true
+          properties:
+            "currency":
+              type: ["null", "string"]
+            "unit_amount":
+              type: ["null", "number"]
+            "tax_inclusive":
+              type: ["null", "boolean"]
+      "created_at":
+        type: ["null", "string"]
+        format: date-time
+      "updated_at":
+        type: ["null", "string"]
+        format: date-time
+      "deleted_at":
+        type: ["null", "string"]
+        format: date-time
+    $schema: http://json-schema.org/schema#
+  subscription_add_ons_parent:
+    type: object
+    additionalProperties: true
+    properties:
+      "id":
+        type: ["null", "string"]
+      "object":
+        type: ["null", "string"]
+      "subscription_id":
+        type: ["null", "string"]
+      "add_on":
+        type: ["null", "object"]
+        additionalProperties: true
+        properties:
+          "id":
+            type: ["null", "string"]
+          "object":
+            type: ["null", "string"]
+          "code":
+            type: ["null", "string"]
+          "name":
+            type: ["null", "string"]
+          "add_on_type":
+            type: ["null", "string"]
+          "usage_type":
+            type: ["null", "string"]
+          "usage_percentage":
+            type: ["null", "number"]
+          "measured_unit_id":
+            type: ["null", "string"]
+          "item_id":
+            type: ["null", "string"]
+          "external_sku":
+            type: ["null", "string"]
+          "accounting_code":
+            type: ["null", "string"]
+      "add_on_source":
+        type: ["null", "string"]
+      "quantity":
+        type: ["null", "integer"]
+      "unit_amount":
+        type: ["null", "number"]
+      "unit_amount_decimal":
+        type: ["null", "string"]
+      "revenue_schedule_type":
+        type: ["null", "string"]
+      "tier_type":
+        type: ["null", "string"]
+      "usage_calculation_type":
+        type: ["null", "string"]
+      "usage_timeframe":
+        type: ["null", "string"]
+      "tiers":
+        type: ["null", "array"]
+        items:
+          type: ["null", "object"]
+          additionalProperties: true
+          properties:
+            "ending_quantity":
+              type: ["null", "integer"]
+            "unit_amount":
+              type: ["null", "number"]
+            "unit_amount_decimal":
+              type: ["null", "string"]
+            "usage_percentage":
+              type: ["null", "string"]
+      "percentage_tiers":
+        type: ["null", "array"]
+        items:
+          type: ["null", "object"]
+          additionalProperties: true
+          properties:
+            "ending_amount":
+              type: ["null", "number"]
+            "usage_percentage":
+              type: ["null", "string"]
+      "usage_percentage":
+        type: ["null", "number"]
+      "created_at":
+        type: ["null", "string"]
+        format: date-time
+      "updated_at":
+        type: ["null", "string"]
+        format: date-time
+      "expired_at":
+        type: ["null", "string"]
+        format: date-time
+    $schema: http://json-schema.org/schema#
   add_ons:
     type: object
     $schema: http://json-schema.org/schema#

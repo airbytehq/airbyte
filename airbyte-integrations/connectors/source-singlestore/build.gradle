@@ -33,7 +33,7 @@ application {
 dependencies {
     implementation 'com.singlestore:singlestore-jdbc-client:1.2.2'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testFixturesImplementation 'org.testcontainers:jdbc:1.19.0'
+    testFixturesImplementation 'org.testcontainers:jdbc:1.21.4'
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-singlestore')
 }
 
