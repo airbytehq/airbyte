@@ -26,7 +26,9 @@ def test_check_succeeds_when_the_retired_annotations_report_has_no_files() -> No
     job has a report file, and never asks for the annotations job's reports.
     """
     config = ConfigBuilder().build()
-    retired_reports_request = YoutubeAnalyticsRequestBuilder.reports_endpoint(_RETIRED_JOB_ID).with_created_after(_FIRST_CREATE_TIME).build()
+    retired_reports_request = (
+        YoutubeAnalyticsRequestBuilder.reports_endpoint(_RETIRED_JOB_ID).with_created_after(_FIRST_CREATE_TIME).build()
+    )
 
     with HttpMocker() as http_mocker:
         http_mocker.post(
