@@ -254,6 +254,63 @@ class TestIncrementalTwilioStream:
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
+    @pytest.mark.parametrize(
+        "stream_name,path,cursor_field,lower_key,upper_key",
+        [
+            pytest.param("messages", "/Accounts/AC123/Messages.json", "date_sent", "DateSent>", "DateSent<", id="messages"),
+            pytest.param("recordings", "/Accounts/AC123/Recordings.json", "date_created", "DateCreated>", "DateCreated<", id="recordings"),
+        ],
+    )
+    def test_multi_slice_sync_advances_partition_cursor(self, stream_name, path, cursor_field, lower_key, upper_key, requests_mock):
+        """A first sync spanning several slices must leave the per-partition cursor at the newest record,
+        so the next sync requests only the window after it instead of re-exporting history."""
+        config = {**TEST_CONFIG, "start_date": "2022-09-01T00:00:00Z"}
+        partition = {"subresource_uri": f"/2010-04-01{path}", "parent_slice": {}}
+        records = [
+            {"sid": "R1", cursor_field: "2022-09-10T00:00:00Z"},
+            {"sid": "R2", cursor_field: "2022-10-20T00:00:00Z"},
+            {"sid": "R3", cursor_field: "2022-11-15T10:00:00Z"},
+        ]
+        windows = []
+        windows_lock = Lock()
+
+        def _records_in_window(request, context):
+            query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+            lower, upper = query[lower_key][0], query[upper_key][0]
+            with windows_lock:
+                windows.append((lower, upper))
+            return {stream_name: [r for r in records if lower <= r[cursor_field].replace("T", " ") <= upper]}
+
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        requests_mock.get(f"{BASE}{path}", json=_records_in_window)
+
+        with freeze_time("2022-11-16 12:03:11+00:00"):
+            first = read_from_stream(config, stream_name, SyncMode.incremental)
+
+        assert not first.errors
+        assert sorted(windows) == [
+            ("2022-09-01 00:00:00Z", "2022-09-30 23:59:59Z"),
+            ("2022-10-01 00:00:00Z", "2022-10-31 23:59:59Z"),
+            ("2022-11-01 00:00:00Z", "2022-11-16 12:03:11Z"),
+        ]
+        assert sorted(message.record.data["sid"] for message in first.records) == ["R1", "R2", "R3"]
+        first_state = first.most_recent_state.stream_state.__dict__
+        assert first_state["states"] == [{"partition": partition, "cursor": {cursor_field: "2022-11-15 10:00:00Z"}}]
+        assert first_state["state"] == {cursor_field: "2022-11-15 10:00:00Z"}
+
+        windows.clear()
+        records.append({"sid": "R4", cursor_field: "2022-11-17T08:00:00Z"})
+        state = StateBuilder().with_stream_state(stream_name, first_state).build()
+        with freeze_time("2022-11-18 09:00:00+00:00"):
+            second = read_from_stream(config, stream_name, SyncMode.incremental, state)
+
+        assert not second.errors
+        assert windows == [("2022-11-15 10:00:00Z", "2022-11-18 09:00:00Z")]
+        # The window start is inclusive, so the record sitting on the cursor (R3) is the only repeat.
+        assert sorted(message.record.data["sid"] for message in second.records) == ["R3", "R4"]
+        second_state = second.most_recent_state.stream_state.__dict__
+        assert second_state["states"] == [{"partition": partition, "cursor": {cursor_field: "2022-11-17 08:00:00Z"}}]
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}

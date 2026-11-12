@@ -16,6 +16,10 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 None identified yet.
 
+## Cursor granularity must match the datetime format
+
+`cursor_granularity` has to equal the smallest unit `datetime_format` can express (`PT1S` for `%Y-%m-%d %H:%M:%SZ`, `P1D` for `%Y-%m-%d`). The CDK only merges two finished slices when `end + cursor_granularity >= next start`. With a finer granularity the slices never merge, so the per-partition cursor stays at the newest record of the first slice while the global cursor advances, and every later sync re-reads from that stale cursor. `messages` and `recordings` had this with `PT0.000001S` until 1.1.11.
+
 ## Alerts request window splitting
 
 The `alerts` stream handles Twilio's 10,000-result cap with a `SPLIT_REQUEST_WINDOW` response filter plus `request_window_splitting`:
