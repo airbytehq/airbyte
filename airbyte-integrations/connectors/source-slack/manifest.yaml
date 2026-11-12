@@ -328,7 +328,24 @@ definitions:
                     # conversations.history returns ok:false/"not_in_channel" with HTTP 200 for
                     # non-member channels, which poisons the per-partition cursor. The
                     # top-level channels stream and channel_members still see every channel.
-                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or config.get('join_channels')) }}"
+                    # Archived channels cannot be joined (see ChannelsRetriever.should_join_to_channel), and a
+                    # bot token (xoxb-) can only read channels the bot is a member of, so with a bot token
+                    # join_channels never makes an archived non-member channel readable. Other token types
+                    # (e.g. user tokens, which can read public channels without membership) are left as is.
+                    condition: >-
+                      {{
+                        (record.name in config.channel_filter or not config.channel_filter)
+                        and (
+                          record.is_member
+                          or (
+                            config.get('join_channels')
+                            and not (
+                              record.is_archived
+                              and (config.get('credentials', {}).get('api_token') or config.get('credentials', {}).get('access_token') or '').startswith('xoxb-')
+                            )
+                          )
+                        )
+                      }}
             parent_key: id
             partition_field: channel
             request_option:

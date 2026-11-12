@@ -176,7 +176,10 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        # State that already carries the `channel_messages` parent state was written by the manifest-based stream.
+        # Its per-channel cursors must be kept as is: seeding them again from the thread cursors would discard them
+        # and make the next read request every channel's history from a single, older point in time.
+        return not (stream_state.get("parent_state") or {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
