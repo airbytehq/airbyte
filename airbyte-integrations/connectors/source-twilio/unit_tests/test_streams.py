@@ -254,6 +254,129 @@ class TestIncrementalTwilioStream:
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
+    @freeze_time("2026-05-22 12:00:00+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,resource,cursor_field,lower_key,upper_key,stale_cursor,global_cursor,expected_windows,expected_cursor",
+        [
+            pytest.param(
+                "messages",
+                "Messages",
+                "date_sent",
+                "DateSent>",
+                "DateSent<",
+                "2025-06-01 00:00:00Z",
+                "2026-05-21 10:00:00Z",
+                {"AC1": [("2026-05-21 09:00:00Z", "2026-05-22 12:00:00Z")], "AC2": [("2026-05-21 10:00:00Z", "2026-05-22 12:00:00Z")]},
+                "2026-05-21 11:00:00Z",
+                id="messages",
+            ),
+            pytest.param(
+                "recordings",
+                "Recordings",
+                "date_created",
+                "DateCreated>",
+                "DateCreated<",
+                "2025-06-01 00:00:00Z",
+                "2026-05-21 10:00:00Z",
+                {"AC1": [("2026-05-21 09:00:00Z", "2026-05-22 12:00:00Z")], "AC2": [("2026-05-21 10:00:00Z", "2026-05-22 12:00:00Z")]},
+                "2026-05-21 11:00:00Z",
+                id="recordings",
+            ),
+            pytest.param(
+                "calls",
+                "Calls",
+                "end_time",
+                "EndTime>",
+                "EndTime<",
+                "2025-06-01",
+                "2026-05-21",
+                {"AC1": [("2026-05-20", "2026-05-22")], "AC2": [("2026-05-21", "2026-05-22")]},
+                "2026-05-21",
+                id="calls",
+            ),
+        ],
+    )
+    def test_stale_partition_state_resumes_from_global_cursor(
+        self,
+        stream_name,
+        resource,
+        cursor_field,
+        lower_key,
+        upper_key,
+        stale_cursor,
+        global_cursor,
+        expected_windows,
+        expected_cursor,
+        requests_mock,
+    ):
+        """A per-partition cursor older than the global cursor must not make that partition re-read its history.
+
+        AC1's partition cursor is a year behind the global cursor. AC1 must resume from the global cursor minus the
+        runtime lookback (3600s), like a partition without an entry, so its year-old record is not exported again.
+        """
+        accounts = [
+            {"sid": sid, "subresource_uris": {resource.lower(): f"/2010-04-01/Accounts/{sid}/{resource}.json"}} for sid in ("AC1", "AC2")
+        ]
+        requests_mock.get(f"{BASE}/Accounts.json", json={"accounts": accounts})
+
+        account_records = {
+            "AC1": [
+                {"sid": "OLD1", cursor_field: "Sun, 15 Jun 2025 10:00:00 +0000"},
+                {"sid": "NEW1", cursor_field: "Thu, 21 May 2026 11:00:00 +0000"},
+            ],
+            "AC2": [],
+        }
+        windows = {"AC1": [], "AC2": []}
+
+        def _respond(sid):
+            def _callback(request, context):
+                query = parse_qs(urlparse(request.url).query)
+                lower, upper = query[lower_key][0], query[upper_key][0]
+                windows[sid].append((lower, upper))
+                # Twilio filters by date only for calls; compare on the date prefix so both formats behave like the API.
+                in_window = [
+                    record
+                    for record in account_records[sid]
+                    if lower[:10] <= datetime.strptime(record[cursor_field], "%a, %d %b %Y %H:%M:%S %z").strftime("%Y-%m-%d") <= upper[:10]
+                ]
+                return {stream_name: in_window}
+
+            return _callback
+
+        for sid in ("AC1", "AC2"):
+            requests_mock.get(f"{BASE}/Accounts/{sid}/{resource}.json", json=_respond(sid))
+
+        def _partition(sid):
+            return {"subresource_uri": f"/2010-04-01/Accounts/{sid}/{resource}.json", "parent_slice": {}}
+
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                stream_name,
+                {
+                    "use_global_cursor": False,
+                    "state": {cursor_field: global_cursor},
+                    "lookback_window": 3600,
+                    "states": [
+                        {"partition": _partition("AC1"), "cursor": {cursor_field: stale_cursor}},
+                        {"partition": _partition("AC2"), "cursor": {cursor_field: global_cursor}},
+                    ],
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2020-01-01T00:00:00Z"}, stream_name, SyncMode.incremental, state)
+
+        assert windows == expected_windows
+        assert [record.record.data["sid"] for record in output.records] == ["NEW1"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["state"] == {cursor_field: expected_cursor}
+        assert {s["partition"]["subresource_uri"]: s["cursor"] for s in final_state["states"]} == {
+            f"/2010-04-01/Accounts/AC1/{resource}.json": {cursor_field: expected_cursor},
+            f"/2010-04-01/Accounts/AC2/{resource}.json": {cursor_field: global_cursor},
+        }
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}

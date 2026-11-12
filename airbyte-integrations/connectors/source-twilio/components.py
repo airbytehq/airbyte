@@ -3,8 +3,8 @@
 #
 
 import copy
-from datetime import datetime, timezone
-from typing import Any, Mapping
+from datetime import datetime, timedelta, timezone
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -308,3 +308,116 @@ class TwilioConferencesStateMigration(StateMigration):
         if stream_state and any("conference_status" not in state.get("partition", {}) for state in stream_state.get("states", [])):
             return True
         return False
+
+
+_STATE_CURSOR_DATETIME_FORMATS = (
+    "%Y-%m-%d %H:%M:%SZ",
+    "%Y-%m-%dT%H:%M:%SZ",
+    "%Y-%m-%dT%H:%M:%S.%f%z",
+    "%Y-%m-%d",
+)
+
+
+def _parse_state_cursor_value(value: Any) -> Optional[datetime]:
+    if not isinstance(value, str):
+        return None
+    for datetime_format in _STATE_CURSOR_DATETIME_FORMATS:
+        try:
+            parsed = datetime.strptime(value, datetime_format)
+        except ValueError:
+            continue
+        return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)
+    return None
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Drop per-partition cursors that are older than the stream's global cursor, so those partitions
+    resume from the global cursor instead of re-reading history.
+
+    The CDK's per-partition cursor uses a partition's own entry in `states` whenever one exists, and only
+    falls back to the global `state` (minus the runtime `lookback_window`, in seconds) for partitions
+    without an entry. A partition's cursor only advances when that partition emits a record, so an entry can
+    stay far behind the global cursor even though every partition was read up to the end of the last
+    successful sync. Each sync then re-reads that partition from the old cursor value.
+
+    The global cursor is only advanced when a sync completes, i.e. after every partition was read through
+    the end of that sync. Any partition entry older than `state - lookback_window` is therefore stale;
+    removing it makes the CDK apply the global cursor and its lookback to that partition. Entries whose
+    cursor value cannot be parsed are kept.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "state": { "date_sent": "2026-05-21 10:00:00Z" },
+        "lookback_window": 3600,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC1/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2025-06-01 00:00:00Z" }
+          },
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC2/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2026-05-21 10:00:00Z" }
+          }
+        ]
+      }
+
+    Final:
+      {
+        "use_global_cursor": false,
+        "state": { "date_sent": "2026-05-21 10:00:00Z" },
+        "lookback_window": 3600,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC2/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2026-05-21 10:00:00Z" }
+          }
+        ]
+      }
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        threshold = self._stale_threshold(stream_state)
+        migrated_state = dict(stream_state)
+        migrated_state["states"] = [state for state in stream_state["states"] if not self._is_stale(state, threshold)]
+        return migrated_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state or stream_state.get("use_global_cursor") or not stream_state.get("states"):
+            return False
+        threshold = self._stale_threshold(stream_state)
+        if threshold is None:
+            return False
+        return any(self._is_stale(state, threshold) for state in stream_state["states"])
+
+    @staticmethod
+    def _global_cursor(stream_state: Mapping[str, Any]) -> Optional[tuple[str, datetime]]:
+        global_state = stream_state.get("state")
+        if not isinstance(global_state, Mapping) or len(global_state) != 1:
+            return None
+        cursor_field, value = next(iter(global_state.items()))
+        parsed = _parse_state_cursor_value(value)
+        return (cursor_field, parsed) if parsed else None
+
+    def _stale_threshold(self, stream_state: Mapping[str, Any]) -> Optional[tuple[str, datetime]]:
+        global_cursor = self._global_cursor(stream_state)
+        if global_cursor is None:
+            return None
+        cursor_field, global_value = global_cursor
+        try:
+            lookback_seconds = int(stream_state.get("lookback_window") or 0)
+        except (TypeError, ValueError):
+            return None
+        return cursor_field, global_value - timedelta(seconds=max(lookback_seconds, 0))
+
+    @staticmethod
+    def _is_stale(partition_state: Mapping[str, Any], threshold: Optional[tuple[str, datetime]]) -> bool:
+        if threshold is None:
+            return False
+        cursor_field, threshold_value = threshold
+        cursor = partition_state.get("cursor")
+        if not isinstance(cursor, Mapping):
+            return False
+        partition_value = _parse_state_cursor_value(cursor.get(cursor_field))
+        return partition_value is not None and partition_value < threshold_value

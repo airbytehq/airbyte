@@ -12,6 +12,12 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 **Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.
 
+### Stale per-partition cursors
+
+`calls`, `conferences`, `messages`, `message_media`, `recordings` and `usage_records` keep one cursor per partition (per account, or per message for `message_media`) plus a global `state` cursor. The CDK uses a partition's own entry whenever one exists, and a partition's cursor only advances when that partition emits a record, so an entry can fall far behind the global cursor and make every sync re-read that account's history.
+
+`TwilioStalePartitionStateMigration` runs last in these streams' `state_migrations` and drops any partition entry older than `state` minus `lookback_window` (seconds). The global cursor only advances when a sync completes, so those entries are stale, and the CDK then starts the partition from the global cursor minus the runtime lookback, as it does for a partition with no entry. Entries whose cursor can't be parsed are kept, and states with `use_global_cursor: true` are left unchanged.
+
 ### Future incremental stream candidates
 
 None identified yet.
