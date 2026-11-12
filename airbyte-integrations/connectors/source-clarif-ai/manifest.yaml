@@ -12,10 +12,18 @@ check:
     - applications
 
 definitions:
+  normalize_modified_at:
+    type: AddFields
+    fields:
+      - path:
+          - modified_at
+        value: "{{ record.modified_at[:26] ~ 'Z' if record.modified_at and record.modified_at|length > 27 else record.modified_at }}"
   streams:
     applications:
       type: DeclarativeStream
       name: applications
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
@@ -62,6 +70,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -78,6 +87,8 @@ definitions:
     datasets:
       type: DeclarativeStream
       name: datasets
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
@@ -133,6 +144,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -149,6 +161,8 @@ definitions:
     models:
       type: DeclarativeStream
       name: models
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
@@ -203,6 +217,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
