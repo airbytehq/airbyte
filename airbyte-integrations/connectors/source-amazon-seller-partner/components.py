@@ -612,12 +612,18 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
                     pass
                 if not date_format:
                     raise KeyError(f"Date format not found for Marketplace ID: {self.marketplace_id}")
-                try:
-                    return dt.strptime(original_value, date_format).strftime("%Y-%m-%d")
-                except ValueError as e:
-                    raise ValueError(
-                        f"Error parsing date: {original_value} is expected to be in format {date_format} for marketplace_id: {self.marketplace_id}"
-                    ) from e
+                for supported_format in (date_format, date_format.replace("%y", "%Y")):
+                    try:
+                        return dt.strptime(original_value, supported_format).strftime("%Y-%m-%d")
+                    except ValueError:
+                        pass
+                raise AirbyteTracedException(
+                    message=(
+                        f"Could not parse the 'date' value '{original_value}' in the GET_SELLER_FEEDBACK_DATA report "
+                        f"for marketplace {self.marketplace_id}. The date format returned by Amazon is not supported by the connector."
+                    ),
+                    failure_type=FailureType.system_error,
+                )
 
             return original_value
 

@@ -3,6 +3,8 @@
 #
 
 
+from datetime import datetime
+
 import pytest
 from components import (
     FlatFileSettlementV2ReportsTypeTransformer,
@@ -11,6 +13,9 @@ from components import (
     MerchantReportsTypeTransformer,
     SellerFeedbackReportsTypeTransformer,
 )
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .conftest import get_stream_by_name
 from .integration.utils import config
@@ -49,6 +54,38 @@ def test_transform_seller_feedback(marketplace_id, input_data, expected_data):
     transformer.transform(input_data, schema)
 
     assert input_data == expected_data
+
+
+@pytest.mark.parametrize("marketplace_id,date_format", SellerFeedbackReportsTypeTransformer.MARKETPLACE_DATE_FORMAT_MAP.items())
+def test_transform_seller_feedback_four_digit_year(marketplace_id, date_format):
+    input_data = {"date": datetime(2026, 9, 16).strftime(date_format.replace("%y", "%Y"))}
+    transformer = SellerFeedbackReportsTypeTransformer(config={"marketplace_id": marketplace_id})
+    schema = get_stream_by_name("GET_SELLER_FEEDBACK_DATA", config().build()).get_json_schema()
+    transformer.transform(input_data, schema)
+
+    assert input_data == {"date": "2026-09-16"}
+
+
+@pytest.mark.parametrize("input_date", ["", None])
+def test_transform_seller_feedback_empty_date(input_date):
+    transformer = SellerFeedbackReportsTypeTransformer(config={"marketplace_id": "A1F83G8C2ARO7P"})
+    record = {"date": input_date}
+    schema = get_stream_by_name("GET_SELLER_FEEDBACK_DATA", config().build()).get_json_schema()
+    transformer.transform(record, schema)
+    assert record == {"date": input_date}
+
+
+@pytest.mark.parametrize("input_date", ["not-a-date", "31/02/2026"])
+def test_transform_seller_feedback_unsupported_date(input_date):
+    transformer = SellerFeedbackReportsTypeTransformer(config={"marketplace_id": "A1F83G8C2ARO7P"})
+    schema = get_stream_by_name("GET_SELLER_FEEDBACK_DATA", config().build()).get_json_schema()
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        transformer.transform({"date": input_date}, schema)
+    assert exc_info.value.failure_type == FailureType.system_error
+    assert exc_info.value.message == (
+        f"Could not parse the 'date' value '{input_date}' in the GET_SELLER_FEEDBACK_DATA report "
+        "for marketplace A1F83G8C2ARO7P. The date format returned by Amazon is not supported by the connector."
+    )
 
 
 @pytest.mark.parametrize(
