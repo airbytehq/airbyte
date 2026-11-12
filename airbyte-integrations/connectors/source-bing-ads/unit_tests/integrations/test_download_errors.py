@@ -60,9 +60,7 @@ def test_download_error(stream_name, expired):
         assert errors
         expected_failure = FailureType.transient_error if expired else FailureType.config_error
         expected_message = (
-            "Bing Ads file download URL is expired."
-            if expired
-            else "Forbidden. You don't have permission to access this resource."
+            "Bing Ads file download URL is expired." if expired else "Forbidden. You don't have permission to access this resource."
         )
         assert any(error.failure_type == expected_failure and expected_message in error.message for error in errors), errors
         assert not output.records
