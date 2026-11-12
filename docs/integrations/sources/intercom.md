@@ -113,6 +113,12 @@ The Companies and Company Segments streams rely on the [Scroll over all companie
 
 This means that even if you only need one day of new data, the connector must read all company records from the beginning before it can identify and emit the new ones. For workspaces with a large number of companies, this can result in long sync times.
 
+### Company Segments lists segment memberships
+
+Each `company_segments` record is one segment that one company belongs to. `company_id` is the company's Intercom ID, the same value as `id` in the `companies` stream. It isn't the `company_id` field of the `companies` stream, which holds the ID you set for the company.
+
+The stream filters on the segment's `updated_at`, not on when the company joined the segment. A membership is only synced when both the company and the segment were last updated on or after the Start Date. An incremental sync can miss a company that joined a segment that hasn't changed since the last sync, and it can't remove a membership that ended. For a complete membership table, sync `company_segments` in Full Refresh | Overwrite, in a connection whose Start Date is earlier than your Intercom workspace.
+
 ### Only one scroll can be open per app at a time
 
 The Intercom API allows only one company scroll to be open per app at a time. If a second scroll request is made while one is already active, the API returns a `400` error with the message "scroll already exists for this workspace." The connector retries this error automatically with a one-minute backoff, since scrolls expire after one minute of inactivity.
@@ -134,7 +140,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.14.0 | 2026-11-06 | [78498](https://github.com/airbytehq/airbyte/pull/78498) | Update the conversations stream to Intercom API v2.14 and add conversation handling time statistics. |
+| 1.1.0 | 2026-11-12 | [78498](https://github.com/airbytehq/airbyte/pull/78498) | Update the conversations stream to Intercom API v2.14 and add conversation handling time statistics. |
+| 1.0.0 | 2026-11-10 | [91060](https://github.com/airbytehq/airbyte/pull/91060) | Add `company_id` to `company_segments` and make `[company_id, id]` its primary key |
+| 0.13.30 | 2026-11-10 | [91585](https://github.com/airbytehq/airbyte/pull/91585) | Update dependencies |
 | 0.13.29 | 2026-11-03 | [90886](https://github.com/airbytehq/airbyte/pull/90886) | Simplify error handling configuration for the conversation_parts stream; no behavior change |
 | 0.13.28 | 2026-11-03 | [90605](https://github.com/airbytehq/airbyte/pull/90605) | Update dependencies |
 | 0.13.27 | 2026-10-27 | [89955](https://github.com/airbytehq/airbyte/pull/89955) | Update dependencies |
