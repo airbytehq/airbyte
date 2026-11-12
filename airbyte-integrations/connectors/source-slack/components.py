@@ -176,7 +176,10 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        # State written by the current connector already carries per-channel `channel_messages` cursors under
+        # `parent_state`. Rebuilding it would replace them with a single timestamp for every channel, which is
+        # `start_date` when no thread cursor was saved yet (e.g. an interrupted sync).
+        return not (stream_state or {}).get("parent_state", {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:

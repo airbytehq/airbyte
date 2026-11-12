@@ -5,6 +5,7 @@
 from copy import deepcopy
 from unittest.mock import MagicMock, Mock
 
+import freezegun
 import pytest
 from requests import Response
 
@@ -1022,3 +1023,166 @@ def test_channel_members_error_handler_response_action(token_config, status_code
     mocked_response.headers = {"Content-Type": "application/json"}
     mocked_response.json.return_value = response_json
     assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
+
+
+def _incremental_catalog(stream_name):
+    return ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": stream_name, "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+
+
+def _mock_history_and_replies(requests_mock, messages_by_channel):
+    """Serve conversations.history honouring `oldest`/`latest`, and conversations.replies returning the parent message only."""
+
+    def history(request, context):
+        oldest, latest = float(request.qs["oldest"][0]), float(request.qs["latest"][0])
+        timestamps = messages_by_channel.get(request.qs["channel"][0], [])
+        return {"ok": True, "messages": [{"ts": ts, "thread_ts": ts, "reply_count": 1} for ts in timestamps if oldest <= float(ts) <= latest]}
+
+    def replies(request, context):
+        return {"ok": True, "messages": [{"ts": request.qs["ts"][0]}]}
+
+    requests_mock.register_uri("GET", "https://slack.com/api/conversations.history", json=history)
+    requests_mock.register_uri("GET", "https://slack.com/api/conversations.replies", json=replies)
+
+
+def _history_requests(requests_mock):
+    return sorted(
+        (request.qs["channel"][0], float(request.qs["oldest"][0]))
+        for request in requests_mock.request_history
+        if "conversations.history" in request.url
+    )
+
+
+_SAVED_CHANNEL_MESSAGES_STATE = {
+    "use_global_cursor": False,
+    "states": [
+        {"partition": {"channel": "airbyte-for-beginners", "parent_slice": {}}, "cursor": {"float_ts": "1627400000.0001"}},
+        {"partition": {"channel": "good-reads", "parent_slice": {}}, "cursor": {"float_ts": "1627100000.0001"}},
+    ],
+    "state": {"float_ts": "1627400000.0001"},
+    "lookback_window": 0,
+    "parent_state": {},
+}
+
+
+@pytest.mark.parametrize(
+    "threads_state",
+    (
+        pytest.param(
+            # Sync interrupted after the CDK switched to a global cursor: no per-thread states, no global cursor value yet.
+            {"use_global_cursor": True, "lookback_window": 0, "parent_state": {"channel_messages": _SAVED_CHANNEL_MESSAGES_STATE}},
+            id="interrupted_sync_without_thread_states",
+        ),
+        pytest.param(
+            # Sync interrupted after only one channel's threads were read: the newest thread cursor is ahead of the other channel.
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"float_ts": "1627400000.000100", "parent_slice": {"channel": "airbyte-for-beginners", "parent_slice": {}}},
+                        "cursor": {"float_ts": "1627400050"},
+                    }
+                ],
+                "state": {"float_ts": "1627400050"},
+                "lookback_window": 0,
+                "parent_state": {"channel_messages": _SAVED_CHANNEL_MESSAGES_STATE},
+            },
+            id="interrupted_sync_with_one_channel_ahead",
+        ),
+    ),
+)
+@freezegun.freeze_time("2021-07-30T00:00:00Z")
+def test_threads_resumes_each_channel_from_its_saved_parent_cursor(requests_mock, token_config, threads_state):
+    """
+    A resumed `threads` sync must request conversations.history for each channel from that channel's saved
+    `parent_state.channel_messages` cursor minus the 1-day lookback window, not from `start_date` and not from a
+    single timestamp shared by all channels.
+    """
+    token_config.pop("end_date")  # start_date=2021-07-22T20:00:00Z (1626984000), lookback_window=1 day
+    _mock_history_and_replies(
+        requests_mock,
+        {
+            "airbyte-for-beginners": ["1627000000.000100", "1627500000.000100"],
+            # 1627150000.0001 is newer than the saved good-reads cursor, so it must not be skipped.
+            "good-reads": ["1627000000.000100", "1627150000.000100", "1627450000.000100"],
+        },
+    )
+
+    state = StateBuilder().with_stream_state("threads", deepcopy(threads_state)).build()
+    output = read(get_source(token_config, "threads", state), config=token_config, catalog=_incremental_catalog("threads"), state=state)
+
+    assert output.errors == []
+    assert _history_requests(requests_mock) == [
+        ("airbyte-for-beginners", 1627400000.0001 - 86400),
+        ("good-reads", 1627100000.0001 - 86400),
+    ]
+    assert sorted((record.record.data["channel_id"], record.record.data["ts"]) for record in output.records) == [
+        ("airbyte-for-beginners", "1627500000.000100"),
+        ("good-reads", "1627150000.000100"),
+        ("good-reads", "1627450000.000100"),
+    ]
+    emitted_parent_state = output.most_recent_state.stream_state.parent_state["channel_messages"]
+    assert {s["partition"]["channel"]: s["cursor"]["float_ts"] for s in emitted_parent_state["states"]} == {
+        "airbyte-for-beginners": "1627500000.0001",
+        "good-reads": "1627450000.0001",
+    }
+
+
+@pytest.mark.parametrize("stream_name", ("channel_messages", "threads"))
+@freezegun.freeze_time("2021-07-30T00:00:00Z")
+def test_archived_channels_the_bot_cannot_join_are_not_requested(requests_mock, token_config, stream_name):
+    """
+    With `include_archived_channels` and `join_channels` enabled, archived channels the bot is not a member of cannot be
+    joined, so no conversations.history request may be sent for them. Archived channels the bot already belongs to and
+    active channels the bot joins during the sync are still read.
+    """
+    token_config.pop("end_date")
+    token_config["channel_filter"] = []
+    token_config["include_archived_channels"] = True
+    # requests_mock lower-cases query string values, so channel ids are lower-case to keep the assertions exact.
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list",
+        json={
+            "channels": [
+                {"id": "c_active_member", "name": "active-member", "is_member": True, "is_archived": False},
+                {"id": "c_active_joinable", "name": "active-joinable", "is_member": False, "is_archived": False},
+                {"id": "c_archived_member", "name": "archived-member", "is_member": True, "is_archived": True},
+                {"id": "c_archived_not_member", "name": "archived-not-member", "is_member": False, "is_archived": True},
+            ]
+        },
+    )
+    join_request = requests_mock.register_uri("POST", "https://slack.com/api/conversations.join", json={"ok": True})
+    _mock_history_and_replies(
+        requests_mock,
+        {
+            "c_active_member": ["1627000000.000100"],
+            "c_active_joinable": ["1627000000.000200"],
+            "c_archived_member": ["1627000000.000300"],
+        },
+    )
+
+    state = StateBuilder().build()
+    output = read(get_source(token_config, stream_name, state), config=token_config, catalog=_incremental_catalog(stream_name), state=state)
+
+    assert output.errors == []
+    assert _history_requests(requests_mock) == [
+        ("c_active_joinable", 1626984000.0),
+        ("c_active_member", 1626984000.0),
+        ("c_archived_member", 1626984000.0),
+    ]
+    assert [request.json() for request in join_request.request_history] == [{"channel": "c_active_joinable"}]
+    assert sorted((record.record.data["channel_id"], record.record.data["ts"]) for record in output.records) == [
+        ("c_active_joinable", "1627000000.000200"),
+        ("c_active_member", "1627000000.000100"),
+        ("c_archived_member", "1627000000.000300"),
+    ]

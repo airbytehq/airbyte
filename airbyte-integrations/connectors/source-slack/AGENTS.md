@@ -14,6 +14,16 @@ The `MessagesAndThreadsApiBudget` starts with an `UnlimitedCallRatePolicy` (no r
 
 **Why this matters:** The connector starts fast with no rate limiting and then abruptly drops to 1 request per minute after hitting its first 429. This dramatic slowdown is intentional but can make syncs appear to stall. The rate limit policy is not reset between stream reads within the same sync, so hitting a 429 on the messages stream will also throttle the threads stream.
 
+## 3. Threads Parent State Is Only Rebuilt For Legacy State
+
+`ThreadsStateMigration` builds `parent_state.channel_messages` for the `threads` stream from the newest thread cursor (or `start_date`) minus the lookback window, as a single timestamp shared by every channel. It only runs when the incoming state has no `parent_state.channel_messages`, i.e. legacy state. State written by the current connector already holds one `channel_messages` cursor per channel and is passed through untouched.
+
+**Why this matters:** Rebuilding the parent state on every sync discards the per-channel cursors. After an interrupted sync that makes every channel restart from `start_date` (when no thread cursor was saved) or jump to another channel's newer timestamp and skip messages. Do not make the migration unconditional again.
+
+## 4. Message And Thread Partitions Skip Channels The Bot Cannot Read
+
+The `channel_messages` and `threads` streams only create partitions for channels where `is_member` is true, or where `join_channels` is enabled and the channel is not archived. Archived channels cannot be joined, so archived channels the bot is not already a member of are never requested from `conversations.history`, even with `include_archived_channels` enabled. The `channels` and `channel_members` streams still return every channel.
+
 ## Incremental Stream Considerations
 
 The Slack API supports `oldest`/`latest` timestamp filtering on conversations.history and related endpoints. The connector uses Python custom components (`JoinChannelsStream`) referenced from the manifest.
