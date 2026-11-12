@@ -43,8 +43,8 @@ data:
           account_coupon_redemptions.coupon.redeem_by, coupons.redeem_by, and
           unique_coupons_parent.created_at and updated_at fields now use the date-time format.
           After upgrading, refresh the source schema for the affected streams.
-          Refresh the subscriptions stream to restore coupon_redemptions on previously synced rows.
-          Reset or clear only affected streams whose destination cannot alter the column type.
+          To restore coupon_redemptions on previously synced subscriptions rows, refresh the subscriptions stream using Refresh and retain records.
+          Clear an affected stream only if your destination cannot alter its column type. A clear re-reads only data on or after the Start Date (default: the last five years), so set a fixed Start Date and back up the table first.
           See https://docs.airbyte.com/integrations/sources/recurly-migrations#upgrading-to-200.
         upgradeDeadline: "2026-11-23"
         deadlineAction: auto_upgrade
