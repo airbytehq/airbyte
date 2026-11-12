@@ -24,8 +24,6 @@ definitions:
           response_filters:
             - type: HttpResponseFilter
               action: FAIL
-              http_codes:
-                - 403
               error_message_contains: "missing required scope"
               error_message: "API key is missing a required PostHog scope."
               failure_type: config_error
