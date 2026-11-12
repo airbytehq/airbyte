@@ -18,7 +18,9 @@ from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch, FacebookBadObjectError
 from facebook_business.exceptions import FacebookRequestError
+from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.api import MyFacebookAdsApi
+from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
 from source_facebook_marketing.streams.async_job_manager import APILimit
 from source_facebook_marketing.utils import DateInterval
@@ -594,41 +596,47 @@ class TestInsightAsyncJob:
         for non_pk_field in [f for f in fields if f not in pk]:
             assert non_pk_field in exc_info.value.message
 
-    def test_split_job_by_fields_parent_incrementality_raises_config_error(self, api):
-        """
-        When the unsplittable leaf has the `incrementality` attribution window, raise a
-        config_error that additionally guides the user to disable "Include Incrementality"
-        (the verified dma + conversions + incrementality limitation, oncall #12088).
-        """
+    @pytest.mark.parametrize(
+        "global_incrementality,custom_incrementality",
+        [(False, True), (True, False), (True, True)],
+        ids=["custom-only", "inherited", "both"],
+    )
+    def test_split_job_by_fields_parent_incrementality_raises_config_error(self, api, config, global_incrementality, custom_incrementality):
         interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))
-        params = {
-            "time_increment": 1,
-            "breakdowns": ["comscore_market"],
-            "fields": ["ad_id", "conversions"],  # 1 non-PK field
-            "action_attribution_windows": ["1d_click", "incrementality"],
-            "level": "ad",
-        }
-        pk = ["ad_id"]
+        config["include_incrementality"] = global_incrementality
+        config["custom_insights"] = [
+            {
+                "name": "Geographic",
+                "level": "ad",
+                "breakdowns": ["comscore_market"],
+                "fields": ["ad_id", "conversions"],
+                "include_incrementality": custom_incrementality,
+            }
+        ]
+        stream = SourceFacebookMarketing().get_custom_insights_streams(api, ConnectorConfig(**config))[0]
 
         job = InsightAsyncJob(
             api=api,
             edge_object=Ad(1),
             interval=interval,
-            params=params,
+            params=stream.request_params(),
             job_timeout=timedelta(minutes=60),
-            primary_key=pk,
-            stream_name="ads_insights_comscore_market",
+            primary_key=stream.primary_key,
+            stream_name=stream.name,
         )
 
         with pytest.raises(AirbyteTracedException, match="incrementality") as exc_info:
             job._split_job()
 
         assert exc_info.value.failure_type == FailureType.config_error
-        assert "Include Incrementality" in exc_info.value.message
-        assert "comscore_market" in exc_info.value.message
-        assert "conversions" in exc_info.value.message
-        # The stream name is surfaced so the user knows exactly which stream to fix.
-        assert "ads_insights_comscore_market" in exc_info.value.message
+        assert exc_info.value.message == (
+            "Facebook could not generate the Insights report for stream 'custom_geographic' "
+            "for breakdown(s) ['comscore_market'] with the field(s) ['conversions'] "
+            'when the "incrementality" attribution window is enabled, even at the smallest request size. '
+            'This is a Facebook-side limitation. To resolve it, (1) disable "Include Incrementality" '
+            "in both the source configuration and the custom insight configuration (if applicable); "
+            "or (2) unselect the field(s) ['conversions'] from this stream's schema."
+        )
 
     def test_split_job_by_fields_parent_does_not_add_missing_breakdown_pk_fields(self, api):
         interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))

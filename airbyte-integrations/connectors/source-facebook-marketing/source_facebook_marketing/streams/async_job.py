@@ -585,7 +585,9 @@ class InsightAsyncJob(AsyncJob):
             scope = f"breakdown(s) {breakdowns} with the field(s) {split_candidates}" if breakdowns else f"the field(s) {split_candidates}"
             fixes = []
             if has_incrementality:
-                fixes.append('disable the "Include Incrementality" option for this stream')
+                fixes.append(
+                    'disable "Include Incrementality" in both the source configuration and the custom insight configuration (if applicable)'
+                )
             fixes.append(f"unselect the field(s) {split_candidates} from this stream's schema")
             fix_text = "; or ".join(f"({i + 1}) {fix}" for i, fix in enumerate(fixes)) if len(fixes) > 1 else fixes[0]
 
