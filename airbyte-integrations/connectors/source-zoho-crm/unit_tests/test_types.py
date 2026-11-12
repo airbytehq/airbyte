@@ -6,7 +6,7 @@ from dataclasses import asdict
 
 import pytest
 from source_zoho_crm.exceptions import IncompleteMetaDataException, UnknownDataTypeException
-from source_zoho_crm.types import FieldMeta, ModuleMeta, ZohoBaseType, ZohoPickListItem
+from source_zoho_crm.types import FieldMeta, ModuleMeta, ZohoBaseType
 
 from .parametrize import datatype_inputs
 
@@ -42,7 +42,6 @@ def test_module_schema():
             decimal_place=None,
             system_mandatory=True,
             display_label="Note content",
-            pick_list_values=[],
         )
     ]
     module = ModuleMeta(api_name="Notes", module_name="Notes", api_supported=True, fields=fields)
@@ -54,10 +53,38 @@ def test_module_schema():
             "Modified_Time": {"format": "date-time", "type": "string"},
             "id": {"type": "string"},
         },
-        "required": ["id", "Modified_Time", "Content"],
+        "required": ["id", "Modified_Time"],
         "schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
     }
+
+
+def test_module_schema_does_not_require_system_mandatory_fields():
+    fields = [
+        FieldMeta(
+            json_type="string",
+            length=None,
+            api_name="Mandatory_Field",
+            data_type="text",
+            decimal_place=None,
+            system_mandatory=True,
+            display_label="Mandatory Field",
+        ),
+        FieldMeta(
+            json_type="string",
+            length=None,
+            api_name="Optional_Field",
+            data_type="text",
+            decimal_place=None,
+            system_mandatory=False,
+            display_label="Optional Field",
+        ),
+    ]
+    schema = ModuleMeta(api_name="Events", module_name="Events", api_supported=True, fields=fields).schema
+
+    assert schema.required == ["id", "Modified_Time"]
+    assert "Mandatory_Field" in schema.properties
+    assert "Optional_Field" in schema.properties
 
 
 def test_field_schema_unknown_type():
@@ -69,7 +96,6 @@ def test_field_schema_unknown_type():
         decimal_place=None,
         system_mandatory=False,
         display_label="",
-        pick_list_values=[],
     )
     with pytest.raises(UnknownDataTypeException):
         _ = field.schema
@@ -77,18 +103,19 @@ def test_field_schema_unknown_type():
 
 @datatype_inputs
 def test_field_schema(json_type, data_type, length, decimal_place, api_name, pick_list_values, autonumber, expected_values):
-    if pick_list_values:
-        pick_list_values = [ZohoPickListItem(actual_value=value, display_value=value) for value in pick_list_values]
-    field = FieldMeta(
-        json_type=json_type,
-        length=length,
-        api_name=api_name,
-        data_type=data_type,
-        decimal_place=decimal_place,
-        system_mandatory=True,
-        display_label=api_name,
-        pick_list_values=pick_list_values,
-        auto_number=autonumber or {"prefix": "", "suffix": ""},
+    # Built from the fields metadata payload, so picklist values are passed in and must not reach the schema.
+    field = FieldMeta.from_dict(
+        {
+            "json_type": json_type,
+            "length": length,
+            "api_name": api_name,
+            "data_type": data_type,
+            "decimal_place": decimal_place,
+            "system_mandatory": True,
+            "display_label": api_name,
+            "pick_list_values": [{"actual_value": value, "display_value": value} for value in pick_list_values],
+            "auto_number": autonumber or {"prefix": "", "suffix": ""},
+        }
     )
 
     assert field.schema == expected_values

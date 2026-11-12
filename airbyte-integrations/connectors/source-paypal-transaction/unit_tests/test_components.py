@@ -11,6 +11,7 @@ import requests
 import yaml
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 
 
 @pytest.fixture
@@ -181,11 +182,12 @@ def test_manifest_transaction_id_has_value_type_string(manifest):
 
 def test_transactions_rate_limits_use_long_backoff(manifest):
     """Transactions must retry rate limits instead of failing after the default delay."""
-    transactions = manifest["definitions"]["streams"]["transactions"]
+    resolved_manifest = ManifestReferenceResolver().preprocess_manifest(manifest)
+    transactions = resolved_manifest["definitions"]["streams"]["transactions"]
     error_handler = transactions["retriever"]["requester"]["error_handler"]
-    default_handler = next(handler for handler in error_handler["error_handlers"] if handler["type"] == "DefaultErrorHandler")
+    assert error_handler["type"] == "DefaultErrorHandler"
 
-    backoff_strategies = default_handler["backoff_strategies"]
+    backoff_strategies = error_handler["backoff_strategies"]
     assert {
         strategy["type"]: strategy["backoff_time_in_seconds"]
         for strategy in backoff_strategies

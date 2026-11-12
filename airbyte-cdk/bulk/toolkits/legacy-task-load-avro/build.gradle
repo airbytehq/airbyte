@@ -3,7 +3,7 @@ dependencies {
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader')
 
     implementation("org.tukaani:xz:1.9")
-    api("org.apache.avro:avro:1.11.0")
+    api("org.apache.avro:avro:1.11.4") // CVE-2024-47561
 
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader"))
 }

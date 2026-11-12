@@ -21,18 +21,16 @@ definitions:
           request_headers:
             Authorization: OAuth {{ config['api_key'] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 62
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 420
-                      - 429
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 62
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 420
+                  - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -303,18 +301,16 @@ definitions:
           request_headers:
             Authorization: OAuth {{ config['api_key'] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 62
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 420
-                      - 429
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 62
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 420
+                  - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -354,18 +350,16 @@ definitions:
                       request_headers:
                         Authorization: OAuth {{ config['api_key'] }}
                       error_handler:
-                        type: CompositeErrorHandler
-                        error_handlers:
-                          - type: DefaultErrorHandler
-                            backoff_strategies:
-                              - type: ConstantBackoffStrategy
-                                backoff_time_in_seconds: 62
-                            response_filters:
-                              - type: HttpResponseFilter
-                                action: RETRY
-                                http_codes:
-                                  - 420
-                                  - 429
+                        type: DefaultErrorHandler
+                        backoff_strategies:
+                          - type: ConstantBackoffStrategy
+                            backoff_time_in_seconds: 62
+                        response_filters:
+                          - type: HttpResponseFilter
+                            action: RETRY
+                            http_codes:
+                              - 420
+                              - 429
                     record_selector:
                       type: RecordSelector
                       extractor:
@@ -760,18 +754,16 @@ definitions:
           request_headers:
             Authorization: OAuth {{ config['api_key'] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 62
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 420
-                      - 429
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 62
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 420
+                  - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -811,18 +803,16 @@ definitions:
                       request_headers:
                         Authorization: OAuth {{ config['api_key'] }}
                       error_handler:
-                        type: CompositeErrorHandler
-                        error_handlers:
-                          - type: DefaultErrorHandler
-                            backoff_strategies:
-                              - type: ConstantBackoffStrategy
-                                backoff_time_in_seconds: 62
-                            response_filters:
-                              - type: HttpResponseFilter
-                                action: RETRY
-                                http_codes:
-                                  - 420
-                                  - 429
+                        type: DefaultErrorHandler
+                        backoff_strategies:
+                          - type: ConstantBackoffStrategy
+                            backoff_time_in_seconds: 62
+                        response_filters:
+                          - type: HttpResponseFilter
+                            action: RETRY
+                            http_codes:
+                              - 420
+                              - 429
                     record_selector:
                       type: RecordSelector
                       extractor:
@@ -1231,18 +1221,16 @@ definitions:
           request_headers:
             Authorization: OAuth {{ config['api_key'] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 62
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 420
-                      - 429
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 62
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 420
+                  - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1282,18 +1270,16 @@ definitions:
                       request_headers:
                         Authorization: OAuth {{ config['api_key'] }}
                       error_handler:
-                        type: CompositeErrorHandler
-                        error_handlers:
-                          - type: DefaultErrorHandler
-                            backoff_strategies:
-                              - type: ConstantBackoffStrategy
-                                backoff_time_in_seconds: 62
-                            response_filters:
-                              - type: HttpResponseFilter
-                                action: RETRY
-                                http_codes:
-                                  - 420
-                                  - 429
+                        type: DefaultErrorHandler
+                        backoff_strategies:
+                          - type: ConstantBackoffStrategy
+                            backoff_time_in_seconds: 62
+                        response_filters:
+                          - type: HttpResponseFilter
+                            action: RETRY
+                            http_codes:
+                              - 420
+                              - 429
                     record_selector:
                       type: RecordSelector
                       extractor:
@@ -1723,18 +1709,16 @@ definitions:
           request_headers:
             Authorization: OAuth {{ config['api_key'] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 62
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 420
-                      - 429
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 62
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 420
+                  - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -1774,18 +1758,16 @@ definitions:
                       request_headers:
                         Authorization: OAuth {{ config['api_key'] }}
                       error_handler:
-                        type: CompositeErrorHandler
-                        error_handlers:
-                          - type: DefaultErrorHandler
-                            backoff_strategies:
-                              - type: ConstantBackoffStrategy
-                                backoff_time_in_seconds: 62
-                            response_filters:
-                              - type: HttpResponseFilter
-                                action: RETRY
-                                http_codes:
-                                  - 420
-                                  - 429
+                        type: DefaultErrorHandler
+                        backoff_strategies:
+                          - type: ConstantBackoffStrategy
+                            backoff_time_in_seconds: 62
+                        response_filters:
+                          - type: HttpResponseFilter
+                            action: RETRY
+                            http_codes:
+                              - 420
+                              - 429
                     record_selector:
                       type: RecordSelector
                       extractor:
@@ -2496,18 +2478,16 @@ definitions:
           request_headers:
             Authorization: OAuth {{ config['api_key'] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 62
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 420
-                      - 429
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 62
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 420
+                  - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -2547,18 +2527,16 @@ definitions:
                       request_headers:
                         Authorization: OAuth {{ config['api_key'] }}
                       error_handler:
-                        type: CompositeErrorHandler
-                        error_handlers:
-                          - type: DefaultErrorHandler
-                            backoff_strategies:
-                              - type: ConstantBackoffStrategy
-                                backoff_time_in_seconds: 62
-                            response_filters:
-                              - type: HttpResponseFilter
-                                action: RETRY
-                                http_codes:
-                                  - 420
-                                  - 429
+                        type: DefaultErrorHandler
+                        backoff_strategies:
+                          - type: ConstantBackoffStrategy
+                            backoff_time_in_seconds: 62
+                        response_filters:
+                          - type: HttpResponseFilter
+                            action: RETRY
+                            http_codes:
+                              - 420
+                              - 429
                     record_selector:
                       type: RecordSelector
                       extractor:
@@ -2924,18 +2902,16 @@ definitions:
           request_headers:
             Authorization: OAuth {{ config['api_key'] }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 62
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 420
-                      - 429
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 62
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
+                  - 420
+                  - 429
         record_selector:
           type: RecordSelector
           extractor:
@@ -2975,18 +2951,16 @@ definitions:
                       request_headers:
                         Authorization: OAuth {{ config['api_key'] }}
                       error_handler:
-                        type: CompositeErrorHandler
-                        error_handlers:
-                          - type: DefaultErrorHandler
-                            backoff_strategies:
-                              - type: ConstantBackoffStrategy
-                                backoff_time_in_seconds: 62
-                            response_filters:
-                              - type: HttpResponseFilter
-                                action: RETRY
-                                http_codes:
-                                  - 420
-                                  - 429
+                        type: DefaultErrorHandler
+                        backoff_strategies:
+                          - type: ConstantBackoffStrategy
+                            backoff_time_in_seconds: 62
+                        response_filters:
+                          - type: HttpResponseFilter
+                            action: RETRY
+                            http_codes:
+                              - 420
+                              - 429
                     record_selector:
                       type: RecordSelector
                       extractor:
@@ -3359,18 +3333,16 @@ streams:
         request_headers:
           Authorization: OAuth {{ config['api_key'] }}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 62
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 420
-                    - 429
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 62
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 420
+                - 429
       record_selector:
         type: RecordSelector
         extractor:
@@ -3637,18 +3609,16 @@ streams:
         request_headers:
           Authorization: OAuth {{ config['api_key'] }}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 62
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 420
-                    - 429
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 62
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 420
+                - 429
       record_selector:
         type: RecordSelector
         extractor:
@@ -3688,18 +3658,16 @@ streams:
                     request_headers:
                       Authorization: OAuth {{ config['api_key'] }}
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: ConstantBackoffStrategy
-                              backoff_time_in_seconds: 62
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: RETRY
-                              http_codes:
-                                - 420
-                                - 429
+                      type: DefaultErrorHandler
+                      backoff_strategies:
+                        - type: ConstantBackoffStrategy
+                          backoff_time_in_seconds: 62
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: RETRY
+                          http_codes:
+                            - 420
+                            - 429
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -4091,18 +4059,16 @@ streams:
         request_headers:
           Authorization: OAuth {{ config['api_key'] }}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 62
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 420
-                    - 429
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 62
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 420
+                - 429
       record_selector:
         type: RecordSelector
         extractor:
@@ -4142,18 +4108,16 @@ streams:
                     request_headers:
                       Authorization: OAuth {{ config['api_key'] }}
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: ConstantBackoffStrategy
-                              backoff_time_in_seconds: 62
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: RETRY
-                              http_codes:
-                                - 420
-                                - 429
+                      type: DefaultErrorHandler
+                      backoff_strategies:
+                        - type: ConstantBackoffStrategy
+                          backoff_time_in_seconds: 62
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: RETRY
+                          http_codes:
+                            - 420
+                            - 429
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -4540,18 +4504,16 @@ streams:
         request_headers:
           Authorization: OAuth {{ config['api_key'] }}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 62
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 420
-                    - 429
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 62
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 420
+                - 429
       record_selector:
         type: RecordSelector
         extractor:
@@ -4591,18 +4553,16 @@ streams:
                     request_headers:
                       Authorization: OAuth {{ config['api_key'] }}
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: ConstantBackoffStrategy
-                              backoff_time_in_seconds: 62
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: RETRY
-                              http_codes:
-                                - 420
-                                - 429
+                      type: DefaultErrorHandler
+                      backoff_strategies:
+                        - type: ConstantBackoffStrategy
+                          backoff_time_in_seconds: 62
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: RETRY
+                          http_codes:
+                            - 420
+                            - 429
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -5028,18 +4988,16 @@ streams:
         request_headers:
           Authorization: OAuth {{ config['api_key'] }}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 62
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 420
-                    - 429
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 62
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 420
+                - 429
       record_selector:
         type: RecordSelector
         extractor:
@@ -5079,18 +5037,16 @@ streams:
                     request_headers:
                       Authorization: OAuth {{ config['api_key'] }}
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: ConstantBackoffStrategy
-                              backoff_time_in_seconds: 62
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: RETRY
-                              http_codes:
-                                - 420
-                                - 429
+                      type: DefaultErrorHandler
+                      backoff_strategies:
+                        - type: ConstantBackoffStrategy
+                          backoff_time_in_seconds: 62
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: RETRY
+                          http_codes:
+                            - 420
+                            - 429
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -5785,18 +5741,16 @@ streams:
         request_headers:
           Authorization: OAuth {{ config['api_key'] }}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 62
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 420
-                    - 429
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 62
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 420
+                - 429
       record_selector:
         type: RecordSelector
         extractor:
@@ -5836,18 +5790,16 @@ streams:
                     request_headers:
                       Authorization: OAuth {{ config['api_key'] }}
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: ConstantBackoffStrategy
-                              backoff_time_in_seconds: 62
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: RETRY
-                              http_codes:
-                                - 420
-                                - 429
+                      type: DefaultErrorHandler
+                      backoff_strategies:
+                        - type: ConstantBackoffStrategy
+                          backoff_time_in_seconds: 62
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: RETRY
+                          http_codes:
+                            - 420
+                            - 429
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -6211,18 +6163,16 @@ streams:
         request_headers:
           Authorization: OAuth {{ config['api_key'] }}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 62
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RETRY
-                  http_codes:
-                    - 420
-                    - 429
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 62
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 420
+                - 429
       record_selector:
         type: RecordSelector
         extractor:
@@ -6262,18 +6212,16 @@ streams:
                     request_headers:
                       Authorization: OAuth {{ config['api_key'] }}
                     error_handler:
-                      type: CompositeErrorHandler
-                      error_handlers:
-                        - type: DefaultErrorHandler
-                          backoff_strategies:
-                            - type: ConstantBackoffStrategy
-                              backoff_time_in_seconds: 62
-                          response_filters:
-                            - type: HttpResponseFilter
-                              action: RETRY
-                              http_codes:
-                                - 420
-                                - 429
+                      type: DefaultErrorHandler
+                      backoff_strategies:
+                        - type: ConstantBackoffStrategy
+                          backoff_time_in_seconds: 62
+                      response_filters:
+                        - type: HttpResponseFilter
+                          action: RETRY
+                          http_codes:
+                            - 420
+                            - 429
                   record_selector:
                     type: RecordSelector
                     extractor:
