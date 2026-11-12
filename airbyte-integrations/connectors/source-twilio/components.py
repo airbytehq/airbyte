@@ -103,6 +103,11 @@ class TwilioMessagesStateMigration(StateMigration):
       }
     """
 
+    @staticmethod
+    def _parse_cursor(value: str) -> datetime:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return bool(stream_state.get("states")) or stream_state.get("use_global_cursor") is False
 
@@ -110,13 +115,7 @@ class TwilioMessagesStateMigration(StateMigration):
         cursor = stream_state.get("state", {}).get("date_sent")
         if cursor is None:
             cursors = [state.get("cursor", {}).get("date_sent") for state in stream_state.get("states", [])]
-            cursor = min(
-                (value for value in cursors if value),
-                key=lambda value: datetime.fromisoformat(value.replace("Z", "+00:00")).replace(tzinfo=timezone.utc)
-                if len(value) == 10
-                else datetime.fromisoformat(value.replace("Z", "+00:00")),
-                default=None,
-            )
+            cursor = min((value for value in cursors if value), key=self._parse_cursor, default=None)
         migrated_state = {"use_global_cursor": True, "state": {"date_sent": cursor} if cursor is not None else {}}
         if "lookback_window" in stream_state:
             migrated_state["lookback_window"] = stream_state["lookback_window"]
