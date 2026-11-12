@@ -31,6 +31,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.70 | 2026-11-12 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Fix `categories` and `distribution_channels` streams endlessly re-requesting the same unpaginated endpoint, which caused syncs to never finish and duplicated records |
 | 0.0.69 | 2026-11-10 | [91702](https://github.com/airbytehq/airbyte/pull/91702) | Update dependencies |
 | 0.0.68 | 2026-11-03 | [90733](https://github.com/airbytehq/airbyte/pull/90733) | Update dependencies |
 | 0.0.67 | 2026-10-20 | [89404](https://github.com/airbytehq/airbyte/pull/89404) | Update dependencies |
