@@ -24,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -531,3 +532,115 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_state_when_attempt_interrupted_during_lookback_then_cursor_never_regresses(self, http_mocker: HttpMocker) -> None:
+        """
+        A sync re-reads the lookback window below the saved cursor. If the attempt fails part way through that
+        window, every emitted checkpoint must still hold a cursor >= the incoming cursor. Otherwise the next attempt
+        subtracts the lookback again from the lower value and each interruption widens the re-read window.
+        """
+        account_id = "123123123"
+        cursor_value = "2023-01-08"
+        lookback_days = 2
+        # lookback start = 2023-01-06; end date (2023-01-09) is before NOW so no timezone adjustment is involved
+        days = [ab_datetime_parse(f"2023-01-0{day}T00:00:00Z") for day in (6, 7, 8, 9)]
+        report_run_ids = [f"15718600600195{index}0" for index in range(len(days))]
+        job_ids = [f"10499373796016{index}0" for index in range(len(days))]
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id in zip(days, report_run_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids, account_id=account_id))
+        # first lookback day (2023-01-06) is read successfully
+        http_mocker.get(
+            _get_insights_request(job_ids[0]).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        # second lookback day (2023-01-07) fails, interrupting the attempt
+        http_mocker.get(
+            _get_insights_request(job_ids[1]).build(),
+            build_response(
+                body={"error": {"code": 100, "message": "Invalid parameter", "type": "OAuthException"}},
+                status_code=HTTPStatus.BAD_REQUEST,
+            ),
+        )
+
+        state = (
+            StateBuilder()
+            .with_stream_state(_STREAM_NAME, {account_id: {_CURSOR_FIELD: cursor_value, "slices": []}, "time_increment": 1})
+            .build()
+        )
+        output = self._read(
+            config()
+            .with_account_ids([account_id])
+            .with_start_date(ab_datetime_parse("2022-12-01T00:00:00Z"))
+            .with_end_date(ab_datetime_parse("2023-01-09T23:59:59Z"))
+            .with_insights_lookback_window(lookback_days),
+            state=state,
+            expecting_exception=True,
+        )
+
+        assert len(output.records) == 1
+        assert output.state_messages, "a checkpoint must be emitted after the completed lookback slice"
+        emitted_cursors = [
+            AirbyteStreamStateSerializer.dump(message.state.stream).get("stream_state").get(account_id, {}).get(_CURSOR_FIELD)
+            for message in output.state_messages
+        ]
+        assert emitted_cursors == [cursor_value] * len(output.state_messages)
+
+    @HttpMocker()
+    def test_given_completed_slices_below_cursor_in_state_when_read_then_cursor_advances_and_stale_slices_dropped(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """Completed slices at or below the cursor are always re-read in the lookback window, so they must not linger in state."""
+        account_id = "123123123"
+        days = [ab_datetime_parse(f"2023-01-0{day}T00:00:00Z") for day in (6, 7, 8, 9)]
+        report_run_ids = [f"15718600600195{index}0" for index in range(len(days))]
+        job_ids = [f"10499373796016{index}0" for index in range(len(days))]
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id, job_id in zip(days, report_run_ids, job_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+            http_mocker.get(
+                _get_insights_request(job_id).build(),
+                _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids, account_id=account_id))
+
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {account_id: {_CURSOR_FIELD: "2023-01-08", "slices": ["2022-12-20", "2023-01-07"]}, "time_increment": 1},
+            )
+            .build()
+        )
+        output = self._read(
+            config()
+            .with_account_ids([account_id])
+            .with_start_date(ab_datetime_parse("2022-12-01T00:00:00Z"))
+            .with_end_date(ab_datetime_parse("2023-01-09T23:59:59Z"))
+            .with_insights_lookback_window(2),
+            state=state,
+        )
+
+        assert len(output.records) == 4
+        assert AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state").get(account_id) == {
+            _CURSOR_FIELD: "2023-01-09",
+            "slices": [],
+        }

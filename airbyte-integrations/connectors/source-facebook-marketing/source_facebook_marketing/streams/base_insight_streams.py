@@ -275,10 +275,14 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._cursor_values:
             for account_id in self._account_ids:
-                if account_id in self._cursor_values and self._cursor_values[account_id]:
-                    new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
+                cursor_value = self._cursor_values.get(account_id)
+                completed_slices = self._completed_slices[account_id]
+                if cursor_value:
+                    new_state[account_id] = {self.cursor_field: cursor_value.isoformat()}
+                    # slices at or below the cursor are always re-read within the lookback window, so they carry no information
+                    completed_slices = {d for d in completed_slices if d > cursor_value}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in completed_slices}))
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -413,12 +417,20 @@ class AdsInsights(FBMarketingIncrementalStream):
                 current_date += timedelta(days=self.time_increment)
 
     def _advance_cursor(self, account_id: str):
-        """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
+        """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state.
+
+        The walk starts at `cursor - insights_lookback_period`, so the first slices it visits are below the cursor that was
+        loaded from state. The cursor must only move forward: if it were lowered to those lookback slices and the attempt
+        were interrupted, the next attempt would subtract the lookback again from the lower value and re-read an ever wider window.
+        """
         for ts_start in self._date_intervals(account_id):
             if ts_start not in self._completed_slices[account_id]:
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
+            current_cursor = self._cursor_values.get(account_id) if self._cursor_values else None
+            if current_cursor and ts_start <= current_cursor:
+                continue
             if self._cursor_values:
                 self._cursor_values[account_id] = ts_start
             else:
