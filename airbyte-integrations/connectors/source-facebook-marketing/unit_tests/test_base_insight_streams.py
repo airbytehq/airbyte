@@ -56,6 +56,54 @@ def async_job_mock_fixture(mocker):
 
 
 class TestBaseInsightsStream:
+    @freeze_time("2025-06-01")
+    @pytest.mark.parametrize("slice_count", [3, 31])
+    @pytest.mark.parametrize("empty_results", [False, True])
+    def test_lookback_cursor_never_regresses(self, mocker, api, async_manager_mock, slice_count, empty_results):
+        account_id = "unknown_account"
+        cursor = date(2025, 5, 1)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 5, 5),
+            insights_lookback_window=28,
+        )
+        stream.state = {account_id: {"date_start": cursor.isoformat(), "slices": []}, "time_increment": 1}
+        record = mocker.Mock()
+        record.export_all_data.return_value = {"date_start": "2025-04-03"}
+
+        def make_job(api, interval, **kwargs):
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = interval
+            job.get_result.return_value = [] if empty_results else [record]
+            return job
+
+        mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob", side_effect=make_job)
+        async_manager_mock.completed_jobs.side_effect = lambda: iter(list(async_manager_mock.call_args.kwargs["jobs"]))
+        slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
+        assert slices[0]["insight_job"].interval.start == cursor - timedelta(days=28)
+
+        # A completed out-of-order slice must remain bookmarked until the gap is filled.
+        list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=slices[2]))
+        assert stream.state[account_id] == {"date_start": cursor.isoformat(), "slices": ["2025-04-05"]}
+        for index, stream_slice in enumerate(slices[:slice_count]):
+            if index == 2:
+                continue
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+            assert stream.state[account_id]["date_start"] >= cursor.isoformat()
+            if index == 0:
+                assert stream.state[account_id]["slices"] == ["2025-04-05"]
+
+        expected_cursor = max(cursor, slices[slice_count - 1]["insight_job"].interval.start)
+        assert stream.state[account_id] == {"date_start": expected_cursor.isoformat(), "slices": []}
+
+        resumed_slices = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream.state))
+        assert resumed_slices[0]["insight_job"].interval.start == expected_cursor - timedelta(days=28)
+        assert slices[slice_count]["insight_job"].interval.start in [
+            stream_slice["insight_job"].interval.start for stream_slice in resumed_slices
+        ]
+
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,
