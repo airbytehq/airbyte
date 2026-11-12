@@ -254,9 +254,9 @@ Data related to [marketing attribution](https://www.shopify.com/au/blog/marketin
 
 ## IP allow list
 
-Airbyte's Shopify app accepts Admin API requests only from the IP addresses below. If you authenticate with **OAuth2.0**, the connector works only when it runs in Airbyte Cloud or Airbyte Agents. To run the connector anywhere else, such as Airbyte Open Source, authenticate with **API Password** and your own [custom app](#create-a-custom-app).
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list. If you use Airbyte Agents, also add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist). The table below lists both.
 
-If your organization restricts access to specific IPs, add these addresses to your allow list. They're the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) plus the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist).
+Airbyte's Shopify app accepts Admin API requests only from the IP addresses below. If you authenticate with **OAuth2.0**, the connector works only when it runs in Airbyte Cloud or Airbyte Agents. To run the connector anywhere else, such as Airbyte Open Source, authenticate with **API Password** and your own [custom app](#create-a-custom-app).
 
 | Product        | Cloud provider | Region       | IP addresses                                                                                                                    |
 | :------------- | :------------- | :----------- | :------------------------------------------------------------------------------------------------------------------------------ |
