@@ -300,8 +300,8 @@ class TestBaseInsightsStream:
                 {
                     AdsInsights.cursor_field: "2010-10-03",
                     "slices": [
-                        "2010-01-01",
-                        "2010-01-02",
+                        "2010-10-05",
+                        "2010-10-06",
                     ],
                     "time_increment": 1,
                 },
@@ -309,8 +309,8 @@ class TestBaseInsightsStream:
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
                         "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-05",
+                            "2010-10-06",
                         ],
                     },
                     "time_increment": 1,
@@ -348,13 +348,36 @@ class TestBaseInsightsStream:
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
                         "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-05",
+                            "2010-10-06",
                         ],
                     },
                     "time_increment": 1,
                 },
                 None,
+            ),
+            # Slices at or before the cursor are stale (left behind by older versions) and are dropped
+            (
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": [
+                            "2010-01-01",
+                            "2010-10-03",
+                            "2010-10-05",
+                        ],
+                    },
+                    "time_increment": 1,
+                },
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": [
+                            "2010-10-05",
+                        ],
+                    },
+                    "time_increment": 1,
+                },
             ),
             (
                 {
