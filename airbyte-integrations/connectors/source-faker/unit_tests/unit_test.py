@@ -10,7 +10,14 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Status, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
@@ -115,7 +122,9 @@ def test_check_succeeds_when_optional_settings_are_omitted(config):
 @pytest.mark.parametrize(
     "config, expected_message",
     [
-        pytest.param({"count": 5000, "parallelism": 0}, "`parallelism` must be a number greater than or equal to 1, got 0", id="parallelism_zero"),
+        pytest.param(
+            {"count": 5000, "parallelism": 0}, "`parallelism` must be a number greater than or equal to 1, got 0", id="parallelism_zero"
+        ),
         pytest.param(
             {"count": 5000, "records_per_slice": 0},
             "`records_per_slice` must be a number greater than or equal to 1, got 0",
