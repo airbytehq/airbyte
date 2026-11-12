@@ -795,6 +795,12 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.outreach.io/api/v2/
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          predicate: "{{ response.get('id') == 'expiredAccessToken' }}"
+          action: REFRESH_TOKEN_THEN_RETRY
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config['client_id'] }}"
