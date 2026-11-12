@@ -2615,13 +2615,16 @@ definitions:
 
   # base retrievers
   download_error_handler:
-    type: DefaultErrorHandler
-    response_filters:
-      - type: HttpResponseFilter
-        action: FAIL
-        failure_type: transient_error
-        error_message_contains: "Signature not valid in the specified time frame"
-        error_message: "Bing Ads file download URL is expired."
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+      - type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: transient_error
+            error_message_contains: "Signature not valid in the specified time frame"
+            error_message: "Bing Ads file download URL is expired."
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:
