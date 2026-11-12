@@ -3,7 +3,9 @@
 #
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
+import pytest
+
+from airbyte_cdk.models import AirbyteStateMessageSerializer, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -16,6 +18,92 @@ state_test_records = [
     {"id": "2", "last_edited_time": "2022-01-03T00:00:00.000Z"},
     {"id": "3", "last_edited_time": "2022-01-04T00:00:00.000Z"},
 ]
+
+
+@pytest.mark.parametrize("sync_mode", ["incremental", "full_refresh"])
+def test_blocks_incremental_state_and_descendants(requests_mock, sync_mode):
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+
+    def block(identifier, edited, children=False):
+        return {
+            "object": "block",
+            "id": identifier,
+            "type": "paragraph",
+            "last_edited_time": edited,
+            "has_children": children,
+            "parent": {"type": "page_id", "page_id": "page-1"},
+        }
+
+    def response(records):
+        return {"object": "list", "results": records, "next_cursor": None, "has_more": False}
+
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json=response([{"object": "page", "id": "page-1", "last_edited_time": "2022-01-05T00:00:00.000Z"}]),
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100", json=response([block("baseline", "2022-01-03T00:00:00.000Z")])
+    )
+    first = read(get_source(config), config=config, catalog=catalog)
+    assert not first.errors
+    assert [record.record.data["id"] for record in first.records] == ["baseline"]
+    print("FIRST STATE", AirbyteStateMessageSerializer.dump(first.state_messages[-1].state))
+    assert AirbyteStateMessageSerializer.dump(first.state_messages[-1].state)["stream"]["stream_state"]["state"] == {
+        "last_edited_time": "2022-01-03T00:00:00.000000Z"
+    }
+    state = [message.state for message in first.state_messages]
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        json=response(
+            [
+                block("old", "2022-01-01T00:00:00.000Z"),
+                block("new", "2022-01-04T00:00:00.000Z"),
+                block("parent", "2022-01-02T00:00:00.000Z", True),
+                dict(block("excluded", "2022-01-06T00:00:00.000Z"), type="child_page"),
+            ]
+        ),
+    )
+    child_request = requests_mock.get(
+        "https://api.notion.com/v1/blocks/parent/children?page_size=100", json=response([block("child", "2022-01-05T00:00:00.000Z")])
+    )
+    catalog.streams[0].sync_mode = type(catalog.streams[0].sync_mode)(sync_mode)
+    if sync_mode == "full_refresh":
+        state = []
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+    assert not output.errors
+    print("SECOND IDS", sorted(record.record.data["id"] for record in output.records))
+    print("FINAL STATE", AirbyteStateMessageSerializer.dump(output.state_messages[-1].state))
+    expected_ids = ["child", "new"] if sync_mode == "incremental" else ["child", "new", "old", "parent"]
+    assert sorted(record.record.data["id"] for record in output.records) == expected_ids
+    assert child_request.called
+    if sync_mode == "incremental":
+        assert AirbyteStateMessageSerializer.dump(output.state_messages[-1].state)["stream"]["stream_state"]["state"] == {
+            "last_edited_time": "2022-01-05T00:00:00.000000Z"
+        }
+        state = [message.state for message in output.state_messages]
+        for status_code in [200, 404]:
+            requests_mock.get(
+                "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+                json=response([]),
+                status_code=status_code,
+            )
+            empty = read(get_source(config, state), config=config, catalog=catalog, state=state)
+            assert not empty.errors
+            assert not empty.records
+            assert AirbyteStateMessageSerializer.dump(empty.state_messages[-1].state)["stream"]["stream_state"]["state"] == {
+                "last_edited_time": "2022-01-05T00:00:00.000000Z"
+            }
 
 
 def test_blocks_retriever_depth_restored_after_children(components_module):
