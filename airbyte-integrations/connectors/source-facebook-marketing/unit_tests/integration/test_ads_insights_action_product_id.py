@@ -12,7 +12,7 @@ from unittest import TestCase
 import freezegun
 from source_facebook_marketing.streams.async_job import Status
 
-from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -437,6 +437,45 @@ class TestFullRefresh(TestCase):
 
 @freezegun.freeze_time(NOW.isoformat())
 class TestIncremental(TestCase):
+    @HttpMocker()
+    def test_failed_read_during_lookback_preserves_cursor(self, http_mocker: HttpMocker) -> None:
+        cursor = NOW - timedelta(days=1)
+        start_date = cursor - timedelta(days=28)
+        report_ids = [str(1000 + day) for day in range(29)]
+        job_ids = [str(2000 + day) for day in range(29)]
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        for day, report_id in enumerate(report_ids):
+            slice_date = start_date + timedelta(days=day)
+            http_mocker.post(_job_start_request(since=slice_date, until=slice_date).build(), _job_start_response(report_id))
+        http_mocker.post(_job_status_request(report_ids).build(), _job_status_response(job_ids))
+        http_mocker.get(
+            _get_insights_request(job_ids[0]).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        http_mocker.get(
+            _get_insights_request(job_ids[1]).build(),
+            build_response({"error": {"code": 100, "message": "Invalid parameter"}}, HTTPStatus.BAD_REQUEST),
+        )
+        state = [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamStateSerializer.load(
+                    {
+                        "stream_descriptor": {"name": _STREAM_NAME},
+                        "stream_state": {ACCOUNT_ID: {_CURSOR_FIELD: cursor.strftime(DATE_FORMAT)}, "time_increment": 1},
+                    }
+                ),
+            )
+        ]
+
+        output = self._read(config().with_start_date(start_date).with_end_date(cursor), state=state, expecting_exception=True)
+
+        assert len(output.records) == 1
+        assert AirbyteStreamStateSerializer.dump(output.most_recent_state)["stream_state"][ACCOUNT_ID][_CURSOR_FIELD] == cursor.strftime(
+            DATE_FORMAT
+        )
+
     @staticmethod
     def _read(
         config_: ConfigBuilder,
