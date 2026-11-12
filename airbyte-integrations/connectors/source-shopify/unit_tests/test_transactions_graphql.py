@@ -3,7 +3,7 @@
 #
 
 import json
-from typing import List
+from typing import List, Optional
 
 import pytest
 from source_shopify.streams.streams import TransactionsGraphql
@@ -12,12 +12,21 @@ from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(
+    order_id: int,
+    order_created_at: str,
+    transaction_id: int,
+    transaction_created_at: str,
+    order_updated_at: Optional[str] = None,
+    kind: str = "SALE",
+    status: str = "SUCCESS",
+) -> str:
+    order_updated_at_field = f'"order_updated_at":"{order_updated_at}",' if order_updated_at else ""
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
-        f'"order_created_at":"{order_created_at}","transactions":['
+        f'"order_created_at":"{order_created_at}",{order_updated_at_field}"transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
-        f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
+        f'"kind":"{kind}","amount":"57.23","createdAt":"{transaction_created_at}","status":"{status}",'
         f'"processedAt":"{transaction_created_at}","gateway":"bogus","paymentId":"c25048437719229.1",'
         f'"accountNumber":"1","formattedGateway":"bogus","manuallyCapturable":false,"receipt":"{{}}",'
         f'"parentTransaction":null,"authorization":null,'
@@ -84,7 +93,7 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
     finally:
         stream_state_cache.cached_state.pop("transactions", None)
 
-    assert all("order_created_at" not in record for record in records)
+    assert all("order_created_at" not in record and "order_updated_at" not in record for record in records)
     return stream, records
 
 
@@ -164,3 +173,50 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
         assert state["created_at"] >= previous_state_value
 
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
+
+
+def test_transactions_graphql_emits_status_change_of_transaction_on_order_updated_after_state(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+) -> None:
+    # a refund created at 13:00 was first synced as PENDING, the saved state then moved to 14:16:17,
+    # the refund became SUCCESS at 15:10, which updated its order, so the order is exported again.
+    state_value = "2026-10-22T14:16:17+00:00"
+    jsonl_lines = [
+        # order and refund both predate the state, the order was updated after it -> the updated refund is emitted
+        _order_jsonl(
+            1,
+            "2026-10-22T12:00:00Z",
+            1001,
+            "2026-10-22T13:00:00Z",
+            order_updated_at="2026-10-22T15:10:00Z",
+            kind="REFUND",
+            status="SUCCESS",
+        ),
+        # order updated exactly at the state value -> emitted
+        _order_jsonl(2, "2026-10-22T12:00:00Z", 1002, "2026-10-22T13:00:00Z", order_updated_at="2026-10-22T14:16:17Z"),
+        # order exported by the lookback window only, its update predates the state -> not emitted again
+        _order_jsonl(3, "2026-10-22T12:00:00Z", 1003, "2026-10-22T13:00:00Z", order_updated_at="2026-10-22T14:00:00Z"),
+        # a new transaction created after the state -> emitted, sets the new state
+        _order_jsonl(4, "2026-10-22T15:00:00Z", 1004, "2026-10-22T15:20:00Z", order_updated_at="2026-10-22T15:20:00Z"),
+    ]
+
+    stream, test_records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        jsonl_lines,
+        state_value=state_value,
+    )
+
+    assert sorted(record["id"] for record in test_records) == [1001, 1002, 1004]
+    refund = next(record for record in test_records if record["id"] == 1001)
+    assert refund["kind"] == "REFUND"
+    assert refund["status"] == "SUCCESS"
+
+    state = {"created_at": state_value}
+    for record in test_records:
+        state = stream.get_updated_state(state, record)
+    # re-emitting older transactions never moves the cursor backwards
+    assert state == {"created_at": "2026-10-22T15:20:00+00:00"}
