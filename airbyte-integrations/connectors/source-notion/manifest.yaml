@@ -280,7 +280,16 @@ streams:
         $ref: "#/definitions/record_selector"
         record_filter:
           type: RecordFilter
-          condition: '{{ record["type"] not in ["child_page", "child_database", "ai_block"] }}'
+          # Client-side incremental filtering on the cursor value. The CDK does not attach its
+          # ClientSideIncrementalRecordFilterDecorator to the record selector of a CustomRetriever,
+          # so blocks older than the current stream interval are filtered here instead.
+          # Blocks with children are always kept: BlocksRetriever only recurses into blocks that
+          # pass this filter, and an edited nested block does not necessarily update its parent.
+          condition: >-
+            {{ record["type"] not in ["child_page", "child_database", "ai_block"]
+            and (not stream_interval.get("start_time")
+            or record.get("has_children")
+            or str_to_datetime(record["last_edited_time"]) >= str_to_datetime(stream_interval["start_time"])) }}
       paginator:
         $ref: "#/definitions/request_parameter_paginator"
         $parameters:

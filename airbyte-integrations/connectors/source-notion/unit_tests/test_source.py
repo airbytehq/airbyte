@@ -61,7 +61,7 @@ def test_error_handler_maps_429_to_rate_limited(status_code, expected_action):
     stream = _get_stream_by_name("pages", config)
     retriever = _get_retriever(stream)
 
-    mocked_response = MagicMock(spec=Response, status_code=status_code)
+    mocked_response = MagicMock(spec=Response, status_code=status_code, url="https://api.notion.com/v1/users")
     mocked_response.ok = status_code == 200
     mocked_response.headers = {"Content-Type": "application/json"}
 
@@ -74,7 +74,7 @@ def test_users_stream_403_restricted_resource_error_message():
     stream = _get_stream_by_name("users", config)
     retriever = _get_retriever(stream)
 
-    mocked_response = MagicMock(spec=Response, status_code=403)
+    mocked_response = MagicMock(spec=Response, status_code=403, url="https://api.notion.com/v1/users")
     mocked_response.ok = False
     mocked_response.headers = {"Content-Type": "application/json"}
     mocked_response.json.return_value = {
