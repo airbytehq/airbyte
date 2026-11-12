@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from itertools import combinations
 from pathlib import Path
 
 import jsonschema
@@ -10,7 +11,14 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
@@ -94,6 +102,32 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+@pytest.mark.parametrize(
+    "omitted_settings",
+    [omitted for size in range(1, 4) for omitted in combinations(("count", "records_per_slice", "parallelism"), size)],
+)
+def test_check_with_omitted_settings(omitted_settings):
+    config = {"count": 5000, "records_per_slice": 1000, "parallelism": 4, "seed": 42}
+    config = {key: value for key, value in config.items() if key not in omitted_settings}
+    original_config = config.copy()
+
+    result = SourceFaker().check(logger, config)
+
+    assert result.status == Status.SUCCEEDED, result.message
+    assert config == original_config
+
+
+@pytest.mark.parametrize("setting", ("count", "records_per_slice", "parallelism"))
+@pytest.mark.parametrize("value", (0, -1, None, True, False, "10"))
+def test_check_connection_rejects_explicit_invalid_settings(setting, value):
+    config = {"count": 5000, "records_per_slice": 1000, "parallelism": 4, "seed": 42, setting: value}
+
+    assert SourceFaker().check_connection(logger, config) == (
+        False,
+        f"`{setting}` must be a number greater than or equal to 1, got {value!r}",
+    )
 
 
 def test_read_small_random_data():
