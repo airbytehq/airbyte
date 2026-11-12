@@ -2613,6 +2613,20 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  # Report and bulk files are downloaded from pre-signed Azure Blob Storage SAS URLs that expire shortly after
+  # they are issued. Azure answers 403 AuthenticationFailed ("Signature not valid in the specified time frame") when
+  # a download starts after expiry. No user credentials are sent with these requests, so a 403 is never a user
+  # permission problem; surface it as a transient error instead of the CDK's default "permission" config_error.
+  download_url_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        http_codes:
+          - 403
+        error_message: "The Bing Ads download link for stream '{{ parameters.get('stream_name', 'unknown') }}' expired before the file could be downloaded. The sync will retry."
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2660,6 +2674,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/download_url_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2726,6 +2742,8 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        $ref: "#/definitions/download_url_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
@@ -6296,6 +6314,10 @@ dynamic_streams:
           value: "{{components_values['parameters']}}"
         - type: ComponentMappingDefinition
           create_or_update: true
+          field_path: ["$parameters", "stream_name"]
+          value: "{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
           field_path: ["primary_key"]
           value: "{{components_values['primary_key']}}"
         - type: ComponentMappingDefinition
@@ -6386,6 +6408,10 @@ dynamic_streams:
           value: "{{components_values['DownloadEntities']}}"
         - type: ComponentMappingDefinition
           create_or_update: true
+          field_path: ["$parameters", "stream_name"]
+          value: "{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
           field_path: ["schema_loader"]
           value: "{{components_values['schema_loader']}}"
   # Custom reports
@@ -6432,6 +6458,10 @@ dynamic_streams:
           create_or_update: true
           field_path: ["$parameters", "report_aggregation"]
           value: "{{ components_values['report_aggregation'] }}"
+        - type: ComponentMappingDefinition
+          create_or_update: true
+          field_path: ["$parameters", "stream_name"]
+          value: "{{ camel_case_to_snake_case(components_values['name']) if not components_values.get('disable_custom_report_names_camel_to_snake_conversion', false) else components_values['name'] }}"
         - type: ComponentMappingDefinition
           create_or_update: true
           field_path: ["$parameters", "report_type"]
