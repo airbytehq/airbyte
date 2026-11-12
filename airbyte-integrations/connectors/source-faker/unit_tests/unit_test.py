@@ -10,7 +10,7 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Status, Type
 
 
 class MockLogger:
@@ -94,6 +94,17 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+@pytest.mark.parametrize("config", [{"count": 5000, "seed": 42}, {}])
+def test_check_with_omitted_settings(config):
+    assert SourceFaker().check(logger, config).status == Status.SUCCEEDED
+
+
+def test_check_with_zero_parallelism():
+    result = SourceFaker().check(logger, {"parallelism": 0})
+    assert result.status == Status.FAILED
+    assert result.message == "'`parallelism` must be a number greater than or equal to 1, got 0'"
 
 
 def test_read_small_random_data():
