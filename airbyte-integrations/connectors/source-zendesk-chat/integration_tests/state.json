@@ -12,7 +12,7 @@
     },
     "parent_state": {
       "chats_search": {
-        "timestamp": "2023-10-20T09:42:20Z"
+        "search_window_end": "2023-11-14T23:59:59Z"
       }
     }
   },

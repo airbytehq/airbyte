@@ -15,7 +15,7 @@ What changed in the `chats` stream:
 - The cursor field is now `timestamp` (when the chat started) instead of `update_timestamp`. Existing incremental state is migrated automatically, so the next sync continues from where the previous version stopped without skipping chats.
 - The fields `deleted`, `update_timestamp` and `engagements` are no longer available from the new endpoints and are removed from the stream schema. `tags` on offline messages, always an empty list before, is now absent. The export also sent a few fields that were never part of the schema and are gone as well: `abandon_time`, `dropped`, `proactive`, `skills_fulfilled` and `skills_requested` on chats.
 - Deleted chats are no longer reported. Previously a deleted chat arrived with `deleted` set to `true`; now it disappears from the source and existing rows in your destination are left as they are.
-- Chats updated after they first synced are still synced again, because the search covers every chat whose last update falls in the synced window. Every sync also sends again the chats updated during the day before the stream's cursor (a one-day lookback), which the previous version did not do; these repeats carry the same primary key and are deduplicated by destinations that deduplicate.
+- Chats updated after they first synced are still synced again, because the search covers every chat whose last update falls in the synced window. Every sync also starts its search one day before the end of the last search window in which earlier syncs found chats (a one-day lookback), so the chats updated during that day are sent again, which the previous version did not do; these repeats carry the same primary key and are deduplicated by destinations that deduplicate.
 
 What to do after upgrading:
 

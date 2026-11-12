@@ -147,6 +147,8 @@ class ChatsTest(TestCase):
         assert sorted(r.record.data["id"] for r in output.records) == [c["id"] for c in chats]
         # Records are the full chats from `chats?ids=`, not the search summaries.
         assert all("message" in r.record.data and "preview" not in r.record.data for r in output.records)
+        # The window end stamped on the search results is the parent's cursor only; it never reaches a chat record.
+        assert all("search_window_end" not in r.record.data for r in output.records)
 
     @HttpMocker()
     def test_given_search_spans_pages_when_read_then_paginate_and_fetch_in_groups_of_50(self, http_mocker: HttpMocker) -> None:
@@ -185,6 +187,24 @@ class ChatsTest(TestCase):
 
         assert sorted(r.record.data["id"] for r in output.records) == [c["id"] for c in chats]
         assert not output.errors
+
+    @HttpMocker()
+    def test_given_split_window_when_read_then_state_is_the_end_of_the_half_that_returned_chats(self, http_mocker: HttpMocker) -> None:
+        """Each half of a split window stamps its own end, so the state stops at the last half that returned chats."""
+        overflow_page = _search_response([_search_result(_chat_id(99), "2021-01-01T00:00:01Z")], count=10000, next_page=2)
+        first_half = ("2021-01-01T00:00:00Z", "2021-01-15T23:59:59Z")
+        second_half = ("2021-01-16T00:00:00Z", "2021-01-30T23:59:59Z")
+        chat = _chat(_chat_id(1), "2021-01-10T10:00:00Z")
+        http_mocker.get(_search_request(*_WINDOWS[0]), overflow_page)
+        http_mocker.get(_search_request(*first_half), _search_response([_search_result(chat["id"], chat["timestamp"])]))
+        http_mocker.get(_search_request(*second_half), _search_response([]))
+        _mock_empty_windows(http_mocker, _WINDOWS[1:])
+        http_mocker.get(_chats_request([chat["id"]]), _chats_response([chat]))
+
+        output = read(_config(), sync_mode=SyncMode.incremental)
+
+        assert [r.record.data["id"] for r in output.records] == [chat["id"]]
+        assert output.most_recent_state.stream_state.__dict__["parent_state"] == {"chats_search": {"search_window_end": first_half[1]}}
 
     @HttpMocker()
     def test_given_every_window_at_cap_when_read_then_fail_after_ten_splits(self, http_mocker: HttpMocker) -> None:
@@ -240,7 +260,10 @@ class ChatsTest(TestCase):
 
     @HttpMocker()
     def test_incremental_sync_first_sync_no_state(self, http_mocker: HttpMocker) -> None:
-        """The stream cursor is `timestamp`; the state also carries the parent search cursor."""
+        """
+        The stream cursor is `timestamp` (the newest chat start). The parent search cursor is the end of the last window
+        that returned chats, not a chat start time; the empty last window does not move it.
+        """
         chats = [_chat(_chat_id(1), "2021-01-01T10:00:00Z"), _chat(_chat_id(2), "2021-02-02T08:00:00Z")]
         http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([_search_result(chats[0]["id"], chats[0]["timestamp"])]))
         http_mocker.get(_search_request(*_WINDOWS[1]), _search_response([_search_result(chats[1]["id"], chats[1]["timestamp"])]))
@@ -253,13 +276,41 @@ class ChatsTest(TestCase):
         assert len(output.records) == 2
         latest_state = output.most_recent_state.stream_state.__dict__
         assert latest_state["state"] == {"timestamp": "2021-02-02T08:00:00Z"}
-        assert latest_state["parent_state"] == {"chats_search": {"timestamp": "2021-02-02T08:00:00Z"}}
+        assert latest_state["parent_state"] == {"chats_search": {"search_window_end": _WINDOWS[1][1]}}
+
+    @HttpMocker()
+    def test_given_state_of_previous_sync_when_read_then_chats_updated_before_last_window_are_not_searched_again(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        The second sync restarts one day before the end of the last window that returned chats, not one day before the
+        newest chat started. A chat that started on 2021-02-02 and was last updated on 2021-02-15 is therefore not found
+        again: the only search of the second sync starts on 2021-02-28 and the chat is fetched once.
+        """
+        chat = _chat(_chat_id(1), "2021-02-02T08:00:00Z")
+        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([]))
+        http_mocker.get(_search_request(*_WINDOWS[1]), _search_response([_search_result(chat["id"], chat["timestamp"])]))
+        http_mocker.get(_search_request(*_WINDOWS[2]), _search_response([]))
+        fetch = _chats_request([chat["id"]])
+        http_mocker.get(fetch, _chats_response([chat]))
+        first_sync = read(_config(), sync_mode=SyncMode.incremental)
+        first_state = first_sync.most_recent_state.stream_state.__dict__
+        assert first_state["parent_state"] == {"chats_search": {"search_window_end": "2021-03-01T23:59:59Z"}}
+
+        http_mocker.get(_search_request("2021-02-28T23:59:59Z", _NOW), _search_response([]))
+        second_sync = read(_config(), StateBuilder().with_stream_state(_STREAM_NAME, first_state), sync_mode=SyncMode.incremental)
+
+        assert len(second_sync.records) == 0
+        assert not second_sync.errors
+        http_mocker.assert_number_of_calls(fetch, 1)
+        assert second_sync.most_recent_state.stream_state.__dict__["parent_state"] == first_state["parent_state"]
 
     def _assert_legacy_state_is_migrated(self, http_mocker: HttpMocker, legacy_cursor_value: Any) -> None:
         """
         A state written before 2.0.0 (`{"update_timestamp": <epoch seconds or ISO>}`) seeds both cursors. With a cursor of
         2021-01-02T00:00:00Z the search restarts one day earlier (lookback), so the first window starts on 2021-01-01, and a
-        chat started before the cursor but updated inside a later window is emitted again.
+        chat started before the cursor but updated inside a later window is emitted again. The parent cursor then moves
+        to the end of the window that returned the chat.
         """
         old_chat = _chat(_chat_id(1), "2020-12-15T10:00:00Z")
         http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([]))
@@ -276,7 +327,7 @@ class ChatsTest(TestCase):
         assert [r.record.data["id"] for r in output.records] == [old_chat["id"]]
         latest_state = output.most_recent_state.stream_state.__dict__
         assert latest_state["state"] == {"timestamp": "2021-01-02T00:00:00Z"}
-        assert latest_state["parent_state"] == {"chats_search": {"timestamp": "2021-01-02T00:00:00Z"}}
+        assert latest_state["parent_state"] == {"chats_search": {"search_window_end": _WINDOWS[1][1]}}
 
     @HttpMocker()
     def test_given_legacy_epoch_state_when_read_then_state_is_migrated(self, http_mocker: HttpMocker) -> None:
@@ -291,7 +342,7 @@ class ChatsTest(TestCase):
         state = {
             "use_global_cursor": True,
             "state": {"timestamp": "2021-01-02T00:00:00Z"},
-            "parent_state": {"chats_search": {"timestamp": "2021-01-02T00:00:00Z"}},
+            "parent_state": {"chats_search": {"search_window_end": "2021-01-02T00:00:00Z"}},
         }
         _mock_empty_windows(http_mocker, _WINDOWS)
 
@@ -302,4 +353,7 @@ class ChatsTest(TestCase):
         )
 
         assert len(output.records) == 0
-        assert output.most_recent_state.stream_state.__dict__["state"] == {"timestamp": "2021-01-02T00:00:00Z"}
+        latest_state = output.most_recent_state.stream_state.__dict__
+        assert latest_state["state"] == {"timestamp": "2021-01-02T00:00:00Z"}
+        # Empty windows do not move the parent cursor: the state follows the stamped results, not the searched range.
+        assert latest_state["parent_state"] == {"chats_search": {"search_window_end": "2021-01-02T00:00:00Z"}}

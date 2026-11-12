@@ -262,6 +262,10 @@ definitions:
         fetched in full by id (see `chats`). Search results are sorted by `timestamp` and capped
         at 10,000 results (250 pages of 40) per query:
         https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#search-chats
+        The cursor is `search_window_end`, the end of the searched window stamped on every result,
+        so the saved state is a point in update time like the search filter. A cursor on the chat
+        start time (`timestamp`) would restart every sync one day before the newest chat started
+        and re-emit every chat updated since then.
       retriever:
         type: SimpleRetriever
         request_window_splitting:
@@ -312,12 +316,19 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('next_url') | regex_search('[?&]page=([0-9]+)') }}"
             stop_condition: "{{ not response.get('next_url') }}"
+      transformations:
+        # Every result carries the end of the window that found it. Split windows stamp their own end.
+        - type: AddFields
+          fields:
+            - path:
+                - search_window_end
+              value: "{{ stream_interval['end_time'] }}"
       name: chats_search
       primary_key:
         - id
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: timestamp
+        cursor_field: search_window_end
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -817,6 +828,12 @@ schemas:
           - "null"
           - string
       timestamp:
+        type:
+          - "null"
+          - string
+        format: date-time
+      search_window_end:
+        description: End of the search window that returned the chat. Added by the connector, used as the cursor.
         type:
           - "null"
           - string

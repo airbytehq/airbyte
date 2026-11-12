@@ -62,7 +62,8 @@ def test_bans_stream_record_extractor(
 
 
 class TestChatsStateMigration:
-    """The pre-2.0.0 `chats` state is `{"update_timestamp": <epoch seconds or ISO>}`; 2.0.0 cursors on `timestamp`."""
+    """The pre-2.0.0 `chats` state is `{"update_timestamp": <epoch seconds or ISO>}`; 2.0.0 cursors on `timestamp` and, for
+    the `chats_search` parent, on `search_window_end`."""
 
     def setup_method(self) -> None:
         from components import ChatsStateMigration
@@ -80,7 +81,7 @@ class TestChatsStateMigration:
         assert self.migration.migrate(legacy_state) == {
             "use_global_cursor": True,
             "state": {"timestamp": "2023-10-20T09:44:12Z"},
-            "parent_state": {"chats_search": {"timestamp": "2023-10-20T09:44:12Z"}},
+            "parent_state": {"chats_search": {"search_window_end": "2023-10-20T09:44:12Z"}},
         }
 
     @pytest.mark.parametrize(

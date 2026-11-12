@@ -18,6 +18,7 @@ date_time_parser = DatetimeParser()
 
 _CHATS_SEARCH_STREAM_NAME = "chats_search"
 _CHATS_CURSOR_FIELD = "timestamp"
+_CHATS_SEARCH_CURSOR_FIELD = "search_window_end"
 _CHATS_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 _LEGACY_CHATS_CURSOR_FIELD = "update_timestamp"
 
@@ -52,13 +53,14 @@ class ChatsStateMigration(StateMigration):
     Before 2.0.0 the stream read the incremental export with cursor `update_timestamp`, so the state was
     `{"update_timestamp": <value>}` where the value is either epoch seconds (the format the export took as
     `start_time`) or an ISO 8601 timestamp. Since 2.0.0 the stream is a substream of the internal `chats_search`
-    parent, which searches by `update_timestamp` windows and tracks `timestamp` as its cursor; the stream itself
-    keeps a global `timestamp` cursor. The state becomes
-    `{"use_global_cursor": true, "state": {"timestamp": <iso>}, "parent_state": {"chats_search": {"timestamp": <iso>}}}`.
+    parent, which searches by `update_timestamp` windows and tracks the end of the last window that returned chats
+    (`search_window_end`) as its cursor; the stream itself keeps a global `timestamp` cursor. The state becomes
+    `{"use_global_cursor": true, "state": {"timestamp": <iso>}, "parent_state": {"chats_search": {"search_window_end": <iso>}}}`.
 
-    Seeding both cursors with the old `update_timestamp` value never skips data: every chat the old state had not
-    seen was created or updated after that value, so the next search windows (which start one day earlier, see the
-    parent's `lookback_window`) return it again.
+    The parent cursor and the old `update_timestamp` value are both points in update time, so seeding the parent
+    with the old value never skips data: every chat the old state had not seen was created or updated after that
+    value, so the next search windows (which start one day earlier, see the parent's `lookback_window`) return it
+    again.
     """
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
@@ -77,7 +79,7 @@ class ChatsStateMigration(StateMigration):
         return {
             "use_global_cursor": True,
             "state": {_CHATS_CURSOR_FIELD: cursor_value},
-            "parent_state": {_CHATS_SEARCH_STREAM_NAME: {_CHATS_CURSOR_FIELD: cursor_value}},
+            "parent_state": {_CHATS_SEARCH_STREAM_NAME: {_CHATS_SEARCH_CURSOR_FIELD: cursor_value}},
         }
 
     @staticmethod
