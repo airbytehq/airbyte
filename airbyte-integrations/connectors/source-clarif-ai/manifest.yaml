@@ -57,6 +57,18 @@ definitions:
             page_size: 20
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          description: >-
+            Clarifai returns modified_at with nanosecond precision, which the cursor cannot parse.
+            Trim the fractional seconds to microseconds so the cursor can track modified_at.
+          condition: >-
+            {{ record.get('modified_at') is string and record['modified_at'] | length > 27 and record['modified_at'][19] == '.' and record['modified_at'][-1] == 'Z' }}
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - modified_at
+              value: "{{ (record.get('modified_at') or '')[:26] ~ 'Z' }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -128,6 +140,18 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - type: AddFields
+          description: >-
+            Clarifai returns modified_at with nanosecond precision, which the cursor cannot parse.
+            Trim the fractional seconds to microseconds so the cursor can track modified_at.
+          condition: >-
+            {{ record.get('modified_at') is string and record['modified_at'] | length > 27 and record['modified_at'][19] == '.' and record['modified_at'][-1] == 'Z' }}
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - modified_at
+              value: "{{ (record.get('modified_at') or '')[:26] ~ 'Z' }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -198,6 +222,18 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - type: AddFields
+          description: >-
+            Clarifai returns modified_at with nanosecond precision, which the cursor cannot parse.
+            Trim the fractional seconds to microseconds so the cursor can track modified_at.
+          condition: >-
+            {{ record.get('modified_at') is string and record['modified_at'] | length > 27 and record['modified_at'][19] == '.' and record['modified_at'][-1] == 'Z' }}
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - modified_at
+              value: "{{ (record.get('modified_at') or '')[:26] ~ 'Z' }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
