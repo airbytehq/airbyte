@@ -888,6 +888,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+          schema_normalization: Default
         paginator:
           type: DefaultPaginator
           page_token_option:
