@@ -103,7 +103,7 @@ class TwilioStateMigration(StateMigration):
         return None
 
     @classmethod
-    def _advance_cursor(cls, state, candidate):
+    def _advance_cursor(cls, state: dict[str, Any], candidate: Mapping[str, Any]) -> None:
         cursor = state.get("cursor", {})
         for field, value in candidate.items():
             candidate_date = cls._parse_cursor(value)
@@ -113,7 +113,7 @@ class TwilioStateMigration(StateMigration):
                 state["cursor"] = cursor
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return self.migrate(stream_state) != stream_state
+        return bool(stream_state) and self.migrate(stream_state) != stream_state
 
 
 class TwilioAlertsStateMigration(StateMigration):
