@@ -13,15 +13,18 @@ from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, Muta
 
 import requests
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
 
@@ -683,3 +686,35 @@ class BingAdsReportDownloadRequester(HttpRequester):
                 exc_info=True,
             )
             return None
+
+
+# Detail that Azure Blob Storage puts in the body of a 403 for a pre-signed URL whose validity window is over.
+EXPIRED_DOWNLOAD_URL_MARKER = "Signature not valid in the specified time frame"
+
+
+@dataclass
+class BingAdsDownloadErrorHandler(DefaultErrorHandler):
+    """Error handler for the report and bulk file downloads.
+
+    The files are served by Azure Blob Storage from pre-signed URLs that Bing Ads issues with a short validity
+    window. Once the window is over, the storage answers 403, which the default handling reports as a permission
+    problem (``config_error``). The user's credentials are not involved in that request, and a new sync gets a new
+    URL, so this case is reported as a ``transient_error`` with its own message. Sending the same URL again cannot
+    succeed, so the request is not retried. Every other response keeps the default handling.
+
+    Only the body of a 403 is read. Successful downloads are streamed, and reading their body here would leave
+    nothing for the decoder.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if (
+            isinstance(response_or_exception, requests.Response)
+            and response_or_exception.status_code == 403
+            and EXPIRED_DOWNLOAD_URL_MARKER in response_or_exception.text
+        ):
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.transient_error,
+                error_message="Bing Ads file download URL is expired.",
+            )
+        return super().interpret_response(response_or_exception)
