@@ -5,7 +5,9 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - channel_annotations_a1
+    # YouTube retired channel_annotations_a1 on 2025-10-31 and no longer issues report files
+    # for it, so checking it always found no slices. channel_basic_a3 is the core channel report.
+    - channel_basic_a3
 
 definitions:
   streams:
