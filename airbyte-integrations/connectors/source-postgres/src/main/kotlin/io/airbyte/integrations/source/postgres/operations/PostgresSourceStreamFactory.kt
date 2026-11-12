@@ -12,6 +12,7 @@ import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.discover.DiscoveredStream
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -24,6 +25,7 @@ import io.airbyte.integrations.source.postgres.cdc.PostgresSourceCdcPosition
 import io.airbyte.integrations.source.postgres.cdc.PostgresSourceDebeziumOperations
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.config.XminIncrementalConfiguration
+import io.airbyte.integrations.source.postgres.operations.types.PostgresUuidFieldType
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
 import io.micronaut.context.annotation.Primary
@@ -107,6 +109,10 @@ class PostgresSourceStreamFactory(val jdbcConnectionFactory: JdbcConnectionFacto
                 PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>,
             )
     }
+
+    /** Postgres orders uuid values bytewise, so they do not increase with new rows. */
+    override fun isPossibleCursor(field: EmittedField): Boolean =
+        super.isPossibleCursor(field) && field.type !is PostgresUuidFieldType
 
     override fun create(
         config: SourceConfiguration,
