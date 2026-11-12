@@ -26,9 +26,7 @@ def test_sla_policy_ids_are_integers(id_type: type) -> None:
     catalog = CatalogBuilder().with_stream("sla_policies", SyncMode.full_refresh).build()
     config = ConfigBuilder().domain("a-domain.freshdesk.com").build()
     state = StateBuilder().build()
-    source = YamlDeclarativeSource(
-        path_to_yaml=str(_SOURCE_FOLDER_PATH / "manifest.yaml"), catalog=catalog, config=config, state=state
-    )
+    source = YamlDeclarativeSource(path_to_yaml=str(_SOURCE_FOLDER_PATH / "manifest.yaml"), catalog=catalog, config=config, state=state)
     request = HttpRequest("https://a-domain.freshdesk.com/api/v2/sla_policies", query_params=ANY_QUERY_PARAMS)
 
     with HttpMocker() as http_mocker:
