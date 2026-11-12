@@ -41,6 +41,7 @@ All streams except Export Dates support incremental syncs. Most streams use `upd
 ## Supported streams
 
 - [Accounts](https://docs.recurly.com/docs/accounts)
+- [Account Acquisitions](https://docs.recurly.com/docs/accounts)
 - [Account Coupon Redemptions](https://docs.recurly.com/docs/coupons#redemptions)
 - [Account Notes](https://docs.recurly.com/docs/accounts#account-notes)
 - [Add Ons](https://docs.recurly.com/docs/plans#add-ons-1)
@@ -48,7 +49,11 @@ All streams except Export Dates support incremental syncs. Most streams use `upd
 - [Coupons](https://docs.recurly.com/docs/coupons)
 - [Credit Payments](https://docs.recurly.com/docs/invoices)
 - [Export Dates](https://docs.recurly.com/docs/export-overview) (Full Refresh only)
+- [External Subscriptions](https://developers.recurly.com/api/v2021-02-25/index.html#operation/list_external_subscriptions)
+- [External Subscription Payment Phases](https://developers.recurly.com/api/v2021-02-25/index.html#operation/list_external_subscription_external_payment_phases)
+- [Gift Cards](https://docs.recurly.com/docs/gift-cards)
 - [Invoices](https://docs.recurly.com/docs/invoices)
+- [Items](https://developers.recurly.com/api/v2021-02-25/index.html#operation/list_items)
 - [Line Items](https://docs.recurly.com/docs/invoices#line-items)
 - [Measured Units](https://recurly.com/developers/api/v2021-02-25/index.html#tag/measured_unit)
 - [Plans](https://docs.recurly.com/docs/plans)
@@ -58,6 +63,13 @@ All streams except Export Dates support incremental syncs. Most streams use `upd
 - [Transactions](https://docs.recurly.com/docs/transactions)
 - [Unique Coupons](https://docs.recurly.com/docs/bulk-unique-coupons)
 - Unique Coupons Parent
+- [Usage Records](https://docs.recurly.com/docs/usage-based-billing)
+
+The `account_acquisitions` and `items` streams support Full Refresh and Incremental syncs. The `gift_cards`, `external_subscriptions`, `external_subscription_payment_phases`, and `usage_records` streams support Full Refresh only. The `usage_records` stream reads all billing statuses (`billing_status=all`), including billed and unbilled usage.
+
+The `gift_cards`, `external_subscriptions` (and their payment phases), `usage_records`, and `items` streams require the corresponding Recurly site features: gift cards, external subscriptions, usage-based billing, and the item catalog, respectively. The item catalog also requires Credit Invoices. Enable the relevant features on your Recurly site before syncing these streams.
+
+Feature-gated streams added in version 1.4.0 are skipped with a log message when Recurly reports that the site lacks the required feature (`missing_feature`), allowing the sync to succeed.
 
 The Account Coupon Redemptions, Account Notes, Billing Infos, and Shipping Addresses streams make one request per account, so they can take longer to sync on sites with many accounts.
 
@@ -68,6 +80,12 @@ The Account Coupon Redemptions, Account Notes, Billing Infos, and Shipping Addre
 Recurly limits API requests over a sliding five-minute window. By default, production sites allow 5,000 GET requests and sandbox sites allow 2,000 requests in that window. The connector paces its requests to stay within the limit for the site type you select with **Use Sandbox Environment**. See [Recurly API limits](https://recurly.com/developers/api/v2021-02-25/index.html#section/Getting-Started/Limits).
 
 Recurly applies the limit to the whole site, but the connector only tracks its own requests. If other connections or integrations use the same Recurly site, the connector can still receive HTTP 429 responses. The connector retries rate-limited and server error responses up to five times with exponential backoff.
+
+The `usage_records` stream reads every subscription on every sync, then makes one API request per subscription add-on. On large sites, it can be slow and consume a substantial portion of Recurly's API quota. Enable this stream only when you need usage records.
+
+Connections configured to propagate all stream changes automatically select new streams after a schema refresh. Review your stream selection to avoid enabling high-cost streams unintentionally.
+
+API quota usage depends on the selected streams and site size, especially for `usage_records`. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ### Authentication errors
 
@@ -84,6 +102,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.4.0 | 2026-11-10 | [91305](https://github.com/airbytehq/airbyte/pull/91305) | Add account_acquisitions, gift_cards, external_subscriptions, external_subscription_payment_phases, usage_records and items streams |
 | 1.3.71 | 2026-11-10 | [91303](https://github.com/airbytehq/airbyte/pull/91303) | Pace requests to Recurly's published rate limits, retry rate-limited and server error responses with exponential backoff, show actionable API key errors, and accept start and end dates saved without the trailing `Z` |
 | 1.3.70 | 2026-11-10 | [91708](https://github.com/airbytehq/airbyte/pull/91708) | Update dependencies |
 | 1.3.69 | 2026-11-03 | [90721](https://github.com/airbytehq/airbyte/pull/90721) | Update dependencies |
