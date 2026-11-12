@@ -14,6 +14,7 @@ from source_facebook_marketing.streams.async_job import Status
 
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
@@ -531,3 +532,90 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestIncrementalCursorAfterInterruptedSync(TestCase):
+    """
+    The insights cursor (`date_start`) must never move backwards. Each sync re-reads the lookback window
+    that ends at the saved cursor; if the sync fails partway through that window, the emitted state must
+    keep the saved cursor instead of the start of the last lookback slice that completed. Otherwise every
+    failed sync backtracks the cursor and the next sync re-reads an ever wider window.
+    """
+
+    _ACCOUNT_ID = "123123123"
+    _LOOKBACK_START = datetime(2023, 1, 4)
+    _CURSOR_FROM_STATE = datetime(2023, 1, 5)
+    _REPORT_RUN_IDS = ["1571860060019500", "1571860060019501"]
+    _JOB_IDS = ["1049937379601600", "1049937379601601"]
+
+    def _mock_slices_with_second_one_failing(self, http_mocker: HttpMocker) -> None:
+        account_id = self._ACCOUNT_ID
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id in zip([self._LOOKBACK_START, self._CURSOR_FROM_STATE], self._REPORT_RUN_IDS):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+        http_mocker.post(
+            _job_status_request(self._REPORT_RUN_IDS).build(),
+            _job_status_response(self._JOB_IDS, account_id=account_id),
+        )
+        # The first lookback slice (2023-01-04) is read successfully...
+        http_mocker.get(
+            _get_insights_request(self._JOB_IDS[0]).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        # ...but the sync is interrupted while reading the slice for 2023-01-05.
+        http_mocker.get(
+            _get_insights_request(self._JOB_IDS[1]).build(),
+            build_response(
+                body={"error": {"code": 100, "message": "Unsupported request", "type": "OAuthException"}},
+                status_code=HTTPStatus.BAD_REQUEST,
+            ),
+        )
+
+    @HttpMocker()
+    def test_given_sync_interrupted_within_lookback_window_when_read_then_cursor_does_not_move_backwards(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        self._mock_slices_with_second_one_failing(http_mocker)
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {
+                    self._ACCOUNT_ID: {_CURSOR_FIELD: self._CURSOR_FROM_STATE.strftime(DATE_FORMAT), "slices": []},
+                    "time_increment": 1,
+                },
+            )
+            .build()
+        )
+
+        output = read_output(
+            config_builder=config()
+            .with_account_ids([self._ACCOUNT_ID])
+            .with_start_date(datetime(2023, 1, 1))
+            .with_end_date(self._CURSOR_FROM_STATE)
+            .with_insights_lookback_window(1),
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.incremental,
+            state=state,
+            expecting_exception=True,
+        )
+
+        assert len(output.records) == 1
+        assert output.errors, "the sync is expected to fail on the 2023-01-05 slice"
+        emitted_cursors = [
+            AirbyteStreamStateSerializer.dump(state_message.state.stream)
+            .get("stream_state", {})
+            .get(self._ACCOUNT_ID, {})
+            .get(_CURSOR_FIELD)
+            for state_message in output.state_messages
+        ]
+        assert emitted_cursors, "a state message is expected after the 2023-01-04 slice completed"
+        assert all(cursor == self._CURSOR_FROM_STATE.strftime(DATE_FORMAT) for cursor in emitted_cursors), emitted_cursors
