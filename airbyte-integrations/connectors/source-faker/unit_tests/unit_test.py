@@ -10,7 +10,14 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
@@ -94,6 +101,36 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        {},
+        {"sourceType": "faker", "count": 5000, "seed": 42},
+        {"count": 5000, "seed": 42, "records_per_slice": 1000},
+        {"count": 5000, "parallelism": 4},
+        {"records_per_slice": 1000, "parallelism": 4},
+        {"records_per_slice": 1000},
+        {"parallelism": 4},
+    ],
+)
+def test_check_accepts_omitted_numeric_settings(config):
+    result = SourceFaker().check(logger, config)
+
+    assert result.status is Status.SUCCEEDED, result.message
+    assert result.message is None
+
+
+@pytest.mark.parametrize("setting", ["count", "records_per_slice", "parallelism"])
+@pytest.mark.parametrize("value", [0, -1, False, True, None, "1", []])
+def test_check_rejects_explicit_invalid_numeric_settings(setting, value):
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 2, setting: value}
+
+    result = SourceFaker().check(logger, config)
+
+    assert result.status is Status.FAILED
+    assert result.message == repr(f"`{setting}` must be a number greater than or equal to 1, got {value!r}")
 
 
 def test_read_small_random_data():
