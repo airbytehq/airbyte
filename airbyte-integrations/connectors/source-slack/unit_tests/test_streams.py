@@ -1045,7 +1045,10 @@ def _mock_history_and_replies(requests_mock, messages_by_channel):
     def history(request, context):
         oldest, latest = float(request.qs["oldest"][0]), float(request.qs["latest"][0])
         timestamps = messages_by_channel.get(request.qs["channel"][0], [])
-        return {"ok": True, "messages": [{"ts": ts, "thread_ts": ts, "reply_count": 1} for ts in timestamps if oldest <= float(ts) <= latest]}
+        return {
+            "ok": True,
+            "messages": [{"ts": ts, "thread_ts": ts, "reply_count": 1} for ts in timestamps if oldest <= float(ts) <= latest],
+        }
 
     def replies(request, context):
         return {"ok": True, "messages": [{"ts": request.qs["ts"][0]}]}
@@ -1088,7 +1091,10 @@ _SAVED_CHANNEL_MESSAGES_STATE = {
                 "use_global_cursor": False,
                 "states": [
                     {
-                        "partition": {"float_ts": "1627400000.000100", "parent_slice": {"channel": "airbyte-for-beginners", "parent_slice": {}}},
+                        "partition": {
+                            "float_ts": "1627400000.000100",
+                            "parent_slice": {"channel": "airbyte-for-beginners", "parent_slice": {}},
+                        },
                         "cursor": {"float_ts": "1627400050"},
                     }
                 ],
