@@ -28,7 +28,7 @@ _TOKEN_REQUEST = HttpRequest(
     "https://oauth2.googleapis.com/token",
     body="grant_type=refresh_token&client_id=id&client_secret=secret&refresh_token=rt",
 )
-_TOKEN_RESPONSE = HttpResponse(json.dumps({"access_token": "at", "expires_in": 3600}))
+_TOKEN_RESPONSE = HttpResponse(json.dumps({"access_token": "test-access-token", "expires_in": 3600}))
 
 
 def _google_error(status_code: int, reason: str = "", details_reason: str = "") -> HttpResponse:
@@ -83,7 +83,7 @@ def _mock_calendar(http_mocker: HttpMocker) -> None:
 @pytest.mark.parametrize("stream, path", [("settings", "users/me/settings"), ("colors", "colors")])
 def test_base_requester_reports_a_missing_scope(stream, path, response):
     with HttpMocker() as http_mocker:
-        http_mocker.get(HttpRequest(f"{_BASE_URL}/{path}"), response)
+        http_mocker.get(HttpRequest(f"{_BASE_URL}/{path}", query_params={"maxResults": "250"} if stream == "settings" else {}), response)
 
         _assert_missing_scope_error(_read(http_mocker, stream))
 
@@ -100,7 +100,9 @@ def test_freebusy_reports_a_missing_scope(response):
 
 def test_scope_marker_on_a_non_403_is_not_a_missing_scope():
     with HttpMocker() as http_mocker:
-        http_mocker.get(HttpRequest(f"{_BASE_URL}/users/me/settings"), _google_error(400, "insufficientPermissions"))
+        http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/users/me/settings", query_params={"maxResults": "250"}), _google_error(400, "insufficientPermissions")
+        )
 
         output = _read(http_mocker, "settings")
 
@@ -110,7 +112,7 @@ def test_scope_marker_on_a_non_403_is_not_a_missing_scope():
 
 def test_plain_403_keeps_the_access_message():
     with HttpMocker() as http_mocker:
-        http_mocker.get(HttpRequest(f"{_BASE_URL}/users/me/settings"), _PLAIN_403)
+        http_mocker.get(HttpRequest(f"{_BASE_URL}/users/me/settings", query_params={"maxResults": "250"}), _PLAIN_403)
 
         output = _read(http_mocker, "settings")
 
