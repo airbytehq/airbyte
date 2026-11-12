@@ -164,3 +164,35 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
         assert state["created_at"] >= previous_state_value
 
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
+
+
+def _order_jsonl_with_updated_at(order_jsonl: str, order_updated_at: str, transaction_status: str) -> str:
+    order = json.loads(order_jsonl)
+    order["order_updated_at"] = order_updated_at
+    for transaction in order["transactions"]:
+        transaction["status"] = transaction_status
+    return json.dumps(order)
+
+
+def test_transactions_graphql_emits_status_change_of_transaction_predating_state_when_order_is_updated(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+) -> None:
+    state_value = "2026-10-22T14:59:10+00:00"
+    jsonl_lines = [
+        # refund and order were created before the saved state, the refund moved to SUCCESS after it, which updated the order -> emitted
+        _order_jsonl_with_updated_at(
+            _order_jsonl(1, "2026-10-20T08:00:00Z", 1001, "2026-10-21T09:00:00Z"), "2026-10-22T15:10:00Z", "SUCCESS"
+        ),
+        # order was last updated before the saved state (returned by the lookback window) -> its old transaction stays dropped
+        _order_jsonl_with_updated_at(
+            _order_jsonl(2, "2026-10-20T08:00:00Z", 1002, "2026-10-21T09:00:00Z"), "2026-10-22T10:00:00Z", "PENDING"
+        ),
+    ]
+
+    stream, test_records = _read_transactions(requests_mock, bulk_job_completed_response, auth_config, jsonl_lines, state_value)
+
+    assert [(record["id"], record["status"]) for record in test_records] == [(1001, "SUCCESS")]
+    assert all("order_updated_at" not in record for record in test_records)
+    assert stream.get_updated_state({"created_at": state_value}, test_records[0]) == {"created_at": state_value}

@@ -100,6 +100,102 @@ def create_job_creation_customer_address_request(shop_name: str, lower_boundary:
     return HttpRequest(url=_create_job_url(shop_name), body=create_job_creation_customer_address_body(lower_boundary, upper_boundary))
 
 
+def create_job_creation_transactions_body(lower_boundary: datetime, upper_boundary: datetime):
+    query = """ {
+  orders(
+    query: "updated_at:>='%LOWER_BOUNDARY_TOKEN%' AND updated_at:<='%UPPER_BOUNDARY_TOKEN%'"
+    sortKey: UPDATED_AT
+  ) {
+    edges {
+      node {
+        __typename
+        id
+        currency: currencyCode
+        order_created_at: createdAt
+        order_updated_at: updatedAt
+        transactions {
+          id
+          errorCode
+          test
+          kind
+          amount
+          createdAt
+          status
+          processedAt
+          gateway
+          paymentId
+          accountNumber
+          formattedGateway
+          manuallyCapturable
+          receipt: receiptJson
+          parentTransaction {
+            parentId: id
+          }
+          authorization: authorizationCode
+          totalUnsettledSet {
+            presentmentMoney {
+              amount
+              currency: currencyCode
+            }
+            shopMoney {
+              amount
+              currency: currencyCode
+            }
+          }
+          amountSet {
+            shop_money: shopMoney {
+              amount
+              currency: currencyCode
+            }
+          }
+          fees {
+            id
+            rate
+            type
+            flat_fee_name: flatFeeName
+            rate_name: rateName
+            amount {
+              amount
+              currency: currencyCode
+            }
+            flat_fee: flatFee {
+              amount
+              currency: currencyCode
+            }
+            tax_amount: taxAmount {
+              amount
+              currency: currencyCode
+            }
+          }
+          paymentDetails {
+            ... on CardPaymentDetails {
+              avsResultCode
+              cvvResultCode
+              creditCardBin: bin
+              creditCardCompany: company
+              creditCardNumber: number
+              creditCardName: name
+              creditCardWallet: wallet
+              creditCardExpirationYear: expirationYear
+              creditCardExpirationMonth: expirationMonth
+            }
+          }
+        }
+      }
+    }
+  }
+}"""
+    query = query.replace("%LOWER_BOUNDARY_TOKEN%", lower_boundary.isoformat()).replace(
+        "%UPPER_BOUNDARY_TOKEN%", upper_boundary.isoformat()
+    )
+    prepared_query = ShopifyBulkTemplates.prepare(query)
+    return json.dumps({"query": prepared_query})
+
+
+def create_job_creation_transactions_request(shop_name: str, lower_boundary: datetime, upper_boundary: datetime) -> HttpRequest:
+    return HttpRequest(url=_create_job_url(shop_name), body=create_job_creation_transactions_body(lower_boundary, upper_boundary))
+
+
 def create_job_status_request(shop_name: str, job_id: str) -> HttpRequest:
     return HttpRequest(
         url=_create_job_url(shop_name),

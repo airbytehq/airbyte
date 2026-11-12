@@ -440,14 +440,19 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
         return "transactions"
 
     def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
-        # transactions of offsite payments can predate their order, so they are first exported with the newly created order
-        order_created_at = record.get("order_created_at")
-        return bool(order_created_at) and order_created_at >= state_value
+        # transactions of offsite payments can predate their order, so they are first exported with the newly created order.
+        # `OrderTransaction` has no `updatedAt`, so changes to existing transactions (eg. a refund going from PENDING to SUCCESS)
+        # are only visible through the `updatedAt` of their order.
+        return any(
+            bool(order_cursor_value) and order_cursor_value >= state_value
+            for order_cursor_value in (record.get("order_created_at"), record.get("order_updated_at"))
+        )
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            # `order_created_at` is only used for state comparison, it should not be part of the output
+            # `order_created_at` and `order_updated_at` are only used for state comparison, they should not be part of the output
             record.pop("order_created_at", None)
+            record.pop("order_updated_at", None)
             yield record
 
     def get_json_schema(self) -> Mapping[str, Any]:
