@@ -1025,9 +1025,7 @@ def _partition(stream_path: str, account_sid: str) -> dict:
 
 def _partition_cursors(output: EntrypointOutput, cursor_field: str) -> dict:
     stream_state = output.most_recent_state.stream_state.__dict__
-    return {
-        state["partition"]["subresource_uri"].split("/")[3]: state["cursor"][cursor_field] for state in stream_state["states"]
-    }
+    return {state["partition"]["subresource_uri"].split("/")[3]: state["cursor"][cursor_field] for state in stream_state["states"]}
 
 
 @pytest.mark.parametrize(
