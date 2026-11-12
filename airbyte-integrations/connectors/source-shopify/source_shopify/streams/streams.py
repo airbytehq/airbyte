@@ -238,7 +238,7 @@ class DeletedProducts(IncrementalShopifyStream):
         query_filter = "action:destroy AND subject_type:Product"
         if stream_state and stream_state.get(self.cursor_field):
             state_value = stream_state[self.cursor_field]
-            query_filter += f" AND created_at:>'{state_value}'"
+            query_filter += f" AND created_at:>='{state_value}'"
 
         variables = {
             "first": 250,
@@ -438,6 +438,20 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
     def name(self) -> str:
         # override default name. This stream is essentially the same as `Transactions` stream, but it's using GraphQL API, which does not include the user_id field
         return "transactions"
+
+    def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
+        # transactions have no `updatedAt`, so a status change (e.g. a refund going from PENDING to SUCCESS) is only
+        # visible through the parent order's `updatedAt`. Transactions of offsite payments can also predate their order.
+        # compare against the lookback-adjusted state, so orders re-fetched only by the lookback window are not dropped.
+        order_cursor = record.get("order_updated_at") or record.get("order_created_at")
+        return bool(order_cursor) and order_cursor >= self._apply_lookback_window(state_value)
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            # the order cursors are only used for state comparison, they should not be part of the output
+            record.pop("order_created_at", None)
+            record.pop("order_updated_at", None)
+            yield record
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """

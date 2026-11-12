@@ -8,23 +8,25 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 
 - **Sessions** — All Devin sessions in your organization
   - Session status, title, tags, and timestamps
-  - ACU consumption and billing-relevant metrics
+  - ACU consumption (`acus_consumed`) and on-demand spend in USD (`on_demand_usage`, Teams plans only)
   - Associated pull requests with PR state
   - User and service user attribution
+  - Where the session was started (`origin`, such as `webapp`, `slack`, `api`, or `automation`) and the creating automation (`automation_id`)
+  - Agent mode (`devin_mode`), use-case category (`category`, `subcategory`), and security profile (`security_profile`)
   - Parent/child session relationships
 - **Sessions Insights** — Sessions augmented with aggregate insights
   - All fields from the Sessions stream
   - Per-session message counts (`num_user_messages`, `num_devin_messages`)
   - Session size classification (`session_size`)
   - AI-generated analysis: category, programming languages, tools and frameworks, issues, note usage, suggested prompts, timeline
-  - Analysis fields may be null for sessions where insights have not been generated
+  - Analysis run state (`analysis_status`): `started`, `completed`, `failed`, or null if analysis never ran. `analysis` is null until an analysis run completes.
 - **Session Messages** — Full conversation history for each session
   - Every message exchanged between users and Devin
   - Message source attribution (user vs. devin)
   - Chronological ordering via timestamps
 - **Playbooks** — Reusable playbook definitions
   - Playbook title, body content, and macro triggers
-  - Access controls (team vs. personal)
+  - Access type
   - Authorship and modification tracking
 - **Secrets** — Secret metadata (values are never exposed)
   - Secret keys, types, and sensitivity flags
@@ -38,13 +40,12 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 ## Prerequisites
 
 - A Devin account with access to an organization.
-- A Devin API key. All Devin API credentials use the `cog_` prefix. A [service user API key](https://docs.devin.ai/api-reference/authentication) is recommended for automation; a personal access token also works if your account has the closed beta enabled.
+- A Devin API key. All Devin API credentials use the `cog_` prefix. A [service user API key](https://docs.devin.ai/api-reference/authentication#service-users-recommended-for-automation) is recommended. A [personal access token](https://docs.devin.ai/api-reference/personal-access-tokens) also works and has the same permissions as the user who created it. Enterprise accounts must enable personal access tokens in their enterprise policy first.
 - Your Devin organization ID (uses the `org_` prefix).
-- The principal behind your API key must have the Devin permissions required to read the streams you want to sync. Grant these permissions to the service user's role in **Enterprise settings → Roles**:
-  - `ViewOrgSessions` — required for `sessions`, `sessions_insights`, and `session_messages`.
-  - `ManageOrgPlaybooks` — required for `playbooks`.
-  - `ManageOrgSecrets` — required for `secrets` (only metadata is returned; secret values are never exposed).
-  - `ManageOrgKnowledge` — required for `knowledge_notes`.
+- The service user or personal access token must have the organization-level Devin permissions required to read the streams you want to sync:
+  - `ViewOrgSessions`: required for `sessions`, `sessions_insights`, and `session_messages`.
+  - `UseDevinSessions`: required for `playbooks` and `knowledge_notes`.
+  - `ManageOrgSecrets`: required for `secrets`. Only metadata is returned; secret values are never exposed.
 
 For a full permission reference, see the [Devin Permissions & RBAC documentation](https://docs.devin.ai/api-reference/v3/overview).
 
@@ -53,13 +54,13 @@ For a full permission reference, see the [Devin Permissions & RBAC documentation
 ### Step 1: Create a service user and API key
 
 1. Sign in to [app.devin.ai](https://app.devin.ai/) as an organization admin.
-2. Open **Settings → Service users** (organization) or **Enterprise settings → Service users** (enterprise).
+2. Open **Settings → Devin API** and select the **Service users** tab.
 3. Create a service user and assign a role that grants the permissions listed under [Prerequisites](#prerequisites).
 4. Generate an API key for the service user. The key is shown only once at creation — copy and store it securely. All keys start with `cog_`.
 
 ### Step 2: Find your organization ID
 
-Your organization ID is shown on the **Settings → Service users** page in [app.devin.ai](https://app.devin.ai/). It starts with `org_`.
+Your organization ID is shown at the top of the **Settings → Devin API** page in [app.devin.ai](https://app.devin.ai/). It starts with `org_`.
 
 ### Step 3: Configure the connector in Airbyte
 
@@ -75,12 +76,20 @@ Your organization ID is shown on the **Settings → Service users** page in [app
 |--------|-----------|-------------|
 | [Sessions](https://docs.devin.ai/api-reference/v3/sessions/organizations-sessions) | Full Refresh | All Devin sessions in your organization |
 | [Sessions Insights](https://docs.devin.ai/api-reference/v3/sessions/organizations-sessions-insights) | Full Refresh | Sessions enriched with message counts, size classification, and AI-generated analysis |
-| [Session Messages](https://docs.devin.ai/api-reference/v3/sessions/get-session-messages) | Full Refresh | Conversation messages for each session |
-| [Playbooks](https://docs.devin.ai/api-reference/v3/playbooks/list-playbooks) | Full Refresh | Team playbooks for the organization |
-| [Secrets](https://docs.devin.ai/api-reference/v3/secrets/list-secrets) | Full Refresh | Secret metadata (no secret values are synced) |
-| [Knowledge Notes](https://docs.devin.ai/api-reference/v3/notes/enterprise-knowledge-notes) | Full Refresh | Knowledge notes for the organization |
+| [Session Messages](https://docs.devin.ai/api-reference/v3/sessions/get-organizations-session-messages) | Full Refresh | Conversation messages for each session |
+| [Playbooks](https://docs.devin.ai/api-reference/v3/playbooks/organizations-playbooks) | Full Refresh | Playbooks owned by the organization. Enterprise-level playbooks aren't synced. |
+| [Secrets](https://docs.devin.ai/api-reference/v3/secrets/organizations-secrets) | Full Refresh | Secret metadata (no secret values are synced) |
+| [Knowledge Notes](https://docs.devin.ai/api-reference/v3/notes/organizations-knowledge-notes) | Full Refresh | Knowledge notes for the organization |
 
 The `session_messages` stream is a substream of `sessions`: for each session returned by `sessions`, Airbyte issues one additional request to fetch that session's messages. Conversation history may contain PII, so only enable this stream when you need message-level data. For aggregate message counts and Devin-generated classification without raw message bodies, use `sessions_insights` instead.
+
+The connector requests a single page of messages for each session, and the Devin API returns up to 100 messages per page by default. For sessions with more than 100 messages, only the first 100 messages are synced.
+
+## Limitations
+
+- All streams support full refresh only. Each sync re-reads every record. To limit the sessions that `sessions`, `sessions_insights`, and `session_messages` read, set **Start Date**.
+- The `on_demand_usage` field is populated only for organizations on a Devin Teams plan. It's `0` when a session was fully covered by your plan's quota, and absent for other plans.
+- The connector retries requests that fail with HTTP `429` or `5xx` responses, up to five times with exponential backoff.
 
 ## Configuration reference
 
@@ -101,6 +110,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.3.1 | 2026-10-27 | [89826](https://github.com/airbytehq/airbyte/pull/89826) | Update dependencies |
+| 0.3.0 | 2026-10-21 | [89592](https://github.com/airbytehq/airbyte/pull/89592) | Add `on_demand_usage`, `devin_mode`, `origin`, `category`, `subcategory`, `automation_id`, and `security_profile` to `sessions` and `sessions_insights`; add `analysis_status` to `sessions_insights` |
+| 0.2.19 | 2026-10-20 | [89148](https://github.com/airbytehq/airbyte/pull/89148) | Update dependencies |
 | 0.2.18 | 2026-10-13 | [88586](https://github.com/airbytehq/airbyte/pull/88586) | Update dependencies |
 | 0.2.17 | 2026-10-06 | [87810](https://github.com/airbytehq/airbyte/pull/87810) | Update dependencies |
 | 0.2.16 | 2026-09-29 | [87099](https://github.com/airbytehq/airbyte/pull/87099) | Update dependencies |

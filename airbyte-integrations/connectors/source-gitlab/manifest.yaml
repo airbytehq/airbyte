@@ -432,6 +432,23 @@ definitions:
     cursor_datetime_formats: "#/definitions/cursor_datetime_formats"
     global_substream_cursor: true
 
+  # Streams that were Full Refresh only before 4.6.0. They start from the epoch, not `start_date`, so
+  # Full Refresh and the first Incremental sync still return every record, as before. No `step`: one window.
+  full_history_updated_at_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "updated_at"
+    start_datetime: "1970-01-01T00:00:00Z"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_datetime_formats: "#/definitions/cursor_datetime_formats"
+    start_time_option:
+      type: RequestOption
+      field_name: "updated_after"
+      inject_into: request_parameter
+    end_time_option:
+      type: RequestOption
+      field_name: "updated_before"
+      inject_into: request_parameter
+
   base_pipelines_incremental_child_stream:
     $ref: "#/definitions/base_projects_child_stream"
     retriever: "#/definitions/pipelines_child_streams_retriever"
@@ -495,6 +512,7 @@ definitions:
   group_milestones_stream:
     name: "group_milestones"
     $ref: "#/definitions/base_groups_child_stream"
+    incremental_sync: "#/definitions/full_history_updated_at_incremental_sync"
     $parameters:
       path: "groups/{{ stream_slice.id }}/milestones"
     schema_loader:
@@ -549,6 +567,20 @@ definitions:
           - type: AddedFieldDefinition
             path: ["author_id"]
             value: "{{ (record.get('author') or {}).get('id') }}"
+      - type: AddFields
+        condition: "{{ record.get('due_date_from_milestones') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["due_date_from_milestones"]
+            value: "{{ (record.get('due_date_from_milestones') or '')[:10] }}"
+            value_type: string
+      - type: AddFields
+        condition: "{{ record.get('start_date_from_milestones') }}"
+        fields:
+          - type: AddedFieldDefinition
+            path: ["start_date_from_milestones"]
+            value: "{{ (record.get('start_date_from_milestones') or '')[:10] }}"
+            value_type: string
     primary_key: "iid"
     $parameters:
       path: "groups/{{ stream_slice.id }}/epics"
@@ -614,6 +646,7 @@ definitions:
   project_milestones_stream:
     name: "project_milestones"
     $ref: "#/definitions/base_projects_child_stream"
+    incremental_sync: "#/definitions/full_history_updated_at_incremental_sync"
     $parameters:
       path: "projects/{{ stream_slice.id }}/milestones"
     schema_loader:
@@ -726,6 +759,7 @@ definitions:
   deployments_stream:
     name: "deployments"
     $ref: "#/definitions/base_projects_child_stream"
+    incremental_sync: "#/definitions/full_history_updated_at_incremental_sync"
     transformations:
       - "#/definitions/add_project_id_field"
       - type: AddFields
@@ -747,6 +781,9 @@ definitions:
             value: "{{ (record.get('environment') or {}).get('id') }}"
     $parameters:
       path: "projects/{{ stream_slice.id }}/deployments"
+      request_parameters:
+        order_by: "updated_at"
+        sort: "asc"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -764,6 +801,11 @@ definitions:
             parent_key: "iid"
             stream: "#/definitions/merge_requests_stream"
             partition_field: "iid"
+            incremental_dependency: true
+            extra_fields: [["updated_at"]]
+    incremental_sync:
+      $ref: "#/definitions/pipelines_child_incremental_sync"
+      cursor_field: "merge_request_updated_at"
     transformations:
       - type: AddFields
         fields:
@@ -773,6 +815,9 @@ definitions:
           - type: AddedFieldDefinition
             path: ["merge_request_iid"]
             value: "{{ stream_slice.iid }}"
+          - type: AddedFieldDefinition
+            path: ["merge_request_updated_at"]
+            value: "{{ stream_slice.extra_fields['updated_at'] }}"
     $parameters:
       path: "projects/{{ stream_slice.parent_slice.id }}/merge_requests/{{ stream_slice.iid }}/commits"
     schema_loader:
@@ -814,6 +859,9 @@ definitions:
             value: "{{ (record.get('commit') or {}).get('id') }}"
     $parameters:
       path: "projects/{{ stream_slice.parent_slice.id }}/pipelines/{{ stream_slice.id }}/jobs"
+      # GitLab omits earlier attempts of retried jobs unless include_retried=true.
+      request_parameters:
+        include_retried: "true"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1959,6 +2007,11 @@ schemas:
         type:
         - 'null'
         - integer
+      work_item_id:
+        description: ID of the corresponding work item (for the Work Items GraphQL API)
+        type:
+        - 'null'
+        - integer
       iid:
         description: Internal ID of the epic
         type:
@@ -1994,6 +2047,16 @@ schemas:
         type:
         - 'null'
         - boolean
+      imported:
+        description: Flag indicating if the epic was imported
+        type:
+        - 'null'
+        - boolean
+      imported_from:
+        description: Source the epic was imported from
+        type:
+        - 'null'
+        - string
       web_url:
         description: URL for viewing the epic in a web browser
         type:
@@ -2043,7 +2106,7 @@ schemas:
         - string
         - boolean
       end_date:
-        description: End date of the epic
+        description: End date of the epic. Deprecated by GitLab in favor of due_date.
         type:
         - 'null'
         - string
@@ -2122,7 +2185,7 @@ schemas:
         - 'null'
         - string
       due_date_from_milestones:
-        description: Due date linked to milestone
+        description: Due date linked to milestone. Deprecated by GitLab in favor of due_date_from_inherited_source.
         type:
         - 'null'
         - string
@@ -2154,7 +2217,7 @@ schemas:
             - 'null'
             - string
       start_date_from_milestones:
-        description: Start date linked to milestone
+        description: Start date linked to milestone. Deprecated by GitLab in favor of start_date_from_inherited_source.
         type:
         - 'null'
         - string
@@ -3671,6 +3734,12 @@ schemas:
         type:
         - 'null'
         - integer
+      merge_request_updated_at:
+        description: The `updated_at` of the parent merge request; used as the incremental cursor.
+        type:
+        - 'null'
+        - string
+        format: date-time
   merge_requests:
     $schema: https://json-schema.org/draft-07/schema#
     type: object

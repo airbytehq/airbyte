@@ -1,27 +1,53 @@
 # Kissmetrics
-This page contains the setup guide and reference information for the [Kissmetrics](https://app.kissmetrics.io/) source connector.
 
-## Documentation reference:
-Visit `https://support.kissmetrics.io/reference/overview-1` for API documentation
+This page contains the setup guide and reference information for the [Kissmetrics](https://www.kissmetrics.io/) source connector.
 
-## Authentication setup
-`Kissmetrics` uses Basic Http authentication which uses your username and password,
-Refer `https://support.kissmetrics.io/reference/authorization` for more details.
+The connector reads metadata from the [Kissmetrics REST API v3](https://support.kissmetrics.io/reference/overview-1): your products, and the reports, events, and properties defined in each product.
+
+## Prerequisites
+
+- A Kissmetrics account with access to the products you want to sync.
+- The email address and password you use to sign in to Kissmetrics.
+
+## Authentication
+
+The Kissmetrics API uses HTTP Basic authentication with your Kissmetrics sign-in credentials. Airbyte sends them in the `Authorization` header of each request. For details, see the Kissmetrics [Authorization](https://support.kissmetrics.io/reference/authorization) documentation.
+
+## Set up the Kissmetrics connector in Airbyte
+
+1. In Airbyte, create a new source and select **Kissmetrics**.
+2. For **Username**, enter the email address you use to sign in to Kissmetrics.
+3. For **Password**, enter your Kissmetrics password.
+4. Click **Set up source**. Airbyte tests the connection by reading the `products` stream.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `username` | `string` | Username.  |  |
-| `password` | `string` | Password.  |  |
+| `username` | `string` | The email address you use to sign in to Kissmetrics. |  |
+| `password` | `string` | Your Kissmetrics password. |  |
 
-## Streams
+## Supported streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | products | id | DefaultPaginator | ✅ |  ❌  |
 | reports | id | DefaultPaginator | ✅ |  ❌  |
 | events | id | DefaultPaginator | ✅ |  ❌  |
 | properties | id | DefaultPaginator | ✅ |  ❌  |
+
+- `products`: The Kissmetrics products your account can access.
+- `reports`: The reports defined in each product.
+- `events`: The event definitions tracked in each product.
+- `properties`: The property definitions tracked in each product.
+
+The `reports`, `events`, and `properties` streams are child streams of `products`. The connector requests them once for each product it reads, so sync time grows with the number of products in your account.
+
+All streams support full refresh only. The connector syncs metadata about your products, reports, events, and properties. It doesn't sync individual tracked event records or people records.
+
+## Limitations
+
+- **Rate limiting**: If the Kissmetrics API responds with HTTP 429, the connector retries the request with exponential backoff.
 
 ## IP allow list
 
@@ -34,6 +60,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------| ------------ | --- | ---------------- |
+| 0.0.73 | 2026-11-11 | [90369](https://github.com/airbytehq/airbyte/pull/90369) | Simplify rate-limit error handling configuration (no behavior change) |
+| 0.0.72 | 2026-11-03 | [90616](https://github.com/airbytehq/airbyte/pull/90616) | Update dependencies |
+| 0.0.71 | 2026-10-27 | [89938](https://github.com/airbytehq/airbyte/pull/89938) | Update dependencies |
+| 0.0.70 | 2026-10-20 | [89279](https://github.com/airbytehq/airbyte/pull/89279) | Update dependencies |
 | 0.0.69 | 2026-10-13 | [88664](https://github.com/airbytehq/airbyte/pull/88664) | Update dependencies |
 | 0.0.68 | 2026-10-06 | [87908](https://github.com/airbytehq/airbyte/pull/87908) | Update dependencies |
 | 0.0.67 | 2026-09-29 | [87228](https://github.com/airbytehq/airbyte/pull/87228) | Update dependencies |

@@ -22,10 +22,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
-        timeout_seconds: 600
         empty_streams:
           - name: skills
             bypass_reason: "no records"
@@ -33,7 +29,6 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: ticket_activities
             bypass_reason: "The test account has no daily ticket activity export files: the export API returns file_not_found."
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"

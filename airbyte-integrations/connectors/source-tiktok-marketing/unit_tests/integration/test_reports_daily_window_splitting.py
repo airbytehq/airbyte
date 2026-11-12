@@ -245,7 +245,7 @@ class TestAdvertisersReportsDailyWindowSplitting(TestCase):
 
         assert not output.records
         assert output.errors[0].trace.error.failure_type == FailureType.system_error
-        assert output.errors[0].trace.error.message == "Invalid parameter"
+        assert output.errors[0].trace.error.message == "TikTok Marketing API returned an error (code 40006): Invalid parameter"
 
     @HttpMocker()
     def test_given_40133_throttling_when_read_then_retry(self, http_mocker: HttpMocker):
@@ -266,3 +266,17 @@ class TestAdvertisersReportsDailyWindowSplitting(TestCase):
 
         assert not output.errors
         assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_given_51001_internal_service_timeout_when_read_then_retry_and_read_records(self, http_mocker: HttpMocker):
+        internal_service_timeout = {"code": 51001, "message": "internal service timeout", "request_id": "20241015000000000000000000000001"}
+        mock_advertisers_slices(http_mocker, self.config())
+        http_mocker.get(
+            _report_request("2024-09-01", "2024-09-30"),
+            [HttpResponse(body=json.dumps(internal_service_timeout), status_code=200), _report_response("2024-09-03")],
+        )
+
+        output = self._read()
+
+        assert not output.errors
+        assert [record.record.data["stat_time_day"] for record in output.records] == ["2024-09-03 00:00:00"]

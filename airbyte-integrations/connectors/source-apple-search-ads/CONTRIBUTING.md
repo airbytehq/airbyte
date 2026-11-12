@@ -33,17 +33,17 @@ The canonical pattern for this connector is a deletion flag on the primary strea
 
 ### 4. Entity streams are full refresh even though records carry `modificationTime`
 
-The entity streams could be incremental — Apple's `POST /*/find` endpoints accept a
-`modificationTime` condition — but are not. This is a deliberate deferral: entity volumes are small,
-`find` is a different request shape, and adding a cursor changes the state format and catalog sync
-modes.
+Apple's `modificationTime` records changes to the object itself, but `servingStatus`,
+`servingStateReasons` and `displayStatus` change when Apple's system reacts to dates, budgets and
+billing. A cursor on `modificationTime` would leave those fields stale, and `Keyword` and `AdGroup`
+document no range filter on it. The entity streams stay full refresh; see
+[AGENTS.md](./AGENTS.md#4-entity-streams-are-full-refresh-even-though-records-carry-modificationtime).
 
 ### 5. No `api_budget`: the Campaign Management API publishes no numeric quota
 
-Apple documents only exponential-backoff retry guidance for v5, with no published request quota, so
-there is nothing for an `api_budget` to match; the streams rely on `ExponentialBackoffStrategy` and
-retry `429`/`500`. Apple's newer Apple Ads Platform API does publish `RateLimit-*` headers — revisit
-this if the connector ever migrates.
+Apple publishes only backoff advice for v5, so there is no `api_budget`. Campaign Management API v5
+sunsets on 2027-01-26 and the Platform API that replaces it publishes `RateLimit-*` headers, so
+revisit this during that migration.
 
 ### 6. Stream coverage versus Fivetran (parity table)
 
