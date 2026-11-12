@@ -871,6 +871,13 @@ definitions:
     sla_policies:
       type: DeclarativeStream
       name: sla_policies
+      transformations:
+        - type: AddFields
+          fields:
+            - path: [id]
+              value: "{{ record.get('id') | int }}"
+              value_type: integer
+          condition: "{{ record.get('id') is string and record['id'].isdigit() }}"
       primary_key:
         - id
       retriever:
