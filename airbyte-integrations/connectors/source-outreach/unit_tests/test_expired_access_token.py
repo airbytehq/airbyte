@@ -26,7 +26,9 @@ _CONFIG = {
     "start_date": "2020-11-16T00:00:00Z",
 }
 _STREAMS = yaml.safe_load(Path(_YAML_FILE_PATH).read_text())["definitions"]["streams"]
-_EXPIRED_TOKEN_BODY = {"errors": [{"id": "expiredAccessToken", "title": "Expired Access Token", "detail": "Please get a new access token and try again."}]}
+_EXPIRED_TOKEN_BODY = {
+    "errors": [{"id": "expiredAccessToken", "title": "Expired Access Token", "detail": "Please get a new access token and try again."}]
+}
 
 
 def _token_request() -> HttpRequest:
