@@ -56,6 +56,39 @@ def async_job_mock_fixture(mocker):
 
 
 class TestBaseInsightsStream:
+    @freeze_time("2025-07-01")
+    @pytest.mark.parametrize("name", [None, "custom_ad_insights"])
+    def test_interrupted_lookback_does_not_regress_cursor(self, api, mocker, async_manager_mock, name):
+        account_id = "unknown_account"
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 7, 1),
+            insights_lookback_window=28,
+            name=name,
+        )
+        original_state = {account_id: {"date_start": "2025-06-30", "slices": []}, "time_increment": 1}
+        job = mocker.Mock(spec=InsightAsyncJob)
+        job.interval = DateInterval(date(2025, 6, 2), date(2025, 6, 2))
+        job.get_result.return_value = []
+
+        def completed_jobs():
+            yield job
+            raise RuntimeError("later async job failed after retries")
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        checkpoints = []
+        with pytest.raises(RuntimeError, match="later async job failed"):
+            for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=original_state):
+                list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+                checkpoints.append(copy.deepcopy(stream.state))
+
+        assert len(checkpoints) == 1
+        stream.state = checkpoints[-1]
+        assert stream._get_start_date()[account_id] >= date(2025, 6, 2)
+        assert checkpoints[-1][account_id]["date_start"] >= original_state[account_id]["date_start"]
+
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,
