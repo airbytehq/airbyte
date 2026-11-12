@@ -51,9 +51,7 @@ def test_events_skips_calendar_returning_404_and_syncs_other_calendars(sync_mode
             _page([{"id": calendar_id, "grant_id": GRANT} for calendar_id in CALENDARS]),
         )
         event_requests = {
-            calendar_id: HttpRequest(
-                f"{BASE}/grants/{GRANT}/events", query_params={"limit": "50", "calendar_id": calendar_id, **WINDOW}
-            )
+            calendar_id: HttpRequest(f"{BASE}/grants/{GRANT}/events", query_params={"limit": "50", "calendar_id": calendar_id, **WINDOW})
             for calendar_id in CALENDARS
         }
         http.get(event_requests["primary-cal"], _page([_event("evt-1", "primary-cal")]))
@@ -69,8 +67,6 @@ def test_events_skips_calendar_returning_404_and_syncs_other_calendars(sync_mode
         assert sorted(message.record.data["id"] for message in output.records) == ["evt-1", "evt-2", "evt-3"]
         assert output.get_stream_statuses(STREAM)[-1].value == "COMPLETE"
         assert not any(message.log.level == Level.ERROR for message in output.logs)
-        assert any(
-            message.log.level == Level.INFO and "Skipping events for a calendar" in message.log.message for message in output.logs
-        )
+        assert any(message.log.level == Level.INFO and "Skipping events for a calendar" in message.log.message for message in output.logs)
         for request in event_requests.values():
             http.assert_number_of_calls(request, 1)
