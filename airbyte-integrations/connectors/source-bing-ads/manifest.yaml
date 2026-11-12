@@ -2614,6 +2614,22 @@ definitions:
       - type: LegacyToPerPartitionStateMigration
 
   # base retrievers
+  # Bulk and report files are downloaded from pre-signed Azure Blob Storage URLs that Bing Ads issues per job. No
+  # credential from the connector configuration is sent with the download, so a 403 here is never a configuration
+  # problem; in practice it is an expired signature (x-ms-error-code: AuthenticationFailed). Resending the same URL
+  # cannot succeed, so the request fails without retry as a transient error.
+  # Keep this filter on http_codes only. A `predicate` or `error_message_contains` makes the CDK read the body of
+  # every response, including successful ones, which empties the streamed file before the decoder reads it.
+  download_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [403]
+        action: FAIL
+        failure_type: transient_error
+        error_message: >-
+          {{ 'Bing Ads file download URL is expired.' if headers.get('x-ms-error-code') == 'AuthenticationFailed'
+          else 'Bing Ads file download URL is rejected by Azure Blob Storage.' }}
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -2660,6 +2676,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2726,6 +2744,8 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
