@@ -152,6 +152,23 @@ class TestSourceFacebookMarketing:
 
         assert len(streams) == 31
 
+    @pytest.mark.parametrize("include_incrementality", [True, False])
+    @pytest.mark.parametrize("insight_include_incrementality", [None, False, True])
+    def test_custom_insights_incrementality_request_params(
+        self, config, fb_marketing, include_incrementality, insight_include_incrementality
+    ):
+        config["include_incrementality"] = include_incrementality
+        insight = {"name": "incrementality", "fields": ["account_id"]}
+        if insight_include_incrementality is not None:
+            insight["include_incrementality"] = insight_include_incrementality
+        config["custom_insights"] = [insight]
+
+        streams = fb_marketing.streams(config)
+        stream = next(stream for stream in streams if stream.name == "customincrementality")
+
+        windows = stream.request_params()["action_attribution_windows"]
+        assert ("incrementality" in windows) == (include_incrementality or insight_include_incrementality is True)
+
     def test_spec(self, fb_marketing):
         spec = fb_marketing.spec()
 
