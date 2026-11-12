@@ -18,6 +18,13 @@ definitions:
       name: applications
       primary_key:
         - id
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('modified_at') }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('modified_at') else record.get('modified_at') }}"
       retriever:
         type: SimpleRetriever
         requester:
@@ -80,6 +87,13 @@ definitions:
       name: datasets
       primary_key:
         - id
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('modified_at') }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('modified_at') else record.get('modified_at') }}"
       retriever:
         type: SimpleRetriever
         requester:
@@ -151,6 +165,13 @@ definitions:
       name: models
       primary_key:
         - id
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('modified_at') }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ') if record.get('modified_at') else record.get('modified_at') }}"
       retriever:
         type: SimpleRetriever
         requester:

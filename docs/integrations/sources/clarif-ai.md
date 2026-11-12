@@ -15,14 +15,21 @@ API Documentation: https://docs.clarifai.com/api-guide/api-overview/helpful-api-
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| applications | id | DefaultPaginator | ✅ |   ❌  |
-| datasets | id | DefaultPaginator | ✅ |   ❌  |
-| models | id | DefaultPaginator | ✅ |   ❌  |
+| applications | id | DefaultPaginator | ✅ | ✅ |
+| datasets | id | DefaultPaginator | ✅ | ✅ |
+| models | id | DefaultPaginator | ✅ | ✅ |
 | model_versions | id | DefaultPaginator | ✅ |   ❌  |
 | worklows | id | DefaultPaginator | ✅ |   ❌  |
 | app_inputs | id | DefaultPaginator | ✅ |   ❌  |
 | app_inputs_jobs | id | DefaultPaginator | ✅ |   ❌ |
 | app_concepts | id | DefaultPaginator | ✅ |   ❌  |
+
+### Incremental timestamps
+
+In version 1.0.0, `applications`, `datasets`, and `models` emit nonempty `modified_at` values
+with six fractional digits so incremental state can advance. Sub-microsecond precision is discarded.
+These streams still scan their list endpoints and may emit previously synced records.
+See the [migration guide](clarif-ai-migrations.md#upgrading-to-100) before upgrading.
 
 ## IP allow list
 
@@ -35,6 +42,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.0 | 2026-11-12 | | Fix incremental state advancement for applications, datasets, and models by normalizing modified_at to microsecond precision (breaking change) |
 | 0.0.77 | 2026-11-10 | [91461](https://github.com/airbytehq/airbyte/pull/91461) | Update dependencies |
 | 0.0.76 | 2026-11-04 | [90341](https://github.com/airbytehq/airbyte/pull/90341) | Simplify error handler configuration with no behavior change |
 | 0.0.75 | 2026-11-03 | [90511](https://github.com/airbytehq/airbyte/pull/90511) | Update dependencies |
