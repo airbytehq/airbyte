@@ -888,6 +888,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+          # Freshdesk returns `id` as a numeric string on this endpoint; cast records to the declared schema.
+          schema_normalization: Default
         paginator:
           type: DefaultPaginator
           page_token_option:
