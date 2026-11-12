@@ -390,7 +390,7 @@ class ConnectorConfig(BaseConfig):
         title="Include Incrementality",
         order=13,
         description=(
-            "If enabled, the incrementality attribution window will be included in the action attribution windows for all built-in insight streams. "
+            "If enabled, the incrementality attribution window will be included in the action attribution windows for all built-in insight streams and custom insights. "
             "This allows you to retrieve incrementality data for action metrics. "
             "See the Facebook Marketing API documentation for more details: "
             "https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/"
@@ -402,7 +402,7 @@ class ConnectorConfig(BaseConfig):
         title="Include Engaged View",
         order=14,
         description=(
-            "If enabled, the engaged view (ev) attribution window will be included in the action attribution windows for all built-in insight streams. "
+            "If enabled, the engaged view (ev) attribution window will be included in the action attribution windows for all built-in insight streams and custom insights. "
             "This surfaces attribution data for users who had an engaged view of a video ad (watched 10+ seconds or 97%+ of a short video). "
             "See the Facebook Marketing API documentation for more details: "
             "https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/"
