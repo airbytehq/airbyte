@@ -188,6 +188,31 @@ def test_read_products_count():
     assert [record["id"] for record in records] == list(range(1, 11))
 
 
+@pytest.mark.parametrize(
+    "config_overrides, expected_ids",
+    [
+        pytest.param({"products_count": 50, "records_per_slice": 20}, list(range(1, 51)), id="trailing_partial_slice"),
+        pytest.param({"products_count": 10, "records_per_slice": 3}, list(range(1, 11)), id="small_trailing_partial_slice"),
+        pytest.param({"records_per_slice": 30}, list(range(1, 101)), id="default_products_count_with_partial_slice"),
+        pytest.param({"products_count": 40, "records_per_slice": 20}, list(range(1, 41)), id="exact_multiple_of_slice"),
+        pytest.param({"products_count": 5, "records_per_slice": 100}, list(range(1, 6)), id="slice_larger_than_products_count"),
+    ],
+)
+def test_read_products_emits_every_requested_product(config_overrides, expected_ids):
+    source = SourceFaker()
+    config = {"count": 1000, "seed": 7, "always_updated": True, "parallelism": 1, **config_overrides}
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "full_refresh",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    records = [row.record.data for row in source.read(logger, config, catalog, {}) if row.type is Type.RECORD]
+
+    assert [record["id"] for record in records] == expected_ids
+
+
 def test_read_big_random_data():
     source = SourceFaker()
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
