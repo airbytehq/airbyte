@@ -4,11 +4,11 @@
 
 import copy
 from datetime import datetime, timezone
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +81,66 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Raise per-partition cursors that are older than the stream's global cursor up to the global cursor.
+
+    The per-partition cursor takes precedence over the global `state`, so a stale partition cursor (for example,
+    an account with no new records, or a partition cursor left behind after the global cursor was moved forward)
+    makes every sync re-read that account from the stale value. The global cursor only advances after a sync
+    reads every partition to completion, so no partition has unread data before it.
+
+    Initial:
+      {
+        "state": { "date_sent": "2026-05-20 00:00:00Z" },
+        "states": [
+          { "partition": { "subresource_uri": "...", "parent_slice": {} }, "cursor": { "date_sent": "2025-01-01 00:00:00Z" } }
+        ]
+      }
+
+    Final:
+      {
+        "state": { "date_sent": "2026-05-20 00:00:00Z" },
+        "states": [
+          { "partition": { "subresource_uri": "...", "parent_slice": {} }, "cursor": { "date_sent": "2026-05-20 00:00:00Z" } }
+        ]
+      }
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor_field, global_value = self._global_cursor(stream_state)
+        global_datetime = ab_datetime_try_parse(global_value)
+        for state in stream_state["states"]:
+            if self._is_stale(state, cursor_field, global_datetime):
+                state["cursor"] = {**state["cursor"], cursor_field: global_value}
+        return stream_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state or stream_state.get("use_global_cursor") or not stream_state.get("states"):
+            return False
+        global_cursor = self._global_cursor(stream_state)
+        if not global_cursor:
+            return False
+        cursor_field, global_value = global_cursor
+        global_datetime = ab_datetime_try_parse(global_value)
+        if global_datetime is None:
+            return False
+        return any(self._is_stale(state, cursor_field, global_datetime) for state in stream_state["states"])
+
+    @staticmethod
+    def _global_cursor(stream_state: Mapping[str, Any]) -> Optional[Tuple[str, Any]]:
+        global_state = stream_state.get("state")
+        if not isinstance(global_state, Mapping) or len(global_state) != 1:
+            return None
+        return next(iter(global_state.items()))
+
+    @staticmethod
+    def _is_stale(state: Mapping[str, Any], cursor_field: str, global_datetime: datetime) -> bool:
+        partition_value = (state.get("cursor") or {}).get(cursor_field)
+        partition_datetime = ab_datetime_try_parse(partition_value) if isinstance(partition_value, str) else None
+        return partition_datetime is not None and partition_datetime < global_datetime
 
 
 class TwilioAlertsStateMigration(StateMigration):

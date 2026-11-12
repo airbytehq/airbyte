@@ -1003,3 +1003,139 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+TWO_ACCOUNTS_JSON = {
+    "accounts": [
+        {
+            "sid": sid,
+            "subresource_uris": {
+                resource: f"/2010-04-01/Accounts/{sid}/{resource.capitalize()}.json" for resource in ("messages", "calls", "recordings")
+            },
+        }
+        for sid in ("AC123", "AC456")
+    ],
+}
+# AC123 has one record the previous syncs already emitted (before the global cursor) and one new record; AC456 has one new record.
+RECORD_DATES_BY_ACCOUNT = {
+    "AC123": [("ALREADY_SYNCED", "2022-03-01T10:00:00Z"), ("NEW_123", "2022-11-15T10:00:00Z")],
+    "AC456": [("NEW_456", "2022-11-16T01:00:00Z")],
+}
+
+
+@freeze_time("2022-11-16 12:03:11+00:00")
+@pytest.mark.parametrize(
+    "stream_name,cursor_field,lower_key,upper_key,request_format,stale_cursor,global_cursor,expected_window,expected_cursors",
+    [
+        pytest.param(
+            "messages",
+            "date_sent",
+            "DateSent>",
+            "DateSent<",
+            "%Y-%m-%d %H:%M:%SZ",
+            "2022-01-01 00:00:00Z",
+            "2022-11-15 00:00:00Z",
+            ("2022-11-15 00:00:00Z", "2022-11-16 12:03:11Z"),
+            {"AC123": "2022-11-15 10:00:00Z", "AC456": "2022-11-16 01:00:00Z"},
+            id="messages",
+        ),
+        pytest.param(
+            "messages",
+            "date_sent",
+            "DateSent>",
+            "DateSent<",
+            "%Y-%m-%d %H:%M:%SZ",
+            "2022-01-01T00:00:00Z",
+            "2022-11-15 00:00:00Z",
+            ("2022-11-15 00:00:00Z", "2022-11-16 12:03:11Z"),
+            {"AC123": "2022-11-15 10:00:00Z", "AC456": "2022-11-16 01:00:00Z"},
+            id="messages_iso_partition_cursor",
+        ),
+        pytest.param(
+            "recordings",
+            "date_created",
+            "DateCreated>",
+            "DateCreated<",
+            "%Y-%m-%d %H:%M:%SZ",
+            "2022-01-01 00:00:00Z",
+            "2022-11-15 00:00:00Z",
+            ("2022-11-15 00:00:00Z", "2022-11-16 12:03:11Z"),
+            {"AC123": "2022-11-15 10:00:00Z", "AC456": "2022-11-16 01:00:00Z"},
+            id="recordings",
+        ),
+        pytest.param(
+            "calls",
+            "end_time",
+            "EndTime>",
+            "EndTime<",
+            "%Y-%m-%d",
+            "2022-01-01",
+            "2022-11-15",
+            ("2022-11-15", "2022-11-16"),
+            {"AC123": "2022-11-15", "AC456": "2022-11-16"},
+            id="calls",
+        ),
+    ],
+)
+def test_stale_partition_cursor_resumes_from_global_cursor(
+    stream_name,
+    cursor_field,
+    lower_key,
+    upper_key,
+    request_format,
+    stale_cursor,
+    global_cursor,
+    expected_window,
+    expected_cursors,
+    requests_mock,
+):
+    requested_windows = []
+
+    def _callback(request, context):
+        account_sid = urlparse(request.url).path.split("/")[3]
+        query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+        lower, upper = query[lower_key][0], query[upper_key][0]
+        requested_windows.append((account_sid, lower, upper))
+        lower_dt = datetime.strptime(lower, request_format)
+        upper_dt = datetime.strptime(upper, request_format) + (timedelta(days=1) if request_format == "%Y-%m-%d" else timedelta(0))
+        return {
+            stream_name: [
+                {"sid": sid, "account_sid": account_sid, cursor_field: date}
+                for sid, date in RECORD_DATES_BY_ACCOUNT[account_sid]
+                if lower_dt <= datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ") < upper_dt
+            ]
+        }
+
+    requests_mock.get(f"{BASE}/Accounts.json", json=TWO_ACCOUNTS_JSON)
+    for account_sid in RECORD_DATES_BY_ACCOUNT:
+        requests_mock.get(f"{BASE}/Accounts/{account_sid}/{stream_name.capitalize()}.json", json=_callback)
+
+    def _partition(account_sid):
+        return {"subresource_uri": f"/2010-04-01/Accounts/{account_sid}/{stream_name.capitalize()}.json", "parent_slice": {}}
+
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            stream_name,
+            {
+                "use_global_cursor": False,
+                "state": {cursor_field: global_cursor},
+                "states": [
+                    {"partition": _partition("AC123"), "cursor": {cursor_field: stale_cursor}},
+                    {"partition": _partition("AC456"), "cursor": {cursor_field: global_cursor}},
+                ],
+                "lookback_window": 0,
+            },
+        )
+        .build()
+    )
+
+    output = read_from_stream(TEST_CONFIG, stream_name, SyncMode.incremental, state)
+
+    assert sorted(record.record.data["sid"] for record in output.records) == ["NEW_123", "NEW_456"]
+    assert sorted(requested_windows) == [("AC123", *expected_window), ("AC456", *expected_window)]
+    final_state = output.most_recent_state.stream_state.__dict__
+    assert final_state["state"] == {cursor_field: expected_cursors["AC456"]}
+    assert {state["partition"]["subresource_uri"]: state["cursor"][cursor_field] for state in final_state["states"]} == {
+        _partition(account_sid)["subresource_uri"]: cursor for account_sid, cursor in expected_cursors.items()
+    }
