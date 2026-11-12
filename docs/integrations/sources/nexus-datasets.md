@@ -176,7 +176,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.1.17 | 2026-11-12 | [0](https://github.com/airbytehq/airbyte/pull/0) | Upgrade SDM base image to 7.47.0 |
+| 0.1.17 | 2026-11-12 | [92639](https://github.com/airbytehq/airbyte/pull/92639) | Upgrade SDM base image to 7.47.0 |
 | 0.1.17 | 2026-11-10 | [91811](https://github.com/airbytehq/airbyte/pull/91811) | Upgrade SDM base image to 7.47.0 |
 | 0.1.16 | 2026-10-09 | [88404](https://github.com/airbytehq/airbyte/pull/88404) | Mark `api_key` and `secret_key` as `airbyte_secret` |
 | 0.1.15 | 2026-10-07 | [88193](https://github.com/airbytehq/airbyte/pull/88193) | Fix sync failing on every ready export: accept the `binary/octet-stream` Content-Type the Infor Nexus export returns; treat HTTP 202 (dataset not ready) as a transient error |
