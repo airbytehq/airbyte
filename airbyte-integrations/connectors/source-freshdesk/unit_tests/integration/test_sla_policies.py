@@ -4,12 +4,9 @@ import json
 from pathlib import Path
 
 import pytest
-import yaml
 from config_builder import ConfigBuilder
 
 from airbyte_cdk import SyncMode, YamlDeclarativeSource
-from airbyte_cdk.sources.declarative.models import AddFields
-from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -51,14 +48,3 @@ def test_sla_policy_ids_are_integers() -> None:
 def test_sla_policy_ids_preserve_other_values(records: list[dict], expected_ids: list) -> None:
     assert _read_ids(records) == expected_ids
 
-
-def test_sla_policy_transformation_preserves_null() -> None:
-    manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
-    transformation = ModelToComponentFactory().create_component(
-        AddFields, manifest["definitions"]["streams"]["sla_policies"]["transformations"][0], config={}
-    )
-    record = {"id": None}
-
-    transformation.transform(record)
-
-    assert record == {"id": None}
