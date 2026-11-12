@@ -7,8 +7,9 @@ For general guidance on contributing to Airbyte connectors, see the
 
 ### Pagination and page sizes
 
-Every stream sends `sort=updatedAt` and follows the full URL in `links.next` until it is absent
-([Pagination](https://developers.outreach.io/api/common-patterns/)).
+Every stream follows the full URL in `links.next` until it is absent
+([Pagination](https://developers.outreach.io/api/common-patterns/)). Every stream sends `sort=updatedAt` except
+`audit_logs`, `recipients` and `compliance_requests`; see [Incremental sync](#incremental-sync).
 
 - **Page size is 1000, the API maximum.** `page[size]=1001` returns `400 pageParameter.sizeInvalid`
   ("must be a number between 1 and 1000, inclusive").
@@ -22,12 +23,25 @@ Every stream sends `sort=updatedAt` and follows the full URL in `links.next` unt
 
 ### Incremental sync
 
-- Every stream is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`. The filter includes the
-  cursor value, so the last record of the previous sync is read again.
+- Every stream is incremental on `updatedAt` and filters with `filter[updatedAt][gte]`, except the three below. The
+  filter includes the cursor value, so the last record of the previous sync is read again.
+- `audit_logs` is incremental on `timestamp`, with `sort=timestamp` and `filter[timestamp][gte]`. `/auditLogs`
+  rejects `sort=updatedAt` with `400 sort_parameter.unsupported_attribute`, and its records have no `updatedAt`.
+  Its `id` is a UUID string, not an integer.
+- `recipients` and `compliance_requests` are full refresh and send no sort or filter. Both endpoints return
+  `400 filterParameter.unfilterableAttribute` for `filter[updatedAt]` and `400 sortParameter.unsortableAttribute` for
+  `sort=updatedAt`, although the records carry `updatedAt`.
 - State is saved as `%Y-%m-%dT%H:%M:%S.%_msZ`. `/callDispositions` and `/callPurposes` return `updatedAt` without
   milliseconds (`2021-07-08T18:39:55Z`), so each cursor lists both formats in `cursor_datetime_formats`. Without the
   second format the value fails to parse and the state stays at `start_date`.
 - `is_data_feed: true` is set on every stream: a record older than the saved cursor is dropped and stops the read.
+
+### OAuth scopes
+
+`email_addresses`, `phone_numbers`, `recipients`, `compliance_requests` and `audit_logs` need the
+`emailAddresses.read`, `phoneNumbers.read`, `recipients.read`, `complianceRequests.read` and `auditLogs.read` scopes.
+A token issued before these streams existed lacks them, and selecting one of the streams fails with the 403 below
+until the user re-authenticates. `/auditLogs` also needs an Outreach admin user.
 
 ### Error handling
 
@@ -82,7 +96,8 @@ The backoff strategies run in order:
   every access token and a refresh token stays active for 14 days
   ([Token availability](https://developers.outreach.io/api/getting-started/)). A local run that refreshes the token
   receives a refresh token the stored secret does not have, so prefer CI for credentialed runs.
-- `sequence_states` is the only stream the test account cannot seed; its mock-server test is its only coverage.
+- `sequence_states` and `compliance_requests` are the streams the test account cannot seed; their mock-server tests
+  are their only coverage. A compliance request deletes or exports a prospect's data, so the test account has none.
 - `snippets` and `templates` are listed in `empty_streams` although the test account has records for both. Their
   schemas type `tags` (and, on `templates`, `toRecipients`, `ccRecipients` and `bccRecipients`) as strings, but the API
   returns arrays of strings, so the records fail schema validation. Retyping a top-level field is a breaking change and

@@ -185,5 +185,38 @@
         "updatedAt": "2040-11-16T00:00:00.000Z"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "email_addresses"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "phone_numbers"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "audit_logs"
+      },
+      "stream_state": {
+        "timestamp": "2040-11-16T00:00:00.000Z"
+      }
+    }
   }
 ]

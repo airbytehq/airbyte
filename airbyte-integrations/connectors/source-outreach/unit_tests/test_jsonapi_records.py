@@ -47,10 +47,9 @@ def _legacy_flatten(element: dict) -> dict:
 def _query_params(stream_name: str, cursor: str = _START_CURSOR, page: int | None = None) -> dict:
     stream = _STREAMS[stream_name]
     requester = stream["retriever"]["requester"]
-    query_params = {
-        **requester["request_parameters"],
-        stream["incremental_sync"]["start_time_option"]["field_name"]: cursor,
-    }
+    query_params = dict(requester["request_parameters"])
+    if "incremental_sync" in stream:
+        query_params[stream["incremental_sync"]["start_time_option"]["field_name"]] = cursor
     if page is not None:
         query_params["page[number]"] = str(page)
     return query_params
