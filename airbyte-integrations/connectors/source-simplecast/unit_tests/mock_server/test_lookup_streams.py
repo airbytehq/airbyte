@@ -32,4 +32,3 @@ def test_lookup_collection_is_read_once(stream_name, record_count, empty):
         assert [record.record.data["id"] for record in output.records] == [record["id"] for record in records]
         http_mocker.assert_number_of_calls(request, 1)
         assert not output.errors
-
