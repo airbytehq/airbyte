@@ -2655,6 +2655,7 @@ definitions:
       request_body_json:
         ReportRequestId: "'{{ creation_response['ReportRequestId'] }}'"
     download_requester:
+      error_handler: "#/definitions/download_error_handler"
       type: CustomRequester
       class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
@@ -2678,6 +2679,14 @@ definitions:
         CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
+  download_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [403]
+        action: FAIL
+        failure_type: transient_error
+        error_message: "The Bing Ads file download link was rejected (HTTP 403), most likely because it expired before the download started. The sync will retry."
   basic_bulk_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -2726,6 +2735,7 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
