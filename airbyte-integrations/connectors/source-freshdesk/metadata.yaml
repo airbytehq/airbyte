@@ -45,6 +45,7 @@ data:
           clear the stream's destination data before re-syncing to rebuild the column
           as an integer. See the Freshdesk migration guide for details.
         upgradeDeadline: "2026-12-14"
+        deadlineAction: auto_upgrade
         scopedImpact:
           - scopeType: stream
             impactedScopes:
