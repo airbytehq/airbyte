@@ -33,21 +33,7 @@ class ContentOwnerRequester(HttpRequester):
     """
     Custom requester that conditionally adds the onBehalfOfContentOwner parameter
     only when content_owner_id is provided in the config.
-
-    Also supports static `extra_request_parameters` declared in the manifest. `HttpRequester`
-    has no such field, and the model factory only forwards manifest keys that match a
-    component's type hints, so the field is declared here to be accepted and merged.
-
-    Deliberately NOT named `request_parameters`: that key is already used by the `report`
-    stream with a Jinja template value, and it is handled by the CDK's
-    `InterpolatedRequestOptionsProvider` rather than by this class. Declaring a field of
-    that name here makes the factory forward `report`'s template to this class, which
-    merges values verbatim, sending the raw `{{ ... }}` text to the API as a query value.
-    Values assigned to `extra_request_parameters` are NOT interpolated -- use static
-    strings only.
     """
-
-    extra_request_parameters: Optional[Mapping[str, Any]] = None
 
     def get_request_params(
         self,
@@ -61,8 +47,6 @@ class ContentOwnerRequester(HttpRequester):
             stream_slice=stream_slice,
             next_page_token=next_page_token,
         )
-        if self.extra_request_parameters:
-            params.update(self.extra_request_parameters)
         content_owner_id = self.config.get("content_owner_id")
         if content_owner_id:
             params["onBehalfOfContentOwner"] = content_owner_id
