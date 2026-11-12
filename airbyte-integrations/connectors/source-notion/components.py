@@ -5,6 +5,7 @@ from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -21,7 +22,14 @@ class BlocksRetriever(SimpleRetriever):
     According to that fact that block's entity may have children entities that stream also need to retrieve
     BlocksRetriever calls read_records when received record.has_children is True.
 
+    The stream is client-side incremental: Notion cannot filter block children by `last_edited_time`, so every block
+    is fetched and the blocks the cursor considers already synced are dropped here. The CDK only wires that filter into
+    the record selector of a `SimpleRetriever`; for a `CustomRetriever` it hands over the stream's `cursor` instead, so
+    this retriever applies it itself. The filter runs after the recursion on purpose: editing a nested block does not
+    reliably update the `last_edited_time` of its ancestors, so the children of an unchanged block are still visited.
     """
+
+    cursor: Optional[Cursor] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
@@ -50,4 +58,5 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            yield stream_data
+            if self.cursor is None or self.cursor.should_be_synced(stream_data):
+                yield stream_data

@@ -3,6 +3,8 @@
 #
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
@@ -279,3 +281,82 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+def _block(block_id, last_edited_time, has_children=False):
+    return {
+        "object": "block",
+        "id": block_id,
+        "parent": {"type": "page_id", "page_id": "page-1"},
+        "created_time": "2021-10-19T13:33:00.000Z",
+        "last_edited_time": last_edited_time,
+        "has_children": has_children,
+        "archived": False,
+        "in_trash": False,
+        "type": "paragraph",
+        "paragraph": {"rich_text": [], "color": "default"},
+    }
+
+
+def _list_response(results):
+    return {"object": "list", "results": results, "next_cursor": None, "has_more": False}
+
+
+_OLD = "2022-01-01T00:00:00.000Z"
+_NEW = "2022-03-01T00:00:00.000Z"
+_ALL_BLOCK_IDS = ["old-leaf", "old-parent-child-old", "old-parent-child-new", "old-parent", "new-parent-child-old", "new-parent"]
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected_ids",
+    [
+        pytest.param({}, _ALL_BLOCK_IDS, id="first_sync_emits_every_block"),
+        pytest.param(
+            {"use_global_cursor": True, "state": {"last_edited_time": "2022-02-01T00:00:00.000000Z"}, "lookback_window": 0},
+            # `old-parent` itself is dropped, but its children are still visited so the edited child is not lost
+            ["old-parent-child-new", "new-parent"],
+            id="incremental_sync_emits_only_blocks_edited_since_state",
+        ),
+    ],
+)
+def test_blocks_incremental_read_filters_on_state_and_still_visits_children(requests_mock, stream_state, expected_ids):
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json=_list_response([{"object": "page", "id": "page-1", "last_edited_time": _NEW, "properties": {}}]),
+    )
+    page_blocks = requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        json=_list_response(
+            [_block("old-leaf", _OLD), _block("old-parent", _OLD, has_children=True), _block("new-parent", _NEW, has_children=True)]
+        ),
+    )
+    old_parent_children = requests_mock.get(
+        "https://api.notion.com/v1/blocks/old-parent/children?page_size=100",
+        json=_list_response([_block("old-parent-child-old", _OLD), _block("old-parent-child-new", _NEW)]),
+    )
+    new_parent_children = requests_mock.get(
+        "https://api.notion.com/v1/blocks/new-parent/children?page_size=100",
+        json=_list_response([_block("new-parent-child-old", _OLD)]),
+    )
+
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state("blocks", stream_state).build()
+
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+
+    assert [record.record.data["id"] for record in output.records] == expected_ids
+    # filtering is client-side: the whole block tree is requested on every sync, whatever the state
+    assert (page_blocks.call_count, old_parent_children.call_count, new_parent_children.call_count) == (1, 1, 1)
+    assert output.most_recent_state.stream_state.state == {"last_edited_time": "2022-03-01T00:00:00.000000Z"}
+    assert output.errors == []
