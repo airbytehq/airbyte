@@ -304,3 +304,21 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+def test_read_users_restarts_after_completed_sync():
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    state = {}
+    for _ in range(3):
+        messages = list(source.read(logger, config, catalog, state))
+        records = [message.record.data for message in messages if message.type is Type.RECORD]
+        assert [record["id"] for record in records] == list(range(1, 11))
+        state = [[message.state for message in messages if message.type is Type.STATE][-1]]
