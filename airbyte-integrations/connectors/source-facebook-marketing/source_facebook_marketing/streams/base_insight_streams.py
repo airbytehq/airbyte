@@ -278,7 +278,10 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                cursor = self._cursor_values.get(account_id)
+                new_state[account_id]["slices"] = sorted(
+                    d.isoformat() for d in self._completed_slices[account_id] if cursor is None or d > cursor
+                )
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -321,7 +324,11 @@ class AdsInsights(FBMarketingIncrementalStream):
             for account_id in self._account_ids
         }
         self._completed_slices = {
-            account_id: set(ab_datetime_parse(v).date() for v in transformed_state.get(account_id, {}).get("slices", []))
+            account_id: {
+                slice_date
+                for v in transformed_state.get(account_id, {}).get("slices", [])
+                if (slice_date := ab_datetime_parse(v).date()) > (self._cursor_values[account_id] or date.min)
+            }
             for account_id in self._account_ids
         }
 
@@ -420,7 +427,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 break
             self._completed_slices[account_id].remove(ts_start)
             if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
+                self._cursor_values[account_id] = max(self._cursor_values.get(account_id) or ts_start, ts_start)
             else:
                 self._cursor_values = {account_id: ts_start}
 
