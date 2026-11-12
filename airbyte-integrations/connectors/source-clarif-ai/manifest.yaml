@@ -57,11 +57,14 @@ definitions:
             page_size: 20
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -128,11 +131,14 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -198,11 +204,14 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -513,6 +522,21 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
+  # Clarifai returns `modified_at` with nanosecond precision (9 fractional digits), which the
+  # cursor cannot parse: `%f` accepts at most 6 digits. Trim the cursor field to microseconds so
+  # the incremental state can advance.
+  truncate_modified_at_to_microseconds:
+    type: AddFields
+    condition: >-
+      {{ record.get('modified_at') is string and record['modified_at'] | length > 27
+      and record['modified_at'][19] == '.' and record['modified_at'][-1] == 'Z' }}
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - modified_at
+        # The value is evaluated before the condition, so it must not fail on records without `modified_at`.
+        value: "{{ ((record.get('modified_at') or '') | string)[:26] }}Z"
+        value_type: string
 
 streams:
   - $ref: "#/definitions/streams/applications"
