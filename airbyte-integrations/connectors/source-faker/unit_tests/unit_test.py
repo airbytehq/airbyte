@@ -10,7 +10,14 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
@@ -94,6 +101,36 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param({"count": 5000, "seed": 42}, id="only_count_and_seed"),
+        pytest.param({}, id="empty_config"),
+        pytest.param({"count": 10, "records_per_slice": 5}, id="parallelism_omitted"),
+        pytest.param({"count": 10, "parallelism": 2}, id="records_per_slice_omitted"),
+    ],
+)
+def test_check_succeeds_when_optional_settings_are_omitted(config):
+    status = SourceFaker().check(logger, config)
+    assert status.status == Status.SUCCEEDED, status.message
+    assert status.message is None
+
+
+@pytest.mark.parametrize(
+    "config, invalid_key",
+    [
+        ({"count": 5000, "seed": 42, "records_per_slice": 0}, "records_per_slice"),
+        ({"count": 5000, "seed": 42, "parallelism": 0}, "parallelism"),
+        ({"count": 0}, "count"),
+        ({"count": 10, "parallelism": None}, "parallelism"),
+    ],
+)
+def test_check_fails_when_a_provided_setting_is_invalid(config, invalid_key):
+    status = SourceFaker().check(logger, config)
+    assert status.status == Status.FAILED
+    assert f"`{invalid_key}` must be a number greater than or equal to 1" in status.message
 
 
 def test_read_small_random_data():
