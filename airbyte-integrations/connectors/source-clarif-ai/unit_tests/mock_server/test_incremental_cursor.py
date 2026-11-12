@@ -45,9 +45,7 @@ def test_incremental_state_advances(stream_name, modified_at, expected_cursor):
     if stream_name == "applications":
         assert state["modified_at"] == expected_cursor
     else:
-        assert state["states"] == [
-            {"partition": {"app_id": "app1", "parent_slice": {}}, "cursor": {"modified_at": expected_cursor}}
-        ]
+        assert state["states"] == [{"partition": {"app_id": "app1", "parent_slice": {}}, "cursor": {"modified_at": expected_cursor}}]
     assert output.records[0].record.data["modified_at"] == expected_cursor
 
 
