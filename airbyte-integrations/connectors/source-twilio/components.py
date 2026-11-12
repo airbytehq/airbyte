@@ -83,6 +83,68 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioMessagesGlobalStateMigration(StateMigration):
+    """
+    Replace per-account Messages cursors with a single global cursor.
+    Prefer the existing global cursor; otherwise retain the earliest partition cursor.
+    If no cursor can be determined, preserve the entire incoming state unchanged.
+
+    Initial:
+      {
+        "state": {"date_sent": "2022-11-14T12:03:11Z"},
+        "states": [
+          {
+            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+            "cursor": {"date_sent": "2022-01-20T12:03:11Z"}
+          }
+        ],
+        "use_global_cursor": false,
+        "lookback_window": 0
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": {"date_sent": "2022-11-14T12:03:11Z"},
+        "lookback_window": 0
+      }
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state.get("states"))
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor = stream_state.get("state", {}).get("date_sent")
+        if cursor is None:
+            candidates = []
+            for state in stream_state.get("states", []):
+                value = state.get("cursor", {}).get("date_sent")
+                if not isinstance(value, str):
+                    continue
+                for date_format in (
+                    "%Y-%m-%dT%H:%M:%SZ",
+                    "%Y-%m-%d %H:%M:%SZ",
+                    "%Y-%m-%d",
+                    "%Y-%m-%dT%H:%M:%S.%f%z",
+                ):
+                    try:
+                        parsed = datetime.strptime(value, date_format)
+                    except ValueError:
+                        continue
+                    parsed = parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)
+                    candidates.append((parsed, value))
+                    break
+            if not candidates:
+                return stream_state
+            cursor = min(candidates, key=lambda candidate: candidate[0])[1]
+
+        new_state = {"use_global_cursor": True, "state": {"date_sent": cursor}}
+        for key in ("lookback_window", "parent_state"):
+            if key in stream_state:
+                new_state[key] = stream_state[key]
+        return new_state
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
