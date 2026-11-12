@@ -18,10 +18,12 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import SUCCESS_RESOLUTION, ErrorResolution
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
 
@@ -574,6 +576,20 @@ class BingAdsGzipCsvDecoder(Decoder):
 
 
 BING_ADS_REPORTING_POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
+
+
+@dataclass
+class BingAdsDownloadErrorHandler(DefaultErrorHandler):
+    """Error handler for file download requesters that skips response filters on successful responses.
+
+    ``DefaultErrorHandler`` applies response filters before checking for success, and body-based
+    filters read ``response.content``, which drains the streamed ``response.raw`` the download decoders read.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response) and response_or_exception.ok:
+            return SUCCESS_RESOLUTION
+        return super().interpret_response(response_or_exception)
 
 
 @dataclass
