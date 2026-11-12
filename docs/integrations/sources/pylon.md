@@ -8,12 +8,12 @@ This page contains the setup guide and reference information for the [Pylon](htt
 
 ## Prerequisites
 
-- A Pylon API token created by an Admin under **Settings > Integrations & dev > API tokens**. Choose a role that can read the data you plan to sync. If the token acts as a user or bot, it inherits that identity's current role and permissions. Pylon tokens have no separate scopes. For creation steps, see [Pylon's authentication guide](https://docs.usepylon.com/pylon-docs/developer/api/authentication).
+- A Pylon API token created by an Admin under **Settings > Integrations & dev > API tokens**. Choose a role that can read the data you plan to sync. If the token acts as a user or bot, it inherits that identity's current role and permissions. Pylon tokens have no separate scopes. For creation steps, see [Pylon's authentication guide](https://docs.usepylon.com/pylon-docs/developer/api/authentication#create-an-api-token).
 - Access to Tags for the source connection check, plus access to each selected stream and its parent stream. A successful connection check does not verify access to every stream.
 
 ## Setup guide
 
-Before you set up the source, create a Pylon API token with a role that can read the data you plan to sync, as described in [Prerequisites](#prerequisites). For creation steps, see [Pylon's authentication guide](https://docs.usepylon.com/pylon-docs/developer/api/authentication).
+Before you set up the source, create a Pylon API token with a role that can read the data you plan to sync, as described in [Prerequisites](#prerequisites). For creation steps, see [Pylon's authentication guide](https://docs.usepylon.com/pylon-docs/developer/api/authentication#create-an-api-token).
 
 ## Set up Pylon
 
@@ -61,7 +61,7 @@ Optionally, set **Number of Workers** from **2** to **10** (default: **3**). At 
 
 ## Supported sync modes
 
-The Pylon source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Pylon source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts#sync-mode):
 
 - Full Refresh | Overwrite
 - Full Refresh | Append
@@ -120,21 +120,21 @@ Notes for earlier versions, including 0.0.8, are in the [Pylon migration guide](
 
 ### Authentication and permissions
 
-- For `wrong_region_token` (HTTP 401), change **Region** to match your Pylon tenant and token.
-- For `invalid_api_token` (HTTP 401), check that the token is correct and has not been rotated or revoked. If the token has an IP allowlist, allow the public egress IP addresses used by Airbyte. Pylon returns the same error when an IP address is blocked.
-- For HTTP 403, give the token's role read access to the affected data, or deselect the stream. Child streams also require access to their parent data. The connector fails on permission errors rather than silently skipping inaccessible streams.
+- For `wrong_region_token` ([HTTP 401](https://docs.usepylon.com/pylon-docs/developer/api/errors#authentication-401)), change **Region** to match your Pylon tenant and token.
+- For `invalid_api_token` (HTTP 401), check that the token is correct and has not been rotated or revoked. If the token has an [IP allowlist](https://docs.usepylon.com/pylon-docs/developer/api/authentication#ip-allowlist), allow the public egress IP addresses used by Airbyte. Pylon returns the same error when an IP address is blocked.
+- For [HTTP 403](https://docs.usepylon.com/pylon-docs/developer/api/errors#authorization-403), give the token's role read access to the affected data, or deselect the stream. Child streams also require access to their parent data. The connector fails on permission errors rather than silently skipping inaccessible streams.
 
-For other error codes, see [Pylon's error reference](https://docs.usepylon.com/pylon-docs/developer/api/errors).
+For other error codes, see [Pylon's error reference](https://docs.usepylon.com/pylon-docs/developer/api/errors#error-codes).
 
 ### Rate limiting
 
-The [Pylon API rate limits](https://docs.usepylon.com/pylon-docs/developer/api/rate-limits) apply per endpoint and are shared by all API tokens in your organization:
+The [Pylon API rate limits](https://docs.usepylon.com/pylon-docs/developer/api/rate-limits#how-limits-apply) apply per endpoint and are shared by all API tokens in your organization:
 
 - `GET /activity-types` and `GET /issue-statuses`: 30 requests per minute each.
 - `POST /issues/search`, `GET /issues/{id}/messages`, `GET /issues/{id}/threads`, and `GET /knowledge-bases/{id}/articles`: 120 requests per minute each.
 - Other endpoints used by this connector: 300 requests per minute each.
 
-The connector budgets requests separately for each endpoint. For rate-limited responses (HTTP 429), it uses `Retry-After`, then `X-Retry-After` if the first header is absent, then exponential backoff if neither is present, with up to five retries. A selected retry-header wait of 120 seconds or more stops the stream rather than waiting. By default, the connector uses three workers, with a minimum of two and a maximum of ten. Lower **Number of Workers** if other integrations also use your organization's API allowance.
+The connector budgets requests separately for each endpoint. For rate-limited responses ([HTTP 429](https://docs.usepylon.com/pylon-docs/developer/api/rate-limits#handling-429-responses)), it uses `Retry-After`, then `X-Retry-After` if the first header is absent, then exponential backoff if neither is present, with up to five retries. A selected retry-header wait of 120 seconds or more stops the stream rather than waiting. By default, the connector uses three workers, with a minimum of two and a maximum of ten. Lower **Number of Workers** if other integrations also use your organization's API allowance.
 
 ### IP allow list
 
