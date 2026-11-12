@@ -57,11 +57,24 @@ definitions:
             page_size: 20
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        # Clarifai returns up to nanosecond precision, which the cursor cannot parse;
+        # trim fractional seconds beyond microseconds so the state can advance.
+        - type: AddFields
+          condition: "{{ record.get('modified_at') is string }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - modified_at
+              value_type: string
+              value: >-
+                {{ record['modified_at'] | regex_replace('(?<=[.][0-9]{6})[0-9]+', '') }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -128,11 +141,24 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        # Clarifai returns up to nanosecond precision, which the cursor cannot parse;
+        # trim fractional seconds beyond microseconds so the state can advance.
+        - type: AddFields
+          condition: "{{ record.get('modified_at') is string }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - modified_at
+              value_type: string
+              value: >-
+                {{ record['modified_at'] | regex_replace('(?<=[.][0-9]{6})[0-9]+', '') }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -198,11 +224,24 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        # Clarifai returns up to nanosecond precision, which the cursor cannot parse;
+        # trim fractional seconds beyond microseconds so the state can advance.
+        - type: AddFields
+          condition: "{{ record.get('modified_at') is string }}"
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - modified_at
+              value_type: string
+              value: >-
+                {{ record['modified_at'] | regex_replace('(?<=[.][0-9]{6})[0-9]+', '') }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
