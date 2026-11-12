@@ -29,3 +29,11 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Download Link Validity Failures Are Transient
+
+Bulk and reporting downloads use temporary Azure SAS URLs. An XML `AuthenticationErrorDetail` beginning with `Signature not valid in the specified time frame` means the download link is outside its validity period, rather than proving that the source credentials lack permissions. Both download requesters classify this response as `transient_error` and include the stream name in the message. Other 403 responses retain their default classification.
+
+The handler uses `FAIL` to stop the current download; HTTP retries would reuse the same URL. A new sync attempt can create a new download job. This handler does not renew bulk URLs or change the reporting requester's existing re-poll behavior. The first `DefaultErrorHandler` in the composite must have no body-based filters: it short-circuits successful downloads before the second handler examines error bodies, preserving streaming.
+
+**Why this matters:** Treating expired download links as permission failures directs users toward unnecessary credential changes. Retrying an expired URL cannot extend its validity period.
