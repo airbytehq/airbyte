@@ -304,3 +304,33 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+def _users_incremental_catalog():
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    return ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+
+@pytest.mark.parametrize("records_per_slice", [5, 10], ids=["multiple_slices", "single_slice"])
+def test_read_users_after_completed_sync_emits_all_users_again(records_per_slice):
+    from airbyte_cdk.models import AirbyteStateMessage
+
+    source = SourceFaker()
+    config = {"count": 10, "seed": 1, "records_per_slice": records_per_slice, "parallelism": 1, "always_updated": True}
+    catalog = _users_incremental_catalog()
+
+    first_sync = list(source.read(logger, config, catalog, []))
+    first_ids = [row.record.data["id"] for row in first_sync if row.type is Type.RECORD]
+    first_final_state = [row.state for row in first_sync if row.type is Type.STATE][-1]
+    assert first_ids == list(range(1, 11))
+    assert first_final_state.stream.stream_state.loop_offset == 10
+
+    second_sync = list(source.read(logger, config, catalog, [AirbyteStateMessage(**first_final_state.__dict__)]))
+    second_ids = [row.record.data["id"] for row in second_sync if row.type is Type.RECORD]
+    second_final_state = [row.state for row in second_sync if row.type is Type.STATE][-1]
+    assert second_ids == list(range(1, 11))
+    assert second_final_state.stream.stream_state.loop_offset == 10
