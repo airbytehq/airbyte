@@ -49,6 +49,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.3.1 | 2026-11-12 | | Fixed connection checks for sources that omit optional numeric settings. |
 | 7.2.3 | 2026-11-12 | [89529](https://github.com/airbytehq/airbyte/pull/89529) | Add support for Python 3.13 and upgrade to Airbyte CDK 7 |
 | 7.2.2 | 2026-11-10 | [90918](https://github.com/airbytehq/airbyte/pull/90918) | Raised the minimum supported Python version to 3.11 |
 | 7.2.1 | 2026-07-10 | [81653](https://github.com/airbytehq/airbyte/pull/81653) | chore(source-faker): dummy version bump for progressive rollout (autopilot) testing |
