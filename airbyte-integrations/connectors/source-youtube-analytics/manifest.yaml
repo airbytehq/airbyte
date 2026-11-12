@@ -4,8 +4,12 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
+  # `report_types` reads `reportTypes.list`, which answers for any authorized account. A report
+  # stream cannot be used here: it has no slices until YouTube has generated a report file for
+  # its job, which takes up to 48 hours after the job is created and never happens for a report
+  # version YouTube has stopped generating.
   stream_names:
-    - channel_annotations_a1
+    - report_types
 
 definitions:
   streams:
@@ -68,6 +72,29 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: createdAfter
+
+    report_types:
+      type: DeclarativeStream
+      name: report_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reportTypes
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reportTypes
+        paginator:
+          $ref: "#/definitions/next_page_token_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_types"
 
     base_report_stream:
       type: DeclarativeStream
@@ -628,6 +655,7 @@ streams:
   - $ref: "#/definitions/streams/playlist_playback_location_a2"
   - $ref: "#/definitions/streams/playlist_province_a2"
   - $ref: "#/definitions/streams/playlist_traffic_source_a2"
+  - $ref: "#/definitions/streams/report_types"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -755,6 +783,7 @@ metadata:
     playlist_playback_location_a2: false
     playlist_province_a2: false
     playlist_traffic_source_a2: false
+    report_types: false
   yamlComponents:
     global:
       - authenticator
@@ -2038,6 +2067,26 @@ schemas:
         type:
           - "null"
           - integer
+  report_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      deprecateTime:
+        type:
+          - "null"
+          - string
+        format: date-time
+      systemManaged:
+        type:
+          - "null"
+          - boolean
 
 api_budget:
   type: HTTPAPIBudget

@@ -12,6 +12,8 @@ The `jobs` and `report` streams follow YouTube's `nextPageToken` through `next_p
 
 Only report downloads handle a 404. The download requester puts an `action: IGNORE` filter for 404 ahead of the shared error handler, so a report file YouTube has already removed (most likely after its retention period) is skipped with a log message and the rest of the sync continues. That file's rows are not synced, and a later sync cannot recover them. A 404 on a listing endpoint still fails the sync.
 
+The connection check reads `report_types` (`reportTypes.list`), not a report stream. A report stream has no slices until YouTube has generated a file for its job, which takes up to 48 hours after the job is created and never happens for a report version YouTube no longer generates, so `CheckStream` on a report stream fails with `no stream slices were found` for new accounts. `report_types` is the only stream that is not a report stream: it uses `base_requester` directly, is full refresh only, and neither lists nor creates jobs (`unit_tests/mock_server/test_check.py`).
+
 **Why this matters:** The first read of a report stream can create a YouTube job, and data rows come from downloaded CSV files rather than the job or report listing responses. Emitted value types follow the stream schemas, so changing a schema type changes what destinations receive. A missing report file is skipped rather than failing the sync, so a sync can succeed with rows missing.
 
 ## 2. Incremental Cursor Lives on the Parent `report` Stream
