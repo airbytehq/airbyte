@@ -164,3 +164,50 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
         assert state["created_at"] >= previous_state_value
 
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
+
+
+def _order_jsonl_with_order_updated_at(order_jsonl: str, order_updated_at: str, status: str) -> str:
+    order = json.loads(order_jsonl)
+    order["order_updated_at"] = order_updated_at
+    for transaction in order["transactions"]:
+        transaction["kind"] = "REFUND"
+        transaction["status"] = status
+    return json.dumps(order)
+
+
+@pytest.mark.parametrize(
+    "order_updated_at, expected",
+    [
+        pytest.param("2026-10-22T15:10:00Z", [(1001, "SUCCESS")], id="order_updated_after_state_re_emits_status_change"),
+        pytest.param("2026-10-22T14:16:17Z", [(1001, "SUCCESS")], id="order_updated_at_equal_to_state_is_emitted"),
+        pytest.param("2026-10-22T14:00:00Z", [], id="order_updated_before_state_is_dropped"),
+    ],
+)
+def test_transactions_graphql_emits_status_change_of_transaction_predating_state(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+    order_updated_at,
+    expected,
+) -> None:
+    # the refund and its order were both created before the saved state, the refund then moved from PENDING to SUCCESS,
+    # which updates the order -> the updated refund has to be emitted again for the destination to see the new status
+    refund_order = _order_jsonl_with_order_updated_at(
+        _order_jsonl(1, "2026-10-21T09:00:00Z", 1001, "2026-10-22T10:00:00Z"), order_updated_at, status="SUCCESS"
+    )
+
+    stream, test_records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [refund_order],
+        state_value="2026-10-22T14:16:17+00:00",
+    )
+
+    assert [(record["id"], record["status"]) for record in test_records] == expected
+    assert all("order_updated_at" not in record for record in test_records)
+    # re-emitting an older transaction never moves the cursor backwards
+    state = {"created_at": "2026-10-22T14:16:17+00:00"}
+    for record in test_records:
+        state = stream.get_updated_state(state, record)
+    assert state == {"created_at": "2026-10-22T14:16:17+00:00"}
