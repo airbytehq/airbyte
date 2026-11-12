@@ -55,6 +55,12 @@ List of available streams:
 - ComplianceRequests
 - AuditLogs
 
+:::note
+EmailAddresses, PhoneNumbers, Recipients, ComplianceRequests and AuditLogs need the `emailAddresses.read`, `phoneNumbers.read`, `recipients.read`, `complianceRequests.read` and `auditLogs.read` scopes. Connections authorized before version 1.5.0 must re-authenticate before selecting these streams.
+
+AuditLogs requires an Outreach admin user. Outreach keeps audit-log events for about 90 days, so the first sync returns at most that much history regardless of the start date.
+:::
+
 :::warning Upcoming change to the Prospects stream
 Starting **October 1, 2026**, Outreach will no longer include the `contactHistogram` attribute in the default response of the `/prospects` endpoint. See the [Outreach deprecated features page](https://developers.outreach.io/api/deprecated-features/) for details.
 
@@ -74,7 +80,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
-| 1.3.0 | 2026-11-12 | [92564](https://github.com/airbytehq/airbyte/pull/92564) | Add the `email_addresses`, `phone_numbers`, `recipients`, `compliance_requests` and `audit_logs` streams |
+| 1.5.0 | 2026-11-12 | [92564](https://github.com/airbytehq/airbyte/pull/92564) | Add the `email_addresses`, `phone_numbers`, `recipients`, `compliance_requests` and `audit_logs` streams |
 | 1.2.0 | 2026-11-11 | [92031](https://github.com/airbytehq/airbyte/pull/92031) | Add rate-limit handling, retries and the `num_workers` option; report a missing OAuth scope as a configuration error; save state for `call_dispositions` and `call_purposes`; declare 39 fields the API returns |
 | 1.1.54 | 2026-11-11 | [89085](https://github.com/airbytehq/airbyte/pull/89085) | Replace custom record extractor with declarative components; record output is unchanged |
 | 1.1.53 | 2026-11-10 | [91643](https://github.com/airbytehq/airbyte/pull/91643) | Update dependencies |

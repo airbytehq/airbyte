@@ -27,7 +27,8 @@ Every stream follows the full URL in `links.next` until it is absent
   filter includes the cursor value, so the last record of the previous sync is read again.
 - `audit_logs` is incremental on `timestamp`, with `sort=timestamp` and `filter[timestamp][gte]`. `/auditLogs`
   rejects `sort=updatedAt` with `400 sort_parameter.unsupported_attribute`, and its records have no `updatedAt`.
-  Its `id` is a UUID string, not an integer.
+  Its `id` is a UUID string, not an integer. Outreach keeps audit-log events for about 90 days, so the first sync
+  returns at most that much regardless of `start_date`.
 - `recipients` and `compliance_requests` are full refresh and send no sort or filter. Both endpoints return
   `400 filterParameter.unfilterableAttribute` for `filter[updatedAt]` and `400 sortParameter.unsortableAttribute` for
   `sort=updatedAt`, although the records carry `updatedAt`.
@@ -96,8 +97,7 @@ The backoff strategies run in order:
   every access token and a refresh token stays active for 14 days
   ([Token availability](https://developers.outreach.io/api/getting-started/)). A local run that refreshes the token
   receives a refresh token the stored secret does not have, so prefer CI for credentialed runs.
-- `sequence_states` and `compliance_requests` are the streams the test account cannot seed; their mock-server tests
-  are their only coverage. A compliance request deletes or exports a prospect's data, so the test account has none.
+- `sequence_states` is the stream the test account cannot seed; its mock-server tests are its only coverage.
 - `snippets` and `templates` are listed in `empty_streams` although the test account has records for both. Their
   schemas type `tags` (and, on `templates`, `toRecipients`, `ccRecipients` and `bccRecipients`) as strings, but the API
   returns arrays of strings, so the records fail schema validation. Retyping a top-level field is a breaking change and
