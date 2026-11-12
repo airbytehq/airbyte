@@ -561,6 +561,13 @@ def test_rate_limited_backoff_only_uses_header_waits_for_rate_limits():
     assert strategy.backoff_time(response, 0) is None
 
     response = _http_response(
+        500,
+        headers={"X-RateLimit-Reset": str(reset_at), "X-RateLimit-Remaining": "0"},
+        body={"message": "Server Error"},
+    )
+    assert strategy.backoff_time(response, 0) is None
+
+    response = _http_response(
         403,
         headers={"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(reset_at)},
         body={"message": "API rate limit exceeded."},

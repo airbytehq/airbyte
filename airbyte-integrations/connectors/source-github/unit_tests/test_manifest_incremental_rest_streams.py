@@ -516,6 +516,34 @@ def test_review_comments_500_with_reset_header_uses_exponential_backoff(sleep_mo
     assert not any(2990 <= wait <= 3001 for wait in _sleep_times(sleep_mock))
 
 
+@pytest.mark.parametrize("status_code", [500, 503])
+@patch("time.sleep")
+def test_review_comments_server_error_with_spent_quota_uses_exponential_backoff(
+    sleep_mock, status_code, rate_limit_mock_response, requests_mock
+):
+    """A 5xx that carries `X-RateLimit-Remaining: 0` is still a server error: it is retried on
+    the exponential schedule within the normal retry budget, not parked until the quota reset."""
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    listing = requests_mock.get(
+        "https://api.github.com/repos/docker/compose/pulls/comments",
+        status_code=status_code,
+        headers={
+            "X-RateLimit-Reset": str(int(time.time()) + 3000),
+            "X-RateLimit-Remaining": "0",
+        },
+        json={"message": "Server Error"},
+    )
+
+    _, statuses, _, error = _read(config, "review_comments")
+
+    assert statuses[-1] == "INCOMPLETE"
+    assert listing.call_count == 6  # the first attempt plus five retries
+    assert _sleep_times(sleep_mock) == [1, 2, 4, 8, 16]
+    assert f"HTTP Status Code: {status_code}" in str(error)
+    assert "rate limit" not in str(error).lower()
+
+
 @patch("time.sleep")
 def test_review_comments_primary_rate_limit_waits_for_reset(sleep_mock, rate_limit_mock_response, requests_mock):
     config = _config("docker/compose")

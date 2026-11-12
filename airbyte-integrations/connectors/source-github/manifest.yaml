@@ -151,6 +151,13 @@ definitions:
     action: RATE_LIMITED
     error_message: "GitHub secondary rate limit hit. Waiting before retrying."
 
+  # Must sit right before `exhausted_quota_filter`: a 5xx sent while the quota happens to be spent
+  # (`X-RateLimit-Remaining: 0`) is a server error, not a rate limit, and gets exponential backoff.
+  server_error_retry_filter:
+    type: HttpResponseFilter
+    http_codes: [500, 502, 503, 504]
+    action: RETRY
+
   exhausted_quota_filter:
     type: HttpResponseFilter
     # `is not none` is required: a falsy `.get()` renders "None", which InterpolatedBoolean reads as true.
@@ -241,6 +248,7 @@ definitions:
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/server_error_retry_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
       - $ref: "#/definitions/unauthorized_fail_filter"
       # No `disabled_feature_skip_filter` here: it would match before `forbidden_fail_filter` and hide check's 403.
@@ -257,6 +265,7 @@ definitions:
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/server_error_retry_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
       - $ref: "#/definitions/unauthorized_fail_filter"
       - $ref: "#/definitions/disabled_feature_skip_filter"
@@ -276,6 +285,7 @@ definitions:
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/server_error_retry_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
       - $ref: "#/definitions/unauthorized_fail_filter"
       - $ref: "#/definitions/disabled_feature_skip_filter"
@@ -301,6 +311,7 @@ definitions:
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/server_error_retry_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
       - $ref: "#/definitions/unauthorized_fail_filter"
       - $ref: "#/definitions/not_found_skip_filter"
@@ -342,6 +353,7 @@ definitions:
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/server_error_retry_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
       - $ref: "#/definitions/unauthorized_fail_filter"
       - $ref: "#/definitions/disabled_feature_skip_filter"
@@ -15520,6 +15532,7 @@ definitions:
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/server_error_retry_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
       - $ref: "#/definitions/computing_statistics_retry_filter"
       - $ref: "#/definitions/disabled_feature_skip_filter"
@@ -18260,6 +18273,7 @@ definitions:
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/server_error_retry_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
       - $ref: "#/definitions/not_found_skip_filter"
       - $ref: "#/definitions/forbidden_skip_filter"

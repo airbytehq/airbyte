@@ -513,6 +513,7 @@ floored:
 | 403 + `X-RateLimit-Reset` now+10 | 60s | 60s |
 | 403 + reset already past | 60s | 60s |
 | 500 + `X-RateLimit-Reset` now+3000 | expo | expo |
+| 500 + `X-RateLimit-Remaining: 0` + reset now+3000 | expo | expo |
 | 500 / timeout, no such headers | expo | expo |
 
 `WaitTimeFromHeader` has no `min_wait`, so `Retry-After` is used raw; `WaitUntilTimeFromHeader`
@@ -521,7 +522,11 @@ the strategies are shared by every retryable response on the requesters that inh
 `components.RateLimitedResponseBackoffStrategy` contains both effects by gating the two strategies
 on a rate-limit response: headerless ordinary retries no longer inherit `min_wait`, and a reset
 header on a 5xx is ignored (GitHub sends one on 500s; waiting for it spent the 600s `max_time`
-retry budget in one sleep, airbytehq/oncall#13837). The `Retry-After` floor is still missing.
+retry budget in one sleep, airbytehq/oncall#13837). That holds when the 5xx also says
+`X-RateLimit-Remaining: 0`: the component does not count a spent quota on a 5xx as a rate limit,
+and `server_error_retry_filter` sits right before `exhausted_quota_filter` in every handler so
+the response is RETRY rather than RATE_LIMITED (which, with no wait, the CDK retries endlessly).
+A 5xx with `Retry-After` is still waited out as sent. The `Retry-After` floor is still missing.
 Alternatives measured and rejected: a `CompositeErrorHandler` with `min_wait` on a rate-limit-only
 branch changes nothing (`CompositeErrorHandler.backoff_strategies` flattens every child's
 strategies, and `HttpClient` takes the first truthy one, which is why the component gate is

@@ -61,7 +61,8 @@ def _is_rate_limited_response(response: requests.Response) -> bool:
     """Whether GitHub identifies an HTTP response as rate limited."""
     if response.status_code == 429 or "Retry-After" in response.headers:
         return True
-    if response.status_code != 200 and response.headers.get("X-RateLimit-Remaining") == "0":
+    # A 5xx carries the quota headers too; a spent quota on one is incidental, not the cause.
+    if response.status_code != 200 and response.status_code < 500 and response.headers.get("X-RateLimit-Remaining") == "0":
         return True
 
     try:
