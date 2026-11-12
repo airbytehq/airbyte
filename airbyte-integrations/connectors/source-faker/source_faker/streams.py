@@ -108,6 +108,12 @@ class Users(Stream, IncrementalMixin):
         # instead of regenerating them.
         loop_offset = self.state.get("loop_offset", 0)
 
+        # A sync that ran to completion leaves `loop_offset` at the end of the
+        # stream. That is not a checkpoint to resume from: the next sync starts
+        # a new pass over all users.
+        if loop_offset >= self.count:
+            loop_offset = 0
+
         median_record_byte_size = 450
         yield generate_estimate(self.name, self.count - loop_offset, median_record_byte_size)
 

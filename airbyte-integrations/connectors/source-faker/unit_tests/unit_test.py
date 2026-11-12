@@ -284,6 +284,29 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+def test_read_users_emits_all_users_again_after_a_completed_sync():
+    """A sync that follows a completed sync starts a new pass over all users instead of resuming at the end."""
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    all_user_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+    state = []
+    for _sync_number in range(3):
+        messages = list(source.read(logger, config, catalog, state))
+
+        assert [message.record.data["id"] for message in messages if message.type is Type.RECORD] == all_user_ids
+        state_messages = [message.state for message in messages if message.type is Type.STATE]
+        assert state_messages[-1].stream.stream_state.loop_offset == 10
+        # feed the state this sync finished with into the next sync, as the platform does
+        state = [state_messages[-1]]
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
