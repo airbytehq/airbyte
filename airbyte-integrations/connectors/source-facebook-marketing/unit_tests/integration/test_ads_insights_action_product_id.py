@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Union
 from unittest import TestCase
 
 import freezegun
+import pytest
 from source_facebook_marketing.streams.async_job import Status
 
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
@@ -151,6 +152,8 @@ def _job_start_request(
     since: Optional[datetime] = None,
     until: Optional[datetime] = None,
     fields: Optional[List[str]] = None,
+    include_incrementality: bool = False,
+    include_status_filter: bool = True,
 ) -> RequestBuilder:
     since = since.strftime(DATE_FORMAT) if since else START_DATE[:10]
     until = until.strftime(DATE_FORMAT) if until else END_DATE[:10]
@@ -184,6 +187,10 @@ def _job_start_request(
         ],
         "time_range": {"since": since, "until": until},
     }
+    if include_incrementality:
+        body["action_attribution_windows"].append("incrementality")
+    if not include_status_filter:
+        del body["filtering"]
     return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=account_id).with_body(encode_request_body(body))
 
 
@@ -243,6 +250,43 @@ def _ads_insights_action_product_id_record() -> RecordBuilder:
         records_path=FieldPath("data"),
         record_cursor_path=FieldPath(_CURSOR_FIELD),
     )
+
+
+@pytest.mark.parametrize(
+    "top_level,per_insight,expected",
+    [(True, None, True), (True, False, True), (False, False, False), (False, True, True)],
+)
+@freezegun.freeze_time("2023-01-10T00:00:00Z")
+def test_custom_insight_incrementality(top_level, per_insight, expected):
+    config_builder = config()
+    insight = {"name": "Incrementality", "fields": ["clicks"], "breakdowns": ["product_id"], "action_breakdowns": []}
+    if per_insight is not None:
+        insight["include_incrementality"] = per_insight
+    config_builder.build().update(include_incrementality=top_level, custom_insights=[insight])
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        http_mocker.post(
+            _job_start_request(fields=["clicks"], include_incrementality=expected, include_status_filter=False).build(),
+            _job_start_response(_REPORT_RUN_ID),
+        )
+        http_mocker.post(_job_status_request(_REPORT_RUN_ID).build(), _job_status_response(_JOB_ID))
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).build(),
+            _insights_response().with_pagination().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).with_next_page_token(NEXT_PAGE_TOKEN).build(),
+            build_response(body={"data": []}, status_code=HTTPStatus.OK),
+        )
+        output = read_output(
+            config_builder,
+            "custom_incrementality",
+            SyncMode.full_refresh,
+            json_schema={"properties": {"clicks": {"type": "string"}}},
+        )
+        assert len(output.records) == 1
 
 
 @freezegun.freeze_time("2023-01-10T00:00:00Z")
