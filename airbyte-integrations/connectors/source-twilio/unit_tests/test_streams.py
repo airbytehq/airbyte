@@ -2,12 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
-from components import TwilioConferencesStateMigration
+from components import TwilioConferencesStateMigration, TwilioMessagesStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
@@ -632,7 +632,84 @@ class TestConferenceParticipantsStream:
         assert len(records) == 0
 
 
+class TestTwilioMessagesStateMigration:
+    @pytest.mark.parametrize(
+        "state",
+        [{}, {"states": []}, {"date_sent": "2026-11-01"}, {"use_global_cursor": True, "state": {"date_sent": "2026-11-01"}}],
+    )
+    def test_should_not_migrate(self, state):
+        assert not TwilioMessagesStateMigration().should_migrate(state)
+
+    @pytest.mark.parametrize(
+        "cursors, expected",
+        [
+            (["2026-11-02T00:00:00Z", "2026-11-01 00:00:00Z", "2026-11-03"], "2026-11-01 00:00:00Z"),
+            (["2026-11-02 00:00:00Z", "2026-11-01", "invalid"], "2026-11-01"),
+            (["2026-11-01T00:00:00Z", "2026-11-02"], "2026-11-01T00:00:00Z"),
+        ],
+    )
+    def test_oldest_partition_cursor(self, cursors, expected):
+        state = {
+            "states": [{"cursor": {"date_sent": cursor}} for cursor in cursors],
+            "lookback_window": 60,
+            "parent_state": {"accounts": {}},
+        }
+        migration = TwilioMessagesStateMigration()
+        assert migration.should_migrate(state)
+        assert migration.migrate(state) == {
+            "use_global_cursor": True,
+            "state": {"date_sent": expected},
+            "lookback_window": 60,
+            "parent_state": {"accounts": {}},
+        }
+
+    def test_global_cursor_takes_precedence(self):
+        assert TwilioMessagesStateMigration().migrate(
+            {"state": {"date_sent": "2026-11-02"}, "states": [{"cursor": {"date_sent": "2020-01-01"}}]}
+        ) == {"use_global_cursor": True, "state": {"date_sent": "2026-11-02"}}
+
+    @pytest.mark.parametrize("partition", [{}, {"cursor": {}}, {"cursor": {"date_sent": "invalid"}}, {"cursor": {"date_sent": None}}])
+    def test_missing_valid_cursor_resets_state(self, partition):
+        state = {"states": [partition], "lookback_window": 60, "parent_state": {"accounts": {}}}
+        migration = TwilioMessagesStateMigration()
+        assert migration.should_migrate(state)
+        assert migration.migrate(state) == {}
+
+
 class TestTwilioNestedStream:
+    @pytest.mark.parametrize("state_format", ["mixed", "legacy", "global"])
+    def test_messages_global_cursor_read(self, requests_mock, state_format):
+        recent = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=2)
+        cursor = recent.strftime("%Y-%m-%dT%H:%M:%SZ")
+        partition = {
+            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+            "cursor": {"date_sent": "2020-01-01T00:00:00Z" if state_format == "mixed" else cursor},
+        }
+        stream_state = {"use_global_cursor": False, "states": [partition]}
+        if state_format == "mixed":
+            stream_state["state"] = {"date_sent": cursor}
+        elif state_format == "global":
+            stream_state = {"use_global_cursor": True, "state": {"date_sent": cursor}}
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        messages = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Messages.json",
+            json={"messages": [{"sid": "SM1", "date_sent": (recent + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")}]},
+        )
+        state = StateBuilder().with_stream_state("messages", stream_state).build()
+        output = read_from_stream(
+            {**TEST_CONFIG, "start_date": "2000-01-01T00:00:00Z", "lookback_window": 5},
+            "messages",
+            SyncMode.incremental,
+            state,
+        )
+
+        query = parse_qs(urlparse(messages.request_history[0].url).query)
+        assert query["DateSent>"] == [(recent - timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M:%SZ")]
+        assert [record.record.data["sid"] for record in output.records] == ["SM1"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert "states" not in final_state
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_message_media_filters_num_media_zero(self, requests_mock):
         ACCOUNTS_JSON = {

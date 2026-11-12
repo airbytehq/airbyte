@@ -10,6 +10,8 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 **Connector type:** Manifest-only, with custom components in `components.py`
 
+The `messages` stream uses a single global `date_sent` cursor. `TwilioMessagesStateMigration` replaces per-partition state, preferring an existing global cursor or otherwise the oldest partition cursor.
+
 **Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.
 
 ### Future incremental stream candidates
