@@ -12,6 +12,10 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 **Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.
 
+### Cursor granularity must match the window format
+
+`cursor_granularity` has to equal the smallest unit `datetime_format` can express (`PT1S` for `%Y-%m-%d %H:%M:%SZ`, `P1D` for `%Y-%m-%d`). The CDK only merges two finished windows when the gap between them is at most one granularity. With a finer granularity the windows never merge, the per-account cursor stays in the oldest window, and every later sync re-reads the whole history.
+
 ### Future incremental stream candidates
 
 None identified yet.

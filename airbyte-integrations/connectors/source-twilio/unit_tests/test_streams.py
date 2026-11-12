@@ -254,6 +254,69 @@ class TestIncrementalTwilioStream:
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
+    @pytest.mark.parametrize(
+        "stream_name,path,lower_key,upper_key,cursor_field",
+        [
+            ("messages", "/Accounts/AC123/Messages.json", "DateSent>", "DateSent<", "date_sent"),
+            ("recordings", "/Accounts/AC123/Recordings.json", "DateCreated>", "DateCreated<", "date_created"),
+        ],
+    )
+    def test_second_sync_resumes_from_partition_cursor_after_multi_window_sync(
+        self, stream_name, path, lower_key, upper_key, cursor_field, requests_mock
+    ):
+        """
+        A first sync spanning several monthly windows must leave the account's cursor at the newest record,
+        so the next sync requests one window starting at that cursor rather than the whole history again.
+        """
+        api_records = [
+            {"sid": "old", cursor_field: "Mon, 05 Sep 2022 08:00:00 +0000"},
+            {"sid": "recent", cursor_field: "Tue, 15 Nov 2022 10:00:00 +0000"},
+            {"sid": "new", cursor_field: "Thu, 17 Nov 2022 09:00:00 +0000"},
+        ]
+        record_format = "%a, %d %b %Y %H:%M:%S %z"
+        window_format = "%Y-%m-%d %H:%M:%S%z"
+        windows = []
+
+        def _records_in_window(request, context):
+            query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+            lower, upper = query[lower_key][0], query[upper_key][0]
+            windows.append((lower, upper))
+            lower_dt, upper_dt = (datetime.strptime(value, window_format) for value in (lower, upper))
+            return {
+                stream_name: [
+                    record for record in api_records if lower_dt <= datetime.strptime(record[cursor_field], record_format) <= upper_dt
+                ]
+            }
+
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        requests_mock.get(f"{BASE}{path}", json=_records_in_window, status_code=200)
+        config = {**TEST_CONFIG, "start_date": "2022-09-01T00:00:00Z"}
+
+        with freeze_time("2022-11-16 12:03:11+00:00"):
+            first = read_from_stream(config, stream_name, SyncMode.incremental)
+
+        assert sorted(windows) == [
+            ("2022-09-01 00:00:00Z", "2022-09-30 23:59:59Z"),
+            ("2022-10-01 00:00:00Z", "2022-10-31 23:59:59Z"),
+            ("2022-11-01 00:00:00Z", "2022-11-16 12:03:11Z"),
+        ]
+        assert sorted(record.record.data["sid"] for record in first.records) == ["old", "recent"]
+        first_state = first.most_recent_state.stream_state.__dict__
+        assert [partition_state["cursor"] for partition_state in first_state["states"]] == [{cursor_field: "2022-11-15 10:00:00Z"}]
+        assert first_state["state"] == {cursor_field: "2022-11-15 10:00:00Z"}
+
+        windows.clear()
+        with freeze_time("2022-11-17 12:03:11+00:00"):
+            second = read_from_stream(
+                config, stream_name, SyncMode.incremental, StateBuilder().with_stream_state(stream_name, first_state).build()
+            )
+
+        # The lower bound is inclusive, so the record sitting exactly on the cursor is read again; nothing older is.
+        assert windows == [("2022-11-15 10:00:00Z", "2022-11-17 12:03:11Z")]
+        assert sorted(record.record.data["sid"] for record in second.records) == ["new", "recent"]
+        second_state = second.most_recent_state.stream_state.__dict__
+        assert [partition_state["cursor"] for partition_state in second_state["states"]] == [{cursor_field: "2022-11-17 09:00:00Z"}]
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
