@@ -284,6 +284,34 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+@pytest.mark.parametrize("count, records_per_slice", [(10, 5), (12, 5), (0, 5)])
+def test_read_users_restarts_after_completed_sync(count, records_per_slice):
+    config = {"count": count, "seed": -1, "records_per_slice": records_per_slice, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    first_read = list(SourceFaker().read(logger, config, catalog, {}))
+    first_records = [row.record.data for row in first_read if row.type is Type.RECORD]
+    assert [record["id"] for record in first_records] == list(range(1, count + 1))
+    final_state = [row.state for row in first_read if row.type is Type.STATE][-1]
+
+    second_read = list(SourceFaker().read(logger, config, catalog, [final_state]))
+    records = [row.record.data for row in second_read if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == list(range(1, count + 1))
+    final_state = [row.state for row in second_read if row.type is Type.STATE][-1]
+    final_state_dict = AirbyteMessageSerializer.dump(AirbyteMessage(type=Type.STATE, state=final_state))
+    assert final_state_dict["state"]["stream"]["stream_state"] == {
+        "seed": -1,
+        "updated_at": records[-1]["updated_at"] if records else "",
+        "loop_offset": count,
+    }
+    estimates = [row.trace.estimate for row in second_read if row.type is Type.TRACE and row.trace.estimate]
+    assert [estimate.row_estimate for estimate in estimates] == [count]
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
