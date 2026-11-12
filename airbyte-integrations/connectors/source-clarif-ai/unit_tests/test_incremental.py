@@ -42,9 +42,7 @@ def test_incremental_state_advances(stream_name, fraction):
     cursor = state if stream_name == "applications" else state["state"]
     assert cursor == {"modified_at": "2024-01-03T17:05:11.904417Z"}
     if stream_name != "applications":
-        assert state["states"] == [
-            {"partition": {"app_id": "app1", "parent_slice": {}}, "cursor": cursor}
-        ]
+        assert state["states"] == [{"partition": {"app_id": "app1", "parent_slice": {}}, "cursor": cursor}]
     assert not output.errors
     expected_records = [dict(record) for record in records]
     expected_records[1] = {"id": "null"}
