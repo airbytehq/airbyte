@@ -254,6 +254,95 @@ class TestIncrementalTwilioStream:
         assert all(m.called for m in child_matchers), "Not all date-window URLs were called"
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
+    @pytest.mark.parametrize(
+        "stream_name,resource,cursor_field,lower_key,upper_key",
+        [
+            ("messages", "Messages", "date_sent", "DateSent>", "DateSent<"),
+            ("recordings", "Recordings", "date_created", "DateCreated>", "DateCreated<"),
+        ],
+    )
+    def test_second_read_resumes_each_account_from_its_own_cursor(
+        self, stream_name, resource, cursor_field, lower_key, upper_key, requests_mock
+    ):
+        """
+        The first read spans several monthly request windows per account. The state it emits must let the second read
+        resume every account from its newest record instead of from the start date.
+        """
+        fmt = "%Y-%m-%d %H:%M:%SZ"
+        accounts = ("AC123", "AC456")
+        records_by_account = {
+            "AC123": [("R2", "2022-09-10 10:00:00Z"), ("R3", "2022-11-15 10:00:00Z")],
+            "AC456": [("R5", "2022-11-02 09:00:00Z")],
+        }
+        requests_mock.get(
+            f"{BASE}/Accounts.json",
+            json={
+                "accounts": [
+                    {"sid": sid, "subresource_uris": {stream_name: f"/2010-04-01/Accounts/{sid}/{resource}.json"}} for sid in accounts
+                ]
+            },
+        )
+
+        def _callback_for(sid):
+            # Serves the records inside the requested window, both bounds inclusive, like Twilio's `>=` / `<=` filters.
+            def _callback(request, context):
+                query = parse_qs(urlparse(request.url).query)
+                lower = datetime.strptime(query[lower_key][0], fmt)
+                upper = datetime.strptime(query[upper_key][0], fmt)
+                return {
+                    stream_name: [
+                        {"sid": record_sid, cursor_field: datetime.strptime(value, fmt).strftime("%a, %d %b %Y %H:%M:%S +0000")}
+                        for record_sid, value in records_by_account[sid]
+                        if lower <= datetime.strptime(value, fmt) <= upper
+                    ]
+                }
+
+            return _callback
+
+        matchers = {sid: requests_mock.get(f"{BASE}/Accounts/{sid}/{resource}.json", json=_callback_for(sid)) for sid in accounts}
+
+        def _windows(sid):
+            queries = [parse_qs(urlparse(request.url).query) for request in matchers[sid].request_history]
+            return sorted((query[lower_key][0], query[upper_key][0]) for query in queries)
+
+        def _partition_cursors(output):
+            stream_state = output.most_recent_state.stream_state.__dict__
+            return {
+                partition_state["partition"]["subresource_uri"].split("/")[3]: partition_state["cursor"][cursor_field]
+                for partition_state in stream_state["states"]
+            }
+
+        config = {**TEST_CONFIG, "start_date": "2022-09-01T00:00:00Z"}
+
+        with freeze_time("2022-11-16 12:03:11+00:00"):
+            first_read = read_from_stream(config, stream_name, SyncMode.incremental)
+
+        first_windows = [
+            ("2022-09-01 00:00:00Z", "2022-09-30 23:59:59Z"),
+            ("2022-10-01 00:00:00Z", "2022-10-31 23:59:59Z"),
+            ("2022-11-01 00:00:00Z", "2022-11-16 12:03:11Z"),
+        ]
+        assert {sid: _windows(sid) for sid in accounts} == {"AC123": first_windows, "AC456": first_windows}
+        assert sorted(record.record.data["sid"] for record in first_read.records) == ["R2", "R3", "R5"]
+        assert _partition_cursors(first_read) == {"AC123": "2022-11-15 10:00:00Z", "AC456": "2022-11-02 09:00:00Z"}
+
+        for matcher in matchers.values():
+            matcher.reset()
+        records_by_account["AC123"].append(("R6", "2022-11-17 08:00:00Z"))
+        state = StateBuilder().with_stream_state(stream_name, first_read.most_recent_state.stream_state.__dict__).build()
+
+        with freeze_time("2022-11-17 12:03:11+00:00"):
+            second_read = read_from_stream(config, stream_name, SyncMode.incremental, state)
+
+        # One window per account, starting at that account's cursor. The lower bound is inclusive, so the record
+        # sitting on each cursor (R3, R5) is read again; nothing older is.
+        assert {sid: _windows(sid) for sid in accounts} == {
+            "AC123": [("2022-11-15 10:00:00Z", "2022-11-17 12:03:11Z")],
+            "AC456": [("2022-11-02 09:00:00Z", "2022-11-17 12:03:11Z")],
+        }
+        assert sorted(record.record.data["sid"] for record in second_read.records) == ["R3", "R5", "R6"]
+        assert _partition_cursors(second_read) == {"AC123": "2022-11-17 08:00:00Z", "AC456": "2022-11-02 09:00:00Z"}
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}

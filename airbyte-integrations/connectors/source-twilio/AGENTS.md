@@ -12,6 +12,10 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 **Analysis status:** No stream-by-stream incremental analysis yet; build it from the stream definitions in `manifest.yaml`.
 
+### Cursor granularity must match the datetime format
+
+`messages` and `recordings` format their request windows to the second (`%Y-%m-%d %H:%M:%SZ`), so their `cursor_granularity` must stay `PT1S`. With a finer granularity the CDK sees a one-second gap between consecutive windows, never merges them, and saves each account's cursor at the start of the first window, so every sync re-reads from the start date. `message_media` reads `messages` as its parent and inherits the same setting.
+
 ### Future incremental stream candidates
 
 None identified yet.
