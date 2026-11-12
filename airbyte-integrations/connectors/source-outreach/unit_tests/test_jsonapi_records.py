@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 import pytest
 import yaml
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -335,3 +335,81 @@ def test_manifest_has_no_custom_components() -> None:
     assert all(key != "class_name" for key, _ in walk(manifest))
     assert all(not value.startswith("Custom") for key, value in walk(manifest) if key == "type" and isinstance(value, str))
     assert not (Path(_YAML_FILE_PATH).parent / "components.py").exists()
+
+
+_EXPIRED_TOKEN_RESPONSE = HttpResponse(
+    body=json.dumps(
+        {"id": "expiredAccessToken", "title": "Expired Access Token", "detail": "Please get a new access token and try again."}
+    ),
+    status_code=401,
+)
+
+
+_TOKEN_REQUEST = HttpRequest(
+    _TOKEN_URL,
+    body="grant_type=refresh_token&client_id=test-client-id&client_secret=test-client-secret&refresh_token=test-refresh-token",
+)
+
+
+def _mock_tokens(http_mocker: HttpMocker, access_tokens: list[str]) -> None:
+    http_mocker.post(
+        _TOKEN_REQUEST,
+        [HttpResponse(body=json.dumps({"access_token": token, "expires_in": 7200}), status_code=200) for token in access_tokens],
+    )
+
+
+def _authorized_request(stream_name: str, access_token: str) -> HttpRequest:
+    requester = _STREAMS[stream_name]["retriever"]["requester"]
+    return HttpRequest(
+        f"{_BASE_URL}{requester['path']}",
+        query_params=_query_params(stream_name),
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+
+
+def _read_stream(stream_name: str):
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    state = StateBuilder().build()
+    return read(get_source(config=_CONFIG, state=state), _CONFIG, catalog, state, expecting_exception=True)
+
+
+@pytest.mark.parametrize("stream_name", ["mailings", "calls"])
+def test_access_token_expired_mid_sync_is_refreshed_and_request_retried(stream_name: str, monkeypatch) -> None:
+    monkeypatch.setattr("time.sleep", lambda _seconds: None)
+    resource = _resource("after-refresh", {"updatedAt": "2021-01-01T00:00:00.000Z"})
+
+    with HttpMocker() as http_mocker:
+        _mock_tokens(http_mocker, ["expired-token", "fresh-token"])
+        stale_request = _authorized_request(stream_name, "expired-token")
+        fresh_request = _authorized_request(stream_name, "fresh-token")
+        http_mocker.get(stale_request, _EXPIRED_TOKEN_RESPONSE)
+        http_mocker.get(fresh_request, _response([resource]))
+        output = _read_stream(stream_name)
+
+        http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 2)
+        http_mocker.assert_number_of_calls(stale_request, 1)
+        http_mocker.assert_number_of_calls(fresh_request, 1)
+
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == ["after-refresh"]
+
+
+def test_401_after_token_refresh_fails_as_config_error_without_refreshing_again(monkeypatch) -> None:
+    monkeypatch.setattr("time.sleep", lambda _seconds: None)
+
+    with HttpMocker() as http_mocker:
+        _mock_tokens(http_mocker, ["rejected-token-1", "rejected-token-2"])
+        first_request = _authorized_request("mailings", "rejected-token-1")
+        second_request = _authorized_request("mailings", "rejected-token-2")
+        http_mocker.get(first_request, _EXPIRED_TOKEN_RESPONSE)
+        http_mocker.get(second_request, _EXPIRED_TOKEN_RESPONSE)
+        output = _read_stream("mailings")
+
+        http_mocker.assert_number_of_calls(_TOKEN_REQUEST, 2)
+        http_mocker.assert_number_of_calls(first_request, 1)
+        http_mocker.assert_number_of_calls(second_request, 1)
+
+    assert output.records == []
+    assert output.errors
+    assert {error.trace.error.failure_type for error in output.errors} == {FailureType.config_error}
+    assert output.errors[0].trace.error.message == "Refreshed OAuth access token is rejected by the API."
