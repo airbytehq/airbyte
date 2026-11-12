@@ -23,6 +23,11 @@ def _request() -> HttpRequest:
     return OutreachRequestBuilder.endpoint("/accounts").build()
 
 
+def _reset_headers(seconds_until_reset: int) -> dict[str, str]:
+    reset = str(int(_NOW.timestamp()) + seconds_until_reset)
+    return {"Retry-After": reset, "X-RateLimit-Reset": reset}
+
+
 def _accounts_page() -> HttpResponse:
     return page_response([resource(1, "account", {"name": "Acme", "updatedAt": "2024-01-02T03:04:05.000Z"})])
 
@@ -106,8 +111,8 @@ class TestErrorHandling(TestCase):
 
     @HttpMocker()
     def test_429_waits_until_the_epoch_in_retry_after_then_retries(self, http_mocker: HttpMocker) -> None:
-        # Body from https://developers.outreach.io/api/getting-started/#rate-limiting. Outreach sends the reset time,
-        # a Unix epoch, as `Retry-After`.
+        # Body from https://developers.outreach.io/api/getting-started/#rate-limiting. The docs make `Retry-After` an
+        # alias of `X-RateLimit-Reset`, which is a Unix epoch on live responses, so both carry the reset time.
         given_token(http_mocker)
         http_mocker.get(
             _request(),
@@ -117,8 +122,7 @@ class TestErrorHandling(TestCase):
                     "rateLimitExceeded",
                     "Rate Limit Exceeded",
                     "You have exceeded your permitted rate limit of 10,000; please try again at 2026-11-11T12:00:42.",
-                    # No `X-RateLimit-Remaining` header here, so the budget assertion below rests on the 429 status alone.
-                    headers={"Retry-After": str(int(_NOW.timestamp()) + 42)},
+                    headers=_reset_headers(42),
                 ),
                 _accounts_page(),
             ],
@@ -131,9 +135,38 @@ class TestErrorHandling(TestCase):
         assert record_ids(output) == [1]
         # 42 seconds until the reset, plus the second the CDK adds to a header-based wait.
         assert clock.sleeps[0] == 43
-        # The API budget also counts the 429 as a used-up hour: with no earlier requests in its moving window, the
-        # retry is held until a full hour after the 429.
-        assert round(sum(clock.sleeps)) == 3600
+        # The API budget treats the 429 as a used-up window that ends at `X-RateLimit-Reset`, which has passed by the
+        # time the retry goes out, so it holds nothing more.
+        assert round(sum(clock.sleeps)) == 43
+
+    @HttpMocker()
+    def test_api_budget_holds_requests_until_x_ratelimit_reset_after_a_429(self, http_mocker: HttpMocker) -> None:
+        # No `Retry-After` and no `X-RateLimit-Remaining`: the backoff falls to the exponential strategy, and only the
+        # 429 status tells the budget the window is used up.
+        given_token(http_mocker)
+        http_mocker.get(
+            _request(),
+            [
+                error_response(
+                    429,
+                    "rateLimitExceeded",
+                    "Rate Limit Exceeded",
+                    "You have exceeded your permitted rate limit of 10,000; please try again at 2026-11-11T12:10:00.",
+                    headers={"X-RateLimit-Reset": str(int(_NOW.timestamp()) + 600)},
+                ),
+                _accounts_page(),
+            ],
+        )
+
+        with _Clock() as clock:
+            output = read_stream(_STREAM, SyncMode.full_refresh)
+
+        assert not output.errors
+        assert record_ids(output) == [1]
+        # factor 5 on the first retry: 5 * 2^1, plus the second the CDK adds.
+        assert clock.sleeps[0] == 11
+        # The budget then holds the retry until the reset time Outreach sent.
+        assert round(sum(clock.sleeps)) == 600
 
     @HttpMocker()
     def test_503_with_an_iso_retry_after_falls_back_to_exponential_backoff(self, http_mocker: HttpMocker) -> None:
@@ -171,7 +204,7 @@ class TestErrorHandling(TestCase):
             page_response(
                 [resource(1, "account", {"name": "Acme", "updatedAt": "2024-01-02T03:04:05.000Z"})],
                 next_url=next_url,
-                headers={"X-RateLimit-Remaining": "0"},
+                headers={"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(int(_NOW.timestamp()) + 42)},
             ),
         )
         http_mocker.get(
@@ -184,5 +217,5 @@ class TestErrorHandling(TestCase):
 
         assert not output.errors
         assert record_ids(output) == [1, 2]
-        # The budget is 10,000 requests per moving hour, so a window reported as used up frees after one hour.
-        assert round(sum(clock.sleeps)) == 3600
+        # The budget's window ends when Outreach resets the quota, 42 seconds later, not a full hour after the response.
+        assert round(sum(clock.sleeps)) == 42

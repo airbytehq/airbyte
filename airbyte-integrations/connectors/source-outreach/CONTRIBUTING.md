@@ -45,23 +45,26 @@ Outreach returns errors as `{"errors": [{"id", "title", "detail"}]}`
 
 The backoff strategies run in order:
 
-1. `WaitUntilTimeFromHeader` on `Retry-After`. On a 429 Outreach sends the rate-limit reset time there as a Unix
-   epoch. The strategy has no `min_wait`: with one set, it would return that value whenever the header is missing and
+1. `WaitUntilTimeFromHeader` on `Retry-After`. The docs make `Retry-After` an alias of `X-RateLimit-Reset`, which is a
+   Unix epoch on live 200 and 400 responses; no live 429 has been captured. The strategy has no `min_wait`: with one set, it would return that value whenever the header is missing and
    the exponential strategy would never run.
 2. `ExponentialBackoffStrategy` for everything else. A maintenance 503 sends an ISO-8601 `Retry-After`, which the
    first strategy cannot read, so it lands here.
 
 ### Rate limits and concurrency
 
-- Outreach allows 10,000 requests per hour per user and reports the remaining calls in `X-RateLimit-Remaining`
-  ([Rate limiting](https://developers.outreach.io/api/getting-started/#rate-limiting)). The `api_budget` holds all
-  workers to 10,000 requests per moving hour and reads that header.
-- `ratelimit_reset_header` is not declared on purpose: the moving-window policy only syncs with the API when no reset
-  time is given.
-- When Outreach reports no calls left (a 429, or `X-RateLimit-Remaining: 0`), the budget fills its window. Requests the
-  connector already made leave the window first, so a long read resumes as they age out. If the connector made few
-  requests itself, for example because another integration used the same user's quota, the next request waits up to
-  one hour. `maxSecondsBetweenMessages` is 7200 to cover that wait.
+- Outreach allows 10,000 requests per hour per user and sends `X-RateLimit-Remaining` and `X-RateLimit-Reset` (a Unix
+  epoch) on every response ([Rate limiting](https://developers.outreach.io/api/getting-started/#rate-limiting)). Other
+  apps authorized by the same user share the quota.
+- The `api_budget` uses a `FixedWindowCallRatePolicy` of 10,000 calls and reads both headers. Each response moves the
+  window's end to `X-RateLimit-Reset` and lowers the local count to `X-RateLimit-Remaining`, so when Outreach reports no
+  calls left (a 429, or `X-RateLimit-Remaining: 0`), every worker waits until Outreach resets the quota and no longer.
+- A `MovingWindowCallRatePolicy` was tried first. It ignores the reset time and, once told the quota is used up, holds
+  every request for a full hour, even when Outreach resets in seconds.
+- The CDK starts the fixed window ten days long until the first response sets its end, and it parses the reset header
+  with `int()`. Both rely on Outreach sending an integer `X-RateLimit-Reset`, which it does on every live response
+  seen so far.
+- `maxSecondsBetweenMessages` is 7200, above the longest wait for a reset (one hour).
 - `num_workers` (default 3, 2 to 10) sets how many streams are read at the same time. All workers share the budget.
 
 ### Schemas

@@ -15,14 +15,16 @@ concurrency_level:
 api_budget:
   type: HTTPAPIBudget
   ratelimit_remaining_header: X-RateLimit-Remaining
+  # A Unix epoch on every response. The fixed window resets when Outreach does, so a used-up quota waits
+  # only until this time rather than a full hour.
+  ratelimit_reset_header: X-RateLimit-Reset
   status_codes_for_ratelimit_hit:
     - 429
   policies:
     # Outreach allows 10,000 requests per hour per user.
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 10000
-          interval: PT1H
+    - type: FixedWindowCallRatePolicy
+      period: PT1H
+      call_limit: 10000
       matchers: []
 
 definitions:
@@ -891,7 +893,7 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       backoff_strategies:
-        # Outreach sends the rate-limit reset time (a Unix epoch) as Retry-After on a 429. A maintenance 503
+        # On a 429, Retry-After is documented as an alias of X-RateLimit-Reset, a Unix epoch. A maintenance 503
         # sends an ISO-8601 Retry-After, which this strategy cannot read, so it falls through to the
         # exponential strategy. Do not set min_wait: it would be returned whenever the header is missing
         # and the exponential strategy would never run.
