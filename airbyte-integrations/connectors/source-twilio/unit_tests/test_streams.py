@@ -1003,3 +1003,47 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+class TestMessagesGlobalCursor:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_mixed_state_resumes_from_global_cursor_instead_of_stale_partition_cursor(self, requests_mock):
+        stale_partition_cursor = "2021-01-01 00:00:00Z"
+        global_cursor = "2022-11-15 12:00:00Z"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": stale_partition_cursor},
+                        }
+                    ],
+                    "state": {"date_sent": global_cursor},
+                    "lookback_window": 0,
+                },
+            )
+            .build()
+        )
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        messages_matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Messages.json",
+            json={"messages": [{"sid": "SM1", "account_sid": "AC123", "date_sent": "2022-11-16T01:00:00Z"}]},
+            status_code=200,
+        )
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        windows = [
+            (parse_qs(urlparse(request.url).query)["DateSent>"][0], parse_qs(urlparse(request.url).query)["DateSent<"][0])
+            for request in messages_matcher.request_history
+        ]
+        assert windows == [(global_cursor, "2022-11-16 12:03:11Z")]
+        assert [record.record.data["sid"] for record in output.records] == ["SM1"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert "states" not in final_state
+        assert final_state["state"] == {"date_sent": "2022-11-16 01:00:00Z"}

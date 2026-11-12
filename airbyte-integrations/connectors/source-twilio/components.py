@@ -83,6 +83,49 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioGlobalCursorStateMigration(StateMigration):
+    """
+    Collapse per-partition state into a single global cursor for streams declared with `global_substream_cursor: true`.
+
+    Stale per-partition cursors would otherwise take precedence over the newer global `state` and re-read old data.
+    The global `state` is used when present; otherwise the oldest partition cursor is kept so no data is skipped.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2021-01-01 00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-15 12:00:00Z" },
+        "lookback_window": 0
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": { "date_sent": "2022-11-15 12:00:00Z" },
+        "lookback_window": 0
+      }
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        global_state = stream_state.get("state")
+        if not global_state:
+            partition_cursors = [state["cursor"] for state in stream_state.get("states", []) if state.get("cursor")]
+            global_state = min(partition_cursors, key=lambda cursor: sorted(cursor.values())) if partition_cursors else None
+        migrated = {key: value for key, value in stream_state.items() if key not in ("states", "state")}
+        migrated["use_global_cursor"] = True
+        if global_state:
+            migrated["state"] = global_state
+        return migrated
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and "states" in stream_state
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
