@@ -85,7 +85,40 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
         stream_state_cache.cached_state.pop("transactions", None)
 
     assert all("order_created_at" not in record for record in records)
+    assert all("order_updated_at" not in record for record in records)
     return stream, records
+
+
+@pytest.mark.parametrize(
+    "order_updated_at, expected_ids",
+    [
+        pytest.param("2026-09-11T06:00:00Z", [1001], id="updated_since_state"),
+        pytest.param("2026-09-11T05:49:43Z", [1001], id="updated_at_state"),
+        pytest.param("2026-09-11T04:00:00Z", [], id="updated_before_state"),
+        pytest.param(None, [], id="null_updated_at"),
+    ],
+)
+def test_transactions_graphql_emits_status_changes_on_existing_transactions(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+    order_updated_at,
+    expected_ids,
+) -> None:
+    order = json.loads(_order_jsonl(1, "2026-09-11T04:00:00Z", 1001, "2026-09-11T05:07:00Z"))
+    order["order_updated_at"] = order_updated_at
+    order["transactions"][0]["kind"] = "REFUND"
+
+    _, test_records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [json.dumps(order)],
+        state_value="2026-09-11T05:49:43+00:00",
+    )
+
+    assert [record["id"] for record in test_records] == expected_ids
+    assert all(record["status"] == "SUCCESS" for record in test_records)
 
 
 @pytest.mark.parametrize(
