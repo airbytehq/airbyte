@@ -151,14 +151,16 @@ def _job_start_request(
     since: Optional[datetime] = None,
     until: Optional[datetime] = None,
     fields: Optional[List[str]] = None,
+    breakdowns: Optional[List[str]] = None,
+    action_breakdowns: Optional[List[str]] = None,
 ) -> RequestBuilder:
     since = since.strftime(DATE_FORMAT) if since else START_DATE[:10]
     until = until.strftime(DATE_FORMAT) if until else END_DATE[:10]
     body_fields = _JOB_START_FIELDS if not fields else fields
     body = {
         "level": "ad",
-        "action_breakdowns": [],
-        "breakdowns": ["product_id"],
+        "action_breakdowns": action_breakdowns or [],
+        "breakdowns": ["product_id"] if breakdowns is None else breakdowns,
         "fields": body_fields,
         "time_increment": 1,
         "action_attribution_windows": ["1d_click", "7d_click", "28d_click", "1d_view"],
