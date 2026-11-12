@@ -2660,6 +2660,7 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler: "#/definitions/file_download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2726,6 +2727,7 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/file_download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
@@ -2741,6 +2743,21 @@ definitions:
         CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
+
+  # Bulk and report files are downloaded from short-lived pre-signed Azure Blob Storage (SAS) URLs. A 403 on such a URL
+  # is not caused by the user's credentials or permissions, and resending the request cannot succeed because the URL
+  # is part of it, so the download fails as a transient error without retries.
+  # Keep this filter on `http_codes` only: a `predicate` or `error_message_contains` makes the CDK parse the body of
+  # every response, which consumes the streamed file of a successful download before the decoder reads it.
+  file_download_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        http_codes:
+          - 403
+        error_message: "{{ 'Bing Ads file download URL is expired.' if headers.get('x-ms-error-code') == 'AuthenticationFailed' else 'Bing Ads file download URL is rejected by Azure Blob Storage.' }}"
 
   # substream partition routers
   account_substream_partition_router:
