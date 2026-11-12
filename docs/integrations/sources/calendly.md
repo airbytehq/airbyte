@@ -5,27 +5,54 @@ The Calendly source syncs your organization members, groups, teams, invitations,
 ## Prerequisites
 
 - A Calendly account. [API access is available on all Calendly plans, including Free](https://developer.calendly.com/docs/getting-started/frequently-asked-questions), but routing forms and their submissions need Teams, outgoing communications and activity logs need Enterprise, meeting recaps need a plan with Notetaker, and Calendly can deny contacts with a paid-plan error (see [Streams](#streams)). Creating webhook subscriptions requires a paid Standard, Teams, or Enterprise plan; the connector only reads existing subscriptions.
-- An organization owner or administrator account to read organization-wide data such as scheduled events, webhook subscriptions, activity logs and outgoing communications. The connector reads the current organization associated with the token owner's profile; you don't need to enter an organization ID.
-- A [personal access token](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) with the [read scopes](https://developer.calendly.com/docs/authentication/scopes) of every stream you sync, listed in [Token scopes](#token-scopes).
+- An organization owner or administrator account to read organization-wide data such as scheduled events, webhook subscriptions, activity logs and outgoing communications. The connector reads the current organization associated with the authenticated user's profile; you don't need to enter an organization ID.
+- To authenticate with a [personal access token](https://developer.calendly.com/docs/authentication/how-to-authenticate-with-personal-access-tokens) instead of OAuth, a token with the [read scopes](https://developer.calendly.com/docs/authentication/scopes) of every stream you sync, listed in [Token scopes](#token-scopes).
 
 ## Setup
+
+<!-- env:cloud -->
+
+### Authenticate with OAuth
+
+1. In Airbyte, create a Calendly source and select **OAuth** under **Authentication**.
+2. Select **Authenticate your Calendly account** and sign in to Calendly as an organization owner or administrator.
+3. Review the requested access and allow it. Calendly grants the read scopes set on Airbyte's Calendly OAuth application; you don't select scopes yourself.
+4. Enter a **Start date (UTC)** and, optionally, a **Lookback window (days)** as described below.
+
+Calendly rotates the OAuth refresh token every time Airbyte requests a new access token, and Airbyte stores the new token automatically. If Calendly rejects the refresh token, for example after you revoke Airbyte's access in Calendly, re-authenticate in the source settings.
+
+Every refresh spends the previous refresh token, so use one connection per OAuth source. Two connections that refresh the same source at the same time leave one of them asking you to re-authenticate; if several connections read the same Calendly account, use a personal access token.
+
+<!-- /env:cloud -->
+
+### Authenticate with a personal access token
+
+In Airbyte Open Source, use a personal access token unless you registered your own Calendly OAuth application.
 
 1. In Calendly, open the **Profile** menu, select **Developer**, then **Personal access tokens**. If **Developer** isn't available, use the **Integrations** page instead.
 2. Select **Create personal access token**, name the token, and select the read scopes listed in [Token scopes](#token-scopes).
 3. Create the token, complete the email verification, and copy it. Calendly shows the token only once.
-4. In Airbyte, create a Calendly source and enter the token in **Calendly personal access token**. Enter a **Start date (UTC)** and, optionally, a **Lookback window (days)** as described below.
+4. In Airbyte, create a Calendly source, select **Personal access token** under **Authentication**, and enter the token in **Calendly personal access token**. Enter a **Start date (UTC)** and, optionally, a **Lookback window (days)** as described below.
 
-The connection check reads only the token owner's profile (`api_user`). A successful check confirms `users:read` access, not the permissions needed for every stream. Missing stream-specific scopes or organization permissions can still cause a sync to fail.
+The connection check reads only the authenticated user's profile (`api_user`). A successful check confirms `users:read` access, not the permissions needed for every stream. Missing stream-specific scopes or organization permissions can still cause a sync to fail.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 | --- | --- | --- | --- |
-| `api_key` | `string` | Required. The personal access token created during setup. | |
+| `credentials.auth_type` | `string` | Required. `oauth2.0` for OAuth, or `api_key` for a personal access token. | |
+| `credentials.client_id` | `string` | Required for OAuth. Client ID of the Calendly OAuth application. Airbyte Cloud fills it in when you authenticate. | |
+| `credentials.client_secret` | `string` | Required for OAuth. Client secret of the Calendly OAuth application. Airbyte Cloud fills it in when you authenticate. | |
+| `credentials.refresh_token` | `string` | Required for OAuth. Refresh token returned by Calendly; the connector replaces it with the rotated token after every refresh. | |
+| `credentials.api_key` | `string` | Required for a personal access token. The personal access token created during setup. Configurations from versions before 1.1.0 that set a top-level `api_key` are moved here automatically. | |
 | `start_date` | `string` | Required. Read scheduled events starting on or after this time, and outgoing communications, activity log entries and meeting recaps from this time on. Use UTC in the format `YYYY-MM-DDTHH:mm:ssZ`, for example `2024-01-01T00:00:00Z`. This filters event start times, not when invitees booked. | |
 | `lookback_days` | `number` | Optional. Incremental `scheduled_events` syncs re-emit events whose `updated_at` falls within this many days before the last synced update, plus a fixed five minutes. Every sync pages through all events from the start date, so 0 is right for most connections. | 0 |
 
+When you create or update the source with the Airbyte API or Terraform, send the personal access token inside `credentials`, for example `{"auth_type": "api_key", "api_key": "<token>"}`; a top-level `api_key` is no longer read from the request. Sources saved before 1.1.0 move the token into `credentials` on their next check, schema refresh or sync. If you edit such a source in the Airbyte UI before that, enter the token again.
+
 ## Token scopes
+
+With OAuth, Calendly grants the scopes configured on Airbyte's Calendly OAuth application, which cover every stream below. The rest of this section applies to personal access tokens.
 
 Since March 2026, Calendly grants newly created tokens no API access until you select scopes for them; tokens created earlier keep their access. Select the scopes of every stream you sync; every token also needs `users:read`, which the connection check uses. When a scope is missing, the sync error lists it. Version 0.3.0 added `user_availability_schedules`, `locations` and `webhook_subscriptions`, which need `availability:read`, `locations:read` and `webhooks:read`, and version 0.4.0 added `routing_forms`, `routing_form_submissions`, `contacts`, `outgoing_communications`, `activity_log_entries` and `meeting_recaps`, which need `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read`. Calendly sets a token's scopes when you create it, so create a token with these scopes and update it in the source settings before you sync these streams. Connections set to propagate all field and stream changes add these streams automatically.
 
@@ -111,8 +138,9 @@ The connector monitors `X-RateLimit-Remaining` and waits when the allowance is e
 
 | Symptom | Action |
 | --- | --- |
-| HTTP 401: invalid or revoked token | Create a new personal access token and update the Airbyte source settings. |
-| HTTP 403: insufficient scope or permission denied | Check the error for missing scopes. Create a token with the required read scopes, and use an organization owner or administrator account for organization-wide data such as scheduled events, webhook subscriptions, activity logs and outgoing communications. Update the token in Airbyte. |
+| HTTP 401: invalid or revoked token | With OAuth, re-authenticate in the Airbyte source settings. With a personal access token, create a new token and update the Airbyte source settings. |
+| Calendly rejected the OAuth refresh token | The refresh token expired, was revoked or was already used. Re-authenticate in the Airbyte source settings. |
+| HTTP 403: insufficient scope or permission denied | Check the error for missing scopes. With a personal access token, create a token with the required read scopes. Authenticate with an organization owner or administrator account for organization-wide data such as scheduled events, webhook subscriptions, activity logs and outgoing communications. Update the credentials in Airbyte. |
 | A plan-gated stream syncs no records | Calendly reported that the plan or feature is unavailable; the sync log names the requirement. Routing forms require Teams; without access to forms, routing form submissions also complete empty. |
 | A scheduled event, event type, member, group or routing form disappears during a sync | The connector logs and skips that event's invitees, that event type's hosts, that member's availability schedules and locations, that group's relationships, or that form's submissions, then continues. A 404 on other endpoints fails the sync. |
 | New bookings or cancellations are missing | Upgrade to 1.0.0; its first sync reads every event from your start date again. Confirm that the connection's start date covers the event. |
@@ -132,6 +160,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 1.1.0 | 2026-11-12 | [91296](https://github.com/airbytehq/airbyte/pull/91296) | Add OAuth authentication as the default; personal access tokens remain available and existing configurations keep working |
 | 1.0.0 | 2026-11-11 | [90864](https://github.com/airbytehq/airbyte/pull/90864) | Fix incremental syncs missing new bookings and cancellations by using updated_at as the scheduled_events cursor, and declare date-time and integer types on existing fields |
 | 0.4.2 | 2026-11-10 | [91376](https://github.com/airbytehq/airbyte/pull/91376) | Update dependencies |
 | 0.4.1 | 2026-11-09 | [91293](https://github.com/airbytehq/airbyte/pull/91293) | Fix syncs that failed on `routing_forms` and `routing_form_submissions` below the Calendly Teams plan, and on `group_relationships` in organizations without groups |
