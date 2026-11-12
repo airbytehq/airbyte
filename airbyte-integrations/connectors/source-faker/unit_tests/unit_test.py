@@ -2,15 +2,24 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import jsonschema
 import pytest
 import tomllib
 from packaging.specifiers import SpecifierSet
+from pytest_mock import MockerFixture
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteStateMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Type,
+)
 
 
 class MockLogger:
@@ -259,6 +268,67 @@ def test_read_with_seed():
     records = [row for row in iterator if row.type is Type.RECORD]
     assert records[0].record.data["occupation"] == "Sheriff Principal"
     assert records[0].record.data["email"] == "alleged2069+1@example.com"
+
+
+@pytest.mark.parametrize("count,records_per_slice,parallelism", [(1000, 1000, 4), (11, 4, 1)])
+def test_read_users_replays_after_completed_sync(count: int, records_per_slice: int, parallelism: int, mocker: MockerFixture) -> None:
+    config = {"count": count, "seed": -1, "records_per_slice": records_per_slice, "always_updated": True, "parallelism": parallelism}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    clock = mocker.patch("source_faker.user_generator.datetime")
+    state = []
+
+    for sync in range(3):
+        now = datetime(2026, 1, 1) + timedelta(days=sync)
+        clock.datetime.now.return_value = now
+        messages = list(SourceFaker().read(logger, config, catalog, state))
+        records = [row.record.data for row in messages if row.type is Type.RECORD]
+        assert [record["id"] for record in records] == list(range(1, count + 1))
+        assert {record["updated_at"] for record in records} == {f"{now.isoformat()}+00:00"}
+
+        final_state = [row.state for row in messages if row.type is Type.STATE][-1]
+        serialized_state = AirbyteStateMessageSerializer.dump(final_state)
+        assert serialized_state["stream"]["stream_state"] == {
+            "seed": -1,
+            "updated_at": f"{now.isoformat()}+00:00",
+            "loop_offset": count,
+        }
+        state = [AirbyteStateMessageSerializer.load(serialized_state)]
+
+
+def test_read_users_resumes_emitted_checkpoint() -> None:
+    config = {"count": 11, "seed": -1, "records_per_slice": 4, "always_updated": True, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    iterator = SourceFaker().read(logger, config, catalog, [])
+    initial_ids = []
+    for row in iterator:
+        if row.type is Type.RECORD:
+            initial_ids.append(row.record.data["id"])
+        if row.type is Type.STATE:
+            checkpoint = AirbyteStateMessageSerializer.dump(row.state)
+            break
+    iterator.close()
+    # The checkpoint trails emission by one batch, which is replayed on retry.
+    assert initial_ids == list(range(1, 9))
+    assert checkpoint["stream"]["stream_state"]["loop_offset"] == 4
+
+    state = [AirbyteStateMessageSerializer.load(checkpoint)]
+    messages = list(SourceFaker().read(logger, config, catalog, state))
+    assert [row.record.data["id"] for row in messages if row.type is Type.RECORD] == list(range(5, 12))
+    final_state = [row.state for row in messages if row.type is Type.STATE][-1]
+    assert AirbyteStateMessageSerializer.dump(final_state)["stream"]["stream_state"]["loop_offset"] == 11
+
+    messages = list(SourceFaker().read(logger, config, catalog, [final_state]))
+    assert [row.record.data["id"] for row in messages if row.type is Type.RECORD] == list(range(1, 12))
 
 
 def test_read_users_resumes_from_checkpoint():
