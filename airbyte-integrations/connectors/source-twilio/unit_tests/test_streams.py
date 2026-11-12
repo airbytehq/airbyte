@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
+import components
 import pytest
 from components import TwilioConferencesStateMigration
 from conftest import TEST_CONFIG, get_source
@@ -156,6 +157,98 @@ class TestTwilioStream:
         assert len(records) == 1
         assert records[0].record.data["date_created"] == "2022-01-01T00:00:00Z"
         assert records[0].record.data["date_updated"] == "2020-12-11T04:28:40Z"
+
+
+class TestMessagesGlobalCursor:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize("parent_slice", [True, False])
+    @pytest.mark.parametrize("global_flag", [None, False, True])
+    @pytest.mark.parametrize("has_global", [True, False])
+    def test_messages_global_cursor(self, requests_mock, parent_slice, global_flag, has_global):
+        accounts = []
+        states = []
+        for sid, cursor in [("AC123", "2022-11-14T00:00:00Z"), ("AC456", "2022-11-13 00:00:00Z")]:
+            uri = f"/2010-04-01/Accounts/{sid}/Messages.json"
+            accounts.append({"sid": sid, "subresource_uris": {"messages": uri}})
+            partition = {"subresource_uri": uri}
+            if parent_slice:
+                partition["parent_slice"] = {}
+            states.append({"partition": partition, "cursor": {"date_sent": cursor}})
+        stream_state = {"states": states, "lookback_window": 0, "parent_state": {}}
+        if has_global:
+            stream_state["state"] = {"date_sent": "2022-11-15 00:00:00Z"}
+        if global_flag is not None:
+            stream_state["use_global_cursor"] = global_flag
+        requests_mock.get(f"{BASE}/Accounts.json", json={"accounts": accounts})
+        lower = "2022-11-15 00:00:00Z" if has_global else "2022-11-13 00:00:00Z"
+        state = StateBuilder().with_stream_state("messages", stream_state).build()
+        for read_number in range(2):
+            end = f"2022-11-{16 + read_number} 12:03:11Z"
+            matchers = []
+            for sid in ("AC123", "AC456"):
+                matchers.append(
+                    requests_mock.get(
+                        f"{BASE}/Accounts/{sid}/Messages.json",
+                        json={"messages": [{"sid": f"SM{sid}", "date_sent": end.replace(" ", "T")}]},
+                    )
+                )
+            with freeze_time(end):
+                output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+            assert sorted(record.record.data["sid"] for record in output.records) == ["SMAC123", "SMAC456"]
+            for matcher in matchers:
+                assert matcher.call_count == 1
+                query = parse_qs(urlparse(matcher.last_request.url).query)
+                assert query["DateSent>"] == [lower]
+                assert query["DateSent<"] == [end]
+            emitted = output.most_recent_state.stream_state.__dict__
+            assert emitted["state"] == {"date_sent": end}
+            assert emitted["use_global_cursor"] is True
+            assert "states" not in emitted
+            state = StateBuilder().with_stream_state("messages", emitted).build()
+            lower = end
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_messages_global_cursor_lookback(self, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        matcher = requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json={"messages": []})
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "state": {"date_sent": "2022-11-15 00:00:00Z"},
+                    "use_global_cursor": True,
+                    "lookback_window": 30,
+                },
+            )
+            .build()
+        )
+        output = read_from_stream({**TEST_CONFIG, "lookback_window": 2}, "messages", SyncMode.incremental, state)
+        query = parse_qs(urlparse(matcher.last_request.url).query)
+        assert query["DateSent>"] == ["2022-11-14 23:57:30Z"]
+        assert query["DateSent<"] == ["2022-11-16 12:03:11Z"]
+        assert not output.records
+        assert output.most_recent_state.stream_state.__dict__["state"] == {"date_sent": "2022-11-15 00:00:00Z"}
+
+    @pytest.mark.parametrize(
+        "state,expected",
+        [
+            ({}, None),
+            ({"state": {"date_sent": "2022-11-15 00:00:00Z"}, "use_global_cursor": True}, None),
+            ({"date_sent": "2022-11-15 00:00:00Z"}, None),
+            ({"states": []}, {"use_global_cursor": True}),
+            (
+                {"states": [], "lookback_window": 30, "parent_state": {"accounts": {"sid": "AC123"}}},
+                {"use_global_cursor": True, "lookback_window": 30, "parent_state": {"accounts": {"sid": "AC123"}}},
+            ),
+        ],
+    )
+    def test_messages_state_migration(self, state, expected):
+        migration = components.TwilioMessagesStateMigration()
+        assert migration.should_migrate(state) is (expected is not None)
+        if expected is not None:
+            assert migration.migrate(state) == expected
+            assert not migration.should_migrate(expected)
 
 
 class TestIncrementalTwilioStream:

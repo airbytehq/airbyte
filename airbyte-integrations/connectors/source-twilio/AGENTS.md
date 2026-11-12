@@ -16,6 +16,10 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 None identified yet.
 
+## Messages global cursor
+
+`messages` uses `global_substream_cursor: true` across account partitions, with `date_sent` and the existing `DateSent>` / `DateSent<` filters. `TwilioMessagesStateMigration` removes legacy per-account cursors, preferring the saved global `state.date_sent` or otherwise the earliest partition cursor. It preserves runtime lookback and parent state, and emits global-mode state without `states`; retaining stale partition entries would make CDK 7.32 generate historical request windows even in global mode.
+
 ## Alerts request window splitting
 
 The `alerts` stream handles Twilio's 10,000-result cap with a `SPLIT_REQUEST_WINDOW` response filter plus `request_window_splitting`:
