@@ -6,7 +6,6 @@ from typing import Any, Dict, List
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
 from unit_tests.conftest import get_source
 
 
