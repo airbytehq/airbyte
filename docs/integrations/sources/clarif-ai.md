@@ -35,7 +35,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.78 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix incremental state not advancing past `start_date` for `applications`, `datasets` and `models`; `modified_at` is now emitted with microsecond precision |
+| 0.0.78 | 2026-11-12 | [92744](https://github.com/airbytehq/airbyte/pull/92744) | Fix incremental state not advancing past `start_date` for `applications`, `datasets` and `models`; `modified_at` is now emitted with microsecond precision |
 | 0.0.77 | 2026-11-10 | [91461](https://github.com/airbytehq/airbyte/pull/91461) | Update dependencies |
 | 0.0.76 | 2026-11-04 | [90341](https://github.com/airbytehq/airbyte/pull/90341) | Simplify error handler configuration with no behavior change |
 | 0.0.75 | 2026-11-03 | [90511](https://github.com/airbytehq/airbyte/pull/90511) | Update dependencies |
