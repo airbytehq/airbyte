@@ -72,7 +72,10 @@ def test_check_succeeds_before_any_report_file_exists(jobs_pages) -> None:
         http_mocker.get(jobs, [HttpResponse(body=json.dumps(page)) for page in jobs_pages] * 3)
         for report_type in ("channel_annotations_a1", "channel_basic_a3"):
             http_mocker.post(
-                HttpRequest(url=f"{YoutubeAnalyticsRequestBuilder.BASE_URL}/jobs", body=json.dumps({"name": "Airbyte reporting job", "reportTypeId": report_type})),
+                HttpRequest(
+                    url=f"{YoutubeAnalyticsRequestBuilder.BASE_URL}/jobs",
+                    body=json.dumps({"name": "Airbyte reporting job", "reportTypeId": report_type}),
+                ),
                 HttpResponse(body=json.dumps({"id": "job-new"})),
             )
         for job_id in ("job-basic", "job-annotations"):
@@ -130,7 +133,9 @@ def test_report_types_read_follows_next_page_token() -> None:
         first = YoutubeAnalyticsRequestBuilder.report_types_endpoint().build()
         second = YoutubeAnalyticsRequestBuilder.report_types_endpoint().with_query_param("pageToken", "page-2").build()
         http_mocker.get(first, HttpResponse(body=json.dumps({**_REPORT_TYPES, "nextPageToken": "page-2"})))
-        http_mocker.get(second, HttpResponse(body=json.dumps({"reportTypes": [{"id": "playlist_basic_a2", "name": "Playlist user activity"}]})))
+        http_mocker.get(
+            second, HttpResponse(body=json.dumps({"reportTypes": [{"id": "playlist_basic_a2", "name": "Playlist user activity"}]}))
+        )
 
         output = read(get_source(config), config, catalog)
 
