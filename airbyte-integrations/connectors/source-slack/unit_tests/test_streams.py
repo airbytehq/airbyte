@@ -35,10 +35,7 @@ def test_threads_read_resumes_per_channel_parent_cursors(requests_mock, token_co
     history = requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": messages})
     requests_mock.get("https://slack.com/api/conversations.replies", json={"ok": True, "messages": messages})
     parent_state = {
-        "states": [
-            {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": ts}}
-            for channel, ts in cursors.items()
-        ],
+        "states": [{"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": ts}} for channel, ts in cursors.items()],
         "state": {},
         "use_global_cursor": False,
     }
