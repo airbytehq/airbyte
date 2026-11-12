@@ -176,7 +176,9 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        # State that already carries per-channel parent cursors is the current format; rebuilding it would
+        # drop every channel's progress and restart conversations.history from the start date.
+        return not (stream_state or {}).get("parent_state", {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:

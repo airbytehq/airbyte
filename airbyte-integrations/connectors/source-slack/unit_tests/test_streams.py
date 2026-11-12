@@ -4,11 +4,13 @@
 
 from copy import deepcopy
 from unittest.mock import MagicMock, Mock
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 from requests import Response
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType
+from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType, SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -1022,3 +1024,92 @@ def test_channel_members_error_handler_response_action(token_config, status_code
     mocked_response.headers = {"Content-Type": "application/json"}
     mocked_response.json.return_value = response_json
     assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
+
+
+def _incremental_catalog(stream_name):
+    return CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+
+
+def _history_oldest_by_channel(requests_mock):
+    oldest_by_channel = {}
+    for request in requests_mock.request_history:
+        if request.path == "/api/conversations.history":
+            query = parse_qs(urlparse(request.url).query)
+            oldest_by_channel.setdefault(query["channel"][0], []).append(float(query["oldest"][0]))
+    return {channel: min(values) for channel, values in oldest_by_channel.items()}
+
+
+_CHANNEL_MESSAGES_PARENT_STATE = {
+    "use_global_cursor": False,
+    "states": [
+        {"partition": {"channel": "airbyte-for-beginners", "parent_slice": {}}, "cursor": {"float_ts": "1700000000.0"}},
+        {"partition": {"channel": "good-reads", "parent_slice": {}}, "cursor": {"float_ts": "1710000000.0"}},
+    ],
+    "state": {"float_ts": "1710000000.0"},
+    "lookback_window": 1,
+    "parent_state": {},
+}
+
+
+@pytest.mark.parametrize(
+    "threads_state",
+    (
+        pytest.param(
+            {"use_global_cursor": False, "states": [], "lookback_window": 1, "parent_state": {"channel_messages": _CHANNEL_MESSAGES_PARENT_STATE}},
+            id="interrupted_attempt_without_thread_cursors",
+        ),
+        pytest.param(
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"float_ts": "1709990000.0", "parent_slice": {"channel": "good-reads", "parent_slice": {}}},
+                        "cursor": {"float_ts": "1710000000"},
+                    }
+                ],
+                "state": {"float_ts": "1710000000"},
+                "lookback_window": 1,
+                "parent_state": {"channel_messages": _CHANNEL_MESSAGES_PARENT_STATE},
+            },
+            id="completed_attempt_with_thread_cursors",
+        ),
+    ),
+)
+def test_threads_resumes_each_channel_from_its_parent_cursor(requests_mock, token_config, threads_state):
+    """A threads sync with saved per-channel channel_messages cursors must resume each channel from its own cursor minus the lookback window."""
+    del token_config["end_date"]
+    requests_mock.register_uri("GET", "https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
+    state = StateBuilder().with_stream_state("threads", threads_state).build()
+
+    read(get_source(token_config, "threads", state), config=token_config, catalog=_incremental_catalog("threads"), state=state)
+
+    one_day = 86400
+    assert _history_oldest_by_channel(requests_mock) == {
+        "airbyte-for-beginners": 1700000000.0 - one_day,
+        "good-reads": 1710000000.0 - one_day,
+    }
+
+
+@pytest.mark.parametrize("stream_name", ("channel_messages", "threads"))
+def test_archived_channels_bot_is_not_member_of_are_not_partitioned(requests_mock, token_config, stream_name):
+    """With join_channels and include_archived_channels, archived channels the bot cannot join must not get conversations.history requests."""
+    token_config.update({"include_archived_channels": True, "channel_filter": []})
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list",
+        json={
+            "channels": [
+                {"id": "C_MEMBER", "name": "member", "is_member": True, "is_archived": False},
+                {"id": "C_JOINABLE", "name": "joinable", "is_member": False, "is_archived": False},
+                {"id": "C_ARCHIVED_MEMBER", "name": "archived-member", "is_member": True, "is_archived": True},
+                {"id": "C_ARCHIVED_NON_MEMBER", "name": "archived-non-member", "is_member": False, "is_archived": True},
+            ]
+        },
+    )
+    requests_mock.register_uri("POST", "https://slack.com/api/conversations.join", json={"ok": True})
+    requests_mock.register_uri("GET", "https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
+    state = StateBuilder().build()
+
+    read(get_source(token_config, stream_name, state), config=token_config, catalog=_incremental_catalog(stream_name), state=state)
+
+    assert set(_history_oldest_by_channel(requests_mock)) == {"C_MEMBER", "C_JOINABLE", "C_ARCHIVED_MEMBER"}
