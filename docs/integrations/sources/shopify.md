@@ -254,7 +254,16 @@ Data related to [marketing attribution](https://www.shopify.com/au/blog/marketin
 
 ## IP allow list
 
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+Airbyte's Shopify app accepts Admin API requests only from the IP addresses below. If you authenticate with **OAuth2.0**, the connector works only when it runs in Airbyte Cloud or Airbyte Agents. To run the connector anywhere else, such as Airbyte Open Source, authenticate with **API Password** and your own [custom app](#create-a-custom-app).
+
+If your organization restricts access to specific IPs, add these addresses to your allow list. They're the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) plus the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist).
+
+| Product        | Cloud provider | Region       | IP addresses                                                                                                                    |
+| :------------- | :------------- | :----------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| Airbyte Cloud  | GCP            | us-west3     | 34.106.109.131, 34.106.196.165, 34.106.60.246, 34.106.229.69, 34.106.127.139, 34.106.218.58, 34.106.115.240, 34.106.225.141 |
+| Airbyte Cloud  | GCP            | us-central1  | 34.33.7.0/29                                                                                                                    |
+| Airbyte Cloud  | AWS            | eu-west-3    | 13.37.4.46, 13.37.142.60, 35.181.124.238                                                                                        |
+| Airbyte Agents | AWS            | us-west-2    | 44.226.44.242, 35.163.106.179, 44.227.212.246                                                                                   |
 
 ## Data type map
 
@@ -372,6 +381,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
 | 4.4.0 | 2026-11-06 | [74079](https://github.com/airbytehq/airbyte/pull/74079) | Add `requires_components` and `product_variant_components` to `product_variants` for Shopify bundles |
+| 4.3.6 | 2026-11-10 | [91709](https://github.com/airbytehq/airbyte/pull/91709) | Update dependencies |
 | 4.3.5 | 2026-11-03 | [90900](https://github.com/airbytehq/airbyte/pull/90900) | Require Python 3.11 or newer, retaining support through Python 3.13 |
 | 4.3.4 | 2026-11-03 | [89704](https://github.com/airbytehq/airbyte/pull/89704) | Emit `transactions` of orders updated since the saved state so transaction status changes, such as refunds going from `PENDING` to `SUCCESS`, are captured by incremental syncs; refresh `transactions` to correct stale rows |
 | 4.3.3 | 2026-11-03 | [90723](https://github.com/airbytehq/airbyte/pull/90723) | Update dependencies |

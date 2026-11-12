@@ -4,6 +4,10 @@
   "fetch_date": "2026-11-04",
   "generation": "Synthetic values recursively generated from each endpoint 200 response data.items schema; no API examples or customer data used.",
   "response_paths": {
+    "audit_logs": "/audit-logs",
+    "macro_groups": "/macro-groups",
+    "surveys": "/surveys",
+    "training_data": "/training-data",
     "accounts": "/accounts",
     "contacts": "/contacts",
     "tags": "/tags",
@@ -19,5 +23,12 @@
     "issue_messages": "/issues/{id}/messages",
     "issue_threads": "/issues/{id}/threads",
     "knowledge_base_articles": "/knowledge-bases/{id}/articles"
+  },
+  "additional_streams_snapshot": {
+    "streams": ["audit_logs", "macro_groups", "surveys", "training_data"],
+    "url": "https://api.usepylon.com/openapi.json",
+    "sha256": "08a3dcc5c912757fccf6fc3a37e8fbd452255aaad93167f53b42dac52821b885",
+    "fetch_date": "2026-11-10",
+    "generation": "Synthetic populated records generated recursively from each GET endpoint 200 response data.items schema; no API examples or customer data used."
   }
 }
