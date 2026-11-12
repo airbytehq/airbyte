@@ -4,8 +4,11 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
+  # channel_basic_a3 is YouTube's core channel report and is still generated. Do not point this
+  # at a retired report type (such as channel_annotations_a1): a retired report's job never gets
+  # new files, so the check finds no stream slices and fails for every account.
   stream_names:
-    - channel_annotations_a1
+    - channel_basic_a3
 
 definitions:
   streams:
