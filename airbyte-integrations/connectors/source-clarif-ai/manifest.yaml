@@ -16,6 +16,13 @@ definitions:
     applications:
       type: DeclarativeStream
       name: applications
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('modified_at') and record['modified_at'] | length > 27 }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ (record.get('modified_at') or '')[:26] ~ 'Z' }}"
       primary_key:
         - id
       retriever:
@@ -62,6 +69,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -78,6 +86,13 @@ definitions:
     datasets:
       type: DeclarativeStream
       name: datasets
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('modified_at') and record['modified_at'] | length > 27 }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ (record.get('modified_at') or '')[:26] ~ 'Z' }}"
       primary_key:
         - id
       retriever:
@@ -133,6 +148,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -149,6 +165,13 @@ definitions:
     models:
       type: DeclarativeStream
       name: models
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('modified_at') and record['modified_at'] | length > 27 }}"
+          fields:
+            - path:
+                - modified_at
+              value: "{{ (record.get('modified_at') or '')[:26] ~ 'Z' }}"
       primary_key:
         - id
       retriever:
@@ -203,6 +226,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
