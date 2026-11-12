@@ -3,7 +3,7 @@
 import json
 
 import pytest
-from unit_tests.conftest import get_source
+from conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
