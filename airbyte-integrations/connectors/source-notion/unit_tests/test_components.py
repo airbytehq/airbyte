@@ -21,23 +21,26 @@ state_test_records = [
 
 
 @pytest.mark.parametrize(
-    "stream_state,start_date,expected_ids",
+    "stream_state,start_date,expected_ids,replay",
     [
         (
             {"use_global_cursor": True, "state": {"last_edited_time": "2022-01-03T00:00:00.000Z"}},
             "2022-01-01T00:00:00.000Z",
             ["new-child", "boundary", "new"],
+            False,
         ),
-        ({}, "2022-01-01T00:00:00.000Z", ["old", "new-child", "old-parent", "boundary", "new"]),
-        ({}, "2022-01-03T00:00:00.000Z", ["new-child", "boundary", "new"]),
+        ({}, "2022-01-01T00:00:00.000Z", ["old", "new-child", "old-parent", "boundary", "new"], False),
+        ({}, "2022-01-03T00:00:00.000Z", ["new-child", "boundary", "new"], False),
         (
             {"use_global_cursor": True, "state": {"last_edited_time": "2022-01-05T00:00:00.000Z"}},
             "2022-01-01T00:00:00.000Z",
             [],
+            False,
         ),
+        ({}, "2022-01-01T00:00:00.000Z", ["new-child", "new"], True),
     ],
 )
-def test_blocks_incremental_read(requests_mock, stream_state, start_date, expected_ids):
+def test_blocks_incremental_read(requests_mock, stream_state, start_date, expected_ids, replay):
     def block(block_id, edited, has_children=False):
         return {
             "object": "block",
@@ -82,6 +85,11 @@ def test_blocks_incremental_read(requests_mock, stream_state, start_date, expect
     )
     state = StateBuilder().with_stream_state("blocks", stream_state).build()
     output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+    if replay:
+        assert not output.errors
+        assert len(output.records) == 5
+        state = [output.state_messages[-1].state]
+        output = read(get_source(config, state), config=config, catalog=catalog, state=state)
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == expected_ids
     final_state = vars(output.state_messages[-1].state.stream.stream_state)

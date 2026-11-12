@@ -28,4 +28,4 @@ All streams are defined declaratively in `manifest.yaml`. The only custom Python
 
 `pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. `users` is full refresh only.
 
-`BlocksRetriever` defers the CDK client-side incremental record filter until after traversing children. Old parent blocks must still be traversed so newly edited descendants are emitted. The manifest's block-type filter still applies before recursion.
+`BlocksRetriever` applies the CDK client-side incremental record filter after traversing children, using the injected cursor on newer CDKs or deferring the selector's decorator on older CDKs. Old parent blocks must still be traversed so newly edited descendants are emitted. The manifest's block-type filter still applies before recursion. Records at the cursor boundary (or within the CDK's lookback window) can be re-emitted on unchanged syncs.

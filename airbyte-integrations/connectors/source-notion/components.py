@@ -7,6 +7,7 @@ from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideI
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 
 
 # maximum block hierarchy recursive request depth
@@ -24,6 +25,8 @@ class BlocksRetriever(SimpleRetriever):
 
     """
 
+    cursor: Optional[Cursor] = None
+    is_client_side_incremental_sync: bool = False
     _incremental_record_filter: Optional[RecordFilter] = field(init=False, default=None)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
@@ -35,6 +38,10 @@ class BlocksRetriever(SimpleRetriever):
                 config=self.config,
                 parameters=parameters,
                 condition=self._incremental_record_filter.condition,
+            )
+        elif self.is_client_side_incremental_sync and self.cursor:
+            self._incremental_record_filter = ClientSideIncrementalRecordFilterDecorator(
+                cursor=self.cursor, config=self.config, parameters=parameters
             )
 
     def read_records(
