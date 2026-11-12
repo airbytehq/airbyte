@@ -21,7 +21,10 @@ def categories(count: int) -> list[dict]:
 
 
 def distribution_channels(count: int) -> list[dict]:
-    return [{"id": f"channel-{i}", "name": f"Channel {i}", "href": f"https://api.simplecast.com/distribution_channels/channel-{i}"} for i in range(count)]
+    return [
+        {"id": f"channel-{i}", "name": f"Channel {i}", "href": f"https://api.simplecast.com/distribution_channels/channel-{i}"}
+        for i in range(count)
+    ]
 
 
 @pytest.mark.parametrize(
