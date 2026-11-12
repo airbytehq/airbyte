@@ -284,6 +284,28 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+def test_read_users_emits_all_users_again_after_a_completed_sync():
+    config = {"count": 10, "seed": 100, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    all_user_ids = list(range(1, 11))
+
+    state = []
+    # The third sync runs on state emitted by a sync that itself started from a completed state.
+    for _ in range(3):
+        messages = list(SourceFaker().read(logger, config, catalog, state))
+        final_state = [message.state for message in messages if message.type is Type.STATE][-1]
+
+        assert [message.record.data["id"] for message in messages if message.type is Type.RECORD] == all_user_ids
+        assert final_state.stream.stream_state.loop_offset == 10
+
+        state = [final_state]
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
