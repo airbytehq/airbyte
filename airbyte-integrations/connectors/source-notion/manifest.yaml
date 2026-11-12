@@ -269,6 +269,7 @@ streams:
           - type: ParentStreamConfig
             parent_key: id
             partition_field: block_id
+            incremental_dependency: true
             stream:
               $ref: "#/definitions/pages_stream"
       requester:
