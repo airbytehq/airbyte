@@ -439,15 +439,20 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
         # override default name. This stream is essentially the same as `Transactions` stream, but it's using GraphQL API, which does not include the user_id field
         return "transactions"
 
+    # parent order fields, only used for the state comparison, they are not part of the output
+    order_state_comparison_fields = ("order_created_at", "order_updated_at")
+
     def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
-        # transactions of offsite payments can predate their order, so they are first exported with the newly created order
-        order_created_at = record.get("order_created_at")
-        return bool(order_created_at) and order_created_at >= state_value
+        # The cursor is the transaction `created_at`, which never changes, while the transaction itself does,
+        # e.g. a refund going from PENDING to SUCCESS. Such a change only bumps the parent order `updatedAt`,
+        # so the transactions of an order updated since the saved state are emitted again.
+        # Transactions of offsite payments can also predate their order, they are first exported with the newly created order.
+        return any((record.get(field) or "") >= state_value for field in self.order_state_comparison_fields)
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            # `order_created_at` is only used for state comparison, it should not be part of the output
-            record.pop("order_created_at", None)
+            for field in self.order_state_comparison_fields:
+                record.pop(field, None)
             yield record
 
     def get_json_schema(self) -> Mapping[str, Any]:

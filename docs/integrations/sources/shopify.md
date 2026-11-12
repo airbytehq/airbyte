@@ -316,6 +316,12 @@ If you synced one of these streams on an earlier connector version and suspect m
 
 Some payment methods, such as offsite or redirect gateways like Klarna, create the transaction a few minutes before Shopify creates the order. Starting in version 4.2.6, the connector emits these transactions when their order is first synced. Such a transaction can be emitted again on following syncs until a newer transaction moves the cursor past the order's creation time, so destinations without deduplication, such as **Incremental | Append**, may see duplicate rows. Upgrading doesn't backfill transactions that earlier versions skipped, so refresh the `transactions` stream or clear its state to recover them.
 
+#### Transactions updated after they're created
+
+Shopify can change a transaction after creating it. For example, a refund is created as `PENDING` and becomes `SUCCESS` once the payment provider settles it. The `transactions` stream uses the transaction's `created_at` as its cursor, and that value doesn't change when the transaction does. Starting in version 4.3.7, when you don't use the **Add `user_id` to Transactions (slower)** option, the connector emits every transaction of an order that Shopify updated since the saved cursor, so these changes reach your destination on the next incremental sync.
+
+Because of this, the transactions of a recently updated order can be emitted again on following syncs until a newer transaction moves the cursor past the order's last update. Destinations without deduplication, such as **Incremental | Append**, may see duplicate rows. Upgrading doesn't backfill changes that earlier versions skipped, so refresh the `transactions` stream or clear its state to recover them.
+
 #### Product category values
 
 The `category` field on the `products` stream comes from Shopify's Standard Product Taxonomy. Shopify updates the taxonomy several times a year and can rename a category or move it in the tree without changing its ID. Because `products` syncs incrementally on `updated_at`, a product is only re-read when it changes, so its `category` values can lag behind the current taxonomy. Use `category.id` as the stable identifier, and refresh the `products` stream to get current values.
@@ -374,6 +380,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 4.3.7 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Emit `transactions` again when their order is updated, so status changes such as a refund going from `PENDING` to `SUCCESS` are captured by incremental syncs; refresh `transactions` to recover previously skipped updates |
 | 4.3.6 | 2026-11-10 | [91709](https://github.com/airbytehq/airbyte/pull/91709) | Update dependencies |
 | 4.3.5 | 2026-11-03 | [90900](https://github.com/airbytehq/airbyte/pull/90900) | Require Python 3.11 or newer, retaining support through Python 3.13 |
 | 4.3.3 | 2026-11-03 | [90723](https://github.com/airbytehq/airbyte/pull/90723) | Update dependencies |
