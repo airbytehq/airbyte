@@ -42,7 +42,7 @@ See the [1.0.0 migration guide](clarif-ai-migrations.md#upgrading-to-100) before
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 1.0.0 | 2026-11-12 | | Fixed incremental state advancement for applications, datasets, and models by normalizing modified_at timestamps to microsecond precision. |
+| 1.0.0 | 2026-11-12 | [92365](https://github.com/airbytehq/airbyte/pull/92365) | Fixed incremental state advancement for applications, datasets, and models by normalizing modified_at timestamps to microsecond precision. |
 | 0.0.77 | 2026-11-10 | [91461](https://github.com/airbytehq/airbyte/pull/91461) | Update dependencies |
 | 0.0.76 | 2026-11-04 | [90341](https://github.com/airbytehq/airbyte/pull/90341) | Simplify error handler configuration with no behavior change |
 | 0.0.75 | 2026-11-03 | [90511](https://github.com/airbytehq/airbyte/pull/90511) | Update dependencies |
