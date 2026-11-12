@@ -357,10 +357,6 @@ def test_deals_full_refresh_emits_deal_modified_after_sync_start(requests_mock, 
     assert not search_bounds
 
 
-
-
-
-
 def _contact(contact_id, updated_at):
     return {
         "id": contact_id,
