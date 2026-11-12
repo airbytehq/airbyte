@@ -39,4 +39,3 @@ def test_lookup_stream_reads_once(stream_name, ids, monkeypatch):
 
     assert [record.record.data["id"] for record in output.records] == ids
     assert not output.errors
-
