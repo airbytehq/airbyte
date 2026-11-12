@@ -10,9 +10,10 @@ from typing import Dict, List, Optional, Union
 from unittest import TestCase
 
 import freezegun
+import pytest
 from source_facebook_marketing.streams.async_job import Status
 
-from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -433,6 +434,61 @@ class TestFullRefresh(TestCase):
         )
 
         self._read(config())
+
+
+@pytest.fixture
+def lookback_http_mocker():
+    with HttpMocker() as http_mocker:
+        yield http_mocker
+
+
+@pytest.mark.parametrize("interrupted", [True, False])
+@pytest.mark.parametrize("empty", [True, False])
+@freezegun.freeze_time(NOW.isoformat())
+def test_lookback_does_not_regress_cursor(interrupted: bool, empty: bool, lookback_http_mocker: HttpMocker) -> None:
+    http_mocker = lookback_http_mocker
+    cursor = NOW - timedelta(days=1)
+    start_date = cursor - timedelta(days=28)
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamStateSerializer.load(
+                {
+                    "stream_descriptor": {"name": _STREAM_NAME},
+                    "stream_state": {ACCOUNT_ID: {_CURSOR_FIELD: cursor.strftime(DATE_FORMAT)}, "time_increment": 1},
+                }
+            ),
+        )
+    ]
+    http_mocker.get(get_account_request().build(), get_account_response())
+    http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+    report_run_ids = [str(1000 + i) for i in range(30)]
+    job_ids = [str(2000 + i) for i in range(30)]
+    for i, (report_run_id, job_id) in enumerate(zip(report_run_ids, job_ids)):
+        day = start_date + timedelta(days=i)
+        http_mocker.post(_job_start_request(since=day, until=day).build(), _job_start_response(report_run_id))
+        if interrupted and i > 1:
+            continue
+        if interrupted and i == 1:
+            response = build_response(
+                body={"error": {"message": "Invalid request", "type": "OAuthException", "code": 100}},
+                status_code=HTTPStatus.BAD_REQUEST,
+            )
+        else:
+            builder = _insights_response()
+            if not empty:
+                builder = builder.with_record(_ads_insights_action_product_id_record())
+            response = builder.build()
+        http_mocker.get(_get_insights_request(job_id).build(), response)
+    http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids))
+
+    output = TestIncremental._read(
+        config().with_start_date(start_date).with_end_date(NOW), state=state, expecting_exception=interrupted
+    )
+
+    assert len(output.records) == (0 if empty else (1 if interrupted else 30))
+    saved_cursor = AirbyteStreamStateSerializer.dump(output.most_recent_state)["stream_state"][ACCOUNT_ID][_CURSOR_FIELD]
+    assert saved_cursor == (cursor if interrupted else NOW).strftime(DATE_FORMAT)
 
 
 @freezegun.freeze_time(NOW.isoformat())
