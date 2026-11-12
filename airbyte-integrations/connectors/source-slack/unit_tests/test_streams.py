@@ -34,12 +34,8 @@ def _incremental_catalog(stream_name):
 @freeze_time("2021-07-26T20:00:00Z")
 def test_threads_read_resumes_saved_parent_cursors(requests_mock, token_config):
     token_config["end_date"] = "2021-07-26T20:00:00Z"
-    requests_mock.get(
-        "https://slack.com/api/conversations.history", json={"ok": True, "messages": [{"ts": "1627243200.000000"}]}
-    )
-    requests_mock.get(
-        "https://slack.com/api/conversations.replies", json={"ok": True, "messages": [{"ts": "1627243200.000000"}]}
-    )
+    requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": [{"ts": "1627243200.000000"}]})
+    requests_mock.get("https://slack.com/api/conversations.replies", json={"ok": True, "messages": [{"ts": "1627243200.000000"}]})
     catalog = _incremental_catalog("threads")
     first = read(get_source(token_config, "threads"), config=token_config, catalog=catalog)
     saved = first.most_recent_state.stream_state.__dict__
