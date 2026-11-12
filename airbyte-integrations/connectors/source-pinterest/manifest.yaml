@@ -5156,6 +5156,9 @@ spec:
         type: object
         additionalProperties: false
         properties:
+          access_token:
+            type: string
+            path_in_connector_config: ["credentials", "access_token"]
           refresh_token:
             type: string
             path_in_connector_config: ["credentials", "refresh_token"]
