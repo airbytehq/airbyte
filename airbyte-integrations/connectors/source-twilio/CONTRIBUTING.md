@@ -17,3 +17,7 @@ None identified yet.
 ## Alerts request window splitting
 
 When an Alerts request window holds more than Twilio's 10,000-result limit, the `alerts` stream splits it in half and re-reads each half (up to 10 times), re-emitting up to 10,000 records per split. See `AGENTS.md` for the filter setup, duplicate handling, smallest window, and failure behavior.
+
+## Second-precision cursors on `messages` and `recordings`
+
+`messages` and `recordings` must keep `cursor_granularity: PT1S` to match their 1-second request format, and a state migration repairs partition cursors that fell behind the stream-level cursor. See `AGENTS.md` for the details.

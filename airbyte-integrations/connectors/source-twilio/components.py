@@ -3,12 +3,12 @@
 #
 
 import copy
-from datetime import datetime, timezone
-from typing import Any, Mapping
+from datetime import datetime, timedelta, timezone
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +81,91 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioStalePartitionCursorStateMigration(StateMigration):
+    """
+    Repair `messages` / `recordings` state whose per-partition cursors were left behind the stream-level cursor.
+
+    Before `cursor_granularity` matched the 1-second request format, a sync that needed more than one request window
+    saved each partition's cursor at (or within) the first window, while the stream-level `state` cursor advanced
+    normally. Every following sync then re-read the whole history from that stale partition cursor.
+
+    The stream-level cursor is only saved once every partition has been read to the end, together with
+    `lookback_window` (the duration of that sync, in seconds). `state - lookback_window` is therefore a point every
+    partition has already been read past, and it is the same value the CDK uses for partitions that have no saved
+    state. Partition cursors older than that point are moved up to it; anything else is left untouched.
+
+    Initial:
+      {
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2025-01-01 00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "lookback_window": 60,
+        "use_global_cursor": false
+      }
+
+    Final:
+      {
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2026-05-20 09:59:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "lookback_window": 60,
+        "use_global_cursor": false
+      }
+    """
+
+    _CURSOR_FORMAT = "%Y-%m-%d %H:%M:%SZ"
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        floor = self._partition_floor(stream_state)
+        if floor is None:
+            return stream_state
+        cursor_field, floor_value = floor
+        for state in stream_state.get("states", []):
+            if self._is_stale(state, cursor_field, floor_value):
+                state["cursor"] = {**state["cursor"], cursor_field: floor_value.astimezone(timezone.utc).strftime(self._CURSOR_FORMAT)}
+        return stream_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        floor = self._partition_floor(stream_state)
+        if floor is None:
+            return False
+        cursor_field, floor_value = floor
+        return any(self._is_stale(state, cursor_field, floor_value) for state in stream_state.get("states", []))
+
+    @staticmethod
+    def _partition_floor(stream_state: Mapping[str, Any]) -> Optional[tuple[str, datetime]]:
+        """Return the cursor field and the point every partition was already read past, if the state has one."""
+        if not stream_state or not isinstance(stream_state.get("states"), list):
+            return None
+        global_state = stream_state.get("state")
+        if not isinstance(global_state, Mapping) or len(global_state) != 1:
+            return None
+        cursor_field, raw_value = next(iter(global_state.items()))
+        global_value = ab_datetime_try_parse(raw_value) if isinstance(raw_value, str) else None
+        if global_value is None:
+            return None
+        try:
+            lookback_seconds = int(stream_state.get("lookback_window") or 0)
+        except (TypeError, ValueError):
+            return None
+        return cursor_field, global_value - timedelta(seconds=max(lookback_seconds, 0))
+
+    @staticmethod
+    def _is_stale(partition_state: Any, cursor_field: str, floor_value: datetime) -> bool:
+        cursor = partition_state.get("cursor") if isinstance(partition_state, Mapping) else None
+        raw_value = cursor.get(cursor_field) if isinstance(cursor, Mapping) else None
+        partition_value = ab_datetime_try_parse(raw_value) if isinstance(raw_value, str) else None
+        return partition_value is not None and partition_value < floor_value
 
 
 class TwilioAlertsStateMigration(StateMigration):

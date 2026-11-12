@@ -1003,3 +1003,145 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+SECOND_PRECISION_STREAMS = [
+    pytest.param("messages", "Messages.json", "date_sent", "DateSent>", "DateSent<", id="messages"),
+    pytest.param("recordings", "Recordings.json", "date_created", "DateCreated>", "DateCreated<", id="recordings"),
+]
+
+
+def _two_accounts_json():
+    return {
+        "accounts": [
+            {
+                "sid": sid,
+                "date_created": "2022-01-01T00:00:00Z",
+                "subresource_uris": {
+                    "messages": f"/2010-04-01/Accounts/{sid}/Messages.json",
+                    "recordings": f"/2010-04-01/Accounts/{sid}/Recordings.json",
+                },
+            }
+            for sid in ("AC123", "AC456")
+        ]
+    }
+
+
+def _register_windowed_stream(requests_mock, account_sid, resource, stream_name, lower_key, upper_key, records_by_window_start=None):
+    """Serve `resource` for one account and capture every (lower, upper) window requested, in request order."""
+    windows = []
+    records_by_window_start = records_by_window_start or {}
+
+    def _callback(request, context):
+        query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+        window = (query[lower_key][0], query[upper_key][0])
+        windows.append(window)
+        return {stream_name: records_by_window_start.get(window[0], [])}
+
+    requests_mock.get(f"{BASE}/Accounts/{account_sid}/{resource}", json=_callback)
+    return windows
+
+
+def _partition_cursors(output, cursor_field):
+    stream_state = output.most_recent_state.stream_state.__dict__
+    return {state["partition"]["subresource_uri"]: state["cursor"][cursor_field] for state in stream_state["states"]}
+
+
+@freeze_time("2022-11-16 12:03:11+00:00")
+@pytest.mark.parametrize("stream_name,resource,cursor_field,lower_key,upper_key", SECOND_PRECISION_STREAMS)
+def test_multi_window_read_saves_latest_record_as_partition_cursor_and_resumes_from_it(
+    stream_name, resource, cursor_field, lower_key, upper_key, requests_mock
+):
+    """A read spanning several request windows must checkpoint the partition at the newest record, not at the first window."""
+    config = {**TEST_CONFIG, "start_date": "2022-09-01T00:00:00Z"}
+    partition = f"/2010-04-01/Accounts/AC123/{resource}"
+    requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+    windows = _register_windowed_stream(
+        requests_mock,
+        "AC123",
+        resource,
+        stream_name,
+        lower_key,
+        upper_key,
+        records_by_window_start={
+            "2022-10-01 00:00:00Z": [{"sid": "october", cursor_field: "2022-10-20T08:00:00Z"}],
+            "2022-11-01 00:00:00Z": [{"sid": "november", cursor_field: "2022-11-15T10:00:00Z"}],
+        },
+    )
+
+    first_output = read_from_stream(config, stream_name, SyncMode.incremental)
+
+    assert not first_output.errors
+    assert sorted(windows) == [
+        ("2022-09-01 00:00:00Z", "2022-09-30 23:59:59Z"),
+        ("2022-10-01 00:00:00Z", "2022-10-31 23:59:59Z"),
+        ("2022-11-01 00:00:00Z", "2022-11-16 12:03:11Z"),
+    ]
+    assert sorted(record.record.data["sid"] for record in first_output.records) == ["november", "october"]
+    assert _partition_cursors(first_output, cursor_field) == {partition: "2022-11-15 10:00:00Z"}
+
+    windows.clear()
+    state = StateBuilder().with_stream_state(stream_name, first_output.most_recent_state.stream_state.__dict__).build()
+    second_output = read_from_stream(config, stream_name, SyncMode.incremental, state)
+
+    assert not second_output.errors
+    # The cursor is inclusive, so the second read starts exactly at the newest record of the first read.
+    assert windows == [("2022-11-15 10:00:00Z", "2022-11-16 12:03:11Z")]
+    assert _partition_cursors(second_output, cursor_field) == {partition: "2022-11-15 10:00:00Z"}
+
+
+@freeze_time("2022-11-16 12:03:11+00:00")
+@pytest.mark.parametrize("stream_name,resource,cursor_field,lower_key,upper_key", SECOND_PRECISION_STREAMS)
+def test_stale_partition_cursor_resumes_from_stream_level_cursor(stream_name, resource, cursor_field, lower_key, upper_key, requests_mock):
+    """
+    State saved by earlier versions keeps a partition cursor stuck at the first request window next to a recent
+    stream-level cursor. The stale partition must resume from the stream-level cursor minus the saved lookback
+    (the previous sync's duration), while a partition that is not behind keeps its own cursor.
+    """
+    stale_partition = f"/2010-04-01/Accounts/AC123/{resource}"
+    current_partition = f"/2010-04-01/Accounts/AC456/{resource}"
+    requests_mock.get(f"{BASE}/Accounts.json", json=_two_accounts_json())
+    stale_windows = _register_windowed_stream(
+        requests_mock,
+        "AC123",
+        resource,
+        stream_name,
+        lower_key,
+        upper_key,
+        records_by_window_start={"2022-11-13 23:58:00Z": [{"sid": "new", cursor_field: "2022-11-15T10:00:00Z"}]},
+    )
+    current_windows = _register_windowed_stream(requests_mock, "AC456", resource, stream_name, lower_key, upper_key)
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            stream_name,
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"subresource_uri": stale_partition, "parent_slice": {}},
+                        "cursor": {cursor_field: "2022-02-01 00:00:00Z"},
+                    },
+                    {
+                        "partition": {"subresource_uri": current_partition, "parent_slice": {}},
+                        "cursor": {cursor_field: "2022-11-13 23:59:30Z"},
+                    },
+                ],
+                "state": {cursor_field: "2022-11-14 00:00:00Z"},
+                "lookback_window": 120,
+                "parent_state": {},
+            },
+        )
+        .build()
+    )
+
+    output = read_from_stream({**TEST_CONFIG, "start_date": "2022-01-01T00:00:00Z"}, stream_name, SyncMode.incremental, state)
+
+    assert not output.errors
+    assert stale_windows == [("2022-11-13 23:58:00Z", "2022-11-16 12:03:11Z")]
+    assert current_windows == [("2022-11-13 23:59:30Z", "2022-11-16 12:03:11Z")]
+    assert [record.record.data["sid"] for record in output.records] == ["new"]
+    assert _partition_cursors(output, cursor_field) == {
+        stale_partition: "2022-11-15 10:00:00Z",
+        current_partition: "2022-11-13 23:59:30Z",
+    }
