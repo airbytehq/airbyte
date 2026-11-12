@@ -88,9 +88,11 @@ Zendesk Chat returned a `401 Unauthorized` response, so the connector stops the 
 
 ### Requests that return 404
 
-When Zendesk Chat returns a `404 Not Found` response, the connector ignores that response and continues the sync instead of failing. No records from that request are emitted. This most often happens when a record has been deleted, but it applies to every stream and every request except the search requests of the `chats` stream, so a 404 on a list request drops that page of results.
+When Zendesk Chat returns a `404 Not Found` response, the connector ignores that response and continues the sync instead of failing. No records from that request are emitted. This most often happens when a record has been deleted, but it applies to every stream and every request except the two requests of the `chats` stream, so a 404 on a list request drops that page of results.
 
 A `404 Not Found` response to a search request of the `chats` stream fails the sync with the message `Zendesk Search Chats request returned HTTP 404. Chats updated in the requested window cannot be read.` Skipping the search would skip every chat updated in that window, so the next sync retries it from the saved state.
+
+A `404 Not Found` response to a request that fetches chats by id fails the sync with the message `Zendesk List Chats request returned HTTP 404. The chats requested by id cannot be read.` Zendesk answers a chat id it no longer has with an empty entry, not with a 404, so a 404 means none of the requested chats was read. The next sync searches and fetches them again from the saved state.
 
 ### Zendesk rejected the incremental export request for stream agent_timeline with HTTP 403
 
@@ -120,7 +122,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.0 | 2026-11-11 | [90874](https://github.com/airbytehq/airbyte/pull/90874) | Breaking: read `chats` through Search Chats and List Chats instead of the incremental export Zendesk ends for third-party integrations on 2026-12-02; cursor becomes `timestamp` with state migration; drop `deleted`, `update_timestamp` and `engagements` from the `chats` schema; fail the sync when a `chats` search returns 404; report a configuration error when the incremental export behind `agent_timeline` returns 403 |
+| 2.0.0 | 2026-11-11 | [90874](https://github.com/airbytehq/airbyte/pull/90874) | Breaking: read `chats` through Search Chats and List Chats instead of the incremental export Zendesk ends for third-party integrations on 2026-12-02; cursor becomes `timestamp` with state migration; drop `deleted`, `update_timestamp` and `engagements` from the `chats` schema; fail the sync when a `chats` search or fetch by id returns 404; report a configuration error when the incremental export behind `agent_timeline` returns 403 |
 | 1.3.34 | 2026-11-10 | [91778](https://github.com/airbytehq/airbyte/pull/91778) | Update dependencies |
 | 1.3.33 | 2026-11-03 | [90807](https://github.com/airbytehq/airbyte/pull/90807) | Update dependencies |
 | 1.3.32 | 2026-10-27 | [90082](https://github.com/airbytehq/airbyte/pull/90082) | Update dependencies |

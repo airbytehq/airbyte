@@ -364,7 +364,23 @@ definitions:
           request_parameters:
             ids: "{{ stream_slice['chat_ids'] | join(',') }}"
           error_handler:
-            $ref: "#/definitions/error_handler"
+            type: DefaultErrorHandler
+            response_filters:
+              # List Chats answers an unknown id with `"<id>": null` (HTTP 200), so a 404 is not a missing
+              # record. Ignoring it would close the group as empty and let the parent state move past its chats.
+              - type: HttpResponseFilter
+                http_codes: [404]
+                action: FAIL
+                failure_type: system_error
+                error_message: "Zendesk List Chats request returned HTTP 404. The chats requested by id cannot be read."
+              - type: HttpResponseFilter
+                http_codes: [401]
+                action: FAIL
+                failure_type: config_error
+                error_message: "Zendesk Chat access token is invalid, expired, or missing the required read and chat scopes."
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:

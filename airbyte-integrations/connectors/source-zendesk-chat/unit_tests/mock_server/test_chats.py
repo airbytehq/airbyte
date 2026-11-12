@@ -147,6 +147,45 @@ class ChatsTest(TestCase):
             assert parent_state.get("chats_search", {}).get("search_window_end", _WINDOWS[0][1]) <= _WINDOWS[0][1]
 
     @HttpMocker()
+    def test_given_404_on_chats_fetch_when_read_then_fail_without_moving_state_past_the_group(self, http_mocker: HttpMocker) -> None:
+        """
+        A 404 on the fetch by id stops the sync. If it were ignored, the group would close as an empty partition and
+        the parent state would move to the end of the last window that found one of its chats.
+        """
+        chats = [_chat(_chat_id(1), "2021-01-01T10:00:00Z"), _chat(_chat_id(2), "2021-02-02T08:00:00Z")]
+        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([_search_result(chats[0]["id"], chats[0]["timestamp"])]))
+        http_mocker.get(_search_request(*_WINDOWS[1]), _search_response([_search_result(chats[1]["id"], chats[1]["timestamp"])]))
+        _mock_empty_windows(http_mocker, _WINDOWS[2:])
+        http_mocker.get(_chats_request([c["id"] for c in chats]), HttpResponse(body='{"error": "Not Found"}', status_code=404))
+
+        output = read(_config(), expecting_exception=True, sync_mode=SyncMode.incremental)
+
+        assert any(
+            error.trace.error.failure_type == FailureType.system_error
+            and error.trace.error.message == "Zendesk List Chats request returned HTTP 404. The chats requested by id cannot be read."
+            for error in output.errors
+        )
+        assert not output.records
+        for state_message in output.state_messages:
+            parent_state = state_message.state.stream.stream_state.__dict__.get("parent_state") or {}
+            assert "search_window_end" not in parent_state.get("chats_search", {})
+
+    @HttpMocker()
+    def test_given_401_on_chats_fetch_when_read_then_fail_with_config_error(self, http_mocker: HttpMocker) -> None:
+        chat = _chat(_chat_id(1), "2021-01-01T10:00:00Z")
+        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([_search_result(chat["id"], chat["timestamp"])]))
+        _mock_empty_windows(http_mocker, _WINDOWS[1:])
+        http_mocker.get(_chats_request([chat["id"]]), HttpResponse(body='{"error": {"message": "Unauthorized"}}', status_code=401))
+
+        output = read(_config(), expecting_exception=True, sync_mode=SyncMode.incremental)
+
+        assert any(
+            error.trace.error.failure_type == FailureType.config_error
+            and error.trace.error.message == "Zendesk Chat access token is invalid, expired, or missing the required read and chat scopes."
+            for error in output.errors
+        )
+
+    @HttpMocker()
     def test_when_read_then_chats_found_by_search_are_fetched_by_id(self, http_mocker: HttpMocker) -> None:
         """Chats are located with one search per 30-day window and then fetched in full with `chats?ids=`."""
         chats = [_chat(_chat_id(1), "2021-01-01T10:00:00Z"), _chat(_chat_id(2), "2021-01-01T11:00:00Z")]
