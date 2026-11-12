@@ -10,9 +10,9 @@ import pytest
 from requests import Response
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType, SyncMode
-from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_retriever, get_source, get_stream_by_name
@@ -1027,7 +1027,9 @@ def test_channel_members_error_handler_response_action(token_config, status_code
 
 
 def _incremental_catalog(stream_name):
-    return CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    return (
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    )
 
 
 def _history_oldest_by_channel(requests_mock):
@@ -1055,7 +1057,12 @@ _CHANNEL_MESSAGES_PARENT_STATE = {
     "threads_state",
     (
         pytest.param(
-            {"use_global_cursor": False, "states": [], "lookback_window": 1, "parent_state": {"channel_messages": _CHANNEL_MESSAGES_PARENT_STATE}},
+            {
+                "use_global_cursor": False,
+                "states": [],
+                "lookback_window": 1,
+                "parent_state": {"channel_messages": _CHANNEL_MESSAGES_PARENT_STATE},
+            },
             id="interrupted_attempt_without_thread_cursors",
         ),
         pytest.param(
