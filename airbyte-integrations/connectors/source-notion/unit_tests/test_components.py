@@ -3,6 +3,8 @@
 #
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
@@ -279,3 +281,93 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+def _block(block_id, last_edited_time, has_children=False):
+    return {
+        "object": "block",
+        "id": block_id,
+        "type": "paragraph",
+        "paragraph": {},
+        "has_children": has_children,
+        "last_edited_time": last_edited_time,
+        "parent": {"type": "page_id", "page_id": "page-1"},
+    }
+
+
+def _read_blocks(requests_mock, page_blocks, nested_blocks, state, sync_mode="incremental", start_date="2020-01-01T00:00:00.000Z"):
+    requests_mock.register_uri(
+        "POST",
+        "https://api.notion.com/v1/search",
+        json={
+            "object": "list",
+            "results": [{"object": "page", "id": "page-1", "last_edited_time": "2023-08-01T00:00:00.000Z", "properties": {}}],
+            "next_cursor": None,
+            "has_more": False,
+        },
+    )
+    for block_id, results in (("page-1", page_blocks), ("unchanged-parent", nested_blocks)):
+        requests_mock.register_uri(
+            "GET",
+            f"https://api.notion.com/v1/blocks/{block_id}/children?page_size=100",
+            json={"object": "list", "results": results, "next_cursor": None, "has_more": False},
+        )
+    config = {"start_date": start_date, "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": sync_mode,
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+    return output, [record.record.data["id"] for record in output.records]
+
+
+def test_blocks_incremental_read_emits_only_blocks_edited_since_state(requests_mock):
+    page_blocks = [
+        _block("unchanged", "2023-01-01T00:00:00.000Z"),
+        _block("edited", "2023-07-01T00:00:00.000Z"),
+        _block("unchanged-parent", "2023-01-01T00:00:00.000Z", has_children=True),
+    ]
+    nested_blocks = [
+        _block("unchanged-child", "2023-01-01T00:00:00.000Z"),
+        _block("edited-child", "2023-07-01T00:00:00.000Z"),
+    ]
+
+    first_output, first_ids = _read_blocks(requests_mock, page_blocks, nested_blocks, StateBuilder().build())
+    assert first_ids == ["unchanged", "edited", "unchanged-child", "edited-child", "unchanged-parent"]
+    first_state = first_output.most_recent_state.stream_state.__dict__
+    assert first_state["state"] == {"last_edited_time": "2023-07-01T00:00:00.000000Z"}
+
+    nested_blocks[0] = _block("unchanged-child", "2023-08-01T00:00:00.000Z")
+    second_state = StateBuilder().with_stream_state("blocks", first_state).build()
+    second_output, second_ids = _read_blocks(requests_mock, page_blocks, nested_blocks, second_state)
+
+    # Blocks edited at exactly the state value are re-emitted: the cursor is inclusive. The child of an
+    # unchanged parent is still fetched and emitted once it is edited.
+    assert second_ids == ["edited", "unchanged-child", "edited-child"]
+    assert [request.path for request in requests_mock.request_history[-3:]] == [
+        "/v1/search",
+        "/v1/blocks/page-1/children",
+        "/v1/blocks/unchanged-parent/children",
+    ]
+    assert second_output.most_recent_state.stream_state.__dict__["state"] == {"last_edited_time": "2023-08-01T00:00:00.000000Z"}
+
+
+@pytest.mark.parametrize("sync_mode", ["full_refresh", "incremental"])
+def test_blocks_read_without_state_emits_blocks_edited_before_start_date(requests_mock, sync_mode):
+    page_blocks = [
+        _block("before-start-date", "2021-01-01T00:00:00.000Z"),
+        _block("after-start-date", "2023-07-01T00:00:00.000Z"),
+    ]
+
+    _, ids = _read_blocks(
+        requests_mock, page_blocks, [], StateBuilder().build(), sync_mode=sync_mode, start_date="2023-06-01T00:00:00.000Z"
+    )
+
+    assert ids == ["before-start-date", "after-start-date"]

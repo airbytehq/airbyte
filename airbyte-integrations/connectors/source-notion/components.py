@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -21,11 +22,22 @@ class BlocksRetriever(SimpleRetriever):
     According to that fact that block's entity may have children entities that stream also need to retrieve
     BlocksRetriever calls read_records when received record.has_children is True.
 
+    The CDK does not hand the stream cursor to the record selector of a custom retriever, so the
+    client-side incremental filter is applied here instead, and only when the sync starts from a saved
+    cursor value: full refresh and first incremental syncs still emit every block, as before. Children
+    are still fetched for blocks that are filtered out, because a child block can be edited later than
+    its parent.
     """
+
+    cursor: Optional[Cursor] = None
+    is_client_side_incremental_sync: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
+        self._filter_records_by_state = (
+            self.is_client_side_incremental_sync and self.cursor is not None and self._cursor_has_saved_value(self.cursor)
+        )
 
     def read_records(
         self,
@@ -50,4 +62,15 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            yield stream_data
+            if self._should_be_synced(stream_data):
+                yield stream_data
+
+    def _should_be_synced(self, stream_data: StreamData) -> bool:
+        if not self._filter_records_by_state or not isinstance(stream_data, Record):
+            return True
+        return self.cursor.should_be_synced(stream_data)
+
+    @staticmethod
+    def _cursor_has_saved_value(cursor: Cursor) -> bool:
+        state = cursor.state
+        return bool(state.get("state") or state.get("states"))
