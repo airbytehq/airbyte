@@ -7,7 +7,7 @@ Docs: https://dev.mention.com/current/
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
+| `api_key` | `string` | API Key. Your Mention access token, without the `Bearer` prefix.  |  |
 | `stats_interval` | `string` | Statistics Interval. Periodicity of statistics returned. it may be daily(P1D), weekly(P1W) or monthly(P1M). | P1D |
 | `stats_start_date` | `string` | Statistics Start Date.  |  |
 | `stats_end_date` | `string` | Statistics End Date.  |  |
@@ -37,6 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.75 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix `401 invalid_token` errors on all streams by sending the API key as a Bearer token |
 | 0.0.74 | 2026-11-10 | [91601](https://github.com/airbytehq/airbyte/pull/91601) | Update dependencies |
 | 0.0.73 | 2026-11-03 | [90624](https://github.com/airbytehq/airbyte/pull/90624) | Update dependencies |
 | 0.0.72 | 2026-10-27 | [89995](https://github.com/airbytehq/airbyte/pull/89995) | Update dependencies |
