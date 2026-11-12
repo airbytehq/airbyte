@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -23,6 +24,8 @@ class BlocksRetriever(SimpleRetriever):
 
     """
 
+    cursor: Optional[Cursor] = None
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
@@ -38,11 +41,14 @@ class BlocksRetriever(SimpleRetriever):
             return
 
         for sequence_number, stream_data in enumerate(super().read_records(records_schema, stream_slice)):
+            if not isinstance(stream_data, Record):
+                yield stream_data
+                continue
             if stream_data.data.get("has_children"):
                 self.current_block_depth += 1
                 child_stream_slice = StreamSlice(
                     partition={"block_id": stream_data.data["id"], "parent_slice": {}},
-                    cursor_slice=stream_slice.cursor_slice,
+                    cursor_slice=stream_slice.cursor_slice if stream_slice else {},
                 )
                 yield from self.read_records(records_schema, child_stream_slice)
                 self.current_block_depth -= 1
@@ -50,4 +56,5 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            yield stream_data
+            if self.cursor is None or self.cursor.should_be_synced(stream_data):
+                yield stream_data

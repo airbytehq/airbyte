@@ -8,6 +8,8 @@ The `BlocksRetriever` performs depth-first recursive fetching of Notion blocks. 
 
 A single page with deeply nested content (e.g., toggles inside toggles inside columns) can trigger dozens of additional API calls as the retriever walks the entire block tree. Each level of nesting adds another round of paginated API requests for that block's children.
 
+Incremental filtering happens after traversal: an unchanged block can contain updated descendants. Do not move cursor filtering into the record selector, where it would hide those ancestors before their children can be fetched. The block tree is still fetched on every sync; only emission is filtered.
+
 **Why this matters:** What looks like a single blocks stream read can fan out into a large number of API calls proportional to the depth and breadth of the block hierarchy. A page with 5 levels of nested blocks and 10 children per level could trigger hundreds of requests from a single parent page slice. The 30-level depth limit exists to prevent infinite recursion but is otherwise not enforced by Notion's API.
 
 ## 2. Every 400 and 404 Is Skipped on Pages, Data Sources, Comments and Blocks
