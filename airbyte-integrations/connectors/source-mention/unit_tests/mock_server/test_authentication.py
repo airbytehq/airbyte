@@ -4,11 +4,12 @@ import json
 from typing import Any, Dict
 from unittest import TestCase
 
+from unit_tests.conftest import get_source
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-from unit_tests.conftest import get_source
 
 
 _API_KEY = "test-mention-token"
@@ -39,7 +40,6 @@ class TestBearerAuthentication(TestCase):
 
         assert [record.record.data["id"] for record in output.records] == [_ACCOUNT_ID]
         assert not output.errors
-
 
     @HttpMocker()
     def test_alert_pages_send_bearer_token(self, http_mocker: HttpMocker) -> None:
