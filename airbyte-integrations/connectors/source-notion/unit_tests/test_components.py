@@ -279,3 +279,95 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+def _block(block_id: str, last_edited_time: str, has_children: bool = False) -> dict:
+    return {
+        "object": "block",
+        "id": block_id,
+        "parent": {"type": "page_id", "page_id": "page-1"},
+        "created_time": "2023-01-01T00:00:00.000Z",
+        "last_edited_time": last_edited_time,
+        "has_children": has_children,
+        "archived": False,
+        "in_trash": False,
+        "type": "paragraph",
+        "paragraph": {"rich_text": []},
+    }
+
+
+def test_blocks_incremental_read_emits_only_blocks_edited_since_state(requests_mock):
+    """
+    A block edited before the state is not emitted again, but its children are still traversed, so a nested block
+    edited after the state is emitted even when its parent block was not edited.
+    """
+    requests_mock.register_uri(
+        "POST",
+        "https://api.notion.com/v1/search",
+        json={
+            "object": "list",
+            "results": [{"object": "page", "id": "page-1", "last_edited_time": "2024-06-01T00:00:00.000Z", "properties": {}}],
+            "next_cursor": None,
+            "has_more": False,
+        },
+    )
+    page_children = requests_mock.register_uri(
+        "GET",
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        json={
+            "object": "list",
+            "results": [
+                _block("unchanged-block", "2023-03-01T00:00:00.000Z"),
+                _block("unchanged-parent-block", "2023-03-01T00:00:00.000Z", has_children=True),
+                _block("edited-block", "2024-05-01T00:00:00.000Z"),
+            ],
+            "next_cursor": None,
+            "has_more": False,
+        },
+    )
+    nested_children = requests_mock.register_uri(
+        "GET",
+        "https://api.notion.com/v1/blocks/unchanged-parent-block/children?page_size=100",
+        json={
+            "object": "list",
+            "results": [
+                _block("unchanged-nested-block", "2023-03-01T00:00:00.000Z"),
+                _block("edited-nested-block", "2024-06-01T00:00:00.000Z"),
+            ],
+            "next_cursor": None,
+            "has_more": False,
+        },
+    )
+
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "blocks",
+            {
+                "use_global_cursor": True,
+                "state": {"last_edited_time": "2024-01-01T00:00:00.000000Z"},
+                "lookback_window": 0,
+                "parent_state": {},
+            },
+        )
+        .build()
+    )
+
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+
+    assert [record.record.data["id"] for record in output.records] == ["edited-nested-block", "edited-block"]
+    assert page_children.call_count == 1
+    assert nested_children.call_count == 1
+    assert output.most_recent_state.stream_state.state == {"last_edited_time": "2024-06-01T00:00:00.000000Z"}
