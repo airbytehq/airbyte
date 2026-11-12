@@ -23,10 +23,6 @@ acceptance_tests:
         empty_streams:
           - name: "sequence_states"
             bypass_reason: "Sandbox account cannot seed the stream"
-          - name: "snippets"
-            bypass_reason: "The schema declares `tags` as a string but the API returns an array; retyping it is a breaking change"
-          - name: "templates"
-            bypass_reason: "The schema declares `tags` and the recipient fields as strings but the API returns arrays; retyping them is a breaking change"
   incremental:
     tests:
       - config_path: "secrets/config.json"
