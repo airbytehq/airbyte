@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
-  dockerImageTag: 2.4.2
+  dockerImageTag: 2.4.3
   dockerRepository: airbyte/source-pinterest
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0

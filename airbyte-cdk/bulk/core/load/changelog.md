@@ -7,9 +7,13 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
-### 1.1.10 - 2026-11-09 
+### 1.1.11 — 2026-11-09
 
 [#91300](https://github.com/airbytehq/airbyte/pull/91300) — Fix a race in the legacy task loader by making every `handleStreamMessage()` call wait for stream loader initialization, preventing concurrent SOCKET channels from forwarding records before `StreamLoader.start()` completes. The wait is guarded by a new `StreamManager.isLoaderStarted()` flag (set by `SyncManager.registerStartedStreamLoader()` on success), so once a stream is open the per-record path is a single volatile read with no map lookup, suspend call, or allocation.
+
+### 1.1.10 — 2026-11-05
+
+[#88400](https://github.com/airbytehq/airbyte/pull/88400) - Fix: `IcebergTableCleaner.clearTable` deletes only the table's directory instead of every key prefixed by the table location.
 
 ### 1.1.9 — 2026-10-21
 
