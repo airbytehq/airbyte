@@ -279,3 +279,119 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+_BLOCKS_CONFIG = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+_BLOCKS_CATALOG = ConfiguredAirbyteCatalogSerializer.load(
+    {
+        "streams": [
+            {
+                "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                "sync_mode": "incremental",
+                "destination_sync_mode": "append",
+            }
+        ]
+    }
+)
+
+
+def _block(block_id, last_edited_time, has_children=False):
+    return {
+        "object": "block",
+        "id": block_id,
+        "parent": {"type": "page_id", "page_id": "page-1"},
+        "created_time": "2021-01-01T00:00:00.000Z",
+        "last_edited_time": last_edited_time,
+        "has_children": has_children,
+        "archived": False,
+        "in_trash": False,
+        "type": "paragraph",
+        "paragraph": {"rich_text": []},
+    }
+
+
+def _list_response(results):
+    return {"object": "list", "results": results, "next_cursor": None, "has_more": False}
+
+
+def _read_blocks(requests_mock, state, nested_block_last_edited_time):
+    """
+    Serves one page whose block tree is:
+
+    - unchanged-leaf (2021-06-01)
+    - unchanged-parent (2021-06-01)
+      - unchanged-child (2021-06-01)
+      - nested-block (`nested_block_last_edited_time`)
+    - latest-leaf (2022-03-01)
+    """
+    requests_mock.reset_mock()
+    requests_mock.register_uri(
+        "POST",
+        "https://api.notion.com/v1/search",
+        json=_list_response([{"object": "page", "id": "page-1", "last_edited_time": "2022-03-01T00:00:00.000Z", "properties": {}}]),
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        json=_list_response(
+            [
+                _block("unchanged-leaf", "2021-06-01T00:00:00.000Z"),
+                _block("unchanged-parent", "2021-06-01T00:00:00.000Z", has_children=True),
+                _block("latest-leaf", "2022-03-01T00:00:00.000Z"),
+            ]
+        ),
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://api.notion.com/v1/blocks/unchanged-parent/children?page_size=100",
+        json=_list_response(
+            [
+                _block("unchanged-child", "2021-06-01T00:00:00.000Z"),
+                _block("nested-block", nested_block_last_edited_time),
+            ]
+        ),
+    )
+    source = get_source(_BLOCKS_CONFIG, state)
+    output = read(source, config=_BLOCKS_CONFIG, catalog=_BLOCKS_CATALOG, state=state)
+    assert output.errors == []
+    record_ids = [record.record.data["id"] for record in output.records]
+    request_paths = [f"{request.method} {request.path}" for request in requests_mock.request_history]
+    return record_ids, request_paths, output.most_recent_state.stream_state.__dict__
+
+
+def test_blocks_incremental_read_emits_only_blocks_edited_since_state(requests_mock):
+    all_requests = [
+        "POST /v1/search",
+        "GET /v1/blocks/page-1/children",
+        "GET /v1/blocks/unchanged-parent/children",
+    ]
+
+    first_record_ids, first_requests, first_state = _read_blocks(
+        requests_mock, StateBuilder().with_stream_state("blocks", {}).build(), nested_block_last_edited_time="2021-06-01T00:00:00.000Z"
+    )
+
+    assert first_record_ids == ["unchanged-leaf", "unchanged-child", "nested-block", "unchanged-parent", "latest-leaf"]
+    assert first_requests == all_requests
+    assert first_state["state"] == {"last_edited_time": "2022-03-01T00:00:00.000000Z"}
+
+    # Between the two syncs only `nested-block` is edited. Its parent keeps its old `last_edited_time`.
+    second_record_ids, second_requests, second_state = _read_blocks(
+        requests_mock,
+        StateBuilder().with_stream_state("blocks", first_state).build(),
+        nested_block_last_edited_time="2022-04-01T00:00:00.000Z",
+    )
+
+    # `latest-leaf` sits exactly on the cursor value, which is inclusive, so it is the only block emitted again.
+    assert second_record_ids == ["nested-block", "latest-leaf"]
+    # The whole tree is still traversed, otherwise the edited block under the unchanged parent would be missed.
+    assert second_requests == all_requests
+    assert second_state["state"] == {"last_edited_time": "2022-04-01T00:00:00.000000Z"}
+
+
+def test_blocks_incremental_read_honors_legacy_state(requests_mock):
+    legacy_state = StateBuilder().with_stream_state("blocks", {"last_edited_time": "2022-01-01T00:00:00.000Z"}).build()
+
+    record_ids, _, state = _read_blocks(requests_mock, legacy_state, nested_block_last_edited_time="2022-02-01T00:00:00.000Z")
+
+    assert record_ids == ["nested-block", "latest-leaf"]
+    assert state["state"] == {"last_edited_time": "2022-03-01T00:00:00.000000Z"}
