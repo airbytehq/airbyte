@@ -34,12 +34,18 @@ definitions:
             type: RequestOption
             field_name: page[cursor]
             inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
+            page_size: 1000
             cursor_value: >-
-              {{ last_record['meta']['page']['after'] if last_record else None
-              }}
-            stop_condition: "{{ 'page' not in last_record['meta'] }}"
+              {{ ((response.get('meta') or {}).get('page') or {}).get('after') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not
+              ((response.get('meta') or {}).get('page') or {}).get('after') }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -63,6 +69,19 @@ definitions:
             type: DpathExtractor
             field_path:
               - dashboards
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -144,14 +163,13 @@ definitions:
             type: RequestOption
             field_name: page[offset]
             inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ response.get("meta", {}).get("pagination",
-              {}).get("next_offset", {}) }}
-            stop_condition: >-
-              {{ not response.get("meta", {}).get("pagination",
-              {}).get("next_offset", {}) }}
+            type: OffsetIncrement
+            page_size: 100
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -193,12 +211,21 @@ definitions:
         paginator:
           type: DefaultPaginator
           page_token_option:
-            type: RequestPath
+            type: RequestOption
+            field_name: page[cursor]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[limit]
+            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 1000
-            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+            page_size: 5000
+            cursor_value: >-
+              {{ ((response.get('meta') or {}).get('page') or {}).get('after') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not
+              ((response.get('meta') or {}).get('page') or {}).get('after') }}
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: sync_date
@@ -250,6 +277,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v2/metrics
           http_method: GET
+          request_parameters:
+            window[seconds]: "5184000"
           request_headers:
             DD-APPLICATION-KEY: "{{ config['application_key'] }}"
         record_selector:
@@ -258,6 +287,25 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page[cursor]
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page[size]
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 10000
+            cursor_value: >-
+              {{ ((response.get('meta') or {}).get('pagination') or
+              {}).get('next_cursor') }}
+            stop_condition: >-
+              {{ last_page_size == 0 or not ((response.get('meta') or
+              {}).get('pagination') or {}).get('next_cursor') }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -303,6 +351,19 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -324,6 +385,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - tests
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page_number
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
