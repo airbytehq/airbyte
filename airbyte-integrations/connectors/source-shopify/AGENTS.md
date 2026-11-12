@@ -6,6 +6,10 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Incremental Stream Considerations
 
+### Transactions re-emit every transaction of an updated order
+
+Shopify transactions have no `updatedAt`, so `transactions` re-emits all transactions of orders updated since state to capture status changes on existing transactions. The cursor remains `created_at`; order timestamps are used only for filtering and are not emitted.
+
 The Shopify REST API supports `updated_at_min` filtering on most resource endpoints. The connector is a Python CDK connector with `IncrementalShopifyStream`, `IncrementalShopifySubstream`, and `IncrementalShopifyNestedStream` classes providing layered incremental patterns.
 
 **Connector type:** Python CDK

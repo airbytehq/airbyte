@@ -12,10 +12,12 @@ from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(
+    order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str, order_updated_at: str = None
+) -> str:
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
-        f'"order_created_at":"{order_created_at}","transactions":['
+        f'"order_created_at":"{order_created_at}","order_updated_at":{json.dumps(order_updated_at)},"transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
         f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
         f'"processedAt":"{transaction_created_at}","gateway":"bogus","paymentId":"c25048437719229.1",'
@@ -85,7 +87,36 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
         stream_state_cache.cached_state.pop("transactions", None)
 
     assert all("order_created_at" not in record for record in records)
+    assert all("order_updated_at" not in record for record in records)
     return stream, records
+
+
+@pytest.mark.parametrize(
+    "order_updated_at, expected_ids",
+    [
+        pytest.param("2026-09-11T06:00:00Z", [1001], id="updated_order_is_emitted"),
+        pytest.param("2026-09-11T05:49:43Z", [1001], id="updated_at_equal_to_state_is_emitted"),
+        pytest.param("2026-09-11T05:00:00Z", [], id="older_order_is_dropped"),
+        pytest.param(None, [], id="null_updated_at_is_dropped"),
+    ],
+)
+def test_transactions_graphql_emits_updated_transactions_on_old_orders(
+    requests_mock, bulk_job_completed_response, auth_config, order_updated_at, expected_ids
+) -> None:
+    state = {"created_at": "2026-09-11T05:49:43+00:00"}
+    stream, records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [_order_jsonl(1, "2026-09-11T04:00:00Z", 1001, "2026-09-11T05:07:00Z", order_updated_at)],
+        state_value=state["created_at"],
+    )
+
+    assert [record["id"] for record in records] == expected_ids
+    assert all(record["status"] == "SUCCESS" for record in records)
+    for record in records:
+        state = stream.get_updated_state(state, record)
+    assert state == {"created_at": "2026-09-11T05:49:43+00:00"}
 
 
 @pytest.mark.parametrize(
