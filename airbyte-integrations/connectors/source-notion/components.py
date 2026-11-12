@@ -3,6 +3,8 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
+from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
@@ -24,11 +26,24 @@ class BlocksRetriever(SimpleRetriever):
 
     """
 
-    cursor: Optional[Cursor] = None
+    cursor: Optional[Cursor] = None  # type: ignore[assignment]  # Older CDKs declare a legacy cursor on SimpleRetriever.
+    client_side_incremental_sync: Optional[Mapping[str, Cursor]] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
+        self._incremental_cursor = self.cursor
+        if self.client_side_incremental_sync:
+            self._incremental_cursor = self.client_side_incremental_sync["cursor"]
+            self.cursor = None
+            if isinstance(self.record_selector, RecordSelector):
+                record_filter = self.record_selector.record_filter
+                if isinstance(record_filter, ClientSideIncrementalRecordFilterDecorator):
+                    self.record_selector.record_filter = RecordFilter(
+                        config=record_filter.config,
+                        parameters=parameters,
+                        condition=record_filter.condition or "",
+                    )
 
     def read_records(
         self,
@@ -56,5 +71,5 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            if self.cursor is None or self.cursor.should_be_synced(stream_data):
+            if self._incremental_cursor is None or self._incremental_cursor.should_be_synced(stream_data):
                 yield stream_data

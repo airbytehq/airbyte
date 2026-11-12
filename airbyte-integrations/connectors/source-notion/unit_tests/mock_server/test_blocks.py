@@ -49,7 +49,14 @@ def test_incremental_blocks_resume_without_reemitting_unchanged_ancestors(reques
     first_page = requests_mock.get(
         "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
         complete_qs=True,
-        json=_response([_block("ancestor", ancestor_edited, True), _block("at-start", _START)], "page-2"),
+        json=_response(
+            [
+                _block("ancestor", ancestor_edited, True),
+                _block("at-start", _START),
+                {**_block("excluded-child-page", _UPDATED, True), "type": "child_page", "child_page": {"title": "Excluded"}},
+            ],
+            "page-2",
+        ),
     )
     second_page = requests_mock.get(
         "https://api.notion.com/v1/blocks/page-1/children?page_size=100&start_cursor=page-2",
