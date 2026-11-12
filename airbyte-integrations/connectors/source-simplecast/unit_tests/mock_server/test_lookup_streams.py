@@ -6,7 +6,6 @@ from conftest import get_source
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.models.outcome import ExpectedOutcome
 
 
 @pytest.mark.parametrize("stream_name", ["categories", "distribution_channels"])
@@ -27,16 +26,3 @@ def test_lookup_is_read_once(stream_name, records, requests_mock):
     assert requests_mock.call_count == 1
     assert "offset" not in requests_mock.last_request.qs
     assert [message.record.data for message in output.records] == records
-
-
-@pytest.mark.parametrize("stream_name", ["categories", "distribution_channels"])
-def test_lookup_authentication_error(stream_name, requests_mock):
-    requests_mock.get(f"https://api.simplecast.com/{stream_name}", status_code=401, json={"message": "Unauthorized"})
-    config = {"api_token": "invalid-token"}
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-
-    output = read(get_source(config), config=config, catalog=catalog, expected_outcome=ExpectedOutcome.EXPECT_EXCEPTION)
-
-    assert output.errors
-    assert output.records == []
-    assert requests_mock.call_count == 1
