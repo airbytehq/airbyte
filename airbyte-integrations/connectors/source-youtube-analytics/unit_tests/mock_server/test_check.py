@@ -17,9 +17,7 @@ from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 @freezegun.freeze_time("2026-11-11T00:00:00Z")
 def test_check_succeeds_without_retired_annotations_job() -> None:
     config = ConfigBuilder().build()
-    reports_request = (
-        YoutubeAnalyticsRequestBuilder.reports_endpoint("basic-job").with_created_after("1990-01-01T00:00:00.000000Z").build()
-    )
+    reports_request = YoutubeAnalyticsRequestBuilder.reports_endpoint("basic-job").with_created_after("1990-01-01T00:00:00.000000Z").build()
     with HttpMocker() as http_mocker:
         http_mocker.post(
             YoutubeAnalyticsRequestBuilder.token_request(),
