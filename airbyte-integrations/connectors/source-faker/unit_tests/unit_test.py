@@ -284,6 +284,40 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+@pytest.mark.parametrize("offset", [None, 500, 1000, 1500])
+def test_read_users_checkpoint_round_trip(offset):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    config = {"count": 1000, "seed": -1, "records_per_slice": 1000, "always_updated": True, "parallelism": 4}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    state = []
+    if offset is not None:
+        state = [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name="users", namespace=None),
+                    stream_state=AirbyteStateBlob(updated_at="2024-01-01T00:00:00+00:00", loop_offset=offset),
+                ),
+            )
+        ]
+    messages = list(SourceFaker().read(logger, config, catalog, state))
+    records = [row.record.data for row in messages if row.type is Type.RECORD]
+    start = 501 if offset == 500 else 1
+    assert [record["id"] for record in records] == list(range(start, 1001))
+    final_state = [row.state for row in messages if row.type is Type.STATE][-1]
+    messages = list(SourceFaker().read(logger, config, catalog, [final_state]))
+    new_records = [row.record.data for row in messages if row.type is Type.RECORD]
+    assert [record["id"] for record in new_records] == list(range(1, 1001))
+    assert new_records[-1]["updated_at"] >= records[-1]["updated_at"]
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
