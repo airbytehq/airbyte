@@ -4,11 +4,13 @@
 
 import copy
 from datetime import datetime, timezone
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +83,79 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Drop per-partition cursors that are older than the global cursor so those partitions resume from the global cursor.
+
+    The global cursor (`state`) only advances when a sync completes, after every partition has been read up to that sync's end.
+    A per-partition cursor only advances when its partition returns a record, so an account with no recent records keeps an old
+    cursor. Because a per-partition cursor takes precedence over the global cursor, the next sync re-reads (and re-emits) that
+    partition's history from the old cursor. The CDK starts partitions without a per-partition cursor from the global cursor
+    minus `lookback_window` (the duration of the last sync), which covers records written while that sync was running.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {"partition": {"subresource_uri": ".../AC1/Messages.json", "parent_slice": {}}, "cursor": {"date_sent": "2026-05-20 10:00:00Z"}},
+          {"partition": {"subresource_uri": ".../AC2/Messages.json", "parent_slice": {}}, "cursor": {"date_sent": "2025-01-01 00:00:00Z"}}
+        ],
+        "state": {"date_sent": "2026-05-21 08:00:00Z"},
+        "lookback_window": 3600
+      }
+
+    Final:
+      {
+        "use_global_cursor": false,
+        "states": [],
+        "state": {"date_sent": "2026-05-21 08:00:00Z"},
+        "lookback_window": 3600
+      }
+
+    Per-partition cursors at or ahead of the global cursor (eg. checkpoints of an interrupted sync) are kept unchanged.
+    """
+
+    cursor_field: str
+    config: Config
+    parameters: Mapping[str, Any]
+
+    def __init__(self, cursor_field: str, config: Config, parameters: Mapping[str, Any]):
+        self._cursor_field = InterpolatedString.create(cursor_field, parameters=parameters or {}).eval(config)
+
+    @staticmethod
+    def _parse(value: Any) -> Optional[datetime]:
+        if not isinstance(value, str):
+            return None
+        return ab_datetime_try_parse(value.replace(" ", "T", 1))
+
+    def _global_cursor(self, stream_state: Mapping[str, Any]) -> Optional[datetime]:
+        global_state = stream_state.get("state")
+        if not isinstance(global_state, Mapping) or self._cursor_field not in global_state:
+            return None
+        return self._parse(global_state[self._cursor_field])
+
+    def _is_stale(self, partition_state: Mapping[str, Any], global_cursor: datetime) -> bool:
+        cursor = partition_state.get("cursor")
+        if not isinstance(cursor, Mapping):
+            return False
+        partition_cursor = self._parse(cursor.get(self._cursor_field))
+        return partition_cursor is not None and partition_cursor < global_cursor
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        global_cursor = self._global_cursor(stream_state)
+        migrated_state = dict(stream_state)
+        migrated_state["states"] = [state for state in stream_state["states"] if not self._is_stale(state, global_cursor)]
+        return migrated_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state or stream_state.get("use_global_cursor") or not isinstance(stream_state.get("states"), list):
+            return False
+        global_cursor = self._global_cursor(stream_state)
+        if global_cursor is None:
+            return False
+        return any(self._is_stale(state, global_cursor) for state in stream_state["states"])
 
 
 class TwilioAlertsStateMigration(StateMigration):

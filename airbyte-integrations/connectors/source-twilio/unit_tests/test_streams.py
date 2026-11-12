@@ -1003,3 +1003,106 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+_STALE_PARTITION_ACCOUNTS_JSON = {
+    "accounts": [
+        {
+            "sid": sid,
+            "date_created": "2020-01-01T00:00:00Z",
+            "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"},
+        }
+        for sid in ("AC123", "AC456")
+    ],
+}
+
+# Messages as Twilio stores them; the mock applies the DateSent window like the real API does.
+_STALE_PARTITION_MESSAGES = {
+    "AC123": [
+        {"sid": "SM_AC123_NEW", "date_sent": "Wed, 16 Nov 2022 08:00:00 +0000"},
+    ],
+    "AC456": [
+        {"sid": "SM_AC456_ALREADY_SYNCED", "date_sent": "Wed, 05 Jan 2022 10:00:00 +0000"},
+        {"sid": "SM_AC456_ALREADY_SYNCED_2", "date_sent": "Mon, 14 Nov 2022 10:00:00 +0000"},
+        {"sid": "SM_AC456_NEW", "date_sent": "Wed, 16 Nov 2022 09:00:00 +0000"},
+    ],
+}
+
+
+def _messages_partition_state(account_sid, date_sent):
+    return {
+        "partition": {"subresource_uri": f"/2010-04-01/Accounts/{account_sid}/Messages.json", "parent_slice": {}},
+        "cursor": {"date_sent": date_sent},
+    }
+
+
+def _register_windowed_messages(requests_mock):
+    requests_seen = []
+
+    def _callback(request, context):
+        account_sid = urlparse(request.url).path.split("/")[3]
+        query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+        lower = datetime.strptime(query["DateSent>"][0], "%Y-%m-%d %H:%M:%SZ")
+        upper = datetime.strptime(query["DateSent<"][0], "%Y-%m-%d %H:%M:%SZ")
+        requests_seen.append((account_sid, query["DateSent>"][0], query["DateSent<"][0]))
+        messages = [
+            message
+            for message in _STALE_PARTITION_MESSAGES[account_sid]
+            if lower <= datetime.strptime(message["date_sent"], "%a, %d %b %Y %H:%M:%S %z").replace(tzinfo=None) <= upper
+        ]
+        context.status_code = 200
+        return {"messages": messages, "next_page_uri": None}
+
+    for account_sid in _STALE_PARTITION_MESSAGES:
+        requests_mock.get(f"{BASE}/Accounts/{account_sid}/Messages.json", json=_callback)
+    return requests_seen
+
+
+@freeze_time("2022-11-16 12:03:11+00:00")
+@pytest.mark.parametrize(
+    "stale_cursor",
+    [
+        pytest.param("2021-12-01 00:00:00Z", id="current_cursor_format"),
+        pytest.param("2021-12-01T00:00:00Z", id="legacy_iso_cursor_format"),
+    ],
+)
+def test_messages_stale_partition_state_falls_back_to_global_cursor(stale_cursor, requests_mock):
+    """
+    A per-partition cursor that is older than the global cursor of the last completed sync must not
+    override it: every partition was read up to that sync's end, so re-reading from the stale value
+    re-exports history that was already synced.
+    """
+    requests_mock.get(f"{BASE}/Accounts.json", json=_STALE_PARTITION_ACCOUNTS_JSON, status_code=200)
+    requests_seen = _register_windowed_messages(requests_mock)
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "messages",
+            {
+                "use_global_cursor": False,
+                "states": [
+                    # ahead of the global cursor, eg. a checkpoint of an interrupted sync: must be kept
+                    _messages_partition_state("AC123", "2022-11-15 06:00:00Z"),
+                    _messages_partition_state("AC456", stale_cursor),
+                ],
+                "state": {"date_sent": "2022-11-15 00:00:00Z"},
+                "lookback_window": 3600,
+            },
+        )
+        .build()
+    )
+
+    output = read_from_stream({**TEST_CONFIG, "start_date": "2021-01-01T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+    assert sorted(record.record.data["sid"] for record in output.records) == ["SM_AC123_NEW", "SM_AC456_NEW"]
+    assert sorted(requests_seen) == [
+        ("AC123", "2022-11-15 06:00:00Z", "2022-11-16 12:03:11Z"),
+        # stale partition falls back to the global cursor minus the stored lookback window (3600s)
+        ("AC456", "2022-11-14 23:00:00Z", "2022-11-16 12:03:11Z"),
+    ]
+    final_state = output.state_messages[-1].state.stream.stream_state.__dict__
+    assert final_state["state"] == {"date_sent": "2022-11-16 09:00:00Z"}
+    assert {s["partition"]["subresource_uri"]: s["cursor"] for s in final_state["states"]} == {
+        "/2010-04-01/Accounts/AC123/Messages.json": {"date_sent": "2022-11-16 08:00:00Z"},
+        "/2010-04-01/Accounts/AC456/Messages.json": {"date_sent": "2022-11-16 09:00:00Z"},
+    }

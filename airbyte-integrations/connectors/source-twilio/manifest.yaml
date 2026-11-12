@@ -184,6 +184,9 @@ definitions:
     state_migrations:
       - type: CustomStateMigration
         class_name: source_declarative_manifest.components.TwilioStateMigration
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioStalePartitionStateMigration
+        cursor_field: "{{ parameters.get('cursor_field') }}"
 
   base_pricing_country_stream:
     $ref: "#/definitions/base_stream"
