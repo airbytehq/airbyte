@@ -305,13 +305,11 @@ class TestBaseInsightsStream:
                     ],
                     "time_increment": 1,
                 },
+                # slices at or below the cursor are already covered by it and are not persisted
                 {
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
-                        "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
-                        ],
+                        "slices": [],
                     },
                     "time_increment": 1,
                 },
@@ -349,12 +347,20 @@ class TestBaseInsightsStream:
                         AdsInsights.cursor_field: "2010-10-03",
                         "slices": [
                             "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-03",
+                            "2010-10-05",
                         ],
                     },
                     "time_increment": 1,
                 },
-                None,
+                # only slices after the cursor are kept
+                {
+                    "unknown_account": {
+                        AdsInsights.cursor_field: "2010-10-03",
+                        "slices": ["2010-10-05"],
+                    },
+                    "time_increment": 1,
+                },
             ),
             (
                 {

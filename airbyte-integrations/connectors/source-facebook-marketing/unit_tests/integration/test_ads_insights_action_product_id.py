@@ -15,6 +15,7 @@ from source_facebook_marketing.streams.async_job import Status
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponse,
@@ -531,3 +532,94 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_state_cursor_when_lookback_window_reread_then_emitted_cursor_never_moves_backwards(self, http_mocker: HttpMocker) -> None:
+        # Input cursor is 2023-01-09 with a 1-day lookback, so 2023-01-08 and 2023-01-09 are re-read.
+        cursor_date = NOW - timedelta(days=1)
+        lookback_date = NOW - timedelta(days=2)
+        report_run_id_1 = "1571860060019500"
+        report_run_id_2 = "4571860060019599"
+        job_id_1 = "1049937379601600"
+        job_id_2 = "1049937379601699"
+
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        http_mocker.post(_job_start_request(since=lookback_date, until=lookback_date).build(), _job_start_response(report_run_id_1))
+        http_mocker.post(_job_start_request(since=cursor_date, until=cursor_date).build(), _job_start_response(report_run_id_2))
+        http_mocker.post(_job_status_request([report_run_id_1, report_run_id_2]).build(), _job_status_response([job_id_1, job_id_2]))
+        http_mocker.get(
+            _get_insights_request(job_id_1).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record().with_cursor(lookback_date.strftime(DATE_FORMAT))).build(),
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_2).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record().with_cursor(cursor_date.strftime(DATE_FORMAT))).build(),
+        )
+
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {ACCOUNT_ID: {_CURSOR_FIELD: cursor_date.strftime(DATE_FORMAT), "slices": [lookback_date.strftime(DATE_FORMAT)]}, "time_increment": 1},
+            )
+            .build()
+        )
+        output = self._read(
+            config().with_start_date(NOW - timedelta(days=9)).with_end_date(cursor_date).with_insights_lookback_window(1),
+            state=state,
+        )
+
+        assert [record.record.data[_CURSOR_FIELD] for record in output.records] == [
+            lookback_date.strftime(DATE_FORMAT),
+            cursor_date.strftime(DATE_FORMAT),
+        ]
+        emitted_states = [AirbyteStreamStateSerializer.dump(message.state.stream).get("stream_state") for message in output.state_messages]
+        assert emitted_states, "expected at least one state checkpoint"
+        # Every checkpoint (including the one after the lookback slice) keeps the input cursor and drops slices it covers.
+        for emitted_state in emitted_states:
+            assert emitted_state[ACCOUNT_ID] == {_CURSOR_FIELD: cursor_date.strftime(DATE_FORMAT), "slices": []}
+
+    @HttpMocker()
+    def test_given_interrupted_lookback_reread_when_read_then_checkpointed_cursor_is_not_lowered(self, http_mocker: HttpMocker) -> None:
+        # Input cursor is 2023-01-09 with a 1-day lookback; the 2023-01-08 slice completes and the 2023-01-09 slice fails.
+        cursor_date = NOW - timedelta(days=1)
+        lookback_date = NOW - timedelta(days=2)
+        report_run_id_1 = "1571860060019500"
+        report_run_id_2 = "4571860060019599"
+        job_id_1 = "1049937379601600"
+        job_id_2 = "1049937379601699"
+
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        http_mocker.post(_job_start_request(since=lookback_date, until=lookback_date).build(), _job_start_response(report_run_id_1))
+        http_mocker.post(_job_start_request(since=cursor_date, until=cursor_date).build(), _job_start_response(report_run_id_2))
+        http_mocker.post(_job_status_request([report_run_id_1, report_run_id_2]).build(), _job_status_response([job_id_1, job_id_2]))
+        http_mocker.get(
+            _get_insights_request(job_id_1).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record().with_cursor(lookback_date.strftime(DATE_FORMAT))).build(),
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_2).build(),
+            build_response(
+                body={"error": {"message": "Invalid parameter", "type": "OAuthException", "code": 100}},
+                status_code=HTTPStatus.BAD_REQUEST,
+            ),
+        )
+
+        state = (
+            StateBuilder()
+            .with_stream_state(_STREAM_NAME, {ACCOUNT_ID: {_CURSOR_FIELD: cursor_date.strftime(DATE_FORMAT)}, "time_increment": 1})
+            .build()
+        )
+        output = self._read(
+            config().with_start_date(NOW - timedelta(days=9)).with_end_date(cursor_date).with_insights_lookback_window(1),
+            state=state,
+            expecting_exception=True,
+        )
+
+        assert [record.record.data[_CURSOR_FIELD] for record in output.records] == [lookback_date.strftime(DATE_FORMAT)]
+        assert output.errors, "expected the attempt to fail on the second slice"
+        checkpointed_state = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state")
+        # The next attempt must resume from the same cursor, not from the lookback date.
+        assert checkpointed_state[ACCOUNT_ID][_CURSOR_FIELD] == cursor_date.strftime(DATE_FORMAT)
