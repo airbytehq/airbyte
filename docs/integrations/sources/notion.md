@@ -126,7 +126,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.34 | 2026-11-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Incremental syncs of the `blocks` stream only fetch blocks of pages edited since the last sync |
+| 4.0.34 | 2026-11-11 | [92442](https://github.com/airbytehq/airbyte/pull/92442) | Incremental syncs of the `blocks` stream only fetch blocks of pages edited since the last sync |
 | 4.0.33 | 2026-11-10 | [91664](https://github.com/airbytehq/airbyte/pull/91664) | Update dependencies |
 | 4.0.32 | 2026-11-03 | [90393](https://github.com/airbytehq/airbyte/pull/90393) | Consolidate each stream's error handling into a single error handler |
 | 4.0.31 | 2026-11-03 | [90664](https://github.com/airbytehq/airbyte/pull/90664) | Update dependencies |
