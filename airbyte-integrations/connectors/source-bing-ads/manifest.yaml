@@ -2613,6 +2613,20 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  download_error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      # Accept successful downloads before a body filter consumes the streaming response.
+      - type: DefaultErrorHandler
+      - type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            # Filter conditions are ORed; adding http_codes would match every 403.
+            error_message_contains: AuthenticationFailed
+            action: FAIL
+            failure_type: transient_error
+            error_message: "The Bing Ads download link expired before the file could be downloaded. The sync will retry."
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2657,6 +2671,8 @@ definitions:
     download_requester:
       type: CustomRequester
       class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
@@ -2724,6 +2740,8 @@ definitions:
         RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
     download_requester:
       type: HttpRequester
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
       url_base: "{{download_target}}"
       http_method: GET
     download_decoder:
