@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the [Pylon](htt
 
 ## Prerequisites
 
-- A Pylon API token created by an Admin under **Settings > Integrations & dev > API tokens**. Choose a role that can read the data you plan to sync. If the token acts as a user or bot, it inherits that identity's current role and permissions. Pylon tokens have no separate scopes. For creation steps, see [Pylon's authentication guide](https://docs.usepylon.com/pylon-docs/developer/api/authentication).
+- A Pylon API token created by an Admin under **Settings > Integrations & dev > API tokens**. Choose a role that can read the data you plan to sync. The connection check reads tags, so the role also needs at least view access to tags. The built-in Admin, Member, and Viewer roles all have it. On a custom role, allow at least View on Issue Tags. If the token acts as a user or bot, it inherits that identity's current role and permissions. Pylon tokens have no separate scopes. For creation steps, see [Pylon's authentication guide](https://docs.usepylon.com/pylon-docs/developer/api/authentication).
 - Access to Tags for the source connection check, plus access to each selected stream and its parent stream. A successful connection check does not verify access to every stream.
 
 ## Setup guide
