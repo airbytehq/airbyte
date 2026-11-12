@@ -79,8 +79,6 @@ def test_analytics_emits_one_record_per_podcast():
             )
         output = _read("analytics")
 
-    assert sorted(record.record.data["href"] for record in output.records) == [
-        analytics(podcast_id)["href"] for podcast_id in podcast_ids
-    ]
+    assert sorted(record.record.data["href"] for record in output.records) == [analytics(podcast_id)["href"] for podcast_id in podcast_ids]
     assert sorted(request.query for request in _requests_to(mocker, "/analytics")) == ["podcast=podcast-1", "podcast=podcast-2"]
     assert output.errors == []
