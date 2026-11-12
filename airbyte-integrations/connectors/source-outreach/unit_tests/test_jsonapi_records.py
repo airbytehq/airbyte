@@ -47,10 +47,9 @@ def _legacy_flatten(element: dict) -> dict:
 def _query_params(stream_name: str, cursor: str = _START_CURSOR, page: int | None = None) -> dict:
     stream = _STREAMS[stream_name]
     requester = stream["retriever"]["requester"]
-    query_params = {
-        **requester["request_parameters"],
-        stream["incremental_sync"]["start_time_option"]["field_name"]: cursor,
-    }
+    query_params = dict(requester["request_parameters"])
+    if "incremental_sync" in stream:
+        query_params[stream["incremental_sync"]["start_time_option"]["field_name"]] = cursor
     if page is not None:
         query_params["page[number]"] = str(page)
     return query_params
@@ -101,11 +100,13 @@ def _read(
     response: HttpResponse,
     *,
     state=None,
-    sync_mode: SyncMode = SyncMode.incremental,
+    sync_mode: SyncMode | None = None,
     cursor: str = _START_CURSOR,
 ) -> object:
     _mock_token(http_mocker)
     http_mocker.get(_request(stream_name, cursor), response)
+    if sync_mode is None:
+        sync_mode = SyncMode.incremental if "incremental_sync" in _STREAMS[stream_name] else SyncMode.full_refresh
     catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
     state = state if state is not None else StateBuilder().build()
     return read(get_source(config=_CONFIG, state=state), _CONFIG, catalog, state)
