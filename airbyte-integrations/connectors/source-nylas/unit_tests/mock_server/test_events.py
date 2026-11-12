@@ -4,12 +4,12 @@ import json
 from datetime import datetime, timezone
 
 import pytest
-from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from unit_tests.conftest import get_source
 
 
 CONFIG = {
@@ -40,9 +40,7 @@ def test_events_skips_inaccessible_calendar(http_mocker: HttpMocker, event_ids):
         "end": str(int(datetime(2026, 9, 3, tzinfo=timezone.utc).timestamp())),
         "limit": "50",
     }
-    subscribed_request = HttpRequest(
-        f"{BASE_URL}/grant_1/events", query_params={**time_params, "calendar_id": "cal_subscribed"}
-    )
+    subscribed_request = HttpRequest(f"{BASE_URL}/grant_1/events", query_params={**time_params, "calendar_id": "cal_subscribed"})
     ok_request = HttpRequest(f"{BASE_URL}/grant_1/events", query_params={**time_params, "calendar_id": "cal_ok"})
     http_mocker.get(subscribed_request, response({"error": {"type": "general", "message": "Not Found"}}, 404))
     http_mocker.get(
