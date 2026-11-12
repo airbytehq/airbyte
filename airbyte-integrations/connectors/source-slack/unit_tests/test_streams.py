@@ -6,11 +6,13 @@ from copy import deepcopy
 from unittest.mock import MagicMock, Mock
 
 import pytest
+from freezegun import freeze_time
 from requests import Response
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_retriever, get_source, get_stream_by_name
@@ -19,6 +21,76 @@ from unit_tests.conftest import get_retriever, get_source, get_stream_by_name
 @pytest.fixture
 def authenticator(token_config):
     return TokenAuthenticator(token_config["credentials"]["api_token"])
+
+
+@freeze_time("2021-08-25T00:00:00Z")
+@pytest.mark.parametrize("lookback_days", [0, 7])
+def test_threads_read_resumes_per_channel_parent_state(requests_mock, token_config, lookback_days):
+    config = {**token_config, "lookback_window": lookback_days, "end_date": "2021-08-25T00:00:00Z"}
+    cursors = {"airbyte-for-beginners": "1628553600.0", "good-reads": "1628985600.0"}
+    parent_state = {
+        "use_global_cursor": False,
+        "lookback_window": 0,
+        "state": {"float_ts": "1628553600.0"},
+        "states": [
+            {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": cursor}}
+            for channel, cursor in cursors.items()
+        ],
+    }
+    threads_state = {
+        "use_global_cursor": False,
+        "lookback_window": 0,
+        "state": {"float_ts": "1628553600"},
+        "states": [
+            {
+                "partition": {"float_ts": "1628553600.000100", "parent_slice": {"channel": channel, "parent_slice": {}}},
+                "cursor": {"float_ts": "1628553600"},
+            }
+            for channel in cursors
+        ],
+        "parent_state": {"channel_messages": parent_state},
+    }
+    requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
+    state = StateBuilder().with_stream_state("threads", threads_state).build()
+    catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name("threads")).build()
+    output = read(get_source(config, "threads", state), config=config, catalog=catalog, state=state)
+
+    assert not output.errors
+    oldest_by_channel = [
+        (request.qs["channel"][0], float(request.qs["oldest"][0]))
+        for request in requests_mock.request_history
+        if request.path == "/api/conversations.history"
+    ]
+    assert sorted(oldest_by_channel) == sorted((channel, float(cursor) - lookback_days * 86400) for channel, cursor in cursors.items())
+
+
+@freeze_time("2021-08-25T00:00:00Z")
+@pytest.mark.parametrize("stream_name", ["channel_messages", "threads"])
+def test_message_reads_skip_archived_non_members(requests_mock, token_config, stream_name):
+    config = {**token_config, "channel_filter": [], "include_archived_channels": True, "join_channels": True}
+    requests_mock.get(
+        "https://slack.com/api/conversations.list",
+        json={
+            "ok": True,
+            "channels": [
+                {"id": "member", "name": "member", "is_member": True, "is_archived": False},
+                {"id": "joinable", "name": "joinable", "is_member": False, "is_archived": False},
+                {"id": "archived-non-member", "name": "archived-non-member", "is_member": False, "is_archived": True},
+                {"id": "archived-member", "name": "archived-member", "is_member": True, "is_archived": True},
+            ],
+        },
+    )
+    requests_mock.post("https://slack.com/api/conversations.join", json={"ok": True})
+    requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
+    state = StateBuilder().with_stream_state(stream_name, {}).build()
+    catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name)).build()
+    output = read(get_source(config, stream_name, state), config=config, catalog=catalog, state=state)
+
+    assert not output.errors
+    requested_channels = {
+        request.qs["channel"][0] for request in requests_mock.request_history if request.path == "/api/conversations.history"
+    }
+    assert requested_channels == {"member", "joinable", "archived-member"}
 
 
 @pytest.mark.parametrize(
