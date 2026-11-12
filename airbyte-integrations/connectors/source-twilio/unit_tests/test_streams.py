@@ -255,6 +255,66 @@ class TestIncrementalTwilioStream:
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
     @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,path,cursor_field,lower_key,upper_key",
+        [
+            ("messages", "/Accounts/AC123/Messages.json", "date_sent", "DateSent>", "DateSent<"),
+            ("recordings", "/Accounts/AC123/Recordings.json", "date_created", "DateCreated>", "DateCreated<"),
+        ],
+    )
+    def test_partition_state_advances_past_stale_cursor(self, stream_name, path, cursor_field, lower_key, upper_key, requests_mock):
+        subresource_uri = f"/2010-04-01{path}"
+        stale_cursor = "2022-09-01 00:00:00Z"
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        windows = []
+
+        def _child_callback(request, context):
+            query = parse_qs(urlparse(request.url).query)
+            window = (query[lower_key][0], query[upper_key][0])
+            windows.append(window)
+            if window[0].startswith("2022-11-01"):
+                return {stream_name: [{"sid": "SID1", cursor_field: "Tue, 15 Nov 2022 08:00:00 +0000"}]}
+            return {stream_name: []}
+
+        requests_mock.get(f"{BASE}{path}", json=_child_callback, status_code=200)
+
+        def _read(stream_state):
+            state = StateBuilder().with_stream_state(stream_name, stream_state).build()
+            return read_from_stream({**TEST_CONFIG, "start_date": "2000-11-15T00:00:00Z"}, stream_name, SyncMode.incremental, state)
+
+        output = _read(
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"subresource_uri": subresource_uri, "parent_slice": {}},
+                        "cursor": {cursor_field: stale_cursor},
+                    }
+                ],
+                "state": {cursor_field: "2022-11-15 08:00:00Z"},
+                "lookback_window": 0,
+            }
+        )
+
+        assert [record.record.data["sid"] for record in output.records] == ["SID1"]
+        assert sorted(windows) == [
+            ("2022-09-01 00:00:00Z", "2022-09-30 23:59:59Z"),
+            ("2022-10-01 00:00:00Z", "2022-10-31 23:59:59Z"),
+            ("2022-11-01 00:00:00Z", "2022-11-16 12:03:11Z"),
+        ]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["states"] == [
+            {
+                "partition": {"subresource_uri": subresource_uri, "parent_slice": {}},
+                "cursor": {cursor_field: "2022-11-15 08:00:00Z"},
+            }
+        ]
+
+        windows.clear()
+        _read(final_state)
+        assert windows == [("2022-11-15 08:00:00Z", "2022-11-16 12:03:11Z")]
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
         parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
