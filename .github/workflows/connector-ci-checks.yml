@@ -11,6 +11,16 @@ on:
   # Available as a reusable workflow
   # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
   workflow_call:
+    # The secrets this workflow reads. Callers pass them by name.
+    secrets:
+      GCP_GSM_CREDENTIALS:
+        required: false
+      GCP_PROJECT_ID:
+        required: false
+      OCTAVIA_BOT_APP_ID:
+        required: false
+      OCTAVIA_BOT_PRIVATE_KEY:
+        required: false
     inputs:
       repo:
         type: string

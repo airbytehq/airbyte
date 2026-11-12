@@ -29,6 +29,22 @@ on:
         required: false
         default: ""
   workflow_call:
+    # The secrets this workflow reads. Callers pass them by name.
+    secrets:
+      DEVIN_AI_API_KEY:
+        required: false
+      GH_PAT_APPROVINGTON_OCTAVIA:
+        required: false
+      OCTAVIA_BOT_ADMIN_APP_ID:
+        required: false
+      OCTAVIA_BOT_ADMIN_PRIVATE_KEY:
+        required: false
+      OCTAVIA_BOT_HOARD_APP_ID:
+        required: false
+      OCTAVIA_BOT_HOARD_PRIVATE_KEY:
+        required: false
+      SLACK_BOT_TOKEN_AIRBYTE_TEAM:
+        required: false
     inputs:
       pr:
         description: "PR number"

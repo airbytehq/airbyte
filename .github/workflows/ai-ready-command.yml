@@ -109,4 +109,11 @@ jobs:
     with:
       pr: ${{ inputs.pr }}
       dry-run: ${{ inputs.dry-run }}
-    secrets: inherit
+    secrets:
+      DEVIN_AI_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
+      GH_PAT_APPROVINGTON_OCTAVIA: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+      OCTAVIA_BOT_ADMIN_APP_ID: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+      OCTAVIA_BOT_ADMIN_PRIVATE_KEY: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
+      OCTAVIA_BOT_HOARD_APP_ID: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
+      OCTAVIA_BOT_HOARD_PRIVATE_KEY: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
+      SLACK_BOT_TOKEN_AIRBYTE_TEAM: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}

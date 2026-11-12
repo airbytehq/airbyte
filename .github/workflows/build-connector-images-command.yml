@@ -90,7 +90,6 @@ jobs:
       comment-id: "${{ github.event_name == 'workflow_dispatch' && inputs['comment-id'] || '' }}"
       pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
       connector: ${{ matrix.connector }}
-    secrets: inherit
 
   post-end-comment:
     name: "Post Completion Comment"

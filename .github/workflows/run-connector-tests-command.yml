@@ -78,7 +78,11 @@ jobs:
       gitref: "${{ inputs.gitref || github.ref_name }}"
       comment-id: "${{ needs.post-start-comment.outputs.comment-id }}"
       pr: "${{ github.event_name == 'workflow_dispatch' && inputs.pr || '' }}"
-    secrets: inherit
+    secrets:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      OCTAVIA_BOT_APP_ID: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+      OCTAVIA_BOT_PRIVATE_KEY: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
   post-end-comment:
     name: "Post Completion Comment and Status"

@@ -31,6 +31,12 @@ on:
         type: boolean
         default: false
   workflow_call:
+    # The secrets this workflow reads. Callers pass them by name.
+    secrets:
+      METADATA_SERVICE_PROD_GCS_CREDENTIALS:
+        required: false
+      PUBLISH_ON_MERGE_SLACK_WEBHOOK:
+        required: false
     inputs:
       pr:
         description: "PR. Associated pull request number, for linking in notifications. Ignored when dry-run=true."

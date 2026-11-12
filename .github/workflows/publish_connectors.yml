@@ -7,6 +7,30 @@ on:
     paths:
       - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_call:
+    # The secrets this workflow reads. Callers pass them by name.
+    secrets:
+      CLOUDREPO_PASSWORD:
+        required: false
+      CLOUDREPO_USER:
+        required: false
+      DOCKER_HUB_PASSWORD:
+        required: false
+      DOCKER_HUB_USERNAME:
+        required: false
+      METADATA_SERVICE_DEV_GCS_CREDENTIALS:
+        required: false
+      METADATA_SERVICE_PROD_GCS_CREDENTIALS:
+        required: false
+      OCTAVIA_PUBLISH_BOT_APP_ID:
+        required: false
+      OCTAVIA_PUBLISH_BOT_PRIVATE_KEY:
+        required: false
+      PUBLISH_ON_MERGE_SLACK_WEBHOOK:
+        required: false
+      PYPI_TOKEN:
+        required: false
+      SLACK_AIRBYTE_TEAM_READ_USERS:
+        required: false
     inputs:
       connectors:
         description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
@@ -758,7 +782,9 @@ jobs:
       pr: ${{ inputs.pr }}
       force: ${{ needs.publish_options.outputs.registry-refresh-only == 'true' }}
       connector-name: ${{ needs.publish_options.outputs.registry-refresh-only == 'true' && needs.publish_options.outputs.registry-refresh-connector-name || '' }}
-    secrets: inherit
+    secrets:
+      METADATA_SERVICE_PROD_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+      PUBLISH_ON_MERGE_SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"

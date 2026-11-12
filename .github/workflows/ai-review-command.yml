@@ -16,6 +16,14 @@ on:
         description: "Comment ID"
         required: false
   workflow_call:
+    # The secrets this workflow reads. Callers pass them by name.
+    secrets:
+      DEVIN_AI_API_KEY:
+        required: false
+      OCTAVIA_BOT_APP_ID:
+        required: false
+      OCTAVIA_BOT_PRIVATE_KEY:
+        required: false
     inputs:
       pr:
         description: "PR number"

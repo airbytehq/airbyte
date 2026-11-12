@@ -154,7 +154,18 @@ jobs:
       with-semver-suffix: preview
       gitref: refs/pull/${{ inputs.pr }}/head
       pr: ${{ format('{0}', inputs.pr) }}
-    secrets: inherit
+    secrets:
+      CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+      CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
+      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      METADATA_SERVICE_DEV_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+      METADATA_SERVICE_PROD_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+      OCTAVIA_PUBLISH_BOT_APP_ID: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
+      OCTAVIA_PUBLISH_BOT_PRIVATE_KEY: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
+      PUBLISH_ON_MERGE_SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+      PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      SLACK_AIRBYTE_TEAM_READ_USERS: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
 
   post-completion:
     name: Post Completion Status

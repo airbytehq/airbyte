@@ -130,4 +130,6 @@ jobs:
     with:
       connector-name: ${{ inputs.connector-name }}
       store: ${{ inputs.store }}
-    secrets: inherit
+    secrets:
+      METADATA_SERVICE_PROD_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+      PUBLISH_ON_MERGE_SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
