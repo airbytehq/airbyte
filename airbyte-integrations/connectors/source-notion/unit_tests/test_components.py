@@ -355,7 +355,11 @@ def test_blocks_incremental_read_emits_only_blocks_edited_since_state(requests_m
         "unchanged-parent-block",
     ]
 
-    state = StateBuilder().with_stream_state("blocks", {"use_global_cursor": True, "state": {"last_edited_time": "2023-01-01T00:00:00.000Z"}}).build()
+    state = (
+        StateBuilder()
+        .with_stream_state("blocks", {"use_global_cursor": True, "state": {"last_edited_time": "2023-01-01T00:00:00.000Z"}})
+        .build()
+    )
     second_output = _read_blocks_incrementally(requests_mock, state)
 
     assert [record.record.data["id"] for record in second_output.records] == ["edited-block", "edited-child-block"]
