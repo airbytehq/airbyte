@@ -12,6 +12,17 @@ check:
     - applications
 
 definitions:
+  # Clarifai serializes protobuf timestamps with up to 9 fractional digits (nanoseconds),
+  # but strptime's %f accepts at most 6, so the cursor could not parse `modified_at`
+  # and state never advanced. Truncate to microseconds before the cursor observes it.
+  modified_at_to_microseconds:
+    type: AddFields
+    condition: "{{ record.get('modified_at') and record['modified_at'] | length > 27 }}"
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - modified_at
+        value: "{{ (record.get('modified_at') or '')[:26] ~ 'Z' }}"
   streams:
     applications:
       type: DeclarativeStream
@@ -57,11 +68,14 @@ definitions:
             page_size: 20
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -128,11 +142,14 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -198,11 +215,14 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
