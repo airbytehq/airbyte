@@ -80,7 +80,5 @@ def test_app_substream_partition_state_advances_with_nanosecond_modified_at(stre
         output = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
 
     assert _ids(output) == [f"{stream_name}_1", f"{stream_name}_2"]
-    partition_states = {
-        state["partition"]["app_id"]: state["cursor"] for state in _final_state(output)["states"]
-    }
+    partition_states = {state["partition"]["app_id"]: state["cursor"] for state in _final_state(output)["states"]}
     assert partition_states == {"app1": {"modified_at": "2026-10-14T09:41:55.568082Z"}}
