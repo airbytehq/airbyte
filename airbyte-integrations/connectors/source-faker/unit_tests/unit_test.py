@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+import tempfile
 from pathlib import Path
 
 import jsonschema
@@ -10,6 +12,7 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
+from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
 
 
@@ -94,6 +97,34 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param({"count": 5000, "seed": 42}, id="api_created_source_without_slice_or_parallelism"),
+        pytest.param({}, id="empty_config"),
+        pytest.param({"count": 10, "records_per_slice": 1000}, id="parallelism_omitted"),
+    ],
+)
+def test_check_connection_uses_defaults_for_omitted_settings(config, capsys):
+    # Sources created through the API only carry the settings the caller sent;
+    # omitted settings must be checked against their defaults, not as 0.
+    source = SourceFaker()
+    launch(source, ["check", "--config", _write_config(config)])
+
+    statuses = [
+        json.loads(line)["connectionStatus"]
+        for line in capsys.readouterr().out.splitlines()
+        if line.startswith("{") and json.loads(line).get("type") == "CONNECTION_STATUS"
+    ]
+    assert statuses == [{"status": "SUCCEEDED"}]
+
+
+def _write_config(config):
+    path = Path(tempfile.mkdtemp()) / "config.json"
+    path.write_text(json.dumps(config))
+    return str(path)
 
 
 def test_read_small_random_data():
