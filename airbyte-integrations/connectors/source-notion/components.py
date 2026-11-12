@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -21,7 +22,12 @@ class BlocksRetriever(SimpleRetriever):
     According to that fact that block's entity may have children entities that stream also need to retrieve
     BlocksRetriever calls read_records when received record.has_children is True.
 
+    The CDK does not attach the client-side incremental filter to the record selector of a CustomRetriever, so the
+    stream cursor is applied here instead. Filtering happens after the recursion decision so that an edited child
+    block is still emitted when its parent block was not edited.
     """
+
+    cursor: Optional[Cursor] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
@@ -50,4 +56,10 @@ class BlocksRetriever(SimpleRetriever):
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
+            if self._is_already_synced(stream_data):
+                continue
+
             yield stream_data
+
+    def _is_already_synced(self, stream_data: StreamData) -> bool:
+        return self.cursor is not None and isinstance(stream_data, Record) and not self.cursor.should_be_synced(stream_data)
