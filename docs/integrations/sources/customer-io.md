@@ -185,7 +185,7 @@ How the connector treats Customer.io HTTP errors:
 
 ### Troubleshooting
 
-- **401 errors**: Customer.io rejected the key. Check that it is a private API key (`sk_`) or a legacy App API key, not a public API key (`pk_`) or Track API key, and that you copied all of it. Create a new private key if you lost the original. Check that **Region** matches your account (see [Step 1](#step-1-set-up-customerio)). If your workspace restricts API access by IP address, add the addresses Airbyte connects from to the allowlist ([Step 1](#step-1-set-up-customerio)): Customer.io does not document which error a blocked address gets, so both the 401 and the 403 messages mention it. The connector's error message still refers to an App API key; private keys work in the same field.
+- **401 errors**: Customer.io rejected the key. Check that it is a private API key (`sk_`) or a legacy App API key, not a public API key (`pk_`) or Track API key, and that you copied all of it. Create a new private key if you lost the original. Check that **Region** matches your account (see [Step 1](#step-1-set-up-customerio)). If your workspace restricts API access by IP address, add the addresses Airbyte connects from to the allowlist ([Step 1](#step-1-set-up-customerio)): Customer.io does not document which error a blocked address gets, so both the 401 and the 403 messages mention it.
 - **403 errors**: Customer.io denied the key access to the data the stream reads, or the addresses Airbyte connects from are not on the allowlist. Use a key that can read the data, or deselect the stream.
 - **429 errors or slow syncs**: your other App API traffic shares the 10 requests per second. Schedule syncs when that traffic is low, sync less often, or deselect the expensive streams listed in [Performance considerations](#performance-considerations).
 - **5xx errors**: temporary Customer.io errors. If the sync fails after the retries, check [Customer.io Status](https://status.customerio.com/) and sync again later.
@@ -199,6 +199,7 @@ How the connector treats Customer.io HTTP errors:
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
+| 1.1.8 | 2026-11-12 | TBD | Clarify private API key setup and authentication error messages |
 | 1.1.7 | 2026-11-10 | [91486](https://github.com/airbytehq/airbyte/pull/91486) | Update dependencies |
 | 1.1.6 | 2026-11-03 | [90493](https://github.com/airbytehq/airbyte/pull/90493) | Update dependencies |
 | 1.1.5 | 2026-11-02 | [90331](https://github.com/airbytehq/airbyte/pull/90331) | Consolidate substream error handling into a single error handler; no behavior change |
