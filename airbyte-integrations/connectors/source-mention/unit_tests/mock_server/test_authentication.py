@@ -60,6 +60,7 @@ class TestAuthentication(TestCase):
         output = read(get_source(_CONFIG), _CONFIG, catalog)
 
         assert output.errors == []
-        assert [record.record.data["id"] for record in output.records] == ["mention_1", "mention_2", "mention_3"]
+        # Partitions (one per alert) are read concurrently, so order across alerts is not deterministic.
+        assert sorted(record.record.data["id"] for record in output.records) == ["mention_1", "mention_2", "mention_3"]
         for request in (alerts_page_1_request, alerts_page_2_request, mentions_alert_1_request, mentions_alert_2_request):
             http_mocker.assert_number_of_calls(request, 1)
