@@ -284,6 +284,45 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param({"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}, id="multiple_slices"),
+        pytest.param({"count": 10, "records_per_slice": 10, "parallelism": 1, "always_updated": True}, id="single_slice"),
+    ],
+)
+def test_read_users_after_completed_sync_emits_all_users_again(config):
+    from airbyte_cdk.models import AirbyteStateMessageSerializer
+
+    source = SourceFaker()
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    def sync(state):
+        messages = list(source.read(logger, config, catalog, state))
+        records = [m.record.data for m in messages if m.type is Type.RECORD]
+        states = [m.state for m in messages if m.type is Type.STATE]
+        # round-trip through the serializer, as the platform persists and replays the final state
+        final_state = AirbyteStateMessageSerializer.load(AirbyteStateMessageSerializer.dump(states[-1]))
+        return records, final_state
+
+    first_records, first_state = sync([])
+    assert [r["id"] for r in first_records] == list(range(1, 11))
+    assert first_state.stream.stream_state.loop_offset == 10
+
+    second_records, second_state = sync([first_state])
+    assert [r["id"] for r in second_records] == list(range(1, 11))
+    assert all(second["updated_at"] >= first["updated_at"] for first, second in zip(first_records, second_records))
+    assert second_state.stream.stream_state.loop_offset == 10
+
+    third_records, _ = sync([second_state])
+    assert [r["id"] for r in third_records] == list(range(1, 11))
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
