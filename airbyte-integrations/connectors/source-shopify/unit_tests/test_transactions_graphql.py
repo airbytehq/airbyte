@@ -166,7 +166,9 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
 
 
-def _refund_order_jsonl(order_id: int, order_created_at: str, order_updated_at: str, transaction_id: int, created_at: str, status: str) -> str:
+def _refund_order_jsonl(
+    order_id: int, order_created_at: str, order_updated_at: str, transaction_id: int, created_at: str, status: str
+) -> str:
     order = json.loads(_order_jsonl(order_id, order_created_at, transaction_id, created_at))
     order["order_updated_at"] = order_updated_at
     order["transactions"][0]["kind"] = "REFUND"
