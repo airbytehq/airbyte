@@ -25,3 +25,11 @@ The `alerts` stream handles Twilio's 10,000-result cap with a `SPLIT_REQUEST_WIN
 - Each split halves the window at `PT1S` granularity and the CDK stops after 10 halvings, so the smallest window is the slice span / 1024: about 43 minutes with `P1M`, about 84 seconds with `P1D`.
 - Exhausted splitting (depth 10, or a window that can't shrink) fails as `transient_error` with `failure_message` appended to the CDK message.
 - Any other Alerts 400 hits the dedicated FAIL filter (`http_codes: [400]`, after the SPLIT filter) and fails as `system_error` with Twilio's own message.
+
+## Messages global cursor
+
+The `messages` stream uses `global_substream_cursor: true`, so it keeps one `date_sent` cursor for all accounts instead of one per account.
+
+- The CDK restores `use_global_cursor` from the incoming state, so the flag alone does not move existing connections to the global cursor. `TwilioMessagesGlobalCursorStateMigration` reduces older per-account state to `{"use_global_cursor": true, "state": {"date_sent": ...}}`.
+- The migration keeps the old global `state.date_sent` when it is present. Without it, the migration uses the oldest per-account cursor so no account skips messages.
+- Per-account cursors are dropped. Before this change, an old per-account cursor took precedence over the newer global cursor and the stream re-read months of messages.
