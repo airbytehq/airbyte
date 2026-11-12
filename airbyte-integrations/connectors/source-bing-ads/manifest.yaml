@@ -2613,6 +2613,18 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  download_error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+      - type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: transient_error
+            error_message_contains: "Signature not valid in the specified time frame"
+            error_message: "Bing Ads file download URL is expired."
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2657,6 +2669,8 @@ definitions:
     download_requester:
       type: CustomRequester
       class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
@@ -2724,6 +2738,8 @@ definitions:
         RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
     download_requester:
       type: HttpRequester
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
       url_base: "{{download_target}}"
       http_method: GET
     download_decoder:
