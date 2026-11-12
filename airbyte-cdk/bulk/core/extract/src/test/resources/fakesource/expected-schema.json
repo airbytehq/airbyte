@@ -3,6 +3,35 @@
   "title": "Test Source Spec",
   "type": "object",
   "additionalProperties": true,
+  "groups": [
+    {
+      "id": "db"
+    },
+    {
+      "id": "sync",
+      "title": "Sync method"
+    }
+  ],
+  "sections": [
+    {
+      "id": "connection",
+      "title": "Connection",
+      "groups": ["db"],
+      "check": true
+    },
+    {
+      "id": "naming",
+      "title": "Naming",
+      "groups": [],
+      "check": false
+    },
+    {
+      "id": "sync_method",
+      "title": "Sync method",
+      "groups": ["sync"],
+      "check": true
+    }
+  ],
   "properties": {
     "host": {
       "type": "string",

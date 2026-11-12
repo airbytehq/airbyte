@@ -1,3 +1,7 @@
+## Version 1.0.9
+
+[#89691](https://github.com/airbytehq/airbyte/pull/89691) — `CliRunner.source` overload taking the configuration JSON verbatim (test fixtures only), for partial configurations and keys the POJO does not expose such as `check-section`; no runtime change.
+
 ## Version 1.0.8
 
 [#89632](https://github.com/airbytehq/airbyte/pull/89632) — Bump `sshd-mina` 2.13.2 → 2.20.0 (CVE-2026-77185 and twelve further Apache MINA SSHD advisories), `mina-core` 2.0.27 → 2.0.31 (CVE-2026-41409, CVE-2026-41635, CVE-2026-47065) and `bcprov-jdk18on` 1.78.1 → 1.86 (CVE-2026-8763, CVE-2025-14813, CVE-2026-13506), removing the critical findings Docker Scout reports on every Bulk CDK connector image; no behaviour change expected.

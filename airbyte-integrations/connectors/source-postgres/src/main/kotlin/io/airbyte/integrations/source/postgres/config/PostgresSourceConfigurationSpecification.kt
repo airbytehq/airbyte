@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaArrayWithUniqueItems
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
@@ -23,11 +25,25 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
+import io.airbyte.cdk.util.Jsons
 import io.micronaut.context.annotation.ConfigurationBuilder
 import io.micronaut.context.annotation.ConfigurationProperties
 import jakarta.inject.Singleton
+import java.util.function.Supplier
+
+/**
+ * Section ids of the stepped setup form, in order. All four are declared with `"check":true`, so a
+ * `check-section` value may name any of them; the
+ * [io.airbyte.integrations.source.postgres.PostgresSourceCheckSectionHandler] checks the first
+ * three, the last one is the full check.
+ */
+const val SECTION_CONNECTION = "connection"
+const val SECTION_CREDENTIALS = "credentials"
+const val SECTION_SYNC_METHOD = "sync_method"
+const val SECTION_REVIEW = "review"
 
 /**
  * The object which is mapped to the Postgres source configuration JSON.
@@ -37,15 +53,54 @@ import jakarta.inject.Singleton
  * `MicronautPropertiesFriendly.*`.
  */
 @JsonSchemaTitle("Postgres Source Spec")
+// Stepped setup form ("Stepped Connector Forms" mini-spec): `groups` is the existing keyword and
+// `sections` the new one, each section listing the groups it shows, in form order. Properties opt
+// into a group with `"group":"<id>"` in their own @JsonSchemaInject. A section with `"check":true`
+// can be checked on its own: a CHECK whose config carries a top-level `check-section` key naming it
+// validates the configuration up to that section only; see PostgresSourceCheckSectionHandler. Every
+// Postgres section is checkable. The last section completes the configuration, so a CHECK for it is
+// the full check.
+//
+// Layout, following the form mock:
+// - connection: how Airbyte reaches the server. `network` holds the connection method (direct or
+//   through an SSH tunnel, as radio tiles) with the host and the port; `connection_advanced` the
+//   SSL mode and the JDBC URL parameters, which change how the connection is made.
+// - credentials: what to log into and as whom. `db` holds the database and its schemas, `auth` the
+//   user.
+// - sync_method: the replication method.
+// - review: the remaining optional settings.
 @JsonSchemaInject(
     json =
-        """{"groups":[{"id":"db"},{"id":"auth"},{"id":"security","title":"Security"},{"id":"advanced","title":"Advanced"},{"id":"performance","title":"Performance"}]}""",
+        """{"groups":[
+  {"id":"network"},
+  {"id":"connection_advanced","title":"Advanced"},
+  {"id":"db"},
+  {"id":"auth"},
+  {"id":"sync","title":"Sync method"},
+  {"id":"advanced","title":"Advanced"}
+],"sections":[
+  {"id":"$SECTION_CONNECTION","title":"Connection","order":0,
+   "description":"How Airbyte reaches your Postgres server.",
+   "groups":["network","connection_advanced"],"check":true},
+  {"id":"$SECTION_CREDENTIALS","title":"Credentials","order":1,
+   "description":"The database to read, and the Postgres user Airbyte reads it with.",
+   "groups":["db","auth"],"check":true},
+  {"id":"$SECTION_SYNC_METHOD","title":"Sync method","order":2,
+   "description":"How Airbyte reads changes from your database.",
+   "groups":["sync"],"check":true},
+  {"id":"$SECTION_REVIEW","title":"Review & set up","order":3,
+   "description":"Name your source and check the optional settings.",
+   "groups":["advanced"],"check":true}
+]}""",
 )
 @JsonPropertyOrder(
     value =
         [
+            "tunnel_method",
             "host",
             "port",
+            "ssl_mode",
+            "jdbc_url_params",
             "database",
             "schemas",
             "username",
@@ -53,9 +108,6 @@ import jakarta.inject.Singleton
             "entra_service_principal_auth",
             "entra_tenant_id",
             "entra_client_id",
-            "ssl_mode",
-            "tunnel_method",
-            "jdbc_url_params",
             "replication_method",
             "check_privileges",
             "checkpoint_target_interval_seconds",
@@ -68,34 +120,40 @@ import jakarta.inject.Singleton
 class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
-    @JsonSchemaInject(json = """{"order":1,"group":"db"}""")
-    @JsonPropertyDescription("Hostname of the database.")
+    @JsonSchemaInject(json = """{"order":2,"group":"network"}""")
+    @JsonPropertyDescription(
+        "Hostname of the database. Through an SSH tunnel, the hostname at which the jump server " +
+            "reaches the database.",
+    )
     lateinit var host: String
 
     @JsonProperty("port")
     @JsonSchemaTitle("Port")
-    @JsonSchemaInject(json = """{"order":2,"minimum": 0,"maximum": 65536,"group":"db"}""")
+    @JsonSchemaInject(json = """{"order":3,"minimum": 0,"maximum": 65536,"group":"network"}""")
     @JsonSchemaDefault("5432")
-    @JsonPropertyDescription("Port of the database. Defaults to 5432.")
+    @JsonPropertyDescription(
+        "Port of the database. Defaults to 5432. Through an SSH tunnel, the port at which the " +
+            "jump server reaches the database.",
+    )
     var port: Int = 5432
 
     @JsonProperty("database")
     @JsonSchemaTitle("Database Name")
     @JsonPropertyDescription("The name of the database to connect to.")
-    @JsonSchemaInject(json = """{"order":3,"group":"db"}""")
+    @JsonSchemaInject(json = """{"order":6,"group":"db"}""")
     lateinit var database: String
 
     @JsonProperty("username")
     @JsonSchemaTitle("Username")
     @JsonPropertyDescription("The username which is used to access the database.")
-    @JsonSchemaInject(json = """{"order":4,"group":"auth"}""")
+    @JsonSchemaInject(json = """{"order":8,"group":"auth"}""")
     lateinit var username: String
 
     @JsonProperty("password")
     @JsonSchemaTitle("Password")
     @JsonPropertyDescription("The password associated with the username.")
     @JsonSchemaInject(
-        json = """{"order":5,"always_show":true,"airbyte_secret":true,"group":"auth"}""",
+        json = """{"order":9,"always_show":true,"airbyte_secret":true,"group":"auth"}""",
     )
     var password: String? = null
 
@@ -104,14 +162,14 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription(
         "Interpret password as a client secret for a Microsoft Entra service principal",
     )
-    @JsonSchemaInject(json = """{"order":6,"group":"auth"}""")
+    @JsonSchemaInject(json = """{"order":10,"group":"auth"}""")
     @JsonSchemaDefault("false")
     var servicePrincipalAuth: Boolean? = false
 
     @JsonProperty("entra_tenant_id")
     @JsonSchemaTitle("Azure Entra Tenant Id")
     @JsonPropertyDescription("If using Entra service principal, the ID of the tenant")
-    @JsonSchemaInject(json = """{"order":7,"group":"auth"}""")
+    @JsonSchemaInject(json = """{"order":11,"group":"auth"}""")
     var entraTenantId: String? = null
 
     @JsonProperty("entra_client_id")
@@ -119,7 +177,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription(
         "If using Entra service principal, the application ID of the service principal",
     )
-    @JsonSchemaInject(json = """{"order":8,"group":"auth"}""")
+    @JsonSchemaInject(json = """{"order":12,"group":"auth"}""")
     var entraClientId: String? = null
 
     @JsonProperty("schemas")
@@ -128,7 +186,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription(
         "The list of schemas to sync from. Case sensitive. Empty means all schemas.",
     )
-    @JsonSchemaInject(json = """{"order":9,"uniqueItems":true,"group":"db"}""")
+    @JsonSchemaInject(json = """{"order":7,"always_show":true,"uniqueItems":true,"group":"db"}""")
     var schemas: List<String>? = listOf()
 
     @JsonProperty("jdbc_url_params")
@@ -141,7 +199,8 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
             "<a href=\"https://jdbc.postgresql.org/documentation/head/connect.html\">JDBC URL parameters</a>.",
     )
     @JsonSchemaInject(
-        json = """{"order":10,"group":"advanced","pattern_descriptor":"key1=value1&key2=value2"}""",
+        json =
+            """{"order":5,"group":"connection_advanced","pattern_descriptor":"key1=value1&key2=value2"}""",
     )
     var jdbcUrlParams: String? = null
 
@@ -161,7 +220,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription(
         "The encryption method which is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":8,"default":"require","group":"security"}""")
+    @JsonSchemaInject(json = """{"order":4,"default":"require","group":"connection_advanced"}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
@@ -176,12 +235,15 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     }
 
     @JsonGetter("tunnel_method")
-    @JsonSchemaTitle("SSH Tunnel Method")
+    @JsonSchemaTitle("Connection method")
     @JsonPropertyDescription(
-        "Whether to initiate an SSH tunnel before connecting to the database, " +
-            "and if so, which kind of authentication to use.",
+        "How Airbyte reaches the database: directly, or through an SSH tunnel to a jump server " +
+            "in your network.",
     )
-    @JsonSchemaInject(json = """{"order":11,"group":"security"}""")
+    @JsonSchemaInject(
+        json = """{"order":1,"display_type":"radio","group":"network"}""",
+        jsonSupplier = ConnectionMethodOptionsSupplier::class,
+    )
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration =
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
@@ -201,20 +263,20 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("replication_method")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
-    @JsonSchemaInject(json = """{"order":12,"display_type":"radio","group":"advanced"}""")
+    @JsonSchemaInject(json = """{"order":13,"display_type":"radio","group":"sync"}""")
     fun getIncrementalConfigurationSpecificationValue(): IncrementalConfigurationSpecification =
         replicationMethodJson ?: replication_method.asIncrementalConfigurationSpecification()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
-    @JsonSchemaInject(json = """{"order":15,"always_show":true,"group":"performance"}""")
+    @JsonSchemaInject(json = """{"order":15,"always_show":true,"group":"advanced"}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
     var checkpointTargetIntervalSeconds: Int? = 300
 
     @JsonProperty("max_db_connections")
     @JsonSchemaTitle("Max Concurrent Queries to Database")
-    @JsonSchemaInject(json = """{"order":16,"always_show":true,"group":"performance"}""")
+    @JsonSchemaInject(json = """{"order":16,"always_show":true,"group":"advanced"}""")
     @JsonPropertyDescription(
         "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance.",
     )
@@ -222,7 +284,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
-    @JsonSchemaInject(json = """{"order":13,"always_show":true,"group":"performance"}""")
+    @JsonSchemaInject(json = """{"order":14,"always_show":true,"group":"advanced"}""")
     @JsonSchemaDefault("true")
     @JsonPropertyDescription(
         "When this feature is enabled, during schema discovery the connector " +
@@ -242,6 +304,81 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     ) {
         additionalPropertiesMap?.set(name, value)
     }
+}
+
+/**
+ * `tunnel_method` as the connection section shows it, the first choice of the form: two radio
+ * tiles, "Direct connection" and "SSH tunnel", the second holding an "SSH authentication" choice
+ * between an SSH key and a password.
+ *
+ * The saved configuration does not change. The CDK's [SshTunnelMethodConfiguration] is a flat union
+ * of three objects told apart by `tunnel_method` (`NO_TUNNEL`, `SSH_KEY_AUTH`,
+ * `SSH_PASSWORD_AUTH`). The three objects are published as the CDK generates them, retitled; the
+ * two SSH ones are merely grouped under an "SSH tunnel" option whose only content is a `oneOf` of
+ * the two, so the schema accepts exactly what it accepted before.
+ *
+ * The "SSH tunnel" option deliberately declares no `properties` of its own, although both SSH
+ * objects share the jump server's host, port and user: the platform's secret detection reads the
+ * `properties` of an object schema and then ignores a `oneOf` next to them, which would leave
+ * `ssh_key` and `tunnel_user_password` stored as plain text.
+ *
+ * The wording of the tiles belongs on the CDK type, shared by every database connector, once the
+ * form design is settled.
+ */
+class ConnectionMethodOptionsSupplier : Supplier<JsonNode> {
+    override fun get(): JsonNode {
+        val cdkOptions: Map<String, ObjectNode> =
+            ValidatedJsonUtils.generateAirbyteJsonSchema(SshTunnelMethodConfiguration::class.java)
+                .deepCopy<JsonNode>()["oneOf"]
+                .associate { discriminator(it)["enum"].single().asText() to it as ObjectNode }
+        val direct: ObjectNode =
+            cdkOptions
+                .getValue("NO_TUNNEL")
+                .describedAs(
+                    "Direct connection",
+                    "Airbyte connects to the database host directly. On Airbyte Cloud, allow " +
+                        "Airbyte's IP addresses in your database firewall.",
+                )
+        val sshTunnel: ObjectNode = Jsons.objectNode()
+        sshTunnel.put("title", "SSH tunnel")
+        sshTunnel.put("type", "object")
+        sshTunnel.put(
+            "description",
+            "Your database is in a private network. Airbyte connects through a jump server it " +
+                "can reach, as an SSH user of that server.",
+        )
+        val authentication = sshTunnel.putArray("oneOf")
+        authentication.add(
+            cdkOptions
+                .getValue("SSH_KEY_AUTH")
+                .describedAs(
+                    "SSH key",
+                    "Airbyte logs into the jump server with an SSH private key.",
+                )
+                .authentication(),
+        )
+        authentication.add(
+            cdkOptions
+                .getValue("SSH_PASSWORD_AUTH")
+                .describedAs(
+                    "Password",
+                    "Airbyte logs into the jump server with the SSH user's password.",
+                )
+                .authentication(),
+        )
+        return Jsons.objectNode().set("oneOf", Jsons.arrayNode().add(direct).add(sshTunnel))
+    }
+
+    private fun ObjectNode.describedAs(title: String, description: String): ObjectNode =
+        put("title", title).put("description", description)
+
+    /** The nested choice has no property of its own to name it; its discriminator carries it. */
+    private fun ObjectNode.authentication(): ObjectNode = apply {
+        discriminator(this).put("title", "SSH authentication")
+    }
+
+    private fun discriminator(option: JsonNode): ObjectNode =
+        option["properties"]["tunnel_method"] as ObjectNode
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")
@@ -379,11 +516,11 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "method")
 @JsonSubTypes(
-    JsonSubTypes.Type(value = CdcReplicationMethodConfigurationSpecification::class, name = "CDC"),
     JsonSubTypes.Type(
         value = XminReplicationMethodConfigurationSpecification::class,
         name = "Xmin",
     ),
+    JsonSubTypes.Type(value = CdcReplicationMethodConfigurationSpecification::class, name = "CDC"),
     JsonSubTypes.Type(
         value = StandardReplicationMethodConfigurationSpecification::class,
         name = "Standard",
