@@ -2613,16 +2613,18 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
-  # Bing Ads returns pre-signed Azure Blob Storage links for report and bulk files. Azure rejects a link
-  # outside its validity window with 403 and `x-ms-error-code: AuthenticationFailed`. The link is issued
-  # by Microsoft, so this is never a user permission problem, and only a new link from a later attempt works.
+  # Bing Ads returns pre-signed Azure Blob Storage links for report and bulk files, and the download sends
+  # no user credentials. Azure answers 403 when a link is outside its validity window, so a 403 here is never
+  # a user permission problem, and only a new link from a later attempt works.
+  # The filter matches on status code only: a `predicate` parses the body of every response, which consumes
+  # the streamed file before the decoder reads it.
   download_link_error_handler:
     type: DefaultErrorHandler
     response_filters:
       - type: HttpResponseFilter
         action: FAIL
         failure_type: transient_error
-        predicate: "{{ headers.get('x-ms-error-code') == 'AuthenticationFailed' }}"
+        http_codes: [403]
         error_message: >-
           Bing Ads file download link for stream '{{ parameters['stream_name'] }}' is expired or not valid.
           Microsoft storage rejected the download request.
