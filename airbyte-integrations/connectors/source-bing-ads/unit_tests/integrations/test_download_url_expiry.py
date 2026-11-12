@@ -70,7 +70,8 @@ class TestBulkDownloadUrlExpiry(TestBulkStream):
         # Retrying would resend the same expired URL, so the download is attempted exactly once.
         self.http_mocker.assert_number_of_calls(BULK_DOWNLOAD_REQUEST, 1)
 
-    def test_other_forbidden_download_response_keeps_config_error(self):
+    def test_other_forbidden_download_response_is_not_reported_as_permission_error(self):
+        # The download URL is pre-signed by Bing Ads, so no 403 on it can be fixed by changing the connector configuration.
         self._mock_bulk_apis_with_download_response(
             HttpResponse(
                 '<?xml version="1.0" encoding="utf-8"?><Error><Code>AuthorizationPermissionMismatch</Code>'
@@ -82,11 +83,12 @@ class TestBulkDownloadUrlExpiry(TestBulkStream):
 
         output = self._read()
 
-        trace_errors = [message.trace.error for message in output.errors if message.trace.error.stream_descriptor]
-        assert trace_errors
-        for error in trace_errors:
-            assert error.message != EXPECTED_MESSAGE
-            assert error.failure_type == FailureType.config_error
+        stream_errors = [message.trace.error for message in output.errors if message.trace.error.stream_descriptor]
+        assert stream_errors
+        for error in stream_errors:
+            assert error.message == "Microsoft storage rejected the Bing Ads file download URL."
+            assert error.failure_type == FailureType.transient_error
+        self.http_mocker.assert_number_of_calls(BULK_DOWNLOAD_REQUEST, 1)
 
 
 class TestReportDownloadUrlExpiry(TestReportStream):

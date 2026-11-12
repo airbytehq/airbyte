@@ -2681,18 +2681,23 @@ definitions:
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
   # Bing Ads returns pre-signed Azure Blob Storage (SAS) URLs for report and bulk file downloads.
-  # When such a URL expires before the download starts, Azure answers with
-  # 403 AuthenticationFailed "Signature not valid in the specified time frame". Without this
-  # filter the CDK default 403 mapping reports it as a permission problem (config_error).
-  # Retrying would resend the same expired URL, so FAIL as transient. Other 403s keep the default mapping.
+  # These URLs carry their own signature, so a 403 on them is never caused by the user's Bing Ads
+  # credentials or permissions. The common case is an expired URL: Azure answers with
+  # 403 and `x-ms-error-code: AuthenticationFailed` ("Signature not valid in the specified time frame").
+  # Without this filter the CDK default 403 mapping reports it as a permission problem (config_error).
+  # Retrying would resend the same URL, so FAIL as transient.
+  # Match on `http_codes` only: response filters also run on successful responses, and filters that read
+  # the body (`predicate`, `error_message_contains`) would drain the streamed ZIP/GZip download.
   download_url_error_handler:
     type: DefaultErrorHandler
     response_filters:
       - type: HttpResponseFilter
         action: FAIL
         failure_type: transient_error
-        error_message_contains: "Signature not valid in the specified time frame"
-        error_message: "Bing Ads file download URL is expired."
+        http_codes:
+          - 403
+        error_message: >-
+          {{ 'Bing Ads file download URL is expired.' if headers.get('x-ms-error-code') == 'AuthenticationFailed' else 'Microsoft storage rejected the Bing Ads file download URL.' }}
   basic_bulk_async_retriever:
     type: AsyncRetriever
     partition_router:
