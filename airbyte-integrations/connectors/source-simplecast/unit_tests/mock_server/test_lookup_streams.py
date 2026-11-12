@@ -34,7 +34,11 @@ def _read(stream_name: str):
     [
         (
             "categories",
-            [{"label": "Arts", "rss_label": "Arts"}, {"label": "Business", "rss_label": "Business"}, {"label": "Comedy", "rss_label": "Comedy"}],
+            [
+                {"label": "Arts", "rss_label": "Arts"},
+                {"label": "Business", "rss_label": "Business"},
+                {"label": "Comedy", "rss_label": "Comedy"},
+            ],
         ),
         (
             "distribution_channels",
