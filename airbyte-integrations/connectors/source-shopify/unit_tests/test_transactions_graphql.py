@@ -3,7 +3,7 @@
 #
 
 import json
-from typing import List
+from typing import List, Optional
 
 import pytest
 from source_shopify.streams.streams import TransactionsGraphql
@@ -12,12 +12,21 @@ from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(
+    order_id: int,
+    order_created_at: str,
+    transaction_id: int,
+    transaction_created_at: str,
+    order_updated_at: Optional[str] = None,
+    kind: str = "SALE",
+    status: str = "SUCCESS",
+) -> str:
+    order_updated_at_field = f'"order_updated_at":"{order_updated_at}",' if order_updated_at else ""
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
-        f'"order_created_at":"{order_created_at}","transactions":['
+        f'"order_created_at":"{order_created_at}",{order_updated_at_field}"transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
-        f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
+        f'"kind":"{kind}","amount":"57.23","createdAt":"{transaction_created_at}","status":"{status}",'
         f'"processedAt":"{transaction_created_at}","gateway":"bogus","paymentId":"c25048437719229.1",'
         f'"accountNumber":"1","formattedGateway":"bogus","manuallyCapturable":false,"receipt":"{{}}",'
         f'"parentTransaction":null,"authorization":null,'
@@ -164,3 +173,49 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
         assert state["created_at"] >= previous_state_value
 
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
+
+
+def test_transactions_graphql_emits_status_change_of_transaction_older_than_state(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+) -> None:
+    # a refund created before the saved state was synced as PENDING; it became SUCCESS after the state was saved,
+    # which bumped its order's `updatedAt`, so the BULK job returns the order again
+    state = {"created_at": "2026-10-22T14:59:10+00:00"}
+    settled_refund = _order_jsonl(
+        1,
+        "2026-10-20T09:00:00Z",
+        1001,
+        "2026-10-22T13:00:00Z",
+        order_updated_at="2026-10-22T15:10:00Z",
+        kind="REFUND",
+        status="SUCCESS",
+    )
+    # an order last updated before the saved state is part of the lookback overlap only -> dropped
+    unchanged_refund = _order_jsonl(
+        2,
+        "2026-10-20T09:00:00Z",
+        1002,
+        "2026-10-22T13:00:00Z",
+        order_updated_at="2026-10-22T14:00:00Z",
+        kind="REFUND",
+        status="PENDING",
+    )
+    # a transaction created after the saved state -> emitted as before
+    new_sale = _order_jsonl(3, "2026-10-22T15:20:00Z", 1003, "2026-10-22T15:20:00Z", order_updated_at="2026-10-22T15:20:00Z")
+
+    stream, test_records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [settled_refund, unchanged_refund, new_sale],
+        state_value=state["created_at"],
+    )
+
+    assert [(record["id"], record["status"]) for record in test_records] == [(1001, "SUCCESS"), (1003, "SUCCESS")]
+    assert all("order_updated_at" not in record for record in test_records)
+    for record in test_records:
+        state = stream.get_updated_state(state, record)
+    # the cursor stays on the transaction `created_at`, the re-emitted refund doesn't move it backwards
+    assert state == {"created_at": "2026-10-22T15:20:00+00:00"}
