@@ -349,7 +349,9 @@ def _page_request(stream_name: str, token: str, url: str | None = None) -> HttpR
 
 
 _EXPIRED_TOKEN_RESPONSE = HttpResponse(
-    body=json.dumps({"id": "expiredAccessToken", "title": "Expired Access Token", "detail": "Please get a new access token and try again."}),
+    body=json.dumps(
+        {"id": "expiredAccessToken", "title": "Expired Access Token", "detail": "Please get a new access token and try again."}
+    ),
     status_code=401,
 )
 
@@ -385,9 +387,7 @@ def test_mid_sync_expired_access_token_is_refreshed_and_request_retried(stream_n
         state = StateBuilder().build()
         output = read(get_source(config=_CONFIG, state=state), _CONFIG, catalog, state)
 
-        token_calls = [
-            call for call in http_mocker._mocker.request_history if call.url.startswith(_TOKEN_URL)
-        ]
+        token_calls = [call for call in http_mocker._mocker.request_history if call.url.startswith(_TOKEN_URL)]
 
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == ["page-1", "page-2"]
@@ -404,9 +404,7 @@ def test_access_token_rejected_after_refresh_fails_with_config_error() -> None:
         state = StateBuilder().build()
         output = read(get_source(config=_CONFIG, state=state), _CONFIG, catalog, state, expecting_exception=True)
 
-        token_calls = [
-            call for call in http_mocker._mocker.request_history if call.url.startswith(_TOKEN_URL)
-        ]
+        token_calls = [call for call in http_mocker._mocker.request_history if call.url.startswith(_TOKEN_URL)]
         api_calls = [call for call in http_mocker._mocker.request_history if call.url.startswith(f"{_BASE_URL}/mailings")]
 
     assert output.records == []
