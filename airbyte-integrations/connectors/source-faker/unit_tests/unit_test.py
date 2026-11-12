@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from pathlib import Path
 
 import jsonschema
@@ -10,7 +11,8 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.entrypoint import launch
+from airbyte_cdk.models import AirbyteMessage, Status, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
 
 
 class MockLogger:
@@ -94,6 +96,31 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param({"count": 5000, "seed": 42}, id="api_created_source_omits_slice_and_parallelism"),
+        pytest.param({}, id="empty_config"),
+        pytest.param({"count": 10, "records_per_slice": 5}, id="omits_parallelism"),
+    ],
+)
+def test_check_uses_defaults_for_omitted_settings(config, tmp_path, capsys):
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config))
+
+    launch(SourceFaker(), ["check", "--config", str(config_path)])
+
+    statuses = [
+        message.connectionStatus
+        for message in (
+            AirbyteMessageSerializer.load(json.loads(line)) for line in capsys.readouterr().out.splitlines() if line.startswith("{")
+        )
+        if message.type == Type.CONNECTION_STATUS
+    ]
+    assert len(statuses) == 1
+    assert statuses[0].status == Status.SUCCEEDED, statuses[0].message
 
 
 def test_read_small_random_data():
