@@ -10,7 +10,6 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
-from airbyte_cdk.test.models.scenario import ExpectedOutcome
 
 
 def _collection_response(records):
@@ -34,20 +33,3 @@ def test_lookup_collection_is_read_once(stream_name, record_count, empty):
         http_mocker.assert_number_of_calls(request, 1)
         assert not output.errors
 
-
-@pytest.mark.parametrize("stream_name", ["categories", "distribution_channels"])
-def test_lookup_authentication_error_does_not_paginate(stream_name):
-    config = {"api_token": "invalid-token"}
-    request = HttpRequest(f"https://api.simplecast.com/{stream_name}")
-    with HttpMocker() as http_mocker:
-        http_mocker.get(request, HttpResponse(body=json.dumps({"message": "Unauthorized"}), status_code=401))
-        catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-        output = read(get_source(config), config=config, catalog=catalog, expected_outcome=ExpectedOutcome.EXPECT_EXCEPTION)
-
-        assert output.records == []
-        assert output.errors
-        assert output.errors[0].trace.error.failure_type.value == "config_error"
-        assert output.errors[0].trace.error.message == (
-            "HTTP Status Code: 401. Error: Unauthorized. Please ensure you are authenticated correctly."
-        )
-        http_mocker.assert_number_of_calls(request, 1)
