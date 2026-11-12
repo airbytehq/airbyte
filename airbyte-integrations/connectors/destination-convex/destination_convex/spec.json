@@ -9,7 +9,7 @@
     "title": "Destination Convex",
     "type": "object",
     "required": ["deployment_url", "access_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "deployment_url": {
         "type": "string",

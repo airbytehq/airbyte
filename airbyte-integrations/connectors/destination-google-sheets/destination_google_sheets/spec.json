@@ -7,7 +7,7 @@
     "title": "Destination Google Sheets",
     "type": "object",
     "required": ["spreadsheet_id", "credentials"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "spreadsheet_id": {
         "type": "string",

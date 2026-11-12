@@ -7,7 +7,7 @@
     "title": "Destination Amazon Sqs",
     "type": "object",
     "required": ["queue_url", "region"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "queue_url": {
         "title": "Queue URL",
