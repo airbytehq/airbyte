@@ -1,11 +1,11 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import pytest
+import test_bulk_stream
+import test_product_search_query_performance_report
 from freezegun import freeze_time
 from protocol_helpers import read_helper
 from request_builder import RequestBuilder
-import test_bulk_stream
-import test_product_search_query_performance_report
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -14,10 +14,10 @@ from airbyte_cdk.test.mock_http import HttpResponse
 
 EXPIRED_SIGNATURE = (
     '<?xml version="1.0" encoding="utf-8"?><Error><Code>AuthenticationFailed</Code>'
-    '<Message>Server failed to authenticate the request.</Message>'
-    '<AuthenticationErrorDetail>Signature not valid in the specified time frame: '
-    'Start [2026-01-01] - Expiry [2026-01-02] - Current [2026-01-03]'
-    '</AuthenticationErrorDetail></Error>'
+    "<Message>Server failed to authenticate the request.</Message>"
+    "<AuthenticationErrorDetail>Signature not valid in the specified time frame: "
+    "Start [2026-01-01] - Expiry [2026-01-02] - Current [2026-01-03]"
+    "</AuthenticationErrorDetail></Error>"
 )
 
 
