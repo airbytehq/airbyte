@@ -62,11 +62,10 @@ The YouTube Analytics source connector supports the following [sync modes](https
 | Feature           | Supported?                                                        |
 | :---------------- | :---------------------------------------------------------------- |
 | Full Refresh Sync | Yes                                                               |
-| Incremental Sync  | Yes — report streams; `report_types` is full refresh only         |
+| Incremental Sync  | Yes                                                               |
 
 ## Supported Streams
 
-- [report_types](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/reportTypes/list) - The report types available to your channel or content owner. Full refresh only. The connection check uses this stream because it returns data with valid credentials alone and requires no reporting job.
 - [channel_annotations_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-annotations)
 - [channel_basic_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-user-activity)
 - [channel_cards_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-cards)
@@ -160,8 +159,6 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 | 1.3.3 | 2026-08-26 | [84945](https://github.com/airbytehq/airbyte/pull/84945) | Fail fast with a clear transient error when the daily YouTube API project quota is exhausted, and correctly classify rate-limited and server-error responses |
 | 1.3.2 | 2026-08-18 | [84816](https://github.com/airbytehq/airbyte/pull/84816) | Update dependencies |
 | 1.3.1 | 2026-08-11 | [82653](https://github.com/airbytehq/airbyte/pull/82653) | Update dependencies |
-| 1.3.0 | 2026-08-04 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream, fix `check` failures, and explain 401s caused by a Google account with no YouTube channel |
-| 1.2.12 | 2026-07-30 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the always-available `channel_basic_a3` report instead of `channel_annotations_a1` |
 | 1.2.11 | 2026-07-14 | [82069](https://github.com/airbytehq/airbyte/pull/82069) | Update dependencies |
 | 1.2.10 | 2026-06-30 | [81330](https://github.com/airbytehq/airbyte/pull/81330) | Update dependencies |
 | 1.2.9 | 2026-06-23 | [80732](https://github.com/airbytehq/airbyte/pull/80732) | Update dependencies |
