@@ -131,13 +131,13 @@ definitions:
                     $ref: "#/definitions/streams/calendarlist/retriever/record_selector"
                     record_filter:
                       type: RecordFilter
-                      # Parent-only: calendarlist emits deleted entries, but requesting them as child partitions would 404.
+                      # Parent-only guard: only public calendarlist requests deletions; deleted entries must not become child partitions.
                       condition: "{{ not record.get('deleted', false) }}"
                   requester:
                     $ref: "#/definitions/streams/calendarlist/retriever/requester"
                     request_parameters:
                       maxResults: "250"
-                      showDeleted: "true"
+                      showDeleted: ""
                       showHidden: "true"
                       minAccessRole: reader
               parent_key: id
@@ -164,7 +164,6 @@ definitions:
           http_method: GET
           request_parameters:
             maxResults: "{{ '' if config.get('calendarid') else '250' }}"
-            showDeleted: "{{ '' if config.get('calendarid') else 'true' }}"
             showHidden: "{{ '' if config.get('calendarid') else 'true' }}"
             # Set per router; an empty value drops the parameter.
             minAccessRole: "{{ '' if config.get('calendarid') else parameters.get('min_access_role', '') }}"
@@ -180,7 +179,7 @@ definitions:
               on_no_records: emit_parent
           record_filter:
             type: RecordFilter
-            # Parent-only: skip empty pages without an id and deleted entries (child requests would 404); calendarlist still emits deletions.
+            # Parent-only guard: skip empty pages without an id and unexpected deleted entries; only public calendarlist requests deletions.
             condition: "{{ record.get('id') and not record.get('deleted', false) }}"
         paginator:
           type: DefaultPaginator
@@ -1338,6 +1337,18 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      summaryOverride:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
       dataOwner:
         type:
           - string
@@ -1567,6 +1578,28 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      gadget:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      locked:
+        type:
+          - boolean
+          - "null"
+      attendeesOmitted:
+        type:
+          - boolean
+          - "null"
+      birthdayProperties:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      colorId:
+        type:
+          - string
+          - "null"
       focusTimeProperties:
         type:
           - object

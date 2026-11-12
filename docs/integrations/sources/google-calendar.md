@@ -45,7 +45,7 @@ For Airbyte Open Source, or to use **Authenticate with custom app (client ID / s
 5. Under **Authentication**, choose **Authenticate via Google (OAuth)** and authorize your Google account. Alternatively, choose **Authenticate with custom app (client ID / secret)** and enter your own app's **Client ID**, **Client secret**, and **Refresh token** from [Google Calendar setup](#set-up-google-calendar).
 6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync `events`, `acl`, and `freebusy` from only that calendar; `calendarlist` and `calendars` ignore this setting. The calendar does not need to appear in the account's calendar list; it is read directly. The value `primary` is accepted for the account's primary calendar. Leave empty to sync every calendar in the account's calendar list, hidden calendars included.
 7. (Optional) For **Start Date**, enter the earliest event `updated` timestamp in the format `YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`. When unset, the cursor starts at `2000-01-01T00:00:00Z`. On an initial sync or full re-read, the connector sends the filter server-side only for a date within the last 21 days; otherwise it reads the calendar and drops older events itself (see [Events sync behavior](#events-sync-behavior)).
-8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
+8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3). Values below 2 run with 2 workers.
 9. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
@@ -62,7 +62,7 @@ For Airbyte Open Source, or to use **Authenticate with custom app (client ID / s
 5. Under **Authentication**, choose **Authenticate with custom app (client ID / secret)** and enter the **Client ID**, **Client secret**, and **Refresh token** from [Google Calendar setup](#set-up-google-calendar) — a refresh token issued by *your own* Google Cloud OAuth app with the `calendar.readonly` and `calendar.acls.readonly` scopes, plus that app's client ID and client secret. Without `calendar.acls.readonly`, the `acl` stream fails with a configuration error — generate a new refresh token that includes the scope, or deselect the stream.
 6. (Optional) For **Calendar Id**, enter a specific calendar ID to sync `events`, `acl`, and `freebusy` from only that calendar, or `primary` for the account's primary calendar; `calendarlist` and `calendars` ignore this setting. The calendar does not need to appear in the account's calendar list; it is read directly. Leave empty to sync every calendar in the account's calendar list, hidden calendars included.
 7. (Optional) For **Start Date**, enter the earliest event `updated` timestamp (`YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DDTHH:mm:ss.SSSZ`). When unset, the cursor starts at `2000-01-01T00:00:00Z`. On an initial sync or full re-read, the connector sends the filter server-side only for a date within the last 21 days; otherwise it reads the calendar and drops older events itself (see [Events sync behavior](#events-sync-behavior)).
-8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3).
+8. (Optional) For **Number of concurrent workers**, set the number of concurrent request workers (1–10, default 3). Values below 2 run with 2 workers.
 9. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
@@ -74,7 +74,7 @@ If you configure the connector with a configuration file, the Airbyte API, or Te
 - `auth_type`: `oauth2.0` for **Authenticate via Google (OAuth)** or `manual` for **Authenticate with custom app (client ID / secret)**.
 - `client_id`, `client_secret`, and `refresh_token`. The OAuth flow fills these in for the `oauth2.0` option.
 
-The optional top-level fields are `calendarid`, `start_date`, and `num_workers` (default 3, range 1–10).
+The optional top-level fields are `calendarid`, `start_date`, and `num_workers` (default 3, range 1–10). Values below 2 run with 2 workers.
 
 Before version 1.1.0, the credentials were the top-level fields `client_id`, `client_secret`, and `client_refresh_token_2`. On its first run on version 1.1.0 or later, the connector rewrites a saved configuration that uses these fields to `credentials` with `auth_type: manual`, so existing connections keep working with the same OAuth app. Keep the following in mind:
 
@@ -110,7 +110,7 @@ With **Calendar Id** empty, `events` reads only calendars the account can read e
 
 Deleted events are replicated: cancelled events arrive with `status: "cancelled"` (`showDeleted=true`) and are stamped with an `updated` value so they replace the live row under Append + Deduped (see [Events sync behavior](#events-sync-behavior)).
 
-Deleted calendar-list entries appear in `calendarlist` with `deleted: true`, and deleted sharing rules appear in `acl` with `role: "none"`. Removed calendars are not read by `calendars`, `events`, `acl`, or `freebusy`; this prevents requests for calendars you no longer have access to. The full-refresh `calendars` stream has no deletion record of its own: a removed calendar drops out of the next snapshot, and its deletion is visible in `calendarlist`.
+Deleted calendar-list entries appear in `calendarlist` with `deleted: true`, and deleted sharing rules appear in `acl` with `role: "none"`. Internal calendar-list reads do not request deleted entries and guard against using them as child partitions. Removed calendars are not read by `calendars`, `events`, `acl`, or `freebusy`; this prevents requests for calendars you no longer have access to. The full-refresh `calendars` stream has no deletion record of its own: a removed calendar drops out of the next snapshot, and its deletion is visible in `calendarlist`.
 
 ## Google user data
 

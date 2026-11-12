@@ -2,6 +2,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
 
 import pytest
@@ -69,7 +70,17 @@ def test_list_page_sizes_and_tombstones(stream: str, path: str, empty: bool) -> 
 @pytest.mark.parametrize(
     "stream,properties",
     [
-        ("calendarlist", {"dataOwner": "owner@example.com", "autoAcceptInvitations": True, "deleted": False}),
+        (
+            "calendarlist",
+            {
+                "dataOwner": "owner@example.com",
+                "autoAcceptInvitations": True,
+                "deleted": False,
+                "summaryOverride": "Work",
+                "location": "Office",
+                "hidden": True,
+            },
+        ),
         (
             "calendars",
             {
@@ -93,6 +104,11 @@ def test_list_page_sizes_and_tombstones(stream: str, path: str, empty: bool) -> 
                     "officeLocation": {"buildingId": "building", "floorId": "floor", "deskId": "desk"},
                 },
                 "eventLabelId": "label",
+                "gadget": {"title": "Birthday", "height": 100},
+                "locked": False,
+                "attendeesOmitted": True,
+                "birthdayProperties": {"type": "birthday", "contact": "people/person"},
+                "colorId": "1",
             },
         ),
     ],
@@ -100,7 +116,42 @@ def test_list_page_sizes_and_tombstones(stream: str, path: str, empty: bool) -> 
 def test_additive_schema_fields_are_typed_and_nullable(stream: str, properties: dict) -> None:
     catalog = get_source(_CONFIG).discover(logging.getLogger("test"), _CONFIG)
     schema = next(s.json_schema for s in catalog.streams if s.name == stream)
+    config = {**_CONFIG, "calendarid": "primary"}
+    record = {"id": "primary", **properties}
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            HttpRequest(
+                "https://oauth2.googleapis.com/token", body="grant_type=refresh_token&client_id=id&client_secret=secret&refresh_token=rt"
+            ),
+            HttpResponse('{"access_token":"test-access-token","expires_in":3600}'),
+        )
+        if stream in ("calendarlist", "calendars"):
+            params = {"maxResults": "250"}
+            if stream == "calendarlist":
+                params["showDeleted"] = "true"
+            else:
+                params.update({"showHidden": "true", "minAccessRole": "reader"})
+            http_mocker.get(
+                HttpRequest(f"{_BASE_URL}/users/me/calendarList", query_params=params),
+                HttpResponse(json.dumps({"items": [record]})),
+            )
+        if stream in ("events", "calendars"):
+            http_mocker.get(HttpRequest(f"{_BASE_URL}/calendars/primary"), HttpResponse(json.dumps(record)))
+        if stream == "events":
+            http_mocker.get(
+                HttpRequest(
+                    f"{_BASE_URL}/calendars/primary/events",
+                    query_params={"showDeleted": "true", "maxResults": "2500", "singleEvents": "false"},
+                ),
+                HttpResponse(json.dumps({"items": [record]})),
+            )
+        output = read(get_source(config), config, CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build())
+    assert output.errors == []
+    assert len(output.records) == 1
+    emitted = output.records[0].record.data
+    Draft7Validator(schema).validate(emitted)
     for field, value in properties.items():
+        assert emitted[field] == value
         declaration = schema["properties"][field]
         Draft7Validator.check_schema(declaration)
         validator = Draft7Validator(declaration)
