@@ -260,6 +260,52 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @pytest.mark.parametrize(
+        "completion_order",
+        [
+            pytest.param([0, 1, 2, 3, 4, 5], id="in_order"),
+            pytest.param([2, 1, 4, 0, 5, 3], id="out_of_order"),
+        ],
+    )
+    @freeze_time("2010-02-01")
+    def test_read_records_lookback_never_moves_cursor_backwards(self, mocker, api, some_config, completion_order):
+        """Re-reading the lookback window must not lower the emitted cursor below the one loaded from state,
+        so an interrupted attempt persists the input cursor and does not widen the next attempt's window."""
+        account_id = some_config["account_ids"][0]
+        input_cursor = date(2010, 1, 10)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2010, 1, 12),
+            insights_lookback_window=3,
+        )
+        stream.state = {account_id: {"date_start": input_cursor.isoformat(), "slices": ["2010-01-05"]}, "time_increment": 1}
+        # lookback window starts at 2010-01-07, the stream re-reads 01-07..01-12
+        slice_starts = [date(2010, 1, 7) + timedelta(days=i) for i in range(6)]
+
+        emitted_states = []
+        for index in completion_order:
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.get_result.return_value = []
+            job.interval = DateInterval(slice_starts[index], slice_starts[index])
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice={"insight_job": job, "account_id": account_id}))
+            emitted_states.append(copy.deepcopy(stream.state[account_id]))
+
+        assert all(state["date_start"] >= input_cursor.isoformat() for state in emitted_states)
+        assert emitted_states[-1] == {"date_start": "2010-01-12", "slices": ["2010-01-05"]}
+
+        # interrupted attempt: the next attempt starts again from input cursor - lookback, not earlier
+        interrupted = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2010, 1, 12),
+            insights_lookback_window=3,
+        )
+        interrupted.state = {account_id: emitted_states[2], "time_increment": 1}
+        assert interrupted._get_start_date()[account_id] >= input_cursor - timedelta(days=3)
+
     def test_read_records_add_account_id(self, mocker, api, some_config):
         rec_without_account = mocker.Mock()
         rec_without_account.export_all_data.return_value = {}
