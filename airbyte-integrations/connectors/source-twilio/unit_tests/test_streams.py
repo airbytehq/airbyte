@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
+import components
 import pytest
 from components import TwilioConferencesStateMigration
 from conftest import TEST_CONFIG, get_source
@@ -85,6 +86,89 @@ def _parse_alert_date(value):
 
 def _alert_state_date(output):
     return output.most_recent_state.stream_state.__dict__["date_generated"]
+
+
+@pytest.mark.parametrize(
+    "state_kind,expected_lower",
+    [
+        pytest.param("mixed", "2026-11-09 12:00:00Z", id="mixed"),
+        pytest.param("partition_only", "2026-01-15 12:00:00Z", id="partition_only"),
+        pytest.param("global", "2026-11-09 12:00:00Z", id="already_global"),
+    ],
+)
+@pytest.mark.parametrize("lookback_minutes", [0, 60])
+@freeze_time("2026-11-11 12:00:00+00:00")
+def test_messages_global_cursor_state(requests_mock, state_kind, expected_lower, lookback_minutes):
+    stream_state = {"use_global_cursor": state_kind == "global", "lookback_window": 0}
+    if state_kind != "partition_only":
+        stream_state["state"] = {"date_sent": "2026-11-09T12:00:00Z"}
+    if state_kind != "global":
+        stream_state["states"] = [
+            {
+                "partition": {"subresource_uri": f"/2010-04-01/Accounts/{sid}/Messages.json", "parent_slice": {}},
+                "cursor": {"date_sent": cursor},
+            }
+            for sid, cursor in [("AC123", "2026-02-15T12:00:00Z"), ("AC456", "2026-01-15T12:00:00Z")]
+        ]
+    state = StateBuilder().with_stream_state("messages", stream_state).build()
+    requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+    messages = requests_mock.get(
+        f"{BASE}/Accounts/AC123/Messages.json",
+        json={"messages": [{"sid": "SM123", "date_sent": "2026-11-11T11:00:00Z"}]},
+    )
+    config = {**TEST_CONFIG, "lookback_window": lookback_minutes, "slice_step_duration": "P1Y"}
+    output = read_from_stream(config, "messages", SyncMode.incremental, state)
+    query = parse_qs(urlparse(messages.request_history[0].url).query)
+    lower = datetime.strptime(expected_lower, "%Y-%m-%d %H:%M:%SZ") - timedelta(minutes=lookback_minutes)
+    assert query["DateSent>"] == [lower.strftime("%Y-%m-%d %H:%M:%SZ")]
+    assert [record.record.data["sid"] for record in output.records] == ["SM123"]
+    assert output.most_recent_state.stream_state.__dict__ == {
+        "use_global_cursor": True,
+        "state": {"date_sent": "2026-11-11 11:00:00Z"},
+        "lookback_window": 0,
+        "parent_state": {},
+    }
+
+
+@pytest.mark.parametrize(
+    "stream_state,expected_cursor",
+    [
+        ({"states": []}, None),
+        ({"states": [{"cursor": {}}]}, None),
+        ({"states": [{"cursor": {"date_sent": "2026-11-09T00:00:00Z"}}, {"cursor": {}}]}, None),
+        ({"date_sent": "2026-11-09T00:00:00Z"}, "2026-11-09T00:00:00Z"),
+        (
+            {
+                "states": [
+                    {"cursor": {"date_sent": "2026-11-09T00:30:00+01:00"}},
+                    {"cursor": {"date_sent": "2026-11-08T23:45:00Z"}},
+                ]
+            },
+            "2026-11-09T00:30:00+01:00",
+        ),
+        ({"state": {"date_sent": "2026-11-09T00:00:00Z"}, "states": [{"cursor": {"date_sent": "invalid"}}]}, "2026-11-09T00:00:00Z"),
+    ],
+)
+def test_messages_state_migration(stream_state, expected_cursor):
+    migration = components.TwilioMessagesStateMigration()
+    stream_state = {**stream_state, "lookback_window": 60, "parent_state": {"accounts": {}}}
+    assert migration.should_migrate(stream_state)
+    expected = {"use_global_cursor": True, "lookback_window": 60, "parent_state": {"accounts": {}}}
+    if expected_cursor:
+        expected["state"] = {"date_sent": expected_cursor}
+    migrated = migration.migrate(stream_state)
+    assert migrated == expected
+    assert not migration.should_migrate(migrated)
+
+
+@pytest.mark.parametrize("stream_state", [{}, {"use_global_cursor": True, "state": {"date_sent": "2026-11-09 12:00:00Z"}}])
+def test_messages_state_migration_no_op(stream_state):
+    assert not components.TwilioMessagesStateMigration().should_migrate(stream_state)
+
+
+def test_messages_state_migration_invalid_cursor():
+    with pytest.raises(ValueError):
+        components.TwilioMessagesStateMigration().migrate({"states": [{"cursor": {"date_sent": "invalid"}}]})
 
 
 class TestTwilioStream:
