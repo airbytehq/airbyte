@@ -185,5 +185,82 @@
         "updatedAt": "2040-11-16T00:00:00.000Z"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "events"
+      },
+      "stream_state": {
+        "eventAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "teams"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "roles"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "profiles"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "rulesets"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "favorites"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "mail_aliases"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   }
 ]
