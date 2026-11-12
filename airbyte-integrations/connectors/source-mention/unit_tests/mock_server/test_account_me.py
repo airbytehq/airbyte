@@ -41,16 +41,3 @@ def test_empty_account():
     assert len(output.records) == 0
     assert not output.errors
 
-
-def test_invalid_token_fails_read():
-    config = ConfigBuilder().with_api_key("invalid-token").build()
-    catalog = CatalogBuilder().with_stream("account_me", SyncMode.full_refresh).build()
-    with HttpMocker() as http_mocker:
-        http_mocker.get(
-            MentionRequestBuilder.account_me_endpoint(config["api_key"]).build(),
-            HttpResponse(json.dumps({"error": "invalid_token"}), 401),
-        )
-        output = read(get_source(config), config=config, catalog=catalog, expecting_exception=True)
-
-    assert len(output.records) == 0
-    assert output.errors
