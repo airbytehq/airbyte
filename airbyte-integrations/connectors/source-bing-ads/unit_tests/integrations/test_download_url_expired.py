@@ -31,7 +31,11 @@ def _expired_sas_response() -> HttpResponse:
     return HttpResponse(EXPIRED_SAS_BODY, 403, EXPIRED_SAS_HEADERS)
 
 
-def _assert_expired_download_error(output, stream_name: str) -> None:
+def _expired_message(stream_name: str) -> str:
+    return f"The Bing Ads download link for stream '{stream_name}' expired before the file could be downloaded. The sync will retry."
+
+
+def _assert_download_error(output, expected_message: str) -> None:
     assert not output.records
     # The CDK always ends a failed concurrent read with a generic config_error summary
     # ("During the sync, the following streams did not sync successfully"); the per-stream
@@ -40,9 +44,7 @@ def _assert_expired_download_error(output, stream_name: str) -> None:
     assert len(stream_errors) == 1
     error = stream_errors[0]
     assert error.failure_type == FailureType.transient_error
-    assert error.message == (
-        f"The Bing Ads download link for stream '{stream_name}' expired before the file could be downloaded. The sync will retry."
-    )
+    assert error.message == expected_message
 
 
 class TestBulkDownloadUrlExpired(TestBulkStream):
@@ -50,6 +52,21 @@ class TestBulkDownloadUrlExpired(TestBulkStream):
     download_entity = "AppInstallAds"
 
     def test_expired_bulk_download_url_raises_transient_error(self):
+        self._run_bulk_download_403(_expired_sas_response(), _expired_message(self.stream_name))
+
+    def test_other_bulk_download_403_raises_transient_error_with_azure_error_code(self):
+        response = HttpResponse(
+            '<?xml version="1.0" encoding="utf-8"?><Error><Code>AuthorizationPermissionMismatch</Code></Error>',
+            403,
+            {"Content-Type": "application/xml", "x-ms-error-code": "AuthorizationPermissionMismatch"},
+        )
+        self._run_bulk_download_403(
+            response,
+            f"The Bing Ads download link for stream '{self.stream_name}' was rejected by Azure Blob Storage "
+            "(HTTP 403, error code 'AuthorizationPermissionMismatch'). The sync will retry.",
+        )
+
+    def _run_bulk_download_403(self, download_response: HttpResponse, expected_message: str) -> None:
         self.mock_user_query_api(response_template="user_query")
         self.mock_accounts_search_api(
             response_template="accounts_search_for_report",
@@ -58,12 +75,12 @@ class TestBulkDownloadUrlExpired(TestBulkStream):
         self.mock_bulk_download_request()
         self.mock_bulk_download_status_query()
         download_request = RequestBuilder(resource="path/to/bulk/resultquery/url", api="bulk").build()
-        self.http_mocker.get(download_request, _expired_sas_response())
+        self.http_mocker.get(download_request, download_response)
 
         catalog = CatalogBuilder().with_stream(self.stream_name, SyncMode.full_refresh).build()
         output = read_helper(self._config, catalog, expecting_exception=True)
 
-        _assert_expired_download_error(output, self.stream_name)
+        _assert_download_error(output, expected_message)
         # Re-requesting the same expired URL cannot succeed, so the download is not retried in-process.
         self.http_mocker.assert_number_of_calls(download_request, 1)
 
@@ -90,5 +107,5 @@ class TestReportDownloadUrlExpired(BaseTest):
         catalog = CatalogBuilder().with_stream(self.stream_name, SyncMode.full_refresh).build()
         output = read_helper(self._config, catalog, expecting_exception=True)
 
-        _assert_expired_download_error(output, self.stream_name)
+        _assert_download_error(output, _expired_message(self.stream_name))
         self.http_mocker.assert_number_of_calls(download_request, 1)

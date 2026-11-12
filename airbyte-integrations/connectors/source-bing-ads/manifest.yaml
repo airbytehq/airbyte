@@ -2613,17 +2613,21 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
-  # Azure Blob Storage answers 403 with `x-ms-error-code: AuthenticationFailed` when the pre-signed
-  # SAS download URL returned by the Reporting/Bulk API has expired. This is not a permissions problem,
-  # so override the CDK default 403 mapping (config_error, "You don't have permission...").
+  # Report/bulk files are downloaded from pre-signed Azure Blob Storage (SAS) URLs, so a 403 there is never
+  # caused by the user's Bing Ads credentials or permissions. Azure sends `x-ms-error-code: AuthenticationFailed`
+  # when the link has expired. Override the CDK default 403 mapping (config_error, "You don't have permission...").
+  # Match on http_codes only: a `predicate` would read the body of every response, including successful
+  # streamed downloads, before the CSV decoder gets to it.
   download_requester_error_handler:
     type: DefaultErrorHandler
     response_filters:
       - type: HttpResponseFilter
         action: FAIL
         failure_type: transient_error
-        predicate: "{{ headers.get('x-ms-error-code') == 'AuthenticationFailed' }}"
-        error_message: "The Bing Ads download link for stream '{{ parameters.get('stream_name') }}' expired before the file could be downloaded. The sync will retry."
+        http_codes:
+          - 403
+        error_message: >-
+          {% if headers.get('x-ms-error-code') == 'AuthenticationFailed' %}The Bing Ads download link for stream '{{ parameters.get('stream_name') }}' expired before the file could be downloaded. The sync will retry.{% else %}The Bing Ads download link for stream '{{ parameters.get('stream_name') }}' was rejected by Azure Blob Storage (HTTP 403, error code '{{ headers.get('x-ms-error-code') }}'). The sync will retry.{% endif %}
 
   # base retrievers
   basic_async_retriever:
