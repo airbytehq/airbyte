@@ -1037,8 +1037,14 @@ def _messages_partition(account_sid):
         pytest.param(
             {
                 "states": [
-                    {"partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"}, "cursor": {"date_sent": "2022-11-14T00:00:00Z"}},
-                    {"partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json"}, "cursor": {"date_sent": "2022-11-13T12:11:10Z"}},
+                    {
+                        "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                        "cursor": {"date_sent": "2022-11-14T00:00:00Z"},
+                    },
+                    {
+                        "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json"},
+                        "cursor": {"date_sent": "2022-11-13T12:11:10Z"},
+                    },
                 ]
             },
             "2022-11-13 12:11:10Z",
