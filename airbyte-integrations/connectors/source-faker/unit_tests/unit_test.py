@@ -188,6 +188,34 @@ def test_read_products_count():
     assert [record["id"] for record in records] == list(range(1, 11))
 
 
+@pytest.mark.parametrize(
+    "products_count, records_per_slice",
+    [
+        pytest.param(50, 20, id="two_full_slices_and_a_partial_one"),
+        pytest.param(10, 3, id="single_trailing_product"),
+        pytest.param(100, 30, id="full_catalog_with_partial_last_slice"),
+    ],
+)
+def test_read_products_emits_partial_last_slice(products_count, records_per_slice):
+    """`products_count` products are emitted even when it is not a multiple of `records_per_slice`."""
+    source = SourceFaker()
+    config = {"count": 1000, "seed": 7, "products_count": products_count, "records_per_slice": records_per_slice, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    messages = list(source.read(logger, config, catalog, {}))
+
+    records = [message.record.data for message in messages if message.type is Type.RECORD]
+    states = [message.state.stream.stream_state for message in messages if message.type is Type.STATE]
+
+    assert [record["id"] for record in records] == list(range(1, products_count + 1))
+    # The final checkpoint covers the last product of the trailing partial slice.
+    assert states[-1].updated_at == records[-1]["updated_at"]
+
+
 def test_read_big_random_data():
     source = SourceFaker()
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
