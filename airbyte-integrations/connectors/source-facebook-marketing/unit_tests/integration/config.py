@@ -70,5 +70,13 @@ class ConfigBuilder:
         self._config["adset_statuses"] = statuses
         return self
 
+    def with_custom_insights(self, custom_insights: List[MutableMapping[str, Any]]) -> ConfigBuilder:
+        self._config["custom_insights"] = custom_insights
+        return self
+
+    def with_include_incrementality(self, include_incrementality: bool) -> ConfigBuilder:
+        self._config["include_incrementality"] = include_incrementality
+        return self
+
     def build(self) -> MutableMapping[str, Any]:
         return self._config
