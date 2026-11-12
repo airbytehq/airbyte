@@ -176,7 +176,12 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        """
+        Only legacy states (without a saved `channel_messages` parent state) need migrating. Once the CDK has written
+        per-channel parent cursors, rebuilding them here would collapse them into a single value (or reset them to
+        `start_date` when the threads state uses a global cursor) and force every channel to be re-read.
+        """
+        return not (stream_state or {}).get("parent_state", {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:

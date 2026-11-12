@@ -4,11 +4,17 @@
 
 ## 1. Auto-Joining Channels During Sync
 
-When `join_channels` is enabled in the config, the `ChannelsRetriever` automatically joins Slack channels by making POST requests to `conversations.join` during the channels stream read. For each non-archived channel where the bot's `is_member` property is false, the connector fires a side-effect API call to join that channel before yielding the record. Archived channels are always skipped because the Slack API rejects `conversations.join` for archived channels. This means reading the channels stream can modify the Slack workspace state.
+When `join_channels` is enabled in the config, the `ChannelsRetriever` automatically joins Slack channels by making POST requests to `conversations.join` during the channels stream read. For each non-archived channel where the bot's `is_member` property is false, the connector fires a side-effect API call to join that channel before yielding the record. Archived channels are always skipped because the Slack API rejects `conversations.join` for archived channels. This means reading the channels stream can modify the Slack workspace state. For the same reason, `channel_messages` and `threads` only build partitions for channels the bot is a member of, plus non-archived channels it can join when `join_channels` is enabled. Archived non-member channels are listed by the `channels` stream (with `include_archived_channels`) but never read for messages.
 
 **Why this matters:** The channels stream is not read-only when `join_channels` is enabled. It actively modifies the workspace by joining channels, which is a side effect that no other connector stream produces. The Slack API only returns messages from channels the bot has joined, so this behavior exists to ensure the messages and threads streams can actually retrieve data. If the bot lacks permission to join a channel, it logs a warning but does not fail the sync.
 
-## 2. Dynamic Rate Limit Policy Switching on First 429
+## 2. Threads State Migration Preserves Per-Channel Parent Cursors
+
+The `threads` stream uses `ThreadsStateMigration` to convert legacy states (old `float_ts` or `states`-only shapes) into a `parent_state.channel_messages` cursor. The migration only runs when no `parent_state.channel_messages` is present. Once the CDK has written per-channel parent cursors, they are passed through untouched.
+
+**Why this matters:** Rebuilding the parent state from the threads cursors collapses every channel to one value, and when the threads state uses a global cursor (no `states` list) it falls back to `start_date`, which forces a full re-read of `conversations.history` on every attempt.
+
+## 3. Dynamic Rate Limit Policy Switching on First 429
 
 The `MessagesAndThreadsApiBudget` starts with an `UnlimitedCallRatePolicy` (no rate limiting) and dynamically switches to a `MovingWindowCallRatePolicy` of 1 request per 60 seconds after the first 429 response. This switch is permanent for the duration of the sync and only applies to OAuth connections (API token connections do not use this budget).
 
