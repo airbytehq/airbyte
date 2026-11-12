@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from pathlib import Path
 
 import jsonschema
@@ -10,6 +11,7 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
+from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
 
 
@@ -94,6 +96,28 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+def _run_check(config, tmp_path):
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config))
+    entrypoint = AirbyteEntrypoint(SourceFaker())
+    parsed_args = entrypoint.parse_args(["check", "--config", str(config_path)])
+    messages = [json.loads(message) for message in entrypoint.run(parsed_args)]
+    return [m["connectionStatus"] for m in messages if m["type"] == "CONNECTION_STATUS"]
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param({"count": 5000, "seed": 42}, id="records_per_slice_and_parallelism_omitted"),
+        pytest.param({"count": 5000, "records_per_slice": 1000}, id="parallelism_omitted"),
+        pytest.param({"count": 5000, "parallelism": 2}, id="records_per_slice_omitted"),
+        pytest.param({}, id="all_settings_omitted"),
+    ],
+)
+def test_check_succeeds_when_optional_settings_are_omitted(config, tmp_path):
+    assert _run_check(config, tmp_path) == [{"status": "SUCCEEDED"}]
 
 
 def test_read_small_random_data():
