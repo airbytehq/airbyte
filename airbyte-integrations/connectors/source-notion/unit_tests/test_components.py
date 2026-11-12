@@ -1,7 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from datetime import datetime
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
@@ -16,6 +19,70 @@ state_test_records = [
     {"id": "2", "last_edited_time": "2022-01-03T00:00:00.000Z"},
     {"id": "3", "last_edited_time": "2022-01-04T00:00:00.000Z"},
 ]
+
+
+@pytest.mark.parametrize("state_shape", ["global", "legacy", "empty"])
+@pytest.mark.parametrize("empty_response", [False, True])
+def test_blocks_incremental_filters_unchanged_blocks(requests_mock, state_shape, empty_response):
+    cursor = {"last_edited_time": "2024-01-01T00:00:00.000Z"}
+    stream_state = (
+        {"use_global_cursor": True, "state": cursor, "lookback_window": 0, "parent_state": {}}
+        if state_shape == "global"
+        else (cursor if state_shape == "legacy" else {})
+    )
+    old_time = "2023-01-01T00:00:00.000Z"
+    new_time = "2024-06-01T00:00:00.000Z"
+    child_time = "2024-07-01T00:00:00.000Z"
+
+    def block(block_id, edited_time, has_children=False):
+        return {
+            "object": "block",
+            "id": block_id,
+            "type": "paragraph",
+            "paragraph": {},
+            "last_edited_time": edited_time,
+            "has_children": has_children,
+        }
+
+    def response(records):
+        return {"results": records, "has_more": False, "next_cursor": None}
+
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json=response([{"object": "page", "id": "page-1", "last_edited_time": new_time, "properties": {}}]),
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children",
+        json=response([] if empty_response else [block("old", old_time), block("new", new_time, True)]),
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/new/children",
+        json=response([block("old-child", old_time), block("new-child", child_time)]),
+    )
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state("blocks", stream_state).build()
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+    expected_ids = (
+        [] if empty_response else (["old", "old-child", "new-child", "new"] if state_shape == "empty" else ["new-child", "new"])
+    )
+    assert [message.record.data["id"] for message in output.records] == expected_ids
+    emitted_state = output.state_messages[-1].state.stream.stream_state
+    if empty_response and state_shape == "empty":
+        assert not getattr(emitted_state, "state", {})
+    else:
+        expected_cursor = cursor["last_edited_time"] if empty_response else child_time
+        assert datetime.fromisoformat(emitted_state.state["last_edited_time"]) == datetime.fromisoformat(expected_cursor)
 
 
 def test_blocks_retriever_depth_restored_after_children(components_module):
