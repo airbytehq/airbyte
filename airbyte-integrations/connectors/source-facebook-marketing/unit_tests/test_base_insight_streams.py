@@ -229,6 +229,46 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @freeze_time("2026-10-01")
+    @pytest.mark.parametrize("has_records", [True, False])
+    def test_interrupted_lookback_preserves_cursor(self, mocker, api, some_config, async_manager_mock, has_records):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 9, 20)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 8, 1),
+            end_date=datetime(2026, 9, 22),
+            insights_lookback_window=28,
+        )
+        record = mocker.Mock()
+        record.export_all_data.return_value = {}
+
+        def completed_jobs():
+            for generated_job in async_manager_mock.call_args.kwargs["jobs"]:
+                job = mocker.Mock(spec=InsightAsyncJob)
+                job.interval = generated_job.interval
+                job.get_result.return_value = [record] if has_records else []
+                yield job
+
+        async_manager_mock.completed_jobs.side_effect = completed_jobs
+        slices = iter(
+            stream.stream_slices(
+                sync_mode=SyncMode.incremental,
+                stream_state={account_id: {"date_start": cursor.isoformat()}, "time_increment": 1},
+            )
+        )
+        first_slice = next(slices)
+        assert first_slice["insight_job"].interval.start == cursor - timedelta(days=28)
+        list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=first_slice))
+
+        assert stream.state[account_id]["date_start"] == cursor.isoformat()
+
+        for stream_slice in slices:
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+
+        assert stream.state[account_id]["date_start"] == "2026-09-22"
+
     def test_read_records_random_order(self, mocker, api, some_config):
         """1. yield all from mock
         2. if read slice 2, 3 state not changed
