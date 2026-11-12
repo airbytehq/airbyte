@@ -27,3 +27,7 @@ Pages and blocks that are not shared with the integration therefore drop out sil
 All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal, see above).
 
 `pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. `users` is full refresh only.
+
+For `pages`, `data_sources` and `comments` the CDK applies that filter in the record selector. It does not do so for `blocks`, because the CDK only hands the cursor to the record selector of a plain `SimpleRetriever`, not to one nested in a `CustomRetriever`. `BlocksRetriever` therefore declares a `cursor` field, which the CDK fills with the stream's cursor, and drops the blocks for which `cursor.should_be_synced()` is false. It filters after the recursion, so an unchanged block is still traversed and edits to its children are still emitted; an incremental sync of `blocks` makes as many requests as a full refresh and only emits fewer records.
+
+`unit_tests/pyproject.toml` pins `airbyte-cdk` to the version of the base image in `metadata.yaml`. Keep the two in step: the `blocks` filter above went missing on a CDK upgrade of the base image while the unit tests still ran an older CDK and kept passing.

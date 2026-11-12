@@ -279,3 +279,90 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+def _block(block_id, last_edited_time, has_children=False):
+    return {
+        "object": "block",
+        "id": block_id,
+        "parent": {"type": "page_id", "page_id": "page-1"},
+        "last_edited_time": last_edited_time,
+        "has_children": has_children,
+        "type": "paragraph",
+    }
+
+
+def _list_response(results):
+    return {"object": "list", "results": results, "next_cursor": None, "has_more": False}
+
+
+def _read_blocks_incremental(requests_mock, page_blocks, nested_blocks, stream_state):
+    """Read `blocks` for one page whose block `parent` holds `nested_blocks`; returns the output and the requests sent."""
+    requests_mock.reset_mock()
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json=_list_response([{"object": "page", "id": "page-1", "last_edited_time": "2023-08-02T00:00:00.000Z"}]),
+    )
+    requests_mock.get("https://api.notion.com/v1/blocks/page-1/children?page_size=100", json=_list_response(page_blocks))
+    requests_mock.get("https://api.notion.com/v1/blocks/parent/children?page_size=100", json=_list_response(nested_blocks))
+
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state("blocks", stream_state).build()
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+    assert output.errors == []
+    return output, [f"{request.method} {request.url}" for request in requests_mock.request_history]
+
+
+def test_blocks_incremental_read_emits_only_blocks_edited_since_the_state(requests_mock):
+    """
+    A second incremental read emits only the blocks edited at or after the saved cursor value. Blocks under a parent
+    that was not edited itself are still fetched, so their edits are not lost.
+    """
+    first_output, _ = _read_blocks_incremental(
+        requests_mock,
+        page_blocks=[
+            _block("old", "2023-01-01T00:00:00.000Z"),
+            _block("parent", "2023-02-01T00:00:00.000Z", has_children=True),
+            _block("latest", "2023-07-02T00:00:00.000Z"),
+        ],
+        nested_blocks=[_block("nested-old", "2023-01-05T00:00:00.000Z"), _block("nested-edited-later", "2023-01-06T00:00:00.000Z")],
+        stream_state={},
+    )
+    assert [record.record.data["id"] for record in first_output.records] == ["old", "nested-old", "nested-edited-later", "parent", "latest"]
+    first_state = first_output.most_recent_state.stream_state.__dict__
+    assert first_state["state"] == {"last_edited_time": "2023-07-02T00:00:00.000000Z"}
+
+    # Between the two syncs one nested block is edited and one block is added; `parent` itself is left untouched.
+    second_output, second_requests = _read_blocks_incremental(
+        requests_mock,
+        page_blocks=[
+            _block("old", "2023-01-01T00:00:00.000Z"),
+            _block("parent", "2023-02-01T00:00:00.000Z", has_children=True),
+            _block("latest", "2023-07-02T00:00:00.000Z"),
+            _block("added", "2023-08-02T00:00:00.000Z"),
+        ],
+        nested_blocks=[_block("nested-old", "2023-01-05T00:00:00.000Z"), _block("nested-edited-later", "2023-08-01T00:00:00.000Z")],
+        stream_state=first_state,
+    )
+
+    # `latest` sits exactly on the saved cursor value: the lower bound is inclusive, so it is the one expected repeat.
+    assert [record.record.data["id"] for record in second_output.records] == ["nested-edited-later", "latest", "added"]
+    # The position among the siblings counts the blocks that are filtered out too.
+    assert [record.record.data["parent"]["sequence_number"] for record in second_output.records] == [1, 2, 3]
+    assert second_requests == [
+        "POST https://api.notion.com/v1/search",
+        "GET https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        "GET https://api.notion.com/v1/blocks/parent/children?page_size=100",
+    ]
+    assert second_output.most_recent_state.stream_state.__dict__["state"] == {"last_edited_time": "2023-08-02T00:00:00.000000Z"}
