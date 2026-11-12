@@ -185,5 +185,71 @@
         "updatedAt": "2040-11-16T00:00:00.000Z"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "content_categories"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "content_category_memberships"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "content_category_ownerships"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "opportunity_stages"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "opportunity_prospect_roles"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "task_priorities"
+      },
+      "stream_state": {
+        "updatedAt": "2040-11-16T00:00:00.000Z"
+      }
+    }
   }
 ]
