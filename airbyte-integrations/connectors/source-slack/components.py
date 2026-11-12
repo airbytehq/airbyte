@@ -176,7 +176,9 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        # State emitted by the current connector already carries per-channel `channel_messages` cursors.
+        # Overwriting them would restart every channel from a single derived timestamp.
+        return not stream_state.get("parent_state", {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
@@ -187,6 +189,9 @@ class ThreadsStateMigration(StateMigration):
         if stream_state.get("states"):
             for state in stream_state["states"]:
                 start_date_state = max(start_date_state, float(state.get("cursor", {}).get("float_ts", start_date_state)))
+        # for global-cursor state
+        if stream_state.get("state", {}).get("float_ts"):
+            start_date_state = max(start_date_state, float(stream_state["state"]["float_ts"]))
         # for old-stype state
         if stream_state.get("float_ts"):
             start_date_state = max(start_date_state, float(stream_state["float_ts"]))
