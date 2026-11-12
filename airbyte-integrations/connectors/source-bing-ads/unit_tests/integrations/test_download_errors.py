@@ -28,9 +28,14 @@ AZURE_EXPIRED_LINK = (
         (403, AZURE_EXPIRED_LINK, FailureType.transient_error),
         (403, "<Error><Code>AuthorizationFailure</Code></Error>", FailureType.config_error),
         (403, "", FailureType.config_error),
-        (400, AZURE_EXPIRED_LINK, FailureType.system_error),
+        (
+            403,
+            "<Error><Code>AuthenticationFailed</Code>"
+            "<AuthenticationErrorDetail>Signature did not match</AuthenticationErrorDetail></Error>",
+            FailureType.config_error,
+        ),
     ],
-    ids=["expired", "other_forbidden", "empty_forbidden", "other_status"],
+    ids=["expired", "other_forbidden", "empty_forbidden", "other_authentication_failure"],
 )
 def test_download_error(stream_name, status, body, failure_type):
     helper = (

@@ -2745,11 +2745,10 @@ definitions:
       authenticator: "#/definitions/authenticator"
 
   download_error_handler:
-    type: CustomErrorHandler
-    class_name: source_declarative_manifest.components.BingAdsDownloadErrorHandler
+    type: DefaultErrorHandler
     response_filters:
       - type: HttpResponseFilter
-        error_message_contains: "<Code>AuthenticationFailed</Code>"
+        error_message_contains: "Signature not valid in the specified time frame"
         action: FAIL
         failure_type: transient_error
         error_message: "The Bing Ads download link expired before the file could be downloaded. The sync will retry."
