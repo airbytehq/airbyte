@@ -284,6 +284,55 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+def _users_stream_state(state_blob):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users", namespace=None),
+        stream_state=AirbyteStateBlob(**state_blob),
+    )
+    return [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+
+
+def _read_users(config, state):
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    messages = list(SourceFaker().read(logger, config, catalog, state))
+    records = [message.record.data for message in messages if message.type is Type.RECORD]
+    states = [message.state.stream.stream_state.__dict__ for message in messages if message.type is Type.STATE]
+    return records, states
+
+
+def test_read_users_consecutive_completed_syncs_re_emit_all_users():
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+
+    first_records, first_states = _read_users(config, {})
+    assert [record["id"] for record in first_records] == list(range(1, 11))
+
+    # Each following sync starts from the final state of the previous completed sync and must
+    # start a new pass over all users instead of resuming past the end of the stream.
+    final_state = first_states[-1]
+    for _ in range(2):
+        records, states = _read_users(config, _users_stream_state(final_state))
+        assert [record["id"] for record in records] == list(range(1, 11))
+        final_state = states[-1]
+
+
+def test_read_users_completed_state_from_previous_version_starts_new_pass():
+    # Final state persisted by 7.3.0 after a completed sync still carries `loop_offset == count`.
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    state = _users_stream_state({"seed": -1, "updated_at": "2024-01-01T00:00:00+00:00", "loop_offset": 10})
+
+    records, _ = _read_users(config, state)
+
+    assert [record["id"] for record in records] == list(range(1, 11))
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
