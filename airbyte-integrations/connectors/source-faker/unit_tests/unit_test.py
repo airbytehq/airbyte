@@ -304,3 +304,37 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+def _read_users(config, state):
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    messages = list(SourceFaker().read(logger, config, catalog, state))
+    record_ids = [message.record.data["id"] for message in messages if message.type is Type.RECORD]
+    state_messages = [message.state for message in messages if message.type is Type.STATE]
+    return record_ids, state_messages
+
+
+@pytest.mark.parametrize(
+    "first_count, second_count, expected_second_ids",
+    [
+        pytest.param(10, 10, list(range(1, 11)), id="same_count"),
+        pytest.param(10, 4, list(range(1, 5)), id="count_lowered_below_saved_offset"),
+        pytest.param(10, 15, list(range(1, 16)), id="count_raised_above_saved_offset"),
+    ],
+)
+def test_users_sync_after_completed_sync_emits_all_users_again(first_count, second_count, expected_second_ids):
+    """With `always_updated` on, a sync that follows a completed sync re-emits every user instead of resuming past the end."""
+    config = {"count": first_count, "seed": 1, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+
+    first_ids, first_states = _read_users(config, state=[])
+    assert first_ids == list(range(1, first_count + 1))
+    assert first_states[-1].stream.stream_state.loop_offset == first_count
+
+    second_ids, second_states = _read_users({**config, "count": second_count}, state=[first_states[-1]])
+    assert second_ids == expected_second_ids
+    assert second_states[-1].stream.stream_state.loop_offset == second_count
