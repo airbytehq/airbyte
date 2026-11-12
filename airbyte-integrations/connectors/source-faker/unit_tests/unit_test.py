@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from pathlib import Path
 
 import jsonschema
@@ -10,7 +11,14 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
@@ -94,6 +102,32 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        {},
+        {"count": 5000, "seed": 42},
+        {"count": 5000, "seed": 42, "records_per_slice": 1000},
+        {"records_per_slice": 1},
+        {"parallelism": 1},
+    ],
+)
+def test_check_accepts_omitted_optional_settings(config):
+    result = SourceFaker().check(logging.getLogger(__name__), config)
+
+    assert result.status == Status.SUCCEEDED
+    assert result.message is None
+
+
+@pytest.mark.parametrize("key", ["count", "records_per_slice", "parallelism"])
+@pytest.mark.parametrize("value", [0, -1, True, False, "10", None])
+def test_check_rejects_explicit_invalid_setting_with_other_settings_omitted(key, value):
+    result = SourceFaker().check(logging.getLogger(__name__), {key: value})
+
+    assert result.status == Status.FAILED
+    assert result.message == repr(f"`{key}` must be a number greater than or equal to 1, got {value!r}")
 
 
 def test_read_small_random_data():
