@@ -27,6 +27,8 @@ _REPORT_RUN_ID = "1571860060019548"
 _JOB_ID = "1049937379601625"
 _FIELDS = ["account_id", "ad_id", "date_start", "impressions", "actions"]
 _BASE_WINDOWS = ["1d_click", "7d_click", "28d_click", "1d_view"]
+
+
 def _config(top_level_incrementality: bool, custom_insight_incrementality: bool) -> ConfigBuilder:
     builder = ConfigBuilder()
     config = builder.build()
@@ -66,11 +68,7 @@ def _throttle_response() -> HttpResponse:
 
 def _job_status_response() -> HttpResponse:
     body = [
-        {
-            "body": json.dumps(
-                {"id": _JOB_ID, "account_id": ACCOUNT_ID, "async_status": Status.COMPLETED, "async_percent_completion": 100}
-            )
-        }
+        {"body": json.dumps({"id": _JOB_ID, "account_id": ACCOUNT_ID, "async_status": Status.COMPLETED, "async_percent_completion": 100})}
     ]
     return build_response(body=body, status_code=HTTPStatus.OK)
 
@@ -106,7 +104,9 @@ def test_custom_insight_job_requests_incrementality_window(
     """
     with HttpMocker() as http_mocker:
         http_mocker.get(get_account_request().build(), get_account_response())
-        http_mocker.get(RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID).build(), _throttle_response())
+        http_mocker.get(
+            RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=ACCOUNT_ID).build(), _throttle_response()
+        )
         http_mocker.post(
             _job_start_request(expected_windows).build(),
             build_response(body={"report_run_id": _REPORT_RUN_ID}, status_code=HTTPStatus.OK),
