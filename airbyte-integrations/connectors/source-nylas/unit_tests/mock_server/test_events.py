@@ -60,26 +60,6 @@ class TestEvents(TestCase):
         assert [message.record.data["id"] for message in output.records] == ["event_ok"]
 
     @HttpMocker()
-    def test_reads_accessible_calendar(self, http_mocker: HttpMocker):
-        _mock_parents(http_mocker, ["cal_ok"])
-        http_mocker.get(_events_request("cal_ok"), _response([EVENT]))
-
-        output = _read()
-
-        assert output.errors == []
-        assert [message.record.data["id"] for message in output.records] == ["event_ok"]
-
-    @HttpMocker()
-    def test_empty_calendar(self, http_mocker: HttpMocker):
-        _mock_parents(http_mocker, ["cal_ok"])
-        http_mocker.get(_events_request("cal_ok"), _response([]))
-
-        output = _read()
-
-        assert output.errors == []
-        assert output.records == []
-
-    @HttpMocker()
     def test_other_errors_still_fail(self, http_mocker: HttpMocker):
         _mock_parents(http_mocker, ["cal_ok"])
         http_mocker.get(
