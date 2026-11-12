@@ -67,9 +67,7 @@ def test_incremental_state_advances_to_newest_nanosecond_modified_at(stream_name
         _mock_api(mocker)
         first = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
 
-    assert [record.record.data["id"] for record in first.records] == [
-        "app1" if stream_name == "applications" else f"{stream_name}1"
-    ]
+    assert [record.record.data["id"] for record in first.records] == ["app1" if stream_name == "applications" else f"{stream_name}1"]
     # The emitted value is trimmed to microseconds so it matches the cursor that is written to state.
     assert [record.record.data["modified_at"] for record in first.records] == [expected_state]
     assert _cursor_values(first, stream_name)[-1] == expected_state
@@ -80,8 +78,6 @@ def test_incremental_state_advances_to_newest_nanosecond_modified_at(stream_name
         _mock_api(mocker)
         second = read(get_source(_CONFIG, state), config=_CONFIG, catalog=catalog, state=state)
 
-    assert [record.record.data["id"] for record in second.records] == [
-        "app1" if stream_name == "applications" else f"{stream_name}1"
-    ]
+    assert [record.record.data["id"] for record in second.records] == ["app1" if stream_name == "applications" else f"{stream_name}1"]
     assert _cursor_values(second, stream_name)[-1] == expected_state
     assert "2026-01-01T00:00:00.000000Z" not in _cursor_values(second, stream_name)
