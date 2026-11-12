@@ -905,6 +905,14 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/sla_policies"
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('id') is string and record['id'].isdecimal() }}"
+          fields:
+            - path:
+                - id
+              value: "{{ record['id'] }}"
+              value_type: integer
     solution_articles:
       type: DeclarativeStream
       name: solution_articles
