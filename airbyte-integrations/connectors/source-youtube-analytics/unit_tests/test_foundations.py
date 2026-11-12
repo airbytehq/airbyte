@@ -294,6 +294,41 @@ def test_expired_refresh_token_tells_the_user_to_re_authenticate(config):
     assert "Refresh token is invalid or expired" in status.message
 
 
+def test_check_succeeds_when_the_retired_annotations_report_has_no_files(config):
+    """YouTube stopped generating `channel_annotations_a1` files on 2025-10-31, so its job lists no reports.
+
+    `check` must not depend on that report type: it passes on the supported `channel_basic_a3`
+    report and never lists, creates, or downloads anything for the retired one.
+    """
+    annotations_job_id = "job-annotations"
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        mocker.get(
+            f"{_API}/jobs",
+            json={
+                "jobs": [
+                    {"id": annotations_job_id, "reportTypeId": "channel_annotations_a1"},
+                    {"id": _JOB_ID, "reportTypeId": "channel_basic_a3"},
+                ]
+            },
+        )
+        mocker.get(f"{_API}/jobs/{annotations_job_id}/reports", json={})
+        mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-18T00:00:00Z")]})
+        mocker.get(_download_url("r1"), text="date,channel_id,video_id,views\n20261018,channel-1,video-1,7\n")
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+        api_calls = [
+            (request.method, request.path) for request in mocker.request_history if request.netloc == "youtubereporting.googleapis.com"
+        ]
+
+    assert status.status == Status.SUCCEEDED, status.message
+    assert api_calls == [
+        ("GET", "/v1/jobs"),
+        ("GET", f"/v1/jobs/{_JOB_ID}/reports"),
+        ("GET", "/v1/media/channel/r1"),
+    ]
+
+
 @pytest.mark.parametrize("stream", _EMPTY_STREAMS)
 def test_empty_stream_with_header_only_report_reads_cleanly(config, stream):
     """These streams have no rows for the CI channel; a header-only report file yields no records and no error."""
