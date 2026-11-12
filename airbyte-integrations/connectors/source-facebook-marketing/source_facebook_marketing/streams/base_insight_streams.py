@@ -275,10 +275,14 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._cursor_values:
             for account_id in self._account_ids:
-                if account_id in self._cursor_values and self._cursor_values[account_id]:
-                    new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
+                cursor_value = self._cursor_values.get(account_id)
+                completed_slices = self._completed_slices[account_id]
+                if cursor_value:
+                    new_state[account_id] = {self.cursor_field: cursor_value.isoformat()}
+                    # slices at or below the committed cursor are already covered by it
+                    completed_slices = {d for d in completed_slices if d > cursor_value}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in completed_slices}))
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -419,10 +423,15 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
-            if self._cursor_values:
+            # The walk starts at `cursor - insights_lookback_period`, so the first slices it visits are re-reads of data
+            # that was already committed. Never move the committed cursor backwards: if an attempt is interrupted while
+            # re-reading the lookback window, the next attempt would subtract the lookback window again and the re-read
+            # window would grow with every interruption.
+            if self._cursor_values is None:
+                self._cursor_values = {}
+            current_cursor = self._cursor_values.get(account_id)
+            if current_cursor is None or ts_start > current_cursor:
                 self._cursor_values[account_id] = ts_start
-            else:
-                self._cursor_values = {account_id: ts_start}
 
     def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
         """Generator of async jobs
