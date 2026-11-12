@@ -339,3 +339,29 @@ def test_spec_declares_google_oauth_and_optional_num_workers(config):
         "credentials",
         "client_id",
     ]
+
+
+def test_check_succeeds_when_only_the_retired_annotations_report_has_no_files(config):
+    """YouTube retired `channel_annotations_a1` on 2025-10-31, so its job no longer produces report
+    files. `check` must probe a supported report type and pass when that report has files."""
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        mocker.get(
+            f"{_API}/jobs",
+            json={
+                "jobs": [
+                    {"id": "job-annotations", "reportTypeId": "channel_annotations_a1"},
+                    {"id": _JOB_ID, "reportTypeId": _STREAM},
+                ]
+            },
+        )
+        annotations_reports = mocker.get(f"{_API}/jobs/job-annotations/reports", json={})
+        basic_reports = mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-18T00:00:00Z")]})
+        mocker.get(_download_url("r1"), text="date,channel_id,video_id\n")
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+
+    assert status.status == Status.SUCCEEDED, status.message
+    assert basic_reports.called
+    assert not annotations_reports.called
+    assert not [request for request in mocker.request_history if request.method == "POST" and request.path == "/v1/jobs"]
