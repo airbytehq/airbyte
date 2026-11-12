@@ -284,6 +284,29 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+def test_read_users_after_completed_sync_starts_a_new_pass():
+    from airbyte_cdk.models import AirbyteStateMessage
+
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    state = []
+    for _ in range(2):
+        messages = list(source.read(logger, config, catalog, state))
+        records = [message.record.data for message in messages if message.type is Type.RECORD]
+        final_state = [message.state for message in messages if message.type is Type.STATE][-1]
+
+        assert [record["id"] for record in records] == list(range(1, 11))
+        assert final_state.stream.stream_state.loop_offset == 10
+        state = [AirbyteStateMessage(type=final_state.type, stream=final_state.stream)]
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
