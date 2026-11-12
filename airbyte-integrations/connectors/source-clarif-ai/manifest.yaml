@@ -12,10 +12,24 @@ check:
     - applications
 
 definitions:
+  normalize_modified_at:
+    type: AddFields
+    fields:
+      - path:
+          - modified_at
+        value: "{{ record['modified_at'][:26] ~ 'Z' if record.get('modified_at') is string else '' }}"
+    condition: >-
+      {{ record.get('modified_at') is string and
+         record['modified_at']|length > 27 and
+         record['modified_at'][19] == '.' and
+         record['modified_at'][20:-1].isdigit() and
+         record['modified_at'].endswith('Z') }}
   streams:
     applications:
       type: DeclarativeStream
       name: applications
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
@@ -42,6 +56,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - apps
+          transform_before_filtering: true
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -78,6 +93,8 @@ definitions:
     datasets:
       type: DeclarativeStream
       name: datasets
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
@@ -105,6 +122,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - datasets
+          transform_before_filtering: true
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -149,6 +167,8 @@ definitions:
     models:
       type: DeclarativeStream
       name: models
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
@@ -175,6 +195,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - models
+          transform_before_filtering: true
         paginator:
           type: DefaultPaginator
           page_token_option:
