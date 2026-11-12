@@ -5,7 +5,9 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - channel_annotations_a1
+    # YouTube retired channel_annotations_a1 on 2025-10-31 and no longer generates its
+    # report files, so check must read a report type that is still produced.
+    - channel_basic_a3
 
 definitions:
   streams:
