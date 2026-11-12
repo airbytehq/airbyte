@@ -29,7 +29,7 @@ For Airbyte Open Source, or to use **Authenticate with custom app (client ID / s
 3. Create an OAuth client (type **Web application**) on the [Credentials page](https://console.cloud.google.com/apis/credentials). Add `https://developers.google.com/oauthplayground` as an authorized redirect URI.
 4. Obtain a refresh token with the [OAuth 2.0 Playground](https://developers.google.com/oauthplayground):
    - Click the gear icon, check **Use your own OAuth credentials**, and enter your Client ID and Client Secret.
-   - Authorize the scopes `https://www.googleapis.com/auth/calendar.readonly` and `https://www.googleapis.com/auth/calendar.acls.readonly`, then exchange the authorization code for tokens. The `calendar.acls.readonly` scope is required for the `acl` stream; `calendar.readonly` alone is sufficient for all other streams.
+   - Authorize the scopes `https://www.googleapis.com/auth/calendar.readonly` and `https://www.googleapis.com/auth/calendar.acls.readonly`, then exchange the authorization code for tokens. The `calendar.acls.readonly` scope is required for the `acl` stream; `calendar.readonly` alone is sufficient for all other streams. Instead of `calendar.readonly`, you can authorize the five granular scopes Airbyte Cloud's OAuth flow requests (`calendar.calendarlist.readonly`, `calendar.calendars.readonly`, `calendar.events.readonly`, `calendar.settings.readonly`, and `calendar.freebusy`).
 
 ## Set up the Google Calendar connector in Airbyte
 
@@ -67,7 +67,19 @@ For Airbyte Open Source, or to use **Authenticate with custom app (client ID / s
 
 <!-- /env:oss -->
 
-For configuration files, `credentials` is required and contains `auth_type` (`oauth2.0` or `manual`), `client_id`, `client_secret`, and `refresh_token`. The field paths are `credentials.client_id`, `credentials.client_secret`, and `credentials.refresh_token`; the OAuth flow fills these fields for the Google option. Custom-app refresh tokens can use the six granular scopes listed above instead of `calendar.readonly` plus `calendar.acls.readonly`; the ACL scope is needed only for `acl`. Saved flat `client_id`/`client_secret`/`client_refresh_token_2` configurations are rewritten to `credentials` with `auth_type: manual` on their first run on version 1.1.0 or later. The rewrite happens inside the connector, while the Airbyte API and Terraform check new and updated configurations against the 1.1.0 spec before saving them, so configurations sent that way (including the next `apply` of an existing Terraform resource) must use the `credentials` fields. Downgrading a connection below 1.1.0 after that first run requires restoring the flat fields by hand. The optional fields remain `calendarid`, `start_date`, and `num_workers` (default 3, range 1–10).
+### Configuration files and saved connections
+
+If you configure the connector with a configuration file, the Airbyte API, or Terraform, `credentials` is required and contains these fields:
+
+- `auth_type`: `oauth2.0` for **Authenticate via Google (OAuth)** or `manual` for **Authenticate with custom app (client ID / secret)**.
+- `client_id`, `client_secret`, and `refresh_token`. The OAuth flow fills these in for the `oauth2.0` option.
+
+The optional top-level fields are `calendarid`, `start_date`, and `num_workers` (default 3, range 1–10).
+
+Before version 1.1.0, the credentials were the top-level fields `client_id`, `client_secret`, and `client_refresh_token_2`. On its first run on version 1.1.0 or later, the connector rewrites a saved configuration that uses these fields to `credentials` with `auth_type: manual`, so existing connections keep working with the same OAuth app. Keep the following in mind:
+
+- The Airbyte API and Terraform validate new and updated configurations against the 1.1.0 spec before the connector runs, so they must use the `credentials` fields. This includes the next `apply` of an existing Terraform resource.
+- Downgrading a connection below 1.1.0 after that first run requires restoring the top-level fields by hand.
 
 <HideInUI>
 
@@ -158,9 +170,9 @@ The `events` stream is incremental on the event's last modification time (`updat
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
 | 1.2.0 | 2026-11-11 | [92016](https://github.com/airbytehq/airbyte/pull/92016) | Include calendar and ACL tombstones, expand schemas, and improve pagination and concurrency reliability. |
-| 1.1.0 | 2026-11-10 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative Google OAuth with granular read-only scopes and a custom-app authentication option; automatically migrate saved flat credentials (downgrading below 1.1.0 then needs them restored by hand); report a missing OAuth scope as a configuration error. |
+| 1.1.0 | 2026-11-11 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative Google OAuth with granular read-only scopes and a custom-app authentication option; automatically migrate saved flat credentials (downgrading below 1.1.0 then needs them restored by hand); report a missing OAuth scope as a configuration error. |
 | 1.0.1 | 2026-11-10 | [91570](https://github.com/airbytehq/airbyte/pull/91570) | Update dependencies |
-| 1.0.0 | 2026-11-06 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, read `events`/`acl`/`freebusy` from every calendar when `calendarid` is empty, change the `events` primary key to `[calendar_id, id]`, return calendar resources from `calendars`, change the `colors` primary key to `kind`, and type date and date-time fields (breaking, see the [migration guide](/integrations/sources/google-calendar-migrations)) |
+| 1.0.0 | 2026-11-09 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, read `events`/`acl`/`freebusy` from every calendar when `calendarid` is empty, change the `events` primary key to `[calendar_id, id]`, return calendar resources from `calendars`, change the `colors` primary key to `kind`, and type date and date-time fields (breaking, see the [migration guide](/integrations/sources/google-calendar-migrations)) |
 | 0.1.4 | 2026-11-03 | [90589](https://github.com/airbytehq/airbyte/pull/90589) | Update dependencies |
 | 0.1.3 | 2026-10-27 | [89924](https://github.com/airbytehq/airbyte/pull/89924) | Update dependencies |
 | 0.1.2 | 2026-10-20 | [89285](https://github.com/airbytehq/airbyte/pull/89285) | Update dependencies |
