@@ -6,6 +6,7 @@ from copy import deepcopy
 from unittest.mock import MagicMock, Mock
 
 import pytest
+from freezegun import freeze_time
 from requests import Response
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType
@@ -19,6 +20,94 @@ from unit_tests.conftest import get_retriever, get_source, get_stream_by_name
 @pytest.fixture
 def authenticator(token_config):
     return TokenAuthenticator(token_config["credentials"]["api_token"])
+
+
+def incremental_catalog(stream_name):
+    return ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": stream_name, "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+
+
+@freeze_time("2026-11-12T00:00:00Z")
+def test_threads_read_preserves_per_channel_parent_cursor(requests_mock, token_config):
+    token_config.update(start_date="2026-11-01T00:00:00Z", end_date="2026-11-12T00:00:00Z", channel_filter=[])
+    requests_mock.get(
+        "https://slack.com/api/conversations.list",
+        json={"channels": [{"id": "C1", "name": "one", "is_member": True}]},
+    )
+    history = requests_mock.get("https://slack.com/api/conversations.history", json={"messages": []})
+    saved_cursor = 1794355200.0001
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "threads",
+            {
+                "use_global_cursor": False,
+                "state": {"float_ts": "1794355200"},
+                "lookback_window": 1,
+                "parent_state": {
+                    "channel_messages": {
+                        "use_global_cursor": False,
+                        "states": [
+                            {
+                                "partition": {"channel": "C1", "parent_slice": {}},
+                                "cursor": {"float_ts": str(saved_cursor)},
+                            }
+                        ],
+                        "state": {"float_ts": str(saved_cursor)},
+                        "lookback_window": 1,
+                        "parent_state": {},
+                    }
+                },
+            },
+        )
+        .build()
+    )
+
+    output = read(get_source(token_config, "threads", state), config=token_config, catalog=incremental_catalog("threads"), state=state)
+
+    assert not output.errors
+    assert history.call_count == 1
+    assert float(history.last_request.qs["oldest"][0]) == pytest.approx(saved_cursor - 86400, abs=0.001, rel=0)
+
+
+@pytest.mark.parametrize("stream_name", ["channel_messages", "threads"])
+@freeze_time("2026-11-12T00:00:00Z")
+def test_message_reads_skip_archived_non_member_channels(requests_mock, token_config, stream_name):
+    token_config.update(
+        start_date="2026-11-10T00:00:00Z",
+        end_date="2026-11-12T00:00:00Z",
+        channel_filter=[],
+        include_archived_channels=True,
+        join_channels=True,
+    )
+    requests_mock.get(
+        "https://slack.com/api/conversations.list",
+        json={
+            "channels": [
+                {"id": "archived", "name": "archived", "is_archived": True, "is_member": False},
+                {"id": "joinable", "name": "joinable", "is_archived": False, "is_member": False},
+                {"id": "member", "name": "member", "is_archived": False, "is_member": True},
+                {"id": "archived-member", "name": "archived-member", "is_archived": True, "is_member": True},
+            ]
+        },
+    )
+    requests_mock.post("https://slack.com/api/conversations.join", json={"ok": True})
+    history = requests_mock.get("https://slack.com/api/conversations.history", json={"messages": []})
+    state = StateBuilder().build()
+
+    output = read(get_source(token_config, stream_name, state), config=token_config, catalog=incremental_catalog(stream_name), state=state)
+
+    assert not output.errors
+    assert {request.qs["channel"][0] for request in history.request_history} == {"joinable", "member", "archived-member"}
 
 
 @pytest.mark.parametrize(
