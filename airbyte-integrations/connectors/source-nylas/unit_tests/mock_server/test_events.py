@@ -84,8 +84,8 @@ class TestEventsStream(TestCase):
         assert [record.record.data["id"] for record in output.records] == ["event-1", "event-2"]
         assert not output.errors
         assert not any(log.log.level == Level.ERROR for log in output.logs)
-        assert any(
-            "calendar was not found or is not accessible" in log.log.message and "404" in log.log.message for log in output.logs
-        ), "expected an informational log explaining why the calendar was skipped"
+        assert any("calendar was not found or is not accessible" in log.log.message and "404" in log.log.message for log in output.logs), (
+            "expected an informational log explaining why the calendar was skipped"
+        )
         http_mocker.assert_number_of_calls(subscribed_calendar_request, 1)
         http_mocker.assert_number_of_calls(owned_calendar_request, 1)
