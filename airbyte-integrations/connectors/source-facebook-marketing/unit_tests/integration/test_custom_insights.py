@@ -27,6 +27,7 @@ _STREAM_NAME = f"custom{_INSIGHT_NAME}"
 _FIELDS = ["account_id", "actions", "ad_id", "date_start"]
 _DEFAULT_WINDOWS = ["1d_click", "7d_click", "28d_click", "1d_view"]
 
+
 def _job_start_request(day: datetime, action_attribution_windows: List[str]) -> RequestBuilder:
     body = {
         "level": "ad",
