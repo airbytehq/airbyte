@@ -30,4 +30,3 @@ def test_unpaged_list_is_read_once(stream_name, record_count):
         http_mocker.assert_number_of_calls(request, 1)
         assert sorted(record.record.data["id"] for record in output.records) == sorted(record["id"] for record in records)
         assert not output.errors
-
