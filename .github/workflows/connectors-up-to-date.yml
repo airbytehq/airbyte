@@ -36,13 +36,13 @@ jobs:
       generated_matrix: ${{ steps.generate_matrix.outputs.generated_matrix }}
     steps:
       - name: Checkout Airbyte (default branch)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
         with:
           persist-credentials: false
           ref: ${{ github.event.repository.default_branch }}
 
       - name: Install uv
-        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        uses: astral-sh/setup-uv@v8.0.0
 
       - name: Install airbyte-ops CLI
         run: uv tool install airbyte-internal-ops
@@ -187,7 +187,7 @@ jobs:
         run: echo "TODAY=$(date -u +%Y-%m-%d)" >> "$GITHUB_ENV"
 
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -199,7 +199,7 @@ jobs:
       # GitHub App. Pushes made with GITHUB_TOKEN do not trigger
       # pull_request workflows; pushes made with a GitHub App token do.
       - name: Checkout Airbyte (default branch)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           ref: ${{ github.event.repository.default_branch }}
@@ -216,13 +216,13 @@ jobs:
           git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.get-app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        uses: astral-sh/setup-uv@v8.0.0
 
       - name: Install airbyte-ops CLI
         run: uv tool install airbyte-internal-ops
 
       - name: Docker login
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        uses: docker/login-action@v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -230,7 +230,7 @@ jobs:
       # --- Step 1: Set up Python + Poetry ---
       # bump-deps runs `poetry update --lock` internally, so Poetry must be available.
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@v6.2.0
         with:
           python-version: "3.11"
 
@@ -317,7 +317,7 @@ jobs:
       - name: Create or update PR
         id: create-pr
         if: steps.check-changes.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        uses: peter-evans/create-pull-request@v8.1.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           commit-message: "deps(${{ env.CONNECTOR_NAME }}): update dependencies [skip ci]"
@@ -400,7 +400,7 @@ jobs:
       # that created the PR cannot approve its own PRs.
       - name: Authenticate as 'octavia-bot-admin' GitHub App
         if: steps.check-changes.outputs.has_changes == 'true'
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-admin-token
         with:
           owner: "airbytehq"

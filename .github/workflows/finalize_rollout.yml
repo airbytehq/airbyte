@@ -37,10 +37,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte repo
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
 
       - name: Install uv
-        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        uses: astral-sh/setup-uv@v8.0.0
 
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
@@ -207,7 +207,7 @@ jobs:
 
       - name: Authenticate as GitHub App
         if: steps.resolve-vars.outputs.needs_pr == 'true'
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -236,7 +236,7 @@ jobs:
       - name: Create finalize PR
         if: steps.resolve-vars.outputs.needs_pr == 'true'
         id: create-pr
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        uses: peter-evans/create-pull-request@v8.1.0
         env:
           CONNECTOR_NAME: ${{ steps.resolve-vars.outputs.connector_name }}
         with:
@@ -289,7 +289,7 @@ jobs:
 
       - name: Authenticate as GitHub App (Admin)
         if: steps.create-pr.outputs.pull-request-number
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-admin-token
         with:
           owner: "airbytehq"
@@ -321,7 +321,7 @@ jobs:
 
       - name: Notify Slack on rollback success
         if: success() && steps.resolve-vars.outputs.action == 'rollback'
-        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        uses: slackapi/slack-github-action@v3.0.3
         with:
           webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           webhook-type: incoming-webhook
@@ -334,7 +334,7 @@ jobs:
 
       - name: Notify Slack on promote success (no PR needed)
         if: success() && steps.resolve-vars.outputs.action == 'promote' && steps.resolve-vars.outputs.needs_pr == 'false'
-        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        uses: slackapi/slack-github-action@v3.0.3
         with:
           webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           webhook-type: incoming-webhook
@@ -347,7 +347,7 @@ jobs:
 
       - name: Notify Slack on promote success (PR merged)
         if: success() && steps.create-pr.outputs.pull-request-number
-        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        uses: slackapi/slack-github-action@v3.0.3
         with:
           webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           webhook-type: incoming-webhook
@@ -360,7 +360,7 @@ jobs:
 
       - name: Notify Slack on failure
         if: failure()
-        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        uses: slackapi/slack-github-action@v3.0.3
         with:
           webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           webhook-type: incoming-webhook

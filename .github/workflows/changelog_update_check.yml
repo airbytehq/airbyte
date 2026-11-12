@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: CDK Changes
         id: cdk-changes
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d #v4.0.1
+        uses: dorny/paths-filter@v4.0.1
         with:
           filters: |
             base_version:

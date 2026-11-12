@@ -45,7 +45,7 @@ jobs:
       blocked: ${{ steps.weekend-check.outputs.blocked }}
     steps:
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -55,7 +55,7 @@ jobs:
 
       - name: Require PR context
         if: inputs.pr == '' && inputs.comment-id
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           comment-id: ${{ inputs.comment-id }}
@@ -83,7 +83,7 @@ jobs:
 
       - name: Weekend freeze notice
         if: inputs.pr != '' && steps.weekend-check.outputs.blocked == 'true'
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           issue-number: ${{ inputs.pr }}

@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
         with:
           persist-credentials: false
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -84,7 +84,7 @@ jobs:
           fi
 
       - name: Find existing block-release comment
-        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        uses: peter-evans/find-comment@v3.1.0
         id: find-comment
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -112,7 +112,7 @@ jobs:
       # Post or update comment when blocked connectors are found
       - name: Post blocked-connector warning comment
         if: steps.check-blocks.outputs.has-blocked == 'true'
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -123,7 +123,7 @@ jobs:
       # update the comment to indicate all-clear.
       - name: Update comment to all-clear
         if: steps.check-blocks.outputs.has-blocked == 'false' && steps.find-comment.outputs.comment-id != ''
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}

@@ -130,7 +130,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         # v4
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
@@ -243,7 +243,7 @@ jobs:
       docker-image-tag: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
     steps:
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -254,7 +254,7 @@ jobs:
 
       - name: Checkout Airbyte
         # v4
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
@@ -265,28 +265,28 @@ jobs:
         shell: bash
         run: docker buildx create --use --driver=docker-container --name builder --platform linux/amd64,linux/arm64
 
-      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+      - uses: actions/setup-java@v5.2.0
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        uses: docker/login-action@v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Set up Python
         # v5
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        uses: actions/setup-python@v6.2.0
         with:
           python-version: "3.11"
           check-latest: true
           update-environment: true
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        uses: astral-sh/setup-uv@v8.0.0
         with:
           # We pass a token with dedicated GH rate limit
           github-token: ${{ steps.get-app-token.outputs.token }}
@@ -544,7 +544,7 @@ jobs:
           steps.check-release-block.outputs.blocked != 'true' &&
           steps.connector-metadata.outputs.connector-language != 'java' &&
           needs.publish_options.outputs.registry-refresh-only != 'true'
-        uses: ./.github/actions/connector-image-build-push
+        uses: $/.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
           tag-override: ${{ steps.resolve-version.outputs.connector-version-tag }}
@@ -683,7 +683,7 @@ jobs:
 
       - name: Upload Registry CI Artifacts
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: registry-artifacts-${{ matrix.connector }}-${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
           path: ./registry-artifacts/${{ matrix.connector }}/
@@ -764,7 +764,7 @@ jobs:
           steps.check-release-block.outputs.blocked != 'true' &&
           needs.publish_options.outputs.dry-run != 'true' &&
           steps.success-context.outcome == 'success'
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
             {
@@ -799,7 +799,7 @@ jobs:
     if: ${{ always() && needs.publish_connectors.result == 'failure' }}
     steps:
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -810,14 +810,14 @@ jobs:
 
       - name: Checkout Airbyte
         # v4
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ inputs.gitref || '' }}
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
         continue-on-error: true
-        uses: ./.github/actions/match-github-to-slack-user
+        uses: $/.github/actions/match-github-to-slack-user
         env:
           AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
           GITHUB_API_TOKEN: ${{ steps.get-app-token.outputs.token }}
@@ -868,7 +868,7 @@ jobs:
           echo "connector-text=$CONNECTOR_TEXT" >> $GITHUB_OUTPUT
       - name: Send publish failures to connector-publish-failures channel
         id: slack
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        uses: slackapi/slack-github-action@v1.26.0
         with:
           # This data can be any valid JSON from a previous step in the GitHub Action
           payload: |

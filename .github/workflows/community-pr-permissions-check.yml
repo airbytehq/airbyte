@@ -21,7 +21,7 @@ jobs:
     if: github.event.pull_request.head.repo.fork == true
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
         with:
           persist-credentials: false
           ref: master
@@ -58,7 +58,7 @@ jobs:
       - name: Render Comment Template
         if: steps.check.outputs.is_org_fork == 'true' || steps.check.outputs.missing_maintainer_edit == 'true'
         id: template
-        uses: chuhlomin/render-template@f828bb5c72a3e3af89cb79808cea490166c6f1ce # v1.4
+        uses: chuhlomin/render-template@v1.4
         with:
           template: .github/pr-fork-permission-warning.md
           vars: |
@@ -69,7 +69,7 @@ jobs:
 
       - name: Post Comment to PR (Issues Detected)
         if: steps.check.outputs.is_org_fork == 'true' || steps.check.outputs.missing_maintainer_edit == 'true'
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.template.outputs.result }}

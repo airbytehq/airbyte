@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Authenticate as GitHub App (Admin)
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -66,7 +66,7 @@ jobs:
 
       - name: Append comment with job run link
         id: first-comment-action
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           issue-number: ${{ github.event.inputs.pr }}
@@ -98,7 +98,7 @@ jobs:
 
       - name: Post success comment
         if: steps.merge.outputs.merged == 'true'
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
           reactions: hooray
@@ -107,7 +107,7 @@ jobs:
 
       - name: Post to Slack
         if: steps.merge.outputs.merged == 'true'
-        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        uses: slackapi/slack-github-action@v2.1.1
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           method: chat.postMessage
@@ -125,7 +125,7 @@ jobs:
                     text: "Initiated by: ${{ github.actor }} | Reason: ${{ github.event.inputs.reason }} | <https://github.com/${{ github.repository }}/pull/${{ github.event.inputs.pr }}|View PR>"
 
       - name: Append failure comment
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         if: failure()
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}

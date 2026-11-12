@@ -69,7 +69,7 @@ jobs:
 
       - name: Install uv
         if: steps.vars.outputs.pr-number != ''
-        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        uses: astral-sh/setup-uv@v8.0.0
         with:
           ignore-empty-workdir: true
 
@@ -145,7 +145,7 @@ jobs:
 
       - name: Checkout Airbyte
         if: matrix.connector && steps.net-new.outputs.is-net-new != 'true'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v6.0.2
         with:
           repository: ${{ needs.generate-matrix.outputs.checkout-repository }}
           ref: ${{ needs.generate-matrix.outputs.checkout-ref }}
@@ -154,7 +154,7 @@ jobs:
 
       - name: Install uv
         if: matrix.connector && steps.net-new.outputs.is-net-new != 'true'
-        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        uses: astral-sh/setup-uv@v8.0.0
 
       - name: Install Ops CLI
         if: matrix.connector && steps.net-new.outputs.is-net-new != 'true'
@@ -199,7 +199,7 @@ jobs:
       - name: Find stale progressive rollout gate comment
         if: steps.resolve-vars.outputs.cleanup-stale == 'true'
         id: stale-rollout-comment
-        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
+        uses: peter-evans/find-comment@v4.0.0
         with:
           issue-number: ${{ env.PR_NUMBER }}
           comment-author: github-actions[bot]
@@ -209,7 +209,7 @@ jobs:
         if: >
           steps.resolve-vars.outputs.cleanup-stale == 'true' &&
           steps.stale-rollout-comment.outputs.comment-id != ''
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           comment-id: ${{ steps.stale-rollout-comment.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
@@ -306,7 +306,7 @@ jobs:
           steps.rollout-gate-state.outputs.requires-ack == 'true' &&
           github.event_name == 'pull_request'
         id: rollout-bypass
-        uses: AhmedBaset/checklist@ecbf0bacb0d5d1fe41131db29a44984fec266017 # v3
+        uses: AhmedBaset/checklist@3
         with:
           token: ${{ github.token }}
 
@@ -317,7 +317,7 @@ jobs:
           github.event_name == 'workflow_dispatch' &&
           env.PR_NUMBER != ''
         id: rollout-bypass-dispatch
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        uses: actions/github-script@v8.0.0
         env:
           ROLLOUT_ACK_CHECKBOX_TEXT: ${{ env.ROLLOUT_ACK_CHECKBOX_TEXT }}
           PR_NUMBER: ${{ env.PR_NUMBER }}
@@ -356,7 +356,7 @@ jobs:
           steps.rollout-gate-state.outputs.requires-ack == 'true' &&
           env.PR_NUMBER != ''
         id: find-rollout-comment
-        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
+        uses: peter-evans/find-comment@v4.0.0
         with:
           issue-number: ${{ env.PR_NUMBER }}
           comment-author: github-actions[bot]
@@ -369,7 +369,7 @@ jobs:
           env.PR_NUMBER != '' &&
           steps.find-rollout-comment.outputs.comment-id == ''
         id: create-rollout-comment
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           issue-number: ${{ env.PR_NUMBER }}
           edit-mode: replace
@@ -401,7 +401,7 @@ jobs:
           steps.rollout-gate-state.outputs.requires-ack == 'true' &&
           github.event_name == 'pull_request' &&
           steps.bypass-state.outputs.exists != 'true'
-        uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
+        uses: bcgov/action-pr-description-add@v2.0.0
         with:
           github_token: ${{ github.token }}
           add_markdown: |
@@ -417,7 +417,7 @@ jobs:
           github.event_name == 'workflow_dispatch' &&
           env.PR_NUMBER != '' &&
           steps.bypass-state.outputs.exists != 'true'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        uses: actions/github-script@v8.0.0
         env:
           PR_NUMBER: ${{ env.PR_NUMBER }}
           ROLLOUT_ACK_CHECKBOX_TEXT: ${{ env.ROLLOUT_ACK_CHECKBOX_TEXT }}
@@ -461,7 +461,7 @@ jobs:
           env.PR_NUMBER != '' &&
           steps.rollout-comment.outputs.id != ''
         id: rollout-comment-template
-        uses: chuhlomin/render-template@f828bb5c72a3e3af89cb79808cea490166c6f1ce # v1.4
+        uses: chuhlomin/render-template@v1.4
         with:
           template: .github/progressive-rollout-gate-comment.md
           vars: |
@@ -483,7 +483,7 @@ jobs:
           matrix.connector &&
           steps.rollout-gate-state.outputs.requires-ack == 'true' &&
           steps.rollout-comment.outputs.id != ''
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@v4.0.0
         with:
           comment-id: ${{ steps.rollout-comment.outputs.id }}
           issue-number: ${{ env.PR_NUMBER }}
