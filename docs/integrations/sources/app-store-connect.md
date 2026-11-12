@@ -130,9 +130,19 @@ instance > segment > downloaded file. The connector exposes each level so you
 can audit what Apple generated. The streams ending in `_historical` read
 `ONE_TIME_SNAPSHOT` requests; the others read `ONGOING` requests.
 
-The connector reads two Apple reports: **App Store Installation and Deletion
-Standard** and **App Downloads Standard**, both at `DAILY` granularity. Other
-analytics reports aren't supported.
+The connector reads these Apple Analytics reports at `DAILY` granularity:
+
+- **App Store Installation and Deletion Standard**
+- **App Downloads Detailed** ([report fields](https://developer.apple.com/documentation/analytics-reports/app-download))
+- **App Store Discovery and Engagement Detailed** — impressions, product page
+  views, and related engagement events ([report fields](https://developer.apple.com/documentation/analytics-reports/app-store-discovery-and-engagement))
+- **App Sessions Detailed** — app opens (sessions), session duration, and unique
+  devices ([report fields](https://developer.apple.com/documentation/analytics-reports/app-sessions))
+
+Detailed variants include `Page Type`, `Page Title`, `Source Type`, `Source
+Info`, `Campaign`, `Device`, `Platform Version`, and `Territory` so you can
+attribute activity by date, platform, default product page, and custom product
+pages (CPP).
 
 | Stream | Sync mode | Description |
 | --- | --- | --- |
@@ -146,7 +156,17 @@ analytics reports aren't supported.
 | `analytics_app_download_instances` | Incremental | Daily instances of the App Downloads report. Cursor: `processing_date`. |
 | `analytics_app_download_segments` | Incremental | Segments for each instance. Cursor: `processing_date`. |
 | `analytics_app_download_segment_details` | Full refresh | Metadata for each segment, including the pre-signed `download_url`. |
-| `app_download` | Incremental | Rows from the downloaded App Downloads report files. Cursor: `processing_date`. |
+| `app_download` | Incremental | Rows from the downloaded App Downloads **Detailed** report files. Cursor: `processing_date`. |
+| `analytics_app_store_discovery_and_engagement_reports` | Full refresh | Discovery and Engagement report for each ongoing request. |
+| `analytics_app_store_discovery_and_engagement_instances` | Incremental | Daily instances of the Discovery and Engagement report. Cursor: `processing_date`. |
+| `analytics_app_store_discovery_and_engagement_segments` | Incremental | Segments for each Discovery and Engagement instance. Cursor: `processing_date`. |
+| `analytics_app_store_discovery_and_engagement_segment_details` | Full refresh | Segment metadata for Discovery and Engagement, including the pre-signed `download_url`. |
+| `app_store_discovery_and_engagement` | Incremental | Rows from the downloaded Discovery and Engagement **Detailed** report files. Filter `Event` for `Impression` or `Page view`. Cursor: `processing_date`. |
+| `analytics_app_sessions_reports` | Full refresh | App Sessions report for each ongoing request. |
+| `analytics_app_sessions_instances` | Incremental | Daily instances of the App Sessions report. Cursor: `processing_date`. |
+| `analytics_app_sessions_segments` | Incremental | Segments for each App Sessions instance. Cursor: `processing_date`. |
+| `analytics_app_sessions_segment_details` | Full refresh | Segment metadata for App Sessions, including the pre-signed `download_url`. |
+| `app_sessions` | Incremental | Rows from the downloaded App Sessions **Detailed** report files (`Sessions` column). Cursor: `processing_date`. |
 | `analytics_report_requests_historical` | Full refresh | `ONE_TIME_SNAPSHOT` report requests for each app. |
 | `analytics_installations_reports_historical` | Full refresh | The Installation and Deletion report for each snapshot request. |
 | `analytics_installations_instances_historical` | Full refresh | Instances of the historical Installation and Deletion report. |
@@ -157,12 +177,23 @@ analytics reports aren't supported.
 | `analytics_app_download_instances_historical` | Full refresh | Instances of the historical App Downloads report. |
 | `analytics_app_download_segments_historical` | Full refresh | Segments of the historical App Downloads report. |
 | `analytics_app_download_segment_details_historical` | Full refresh | Segment metadata for the historical App Downloads report. |
-| `app_download_historical` | Full refresh | Rows from the downloaded historical App Downloads report files. |
+| `app_download_historical` | Full refresh | Rows from the downloaded historical App Downloads **Detailed** report files. |
+| `analytics_app_store_discovery_and_engagement_reports_historical` | Full refresh | Discovery and Engagement report for each snapshot request. |
+| `analytics_app_store_discovery_and_engagement_instances_historical` | Full refresh | Instances of the historical Discovery and Engagement report. |
+| `analytics_app_store_discovery_and_engagement_segments_historical` | Full refresh | Segments of the historical Discovery and Engagement report. |
+| `analytics_app_store_discovery_and_engagement_segment_details_historical` | Full refresh | Segment metadata for the historical Discovery and Engagement report. |
+| `app_store_discovery_and_engagement_historical` | Full refresh | Rows from the downloaded historical Discovery and Engagement **Detailed** report files. |
+| `analytics_app_sessions_reports_historical` | Full refresh | App Sessions report for each snapshot request. |
+| `analytics_app_sessions_instances_historical` | Full refresh | Instances of the historical App Sessions report. |
+| `analytics_app_sessions_segments_historical` | Full refresh | Segments of the historical App Sessions report. |
+| `analytics_app_sessions_segment_details_historical` | Full refresh | Segment metadata for the historical App Sessions report. |
+| `app_sessions_historical` | Full refresh | Rows from the downloaded historical App Sessions **Detailed** report files. |
 
 Incremental analytics streams read every processing date from
 `analytics_reports_start_date` (or the saved cursor) up to two days before the
 sync. The
-`app_download` and `app_store_installations_and_deletions` streams download
+`app_download`, `app_store_discovery_and_engagement`, `app_sessions`, and
+`app_store_installations_and_deletions` streams download
 each segment's gzip TSV file from Apple's short-lived pre-signed Amazon S3 URL
 and emit one record per row.
 
@@ -176,12 +207,23 @@ and emit one record per row.
 - `ONGOING` analytics requests don't backfill data from before their creation
   date. Use a `ONE_TIME_SNAPSHOT` request and the `_historical` streams for
   earlier data.
+- Each Analytics report type (Downloads Detailed, Discovery and Engagement,
+  App Sessions, and others) must be added to your app's `ONGOING` or
+  `ONE_TIME_SNAPSHOT` request in App Store Connect before the connector can
+  sync it. The first request for a new report category typically requires an
+  **Admin** API key.
 - A report stream is empty, rather than failing, when the API key's role can't
   access that report, the app doesn't produce that report type, or Apple hasn't
   published the requested period yet. The Sales and Trends and finance streams
   treat `400`, `404`, and `410` responses as "no data"; the analytics streams
   also treat `403` that way.
 - The connector runs analytics download jobs one at a time.
+- **App Sessions** and other **App usage** analytics include only users who have
+  opted in to share diagnostics and usage data with developers in iOS/iPadOS
+  settings (Settings → Privacy & Security → Analytics & Improvements → Share
+  with App Developers). Apple may suppress rows when fewer than five users
+  contributed data for a given report slice. Session counts are not a complete
+  census of app opens across your entire user base.
 
 ### Rate limits
 
@@ -208,6 +250,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.0.5 | 2026-11-12 | | Add App Downloads Detailed, Discovery & Engagement, and App Sessions analytics streams |
 | 0.0.4 | 2026-10-06 | [87756](https://github.com/airbytehq/airbyte/pull/87756) | Update dependencies |
 | 0.0.3 | 2026-09-29 | [87078](https://github.com/airbytehq/airbyte/pull/87078) | Update dependencies |
 | 0.0.2 | 2026-09-22 | [86549](https://github.com/airbytehq/airbyte/pull/86549) | Update dependencies |
