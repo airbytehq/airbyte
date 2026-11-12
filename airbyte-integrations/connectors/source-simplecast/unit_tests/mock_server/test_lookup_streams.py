@@ -3,14 +3,13 @@
 import json
 
 import pytest
+from conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
-
-from conftest import get_source
 
 
 _CONFIG = {"api_token": "test-token"}
