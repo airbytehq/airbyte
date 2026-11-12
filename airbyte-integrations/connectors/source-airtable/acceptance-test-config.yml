@@ -52,3 +52,4 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
     bypass_reason: "Incremental is covered by unit_tests/test_incremental.py; the synthetic cursor is the sync-window end time, which the CAT incremental test does not model."
+# CI-only touch: run connector tests with airbyte-cdk 7.46.0.post8.dev42871066020 (airbyte-python-cdk#1270). Do not merge.

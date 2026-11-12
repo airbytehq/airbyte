@@ -20,7 +20,7 @@ python = "^3.11,<3.14"
 google-ads = "==29.1.0"
 protobuf = ">=4.25.2"
 pendulum = "^3.0.0"
-airbyte-cdk = "^7.33.0"
+airbyte-cdk = "7.46.0.post8.dev42871066020"
 
 [tool.poetry.scripts]
 source-google-ads = "source_google_ads.run:run"

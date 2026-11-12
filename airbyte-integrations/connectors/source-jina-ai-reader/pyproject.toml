@@ -15,8 +15,8 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [ { include = "source_jina_ai_reader" } ]
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.14"
-airbyte-cdk = "^7"
+python = "^3.11,<3.14"
+airbyte-cdk = "7.46.0.post8.dev42871066020"
 
 [tool.poetry.scripts]
 source-jina-ai-reader = "source_jina_ai_reader.run:run"

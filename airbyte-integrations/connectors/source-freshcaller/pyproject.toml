@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_freshcaller"
 
 [tool.poetry.dependencies]
-python = "<3.13,>=3.10"
-airbyte-cdk = "^7.0.4"
+python = ">=3.11,<3.13"
+airbyte-cdk = "7.46.0.post8.dev42871066020"
 
 [tool.poetry.scripts]
 source-freshcaller = "source_freshcaller.run:run"

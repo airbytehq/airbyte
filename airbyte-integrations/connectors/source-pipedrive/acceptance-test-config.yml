@@ -55,3 +55,4 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
+# CI-only touch: run connector tests with airbyte-cdk 7.46.0.post8.dev42871066020 (airbyte-python-cdk#1270). Do not merge.
