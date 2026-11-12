@@ -176,7 +176,16 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        # State saved by this connector already carries per-channel `channel_messages` cursors under
+        # `parent_state`. Rebuilding it from the thread cursors would discard them, so every channel
+        # would restart from one shared timestamp (the `start_date` when no thread partition has
+        # progressed yet) instead of resuming where it left off.
+        return not self._has_parent_cursors(stream_state)
+
+    @staticmethod
+    def _has_parent_cursors(stream_state: Mapping[str, Any]) -> bool:
+        parent_state = (stream_state.get("parent_state") or {}).get("channel_messages") or {}
+        return bool(parent_state.get("states") or parent_state.get("state"))
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:

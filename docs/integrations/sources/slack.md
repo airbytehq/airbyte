@@ -86,7 +86,7 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 9. (Optional) **Include private channels**: Toggle on to sync data from private channels. You must manually add the bot to private channels even if **Join all channels** is toggled on.
 </FieldAnchor>
 <FieldAnchor field="include_archived_channels">
-10. (Optional) **Include archived channels**: Toggle on to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams. Enable this if you need to sync data from archived channels.
+10. (Optional) **Include archived channels**: Toggle on to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams. Enable this if you need to sync data from archived channels. Messages and threads are only read from archived channels the bot was already a member of before they were archived, because Slack does not allow joining an archived channel.
 </FieldAnchor>
 <FieldAnchor field="threads_ignore_no_replies">
 11. (Optional) **Ignore messages with no replies in threads stream**: Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default so the Threads stream contains records for all messages.
@@ -107,7 +107,7 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
 8. (Optional) **Channel filter**: A list of channel names (without the leading `#`) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte replicates data from all channels.
 9. (Optional) **Include private channels**: Toggle on to sync data from private channels. You must manually add the bot to private channels even if **Join all channels** is toggled on.
-10. (Optional) **Include archived channels**: Toggle on to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams. Enable this if you need to sync data from archived channels.
+10. (Optional) **Include archived channels**: Toggle on to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams. Enable this if you need to sync data from archived channels. Messages and threads are only read from archived channels the bot was already a member of before they were archived, because Slack does not allow joining an archived channel.
 11. (Optional) **Ignore messages with no replies in threads stream**: Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default so the Threads stream contains records for all messages.
 12. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
 <!-- /env:oss -->
@@ -202,6 +202,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.29 | 2026-11-12 | [PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PLACEHOLDER) | Resume `threads` syncs from each channel's saved position instead of re-reading all channels, and skip archived channels the bot cannot join when reading messages and threads |
 | 3.2.28 | 2026-11-10 | [88808](https://github.com/airbytehq/airbyte/pull/88808) | Update dependencies |
 | 3.2.27 | 2026-10-06 | [88029](https://github.com/airbytehq/airbyte/pull/88029) | Update dependencies |
 | 3.2.26 | 2026-09-29 | [87330](https://github.com/airbytehq/airbyte/pull/87330) | Update dependencies |

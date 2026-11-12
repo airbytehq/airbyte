@@ -12,6 +12,16 @@ The `MessagesAndThreadsApiBudget` starts with an `UnlimitedCallRatePolicy` (no r
 
 **Why this matters:** The connector starts fast with no rate limiting and then abruptly drops to 1 request per minute after hitting its first 429. This dramatic slowdown is intentional but can make syncs appear to stall. The rate limit policy is not reset between stream reads within the same sync, so hitting a 429 on the messages stream will also throttle the threads stream.
 
+## 3. `threads` Resumes From Per-Channel `channel_messages` Cursors
+
+The `threads` stream stores the cursors of its parent (`channel_messages`, one per channel) under `parent_state` in its own state. `ThreadsStateMigration` only builds `parent_state` when the incoming state has none (legacy `float_ts` state, or per-partition thread state without parent cursors); in that case every channel starts from the newest thread cursor minus `lookback_window`. State that already has per-channel parent cursors is passed through untouched, and the parent cursor itself applies `lookback_window` to each channel.
+
+**Why this matters:** Rebuilding `parent_state` on every read collapses all channels onto one timestamp. After an interrupted attempt that timestamp can be the `start_date` (every channel is re-read from scratch) or a newer channel's cursor (a channel that was still behind skips history). Do not make the migration unconditional again.
+
+## 4. Message and Thread Partitions Skip Archived Channels the Bot Has Not Joined
+
+`channel_messages` and `threads` only create partitions for channels where `is_member` is true, or where `join_channels` is enabled and the channel is not archived. Slack rejects `conversations.join` for archived channels, so `join_channels` can never make those readable. The `channels` and `channel_members` streams still return every channel.
+
 ## Incremental Stream Considerations
 
 The Slack API supports `oldest`/`latest` timestamp filtering on conversations.history and related endpoints. The connector uses Python custom components (`JoinChannelsStream`) referenced from the manifest.

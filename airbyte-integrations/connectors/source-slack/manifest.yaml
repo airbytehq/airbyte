@@ -328,7 +328,10 @@ definitions:
                     # conversations.history returns ok:false/"not_in_channel" with HTTP 200 for
                     # non-member channels, which poisons the per-partition cursor. The
                     # top-level channels stream and channel_members still see every channel.
-                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or config.get('join_channels')) }}"
+                    # join_channels cannot make the bot a member of an archived channel (Slack
+                    # rejects conversations.join there), so archived channels only count when
+                    # the bot already is a member.
+                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or (config.get('join_channels') and not record.get('is_archived'))) }}"
             parent_key: id
             partition_field: channel
             request_option:
