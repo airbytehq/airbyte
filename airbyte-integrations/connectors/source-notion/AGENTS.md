@@ -27,3 +27,7 @@ Pages and blocks that are not shared with the integration therefore drop out sil
 All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal, see above).
 
 `pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. `users` is full refresh only.
+
+For `blocks` the filtering is done by `BlocksRetriever`, not by the record selector: the CDK does not hand the cursor to the record selector of a `CustomRetriever`, it passes it to the component as `cursor`. The retriever drops a block when it is emitted, after walking its children, so the children of an unchanged block are still requested and an edited child is not lost. Do not move this filter into the record selector. `unit_tests/mock_server/test_blocks.py` pins this.
+
+The unit tests must run on the CDK version of the base image in `metadata.yaml`: this filter silently stopped working after a CDK upgrade while the tests were locked to an older CDK.
