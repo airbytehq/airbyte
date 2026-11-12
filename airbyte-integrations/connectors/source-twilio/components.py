@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +81,65 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioStalePartitionCursorStateMigration(StateMigration):
+    """
+    Raise per-partition cursors that lag behind the global `state` cursor up to it.
+
+    The global cursor is only committed once every partition finished its slices, so all partitions
+    were already read up to it. Before 1.1.11, `messages` and `recordings` partition cursors stopped
+    advancing past the first slice, and a stale partition cursor takes precedence over the global one.
+
+    Initial:
+      {
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2021-10-12 12:03:11Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-15 00:00:00Z" }
+      }
+
+    Final:
+      {
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2022-11-15 00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-15 00:00:00Z" }
+      }
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated_state = copy.deepcopy(dict(stream_state))
+        global_cursor = migrated_state["state"]
+        for partition_state in migrated_state["states"]:
+            cursor = partition_state.get("cursor", {})
+            for cursor_key, global_value in global_cursor.items():
+                if self._is_older(cursor.get(cursor_key), global_value):
+                    cursor[cursor_key] = global_value
+        return migrated_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state or not stream_state.get("states") or not isinstance(stream_state.get("state"), Mapping):
+            return False
+        return any(
+            self._is_older(partition_state.get("cursor", {}).get(cursor_key), global_value)
+            for partition_state in stream_state["states"]
+            for cursor_key, global_value in stream_state["state"].items()
+        )
+
+    @staticmethod
+    def _is_older(value: Any, reference: Any) -> bool:
+        if not isinstance(value, str) or not isinstance(reference, str):
+            return False
+        parsed_value = ab_datetime_try_parse(value)
+        parsed_reference = ab_datetime_try_parse(reference)
+        return parsed_value is not None and parsed_reference is not None and parsed_value < parsed_reference
 
 
 class TwilioAlertsStateMigration(StateMigration):

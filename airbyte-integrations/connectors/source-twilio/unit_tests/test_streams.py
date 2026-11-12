@@ -1003,3 +1003,121 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+TWO_ACCOUNTS_JSON = {
+    "accounts": [
+        {
+            "sid": sid,
+            "subresource_uris": {
+                "messages": f"/2010-04-01/Accounts/{sid}/Messages.json",
+                "recordings": f"/2010-04-01/Accounts/{sid}/Recordings.json",
+            },
+        }
+        for sid in ("AC123", "AC456")
+    ],
+}
+
+
+def _partition(stream_path: str, account_sid: str) -> dict:
+    return {"subresource_uri": f"/2010-04-01/Accounts/{account_sid}/{stream_path}", "parent_slice": {}}
+
+
+def _partition_cursors(output: EntrypointOutput, cursor_field: str) -> dict:
+    stream_state = output.most_recent_state.stream_state.__dict__
+    return {
+        state["partition"]["subresource_uri"].split("/")[3]: state["cursor"][cursor_field] for state in stream_state["states"]
+    }
+
+
+@pytest.mark.parametrize(
+    "stream_name,stream_path,cursor_field,lower_key,upper_key",
+    [
+        pytest.param("messages", "Messages.json", "date_sent", "DateSent>", "DateSent<", id="messages"),
+        pytest.param("recordings", "Recordings.json", "date_created", "DateCreated>", "DateCreated<", id="recordings"),
+    ],
+)
+class TestSecondPrecisionSubstreamState:
+    @staticmethod
+    def _register_windows(requests_mock, stream_name, stream_path, lower_key, upper_key, records_by_account):
+        requests_mock.get(f"{BASE}/Accounts.json", json=TWO_ACCOUNTS_JSON, status_code=200)
+        windows = []
+        windows_lock = Lock()
+
+        def _callback(account_sid):
+            def _respond(request, context):
+                query = parse_qs(urlparse(request.url).query)
+                window = (query[lower_key][0], query[upper_key][0])
+                with windows_lock:
+                    windows.append((account_sid, *window))
+                records = [r for r in records_by_account.get(account_sid, []) if r["window_start"] == window[0]]
+                return {stream_name: [r["record"] for r in records]}
+
+            return _respond
+
+        for account_sid in ("AC123", "AC456"):
+            requests_mock.get(f"{BASE}/Accounts/{account_sid}/{stream_path}", json=_callback(account_sid), status_code=200)
+        return windows
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_partition_cursor_advances_to_latest_record_across_slices(
+        self, stream_name, stream_path, cursor_field, lower_key, upper_key, requests_mock
+    ):
+        record = {"sid": "SM1", cursor_field: "Wed, 16 Nov 2022 01:00:00 +0000"}
+        windows = self._register_windows(
+            requests_mock,
+            stream_name,
+            stream_path,
+            lower_key,
+            upper_key,
+            {"AC123": [{"window_start": "2022-11-01 00:00:00Z", "record": record}]},
+        )
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2022-10-01T00:00:00Z"}, stream_name, SyncMode.incremental)
+
+        assert [r.record.data["sid"] for r in output.records] == ["SM1"]
+        assert sorted(w for w in windows if w[0] == "AC123") == [
+            ("AC123", "2022-10-01 00:00:00Z", "2022-10-31 23:59:59Z"),
+            ("AC123", "2022-11-01 00:00:00Z", "2022-11-16 12:03:11Z"),
+        ]
+        assert _partition_cursors(output, cursor_field) == {"AC123": "2022-11-16 01:00:00Z", "AC456": "2022-10-01 00:00:00Z"}
+        assert output.most_recent_state.stream_state.__dict__["state"] == {cursor_field: "2022-11-16 01:00:00Z"}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_stale_partition_cursor_resumes_from_global_cursor(
+        self, stream_name, stream_path, cursor_field, lower_key, upper_key, requests_mock
+    ):
+        record = {"sid": "SM2", cursor_field: "Wed, 16 Nov 2022 01:00:00 +0000"}
+        windows = self._register_windows(
+            requests_mock,
+            stream_name,
+            stream_path,
+            lower_key,
+            upper_key,
+            {"AC123": [{"window_start": "2022-11-15 00:00:00Z", "record": record}]},
+        )
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                stream_name,
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {"partition": _partition(stream_path, "AC123"), "cursor": {cursor_field: "2021-06-01 00:00:00Z"}},
+                        {"partition": _partition(stream_path, "AC456"), "cursor": {cursor_field: "2022-11-16 00:00:00Z"}},
+                    ],
+                    "state": {cursor_field: "2022-11-15 00:00:00Z"},
+                    "lookback_window": 0,
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream(TEST_CONFIG, stream_name, SyncMode.incremental, state)
+
+        assert sorted(windows) == [
+            ("AC123", "2022-11-15 00:00:00Z", "2022-11-16 12:03:11Z"),
+            ("AC456", "2022-11-16 00:00:00Z", "2022-11-16 12:03:11Z"),
+        ]
+        assert [r.record.data["sid"] for r in output.records] == ["SM2"]
+        assert _partition_cursors(output, cursor_field) == {"AC123": "2022-11-16 01:00:00Z", "AC456": "2022-11-16 00:00:00Z"}
