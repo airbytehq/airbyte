@@ -7,8 +7,9 @@ version = "0.0.0"
 description = "Unit tests for source-notion"
 authors = ["Airbyte <contact@airbyte.io>"]
 [tool.poetry.dependencies]
-python = "^3.10,<3.13"
-airbyte-cdk = "^7"
+python = "^3.11,<3.13"
+# Keep in sync with the CDK version of the base image in metadata.yaml, so the tests run what ships.
+airbyte-cdk = "7.47.0"
 freezegun = "^1.4.0"
 pytest-mock = "^3.6.1"
 pytest = "^8.0.0"

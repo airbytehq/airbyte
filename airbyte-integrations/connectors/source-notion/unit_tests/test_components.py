@@ -279,3 +279,90 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+def _block(block_id, last_edited_time, has_children=False):
+    return {
+        "object": "block",
+        "id": block_id,
+        "parent": {"type": "page_id", "page_id": "page-1"},
+        "created_time": "2021-10-19T13:33:00.000Z",
+        "last_edited_time": last_edited_time,
+        "has_children": has_children,
+        "archived": False,
+        "in_trash": False,
+        "type": "paragraph",
+        "paragraph": {"rich_text": []},
+    }
+
+
+def _list_response(results):
+    return {"object": "list", "results": results, "next_cursor": None, "has_more": False}
+
+
+def _read_blocks_incrementally(requests_mock, config, stream_state):
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state("blocks", stream_state).build()
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+    assert output.errors == []
+    return [record.record.data["id"] for record in output.records], output.most_recent_state.stream_state.__dict__
+
+
+def test_blocks_incremental_read_emits_only_blocks_edited_since_the_saved_cursor(requests_mock):
+    """
+    The page holds blocks older than the configured start date, and an unchanged block whose child was edited:
+
+    - old           2021-11-01
+    - parent        2021-12-01 (has_children)
+      - old-child   2021-11-05
+      - new-child   2022-03-01
+    - mid           2022-02-01
+    - new           2022-03-01
+    """
+    config = {"start_date": "2022-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json=_list_response([{"object": "page", "id": "page-1", "last_edited_time": "2022-03-01T00:00:00.000Z", "properties": {}}]),
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        json=_list_response(
+            [
+                _block("old", "2021-11-01T00:00:00.000Z"),
+                _block("parent", "2021-12-01T00:00:00.000Z", has_children=True),
+                _block("mid", "2022-02-01T00:00:00.000Z"),
+                _block("new", "2022-03-01T00:00:00.000Z"),
+            ]
+        ),
+    )
+    children_request = requests_mock.get(
+        "https://api.notion.com/v1/blocks/parent/children?page_size=100",
+        json=_list_response([_block("old-child", "2021-11-05T00:00:00.000Z"), _block("new-child", "2022-03-01T00:00:00.000Z")]),
+    )
+
+    # First sync: every block of the page is emitted, including the ones last edited before the start date.
+    first_ids, first_state = _read_blocks_incrementally(requests_mock, config, {})
+    assert first_ids == ["old", "old-child", "new-child", "parent", "mid", "new"]
+    assert first_state["state"] == {"last_edited_time": "2022-03-01T00:00:00.000000Z"}
+
+    # Second sync from the emitted state: the cursor is inclusive, so the blocks edited exactly at the cursor value
+    # are emitted again and nothing older is. The unchanged parent is still traversed to reach its edited child.
+    second_ids, second_state = _read_blocks_incrementally(requests_mock, config, first_state)
+    assert second_ids == ["new-child", "new"]
+    assert second_state["state"] == {"last_edited_time": "2022-03-01T00:00:00.000000Z"}
+    assert children_request.call_count == 2
+
+    # A cursor in the legacy flat format, older than `mid`, is honored the same way.
+    legacy_ids, legacy_state = _read_blocks_incrementally(requests_mock, config, {"last_edited_time": "2022-01-15T00:00:00.000Z"})
+    assert legacy_ids == ["new-child", "mid", "new"]
+    assert legacy_state["state"] == {"last_edited_time": "2022-03-01T00:00:00.000000Z"}

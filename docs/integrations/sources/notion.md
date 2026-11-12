@@ -115,6 +115,8 @@ The Notion API enforces a rate limit of approximately three requests per second 
 
 The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages with deeply nested content can generate a large number of API requests, which may slow down syncs for workspaces with complex page structures.
 
+Notion has no endpoint that returns only the blocks edited since a given time. During an incremental sync, the connector still requests every block of every synced page, and then emits only the blocks edited since the previous sync. The Start Date doesn't filter blocks: the first sync of a page includes all of its blocks, whenever they were last edited.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -126,6 +128,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.34 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix incremental syncs of the Blocks stream re-emitting every block instead of only the blocks edited since the previous sync |
 | 4.0.33 | 2026-11-10 | [91664](https://github.com/airbytehq/airbyte/pull/91664) | Update dependencies |
 | 4.0.32 | 2026-11-03 | [90393](https://github.com/airbytehq/airbyte/pull/90393) | Consolidate each stream's error handling into a single error handler |
 | 4.0.31 | 2026-11-03 | [90664](https://github.com/airbytehq/airbyte/pull/90664) | Update dependencies |

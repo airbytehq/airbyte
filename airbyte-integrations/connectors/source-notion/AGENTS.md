@@ -22,8 +22,21 @@ Pages and blocks that are not shared with the integration therefore drop out sil
 
 `users` has its own `DefaultErrorHandler` and does not skip 400 or 404: it keeps the rate-limit filter and backoff, then fails with a `config_error` when Notion answers `code: restricted_resource` (the integration lacks the "Read user information" capability). All other statuses use the CDK default mapping (5xx and 408 retried, other 4xx fail, unmapped codes such as 409 and 529 retried), with the CDK default of 5 retries. `unit_tests/test_error_handling.py` pins each case.
 
+## 3. Blocks Are Filtered by the Saved Cursor Inside `BlocksRetriever`, After the Tree Walk
+
+`blocks` declares `is_client_side_incremental`, but the CDK only wires that filter (`ClientSideIncrementalRecordFilterDecorator`) into the record selector of a plain `SimpleRetriever`. A `CustomRetriever` receives the stream's `cursor` and nothing else, so `BlocksRetriever.read_records` applies `cursor.should_be_synced` itself. Whether the CDK filters a custom retriever's records has changed between CDK versions, which is why `unit_tests/pyproject.toml` pins `airbyte-cdk` to the version of the base image in `metadata.yaml`: bump both together.
+
+Two rules are deliberate:
+
+1. The filter runs after the recursion, on the records `_read_block_tree` yields. A child block carries its own `last_edited_time`, and the connector does not rely on Notion bumping the parent block when a child changes, so an unchanged block is still traversed to reach its edited descendants. Do not move the cursor comparison into the record selector or a `RecordFilter` condition: both run before the recursion and would drop those descendants.
+2. The filter only applies when the incoming state holds a cursor value (`cursor.state["state"]`). Without one, every block of a synced page is emitted, including blocks last edited before `start_date`. `start_date` limits which pages are synced, not which of their blocks.
+
+The comparison is inclusive and uses the global cursor minus its lookback window (the duration of the previous sync), so blocks edited exactly at the cursor value are emitted again on the next sync.
+
+**Why this matters:** An incremental `blocks` sync makes exactly as many API calls as a full refresh; only the emitted records shrink. Filtering earlier in the pipeline, or by `start_date`, silently loses blocks. `unit_tests/test_components.py::test_blocks_incremental_read_emits_only_blocks_edited_since_the_saved_cursor` pins these rules.
+
 ## Incremental Stream Considerations
 
-All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal, see above).
+All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal and the `blocks` cursor filter, see above).
 
-`pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. `users` is full refresh only.
+`pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. For `pages`, `data_sources` and `comments` the CDK filters in the record selector; for `blocks` the retriever filters (section 3). `users` is full refresh only.
