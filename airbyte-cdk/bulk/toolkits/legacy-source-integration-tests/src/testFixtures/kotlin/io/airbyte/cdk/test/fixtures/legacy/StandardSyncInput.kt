@@ -35,7 +35,7 @@ import java.util.*
     "sourceResourceRequirements",
     "destinationResourceRequirements",
     "workspaceId",
-    "connectionId"
+    "connectionId",
 )
 class StandardSyncInput : Serializable {
     /**
@@ -64,6 +64,7 @@ class StandardSyncInput : Serializable {
     @set:JsonProperty("namespaceFormat")
     @JsonProperty("namespaceFormat")
     var namespaceFormat: String? = null
+
     /**
      * Prefix that will be prepended to the name of each stream when it is written to the
      * destination.
@@ -80,9 +81,10 @@ class StandardSyncInput : Serializable {
     @set:JsonProperty("prefix")
     @JsonProperty("prefix")
     @JsonPropertyDescription(
-        "Prefix that will be prepended to the name of each stream when it is written to the destination."
+        "Prefix that will be prepended to the name of each stream when it is written to the destination.",
     )
     var prefix: String? = null
+
     /**
      * Actor ID for the source used in the sync - this is used to update the actor configuration
      * when requested. (Required)
@@ -99,9 +101,10 @@ class StandardSyncInput : Serializable {
     @set:JsonProperty("sourceId")
     @JsonProperty("sourceId")
     @JsonPropertyDescription(
-        "Actor ID for the source used in the sync - this is used to update the actor configuration when requested."
+        "Actor ID for the source used in the sync - this is used to update the actor configuration when requested.",
     )
     var sourceId: UUID? = null
+
     /**
      * Actor ID for the destination used in the sync - this is used to update the actor
      * configuration when requested. (Required)
@@ -118,9 +121,10 @@ class StandardSyncInput : Serializable {
     @set:JsonProperty("destinationId")
     @JsonProperty("destinationId")
     @JsonPropertyDescription(
-        "Actor ID for the destination used in the sync - this is used to update the actor configuration when requested."
+        "Actor ID for the destination used in the sync - this is used to update the actor configuration when requested.",
     )
     var destinationId: UUID? = null
+
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
@@ -129,6 +133,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("sourceConfiguration")
     @JsonPropertyDescription("Integration specific blob. Must be a valid JSON string.")
     var sourceConfiguration: JsonNode? = null
+
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
     /** Integration specific blob. Must be a valid JSON string. (Required) */
@@ -137,6 +142,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("destinationConfiguration")
     @JsonPropertyDescription("Integration specific blob. Must be a valid JSON string.")
     var destinationConfiguration: JsonNode? = null
+
     /** Sequence of configurations of operations to apply as part of the sync */
     /** Sequence of configurations of operations to apply as part of the sync */
     /** Sequence of configurations of operations to apply as part of the sync */
@@ -144,9 +150,10 @@ class StandardSyncInput : Serializable {
     @set:JsonProperty("operationSequence")
     @JsonProperty("operationSequence")
     @JsonPropertyDescription(
-        "Sequence of configurations of operations to apply as part of the sync"
+        "Sequence of configurations of operations to apply as part of the sync",
     )
     var operationSequence: List<StandardSyncOperation>? = ArrayList()
+
     /**
      * The webhook operation configs belonging to this workspace. See webhookOperationConfigs in
      * StandardWorkspace.yaml.
@@ -163,9 +170,10 @@ class StandardSyncInput : Serializable {
     @set:JsonProperty("webhookOperationConfigs")
     @JsonProperty("webhookOperationConfigs")
     @JsonPropertyDescription(
-        "The webhook operation configs belonging to this workspace. See webhookOperationConfigs in StandardWorkspace.yaml."
+        "The webhook operation configs belonging to this workspace. See webhookOperationConfigs in StandardWorkspace.yaml.",
     )
     var webhookOperationConfigs: JsonNode? = null
+
     /** the configured airbyte catalog (Required) */
     /** the configured airbyte catalog (Required) */
     /** the configured airbyte catalog (Required) */
@@ -174,6 +182,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("catalog")
     @JsonPropertyDescription("the configured airbyte catalog")
     var catalog: ConfiguredAirbyteCatalog? = null
+
     /**
      * State
      *
@@ -194,6 +203,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("state")
     @JsonPropertyDescription("information output by the connection.")
     var state: State? = null
+
     /**
      * ResourceRequirements
      *
@@ -214,6 +224,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("resourceRequirements")
     @JsonPropertyDescription("generic configuration for pod source requirements")
     var resourceRequirements: ResourceRequirements? = null
+
     /**
      * ResourceRequirements
      *
@@ -234,6 +245,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("sourceResourceRequirements")
     @JsonPropertyDescription("generic configuration for pod source requirements")
     var sourceResourceRequirements: ResourceRequirements? = null
+
     /**
      * ResourceRequirements
      *
@@ -254,6 +266,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("destinationResourceRequirements")
     @JsonPropertyDescription("generic configuration for pod source requirements")
     var destinationResourceRequirements: ResourceRequirements? = null
+
     /** The id of the workspace associated with this sync */
     /** The id of the workspace associated with this sync */
     /** The id of the workspace associated with this sync */
@@ -262,6 +275,7 @@ class StandardSyncInput : Serializable {
     @JsonProperty("workspaceId")
     @JsonPropertyDescription("The id of the workspace associated with this sync")
     var workspaceId: UUID? = null
+
     /** The id of the connection associated with this sync */
     /** The id of the connection associated with this sync */
     /** The id of the connection associated with this sync */
@@ -272,7 +286,7 @@ class StandardSyncInput : Serializable {
     var connectionId: UUID? = null
 
     fun withNamespaceDefinition(
-        namespaceDefinition: JobSyncConfig.NamespaceDefinitionType?
+        namespaceDefinition: JobSyncConfig.NamespaceDefinitionType?,
     ): StandardSyncInput {
         this.namespaceDefinition = namespaceDefinition
         return this
@@ -334,14 +348,14 @@ class StandardSyncInput : Serializable {
     }
 
     fun withSourceResourceRequirements(
-        sourceResourceRequirements: ResourceRequirements?
+        sourceResourceRequirements: ResourceRequirements?,
     ): StandardSyncInput {
         this.sourceResourceRequirements = sourceResourceRequirements
         return this
     }
 
     fun withDestinationResourceRequirements(
-        destinationResourceRequirements: ResourceRequirements?
+        destinationResourceRequirements: ResourceRequirements?,
     ): StandardSyncInput {
         this.destinationResourceRequirements = destinationResourceRequirements
         return this
@@ -391,7 +405,7 @@ class StandardSyncInput : Serializable {
         sb.append('=')
         sb.append(
             (if ((this.destinationConfiguration == null)) "<null>"
-            else this.destinationConfiguration)
+            else this.destinationConfiguration),
         )
         sb.append(',')
         sb.append("operationSequence")
@@ -401,7 +415,8 @@ class StandardSyncInput : Serializable {
         sb.append("webhookOperationConfigs")
         sb.append('=')
         sb.append(
-            (if ((this.webhookOperationConfigs == null)) "<null>" else this.webhookOperationConfigs)
+            (if ((this.webhookOperationConfigs == null)) "<null>"
+            else this.webhookOperationConfigs),
         )
         sb.append(',')
         sb.append("catalog")
@@ -415,21 +430,21 @@ class StandardSyncInput : Serializable {
         sb.append("resourceRequirements")
         sb.append('=')
         sb.append(
-            (if ((this.resourceRequirements == null)) "<null>" else this.resourceRequirements)
+            (if ((this.resourceRequirements == null)) "<null>" else this.resourceRequirements),
         )
         sb.append(',')
         sb.append("sourceResourceRequirements")
         sb.append('=')
         sb.append(
             (if ((this.sourceResourceRequirements == null)) "<null>"
-            else this.sourceResourceRequirements)
+            else this.sourceResourceRequirements),
         )
         sb.append(',')
         sb.append("destinationResourceRequirements")
         sb.append('=')
         sb.append(
             (if ((this.destinationResourceRequirements == null)) "<null>"
-            else this.destinationResourceRequirements)
+            else this.destinationResourceRequirements),
         )
         sb.append(',')
         sb.append("workspaceId")

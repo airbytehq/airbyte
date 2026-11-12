@@ -43,6 +43,10 @@ issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 Goto `https://jina.ai/reader/#apiform` for the complete guide about different pricing and tokens for that.
 The website also provides a free bearer token for testing with its interface.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -50,6 +54,7 @@ The website also provides a free bearer token for testing with its interface.
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
+| 0.1.41 | 2026-10-20 | [89549](https://github.com/airbytehq/airbyte/pull/89549) | Upgrade to airbyte-cdk 7 and Python 3.13 base image 4.1.1 |
 | 0.1.40 | 2025-05-24 | [59867](https://github.com/airbytehq/airbyte/pull/59867) | Update dependencies |
 | 0.1.39 | 2025-05-03 | [59263](https://github.com/airbytehq/airbyte/pull/59263) | Update dependencies |
 | 0.1.38 | 2025-04-26 | [58816](https://github.com/airbytehq/airbyte/pull/58816) | Update dependencies |

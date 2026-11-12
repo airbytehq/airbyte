@@ -19,7 +19,7 @@ class StreamTransferManagerWithMetadata(
     bucketName: String?,
     putKey: String?,
     s3Client: AmazonS3?,
-    private val userMetadata: Map<String, String>?
+    private val userMetadata: Map<String, String>?,
 ) : StreamTransferManager(bucketName, putKey, s3Client) {
     override fun customiseInitiateRequest(request: InitiateMultipartUploadRequest) {
         if (userMetadata != null) {

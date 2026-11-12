@@ -170,3 +170,44 @@ class TestProjectsStream(TestCase):
         assert state["dateCreated"].startswith(
             "2023-01-01T00:00:00"
         ), f"Expected state cursor to be latest record's dateCreated, got {state}"
+
+    @HttpMocker()
+    def test_projects_uses_org_scoped_endpoint(self, http_mocker: HttpMocker):
+        """
+        Verify the projects stream uses the org-scoped endpoint
+        /api/0/organizations/{org}/projects/ instead of the deprecated
+        /api/0/projects/ endpoint (Sentry cells architecture migration).
+
+        See: https://github.com/airbytehq/oncall/issues/12901
+        """
+        # ARRANGE - Mock the org-scoped endpoint
+        http_mocker.get(
+            SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
+            create_response("projects", has_next=False),
+        )
+
+        # ACT - Read projects stream
+        source = get_source(config=self._config())
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=self._config(), catalog=catalog)
+
+        # ASSERT - The stream successfully reads from the org-scoped endpoint.
+        # HttpMocker raises if an unmocked URL is hit, so reaching here confirms
+        # the connector used /api/0/organizations/{org}/projects/ (not /api/0/projects/).
+        assert len(output.records) >= 1, "Expected records from org-scoped projects endpoint"
+
+    @HttpMocker()
+    def test_start_date_does_not_filter_projects(self, http_mocker: HttpMocker):
+        """The start date only applies to events, so projects created before it are still synced."""
+        # projects_mixed_dates.json: old-project-1 (01-10), old-project-2 (01-12), new-project (01-20)
+        config = ConfigBuilder().with_start_date("2024-01-15T00:00:00Z").build()
+        http_mocker.get(
+            SentryRequestBuilder.projects_endpoint(_ORGANIZATION, _AUTH_TOKEN).build(),
+            create_response("projects_mixed_dates", has_next=False),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert [record.record.data["slug"] for record in output.records] == ["old-project-1", "old-project-2", "new-project"]

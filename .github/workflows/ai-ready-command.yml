@@ -1,0 +1,112 @@
+name: AI Ready Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repo (passed by slash command dispatcher)"
+        required: false
+        default: "airbytehq/airbyte"
+        type: string
+      gitref:
+        description: "Git ref (passed by slash command dispatcher)"
+        required: false
+        type: string
+      comment-id:
+        description: "The comment-id of the slash command. Used to update the comment with status. Optional for programmatic triggers."
+        required: false
+        type: string
+      pr:
+        description: "PR number, if triggered from a PR"
+        required: false
+        type: string
+      dry-run:
+        description: "If 'true', evaluate only -- do not approve or merge"
+        required: false
+        default: ""
+        type: string
+      force:
+        description: "If 'true', bypass the weekend freeze and evaluate anyway"
+        required: false
+        default: ""
+        type: string
+
+run-name: "AI Ready for #${{ inputs.pr || inputs.comment-id }}"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    outputs:
+      blocked: ${{ steps.weekend-check.outputs.blocked }}
+    steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Require PR context
+        if: inputs.pr == '' && inputs.comment-id
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          body: |
+            > `/ai-ready` can only be run on a pull request. Please run it from a PR comment.
+
+      - name: Stop if not running on a PR
+        if: inputs.pr == ''
+        run: exit 1
+
+      - name: Check for weekend freeze
+        if: inputs.pr != ''
+        id: weekend-check
+        env:
+          FORCE: ${{ inputs.force }}
+        run: |
+          # Day of week in US Pacific time: 6 = Saturday, 7 = Sunday.
+          dow=$(TZ="America/Los_Angeles" date +%u)
+          if [[ ( "$dow" == "6" || "$dow" == "7" ) && "$FORCE" != "true" ]]; then
+            echo "::notice::Weekend freeze in effect (Pacific day-of-week=$dow). Skipping auto-merge."
+            echo "blocked=true" | tee -a "$GITHUB_OUTPUT"
+          else
+            echo "blocked=false" | tee -a "$GITHUB_OUTPUT"
+          fi
+
+      - name: Weekend freeze notice
+        if: inputs.pr != '' && steps.weekend-check.outputs.blocked == 'true'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          issue-number: ${{ inputs.pr }}
+          comment-id: ${{ inputs.comment-id }}
+          edit-mode: replace
+          body: |
+            > **`/ai-ready` blocked: weekend freeze**
+            >
+            > Auto-merge is paused over the weekend, so no `hyd-ready` label was applied.
+            > If this is urgent, re-run `/ai-ready force=true` to bypass the freeze. Otherwise, please wait until after the weekend.
+
+      - name: Apply ready label
+        if: inputs.pr != '' && steps.weekend-check.outputs.blocked != 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ inputs.pr }}
+        run: gh issue edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label hyd-ready
+
+  hydra-automerge:
+    needs: validate
+    if: needs.validate.outputs.blocked != 'true'
+    uses: ./.github/workflows/hydra-automerge.yml
+    with:
+      pr: ${{ inputs.pr }}
+      dry-run: ${{ inputs.dry-run }}
+    secrets: inherit

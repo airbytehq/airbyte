@@ -125,16 +125,15 @@ class InputBeanFactory {
         stateKeyClient: StateKeyClient,
         completionTracker: StreamCompletionTracker,
         statsStore: EmittedStatsStore,
-    ): List<DataFlowPipelineInputFlow> =
-        messageFlows.map {
-            DataFlowPipelineInputFlow(
-                inputFlow = it,
-                stateStore = stateStore,
-                stateKeyClient = stateKeyClient,
-                completionTracker = completionTracker,
-                statsStore = statsStore,
-            )
-        }
+    ): List<DataFlowPipelineInputFlow> = messageFlows.map {
+        DataFlowPipelineInputFlow(
+            inputFlow = it,
+            stateStore = stateStore,
+            stateKeyClient = stateKeyClient,
+            completionTracker = completionTracker,
+            statsStore = statsStore,
+        )
+    }
 
     @Singleton
     fun aggregateStoreFactory(
@@ -159,28 +158,27 @@ class InputBeanFactory {
         @Named("aggregationDispatcher") aggregationDispatcher: CoroutineDispatcher,
         @Named("flushDispatcher") flushDispatcher: CoroutineDispatcher,
         @Named("finalFlushDispatcher") finalFlushDispatcher: CoroutineDispatcher,
-    ): List<DataFlowPipeline> =
-        inputFlows.map {
-            val aggStore = aggregateStoreFactory.make()
-            val aggregate = AggregateStage(aggStore)
-            val completionHandler =
-                PipelineCompletionHandler(
-                    aggStore,
-                    stateHistogramStore,
-                    statsStore,
-                    finalFlushDispatcher,
-                )
-
-            DataFlowPipeline(
-                input = it,
-                parse = parse,
-                aggregate = aggregate,
-                flush = flush,
-                state = state,
-                completionHandler = completionHandler,
-                aggregatePublishingConfig = aggregatePublishingConfig,
-                aggregationDispatcher = aggregationDispatcher,
-                flushDispatcher = flushDispatcher,
+    ): List<DataFlowPipeline> = inputFlows.map {
+        val aggStore = aggregateStoreFactory.make()
+        val aggregate = AggregateStage(aggStore)
+        val completionHandler =
+            PipelineCompletionHandler(
+                aggStore,
+                stateHistogramStore,
+                statsStore,
+                finalFlushDispatcher,
             )
-        }
+
+        DataFlowPipeline(
+            input = it,
+            parse = parse,
+            aggregate = aggregate,
+            flush = flush,
+            state = state,
+            completionHandler = completionHandler,
+            aggregatePublishingConfig = aggregatePublishingConfig,
+            aggregationDispatcher = aggregationDispatcher,
+            flushDispatcher = flushDispatcher,
+        )
+    }
 }

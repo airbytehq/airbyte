@@ -220,6 +220,10 @@ curl --request GET \
 </TabItem>
 </Tabs>
 
+## Use external secret references
+
+If your organization uses an external secret manager (such as AWS Secrets Manager, Google Secret Manager, or Azure Key Vault), you can pass secret references instead of raw credentials when creating or updating connectors via the API. Use the `secret_coordinate::` prefix on any secret field to store an external reference rather than the plain text value. For example, for an AWS Secrets Manager secret named `production/database/password`, pass `secret_coordinate::production/database/password`. For setup instructions and examples, see [External Secret Management](/platform/operating-airbyte/external-secrets#external-secret-references).
+
 ## Handle access token expiry in your requests
 
 Access tokens are short-lived and you need to regularly request a new one. To minimize unnecessary requests and authorization errors, ensure your API requests work together with requests for new access tokens.
@@ -239,3 +243,10 @@ Find Airbyte's full API documentation at [reference.airbyte.com](https://referen
 Airbyte has deprecated the configuration API and no longer supports it. The Configuration API is an internal API designed for communication between different Airbyte components, not for managing an Airbyte deployment.
 
 Use the Configuration API at your own risk. Airbyte engineers may modify it without warning.
+
+If you still call the Configuration API directly, be aware of the following behavior:
+
+- Provide every required field explicitly. Don't rely on Airbyte to fill in missing values. For example, requests to create a source or a destination must include a `name`. Airbyte rejects these requests if `name` is missing, instead of naming the connector `default`.
+- Access tokens from users and applications don't grant access to operations that Airbyte's internal components perform, such as saving sync attempt progress or discovered schemas. Airbyte rejects these requests, even if the user is an instance admin.
+
+To manage an Airbyte deployment programmatically, use the [Airbyte API](https://reference.airbyte.com/reference/getting-started) instead.

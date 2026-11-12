@@ -1,4 +1,4 @@
-# Retrieving Records Spread Across Partitions
+# Partitions
 
 In some cases, the data you are replicating is spread across multiple partitions. You can specify a set of parameters to be iterated over and used while requesting all of your data. On each iteration, using the current element being iterated upon, the connector will perform a cycle of requesting data from your source.
 
@@ -151,10 +151,11 @@ retriever:
 
 ## Nested streams
 
-Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](#SubstreamPartitionRouter)
+Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](#substreampartitionrouter)
 
-## More readings
+## Related
 
+- *No-Code Connector Builder*: [Partitions](/platform/connector-development/connector-builder-ui/partitioning)
 - [Incremental streams](../../cdk-python/incremental-stream.md)
 - [Stream slices](../../cdk-python/stream-slices.md)
 

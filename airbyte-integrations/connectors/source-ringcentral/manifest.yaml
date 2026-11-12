@@ -26,7 +26,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -147,7 +147,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -266,7 +266,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -320,7 +320,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -373,7 +373,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -447,7 +447,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -511,7 +511,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -640,7 +640,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -769,7 +769,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -819,7 +819,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -875,7 +875,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -912,7 +912,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -988,7 +988,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -1072,7 +1072,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+          url_base: https://platform.ringcentral.com/restapi/v1.0
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['auth_token'] }}"
@@ -1115,7 +1115,7 @@ definitions:
           title: Fax Cover Schema
   base_requester:
     type: HttpRequester
-    url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+    url_base: https://platform.ringcentral.com/restapi/v1.0
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['auth_token'] }}"
@@ -1126,7 +1126,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -1246,7 +1246,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -1364,7 +1364,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -1417,7 +1417,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -1469,7 +1469,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -1542,7 +1542,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -1605,7 +1605,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -1733,7 +1733,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -1861,7 +1861,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -1910,7 +1910,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -1965,7 +1965,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -2001,7 +2001,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -2076,7 +2076,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -2159,7 +2159,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://platform.devtest.ringcentral.com/restapi/v1.0
+        url_base: https://platform.ringcentral.com/restapi/v1.0
         authenticator:
           type: BearerAuthenticator
           api_token: "{{ config['auth_token'] }}"
@@ -2216,7 +2216,7 @@ spec:
         description: >
           Could be seen at response to basic api call to an endpoint with ~
           operator.  Example-
-          (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+          (https://platform.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
         airbyte_secret: true
         order: 0
       auth_token:
@@ -2233,7 +2233,7 @@ spec:
         description: >
           Could be seen at response to basic api call to an endpoint with ~
           operator.  Example-
-          (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
+          (https://platform.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
         airbyte_secret: true
         order: 2
     additionalProperties: true

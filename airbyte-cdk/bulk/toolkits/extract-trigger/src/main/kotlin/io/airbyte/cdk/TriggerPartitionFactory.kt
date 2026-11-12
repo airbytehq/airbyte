@@ -175,7 +175,7 @@ class TriggerPartitionFactory(
     }
 
     private fun DefaultJdbcStreamStateValue.cursorPair(
-        stream: Stream
+        stream: Stream,
     ): Pair<EmittedField, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
@@ -249,7 +249,7 @@ class TriggerPartitionFactory(
 
     override fun split(
         unsplitPartition: TriggerPartition,
-        opaqueStateValues: List<OpaqueStateValue>
+        opaqueStateValues: List<OpaqueStateValue>,
     ): List<TriggerPartition> {
         val splitPartitionBoundaries: List<DefaultJdbcStreamStateValue> by lazy {
             opaqueStateValues.map { Jsons.treeToValue(it, DefaultJdbcStreamStateValue::class.java) }
@@ -266,10 +266,11 @@ class TriggerPartitionFactory(
     }
 
     private fun TriggerSplittableSnapshotPartition.split(
-        splitPointValues: List<DefaultJdbcStreamStateValue>
+        splitPointValues: List<DefaultJdbcStreamStateValue>,
     ): List<TriggerSplittableSnapshotPartition> {
-        val inners: List<List<JsonNode>> =
-            splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
+        val inners: List<List<JsonNode>> = splitPointValues.mapNotNull {
+            it.pkMap(streamState.stream)?.values?.toList()
+        }
         val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
         val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
         return lbs.zip(ubs).map { (lowerBound, upperBound) ->
@@ -286,10 +287,11 @@ class TriggerPartitionFactory(
     }
 
     private fun TriggerSplittableSnapshotWithCursorPartition.split(
-        splitPointValues: List<DefaultJdbcStreamStateValue>
+        splitPointValues: List<DefaultJdbcStreamStateValue>,
     ): List<TriggerSplittableSnapshotWithCursorPartition> {
-        val inners: List<List<JsonNode>> =
-            splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
+        val inners: List<List<JsonNode>> = splitPointValues.mapNotNull {
+            it.pkMap(streamState.stream)?.values?.toList()
+        }
         val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
         val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
         return lbs.zip(ubs).map { (lowerBound, upperBound) ->
@@ -308,7 +310,7 @@ class TriggerPartitionFactory(
     }
 
     private fun TriggerCursorIncrementalPartition.split(
-        splitPointValues: List<DefaultJdbcStreamStateValue>
+        splitPointValues: List<DefaultJdbcStreamStateValue>,
     ): List<TriggerCursorIncrementalPartition> {
         val inners: List<JsonNode> = splitPointValues.mapNotNull { it.cursorPair(stream)?.second }
         val lbs: List<JsonNode> = listOf(cursorLowerBound) + inners

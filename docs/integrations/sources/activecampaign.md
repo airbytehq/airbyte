@@ -31,6 +31,10 @@ The connector has a rate limit of 5 requests per second per account.
 - ActiveCampaign account
 - ActiveCampaign API Key
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -38,6 +42,7 @@ The connector has a rate limit of 5 requests per second per account.
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.2.15 | 2026-11-10 | [91316](https://github.com/airbytehq/airbyte/pull/91316) | Upgrade to source-declarative-manifest base image 7.47.0 |
 | 0.2.14 | 2025-05-17 | [60626](https://github.com/airbytehq/airbyte/pull/60626) | Update dependencies |
 | 0.2.13 | 2025-05-10 | [59872](https://github.com/airbytehq/airbyte/pull/59872) | Update dependencies |
 | 0.2.12 | 2025-05-03 | [59306](https://github.com/airbytehq/airbyte/pull/59306) | Update dependencies |

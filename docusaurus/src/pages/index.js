@@ -45,68 +45,6 @@ export default function Home() {
     </svg>
   );
 
-  const AIAgentsIcon = () => (
-    <svg
-      width="48"
-      height="48"
-      viewBox="0 0 16 16"
-      xmlns="http://www.w3.org/2000/svg"
-      className={styles.navIconSvg}
-    >
-      <path d="m11.27 8.345-3.006-.458-1.346-2.72a.67.67 0 0 0-.602-.373.66.66 0 0 0-.573.372L4.397 7.887l-3.007.458c-.544.058-.744.745-.343 1.117l2.148 2.12-.516 3.007c-.057.4.286.744.659.744.114 0 .2 0 .315-.057l2.692-1.432 2.663 1.432c.115.057.2.057.315.057a.657.657 0 0 0 .659-.744l-.515-3.007 2.176-2.12c.372-.372.172-1.06-.372-1.117m-2.777 2.263-.516.487.115.716.286 1.575-1.403-.745-.63-.343-.659.343-1.403.745.286-1.575.115-.716-.516-.487L3.023 9.49l1.575-.23.716-.114 1.03-2.062.688 1.432.315.63.716.115 1.575.229zm1.976-5.356.745-1.517 1.546-.774-1.546-.744L10.469.67l-.773 1.547-1.518.744 1.518.774zm4.124.917-.458-.917-.459.917-.916.458.916.458.459.917.458-.917.916-.458z"/>
-    </svg>
-  );
-
-  const TutorialsIcon = () => (
-    <svg
-      width="48"
-      height="48"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      className={styles.navIconSvg}
-    >
-      <path d="M12 0L1 5l11 5 9-4.09V17h2V5M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
-    </svg>
-  );
-
-  const AgentConnectorsIcon = () => (
-    <svg
-      width="48"
-      height="48"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      className={styles.navIconSvg}
-    >
-      <path d="M12 0c6.623 0 12 5.377 12 12s-5.377 12-12 12-12-5.377-12-12 5.377-12 12-12zm2.085 14h-9v2h9v3l5-4-5-4v3zm-4-6v-3l-5 4 5 4v-3h9v-2h-9z"/>
-    </svg>
-  );
-
-  const AgentApiIcon = () => (
-    <svg
-      width="48"
-      height="48"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      className={styles.navIconSvg}
-    >
-      <path d="M24 10.935v2.131l-8 3.947v-2.23l5.64-2.783-5.64-2.79v-2.223l8 3.948zm-16 3.848l-5.64-2.783 5.64-2.79v-2.223l-8 3.948v2.131l8 3.947v-2.23zm7.047-10.783h-2.078l-4.011 16h2.073l4.016-16z"/>
-    </svg>
-  );
-
-  const McpServerIcon = () => (
-    <svg
-      width="48"
-      height="48"
-      viewBox="0 0 180 180"
-      xmlns="http://www.w3.org/2000/svg"
-      className={styles.mcpIconSvg}
-    >
-      <path d="M18 84.8528L85.8822 16.9706C95.2548 7.59798 110.451 7.59798 119.823 16.9706C129.196 26.3431 129.196 41.5391 119.823 50.9117L68.5581 102.177" strokeWidth="12" strokeLinecap="round" fill="none"/>
-      <path d="M69.2652 101.47L119.823 50.9117C129.196 41.5391 144.392 41.5391 153.765 50.9117L154.118 51.2652C163.491 60.6378 163.491 75.8338 154.118 85.2063L92.7248 146.6C89.6006 149.724 89.6006 154.789 92.7248 157.913L105.331 170.52" strokeWidth="12" strokeLinecap="round" fill="none"/>
-      <path d="M102.853 33.9411L52.6482 84.1457C43.2756 93.5183 43.2756 108.714 52.6482 118.087C62.0208 127.459 77.2167 127.459 86.5893 118.087L136.794 67.8822" strokeWidth="12" strokeLinecap="round" fill="none"/>
-    </svg>
-  );
-
   const DevelopersIcon = () => (
     <svg
       width="48"
@@ -164,49 +102,10 @@ export default function Home() {
     },
   ];
 
-  const aeNavLinks = [
-    {
-      title: 'About Agent Engine',
-      link: '/ai-agents/about/',
-      description: 'Learn what Agent Engine is, how it works, and who it\'s for.',
-      icon: AIAgentsIcon,
-    },
-    {
-      title: 'Tutorials',
-      link: '/ai-agents/tutorials/',
-      description: 'Step-by-step guides and quickstarts to get your agents up and running.',
-      icon: TutorialsIcon,
-    },
-    {
-      title: 'Platform',
-      link: '/ai-agents/platform/',
-      description: 'Authenticate, configure connectors, manage context stores, and execute agent workflows.',
-      icon: PlatformIcon,
-    },
-    {
-      title: 'API reference',
-      link: '/ai-agents/api/',
-      description: 'Integrate Agent Engine into your applications with the REST API.',
-      icon: AgentApiIcon,
-    },
-    {
-      title: 'Connectors',
-      link: '/ai-agents/connectors/',
-      description: 'Browse the growing catalog of agent-optimized connectors for popular platforms.',
-      icon: AgentConnectorsIcon,
-    },
-    {
-      title: 'MCP server',
-      link: '/ai-agents/mcp-server/',
-      description: 'Let AI agents interact with your data sources through the Model Context Protocol.',
-      icon: McpServerIcon,
-    },
-  ];
-
   return (
     <Layout
       title=""
-      description="Airbyte is an open source data integration, activation, and agentic data platform. Replicate data from hundreds of sources into warehouses, lakes, and databases, and equip AI agents to query, search, and act on your data in real-time."
+      description="Airbyte is an open source data replication platform and context layer for AI agents. Move your data from hundreds of sources into warehouses, data lakes, and databases, and equip your agents to query, search, and act on your data in real time."
     >
       <div className={styles.homePage}>
         {/* Section 1: Hero */}
@@ -214,24 +113,16 @@ export default function Home() {
           <div className={styles.heroContainer}>
             <h1 className={styles.heroTitle}>Airbyte documentation</h1>
             <p className={styles.heroDescription}>
-              Airbyte is an open source data integration, activation, and agentic data platform.
-              Replicate data from hundreds of sources into warehouses, lakes, and databases,
-              and equip AI agents to query, search, and act on your data in real-time.
+              Airbyte is an open source data replication platform and context layer for AI agents.
+              Move your data from hundreds of sources into warehouses, data lakes, and databases,
+              and equip your agents to query, search, and act on your data in real time.
             </p>
           </div>
         </section>
 
-        {/* Section 2: Data Replication */}
+        {/* Section 2: Connectors */}
         <section className={styles.drSection}>
           <div className={styles.sectionInner}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.drSectionTitle}>Data Replication</h2>
-              <p className={styles.sectionSubtitle}>
-                Consolidate data from hundreds of sources into your data warehouses, data lakes, and databases.
-                Then, move data into the operational tools where work happens.
-              </p>
-            </div>
-
             {/* Popular connectors */}
             <div className={styles.connectorsRow}>
               <div className={styles.connectorGroup}>
@@ -314,37 +205,6 @@ export default function Home() {
               })}
             </div>
 
-          </div>
-        </section>
-
-        {/* Section 3: Agent Engine */}
-        <section className={styles.aeSection}>
-          <div className={styles.sectionInner}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.aeSectionTitle}>Agent Engine</h2>
-              <p className={styles.aeSectionSubtitle}>
-                Equip your AI agents to explore, query, and act on live data from any connected source.
-              </p>
-            </div>
-
-            <div className={styles.aeNavGrid}>
-              {aeNavLinks.map((item, index) => {
-                const IconComponent = item.icon;
-                return (
-                  <a
-                    key={index}
-                    href={item.link}
-                    className={styles.aeNavCard}
-                  >
-                    <div className={styles.aeNavIcon}>
-                      <IconComponent />
-                    </div>
-                    <h3 className={styles.aeNavTitle}>{item.title}</h3>
-                    <p className={styles.aeNavDescription}>{item.description}</p>
-                  </a>
-                );
-              })}
-            </div>
           </div>
         </section>
 

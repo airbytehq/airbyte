@@ -48,8 +48,10 @@ import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.ChronoField
 
 class PostgresRawDataDumper(
-    private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration
+    private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration,
 ) : DestinationDataDumper {
+    private val coercer = AirbyteValueCoercer()
+
     companion object {
         // Lenient formatters that handle PostgreSQL's JSONB serialization quirks
         // (e.g., dropping :00 seconds)
@@ -157,21 +159,21 @@ class PostgresRawDataDumper(
                 if (value !is StringValue) return value
                 try {
                     TimestampWithTimezoneValue(
-                        OffsetDateTime.parse(value.value, TIMESTAMP_FORMATTER)
+                        OffsetDateTime.parse(value.value, TIMESTAMP_FORMATTER),
                     )
                 } catch (e: Exception) {
                     // Fall back to standard coercer
-                    AirbyteValueCoercer.coerce(value, type) ?: value
+                    coercer.coerce(value, type) ?: value
                 }
             }
             TimestampTypeWithoutTimezone -> {
                 if (value !is StringValue) return value
                 try {
                     TimestampWithoutTimezoneValue(
-                        LocalDateTime.parse(value.value, TIMESTAMP_NO_TZ_FORMATTER)
+                        LocalDateTime.parse(value.value, TIMESTAMP_NO_TZ_FORMATTER),
                     )
                 } catch (e: Exception) {
-                    AirbyteValueCoercer.coerce(value, type) ?: value
+                    coercer.coerce(value, type) ?: value
                 }
             }
             TimeTypeWithTimezone -> {
@@ -179,7 +181,7 @@ class PostgresRawDataDumper(
                 try {
                     TimeWithTimezoneValue(OffsetTime.parse(value.value, TIME_FORMATTER))
                 } catch (e: Exception) {
-                    AirbyteValueCoercer.coerce(value, type) ?: value
+                    coercer.coerce(value, type) ?: value
                 }
             }
             TimeTypeWithoutTimezone -> {
@@ -187,7 +189,7 @@ class PostgresRawDataDumper(
                 try {
                     TimeWithoutTimezoneValue(LocalTime.parse(value.value, TIME_NO_TZ_FORMATTER))
                 } catch (e: Exception) {
-                    AirbyteValueCoercer.coerce(value, type) ?: value
+                    coercer.coerce(value, type) ?: value
                 }
             }
             DateType -> {
@@ -195,7 +197,7 @@ class PostgresRawDataDumper(
                 try {
                     DateValue(LocalDate.parse(value.value, DATE_FORMATTER))
                 } catch (e: Exception) {
-                    AirbyteValueCoercer.coerce(value, type) ?: value
+                    coercer.coerce(value, type) ?: value
                 }
             }
             // For UnknownType with PASS_THROUGH behavior, unwrap double-serialized strings
@@ -223,7 +225,7 @@ class PostgresRawDataDumper(
             }
             // For other primitive types, use the standard coercer
             else -> {
-                val coerced = AirbyteValueCoercer.coerce(value, type)
+                val coerced = coercer.coerce(value, type)
                 // If coercion returns null, it means the value couldn't be coerced to the expected
                 // type.
                 // In test scenarios, we want to preserve the original value to see what went wrong.
@@ -234,7 +236,7 @@ class PostgresRawDataDumper(
 
     override fun dumpRecords(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): List<OutputRecord> {
         val output = mutableListOf<OutputRecord>()
 
@@ -244,7 +246,7 @@ class PostgresRawDataDumper(
                 .postgresDataSource(
                     postgresConfiguration = config,
                     resolvedHost = config.host,
-                    resolvedPort = config.port
+                    resolvedPort = config.port,
                 )
 
         dataSource.use { ds ->
@@ -276,7 +278,8 @@ class PostgresRawDataDumper(
                     FROM information_schema.tables
                     WHERE table_schema = '$rawNamespace'
                     AND table_name = '$rawName'
-                """.trimIndent()
+                """
+                        .trimIndent()
 
                 val existsResultSet = statement.executeQuery(tableExistsQuery)
                 existsResultSet.next()
@@ -386,25 +389,24 @@ class PostgresRawDataDumper(
                                                 // types)
                                                 columnValue.value
                                                     ?.deserializeToNode()
-                                                    ?.toAirbyteValue()
-                                                    ?: NullValue
+                                                    ?.toAirbyteValue() ?: NullValue
                                             }
                                             else -> {
                                                 // Primitive types - convert directly
                                                 when (fieldType.type) {
                                                     is io.airbyte.cdk.load.data.IntegerType ->
                                                         io.airbyte.cdk.load.data.IntegerValue(
-                                                            (columnValue as Number).toLong()
+                                                            (columnValue as Number).toLong(),
                                                         )
                                                     is io.airbyte.cdk.load.data.NumberType ->
                                                         io.airbyte.cdk.load.data.NumberValue(
                                                             (columnValue as java.math.BigDecimal)
                                                                 .toDouble()
-                                                                .toBigDecimal()
+                                                                .toBigDecimal(),
                                                         )
                                                     is io.airbyte.cdk.load.data.BooleanType ->
                                                         io.airbyte.cdk.load.data.BooleanValue(
-                                                            columnValue as Boolean
+                                                            columnValue as Boolean,
                                                         )
                                                     is io.airbyte.cdk.load.data.StringType ->
                                                         StringValue(columnValue.toString())
@@ -437,7 +439,7 @@ class PostgresRawDataDumper(
                             generationId = resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
                             data = coercedData,
                             airbyteMeta =
-                                stringToMeta(resultSet.getString(Meta.COLUMN_NAME_AB_META))
+                                stringToMeta(resultSet.getString(Meta.COLUMN_NAME_AB_META)),
                         )
                     output.add(outputRecord)
                 }
@@ -450,7 +452,7 @@ class PostgresRawDataDumper(
 
     override fun dumpFile(
         spec: ConfigurationSpecification,
-        stream: DestinationStream
+        stream: DestinationStream,
     ): Map<String, String> {
         throw UnsupportedOperationException("Postgres does not support file transfer.")
     }

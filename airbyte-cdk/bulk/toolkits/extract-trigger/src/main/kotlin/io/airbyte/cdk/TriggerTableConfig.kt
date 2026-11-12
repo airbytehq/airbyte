@@ -39,10 +39,10 @@ abstract class TriggerTableConfig() {
 
         stream.schema.forEach { field ->
             result.add(
-                EmittedField(id = TRIGGER_TABLE_PREFIX + field.id + "_before", type = field.type)
+                EmittedField(id = TRIGGER_TABLE_PREFIX + field.id + "_before", type = field.type),
             )
             result.add(
-                EmittedField(id = TRIGGER_TABLE_PREFIX + field.id + "_after", type = field.type)
+                EmittedField(id = TRIGGER_TABLE_PREFIX + field.id + "_after", type = field.type),
             )
         }
         return COMMON_FIELDS + result

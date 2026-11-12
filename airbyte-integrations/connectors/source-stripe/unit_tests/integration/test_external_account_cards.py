@@ -206,6 +206,70 @@ class FullRefreshTest(TestCase):
 @freezegun.freeze_time(_NOW.isoformat())
 class IncrementalTest(TestCase):
     @HttpMocker()
+    def test_given_created_and_updated_events_in_same_second_when_read_then_updated_event_wins_cursor_tie(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        state_datetime = _NOW - timedelta(days=5)
+        event_cursor = int(state_datetime.timestamp()) + 1
+        object_record = _an_external_account_card().with_id("card_same_second")
+
+        http_mocker.get(
+            _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_response()
+            .with_record(
+                _an_event()
+                .with_id("evt_updated")
+                .with_cursor(event_cursor)
+                .with_field(FieldPath("type"), "account.external_account.updated")
+                .with_field(_DATA_FIELD, object_record.build())
+            )
+            .with_record(
+                _an_event()
+                .with_id("evt_created")
+                .with_cursor(event_cursor)
+                .with_field(FieldPath("type"), "account.external_account.created")
+                .with_field(_DATA_FIELD, object_record.build())
+            )
+            .build(),
+        )
+
+        output = self._read(
+            _config(),
+            StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
+        )
+
+        assert output.records[0].record.data["updated"] == event_cursor
+        assert output.records[1].record.data["updated"] == event_cursor - 1
+
+    @HttpMocker()
+    def test_given_created_event_at_state_boundary_when_read_then_emit_record_without_regressing_state(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        state_value = int((_NOW - timedelta(days=5)).timestamp())
+        state_datetime = datetime.fromtimestamp(state_value, timezone.utc)
+
+        http_mocker.get(
+            _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_response()
+            .with_record(
+                _an_event()
+                .with_cursor(state_value)
+                .with_field(FieldPath("type"), "account.external_account.created")
+                .with_field(_DATA_FIELD, _an_external_account_card().build())
+            )
+            .build(),
+        )
+
+        output = self._read(
+            _config(),
+            StateBuilder().with_stream_state(_STREAM_NAME, {"updated": state_value}).build(),
+        )
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["updated"] == state_value - 1
+        assert int(output.most_recent_state.stream_state.updated) >= state_value
+
+    @HttpMocker()
     def test_given_no_state_when_read_then_use_external_accounts_endpoint(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _external_accounts_request().with_object(_OBJECT).with_limit(100).build(),

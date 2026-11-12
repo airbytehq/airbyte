@@ -20,6 +20,7 @@ object StateMessageHelper {
      *
      * @param state
      * - a blob representing the state
+     *
      * @return An optional state wrapper, if there is no state an empty optional will be returned
      */
     fun getTypedState(state: JsonNode?): Optional<StateWrapper> {
@@ -73,7 +74,7 @@ object StateMessageHelper {
                 }
 
                 throw IllegalStateException(
-                    "Unexpected state blob, the state contains either multiple global or conflicting state type."
+                    "Unexpected state blob, the state contains either multiple global or conflicting state type.",
                 )
             }
         }
@@ -115,8 +116,10 @@ object StateMessageHelper {
      *
      * @param stateMessages
      * - an ordered list of state message
+     *
      * @param useStreamCapableState
      * - a flag that indicates whether to return the new format
+     *
      * @return a wrapped state
      */
     private fun provideStreamState(stateMessages: List<AirbyteStateMessage>): StateWrapper {

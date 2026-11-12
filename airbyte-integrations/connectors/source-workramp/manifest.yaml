@@ -43,6 +43,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -115,6 +116,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -184,6 +186,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -232,6 +235,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -320,6 +324,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -380,6 +385,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 100
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -462,6 +468,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 100
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -533,6 +540,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 100
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -601,6 +609,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 100
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -648,6 +657,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 100
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -735,6 +745,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 100
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -794,6 +805,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 100
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:

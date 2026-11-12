@@ -144,6 +144,9 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /audit
           http_method: GET
+          request_parameters:
+            from: "{{ (timestamp(stream_interval['start_time']) * 1000) | int }}"
+            to: "{{ (timestamp(stream_interval['end_time']) * 1000) | int }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -175,14 +178,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_time_option:
-          type: RequestOption
-          field_name: from
-          inject_into: request_parameter
-        end_time_option:
-          type: RequestOption
-          field_name: to
-          inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"

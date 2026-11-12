@@ -23,13 +23,13 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
                 driverClassName,
                 jdbcUrl,
                 connectionProperties,
-                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName)
+                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName),
             )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
             61000,
-            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout,
         )
     }
 
@@ -43,13 +43,13 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
                 driverClassName,
                 jdbcUrl,
                 connectionProperties,
-                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName)
+                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName),
             )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
             30000,
-            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout,
         )
     }
 
@@ -67,14 +67,14 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
                     connectionProperties,
                     JdbcConnector.getConnectionTimeout(
                         connectionProperties,
-                        mySQLContainer.driverClassName
-                    )
+                        mySQLContainer.driverClassName,
+                    ),
                 )
             Assertions.assertNotNull(dataSource)
             Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
             Assertions.assertEquals(
                 5000,
-                (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+                (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout,
             )
         }
     }
@@ -89,13 +89,13 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
                 driverClassName,
                 jdbcUrl,
                 connectionProperties,
-                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName)
+                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName),
             )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
             Int.MAX_VALUE.toLong(),
-            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout,
         )
     }
 
@@ -109,13 +109,13 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
                 driverClassName,
                 jdbcUrl,
                 connectionProperties,
-                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName)
+                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName),
             )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
             10000,
-            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+            (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout,
         )
     }
 
@@ -133,14 +133,14 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
                     connectionProperties,
                     JdbcConnector.getConnectionTimeout(
                         connectionProperties,
-                        mySQLContainer.driverClassName
-                    )
+                        mySQLContainer.driverClassName,
+                    ),
                 )
             Assertions.assertNotNull(dataSource)
             Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
             Assertions.assertEquals(
                 60000,
-                (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout
+                (dataSource as HikariDataSource).hikariConfigMXBean.connectionTimeout,
             )
         }
     }
@@ -152,7 +152,7 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
             10,
-            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize
+            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize,
         )
     }
 
@@ -167,13 +167,13 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
                 driverClassName,
                 jdbcUrl,
                 connectionProperties,
-                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName)
+                JdbcConnector.getConnectionTimeout(connectionProperties, driverClassName),
             )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
             10,
-            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize
+            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize,
         )
     }
 
@@ -185,7 +185,7 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
             10,
-            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize
+            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize,
         )
     }
 
@@ -201,13 +201,13 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
                 port,
                 database,
                 driverClassName,
-                connectionProperties
+                connectionProperties,
             )
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
             10,
-            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize
+            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize,
         )
     }
 
@@ -227,7 +227,7 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
             10,
-            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize
+            (dataSource as HikariDataSource).hikariConfigMXBean.maximumPoolSize,
         )
     }
 

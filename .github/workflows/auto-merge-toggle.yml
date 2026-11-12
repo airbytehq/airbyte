@@ -48,10 +48,7 @@ jobs:
     name: Remove auto-merge labels
     if: >
       github.event.action == 'auto_merge_disabled'
-      && (
-        contains(github.event.pull_request.labels.*.name, 'auto-merge')
-        || contains(github.event.pull_request.labels.*.name, 'auto-merge/bypass-ci-checks')
-      )
+      && contains(github.event.pull_request.labels.*.name, 'auto-merge')
     permissions: {}
     runs-on: ubuntu-24.04
     steps:
@@ -73,16 +70,6 @@ jobs:
           gh pr edit "$PR_NUMBER"
           --repo "${{ github.repository }}"
           --remove-label "auto-merge"
-
-      - name: Remove bypass-ci-checks label
-        if: contains(github.event.pull_request.labels.*.name, 'auto-merge/bypass-ci-checks')
-        env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: >
-          gh pr edit "$PR_NUMBER"
-          --repo "${{ github.repository }}"
-          --remove-label "auto-merge/bypass-ci-checks"
 
       - name: Post notice comment
         env:
