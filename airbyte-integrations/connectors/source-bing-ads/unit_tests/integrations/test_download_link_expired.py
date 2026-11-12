@@ -38,10 +38,7 @@ def _assert_expired_link_error(output, stream_name: str) -> None:
     assert not output.records
     trace_errors = [m.trace.error for m in output.errors]
     assert trace_errors, "expected an error trace message"
-    expected = (
-        f"The Bing Ads download link for stream '{stream_name}' expired before the file could be downloaded. "
-        "The sync will retry."
-    )
+    expected = f"The Bing Ads download link for stream '{stream_name}' expired before the file could be downloaded. The sync will retry."
     stream_errors = [e for e in trace_errors if e.message == expected]
     assert stream_errors, f"expected message {expected!r}, got {[e.message for e in trace_errors]}"
     assert all(e.failure_type == FailureType.transient_error for e in stream_errors)
