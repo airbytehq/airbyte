@@ -68,9 +68,7 @@ def test_threads_resume_preserves_parent_cursors(requests_mock, token_config, us
         assert emitted_parent["use_global_cursor"] is True
         assert float(emitted_parent["state"]["float_ts"]) >= 1627243200.0
     else:
-        assert {
-            s["partition"]["channel"]: float(s["cursor"]["float_ts"]) for s in emitted_parent["states"]
-        } == saved_cursors
+        assert {s["partition"]["channel"]: float(s["cursor"]["float_ts"]) for s in emitted_parent["states"]} == saved_cursors
 
 
 @freeze_time("2021-07-23T20:00:00Z")
