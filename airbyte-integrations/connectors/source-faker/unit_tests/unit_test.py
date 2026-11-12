@@ -12,7 +12,14 @@ from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
 from airbyte_cdk.entrypoint import launch
-from airbyte_cdk.models import AirbyteMessage, Status, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
