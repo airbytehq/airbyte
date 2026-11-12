@@ -157,6 +157,21 @@ class TestSourceFacebookMarketing:
 
         assert isinstance(spec, ConnectorSpecification)
 
+    def test_custom_insight_inherits_top_level_incrementality_in_request_params(self, config, api, fb_marketing):
+        config["include_incrementality"] = True
+        config["custom_insights"] = [{"name": "Incrementality", "fields": ["account_id", "actions"]}]
+
+        streams = fb_marketing.streams(config)
+        custom_stream = next(stream for stream in streams if stream.name == "custom_incrementality")
+
+        assert custom_stream.request_params()["action_attribution_windows"] == [
+            "1d_click",
+            "7d_click",
+            "28d_click",
+            "1d_view",
+            "incrementality",
+        ]
+
     def test_get_custom_insights_streams(self, api, config, fb_marketing):
         config["custom_insights"] = [
             {
