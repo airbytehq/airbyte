@@ -62,6 +62,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -71,6 +72,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -133,6 +136,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -142,6 +146,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -203,6 +209,7 @@ definitions:
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -212,6 +219,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -507,6 +516,19 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/app_concepts"
+  # The API returns `modified_at` with up to nanosecond precision (9 fractional digits), which
+  # the cursor cannot parse (`%f` accepts at most 6 digits), so the state would never advance.
+  # Truncate the extra digits so the cursor can read the value.
+  truncate_modified_at_to_microseconds:
+    type: AddFields
+    condition: "{{ record.get('modified_at') is string and record['modified_at'] | length > 27 and record['modified_at'][19] == '.' and record['modified_at'][-1] == 'Z' }}"
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - modified_at
+        # The value is evaluated before the condition, so it must tolerate a missing `modified_at`.
+        value: "{{ (record.get('modified_at') or '')[:26] ~ 'Z' }}"
+        value_type: string
   base_requester:
     type: HttpRequester
     url_base: https://api.clarifai.com
