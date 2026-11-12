@@ -4,11 +4,17 @@
 
 import datetime
 import logging
+from itertools import count
 
 import pytest
 from source_faker import SourceFaker
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+
+
+@pytest.fixture(autouse=True)
+def isolate_worker_seeds(mocker):
+    mocker.patch("multiprocessing.process._process_counter", count(1))
 
 
 def read_users(config, state=None):
