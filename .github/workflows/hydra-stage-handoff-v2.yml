@@ -25,7 +25,7 @@ name: "Hydra: Stage Handoff v2 (hydra-driven)"
 #   4. Switch on next_action and dispatch the matching slash-command workflow
 #      via curl. No Devin session is launched for the decision itself.
 #      fix_ci and rework fix message the PR's original fix session, with the
-#      same dry-run and idempotency key.
+#      same dry-run mode.
 #   5. Idempotency (HYD-372): each dispatch first records a hidden
 #      `hydra_handoff_v2` marker comment keyed on (pr, head_sha, next_action)
 #      and skips when that key is already on the PR, so repeat wakes on the
@@ -376,7 +376,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          cat > "$RUNNER_TEMP/hydra-claim.sh" <<'HYDRA_CLAIM'
           # Sets CLAIMED=true when this run may dispatch WORKFLOW. The marker
           # is posted before the dispatch, and the handoff job is serialised
           # per PR, so a queued wake sees it and skips. Only [bot] comments
@@ -412,8 +411,6 @@ jobs:
             echo "idempotency=$RESULT" | tee -a "$GITHUB_OUTPUT"
             CLAIMED=true
           }
-          HYDRA_CLAIM
-          source "$RUNNER_TEMP/hydra-claim.sh"
 
           # When the request never reached GitHub (curl 6/7: DNS, connect) or
           # GitHub rejected it (22: HTTP error), the marker is deleted so the
@@ -536,7 +533,6 @@ jobs:
           PR_NUMBER: ${{ needs.gate.outputs.pr }}
           NEXT_ACTION: ${{ steps.assess.outputs.next_action }}
           HEAD_SHA: ${{ steps.assess.outputs.head_sha }}
-          FORCE: ${{ github.event.inputs.force }}
           AUTHOR_KIND: ${{ steps.assess.outputs.author_kind }}
           FIX_RUN: ${{ steps.assess.outputs.fix_run }}
           FAILING_CHECKS: ${{ steps.assess.outputs.failing_checks }}
@@ -549,7 +545,6 @@ jobs:
           result() { echo "fix_session_result=$*" | tee -a "$GITHUB_OUTPUT"; }
           escalate() { echo "::warning::$*"; result "escalate: $*"; }
           trap 'result failed' ERR
-          source "$RUNNER_TEMP/hydra-claim.sh"
           if [[ "$AUTHOR_KIND" != "devin" ]]; then
             if [[ "$NEXT_ACTION" == "fix_ci" ]]; then
               echo "::notice::not a Devin PR; author fixes CI"
@@ -557,14 +552,6 @@ jobs:
             else
               escalate "not a Devin PR; author must rework it"
             fi
-            exit 0
-          fi
-          COMMENTS=$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" | jq 'add')
-          KEY="<!-- hydra_handoff_v2: pr=$PR_NUMBER; head_sha=$HEAD_SHA; next_action=$NEXT_ACTION -->"
-          if [[ "$FORCE" != "true" ]] && jq -e --arg key "$KEY" '
-            any(.[]; (.user.login | endswith("[bot]")) and (.body | contains($key)))' <<<"$COMMENTS" >/dev/null; then
-            echo "idempotency=skipped" | tee -a "$GITHUB_OUTPUT"
-            result "no_action: already routed at this head"
             exit 0
           fi
           SESSION=$FIX_RUN
@@ -627,8 +614,6 @@ jobs:
           Check out the existing branch, make the change these findings call for, push to the same branch, and wait for the required checks to finish. Do not open a new PR. Do not change anything that is not needed for these findings.
           Record this request in review_fix_attempts following the /ai-fix playbook's \"Later Fix Requests\" rules."
           fi
-          claim_dispatch "fix session"
-          if [[ "$CLAIMED" != true ]]; then result "no_action: idempotency skipped"; exit 0; fi
           if [[ "$DRY_RUN" == true ]]; then
             echo "::notice::WOULD message session $SESSION"
             result would_message
@@ -639,8 +624,8 @@ jobs:
           case "$HTTP" in
             2*) result messaged ;;
             429) escalate "message capacity exhausted (HTTP 429)"; echo "::error::Fix message rate limit exhausted"; exit 1 ;;
-            5*|000) escalate "message outcome uncertain (HTTP $HTTP); keeping claim"; echo "::error::Fix message outcome uncertain"; exit 1 ;;
-            *) escalate "fix session $SESSION rejected message (HTTP $HTTP); keeping claim" ;;
+            5*|000) escalate "message outcome uncertain (HTTP $HTTP)"; echo "::error::Fix message outcome uncertain"; exit 1 ;;
+            *) escalate "fix session $SESSION rejected message (HTTP $HTTP)" ;;
           esac
 
       - name: Resolve Variables
@@ -658,12 +643,11 @@ jobs:
           IDEMPOTENCY: ${{ steps.dispatch.outputs.idempotency }}
           DISPATCH_OUTCOME: ${{ steps.dispatch.outcome }}
           FIX_SESSION_RESULT: ${{ steps.fix-session.outputs.fix_session_result }}
-          FIX_IDEMPOTENCY: ${{ steps.fix-session.outputs.idempotency }}
         run: |
           set -euo pipefail
           NOTIFY=$(jq -nr 'env | .NEXT_ACTION as $action |
             (["prove", "review", "ready", "resolve_conflicts", "fix", "triage", "fix_ci", "escalate"] | index($action) != null)
-            and (.IDEMPOTENCY != "skipped" and .FIX_IDEMPOTENCY != "skipped")')
+            and (.IDEMPOTENCY != "skipped")')
           echo "notify=$NOTIFY" | tee -a "$GITHUB_OUTPUT"
           PAYLOAD_FILE="$RUNNER_TEMP/handoff-slack-payload.json"
           jq -n 'env |
