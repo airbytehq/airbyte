@@ -131,6 +131,23 @@ spec:
         order: 9
         type: string
         format: date-time
+      brand_analytics_start_date:
+        title: Brand Analytics Backfill Start Date
+        description: >-
+          Optional backfill start date (YYYY-MM-DD) for Market Basket, Repeat Purchase,
+          and Search Terms. Rounds back to Sunday and includes only complete weeks
+          within the last 730 days. Leave unset to request only the last completed
+          Sunday-Saturday week in full refresh and on incremental reads without
+          newer state; missed weeks are not recovered. These streams ignore Start
+          Date and End Date. Historical Search Terms reports have returned FATAL
+          during validation; Amazon's reason could not be retrieved, so historical
+          availability is unverified. Failed reports are not skipped.
+        type: string
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+        - '2026-10-01'
+        order: 26
       period_in_days:
         title: Period In Days
         type: integer
@@ -682,14 +699,15 @@ definitions:
     start_datetime:
       type: MinMaxDatetime
       datetime: >-
-        {%- set start = str_to_datetime(config.get('replication_start_date') or (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')) -%}
+        {%- set start = str_to_datetime(config['brand_analytics_start_date']) if config.get('brand_analytics_start_date') else now_utc() - duration('P7D') -%}
         {{ (start - duration('P' ~ ((start.weekday() + 1) % 7) ~ 'D')).strftime('%Y-%m-%d') }}
       datetime_format: "%Y-%m-%d"
-      min_datetime: "{{ (now_utc() - duration('P730D')).strftime('%Y-%m-%d') }}"
+      min_datetime: >-
+        {%- set earliest = now_utc() - duration('P730D') -%}
+        {{ (earliest + duration('P' ~ ((6 - earliest.weekday()) % 7) ~ 'D')).strftime('%Y-%m-%d') }}
     end_datetime:
       type: MinMaxDatetime
-      datetime: >-
-        {{ min(str_to_datetime(config['replication_end_date']) + duration('PT1S'), now_utc()).strftime('%Y-%m-%d') if config.get('replication_end_date') else now_utc().strftime('%Y-%m-%d') }}
+      datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
 
   authenticator:

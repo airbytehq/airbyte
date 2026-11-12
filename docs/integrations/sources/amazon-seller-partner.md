@@ -296,7 +296,7 @@ Some streams send report options that you don't configure. Anything you enter in
 
 | Stream | Report options sent |
 | :----- | :------------------ |
-| Market Basket, Repeat Purchase, Search Terms | `reportPeriod: WEEK`, with one complete Sunday–Saturday period per request in the configured date range |
+| Market Basket, Repeat Purchase, Search Terms | `reportPeriod: WEEK`, for the last completed Sunday–Saturday week by default; historical weekly reads require **Brand Analytics Backfill Start Date** |
 | Alternate Purchase, Item Comparison (removed by Amazon) | Unchanged legacy requests for the most recent complete week |
 | `GET_SALES_AND_TRAFFIC_REPORT` | `asinGranularity` from **Sales and Traffic Report ASIN Granularity** |
 | `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` | `dateGranularity: MONTH` and `asinGranularity` |
@@ -305,9 +305,13 @@ Some streams send report options that you don't configure. Anything you enter in
 
 Both Vendor Forecasting streams read Amazon's single `GET_VENDOR_FORECASTING_REPORT` report type and differ only in the `sellingProgram` option they send.
 
-Market Basket, Repeat Purchase, and Search Terms support incremental sync with the `endDate` cursor. They backfill complete Sunday–Saturday weeks from **Start Date** (rounded back to Sunday), then resume after the last nonempty week. **End Date** limits the backfill to complete weeks, and a future or absent end date never includes the current unfinished week. Search Terms records gain an `endDate` field equal to the requested week's Saturday, since Amazon supplies the reporting dates outside its rows. Missing or older start dates are limited to the first complete week within the two-year (730-day) lookback; a partial week at that boundary is omitted. **Period In Days** and **Report Stream Lookback Window (Hours)** do not affect these weekly streams. An entirely empty read retains its starting checkpoint and retries those periods on later syncs.
+Market Basket, Repeat Purchase, and Search Terms support incremental sync with the `endDate` cursor. With **Brand Analytics Backfill Start Date** (`brand_analytics_start_date`) unset, full refresh and incremental reads without newer state request only the last completed Sunday–Saturday week, matching earlier versions. Missed weeks are not recovered by default. These streams continue to ignore **Start Date** (`replication_start_date`) and **End Date** (`replication_end_date`), whether backfill is enabled or not.
 
-Full refresh remains available, but now rereads the configured complete-week range rather than only the latest week. Review historical end dates before upgrading to 8.0.0: they can exclude the latest week that was previously returned. See the [8.0.0 migration guide](amazon-seller-partner-migrations.md#upgrading-to-800).
+To opt into historical reads, set **Brand Analytics Backfill Start Date** to a date in `YYYY-MM-DD` format. The date rounds back to Sunday, with older dates limited to the first complete week within the last 730 days. The partial week at that boundary is omitted. Each request covers one complete Sunday–Saturday week, and the current unfinished week is always excluded. Incremental reads then resume after the last nonempty week. Full refresh rereads all complete weeks from the opt-in date. Moving the date earlier does not rewind saved incremental state; use full refresh to reread history and review destination overwrite or duplicate implications first.
+
+Historical Search Terms reports returned `FATAL` during validation, but Amazon's reason could not be retrieved. Historical availability remains unverified; leave the option unset to preserve latest-week-only reads. Failed reports are not silently skipped, and an opt-in backfill can fail or take longer because it creates more reports.
+
+Search Terms records gain an `endDate` field equal to the requested week's Saturday, since Amazon supplies the reporting dates outside its rows. **Period In Days** and **Report Stream Lookback Window (Hours)** do not affect these weekly streams. An entirely empty read retains its starting checkpoint; opt-in backfills retry those periods on later syncs while the weeks remain within retention. No state migration or destination reset is required when upgrading, since these streams previously offered only full refresh. Refresh the source schema and select incremental mode if desired.
 
 Alternate Purchase and Item Comparison are unchanged legacy streams. Amazon [removed both report types on June 30, 2022](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations); incremental support is not available for them.
 
@@ -511,7 +515,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 8.0.0 | 2026-11-06 | [91216](https://github.com/airbytehq/airbyte/pull/91216) | Add incremental sync for inbound shipments/items and three supported Brand Analytics reports, with weekly backfills honoring configured dates. |
+| 7.1.0 | 2026-11-12 | [91216](https://github.com/airbytehq/airbyte/pull/91216) | Add incremental sync for inbound shipments/items and three supported Brand Analytics reports, preserving one-week defaults with optional historical backfill. |
 | 7.0.2 | 2026-11-09 | [89626](https://github.com/airbytehq/airbyte/pull/89626) | Retry rate-limited (429) report document lookups for longer (30 retries / 1 hour) so report downloads no longer fail when Amazon throttles `getReportDocument`; other errors keep 5 retries / 10 minutes. |
 | 7.0.1 | 2026-10-27 | [89783](https://github.com/airbytehq/airbyte/pull/89783) | Update dependencies |
 | 7.0.0 | 2026-10-22 | [74065](https://github.com/airbytehq/airbyte/pull/74065) | Replace `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon removes on November 11, 2026, with `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` |

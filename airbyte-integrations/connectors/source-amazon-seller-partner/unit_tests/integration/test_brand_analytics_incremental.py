@@ -78,8 +78,51 @@ def expected_jobs(stream_name: str, weeks: list[tuple[str, str]]) -> list[dict]:
 
 @pytest.mark.parametrize("stream_name,records_path", STREAMS)
 @pytest.mark.parametrize("sync_mode", [SyncMode.incremental, SyncMode.full_refresh])
+@pytest.mark.parametrize("replication_dates", ["historical", "future", "unset"])
+@freezegun.freeze_time("2024-06-05T12:00:00Z")
+def test_default_requests_only_last_completed_week(
+    stream_name: str, records_path: str, sync_mode: SyncMode, replication_dates: str
+) -> None:
+    config = ConfigBuilder()
+    if replication_dates == "historical":
+        config.with_start_date(pendulum.datetime(2017, 5, 15)).with_end_date(pendulum.datetime(2017, 5, 27))
+    elif replication_dates == "future":
+        config.with_start_date(pendulum.datetime(2030, 5, 15)).with_end_date(pendulum.datetime(2030, 5, 27))
+    else:
+        config.build().pop("replication_start_date")
+        config.without_end_date()
+    with requests_mock.Mocker() as mocker:
+        jobs = mock_reports(mocker, stream_name, records_path)
+        output = read_output(config, stream_name, sync_mode)
+        assert jobs == expected_jobs(stream_name, [("2024-05-26", "2024-06-01")])
+        assert len(output.records) == 2
+        assert {record.record.data["endDate"] for record in output.records} == {"2024-06-01"}
+        if sync_mode == SyncMode.incremental:
+            assert output.most_recent_state.stream_state.__dict__ == {"endDate": "2024-06-01"}
+
+
+@pytest.mark.parametrize("stream_name,records_path", STREAMS)
+def test_default_does_not_recover_missed_weeks(stream_name: str, records_path: str) -> None:
+    config = ConfigBuilder()
+    with requests_mock.Mocker() as mocker:
+        jobs = mock_reports(mocker, stream_name, records_path)
+        with freezegun.freeze_time("2024-06-02T12:00:00Z"):
+            first = read_output(config, stream_name, SyncMode.incremental)
+        assert jobs == expected_jobs(stream_name, [("2024-05-26", "2024-06-01")])
+        assert len(first.records) == 2
+        assert first.most_recent_state.stream_state.__dict__ == {"endDate": "2024-06-01"}
+        jobs.clear()
+        with freezegun.freeze_time("2024-06-23T12:00:00Z"):
+            second = read_output(config, stream_name, SyncMode.incremental, state=[first.state_messages[-1].state])
+        assert jobs == expected_jobs(stream_name, [("2024-06-16", "2024-06-22")])
+        assert len(second.records) == 2
+        assert second.most_recent_state.stream_state.__dict__ == {"endDate": "2024-06-22"}
+
+
+@pytest.mark.parametrize("stream_name,records_path", STREAMS)
+@pytest.mark.parametrize("sync_mode", [SyncMode.incremental, SyncMode.full_refresh])
 def test_weekly_backfill_and_resume(stream_name: str, records_path: str, sync_mode: SyncMode) -> None:
-    config = ConfigBuilder().with_start_date(pendulum.datetime(2024, 5, 15, 12)).without_end_date()
+    config = ConfigBuilder().with_brand_analytics_start_date(pendulum.datetime(2024, 5, 15))
     with requests_mock.Mocker() as mocker:
         jobs = mock_reports(mocker, stream_name, records_path)
         with freezegun.freeze_time("2024-06-02T12:00:00Z"):
@@ -109,23 +152,22 @@ def test_weekly_backfill_and_resume(stream_name: str, records_path: str, sync_mo
 
 @pytest.mark.parametrize("stream_name,records_path", STREAMS)
 @pytest.mark.parametrize(
-    "end_date,expected_week_ends",
+    "now,expected_week_ends",
     [
         ("2024-05-22T12:00:00Z", ["2024-05-18"]),
         ("2024-05-25T00:00:00Z", ["2024-05-18"]),
         ("2024-05-25T12:00:00Z", ["2024-05-18"]),
         ("2024-05-25T23:59:58Z", ["2024-05-18"]),
-        ("2024-05-25T23:59:59Z", ["2024-05-18", "2024-05-25"]),
-        ("2024-06-20T12:00:00Z", ["2024-05-18", "2024-05-25", "2024-06-01"]),
+        ("2024-05-25T23:59:59Z", ["2024-05-18"]),
+        ("2024-06-02T00:00:00Z", ["2024-05-18", "2024-05-25", "2024-06-01"]),
     ],
 )
-@freezegun.freeze_time("2024-06-05T12:00:00Z")
 def test_only_complete_weeks_and_empty_reports_retried(
-    stream_name: str, records_path: str, end_date: str, expected_week_ends: list[str]
+    stream_name: str, records_path: str, now: str, expected_week_ends: list[str]
 ) -> None:
-    config = ConfigBuilder().with_start_date(pendulum.datetime(2024, 5, 15)).with_end_date(pendulum.parse(end_date))
+    config = ConfigBuilder().with_brand_analytics_start_date(pendulum.datetime(2024, 5, 15))
     config.with_period_in_days(1).with_report_stream_lookback_window_in_hours(10)
-    with requests_mock.Mocker() as mocker:
+    with freezegun.freeze_time(now), requests_mock.Mocker() as mocker:
         jobs = mock_reports(mocker, stream_name, records_path, empty=True)
         output = read_output(config, stream_name, SyncMode.incremental)
         assert sorted(job["dataEndTime"][:10] for job in jobs) == expected_week_ends
@@ -139,13 +181,12 @@ def test_only_complete_weeks_and_empty_reports_retried(
 @pytest.mark.parametrize("stream_name,records_path", STREAMS)
 @freezegun.freeze_time("2024-06-02T12:00:00Z")
 def test_stale_weekly_range_does_not_request_expired_history(stream_name: str, records_path: str) -> None:
-    config = ConfigBuilder().with_start_date(pendulum.datetime(2017, 5, 15)).with_end_date(pendulum.datetime(2017, 5, 27, 23, 59, 59))
+    config = ConfigBuilder().with_brand_analytics_start_date(pendulum.datetime(2017, 5, 15))
+    first_sunday = pendulum.date(2022, 6, 5)
+    weeks = [(first_sunday.add(weeks=week).isoformat(), first_sunday.add(weeks=week, days=6).isoformat()) for week in range(104)]
     with requests_mock.Mocker() as mocker:
         jobs = mock_reports(mocker, stream_name, records_path)
         output = read_output(config, stream_name, SyncMode.incremental)
-        assert jobs == []
-        assert output.records == []
-        config.with_end_date(pendulum.datetime(2022, 6, 11, 23, 59, 59))
-        output = read_output(config, stream_name, SyncMode.full_refresh)
-        assert jobs == expected_jobs(stream_name, [("2022-06-05", "2022-06-11")])
-        assert [record.record.data["endDate"] for record in output.records] == ["2022-06-11", "2022-06-11"]
+        assert sorted(jobs, key=lambda job: job["dataStartTime"]) == expected_jobs(stream_name, weeks)
+        assert sorted(record.record.data["endDate"] for record in output.records) == [end for _, end in weeks for _ in range(2)]
+        assert output.most_recent_state.stream_state.__dict__ == {"endDate": "2024-06-01"}

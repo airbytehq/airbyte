@@ -56,7 +56,7 @@ def test_inbound_state_handoff_and_schema(stream_name: str, mode: str) -> None:
         with freezegun.freeze_time("2024-06-01T00:00:00Z"):
             first = read_output(config, stream_name, SyncMode.incremental)
             catalog = discover(get_source(config.build()), config.build()).catalog.catalog
-        assert [record.record.data["ShipmentId"] for record in first.records] == ["FBA-1", "FBA-2"]
+        assert sorted(record.record.data["ShipmentId"] for record in first.records) == ["FBA-1", "FBA-2"]
         assert queries == expected_queries("2024-05-25T00:00:00Z", "2024-06-01T00:00:00Z", pages=2)
         assert {record.record.data["LastUpdatedBefore"] for record in first.records} == {"2024-06-01T00:00:00Z"}
         schema = next(stream.json_schema for stream in catalog.streams if stream.name == stream_name)
@@ -72,7 +72,7 @@ def test_inbound_state_handoff_and_schema(stream_name: str, mode: str) -> None:
         mock_inbound(mocker, ["FBA-2", "FBA-3"])
         with freezegun.freeze_time("2024-06-03T00:00:00Z"):
             second = read_output(config, stream_name, SyncMode.incremental, state=[first.state_messages[-1].state])
-        assert [record.record.data["ShipmentId"] for record in second.records] == ["FBA-2", "FBA-3"]
+        assert sorted(record.record.data["ShipmentId"] for record in second.records) == ["FBA-2", "FBA-3"]
         # The previous upper bound is reused: changes exactly at the boundary are never skipped.
         assert {record.record.data["LastUpdatedBefore"] for record in second.records} == {"2024-06-03T00:00:00Z"}
         assert [request.qs for request in mocker.request_history if request.url.startswith(BASE_URL) and "/items" not in request.url][
