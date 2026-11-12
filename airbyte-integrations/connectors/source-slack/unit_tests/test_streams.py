@@ -33,8 +33,7 @@ def test_threads_read_resumes_per_channel_parent_state(requests_mock, token_conf
         "lookback_window": 0,
         "state": {"float_ts": "1628553600.0"},
         "states": [
-            {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": cursor}}
-            for channel, cursor in cursors.items()
+            {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": cursor}} for channel, cursor in cursors.items()
         ],
     }
     threads_state = {
