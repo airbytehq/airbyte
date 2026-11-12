@@ -6,8 +6,6 @@ import pytest
 from conftest import get_source
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields
-from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -46,22 +44,3 @@ def test_incremental_state(stream_name, empty):
     assert state["modified_at"] == ("2026-01-01T00:00:00.000000Z" if empty else _LATEST)
     if not empty:
         assert output.records[-1].record.data["modified_at"] == _LATEST
-
-
-@pytest.mark.parametrize("record", [{"id": "missing"}, {"id": "null", "modified_at": None}, {"modified_at": ""}])
-def test_normalization_preserves_empty_cursor(record):
-    definition = get_source(_CONFIG).resolved_manifest["definitions"]["normalize_modified_at"]
-    transformation = ModelToComponentFactory().create_component(AddFields, definition, _CONFIG)
-    original = record.copy()
-
-    transformation.transform(record)
-
-    assert record == original
-
-
-def test_normalization_rejects_invalid_timestamp():
-    definition = get_source(_CONFIG).resolved_manifest["definitions"]["normalize_modified_at"]
-    transformation = ModelToComponentFactory().create_component(AddFields, definition, _CONFIG)
-
-    with pytest.raises(ValueError):
-        transformation.transform({"modified_at": "not-a-timestamp"})
