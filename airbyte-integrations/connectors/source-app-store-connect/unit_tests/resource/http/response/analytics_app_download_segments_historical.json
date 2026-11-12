@@ -5,7 +5,8 @@
       "id": "segment-1",
       "attributes": {
         "checksum": "abc123",
-        "sizeInBytes": 42
+        "sizeInBytes": 42,
+        "url": "https://example.s3.amazonaws.com/app-store-connect/report.csv.gz?signature=test"
       }
     }
   ],
