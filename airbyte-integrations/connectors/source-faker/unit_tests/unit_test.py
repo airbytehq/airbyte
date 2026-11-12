@@ -10,7 +10,7 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Status, Type
 
 
 class MockLogger:
@@ -94,6 +94,33 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        {"count": 5000, "seed": 42},
+        {"count": 5000, "seed": 42, "records_per_slice": 1000},
+        {"count": 5000, "seed": 42, "parallelism": 2},
+        {},
+    ],
+)
+def test_check_succeeds_when_optional_settings_are_omitted(config):
+    status = SourceFaker().check(logger, config)
+    assert status.status == Status.SUCCEEDED, status.message
+
+
+@pytest.mark.parametrize(
+    "config, message",
+    [
+        ({"count": 5000, "records_per_slice": 0}, "`records_per_slice` must be a number greater than or equal to 1, got 0"),
+        ({"count": 5000, "parallelism": 0}, "`parallelism` must be a number greater than or equal to 1, got 0"),
+    ],
+)
+def test_check_fails_when_provided_setting_is_below_one(config, message):
+    status = SourceFaker().check(logger, config)
+    assert status.status == Status.FAILED
+    assert message in status.message
 
 
 def test_read_small_random_data():
