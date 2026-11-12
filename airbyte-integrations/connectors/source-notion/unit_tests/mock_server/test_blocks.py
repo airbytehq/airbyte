@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import json
-from unittest import TestCase
 from typing import Any, Dict, List, Optional
+from unittest import TestCase
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
