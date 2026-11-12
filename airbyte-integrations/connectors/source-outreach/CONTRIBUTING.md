@@ -105,7 +105,7 @@ The backoff strategies run in order:
   every access token and a refresh token stays active for 14 days
   ([Token availability](https://developers.outreach.io/api/getting-started/)). A local run that refreshes the token
   receives a refresh token the stored secret does not have, so prefer CI for credentialed runs.
-- `sequence_states` and `mail_aliases` have no records in the test account; mock-server tests cover their reads.
+- `mail_aliases` has no records in the test account; mock-server tests cover its reads.
 - `snippets` and `templates` are listed in `empty_streams` although the test account has records for both. Their
   schemas type `tags` (and, on `templates`, `toRecipients`, `ccRecipients` and `bccRecipients`) as strings, but the API
   returns arrays of strings, so the records fail schema validation. Retyping a top-level field is a breaking change and
