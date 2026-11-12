@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -308,3 +308,36 @@ class TwilioConferencesStateMigration(StateMigration):
         if stream_state and any("conference_status" not in state.get("partition", {}) for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioGlobalCursorStateMigration(StateMigration):
+    """
+    Converts per-partition state into the global cursor state used by streams with `global_substream_cursor: true`.
+
+    A per-partition cursor only advances when a record is read for that partition, so an account without new records keeps
+    an old cursor and is re-read from it on every sync. The global `state` value only advances once every partition has been
+    read, so it is a safe starting point for all partitions. Without it, the oldest partition cursor is used.
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated_state: dict = {"use_global_cursor": True}
+        global_state = stream_state.get("state") or self._oldest_partition_cursor(stream_state.get("states", []))
+        if global_state:
+            migrated_state["state"] = global_state
+        for key in ("lookback_window", "parent_state"):
+            if key in stream_state:
+                migrated_state[key] = stream_state[key]
+        return migrated_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and "states" in stream_state and not stream_state.get("use_global_cursor", False)
+
+    @staticmethod
+    def _oldest_partition_cursor(partition_states: list) -> Mapping[str, Any] | None:
+        oldest_value, oldest_cursor = None, None
+        for partition_state in partition_states:
+            for cursor_field, value in (partition_state.get("cursor") or {}).items():
+                parsed_value = ab_datetime_try_parse(str(value))
+                if parsed_value and (oldest_value is None or parsed_value < oldest_value):
+                    oldest_value, oldest_cursor = parsed_value, {cursor_field: value}
+        return oldest_cursor
