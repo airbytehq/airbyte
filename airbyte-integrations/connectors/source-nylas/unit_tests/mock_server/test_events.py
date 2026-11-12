@@ -4,12 +4,12 @@ import json
 from typing import Any, Dict, List
 from unittest import TestCase
 
+from unit_tests.conftest import get_source
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
-
-from unit_tests.conftest import get_source
 from mock_server.config import ConfigBuilder
 from mock_server.request_builder import NylasRequestBuilder
 
