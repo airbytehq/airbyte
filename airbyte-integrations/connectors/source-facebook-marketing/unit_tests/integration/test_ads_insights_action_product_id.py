@@ -8,8 +8,10 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 from typing import Dict, List, Optional, Union
 from unittest import TestCase
+from urllib.parse import parse_qs
 
 import freezegun
+import requests_mock
 from source_facebook_marketing.streams.async_job import Status
 
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
@@ -28,7 +30,7 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
-from .request_builder import RequestBuilder, get_account_request
+from .request_builder import API_VERSION, RequestBuilder, get_account_request
 from .response_builder import build_response, error_reduce_amount_of_data_response, get_account_response
 from .utils import config, encode_request_body, read_output
 
@@ -247,6 +249,40 @@ def _ads_insights_action_product_id_record() -> RecordBuilder:
 
 @freezegun.freeze_time("2023-01-10T00:00:00Z")
 class TestFullRefresh(TestCase):
+    def test_custom_insight_inherits_top_level_incrementality(self) -> None:
+        config_builder = config()
+        config_builder.build().update(
+            {
+                "include_incrementality": True,
+                "custom_insights": [
+                    {
+                        "name": "Incrementality",
+                        "fields": ["actions"],
+                        "breakdowns": ["product_id"],
+                        "action_breakdowns": [],
+                        "level": "ad",
+                    }
+                ],
+            }
+        )
+        base_url = f"https://graph.facebook.com/{API_VERSION}"
+        insights_url = f"{base_url}/act_{ACCOUNT_ID}/insights"
+        with requests_mock.Mocker() as mocker:
+            mocker.get(f"{base_url}/act_{ACCOUNT_ID}/", text=get_account_response().body)
+            mocker.get(insights_url, json={}, headers=_update_api_throttle_limit_response().headers)
+            job_start = mocker.post(insights_url, json={"report_run_id": _REPORT_RUN_ID})
+            mocker.post(f"{base_url}/", text=_job_status_response(_JOB_ID).body)
+            mocker.get(
+                f"{base_url}/{_JOB_ID}/insights",
+                text=_insights_response().with_record(_ads_insights_action_product_id_record()).build().body,
+            )
+
+            output = read_output(config_builder, "custom_incrementality", SyncMode.full_refresh)
+
+            assert len(output.records) == 1
+            params = parse_qs(job_start.last_request.text)
+            assert "incrementality" in json.loads(params["action_attribution_windows"][0])
+
     @staticmethod
     def _read(config_: ConfigBuilder, expecting_exception: bool = False, json_schema: Optional[Dict[str, any]] = None) -> EntrypointOutput:
         return read_output(
