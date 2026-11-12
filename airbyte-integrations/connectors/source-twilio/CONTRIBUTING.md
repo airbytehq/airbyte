@@ -14,6 +14,10 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 None identified yet.
 
+### Messages global cursor
+
+The `messages` stream uses a global substream `date_sent` cursor so stale per-account cursors cannot replay message history. Its state migration prefers the existing global cursor, falling back to the earliest partition cursor to avoid data loss. The `message_media` stream retains per-partition state; its Messages parent is read without an incremental dependency.
+
 ## Alerts request window splitting
 
 When an Alerts request window holds more than Twilio's 10,000-result limit, the `alerts` stream splits it in half and re-reads each half (up to 10 times), re-emitting up to 10,000 records per split. See `AGENTS.md` for the filter setup, duplicate handling, smallest window, and failure behavior.

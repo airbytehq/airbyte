@@ -7,7 +7,7 @@ from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
-from components import TwilioConferencesStateMigration
+from components import TwilioConferencesStateMigration, TwilioMessagesStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
@@ -88,6 +88,38 @@ def _alert_state_date(output):
 
 
 class TestTwilioStream:
+    @freeze_time("2025-11-11 12:00:00+00:00")
+    @pytest.mark.parametrize("records", [[], [{"sid": "SM1", "date_sent": "2025-11-09T00:00:00Z"}]])
+    def test_messages_legacy_partition_state_uses_global_cursor(self, requests_mock, records):
+        recent_cursor = "2025-11-08T00:00:00Z"
+        legacy_state = {
+            "states": [
+                {
+                    "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                    "cursor": {"date_sent": "2025-01-01T00:00:00Z"},
+                }
+            ],
+            "state": {"date_sent": recent_cursor},
+            "use_global_cursor": False,
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        messages = requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json={"messages": records})
+        state = StateBuilder().with_stream_state("messages", legacy_state).build()
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        first_query = parse_qs(urlparse(messages.request_history[0].url).query)
+        assert first_query["DateSent>"] == ["2025-11-08 00:00:00Z"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert not final_state.get("states")
+        assert datetime.fromisoformat(final_state["state"]["date_sent"]) >= datetime.fromisoformat(recent_cursor)
+
+        requests_mock.reset_mock()
+        next_state = StateBuilder().with_stream_state("messages", final_state).build()
+        next_output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, next_state)
+        assert next_output.most_recent_state.stream_state.__dict__ == final_state
+
     def test_next_page_token(self, requests_mock):
         accounts_page_1_json = {
             "accounts": [
@@ -634,7 +666,8 @@ class TestConferenceParticipantsStream:
 
 class TestTwilioNestedStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
-    def test_message_media_filters_num_media_zero(self, requests_mock):
+    @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
+    def test_message_media_filters_num_media_zero(self, requests_mock, sync_mode):
         ACCOUNTS_JSON = {
             "accounts": [
                 {
@@ -683,12 +716,17 @@ class TestTwilioNestedStream:
         )
 
         cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
-        out = read_from_stream(cfg, "message_media", SyncMode.full_refresh)
+        out = read_from_stream(cfg, "message_media", sync_mode)
         records = out.records
 
         # Assert we fetched media only for SM1
         assert media_matcher.called, "Media endpoint for SM1 was not called"
         assert len(records) == 1, f"Expected 1 media record (only from SM1), got {len(records)}"
+        if sync_mode == SyncMode.incremental:
+            state = out.most_recent_state.stream_state.__dict__
+            assert state["states"]
+            assert not state.get("use_global_cursor")
+            assert not state.get("parent_state")
 
     def test_services_stream_reads_from_conversations_api(self, requests_mock):
         """`services` must hit the Conversations API, not the deprecated Programmable Chat API.
@@ -1003,3 +1041,40 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+@pytest.mark.parametrize(
+    "input_state,expected_state,should_migrate",
+    [
+        (
+            {
+                "states": [{"cursor": {"date_sent": "2025-01-01T00:00:00Z"}}],
+                "state": {"date_sent": "2025-11-08T00:00:00Z"},
+                "use_global_cursor": False,
+                "lookback_window": 600,
+            },
+            {"use_global_cursor": True, "state": {"date_sent": "2025-11-08T00:00:00Z"}, "lookback_window": 600},
+            True,
+        ),
+        (
+            {"states": [{"cursor": {"date_sent": "2025-03-01T00:00:00Z"}}, {"cursor": {"date_sent": "2025-01-01"}}]},
+            {"use_global_cursor": True, "state": {"date_sent": "2025-01-01"}},
+            True,
+        ),
+        (
+            {"use_global_cursor": True, "state": {"date_sent": "2025-11-08T00:00:00Z"}},
+            {"use_global_cursor": True, "state": {"date_sent": "2025-11-08T00:00:00Z"}},
+            False,
+        ),
+        ({}, {}, False),
+        ({"use_global_cursor": False}, {"use_global_cursor": True, "state": {}}, True),
+        ({"states": [{"cursor": {}}]}, {"use_global_cursor": True, "state": {}}, True),
+    ],
+    ids=["global_wins", "minimum_partition_wins", "already_global", "empty", "false_without_cursors", "missing_cursor"],
+)
+def test_messages_state_migration(input_state, expected_state, should_migrate):
+    migration = TwilioMessagesStateMigration()
+    assert migration.should_migrate(input_state) is should_migrate
+    result = migration.migrate(input_state) if should_migrate else input_state
+    assert result == expected_state
+    assert not migration.should_migrate(result)

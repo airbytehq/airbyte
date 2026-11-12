@@ -83,6 +83,46 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioMessagesStateMigration(StateMigration):
+    """
+    Collapse legacy messages partition cursors into a single global cursor.
+    Prefer the existing global cursor, otherwise retain the earliest partition cursor.
+
+    Initial:
+      {
+        "states": [{"partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                    "cursor": {"date_sent": "2025-01-01T00:00:00Z"}}],
+        "state": {"date_sent": "2025-11-08T00:00:00Z"},
+        "use_global_cursor": false
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": {"date_sent": "2025-11-08T00:00:00Z"}
+      }
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state.get("states")) or stream_state.get("use_global_cursor") is False
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor = stream_state.get("state", {}).get("date_sent")
+        if cursor is None:
+            cursors = [state.get("cursor", {}).get("date_sent") for state in stream_state.get("states", [])]
+            cursor = min(
+                (value for value in cursors if value),
+                key=lambda value: datetime.fromisoformat(value.replace("Z", "+00:00")).replace(tzinfo=timezone.utc)
+                if len(value) == 10
+                else datetime.fromisoformat(value.replace("Z", "+00:00")),
+                default=None,
+            )
+        migrated_state = {"use_global_cursor": True, "state": {"date_sent": cursor} if cursor is not None else {}}
+        if "lookback_window" in stream_state:
+            migrated_state["lookback_window"] = stream_state["lookback_window"]
+        return migrated_state
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
