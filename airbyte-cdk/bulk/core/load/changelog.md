@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.11 — 2026-11-12
+
+[#92616](https://github.com/airbytehq/airbyte/pull/92616) — Fix ([#92615](https://github.com/airbytehq/airbyte/issues/92615)): support 1- and 2-digit fractional seconds (`[SS][S]`) in `TemporalFormatters` (`core/load`) and `AirbyteValueCoercer` (`legacy-task-loader`) so valid ISO-8601 / RFC-3339 timestamps and times (e.g. `2026-11-11T17:01:52.4Z`, `2026-11-11T17:01:52.65Z`, `12:00:00.5Z`) are parsed instead of silently coerced to `NULL` (`DESTINATION_SERIALIZATION_ERROR`).
+
 ### 1.1.10 — 2026-11-05
 
 [#88400](https://github.com/airbytehq/airbyte/pull/88400) - Fix: `IcebergTableCleaner.clearTable` deletes only the table's directory instead of every key prefixed by the table location.
