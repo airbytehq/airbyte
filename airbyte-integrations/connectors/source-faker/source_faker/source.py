@@ -19,8 +19,12 @@ class SourceFaker(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         # Reject settings the streams can't run with (e.g. `parallelism: 0`
         # can't start the worker pool) before a sync starts.
+        # Every setting is optional: one left out of the config falls back to
+        # its default in `streams()`, so only validate the values provided.
         for key in POSITIVE_INTEGER_SETTINGS:
-            value = config.get(key, 0)
+            if key not in config:
+                continue
+            value = config[key]
             if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 1:
                 return False, f"`{key}` must be a number greater than or equal to 1, got {value!r}"
         return True, None
