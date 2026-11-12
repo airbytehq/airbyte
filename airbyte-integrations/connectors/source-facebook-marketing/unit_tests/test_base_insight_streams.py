@@ -260,6 +260,64 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @freeze_time("2026-09-25")
+    @pytest.mark.parametrize("completion_order", [(18, 19, 20, 21), (19, 21, 18, 20)])
+    @pytest.mark.parametrize("result_kind", ["records", "empty", "error"])
+    def test_lookback_read_preserves_committed_cursor(self, mocker, api, completion_order, result_kind):
+        stream = AdsInsights(
+            api=api,
+            account_ids=["account"],
+            start_date=datetime(2026, 9, 1),
+            end_date=datetime(2026, 9, 21),
+            insights_lookback_window=2,
+        )
+        stream.state = {"account": {"date_start": "2026-09-20"}, "time_increment": 1}
+        expected_cursor = "2026-09-20"
+        completed = set()
+        for day in completion_order:
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = DateInterval(date(2026, 9, day), date(2026, 9, day))
+            record = mocker.Mock()
+            record.export_all_data.return_value = {"date_start": f"2026-09-{day}"}
+            if result_kind == "error":
+                previous_state = stream.state
+                job.get_result.side_effect = RuntimeError("interrupted job")
+                with pytest.raises(RuntimeError, match="interrupted job"):
+                    list(stream.read_records(SyncMode.incremental, stream_slice={"insight_job": job, "account_id": "account"}))
+                assert stream.state == previous_state
+                job.get_result.side_effect = None
+            job.get_result.return_value = [] if result_kind == "empty" else [record]
+            assert list(stream.read_records(SyncMode.incremental, stream_slice={"insight_job": job, "account_id": "account"})) == (
+                [] if result_kind == "empty" else [{"date_start": f"2026-09-{day}", "account_id": "account"}]
+            )
+            completed.add(day)
+            if completed == {18, 19, 20, 21}:
+                expected_cursor = "2026-09-21"
+            assert stream.state == {
+                "account": {
+                    "date_start": expected_cursor,
+                    "slices": ["2026-09-21"] if 21 in completed and expected_cursor == "2026-09-20" else [],
+                },
+                "time_increment": 1,
+            }
+
+    @freeze_time("2026-09-25")
+    @pytest.mark.parametrize("cursor", [None, "2026-09-20"])
+    def test_state_only_persists_slices_after_cursor(self, api, cursor):
+        stream = AdsInsights(
+            api=api,
+            account_ids=["account"],
+            start_date=datetime(2026, 9, 1),
+            end_date=datetime(2026, 9, 21),
+            insights_lookback_window=2,
+        )
+        account_state = {"slices": ["2026-09-19", "2026-09-20", "2026-09-21"]}
+        if cursor:
+            account_state["date_start"] = cursor
+        stream.state = {"account": account_state, "time_increment": 1}
+        expected = {**account_state, "slices": ["2026-09-21"] if cursor else account_state["slices"]}
+        assert stream.state == {"account": expected, "time_increment": 1}
+
     def test_read_records_add_account_id(self, mocker, api, some_config):
         rec_without_account = mocker.Mock()
         rec_without_account.export_all_data.return_value = {}
@@ -398,6 +456,10 @@ class TestBaseInsightsStream:
         result_state = state if not result_state else result_state
         result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
         result_state["time_increment"] = 1
+
+        account_state = result_state[some_config["account_ids"][0]]
+        if account_state.get("date_start"):
+            account_state["slices"] = [slice_date for slice_date in account_state["slices"] if slice_date > account_state["date_start"]]
 
         assert actual_state == result_state
 
