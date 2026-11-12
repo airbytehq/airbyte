@@ -188,6 +188,30 @@ def test_read_products_count():
     assert [record["id"] for record in records] == list(range(1, 11))
 
 
+@pytest.mark.parametrize(
+    "products_count, records_per_slice",
+    [(50, 20), (7, 5), (10, 3)],
+)
+def test_read_products_count_not_a_multiple_of_records_per_slice(products_count, records_per_slice):
+    source = SourceFaker()
+    config = {"count": 1000, "seed": 7, "products_count": products_count, "records_per_slice": records_per_slice, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    messages = list(source.read(logger, config, catalog, {}))
+
+    records = [row.record.data for row in messages if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == list(range(1, products_count + 1))
+
+    last_record_index = max(i for i, row in enumerate(messages) if row.type is Type.RECORD)
+    states_after_last_record = [row for row in messages[last_record_index:] if row.type is Type.STATE]
+    assert states_after_last_record
+    assert states_after_last_record[-1].state.stream.stream_state.updated_at == records[-1]["updated_at"]
+
+
 def test_read_big_random_data():
     source = SourceFaker()
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
