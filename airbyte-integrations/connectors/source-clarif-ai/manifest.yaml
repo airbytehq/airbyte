@@ -12,10 +12,26 @@ check:
     - applications
 
 definitions:
+  normalize_modified_at:
+    type: AddFields
+    condition: >-
+      {{ record.get('modified_at') is string and
+      record['modified_at'].endswith('Z') and
+      '.' in record['modified_at'] and
+      record['modified_at'].split('.')[1][:-1] | length > 6 }}
+    fields:
+      - path:
+          - modified_at
+        value: >-
+          {{ (record.get('modified_at') or '').partition('.')[0] ~ '.' ~
+          (record.get('modified_at') or '').partition('.')[2][:6] ~ 'Z' }}
+        value_type: string
   streams:
     applications:
       type: DeclarativeStream
       name: applications
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
@@ -78,6 +94,8 @@ definitions:
     datasets:
       type: DeclarativeStream
       name: datasets
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
@@ -149,6 +167,8 @@ definitions:
     models:
       type: DeclarativeStream
       name: models
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
