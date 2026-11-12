@@ -14,7 +14,7 @@ Only report downloads handle a 404. The download requester puts an `action: IGNO
 
 **Why this matters:** The first read of a report stream can create a YouTube job, and data rows come from downloaded CSV files rather than the job or report listing responses. Emitted value types follow the stream schemas, so changing a schema type changes what destinations receive. A missing report file is skipped rather than failing the sync, so a sync can succeed with rows missing.
 
-The public stream names `channel_annotations_a1`, `channel_end_screens_a1`, and `channel_sharing_service_a1` are compatibility aliases: their `report_type_id` parameters select the corresponding supported `a2` reports. The vendor's current reports have the same columns, so stream names, schemas, primary keys, and cursors remain unchanged. Do not use these three stream names as API report type IDs. The connection check uses `channel_basic_a3`, not the annotations stream; it still needs an available report file to generate a download slice.
+The connection check reads `channel_basic_a3`, not `channel_annotations_a1`, so channels without annotation rows are not required to have an annotations report. It still needs an available basic report file to generate a download slice. Before changing report type versions, verify the authenticated `reportTypes.list` response: the test account advertises the existing annotations, end screens, and sharing `a1` IDs, while the public report documentation lists `a2` IDs that return 404 for this account.
 
 ## 2. Incremental Cursor Lives on the Parent `report` Stream
 
