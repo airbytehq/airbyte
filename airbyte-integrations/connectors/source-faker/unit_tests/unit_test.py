@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import time
 from pathlib import Path
 
 import jsonschema
@@ -259,6 +260,31 @@ def test_read_with_seed():
     records = [row for row in iterator if row.type is Type.RECORD]
     assert records[0].record.data["occupation"] == "Sheriff Principal"
     assert records[0].record.data["email"] == "alleged2069+1@example.com"
+
+
+@pytest.mark.parametrize("count", [0, 1000])
+def test_read_users_again_after_completed_sync(count):
+    source = SourceFaker()
+    config = {"count": count, "seed": -1, "records_per_slice": 1000, "always_updated": True, "parallelism": 4}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    first_read = list(source.read(logger, config, catalog, {}))
+    first_records = [row.record.data for row in first_read if row.type is Type.RECORD]
+    state = [row.state for row in first_read if row.type is Type.STATE][-1:]
+    final_state = AirbyteMessageSerializer.dump(AirbyteMessage(type=Type.STATE, state=state[0]))
+    print(f"First read: {len(first_records)} users; final state: {final_state}")
+    time.sleep(1)
+    second_read = list(SourceFaker().read(logger, config, catalog, state))
+    second_records = [row.record.data for row in second_read if row.type is Type.RECORD]
+    print(f"Second read: {len(second_records)} users")
+
+    assert [record["id"] for record in first_records] == list(range(1, count + 1))
+    assert [record["id"] for record in second_records] == list(range(1, count + 1))
+    assert all(second["updated_at"] > first["updated_at"] for first, second in zip(first_records, second_records))
 
 
 def test_read_users_resumes_from_checkpoint():
