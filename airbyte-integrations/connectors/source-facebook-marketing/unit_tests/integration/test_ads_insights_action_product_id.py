@@ -15,7 +15,6 @@ from source_facebook_marketing.streams.async_job import Status
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponse,
@@ -25,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -534,7 +534,9 @@ class TestIncremental(TestCase):
         assert cursor_value_from_state_account_2 == expected_cursor_value
 
     @HttpMocker()
-    def test_given_state_cursor_when_lookback_window_reread_then_emitted_cursor_never_moves_backwards(self, http_mocker: HttpMocker) -> None:
+    def test_given_state_cursor_when_lookback_window_reread_then_emitted_cursor_never_moves_backwards(
+        self, http_mocker: HttpMocker
+    ) -> None:
         # Input cursor is 2023-01-09 with a 1-day lookback, so 2023-01-08 and 2023-01-09 are re-read.
         cursor_date = NOW - timedelta(days=1)
         lookback_date = NOW - timedelta(days=2)
@@ -550,18 +552,25 @@ class TestIncremental(TestCase):
         http_mocker.post(_job_status_request([report_run_id_1, report_run_id_2]).build(), _job_status_response([job_id_1, job_id_2]))
         http_mocker.get(
             _get_insights_request(job_id_1).build(),
-            _insights_response().with_record(_ads_insights_action_product_id_record().with_cursor(lookback_date.strftime(DATE_FORMAT))).build(),
+            _insights_response()
+            .with_record(_ads_insights_action_product_id_record().with_cursor(lookback_date.strftime(DATE_FORMAT)))
+            .build(),
         )
         http_mocker.get(
             _get_insights_request(job_id_2).build(),
-            _insights_response().with_record(_ads_insights_action_product_id_record().with_cursor(cursor_date.strftime(DATE_FORMAT))).build(),
+            _insights_response()
+            .with_record(_ads_insights_action_product_id_record().with_cursor(cursor_date.strftime(DATE_FORMAT)))
+            .build(),
         )
 
         state = (
             StateBuilder()
             .with_stream_state(
                 _STREAM_NAME,
-                {ACCOUNT_ID: {_CURSOR_FIELD: cursor_date.strftime(DATE_FORMAT), "slices": [lookback_date.strftime(DATE_FORMAT)]}, "time_increment": 1},
+                {
+                    ACCOUNT_ID: {_CURSOR_FIELD: cursor_date.strftime(DATE_FORMAT), "slices": [lookback_date.strftime(DATE_FORMAT)]},
+                    "time_increment": 1,
+                },
             )
             .build()
         )
@@ -597,7 +606,9 @@ class TestIncremental(TestCase):
         http_mocker.post(_job_status_request([report_run_id_1, report_run_id_2]).build(), _job_status_response([job_id_1, job_id_2]))
         http_mocker.get(
             _get_insights_request(job_id_1).build(),
-            _insights_response().with_record(_ads_insights_action_product_id_record().with_cursor(lookback_date.strftime(DATE_FORMAT))).build(),
+            _insights_response()
+            .with_record(_ads_insights_action_product_id_record().with_cursor(lookback_date.strftime(DATE_FORMAT)))
+            .build(),
         )
         http_mocker.get(
             _get_insights_request(job_id_2).build(),
