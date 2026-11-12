@@ -13,8 +13,6 @@ The Calendly source syncs your organization members, groups, teams, invitations,
 
 ## Setup guide
 
-## Set up Calendly
-
 <!-- env:cloud -->
 
 ### Authenticate with OAuth
@@ -32,7 +30,7 @@ Every refresh spends the previous refresh token, so use one connection per OAuth
 
 ### Authenticate with a personal access token
 
-In Airbyte Open Source, use a personal access token unless you registered [your own Calendly OAuth application](https://developer.calendly.com/docs/authentication/creating-an-oauth-app). Configure OAuth on your Airbyte instance to run the Calendly sign-in flow and obtain a refresh token; otherwise, use a personal access token.
+In Airbyte Open Source, use a personal access token. OAuth requires [your own Calendly OAuth application](https://developer.calendly.com/docs/authentication/creating-an-oauth-app) and OAuth configured on your Airbyte instance to run the Calendly sign-in flow.
 
 1. In Calendly, open the **Profile menu**, select **Developer**, then select **Personal access tokens**. If **Developer** isn't in your **Profile menu**, manage tokens from the [Integrations page](https://calendly.com/integrations) instead.
 2. Select **Create personal access token**, enter a name for the token, and select **Next**.
@@ -61,7 +59,7 @@ When you create or update the source with the Airbyte API or Terraform, send the
 
 With OAuth, Calendly grants the scopes configured on Airbyte's Calendly OAuth application, which cover every stream below. The rest of this section applies to personal access tokens.
 
-Since March 2026, Calendly grants newly created tokens no API access until you select scopes for them; tokens created earlier keep their access. Select the scopes of every stream you sync; every token also needs `users:read`, which the connection check uses. When a scope is missing, the sync error lists it. Version 0.3.0 added `user_availability_schedules`, `locations` and `webhook_subscriptions`, which need `availability:read`, `locations:read` and `webhooks:read`, and version 0.4.0 added `routing_forms`, `routing_form_submissions`, `contacts`, `outgoing_communications`, `activity_log_entries` and `meeting_recaps`, which need `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read`. Calendly sets a token's scopes when you create it, so create a token with these scopes and update it in the source settings before you sync these streams. Connections set to propagate all field and stream changes add these streams automatically.
+Since March 2026, Calendly grants newly created tokens no API access until you select scopes for them; tokens created earlier keep their access. Select the scopes of every stream you sync; every token also needs `users:read`, which the connection check uses. When a scope is missing, the sync error lists it. Version 0.3.0 added `user_availability_schedules`, `locations` and `webhook_subscriptions`, which need `availability:read`, `locations:read` and `webhooks:read`, and version 0.4.0 added `routing_forms`, `routing_form_submissions`, `contacts`, `outgoing_communications`, `activity_log_entries` and `meeting_recaps`, which need `routing_forms:read`, `contacts:read`, `outgoing_communications:read`, `activity_log:read` and `meeting_recaps:read`. Version 1.2.0 added `event_type_availability_schedules`, which needs `availability:read`. Calendly sets a token's scopes when you create it, so create a token with these scopes and update it in the source settings before you sync these streams. Connections set to propagate all field and stream changes add these streams automatically.
 
 | Stream | Required scopes |
 | --- | --- |
@@ -132,7 +130,7 @@ The incremental `outgoing_communications`, `activity_log_entries` and `meeting_r
 
 Calendly returns no unique identifier for outgoing communications, so this stream has no source-defined primary key, and no field combination is guaranteed unique. A primary key you select yourself can merge distinct messages, so use Full refresh | Overwrite or Incremental | Append for this stream.
 
-`user_availability_schedules` and `locations` send one request per organization member, and `event_type_memberships` sends one per event type, so they are not suggested by default. `locations` has no primary key because Calendly returns no identifier for a location and can list a location kind more than once. `webhook_subscriptions` lists organization-scoped subscriptions only; user- and group-scoped subscriptions are not synced.
+`user_availability_schedules` and `locations` send one request per organization member, and `event_type_memberships` and `event_type_availability_schedules` send one per event type, so they are not suggested by default. `locations` has no primary key because Calendly returns no identifier for a location and can list a location kind more than once. `webhook_subscriptions` lists organization-scoped subscriptions only; user- and group-scoped subscriptions are not synced.
 
 The scheduling-setup streams read configuration, not live availability or webhook deliveries:
 
@@ -158,7 +156,7 @@ Calendly documents [activity log entries](https://developer.calendly.com/api-doc
 
 ### Rate limits
 
-[Calendly limits API requests](https://developer.calendly.com/api-docs/overview/rate-limits#current-rate-limits) to 500 requests per user per minute on paid plans and 50 on the Free plan. Other applications using the same Calendly user share this allowance.
+[Calendly limits API requests](https://developer.calendly.com/api-docs/overview/rate-limits#current-rate-limits) to 500 requests per user per minute on paid plans and 50 on the Free plan. Other applications using the same Calendly user share this allowance. If other connections or applications use the same Calendly account, lower **Number of concurrent workers** (`num_workers`).
 
 The connector monitors `X-RateLimit-Remaining` and waits when the allowance is exhausted. If Calendly returns HTTP 429, the connector retries after the delay in `X-RateLimit-Reset`. Syncing invitees and routing form submissions requires requests for each scheduled event and form, so large histories can take longer to sync.
 
