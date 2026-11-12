@@ -1980,3 +1980,50 @@ class TestCheckBreakdowns:
             stream.check_breakdowns(account_id=some_config["account_ids"][0])
 
         assert account.get_insights.call_count == 2
+
+
+class TestInsightsCursorDoesNotBacktrack:
+    """The saved cursor must never move backwards when a sync re-reads the lookback window and is interrupted."""
+
+    @staticmethod
+    def _run_interrupted_sync(mocker, api, account_id, state, completed_job_count):
+        def manager_factory(api, jobs, account_id):
+            manager = mocker.Mock()
+
+            def completed_jobs():
+                for generated_job in list(jobs)[:completed_job_count]:
+                    job = mocker.Mock(spec=InsightAsyncJob)
+                    job.interval = generated_job.interval
+                    job.get_result.return_value = []
+                    yield job
+
+            manager.completed_jobs.side_effect = completed_jobs
+            return manager
+
+        mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJobManager", side_effect=manager_factory)
+        mocker.patch("source_facebook_marketing.streams.base_insight_streams.InsightAsyncJob", side_effect=lambda **kwargs: mocker.Mock(**kwargs))
+
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2024, 6, 30),
+            insights_lookback_window=28,
+        )
+        requested_starts = []
+        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=state):
+            requested_starts.append(stream_slice["insight_job"].interval.start)
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+        return requested_starts, stream.state
+
+    @freeze_time("2024-06-30")
+    def test_interrupted_syncs_keep_cursor_and_lookback_window_stable(self, mocker, api, some_config):
+        account_id = some_config["account_ids"][0]
+        state = {account_id: {"date_start": "2024-06-20", "slices": []}, "time_increment": 1}
+
+        for _ in range(3):
+            requested_starts, state = self._run_interrupted_sync(mocker, api, account_id, state, completed_job_count=5)
+
+            assert requested_starts == [date(2024, 5, 23) + timedelta(days=i) for i in range(5)]
+            assert state[account_id]["date_start"] == "2024-06-20"
+            assert state[account_id]["slices"] == []
