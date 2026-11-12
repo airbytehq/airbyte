@@ -17768,6 +17768,18 @@ spec:
         description: Refresh Token to renew the expired Access Token.
         airbyte_secret: true
         order: 3
+      access_token:
+        type: string
+        title: Access Token
+        description: Written back by the connector after each token refresh.
+        airbyte_secret: true
+        airbyte_hidden: true
+      token_expiry_date:
+        type: string
+        title: Token Expiry Date
+        description: Written back by the connector after each token refresh.
+        format: date-time
+        airbyte_hidden: true
       developer_token:
         type: string
         title: Developer Token

@@ -44,6 +44,24 @@ def test_streams_use_the_shared_default_error_handler(manifest_path: Path) -> No
             assert {key: value for key, value in threads.items() if key != "response_filters"} == {
                 key: value for key, value in shared.items() if key != "response_filters"
             }
+        elif stream["name"] == "audit_logs":
+            shared = manifest["definitions"]["error_handler"]
+            audit = requester["error_handler"]
+            assert audit == manifest["definitions"]["audit_logs_error_handler"]
+            assert audit["response_filters"][:5] == shared["response_filters"][:5]
+            assert audit["response_filters"][6:] == shared["response_filters"][6:]
+            assert audit["response_filters"][5] == {
+                "type": "HttpResponseFilter",
+                "action": "FAIL",
+                "failure_type": "config_error",
+                "http_codes": [403],
+                "error_message": "Pylon returned 403 for Audit Logs. This stream requires an API token with the Admin role, "
+                "and your Pylon plan must include audit log access. Use an Admin-role token, or deselect the Audit Logs stream.",
+            }
+            assert {key: value for key, value in audit.items() if key != "response_filters"} == {
+                key: value for key, value in shared.items() if key != "response_filters"
+            }
+            assert requester["http_method"] == "GET"
         else:
             assert requester["error_handler"] == manifest["definitions"]["error_handler"], stream["name"]
         assert requester["connect_timeout_in_seconds"] == 30
