@@ -8,7 +8,8 @@ data:
     cloud:
       enabled: true
   releases:
-    enableProgressiveRollout: true
+    rolloutConfiguration:
+      enableProgressiveRollout: true
     breakingChanges:
       1.0.0:
         upgradeDeadline: "2024-06-30"
