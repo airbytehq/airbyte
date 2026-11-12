@@ -159,6 +159,96 @@ class TestTwilioStream:
 
 
 class TestIncrementalTwilioStream:
+    @freeze_time("2022-11-16 12:00:00+00:00")
+    @pytest.mark.parametrize("with_parent_slice", [True, False])
+    @pytest.mark.parametrize("with_metadata", [True, False])
+    def test_messages_mixed_state_uses_global_cursor(self, requests_mock, with_parent_slice, with_metadata):
+        messages_path = "/2010-04-01/Accounts/AC123/Messages.json"
+        partition = {"subresource_uri": messages_path}
+        if with_parent_slice:
+            partition["parent_slice"] = {}
+        stream_state = {
+            "states": [{"partition": partition, "cursor": {"date_sent": "2022-01-01 00:00:00Z"}}],
+            "state": {"date_sent": "2022-11-11 00:00:00Z"},
+        }
+        if with_metadata:
+            stream_state.update({"use_global_cursor": False, "parent_state": {"accounts": {}}})
+        state = StateBuilder().with_stream_state("messages", stream_state).build()
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        messages = requests_mock.get(
+            f"https://api.twilio.com{messages_path}", json={"messages": [{"sid": "SM1", "date_sent": "2022-11-15T00:00:00Z"}]}
+        )
+
+        output = read_from_stream({**TEST_CONFIG, "slice_step_duration": "P1Y"}, "messages", SyncMode.incremental, state)
+
+        assert not output.errors
+        assert messages.called
+        lower_bound = parse_qs(urlparse(messages.request_history[0].url).query)["DateSent>"][0]
+        assert lower_bound == "2022-11-11 00:00:00Z"
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert final_state["state"]["date_sent"] == "2022-11-15 00:00:00Z"
+        assert "states" not in final_state
+
+    @freeze_time("2022-11-16 12:00:00+00:00")
+    def test_messages_partition_only_state_uses_minimum_cursor(self, requests_mock):
+        accounts = []
+        states = []
+        matchers = []
+        for sid, cursor in (("AC123", "2022-11-13"), ("AC456", "2022-11-12T23:00:00Z")):
+            path = f"/2010-04-01/Accounts/{sid}/Messages.json"
+            accounts.append({"sid": sid, "subresource_uris": {"messages": path}})
+            states.append({"partition": {"subresource_uri": path}, "cursor": {"date_sent": cursor}})
+            matchers.append(requests_mock.get(f"https://api.twilio.com{path}", json={"messages": []}))
+        requests_mock.get(f"{BASE}/Accounts.json", json={"accounts": accounts})
+        state = StateBuilder().with_stream_state("messages", {"states": states}).build()
+
+        output = read_from_stream({**TEST_CONFIG, "slice_step_duration": "P1Y"}, "messages", SyncMode.incremental, state)
+
+        assert not output.errors
+        for matcher in matchers:
+            assert matcher.call_count == 1
+            assert parse_qs(urlparse(matcher.request_history[0].url).query)["DateSent>"] == ["2022-11-12 23:00:00Z"]
+
+    @freeze_time("2022-11-16 12:00:00+00:00")
+    @pytest.mark.parametrize(
+        "stream_state,expected",
+        [
+            ({"use_global_cursor": True, "state": {"date_sent": "2022-11-15 00:00:00Z"}}, "2022-11-15 00:00:00Z"),
+            ({"states": []}, "2022-11-10 00:00:00Z"),
+            ({"states": [{"partition": {}, "cursor": {}}]}, "2022-11-10 00:00:00Z"),
+        ],
+    )
+    def test_messages_global_or_empty_state(self, requests_mock, stream_state, expected):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        messages = requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json={"messages": []})
+        state = StateBuilder().with_stream_state("messages", stream_state).build()
+
+        output = read_from_stream(
+            {**TEST_CONFIG, "start_date": "2022-11-10T00:00:00Z", "slice_step_duration": "P1Y"},
+            "messages",
+            SyncMode.incremental,
+            state,
+        )
+
+        assert not output.errors
+        assert messages.call_count == 1
+        assert parse_qs(urlparse(messages.request_history[0].url).query)["DateSent>"] == [expected]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert "states" not in final_state
+
+    @freeze_time("2022-11-16 12:00:00+00:00")
+    def test_messages_invalid_partition_cursor_fails(self, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json={"messages": []})
+        state = StateBuilder().with_stream_state("messages", {"states": [{"partition": {}, "cursor": {"date_sent": "invalid"}}]}).build()
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state, expecting_exception=True)
+
+        assert output.errors
+        assert "Invalid isoformat string" in output.errors[0].trace.error.internal_message
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_calls_includes_date_window_params(self, requests_mock):
         requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
