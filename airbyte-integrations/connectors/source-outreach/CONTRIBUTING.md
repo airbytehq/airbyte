@@ -32,6 +32,8 @@ Every stream follows the full URL in `links.next` until it is absent
 - `recipients` and `compliance_requests` are full refresh and send no sort or filter. Both endpoints return
   `400 filterParameter.unfilterableAttribute` for `filter[updatedAt]` and `400 sortParameter.unsortableAttribute` for
   `sort=updatedAt`, although the records carry `updatedAt`.
+- `compliance_requests.pii` is kept on purpose as a nullable free-form object and is documented in the user docs.
+  Removing it after release is a breaking schema change. `Recipient` requests return `pii: null`.
 - State is saved as `%Y-%m-%dT%H:%M:%S.%_msZ`. `/callDispositions` and `/callPurposes` return `updatedAt` without
   milliseconds (`2021-07-08T18:39:55Z`), so each cursor lists both formats in `cursor_datetime_formats`. Without the
   second format the value fails to parse and the state stays at `start_date`.

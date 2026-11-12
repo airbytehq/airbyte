@@ -61,6 +61,10 @@ EmailAddresses, PhoneNumbers, Recipients, ComplianceRequests and AuditLogs need 
 AuditLogs requires an Outreach admin user. Outreach keeps audit-log events for about 90 days, so the first sync returns at most that much history regardless of the start date.
 :::
 
+:::warning Personal data in the ComplianceRequests stream
+ComplianceRequests includes a `pii` field with the personal data Outreach keeps to process each request, such as the email address of the person who asked to be deleted. Outreach keeps this data after the deletion completes, so syncing this stream copies it into your destination. If you only need to audit requests, deselect the `pii` column or the stream.
+:::
+
 :::warning Upcoming change to the Prospects stream
 Starting **October 1, 2026**, Outreach will no longer include the `contactHistogram` attribute in the default response of the `/prospects` endpoint. See the [Outreach deprecated features page](https://developers.outreach.io/api/deprecated-features/) for details.
 
