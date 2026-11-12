@@ -22,6 +22,12 @@ Don't try to make these streams incremental per code without new Shopify API sup
 
 An opt-in `discount_codes_sync_new_codes_only` option that tracked the highest code ID per discount was prototyped in #88422 and dropped for these reasons.
 
+### `transactions` re-emits every transaction of an updated order
+
+Shopify transactions have no `updatedAt`, so both `transactions` variants (`Transactions` over REST and `TransactionsGraphql` over GraphQL BULK) keep `created_at` as the cursor. Transactions still change after creation, for example a refund goes from `PENDING` to `SUCCESS`, and that change updates the parent order. Both variants only read orders updated since the previous sync, so they emit every transaction of those orders and don't filter records by the saved `created_at` cursor (`should_emit_record_older_than_state` returns `True`). The cursor still only moves forward.
+
+Don't reintroduce a `created_at >= state` filter on these streams. It silently drops status changes ([airbyte-internal-issues#19163](https://github.com/airbytehq/airbyte-internal-issues/issues/19163)) and transactions that offsite gateways create before their order ([#87638](https://github.com/airbytehq/airbyte/pull/87638)). The cost is that unchanged transactions of an updated order are emitted again, which is documented for users in `docs/integrations/sources/shopify.md`.
+
 ### Future incremental stream candidates
 
 - **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.

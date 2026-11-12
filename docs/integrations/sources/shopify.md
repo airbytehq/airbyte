@@ -312,9 +312,13 @@ Version 3.3.3 fixes an issue where some incremental GraphQL Bulk streams could s
 
 If you synced one of these streams on an earlier connector version and suspect missing historical records, clear the affected stream and run a sync to backfill data. Clearing a stream deletes the data Airbyte wrote for that stream in your destination. For more information, see [Clearing your data](/platform/operator-guides/clear).
 
-#### Transactions created before their order
+#### Transaction updates and transactions created before their order
 
-Some payment methods, such as offsite or redirect gateways like Klarna, create the transaction a few minutes before Shopify creates the order. Starting in version 4.2.6, the connector emits these transactions when their order is first synced. Such a transaction can be emitted again on following syncs until a newer transaction moves the cursor past the order's creation time, so destinations without deduplication, such as **Incremental | Append**, may see duplicate rows. Upgrading doesn't backfill transactions that earlier versions skipped, so refresh the `transactions` stream or clear its state to recover them.
+Shopify doesn't expose a last-modified timestamp for transactions, so the `transactions` stream uses `created_at` as its cursor. A transaction can still change after it's created. For example, a refund is created as `PENDING` and becomes `SUCCESS` later. Starting in version 4.3.7, each incremental sync emits every transaction of the orders Shopify reports as updated since the previous sync, including transactions created before the saved cursor. This captures status changes, and it also captures transactions that offsite or redirect gateways like Klarna create a few minutes before Shopify creates the order.
+
+Because of this, an unchanged transaction is emitted again whenever its order is updated. Destinations without deduplication, such as **Incremental | Append**, may see duplicate rows. Use **Incremental | Append + Deduped** to keep one row per transaction.
+
+Upgrading doesn't backfill status changes or transactions that earlier versions skipped. To recover them, refresh the `transactions` stream or clear its state.
 
 #### Product category values
 
@@ -374,6 +378,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 4.3.7 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix `transactions` incremental syncs missing status changes, such as a refund going from `PENDING` to `SUCCESS`, on transactions created before the saved cursor; refresh `transactions` to recover previously missed updates |
 | 4.3.6 | 2026-11-10 | [91709](https://github.com/airbytehq/airbyte/pull/91709) | Update dependencies |
 | 4.3.5 | 2026-11-03 | [90900](https://github.com/airbytehq/airbyte/pull/90900) | Require Python 3.11 or newer, retaining support through Python 3.13 |
 | 4.3.3 | 2026-11-03 | [90723](https://github.com/airbytehq/airbyte/pull/90723) | Update dependencies |
