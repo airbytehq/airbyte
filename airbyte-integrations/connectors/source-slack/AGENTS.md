@@ -14,6 +14,16 @@ The `MessagesAndThreadsApiBudget` starts with an `UnlimitedCallRatePolicy` (no r
 
 **Why this matters:** The connector starts fast with no rate limiting and then abruptly drops to 1 request per minute after hitting its first 429. This dramatic slowdown is intentional but can make syncs appear to stall. The rate limit policy is not reset between stream reads within the same sync, so hitting a 429 on the messages stream will also throttle the threads stream.
 
+## 3. Threads State Migration Only Rewrites Legacy State
+
+`ThreadsStateMigration` converts legacy `threads` state (a top-level `float_ts`, or per-thread `states` with no `parent_state`) into a single `parent_state.channel_messages` cursor. State that already contains `parent_state.channel_messages` is left untouched, so per-channel cursors survive restarts and resumed attempts continue from where each channel left off. The `lookback_window` is applied by the parent `channel_messages` cursor itself.
+
+**Why this matters:** Rewriting current-format state on every sync collapses all per-channel cursors into one value and, when no thread cursor has been saved yet, resets every channel to `start_date`.
+
+## 4. Message and Thread Partitions Skip Unjoinable Channels
+
+The `channel_messages` and `threads` streams only build partitions for channels where the bot is a member, or for non-archived channels when `join_channels` is enabled. Archived channels the bot is not a member of are skipped because they cannot be joined and `conversations.history` would return `not_in_channel`. The `channels` and `channel_members` streams still return every channel.
+
 ## Incremental Stream Considerations
 
 The Slack API supports `oldest`/`latest` timestamp filtering on conversations.history and related endpoints. The connector uses Python custom components (`JoinChannelsStream`) referenced from the manifest.

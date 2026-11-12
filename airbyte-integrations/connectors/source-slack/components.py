@@ -176,7 +176,9 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        # State that already carries the parent `channel_messages` state (per-channel cursors) is the current
+        # format; rewriting it would collapse those cursors and make resumed syncs restart from `start_date`.
+        return bool(stream_state) and not stream_state.get("parent_state", {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
