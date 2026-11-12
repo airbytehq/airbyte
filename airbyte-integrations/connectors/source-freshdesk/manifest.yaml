@@ -885,6 +885,7 @@ definitions:
               stream_name: sla_policies
         record_selector:
           type: RecordSelector
+          schema_normalization: Default
           extractor:
             type: DpathExtractor
             field_path: []
