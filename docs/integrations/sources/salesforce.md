@@ -162,11 +162,11 @@ This method does not use a refresh token, so Salesforce's 30-day idle refresh-to
 
 <!-- /env:oss -->
 
-### Refresh-token expiration
+## Refresh-token expiration
 
-The **Client** (Airbyte Connected App) authentication method uses an OAuth refresh token. Salesforce expires refresh tokens after 30 days without a successful token refresh. This limit applies to both Airbyte-managed and customer-owned OAuth apps, and Salesforce administrators can't extend it. More restrictive app policies can expire tokens sooner. **ClientCredentials** doesn't use a refresh token, so the idle refresh-token limit doesn't apply to that method.
+The **Client** (Airbyte Connected App) authentication method uses an OAuth refresh token. Salesforce expires refresh tokens after 30 days without a successful token refresh. This limit applies to both Airbyte-managed and customer-owned OAuth apps, and Salesforce administrators can't extend this platform-level limit. More restrictive app policies can expire tokens sooner. **ClientCredentials** doesn't use a refresh token, so the idle refresh-token limit doesn't apply to that method.
 
-Salesforce began enforcing this limit in production, scratch, and Developer Edition organizations on a rolling basis starting November 4, 2026, and in sandboxes starting October 21, 2026. When enforcement reaches an organization, tokens already unused for 30 days or longer expire immediately. Enforcement doesn't start a new 30-day grace period. See [Salesforce's enforcement notice](https://help.salesforce.com/s/articleView?id=005461275&language=en_US&type=1).
+Salesforce's rolling enforcement began on November 4, 2026, for production, scratch, and Developer Edition organizations, and on October 21, 2026, for sandboxes. Enforcement dates vary by organization. When enforcement reaches an organization, tokens already unused for 30 days or longer expire immediately. Enforcement doesn't start a new 30-day grace period. See [Salesforce's enforcement notice](https://help.salesforce.com/s/articleView?id=005461275&language=en_US&type=1).
 
 Each successful refresh-token exchange resets the inactivity window. Normal syncs use the refresh token, but paused connections and connections used less than once every 30 days may require reauthorization when you resume them. Don't create artificial refresh activity solely to prevent expiration. For infrequent unattended integrations, plan for reauthorization or consider [client credentials](#use-your-own-external-client-app-client-credentials).
 
