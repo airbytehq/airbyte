@@ -37,7 +37,13 @@ def test_check_succeeds_with_only_supported_reporting_jobs() -> None:
             HttpResponse(
                 status_code=400,
                 body=json.dumps(
-                    {"error": {"code": 400, "message": "Report type channel_annotations_a1 is no longer supported.", "status": "INVALID_ARGUMENT"}}
+                    {
+                        "error": {
+                            "code": 400,
+                            "message": "Report type channel_annotations_a1 is no longer supported.",
+                            "status": "INVALID_ARGUMENT",
+                        }
+                    }
                 ),
             ),
         )
