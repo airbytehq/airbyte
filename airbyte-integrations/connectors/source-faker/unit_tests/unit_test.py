@@ -188,6 +188,37 @@ def test_read_products_count():
     assert [record["id"] for record in records] == list(range(1, 11))
 
 
+@pytest.mark.parametrize(
+    "products_count, records_per_slice",
+    [
+        pytest.param(50, 20, id="trailing_partial_slice"),
+        pytest.param(100, 30, id="default_products_count_trailing_partial_slice"),
+        pytest.param(7, 20, id="single_partial_slice"),
+        pytest.param(40, 20, id="exact_multiple_of_slice"),
+    ],
+)
+def test_read_products_emits_every_product_when_count_is_not_a_multiple_of_slice(products_count, records_per_slice):
+    source = SourceFaker()
+    config = {"count": 1000, "seed": 7, "products_count": products_count, "records_per_slice": records_per_slice, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    messages = [row for row in source.read(logger, config, catalog, {}) if row.type in (Type.RECORD, Type.STATE)]
+
+    records = [row.record.data for row in messages if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == list(range(1, products_count + 1))
+
+    # The stream must finish on a state message whose cursor is the last emitted product's.
+    assert messages[-1].type is Type.STATE
+    final_state = messages[-1].state.stream.stream_state
+    assert final_state.updated_at == records[-1]["updated_at"]
+    assert final_state.seed == 7
+
+
 def test_read_big_random_data():
     source = SourceFaker()
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
