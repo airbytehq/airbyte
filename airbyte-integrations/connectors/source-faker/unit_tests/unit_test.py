@@ -325,4 +325,3 @@ def test_check_succeeds_when_optional_numeric_settings_are_omitted(config):
     statuses = _run_check(config)
     assert len(statuses) == 1
     assert statuses[0].status.name == "SUCCEEDED", statuses[0].message
-
