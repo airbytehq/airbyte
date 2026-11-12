@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Mock-server tests of the Grades.com manifest: auth, the v1 cursor, per-business partitioning, incremental request
 parameters, the review-text flag, rate limiting and skipped businesses. No network: every request is mocked."""
 
@@ -15,6 +17,7 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
+
 
 _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 _BASE = "https://app.grades.com/api/v1"
@@ -51,8 +54,18 @@ def _read(stream: str, config: dict, sync_mode: SyncMode = SyncMode.full_refresh
 
 
 def _review(uuid: str, published_at: str, **extra: Any) -> dict:
-    return {"uuid": uuid, "source": "google", "rating": 5, "text": "Great visit", "title": "Five stars",
-            "author": "Jane D.", "published_at": published_at, "response_text": None, "response_date": None, **extra}
+    return {
+        "uuid": uuid,
+        "source": "google",
+        "rating": 5,
+        "text": "Great visit",
+        "title": "Five stars",
+        "author": "Jane D.",
+        "published_at": published_at,
+        "response_text": None,
+        "response_date": None,
+        **extra,
+    }
 
 
 @pytest.fixture(scope="module")
@@ -64,8 +77,7 @@ def manifest() -> Mapping[str, Any]:
 @freeze_time(_NOW)
 def test_locations_follow_the_v1_cursor_and_send_the_bearer_key() -> None:
     with HttpMocker() as http:
-        first = HttpRequest(f"{_BASE}/companies", query_params={"limit": "100"},
-                            headers={"Authorization": f"Bearer {_KEY}"})
+        first = HttpRequest(f"{_BASE}/companies", query_params={"limit": "100"}, headers={"Authorization": f"Bearer {_KEY}"})
         second = HttpRequest(f"{_BASE}/companies", query_params={"limit": "100", "cursor": "page2"})
         http.get(first, _json({"data": [_company(_A, "Alpha")], "meta": {"next_cursor": "page2", "has_more": True}}))
         http.get(second, _json({"data": [_company(_B, "Beta")], "meta": {"next_cursor": None, "has_more": False}}))
@@ -80,8 +92,10 @@ def test_locations_follow_the_v1_cursor_and_send_the_bearer_key() -> None:
 def test_company_uuids_limit_the_partitions() -> None:
     with HttpMocker() as http:
         _companies(http, _company(_A, "Alpha"), _company(_B, "Beta"))
-        http.get(HttpRequest(f"{_BASE}/companies/{_A}/sources"),
-                 _json({"data": [{"driver": "google", "display_name": "Google", "active": True}], "meta": {"count": 1}}))
+        http.get(
+            HttpRequest(f"{_BASE}/companies/{_A}/sources"),
+            _json({"data": [{"driver": "google", "display_name": "Google", "active": True}], "meta": {"count": 1}}),
+        )
 
         output = _read("sources", _config(company_uuids=[_A]))
 
@@ -92,16 +106,37 @@ def test_company_uuids_limit_the_partitions() -> None:
 def test_reviews_incremental_sends_the_publish_date_window_and_emits_state() -> None:
     with HttpMocker() as http:
         _companies(http, _company(_A, "Alpha"))
-        page1 = HttpRequest(f"{_BASE}/companies/{_A}/reviews", query_params={
-            "sort": "oldest", "include_removed": "true", "start_date": "2026-01-01", "end_date": "2026-11-09",
-            "limit": "100"})
-        page2 = HttpRequest(f"{_BASE}/companies/{_A}/reviews", query_params={
-            "sort": "oldest", "include_removed": "true", "start_date": "2026-01-01", "end_date": "2026-11-09",
-            "limit": "100", "cursor": "next"})
-        http.get(page1, _json({"data": [_review("r1", "2026-03-01T10:00:00Z")],
-                               "meta": {"next_cursor": "next", "has_more": True}}))
-        http.get(page2, _json({"data": [_review("r2", "2026-10-01T10:00:00Z", removed_at="2026-10-20T00:00:00Z")],
-                               "meta": {"next_cursor": None, "has_more": False}}))
+        page1 = HttpRequest(
+            f"{_BASE}/companies/{_A}/reviews",
+            query_params={
+                "sort": "oldest",
+                "include_removed": "true",
+                "start_date": "2026-01-01",
+                "end_date": "2026-11-09",
+                "limit": "100",
+            },
+        )
+        page2 = HttpRequest(
+            f"{_BASE}/companies/{_A}/reviews",
+            query_params={
+                "sort": "oldest",
+                "include_removed": "true",
+                "start_date": "2026-01-01",
+                "end_date": "2026-11-09",
+                "limit": "100",
+                "cursor": "next",
+            },
+        )
+        http.get(page1, _json({"data": [_review("r1", "2026-03-01T10:00:00Z")], "meta": {"next_cursor": "next", "has_more": True}}))
+        http.get(
+            page2,
+            _json(
+                {
+                    "data": [_review("r2", "2026-10-01T10:00:00Z", removed_at="2026-10-20T00:00:00Z")],
+                    "meta": {"next_cursor": None, "has_more": False},
+                }
+            ),
+        )
 
         output = _read("reviews", _config(start_date="2026-01-01"), SyncMode.incremental)
 
@@ -117,10 +152,19 @@ def test_reviews_incremental_sends_the_publish_date_window_and_emits_state() -> 
 def test_reviews_without_text_when_the_flag_is_off() -> None:
     with HttpMocker() as http:
         _companies(http, _company(_A, "Alpha"))
-        http.get(HttpRequest(f"{_BASE}/companies/{_A}/reviews", query_params={
-            "sort": "oldest", "include_removed": "true", "start_date": "2026-06-01", "end_date": "2026-11-09",
-            "limit": "100"}),
-            _json({"data": [_review("r1", "2026-07-01T10:00:00Z")], "meta": {"next_cursor": None}}))
+        http.get(
+            HttpRequest(
+                f"{_BASE}/companies/{_A}/reviews",
+                query_params={
+                    "sort": "oldest",
+                    "include_removed": "true",
+                    "start_date": "2026-06-01",
+                    "end_date": "2026-11-09",
+                    "limit": "100",
+                },
+            ),
+            _json({"data": [_review("r1", "2026-07-01T10:00:00Z")], "meta": {"next_cursor": None}}),
+        )
 
         output = _read("reviews", _config(start_date="2026-06-01", include_review_text=False))
 
@@ -134,11 +178,26 @@ def test_reviews_without_text_when_the_flag_is_off() -> None:
 def test_review_replies_keep_only_reply_fields() -> None:
     with HttpMocker() as http:
         _companies(http, _company(_A, "Alpha"))
-        http.get(HttpRequest(f"{_BASE}/companies/{_A}/reviews", query_params={
-            "sort": "oldest", "include_removed": "true", "has_company_response": "true", "limit": "100"}),
-            _json({"data": [_review("r1", "2026-07-01T10:00:00Z", response_text="Thanks!",
-                                    response_date="2026-07-02T09:00:00Z", response_author="Alpha")],
-                   "meta": {"next_cursor": None}}))
+        http.get(
+            HttpRequest(
+                f"{_BASE}/companies/{_A}/reviews",
+                query_params={"sort": "oldest", "include_removed": "true", "has_company_response": "true", "limit": "100"},
+            ),
+            _json(
+                {
+                    "data": [
+                        _review(
+                            "r1",
+                            "2026-07-01T10:00:00Z",
+                            response_text="Thanks!",
+                            response_date="2026-07-02T09:00:00Z",
+                            response_author="Alpha",
+                        )
+                    ],
+                    "meta": {"next_cursor": None},
+                }
+            ),
+        )
 
         output = _read("review_replies", _config())
 
@@ -151,10 +210,13 @@ def test_review_replies_keep_only_reply_fields() -> None:
 def test_429_waits_for_retry_after_then_succeeds() -> None:
     with HttpMocker() as http:
         _companies(http, _company(_A, "Alpha"))
-        http.get(HttpRequest(f"{_BASE}/companies/{_A}/stats"), [
-            _json({"title": "Too Many Requests", "status": 429}, 429, {"Retry-After": "1"}),
-            _json({"data": {"total": 3, "average_rating": 4.67, "ratings": {"5": 2, "4": 1}}, "meta": {}}),
-        ])
+        http.get(
+            HttpRequest(f"{_BASE}/companies/{_A}/stats"),
+            [
+                _json({"title": "Too Many Requests", "status": 429}, 429, {"Retry-After": "1"}),
+                _json({"data": {"total": 3, "average_rating": 4.67, "ratings": {"5": 2, "4": 1}}, "meta": {}}),
+            ],
+        )
 
         output = _read("review_stats", _config())
 
@@ -166,10 +228,11 @@ def test_429_waits_for_retry_after_then_succeeds() -> None:
 def test_a_business_without_the_feature_is_skipped_not_failed() -> None:
     with HttpMocker() as http:
         _companies(http, _company(_A, "Alpha"), _company(_B, "Beta"))
-        http.get(HttpRequest(f"{_BASE}/companies/{_A}/stats"),
-                 _json({"title": "Payment Required", "status": 402, "code": "plan_upgrade_required"}, 402))
-        http.get(HttpRequest(f"{_BASE}/companies/{_B}/stats"),
-                 _json({"data": {"total": 1, "average_rating": 5.0}, "meta": {}}))
+        http.get(
+            HttpRequest(f"{_BASE}/companies/{_A}/stats"),
+            _json({"title": "Payment Required", "status": 402, "code": "plan_upgrade_required"}, 402),
+        )
+        http.get(HttpRequest(f"{_BASE}/companies/{_B}/stats"), _json({"data": {"total": 1, "average_rating": 5.0}, "meta": {}}))
 
         output = _read("review_stats", _config())
 
@@ -180,8 +243,10 @@ def test_a_business_without_the_feature_is_skipped_not_failed() -> None:
 @freeze_time(_NOW)
 def test_missing_scope_fails_as_a_config_error() -> None:
     with HttpMocker() as http:
-        http.get(HttpRequest(f"{_BASE}/companies", query_params={"limit": "100"}),
-                 _json({"title": "Forbidden", "status": 403, "required_scopes": ["companies:read"]}, 403))
+        http.get(
+            HttpRequest(f"{_BASE}/companies", query_params={"limit": "100"}),
+            _json({"title": "Forbidden", "status": 403, "required_scopes": ["companies:read"]}, 403),
+        )
 
         output = _read("locations", _config())
 
@@ -194,12 +259,32 @@ def test_daily_stats_one_request_per_day_and_location_rows() -> None:
     with HttpMocker() as http:
         _companies(http, _company(_A, "Alpha"))
         for day in ("2026-11-07", "2026-11-08", "2026-11-09"):
-            http.get(HttpRequest(f"{_BASE}/companies/{_A}/locations/stats", query_params={"from": day, "to": day}),
-                     _json({"data": {"totals": {}, "locations": [{
-                         "location": {"uuid": _A, "name": "Alpha", "is_hq": True}, "reviews_total": 40,
-                         "rating_average": 4.5, "new_reviews": 1, "new_rating_average": 5.0, "responded": 1,
-                         "response_rate": 1.0, "unanswered_negative": 0, "pending_agent_actions": 2, "rank": None,
-                         "rating_distribution": {"5": 1}}]}, "meta": {}}))
+            http.get(
+                HttpRequest(f"{_BASE}/companies/{_A}/locations/stats", query_params={"from": day, "to": day}),
+                _json(
+                    {
+                        "data": {
+                            "totals": {},
+                            "locations": [
+                                {
+                                    "location": {"uuid": _A, "name": "Alpha", "is_hq": True},
+                                    "reviews_total": 40,
+                                    "rating_average": 4.5,
+                                    "new_reviews": 1,
+                                    "new_rating_average": 5.0,
+                                    "responded": 1,
+                                    "response_rate": 1.0,
+                                    "unanswered_negative": 0,
+                                    "pending_agent_actions": 2,
+                                    "rank": None,
+                                    "rating_distribution": {"5": 1},
+                                }
+                            ],
+                        },
+                        "meta": {},
+                    }
+                ),
+            )
 
         output = _read("review_stats_daily", _config(stats_start_date="2026-11-07"), SyncMode.incremental)
 
@@ -213,9 +298,10 @@ def test_daily_stats_one_request_per_day_and_location_rows() -> None:
 def test_daily_stats_skip_a_location_whose_hq_holds_the_group_view() -> None:
     with HttpMocker() as http:
         _companies(http, _company(_A, "Alpha"))
-        http.get(HttpRequest(f"{_BASE}/companies/{_A}/locations/stats",
-                             query_params={"from": "2026-11-09", "to": "2026-11-09"}),
-                 _json({"title": "Conflict", "status": 409, "code": "not_an_hq"}, 409))
+        http.get(
+            HttpRequest(f"{_BASE}/companies/{_A}/locations/stats", query_params={"from": "2026-11-09", "to": "2026-11-09"}),
+            _json({"title": "Conflict", "status": 409, "code": "not_an_hq"}, 409),
+        )
 
         output = _read("review_stats_daily", _config(stats_start_date="2026-11-09"), SyncMode.incremental)
 
@@ -227,11 +313,29 @@ def test_ai_reputation_history_asks_each_assistant_since_the_start() -> None:
     with HttpMocker() as http:
         _companies(http, _company(_A, "Alpha"))
         for engine in ("gemini", "openai", "perplexity", "anthropic"):
-            http.get(HttpRequest(f"{_BASE}/companies/{_A}/radar/ai-perception",
-                                 query_params={"engine": engine, "since": "2026-10-01T00:00:00Z"}),
-                     _json({"data": {"summary": [], "probes": [], "history": [
-                         {"run_id": f"run-{engine}", "engine": engine, "run_at": "2026-11-01T14:00:00Z",
-                          "sentiment": "positive", "score": 0.8}]}, "meta": {}}))
+            http.get(
+                HttpRequest(
+                    f"{_BASE}/companies/{_A}/radar/ai-perception", query_params={"engine": engine, "since": "2026-10-01T00:00:00Z"}
+                ),
+                _json(
+                    {
+                        "data": {
+                            "summary": [],
+                            "probes": [],
+                            "history": [
+                                {
+                                    "run_id": f"run-{engine}",
+                                    "engine": engine,
+                                    "run_at": "2026-11-01T14:00:00Z",
+                                    "sentiment": "positive",
+                                    "score": 0.8,
+                                }
+                            ],
+                        },
+                        "meta": {},
+                    }
+                ),
+            )
 
         output = _read("ai_reputation_history", _config(start_date="2026-10-01"), SyncMode.incremental)
 
@@ -260,8 +364,7 @@ def test_error_handler_honours_retry_after_first(manifest: Mapping[str, Any]) ->
 @freeze_time(_NOW)
 def test_a_key_pasted_with_trailing_whitespace_is_trimmed() -> None:
     with HttpMocker() as http:
-        request = HttpRequest(f"{_BASE}/companies", query_params={"limit": "100"},
-                              headers={"Authorization": f"Bearer {_KEY}"})
+        request = HttpRequest(f"{_BASE}/companies", query_params={"limit": "100"}, headers={"Authorization": f"Bearer {_KEY}"})
         http.get(request, _json({"data": [_company(_A, "Alpha")], "meta": {"next_cursor": None, "has_more": False}}))
 
         output = _read("locations", _config(api_key=f" {_KEY} \n"))
@@ -270,8 +373,12 @@ def test_a_key_pasted_with_trailing_whitespace_is_trimmed() -> None:
     assert not output.errors
 
 
-_SCOPE_403 = {"title": "Forbidden", "status": 403, "required_scopes": ["reviews:read"],
-              "detail": "This API key or app connection does not have the reviews:read permission this request needs."}
+_SCOPE_403 = {
+    "title": "Forbidden",
+    "status": 403,
+    "required_scopes": ["reviews:read"],
+    "detail": "This API key or app connection does not have the reviews:read permission this request needs.",
+}
 
 
 def _check(config: dict):
@@ -298,10 +405,13 @@ def test_check_fails_with_the_scope_text_for_a_key_without_reviews_read() -> Non
 def test_check_succeeds_with_both_scopes() -> None:
     with HttpMocker() as http:
         bearer = {"Authorization": f"Bearer {_KEY}"}
-        http.get(HttpRequest(f"{_BASE}/companies", query_params={"limit": "100"}, headers=bearer),
-                 _json({"data": [_company(_A, "Alpha")], "meta": {"next_cursor": None, "has_more": False}}))
-        http.get(HttpRequest(f"{_BASE}/companies/{_A}/stats", headers=bearer),
-                 _json({"data": {"total": 3, "average_rating": 4.67}, "meta": {}}))
+        http.get(
+            HttpRequest(f"{_BASE}/companies", query_params={"limit": "100"}, headers=bearer),
+            _json({"data": [_company(_A, "Alpha")], "meta": {"next_cursor": None, "has_more": False}}),
+        )
+        http.get(
+            HttpRequest(f"{_BASE}/companies/{_A}/stats", headers=bearer), _json({"data": {"total": 3, "average_rating": 4.67}, "meta": {}})
+        )
 
         status = _check(_config())
 
@@ -309,15 +419,19 @@ def test_check_succeeds_with_both_scopes() -> None:
 
 
 @freeze_time(_NOW)
-@pytest.mark.parametrize("stream,path", [
-    ("review_stats_daily", "locations/stats"),
-    ("review_request_stats_daily", "review-requests/stats"),
-])
+@pytest.mark.parametrize(
+    "stream,path",
+    [
+        ("review_stats_daily", "locations/stats"),
+        ("review_request_stats_daily", "review-requests/stats"),
+    ],
+)
 def test_daily_stats_stop_after_the_first_scope_error(stream: str, path: str) -> None:
     with HttpMocker() as http:
         _companies(http, _company(_A, "Alpha"), _company(_B, "Beta"))
-        http.get(HttpRequest(f"{_BASE}/companies/{_A}/{path}", query_params={"from": "2026-11-09", "to": "2026-11-09"}),
-                 _json(_SCOPE_403, 403))
+        http.get(
+            HttpRequest(f"{_BASE}/companies/{_A}/{path}", query_params={"from": "2026-11-09", "to": "2026-11-09"}), _json(_SCOPE_403, 403)
+        )
 
         # 90 days of stats: before the probe, a key without the scope sent one failing request per business and day.
         output = _read(stream, _config(stats_start_date="2026-08-11"), SyncMode.incremental)
@@ -334,9 +448,10 @@ def test_review_request_stats_daily_one_row_per_day() -> None:
     with HttpMocker() as http:
         _companies(http, _company(_A, "Alpha"))
         for day in ("2026-11-08", "2026-11-09"):
-            http.get(HttpRequest(f"{_BASE}/companies/{_A}/review-requests/stats",
-                                 query_params={"from": day, "to": day}),
-                     _json({"data": {"totals": {"created": 2, "sent": 2, "opened": 1, "reviewed": 0}}, "meta": {}}))
+            http.get(
+                HttpRequest(f"{_BASE}/companies/{_A}/review-requests/stats", query_params={"from": day, "to": day}),
+                _json({"data": {"totals": {"created": 2, "sent": 2, "opened": 1, "reviewed": 0}}, "meta": {}}),
+            )
 
         output = _read("review_request_stats_daily", _config(stats_start_date="2026-11-08"), SyncMode.incremental)
 
