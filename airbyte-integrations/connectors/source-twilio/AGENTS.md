@@ -25,3 +25,7 @@ The `alerts` stream handles Twilio's 10,000-result cap with a `SPLIT_REQUEST_WIN
 - Each split halves the window at `PT1S` granularity and the CDK stops after 10 halvings, so the smallest window is the slice span / 1024: about 43 minutes with `P1M`, about 84 seconds with `P1D`.
 - Exhausted splitting (depth 10, or a window that can't shrink) fails as `transient_error` with `failure_message` appended to the CDK message.
 - Any other Alerts 400 hits the dedicated FAIL filter (`http_codes: [400]`, after the SPLIT filter) and fails as `system_error` with Twilio's own message.
+
+## Stale per-partition cursors
+
+Per-partition cursors only advance when a partition emits records, so an account partition that stops returning records keeps its old cursor and, because per-partition state wins over the global `state`, re-requests everything since that date on every sync. `TwilioStalePartitionStateMigration` (last in every per-partition stream's `state_migrations`) floors each partition cursor at the global cursor minus the stored runtime `lookback_window` seconds, the same value the CDK uses for partitions with no state. It is a no-op for `use_global_cursor` states or states without a global `state`.

@@ -3,8 +3,8 @@
 #
 
 import copy
-from datetime import datetime, timezone
-from typing import Any, Mapping
+from datetime import datetime, timedelta, timezone
+from typing import Any, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -308,3 +308,78 @@ class TwilioConferencesStateMigration(StateMigration):
         if stream_state and any("conference_status" not in state.get("partition", {}) for state in stream_state.get("states", [])):
             return True
         return False
+
+
+_STATE_DATETIME_FORMATS = ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d %H:%M:%SZ", "%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%d")
+
+
+def _parse_state_datetime(value: Any) -> Optional[Tuple[datetime, str]]:
+    if not isinstance(value, str):
+        return None
+    for datetime_format in _STATE_DATETIME_FORMATS:
+        try:
+            parsed = datetime.strptime(value, datetime_format)
+        except ValueError:
+            continue
+        return (parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)), datetime_format
+    return None
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Advance per-partition cursors that lag behind the global cursor.
+
+    The per-partition cursor only advances when a partition emits records, so a partition that stops returning
+    records keeps its old cursor forever and takes precedence over the global `state`, making every sync re-request
+    (and re-emit) everything from that old date. The global cursor is only written after every partition was read
+    to completion, so each partition is floored at the global cursor minus the stored runtime `lookback_window`
+    (seconds), which is what the CDK uses for partitions without their own state.
+
+    Initial:
+      {
+        "states": [{"partition": {...}, "cursor": {"date_sent": "2024-01-01 00:00:00Z"}}],
+        "state": {"date_sent": "2026-05-20 10:00:00Z"},
+        "lookback_window": 60
+      }
+
+    Final:
+      {
+        "states": [{"partition": {...}, "cursor": {"date_sent": "2026-05-20 09:59:00Z"}}],
+        "state": {"date_sent": "2026-05-20 10:00:00Z"},
+        "lookback_window": 60
+      }
+    """
+
+    def _floor(self, stream_state: Mapping[str, Any]) -> Optional[Tuple[str, datetime, str]]:
+        global_state = stream_state.get("state")
+        if not isinstance(global_state, Mapping) or len(global_state) != 1:
+            return None
+        cursor_field, value = next(iter(global_state.items()))
+        parsed = _parse_state_datetime(value)
+        if not parsed:
+            return None
+        global_datetime, datetime_format = parsed
+        lookback_seconds = int(stream_state.get("lookback_window") or 0)
+        return cursor_field, global_datetime - timedelta(seconds=lookback_seconds), datetime_format
+
+    def _is_stale(self, partition_state: Mapping[str, Any], cursor_field: str, floor: datetime) -> bool:
+        parsed = _parse_state_datetime((partition_state.get("cursor") or {}).get(cursor_field))
+        return parsed is not None and parsed[0] < floor
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor_field, floor, datetime_format = self._floor(stream_state)
+        floor_value = floor.strftime(datetime_format)
+        new_state = copy.deepcopy(dict(stream_state))
+        for partition_state in new_state["states"]:
+            if self._is_stale(partition_state, cursor_field, floor):
+                partition_state["cursor"] = {**partition_state["cursor"], cursor_field: floor_value}
+        return new_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state or stream_state.get("use_global_cursor") or not stream_state.get("states"):
+            return False
+        floor = self._floor(stream_state)
+        if not floor:
+            return False
+        cursor_field, floor_datetime, _ = floor
+        return any(self._is_stale(partition_state, cursor_field, floor_datetime) for partition_state in stream_state["states"])

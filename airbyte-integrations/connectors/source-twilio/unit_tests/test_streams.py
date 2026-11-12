@@ -1003,3 +1003,69 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+class TestStalePartitionState:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,path,cursor_field,lower_key,upper_key",
+        [
+            ("messages", "/Accounts/AC123/Messages.json", "date_sent", "DateSent>", "DateSent<"),
+            ("recordings", "/Accounts/AC123/Recordings.json", "date_created", "DateCreated>", "DateCreated<"),
+        ],
+    )
+    @pytest.mark.parametrize(
+        "partition_cursor,lookback_window,expected_windows",
+        [
+            pytest.param(
+                "2022-01-01T00:00:00Z", 0, [("2022-11-13 00:00:00Z", "2022-11-16 12:03:11Z")], id="stale_partition_floored_at_global"
+            ),
+            pytest.param(
+                "2022-01-01T00:00:00Z",
+                120,
+                [("2022-11-12 23:58:00Z", "2022-11-16 12:03:11Z")],
+                id="stale_partition_floored_at_global_minus_lookback",
+            ),
+            pytest.param(
+                "2022-11-15T00:00:00Z", 0, [("2022-11-15 00:00:00Z", "2022-11-16 12:03:11Z")], id="partition_ahead_of_global_kept"
+            ),
+        ],
+    )
+    def test_stale_partition_cursor_does_not_reread_history(
+        self, stream_name, path, cursor_field, lower_key, upper_key, partition_cursor, lookback_window, expected_windows, requests_mock
+    ):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        child = requests_mock.get(
+            f"{BASE}{path}",
+            json={stream_name: [{"sid": "XX1", cursor_field: "2022-11-16T10:00:00Z"}]},
+            status_code=200,
+        )
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                stream_name,
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": f"/2010-04-01{path}", "parent_slice": {}},
+                            "cursor": {cursor_field: partition_cursor},
+                        }
+                    ],
+                    "state": {cursor_field: "2022-11-13T00:00:00Z"},
+                    "lookback_window": lookback_window,
+                    "parent_state": {},
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2020-01-01T00:00:00Z"}, stream_name, SyncMode.incremental, state)
+
+        windows = [
+            (parse_qs(urlparse(r.url).query)[lower_key][0], parse_qs(urlparse(r.url).query)[upper_key][0]) for r in child.request_history
+        ]
+        assert windows == expected_windows
+        assert [record.record.data["sid"] for record in output.records] == ["XX1"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["states"][0]["cursor"][cursor_field] == "2022-11-16 10:00:00Z"
