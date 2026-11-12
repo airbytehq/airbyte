@@ -157,6 +157,24 @@ class TestSourceFacebookMarketing:
 
         assert isinstance(spec, ConnectorSpecification)
 
+    @pytest.mark.parametrize(
+        "top_level,custom,expected",
+        [(True, None, True), (True, False, True), (False, True, True), (False, None, False), (False, False, False)],
+    )
+    def test_custom_insights_include_incrementality(self, config, fb_marketing, top_level, custom, expected):
+        config["include_incrementality"] = top_level
+        insight = {"name": "Incrementality", "fields": ["actions"], "breakdowns": [], "action_breakdowns": []}
+        if custom is not None:
+            insight["include_incrementality"] = custom
+        config["custom_insights"] = [insight]
+
+        stream = next(stream for stream in fb_marketing.streams(config) if stream.name == "custom_incrementality")
+
+        windows = ["1d_click", "7d_click", "28d_click", "1d_view"]
+        if expected:
+            windows.append("incrementality")
+        assert stream.request_params()["action_attribution_windows"] == windows
+
     def test_get_custom_insights_streams(self, api, config, fb_marketing):
         config["custom_insights"] = [
             {
