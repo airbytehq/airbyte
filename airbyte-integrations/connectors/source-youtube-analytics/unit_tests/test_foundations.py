@@ -339,3 +339,22 @@ def test_spec_declares_google_oauth_and_optional_num_workers(config):
         "credentials",
         "client_id",
     ]
+
+
+def test_check_uses_a_supported_report_type_and_succeeds_when_retired_reports_have_no_job(config):
+    """YouTube retired `channel_annotations_a1`, so `jobs.list` never returns a job for it even after
+    a create call. The connection check must probe a supported report type (`channel_basic_a3`)
+    so that setup succeeds, and must not try to create a job for a retired report type.
+    """
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        _register_job(mocker, "channel_basic_a3")
+        create_job = mocker.post(f"{_API}/jobs", json={})
+        reports = mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-01T00:00:00Z")]})
+        mocker.get(_download_url("r1"), text="date,channel_id,views\n20261001,channel-1,3\n")
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+
+    assert status.status == Status.SUCCEEDED, status.message
+    assert not create_job.called
+    assert reports.called

@@ -4,8 +4,10 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
+  # YouTube retired the channel_annotations_a1 report type, so it never gets a reporting job
+  # and the check found no slices. channel_basic_a3 is a current, always-available report.
   stream_names:
-    - channel_annotations_a1
+    - channel_basic_a3
 
 definitions:
   streams:
