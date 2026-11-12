@@ -885,6 +885,8 @@ definitions:
               stream_name: sla_policies
         record_selector:
           type: RecordSelector
+          # Freshdesk has returned `id` as a JSON string on this endpoint; cast records to the declared schema types.
+          schema_normalization: Default
           extractor:
             type: DpathExtractor
             field_path: []
