@@ -68,7 +68,12 @@ class TestEvents(TestCase):
             _page(
                 [
                     {"id": "primary@example.com", "grant_id": _GRANT_ID, "is_owned_by_user": True},
-                    {"id": "en.usa#holiday@group.v.calendar.google.com", "grant_id": _GRANT_ID, "is_owned_by_user": False, "read_only": True},
+                    {
+                        "id": "en.usa#holiday@group.v.calendar.google.com",
+                        "grant_id": _GRANT_ID,
+                        "is_owned_by_user": False,
+                        "read_only": True,
+                    },
                     {"id": "work@example.com", "grant_id": _GRANT_ID, "is_owned_by_user": True},
                 ]
             ),
