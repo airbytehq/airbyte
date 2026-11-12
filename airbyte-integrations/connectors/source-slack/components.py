@@ -176,7 +176,13 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        """
+        Only legacy states (written before the threads stream tracked its parent incrementally) need migrating.
+        A state that already contains `parent_state` carries per-channel `channel_messages` cursors written by the
+        current cursor; rebuilding it from `start_date` and thread cursors would discard that progress and make the
+        next sync re-read every channel from the beginning.
+        """
+        return "parent_state" not in stream_state
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
