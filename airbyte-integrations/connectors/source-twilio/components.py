@@ -3,12 +3,13 @@
 #
 
 import copy
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +82,27 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+@dataclass
+class TwilioStalePartitionStateMigration(StateMigration):
+    """Let completed-sync global state supersede older partition checkpoints."""
+
+    parameters: Mapping[str, Any]
+
+    def _is_stale(self, partition_state: Mapping[str, Any], global_cursor: Any) -> bool:
+        cursor = partition_state.get("cursor", {}).get(self.parameters["cursor_field"])
+        return bool(cursor and ab_datetime_parse(cursor) < ab_datetime_parse(global_cursor))
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        global_cursor = stream_state.get("state", {}).get(self.parameters["cursor_field"])
+        return bool(global_cursor and any(self._is_stale(state, global_cursor) for state in stream_state.get("states", [])))
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        global_cursor = stream_state["state"][self.parameters["cursor_field"]]
+        migrated = copy.deepcopy(stream_state)
+        migrated["states"] = [state for state in migrated.get("states", []) if not self._is_stale(state, global_cursor)]
+        return migrated
 
 
 class TwilioAlertsStateMigration(StateMigration):
