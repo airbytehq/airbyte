@@ -260,6 +260,47 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @freeze_time("2026-04-01")
+    @pytest.mark.parametrize("out_of_order", [False, True])
+    @pytest.mark.parametrize("empty_result", [False, True])
+    def test_interrupted_lookback_keeps_cursor_monotonic(self, mocker, api, some_config, out_of_order, empty_result):
+        account_id = some_config["account_ids"][0]
+        cursor = date(2026, 3, 1)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 3, 10),
+            insights_lookback_window=28,
+        )
+        stream.state = {account_id: {"date_start": cursor.isoformat()}, "time_increment": 1}
+        record = mocker.Mock()
+        record.export_all_data.return_value = {}
+        days = [cursor - timedelta(days=28) + timedelta(days=i) for i in range(31)]
+        if out_of_order:
+            days[0], days[1] = days[1], days[0]
+            days[-2], days[-1] = days[-1], days[-2]
+
+        previous_cursor = cursor.isoformat()
+        for day in days:
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = DateInterval(day, day)
+            job.get_result.return_value = [] if empty_result else [record]
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice={"insight_job": job, "account_id": account_id}))
+            completed_slices = stream._completed_slices[account_id].copy()
+            state = stream.state[account_id]
+            assert stream._completed_slices[account_id] == completed_slices
+            assert state["date_start"] >= previous_cursor
+            assert all(completed > state["date_start"] for completed in state["slices"])
+            previous_cursor = state["date_start"]
+
+        assert stream.state[account_id] == {"date_start": "2026-03-03", "slices": []}
+        job.interval = DateInterval(date(2026, 3, 4), date(2026, 3, 4))
+        job.get_result.side_effect = RuntimeError("interrupted sync")
+        with pytest.raises(RuntimeError, match="interrupted sync"):
+            list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice={"insight_job": job, "account_id": account_id}))
+        assert stream.state[account_id] == {"date_start": "2026-03-03", "slices": []}
+
     def test_read_records_add_account_id(self, mocker, api, some_config):
         rec_without_account = mocker.Mock()
         rec_without_account.export_all_data.return_value = {}
@@ -397,6 +438,9 @@ class TestBaseInsightsStream:
 
         result_state = state if not result_state else result_state
         result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
+        account_state = result_state[some_config["account_ids"][0]]
+        if account_state.get(AdsInsights.cursor_field):
+            account_state["slices"] = [s for s in account_state["slices"] if s > account_state[AdsInsights.cursor_field]]
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
