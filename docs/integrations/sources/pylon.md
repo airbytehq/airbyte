@@ -84,6 +84,10 @@ The Pylon source connector supports the following streams:
 - **Users** includes both active and deactivated users.
 - All streams other than Issues support full refresh only and do not save an incremental cursor. **Start Date** does not limit streams other than Issues, Issue Messages, and Issue Threads.
 
+### Upgrading to 1.0.0
+
+Version 1.0.0 is a breaking change. The `tags` field on Accounts and Issues is now an array of strings instead of an array of objects, and eight timestamp fields on Accounts, Issues, Issue Messages, and Custom Fields are now typed as `date-time`. After upgrading, refresh the source schema. Some destinations also require you to clear the affected streams. For the full list of changed fields and the upgrade steps, see the [Pylon migration guide](/integrations/sources/pylon-migrations#upgrading-to-100).
+
 ### Upgrading to 0.0.8
 
 Connector version 0.0.8 switches the Issues stream from `GET /issues` (cursored on `created_at`) to `POST /issues/search` (cursored on `updated_at`) so that incremental syncs capture updates to existing issues, not just newly created ones. Connections upgrading from any earlier version automatically run a one-time state migration that rewinds the issues cursor and re-pulls history starting from:
@@ -124,7 +128,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 1.0.0 | 2026-11-11 | [92021](https://github.com/airbytehq/airbyte/pull/92021) | Type `tags` as strings and 8 timestamp fields as `date-time` |
+| 1.0.0 | 2026-11-12 | [92021](https://github.com/airbytehq/airbyte/pull/92021) | Type `tags` as strings and 8 timestamp fields as `date-time` |
 | 0.1.0 | 2026-11-10 | [91827](https://github.com/airbytehq/airbyte/pull/91827) | Add Audit Logs, Macro Groups, Surveys, and Training Data streams, with an Admin-role error message for Audit Logs. |
 | 0.0.32 | 2026-11-10 | [91678](https://github.com/airbytehq/airbyte/pull/91678) | Update dependencies |
 | 0.0.31 | 2026-11-06 | [91022](https://github.com/airbytehq/airbyte/pull/91022) | Add EU region support, documented fields, deactivated users, inclusive issue windows, parent IDs on child streams, actionable errors, request budgets, and configurable concurrency. |
