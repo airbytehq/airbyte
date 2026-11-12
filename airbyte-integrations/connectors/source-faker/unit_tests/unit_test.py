@@ -304,3 +304,29 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+@pytest.mark.parametrize("count,records_per_slice", [(10, 5), (10, 3), (10, 10)])
+def test_read_users_after_completed_sync_emits_all_users_again(count, records_per_slice):
+    from airbyte_cdk.models import AirbyteStateMessage
+
+    source = SourceFaker()
+    config = {"count": count, "records_per_slice": records_per_slice, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    expected_ids = list(range(1, count + 1))
+
+    state: list = []
+    for _ in range(3):
+        messages = list(source.read(logger, config, catalog, state))
+        records = [m.record.data for m in messages if m.type is Type.RECORD]
+        state_messages = [m.state for m in messages if m.type is Type.STATE]
+
+        assert [record["id"] for record in records] == expected_ids
+        final_state = state_messages[-1].stream.stream_state.__dict__
+        assert final_state["updated_at"] == records[-1]["updated_at"]
+        state = [AirbyteStateMessage(type=state_messages[-1].type, stream=state_messages[-1].stream)]
