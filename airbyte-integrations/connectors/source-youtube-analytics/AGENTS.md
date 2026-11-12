@@ -2,6 +2,12 @@
 
 # source-youtube-analytics: Unique Connector Behaviors
 
+## Connection Check Uses a Read-Only Jobs Listing
+
+`check` uses the full-refresh `reporting_jobs` stream, which lists jobs through `ContentOwnerRequester` without filtering report types or creating jobs. An empty jobs listing still has a single partition, so valid credentials pass even before any jobs or reports exist. The shared requester preserves content-owner context and existing authentication/permission error messages.
+
+The retired `channel_annotations_a1` report type can have no reports and thus no download slices. Even supported report streams have no download partitions until YouTube produces their first report, so they are unsuitable for checking fresh accounts. Reporting jobs are created by selected report streams during reads, not during connection checks.
+
 ## 1. Three-Level Job → Report → CSV Download Model
 
 Each report stream starts by listing jobs through the YouTube Reporting API's `/v1/jobs` endpoint. `JobRequester` filters the response to the job whose `reportTypeId` matches that stream. If none exists, it creates a reporting job named `Airbyte reporting job` and lists jobs again. This means a source read can write to YouTube by creating a job.

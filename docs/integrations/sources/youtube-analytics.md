@@ -66,6 +66,7 @@ The YouTube Analytics source connector supports the following [sync modes](https
 
 ## Supported Streams
 
+- [reporting_jobs](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs) - Reporting job metadata, available in Full Refresh mode only. Listing jobs does not create them.
 - [channel_annotations_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-annotations)
 - [channel_basic_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-user-activity)
 - [channel_cards_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-cards)
@@ -131,7 +132,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 - **No rows on the first sync.** YouTube may not have generated reports for newly created reporting jobs yet. Reports are typically available within 48 hours.
 - **Skipped report files.** If YouTube lists a report file but it can no longer be downloaded (HTTP 404), most likely because it passed its [retention period](#report-availability), the connector skips that file, records a message in the sync logs, and the rest of the sync continues. The rows in that file are not synced.
 - **Refresh token expires after 7 days.** This applies to External OAuth apps in **Testing** status, even when the channel's Google account is a test user. For ongoing syncs, move the app to **In production** according to [Google's publishing requirements](https://support.google.com/cloud/answer/15549945), then generate a new refresh token and update the source. While the app remains in **Testing**, generate a new refresh token whenever it expires.
-- **Content-owner reports are not available as streams.** The available streams are channel and playlist reports. To retrieve YouTube Data API information, use the separate [YouTube Data connector](/integrations/sources/youtube-data).
+- **Content-owner reports are not available as streams.** The available report streams are channel and playlist reports; `reporting_jobs` provides job metadata only. To retrieve YouTube Data API information, use the separate [YouTube Data connector](/integrations/sources/youtube-data).
 
 ## Changelog
 
@@ -140,6 +141,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 2.1.0 | 2026-11-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix setup check failing on the retired `channel_annotations_a1` report; check now lists reporting jobs, exposed as the new `reporting_jobs` stream |
 | 2.0.3 | 2026-11-05 | [91124](https://github.com/airbytehq/airbyte/pull/91124) | Promote the connector to Certified (Generally Available) support |
 | 2.0.2 | 2026-11-04 | [91024](https://github.com/airbytehq/airbyte/pull/91024) | Replace the icon with YouTube's official icon from brand.youtube and remove the added ANALYTICS wordmark |
 | 2.0.1 | 2026-11-04 | [90433](https://github.com/airbytehq/airbyte/pull/90433) | Merge the report download error handlers into one handler; no behaviour change |
