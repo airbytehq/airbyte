@@ -87,11 +87,7 @@ def test_check_reports_why_the_account_cannot_use_the_reporting_api(config, stat
 def test_report_types_read_follows_next_page_token(config):
     pages = {
         None: {"reportTypes": [{"id": "channel_basic_a3", "name": "User activity"}], "nextPageToken": "page-2"},
-        "page-2": {
-            "reportTypes": [
-                {"id": "playlist_basic_a2", "name": "Playlist user activity", "deprecateTime": "2027-01-01T00:00:00Z"}
-            ]
-        },
+        "page-2": {"reportTypes": [{"id": "playlist_basic_a2", "name": "Playlist user activity", "deprecateTime": "2027-01-01T00:00:00Z"}]},
     }
     with requests_mock.Mocker() as mocker:
         mocker.post(_TOKEN_URL, json={"access_token": "token", "expires_in": 3600})
