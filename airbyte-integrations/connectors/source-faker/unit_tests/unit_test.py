@@ -284,6 +284,38 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+@pytest.mark.parametrize("records_per_slice", [5, 4, 10], ids=["slice_divides_count", "partial_last_slice", "single_slice"])
+def test_read_users_after_completed_sync_starts_new_pass(records_per_slice):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateMessageSerializer
+
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": records_per_slice, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+        "primary_key": [["id"]],
+        "cursor_field": ["updated_at"],
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    def sync(state):
+        messages = list(source.read(logger, config, catalog, state))
+        record_ids = [message.record.data["id"] for message in messages if message.type is Type.RECORD]
+        final_state = [message.state for message in messages if message.type is Type.STATE][-1]
+        return record_ids, final_state
+
+    first_ids, first_state = sync([])
+    assert first_ids == list(range(1, 11))
+    assert first_state.stream.stream_state.loop_offset == 10
+
+    # The platform hands the final state of the completed sync back on the next sync.
+    persisted_state = [AirbyteStateMessageSerializer.load(AirbyteStateMessageSerializer.dump(first_state))]
+    second_ids, second_state = sync(persisted_state)
+    assert second_ids == list(range(1, 11))
+    assert second_state.stream.stream_state.loop_offset == 10
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
