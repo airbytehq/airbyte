@@ -71,6 +71,33 @@ data class FieldTypeMismatch(
         "Field '$fieldName' in stream '$streamID' has type $actual in source but schema expects $expected. Refresh the source schema to continue syncing this stream."
 }
 
+/** The type in the source no longer matches the field's `airbyte_source_type`. */
+data class FieldSourceTypeMismatch(
+    override val streamID: StreamIdentifier,
+    val fieldName: String,
+    val expectedSourceType: String,
+    val actual: AirbyteSchemaType,
+) : CatalogValidationFailure {
+    override val message =
+        "Field '$fieldName' in stream '$streamID' has type $actual in source but schema expects source type $expectedSourceType. Refresh the source schema to continue syncing this stream."
+}
+
+/** The field's values can't be emitted with its configured type. */
+data class UnsupportedFieldConversion(
+    override val streamID: StreamIdentifier,
+    val fieldName: String,
+    val actual: AirbyteSchemaType,
+    val configured: AirbyteSchemaType,
+    val isPrimaryKeyOrCursor: Boolean = false,
+) : CatalogValidationFailure {
+    override val message =
+        if (isPrimaryKeyOrCursor) {
+            "Field '$fieldName' in stream '$streamID' has type $actual in source and can't be synced as $configured because it's part of the primary key or cursor. Refresh the source schema to continue syncing this stream."
+        } else {
+            "Field '$fieldName' in stream '$streamID' has type $actual in source, which this connector can't sync as $configured. Refresh the source schema to continue syncing this stream."
+        }
+}
+
 data class InvalidPrimaryKey(
     override val streamID: StreamIdentifier,
     val primaryKey: List<String>,

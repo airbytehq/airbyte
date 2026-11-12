@@ -26,6 +26,7 @@ import io.airbyte.cdk.output.DataChannelFormat.PROTOBUF
 import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.FieldNotFound
+import io.airbyte.cdk.output.FieldSourceTypeMismatch
 import io.airbyte.cdk.output.FieldTypeMismatch
 import io.airbyte.cdk.output.InvalidIncrementalSyncMode
 import io.airbyte.cdk.output.InvalidPrimaryKey
@@ -33,12 +34,14 @@ import io.airbyte.cdk.output.MultipleStreamsFound
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.StreamHasNoFields
 import io.airbyte.cdk.output.StreamNotFound
+import io.airbyte.cdk.output.UnsupportedFieldConversion
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.SyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
@@ -235,6 +238,7 @@ class StateManagerFactory(
             }
         val actualDataColumns: Map<String, EmittedField> =
             metadataQuerier.fields(streamID).associateBy { it.id }
+        val fieldConversions = mutableMapOf<String, FieldConversion>()
 
         fun dataColumnOrNull(id: String): EmittedField? {
             if (MetaField.isMetaFieldID(id)) {
@@ -249,6 +253,36 @@ class StateManagerFactory(
             }
             val expectedAirbyteSchemaType: AirbyteSchemaType = expectedSchema[id] ?: return null
             val actualAirbyteSchemaType: AirbyteSchemaType = actualColumn.type.airbyteSchemaType
+            val sourceTypeNode: JsonNode? =
+                jsonSchemaProperties[id]?.get(FieldConversion.AIRBYTE_SOURCE_TYPE)
+            if (sourceTypeNode != null && !sourceTypeNode.isNull) {
+                val sourceType: String =
+                    if (sourceTypeNode.isTextual) sourceTypeNode.textValue()
+                    else sourceTypeNode.toString()
+                if (!FieldConversion.sourceTypeMatches(sourceType, actualAirbyteSchemaType)) {
+                    handler.accept(
+                        FieldSourceTypeMismatch(streamID, id, sourceType, actualAirbyteSchemaType),
+                    )
+                    return null
+                }
+                if (expectedAirbyteSchemaType != actualAirbyteSchemaType) {
+                    val conversion: FieldConversion =
+                        FieldConversion.of(actualAirbyteSchemaType, expectedAirbyteSchemaType)
+                            ?: run {
+                                handler.accept(
+                                    UnsupportedFieldConversion(
+                                        streamID,
+                                        id,
+                                        actualAirbyteSchemaType,
+                                        expectedAirbyteSchemaType,
+                                    ),
+                                )
+                                return null
+                            }
+                    fieldConversions[id] = conversion
+                }
+                return actualColumn
+            }
             if (expectedAirbyteSchemaType != actualAirbyteSchemaType) {
                 handler.accept(
                     FieldTypeMismatch(
@@ -312,12 +346,39 @@ class StateManagerFactory(
                     }
                 else -> ConfiguredSyncMode.FULL_REFRESH
             }
+        // The platform never converts a primary key the destination dedupes on, nor an incremental
+        // cursor: the conversion would change how their values compare.
+        val keyColumnIDs: List<String> = buildList {
+            if (configuredStream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
+                configuredPrimaryKey?.forEach { add(it.id) }
+            }
+            if (configuredSyncMode == ConfiguredSyncMode.INCREMENTAL) {
+                configuredCursor?.let { add(it.id) }
+            }
+        }
+        val convertedKeyColumnIDs: List<String> = keyColumnIDs.filter { it in fieldConversions }
+        if (convertedKeyColumnIDs.isNotEmpty()) {
+            for (id in convertedKeyColumnIDs) {
+                val conversion: FieldConversion = fieldConversions.getValue(id)
+                handler.accept(
+                    UnsupportedFieldConversion(
+                        streamID,
+                        id,
+                        conversion.from,
+                        conversion.to,
+                        isPrimaryKeyOrCursor = true,
+                    ),
+                )
+            }
+            return null
+        }
         return Stream(
             streamID,
             streamFields.toSet(),
             configuredSyncMode,
             configuredPrimaryKey,
             configuredCursor,
+            fieldConversions.toMap(),
         )
     }
 

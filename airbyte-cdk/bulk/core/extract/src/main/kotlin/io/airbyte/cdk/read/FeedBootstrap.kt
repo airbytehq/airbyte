@@ -118,17 +118,18 @@ sealed class FeedBootstrap<T : Feed>(
             recordData: NativeRecordPayload,
             changes: Map<EmittedField, FieldValueChange>?,
         ) {
-            if (changes.isNullOrEmpty()) {
-                acceptWithoutChanges(recordData.toJson())
+            val (outputData, outputChanges) = stream.convertFields(recordData, changes)
+            if (outputChanges.isNullOrEmpty()) {
+                acceptWithoutChanges(outputData.toJson())
             } else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
-                    changes.map { (field: EmittedField, fieldValueChange: FieldValueChange) ->
+                    outputChanges.map { (field: EmittedField, fieldValueChange: FieldValueChange) ->
                         AirbyteRecordMessageMetaChange()
                             .withField(field.id)
                             .withChange(fieldValueChange.protocolChange())
                             .withReason(fieldValueChange.protocolReason())
                     }
-                acceptWithChanges(recordData.toJson(), protocolChanges)
+                acceptWithChanges(outputData.toJson(), protocolChanges)
             }
         }
 
@@ -238,15 +239,16 @@ sealed class FeedBootstrap<T : Feed>(
             // otherwise a field absent from this record keeps the previous record's value. The same
             // goes for the meta changes set by acceptWithChanges on the previous record.
             defaultRecordData.clearData().addAllData(defaultDataValues).clearMeta()
-            if (changes.isNullOrEmpty()) {
+            val (outputData, outputChanges) = stream.convertFields(recordData, changes)
+            if (outputChanges.isNullOrEmpty()) {
                 acceptWithoutChanges(
-                    recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder),
+                    outputData.toProtobuf(stream.outputSchema, defaultRecordData, valueVBuilder),
                 )
             } else {
                 val rm = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
                 val c =
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
-                changes.forEach { (field: EmittedField, fieldValueChange: FieldValueChange) ->
+                outputChanges.forEach { (field: EmittedField, fieldValueChange: FieldValueChange) ->
                     c.clear()
                         .setField(field.id)
                         .setChange(fieldValueChange.protobufChange())
@@ -254,7 +256,7 @@ sealed class FeedBootstrap<T : Feed>(
                     rm.addChanges(c)
                 }
                 acceptWithChanges(
-                    recordData.toProtobuf(stream.schema, defaultRecordData, valueVBuilder),
+                    outputData.toProtobuf(stream.outputSchema, defaultRecordData, valueVBuilder),
                     rm,
                 )
             }
