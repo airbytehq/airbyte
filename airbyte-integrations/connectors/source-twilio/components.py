@@ -83,6 +83,73 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioMessagesStateMigration(StateMigration):
+    """
+    Move `messages` state from per-partition cursors to a single global `date_sent` cursor.
+
+    Per-partition cursors take precedence over the global `state` fallback in the CDK, so a stale
+    partition cursor made the stream re-read years of messages even when the global cursor was recent.
+    The stream now uses `global_substream_cursor`, and this migration drops the per-partition cursors.
+    The new global cursor is the existing global cursor when present. Otherwise it is the earliest
+    partition cursor, so no account skips data it has not read yet.
+
+    Initial:
+      {
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2024-01-01T00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2026-05-20T00:00:00Z" },
+        "use_global_cursor": false,
+        "lookback_window": 0
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": { "date_sent": "2026-05-20T00:00:00Z" },
+        "lookback_window": 0
+      }
+    """
+
+    CURSOR_FIELD = "date_sent"
+    _DATETIME_FORMATS = ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d %H:%M:%SZ", "%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%d")
+
+    @classmethod
+    def _parse(cls, value: Any) -> datetime | None:
+        if not isinstance(value, str):
+            return None
+        for datetime_format in cls._DATETIME_FORMATS:
+            try:
+                parsed = datetime.strptime(value, datetime_format)
+            except ValueError:
+                continue
+            return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+        return None
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        global_cursor = (stream_state.get("state") or {}).get(self.CURSOR_FIELD)
+        if self._parse(global_cursor) is None:
+            partition_cursors = [
+                (parsed, value)
+                for value in ((state.get("cursor") or {}).get(self.CURSOR_FIELD) for state in stream_state.get("states", []))
+                if (parsed := self._parse(value)) is not None
+            ]
+            global_cursor = min(partition_cursors)[1] if partition_cursors else None
+
+        migrated_state: dict[str, Any] = {"use_global_cursor": True}
+        if global_cursor is not None:
+            migrated_state["state"] = {self.CURSOR_FIELD: global_cursor}
+        if "lookback_window" in stream_state:
+            migrated_state["lookback_window"] = stream_state["lookback_window"]
+        return migrated_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and ("states" in stream_state or stream_state.get("use_global_cursor") is False)
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
