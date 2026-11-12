@@ -24,12 +24,18 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
 from .request_builder import RequestBuilder, get_account_request
-from .response_builder import build_response, error_reduce_amount_of_data_response, get_account_response
+from .response_builder import (
+    build_response,
+    error_invalid_parameter_response,
+    error_reduce_amount_of_data_response,
+    get_account_response,
+)
 from .utils import config, encode_request_body, read_output
 
 
@@ -531,3 +537,70 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_sync_interrupted_while_rereading_lookback_window_then_cursor_does_not_move_backwards(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        A sync that starts from saved state re-reads the lookback window before the cursor. If it is interrupted
+        there, the emitted cursor must stay at the saved value: a cursor that moves back to the re-read day makes
+        the next sync start one more lookback window earlier, so every interrupted sync widens the re-read window.
+        """
+        account_id = "123123123"
+        lookback_window = 2
+        saved_cursor = NOW - timedelta(days=2)  # 2023-01-08
+        # days the connector must read: the lookback window before the saved cursor, then up to the end date
+        days = [NOW - timedelta(days=offset) for offset in range(4, -1, -1)]  # 2023-01-06 .. 2023-01-10
+        report_run_ids = [f"157186006001950{index}" for index in range(len(days))]
+        job_ids = [f"104993737960160{index}" for index in range(len(days))]
+        interrupted_job_index = 1  # 2023-01-07, the second day of the lookback window
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id in zip(days, report_run_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids, account_id=account_id))
+        insights_page = _insights_response().with_record(_ads_insights_action_product_id_record()).build()
+        for index, job_id in enumerate(job_ids):
+            http_mocker.get(
+                _get_insights_request(job_id).build(),
+                # the first sync fails while downloading this job, the second sync downloads it
+                [error_invalid_parameter_response(), insights_page] if index == interrupted_job_index else insights_page,
+            )
+
+        config_ = (
+            config()
+            .with_account_ids([account_id])
+            .with_start_date(NOW - timedelta(days=9))
+            .with_end_date(NOW)
+            .with_insights_lookback_window(lookback_window)
+        )
+        saved_state = (
+            StateBuilder().with_stream_state(_STREAM_NAME, {account_id: {_CURSOR_FIELD: saved_cursor.strftime(DATE_FORMAT)}}).build()
+        )
+
+        interrupted_output = self._read(config_, state=saved_state, expecting_exception=True)
+
+        assert interrupted_output.errors[0].trace.error.message == "Error code 100: Invalid parameter."
+        assert len(interrupted_output.records) == 1
+        interrupted_state = AirbyteStreamStateSerializer.dump(interrupted_output.most_recent_state)["stream_state"]
+        assert interrupted_state[account_id] == {
+            _CURSOR_FIELD: saved_cursor.strftime(DATE_FORMAT),
+            "slices": [],
+        }
+
+        # HttpMocker rejects any request it has no matcher for, so a second sync that asked for a day before
+        # 2023-01-06 (a job start outside the five days above) would fail here.
+        resumed_output = self._read(config_, state=[interrupted_output.state_messages[-1].state])
+
+        assert resumed_output.errors == []
+        assert len(resumed_output.records) == len(days)
+        resumed_state = AirbyteStreamStateSerializer.dump(resumed_output.most_recent_state)["stream_state"]
+        assert resumed_state[account_id] == {_CURSOR_FIELD: NOW.strftime(DATE_FORMAT), "slices": []}

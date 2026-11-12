@@ -420,7 +420,11 @@ class AdsInsights(FBMarketingIncrementalStream):
                 break
             self._completed_slices[account_id].remove(ts_start)
             if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
+                # A sync that starts from saved state re-reads the lookback window, so the first slices it completes are
+                # older than the saved cursor. The cursor must not follow them back: if the sync is interrupted there,
+                # the next one would start one more lookback window earlier, and keep widening on every interruption.
+                saved_cursor = self._cursor_values.get(account_id)
+                self._cursor_values[account_id] = max(saved_cursor, ts_start) if saved_cursor else ts_start
             else:
                 self._cursor_values = {account_id: ts_start}
 
