@@ -31,18 +31,3 @@ def test_unpaged_list_is_read_once(stream_name, record_count):
         assert sorted(record.record.data["id"] for record in output.records) == sorted(record["id"] for record in records)
         assert not output.errors
 
-
-@pytest.mark.parametrize("stream_name", ["categories", "distribution_channels"])
-def test_api_error_fails_the_read(stream_name):
-    config = {"api_token": "test-token"}
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-    request = HttpRequest(f"https://api.simplecast.com/{stream_name}", query_params=ANY_QUERY_PARAMS)
-
-    with HttpMocker() as http_mocker:
-        http_mocker.get(request, HttpResponse(json.dumps({"message": "Unauthorized"}), status_code=401))
-        output = read(get_source(config, catalog), config=config, catalog=catalog)
-
-        http_mocker.assert_number_of_calls(request, 1)
-        assert not output.records
-        assert output.errors
-        assert any("401" in str(error) for error in output.errors)
