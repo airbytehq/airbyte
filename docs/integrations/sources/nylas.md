@@ -41,7 +41,7 @@ If Nylas returns HTTP 404 when reading a calendar's events, the connector skips 
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.78-rc.1 | 2026-11-12 | | Fixed events syncs failing when a calendar returns HTTP 404. |
+| 0.0.78-rc.1 | 2026-11-12 | [92330](https://github.com/airbytehq/airbyte/pull/92330) | Fixed events syncs failing when a calendar returns HTTP 404. |
 | 0.0.77 | 2026-11-10 | [91646](https://github.com/airbytehq/airbyte/pull/91646) | Update dependencies |
 | 0.0.76 | 2026-11-03 | [90678](https://github.com/airbytehq/airbyte/pull/90678) | Update dependencies |
 | 0.0.75 | 2026-10-27 | [90023](https://github.com/airbytehq/airbyte/pull/90023) | Update dependencies |
