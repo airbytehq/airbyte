@@ -316,6 +316,10 @@ If you synced one of these streams on an earlier connector version and suspect m
 
 Some payment methods, such as offsite or redirect gateways like Klarna, create the transaction a few minutes before Shopify creates the order. Starting in version 4.2.6, the connector emits these transactions when their order is first synced. Such a transaction can be emitted again on following syncs until a newer transaction moves the cursor past the order's creation time, so destinations without deduplication, such as **Incremental | Append**, may see duplicate rows. Upgrading doesn't backfill transactions that earlier versions skipped, so refresh the `transactions` stream or clear its state to recover them.
 
+#### Transaction status updates
+
+A transaction's `status` can change after Shopify creates it, for example when a refund moves from `PENDING` to `SUCCESS`. Starting in version 4.3.7, when you use the default GraphQL API for `transactions`, the connector emits every transaction of an order that was updated since the last sync, so these status changes reach your destination even though the transaction's `created_at` is older than the saved state. Each update to an order re-emits all of its transactions. Use **Incremental | Append + Deduped** to keep only the latest version of each transaction. Upgrading doesn't backfill status changes that earlier versions skipped, so refresh the `transactions` stream to recover them. The REST API option, which you select by enabling **Add `user_id` to Transactions (slower)**, doesn't include this change.
+
 #### Product category values
 
 The `category` field on the `products` stream comes from Shopify's Standard Product Taxonomy. Shopify updates the taxonomy several times a year and can rename a category or move it in the tree without changing its ID. Because `products` syncs incrementally on `updated_at`, a product is only re-read when it changes, so its `category` values can lag behind the current taxonomy. Use `category.id` as the stable identifier, and refresh the `products` stream to get current values.
@@ -374,6 +378,7 @@ If the stream still collides at 1,000,000, or if raising the value does not chan
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 4.3.7 | 2026-11-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Emit status updates of existing `transactions`, such as refunds moving from `PENDING` to `SUCCESS`, when their order is updated |
 | 4.3.6 | 2026-11-10 | [91709](https://github.com/airbytehq/airbyte/pull/91709) | Update dependencies |
 | 4.3.5 | 2026-11-03 | [90900](https://github.com/airbytehq/airbyte/pull/90900) | Require Python 3.11 or newer, retaining support through Python 3.13 |
 | 4.3.3 | 2026-11-03 | [90723](https://github.com/airbytehq/airbyte/pull/90723) | Update dependencies |

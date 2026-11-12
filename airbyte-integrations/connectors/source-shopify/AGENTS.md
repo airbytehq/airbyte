@@ -24,6 +24,10 @@ Don't try to make these streams incremental per code without new Shopify API sup
 
 An opt-in `discount_codes_sync_new_codes_only` option that tracked the highest code ID per discount was prototyped in #88422 and dropped for these reasons.
 
+### `transactions` (GraphQL Bulk) emits records older than the `created_at` state
+
+`TransactionsGraphql` uses `created_at` as its cursor, but the Bulk query selects parent `orders` by `updated_at`. `should_emit_record_older_than_state` also emits a transaction whose `created_at` is older than the state when its order's `createdAt` (offsite payments created before their order) or `updatedAt` (status changes, e.g. refunds moving from `PENDING` to `SUCCESS`) is at or after the state. `order_created_at` and `order_updated_at` are only used for this comparison and are dropped from the output. Don't drop the `order_updated_at` check: without it, status updates of existing transactions are silently missed. The REST `Transactions` stream (`fetch_transactions_user_id: true`) doesn't do this yet.
+
 ### Future incremental stream candidates
 
 - **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
