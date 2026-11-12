@@ -294,6 +294,38 @@ def test_expired_refresh_token_tells_the_user_to_re_authenticate(config):
     assert "Refresh token is invalid or expired" in status.message
 
 
+def test_check_reads_channel_basic_a3_and_never_touches_the_retired_annotations_report(config):
+    """YouTube no longer generates `channel_annotations_a1` reports, so its job lists no files.
+
+    `check` used to read that stream and failed with "no stream slices were found" even when the
+    account's current reports were available. It must read `channel_basic_a3` instead, and must not
+    create a job for the retired report type.
+    """
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        mocker.get(
+            f"{_API}/jobs",
+            json={
+                "jobs": [
+                    {"id": "annotations-job", "reportTypeId": "channel_annotations_a1"},
+                    {"id": _JOB_ID, "reportTypeId": "channel_basic_a3"},
+                ]
+            },
+        )
+        create_job = mocker.post(f"{_API}/jobs", json={"id": "unexpected-job"})
+        mocker.get(f"{_API}/jobs/annotations-job/reports", json={})
+        mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-01T00:00:00Z")]})
+        mocker.get(_download_url("r1"), text="date,channel_id,views\n20261001,channel-1,3\n")
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+        requested_paths = [request.path for request in mocker.request_history if request.method == "GET"]
+
+    assert status.status == Status.SUCCEEDED, status.message
+    assert not create_job.called
+    assert "/v1/jobs/annotations-job/reports" not in requested_paths
+    assert f"/v1/jobs/{_JOB_ID}/reports" in requested_paths
+
+
 @pytest.mark.parametrize("stream", _EMPTY_STREAMS)
 def test_empty_stream_with_header_only_report_reads_cleanly(config, stream):
     """These streams have no rows for the CI channel; a header-only report file yields no records and no error."""
