@@ -39,9 +39,7 @@ def _sla_policy(policy_id: Any, name: str) -> dict:
         "active": True,
         "is_default": False,
         "position": 1,
-        "sla_target": {
-            "priority_1": {"respond_within": 3600, "resolve_within": 7200, "business_hours": True, "escalation_enabled": True}
-        },
+        "sla_target": {"priority_1": {"respond_within": 3600, "resolve_within": 7200, "business_hours": True, "escalation_enabled": True}},
         "applicable_to": {"group_ids": [67000353915]},
         "escalation": {"response": {"escalation_time": 0, "agent_ids": [67001234567]}},
     }
