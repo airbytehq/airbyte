@@ -36,6 +36,15 @@
         "type": "boolean",
         "default": true
       },
+      "products_count": {
+        "title": "Products Count",
+        "description": "How many products to emit from the bundled catalog of 100. Purchases still reference the full catalog.",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 100,
+        "order": 5
+      },
       "parallelism": {
         "title": "Parallelism",
         "description": "How many parallel workers should we use to generate fake data?  Choose a value equal to the number of CPUs you will allocate to this source.",
