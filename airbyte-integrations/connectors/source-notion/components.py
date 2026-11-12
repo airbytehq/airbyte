@@ -6,10 +6,12 @@ from typing import Any, Iterable, Mapping, Optional
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
+CURSOR_FIELD = "last_edited_time"
 logger = logging.getLogger("airbyte")
 
 
@@ -21,6 +23,9 @@ class BlocksRetriever(SimpleRetriever):
     According to that fact that block's entity may have children entities that stream also need to retrieve
     BlocksRetriever calls read_records when received record.has_children is True.
 
+    Incremental filtering happens here rather than in the record selector: a block whose children were edited does
+    not necessarily have a newer `last_edited_time` itself, so every block is traversed and only blocks edited at or
+    after the start of the cursor slice are emitted.
     """
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
@@ -47,7 +52,18 @@ class BlocksRetriever(SimpleRetriever):
                 yield from self.read_records(records_schema, child_stream_slice)
                 self.current_block_depth -= 1
 
+            if not self._is_edited_since_slice_start(stream_data, stream_slice):
+                continue
+
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
             yield stream_data
+
+    @staticmethod
+    def _is_edited_since_slice_start(stream_data: StreamData, stream_slice: Optional[StreamSlice]) -> bool:
+        slice_start = stream_slice.cursor_slice.get("start_time") if stream_slice else None
+        record_cursor_value = stream_data.data.get(CURSOR_FIELD)
+        if not slice_start or not record_cursor_value:
+            return True
+        return ab_datetime_parse(record_cursor_value) >= ab_datetime_parse(slice_start)
