@@ -176,7 +176,15 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        """
+        Only seed the parent `channel_messages` state when it is missing (legacy threads state).
+        State emitted by the connector already carries per-channel `channel_messages` cursors under
+        `parent_state`; overwriting them with a single derived cursor makes every resumed sync
+        re-read `conversations.history` for all channels from that derived value (often `start_date`).
+        """
+        if not stream_state:
+            return False
+        return not (stream_state.get("parent_state") or {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
