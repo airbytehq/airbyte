@@ -11,6 +11,7 @@ from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 
 class MockLogger:
@@ -259,6 +260,26 @@ def test_read_with_seed():
     records = [row for row in iterator if row.type is Type.RECORD]
     assert records[0].record.data["occupation"] == "Sheriff Principal"
     assert records[0].record.data["email"] == "alleged2069+1@example.com"
+
+
+@pytest.mark.parametrize("count", [0, 1000])
+def test_read_users_consecutive_syncs(count):
+    config = {"count": count, "seed": -1, "records_per_slice": 1000, "always_updated": True, "parallelism": 4}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    first_sync = read(SourceFaker(), config, catalog)
+    assert len(first_sync.records) == count
+    assert [row.record.data["id"] for row in first_sync.records] == list(range(1, count + 1))
+
+    state = [row.state for row in first_sync.state_messages[-1:]]
+    second_sync = read(SourceFaker(), config, catalog, state=state)
+    assert len(second_sync.records) == count
+    assert [row.record.data["id"] for row in second_sync.records] == list(range(1, count + 1))
 
 
 def test_read_users_resumes_from_checkpoint():
