@@ -3,6 +3,10 @@ name: PR cannot modify both bulk CDK and connectors
 on:
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   enforce-pr-structure:
     name: Enforce PR structure

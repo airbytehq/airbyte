@@ -40,6 +40,11 @@ on:
         type: boolean
         default: true
 
+# The job token logs in to ghcr.io to push the base image.
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-publish-base-image:
     name: Build and Publish ${{ github.event.inputs.connector-type }} Base Image

@@ -123,6 +123,8 @@ env:
 
 jobs:
   publish_options:
+    permissions:
+      contents: read
     name: Resolve options for connector publishing
     runs-on: ubuntu-24.04
     steps:
@@ -787,6 +789,8 @@ jobs:
       PUBLISH_ON_MERGE_SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
   notify-failure-slack-channel:
+    permissions:
+      contents: read
     name: "Notify Slack Channel on Publish Failures"
     runs-on: ubuntu-24.04
     needs:

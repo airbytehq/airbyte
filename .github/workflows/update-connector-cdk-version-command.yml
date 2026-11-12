@@ -24,6 +24,12 @@ on:
         description: "Ref (Ignored)"
         required: false
 
+# Pushes the version bump with the job token and comments on the pull request.
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   update-connector-cdk-version:
     name: Update Connector CDK Version

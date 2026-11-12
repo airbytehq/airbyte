@@ -26,6 +26,7 @@ on:
 
 jobs:
   get-context:
+    permissions: {}
     name: "Get Context"
     runs-on: ubuntu-24.04
     steps:
@@ -43,6 +44,9 @@ jobs:
       skip: ${{ steps.set-skip-flag.outputs.skip || 'false' }}
 
   post-start-comment:
+    permissions:
+      issues: write
+      pull-requests: write
     name: "Post Start Comment"
     needs: get-context
     runs-on: ubuntu-24.04
@@ -85,6 +89,9 @@ jobs:
       OCTAVIA_BOT_PRIVATE_KEY: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
   post-end-comment:
+    permissions:
+      issues: write
+      pull-requests: write
     name: "Post Completion Comment and Status"
     needs:
       - get-context

@@ -28,6 +28,10 @@ on:
 
 jobs:
   init-workflow:
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     name: "Initialize Workflow"
     runs-on: ubuntu-24.04
     steps:
@@ -92,6 +96,9 @@ jobs:
       connector: ${{ matrix.connector }}
 
   post-end-comment:
+    permissions:
+      issues: write
+      pull-requests: write
     name: "Post Completion Comment"
     needs: [init-workflow, call-connector-ci-build]
     runs-on: ubuntu-24.04

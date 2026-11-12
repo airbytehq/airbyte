@@ -27,6 +27,12 @@ concurrency:
   # Cancel any previous runs on the same branch if they are still in progress
   cancel-in-progress: true
 
+# The fix is pushed with the personal token of the checkout. The job token reads the pull request and comments on it.
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   format-fix:
     name: "Run pre-commit fix"

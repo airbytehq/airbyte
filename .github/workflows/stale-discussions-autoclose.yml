@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "0 3 * * *"
 
+# The discussions are closed with the GitHub App token, the job token is not used.
+permissions: {}
+
 jobs:
   close-stale-discussions:
     runs-on: ubuntu-24.04

@@ -2,6 +2,12 @@ name: Slash Command Dispatch
 on:
   issue_comment:
     types: [created]
+
+# The dispatch uses the GitHub App token. The job token only posts the help comment and its reaction.
+permissions:
+  issues: write
+  pull-requests: write
+
 jobs:
   slashCommandDispatch:
     name: Dispatch

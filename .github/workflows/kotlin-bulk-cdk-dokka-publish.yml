@@ -21,6 +21,9 @@ concurrency:
 
 jobs:
   detect-changes:
+    permissions:
+      contents: read
+      pull-requests: read
     name: Detect Kotlin Bulk CDK Changes
     runs-on: ubuntu-24.04
     steps:
@@ -51,6 +54,8 @@ jobs:
       changed: ${{ steps.set-changed.outputs.changed || steps.detect-changes.outputs.bulk-cdk }}
 
   build-docs:
+    permissions:
+      contents: read
     name: Build Kotlin Bulk CDK Documentation
     runs-on: ubuntu-24.04
     needs: detect-changes

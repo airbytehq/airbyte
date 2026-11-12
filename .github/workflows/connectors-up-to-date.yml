@@ -25,6 +25,9 @@ on:
 env:
   SENTRY_ENVIRONMENT: gitops-prod
 
+permissions:
+  contents: read
+
 jobs:
   generate_matrix:
     name: Generate matrix

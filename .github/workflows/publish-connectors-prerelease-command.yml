@@ -46,6 +46,10 @@ concurrency:
 
 jobs:
   init:
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     name: Initialize Pre-release Publish
     runs-on: ubuntu-24.04
     outputs:
@@ -168,6 +172,9 @@ jobs:
       SLACK_AIRBYTE_TEAM_READ_USERS: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
 
   post-completion:
+    permissions:
+      issues: write
+      pull-requests: write
     name: Post Completion Status
     needs: [init, publish]
     runs-on: ubuntu-24.04

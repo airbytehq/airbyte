@@ -8,6 +8,9 @@ on:
 
 jobs:
   detect-changes:
+    permissions:
+      contents: read
+      pull-requests: read
     name: Detect Changes
     runs-on: ubuntu-24.04
     steps:
@@ -52,6 +55,8 @@ jobs:
       changelog-only: ${{ steps.changelog-only.outputs.changelog-only }}
 
   build-docs:
+    permissions:
+      contents: read
     name: Build Airbyte Docs
     runs-on: ubuntu-24.04
     needs: detect-changes
