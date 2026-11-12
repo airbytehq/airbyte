@@ -24,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -531,3 +532,47 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_state_when_lookback_window_is_reread_then_emitted_cursor_never_regresses(self, http_mocker: HttpMocker) -> None:
+        cursor_date = ab_datetime_parse("2023-01-05T00:00:00Z")
+        lookback_days = 2
+        reread_dates = [cursor_date - timedelta(days=n) for n in range(lookback_days, -1, -1)]
+        report_run_ids = [f"157186006001950{i}" for i in range(len(reread_dates))]
+        job_ids = [f"104993737960160{i}" for i in range(len(reread_dates))]
+        stale_slice_below_cursor = (cursor_date - timedelta(days=3)).strftime(DATE_FORMAT)
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {ACCOUNT_ID: {_CURSOR_FIELD: cursor_date.strftime(DATE_FORMAT), "slices": [stale_slice_below_cursor]}, "time_increment": 1},
+            )
+            .build()
+        )
+
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        for day, report_run_id in zip(reread_dates, report_run_ids):
+            http_mocker.post(_job_start_request(since=day, until=day).build(), _job_start_response(report_run_id))
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids))
+        for job_id in job_ids:
+            http_mocker.get(
+                _get_insights_request(job_id).build(),
+                _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+            )
+
+        output = self._read(
+            config()
+            .with_start_date(ab_datetime_parse(START_DATE))
+            .with_end_date(cursor_date.replace(hour=23, minute=59, second=59))
+            .with_insights_lookback_window(lookback_days),
+            state=state,
+        )
+
+        assert len(output.records) == len(reread_dates)
+        emitted_account_states = [
+            AirbyteStreamStateSerializer.dump(message.state.stream).get("stream_state")[ACCOUNT_ID] for message in output.state_messages
+        ]
+        # every checkpoint may be the one persisted by an interrupted attempt, so none may move the cursor back
+        expected_account_state = {_CURSOR_FIELD: cursor_date.strftime(DATE_FORMAT), "slices": []}
+        assert emitted_account_states == [expected_account_state] * len(reread_dates)
