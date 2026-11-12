@@ -585,9 +585,14 @@ jobs:
             request GET "$API/devin-$SESSION"
             if [[ "$HTTP" == 2* ]]; then
               STATUS=$(jq -r '.status // ""' "$RESPONSE")
-              if [[ "$STATUS" =~ ^(new|claimed|running|resuming)$ ]]; then
+              STATUS_DETAIL=$(jq -r '.status_detail // ""' "$RESPONSE")
+              if [[ "$STATUS" =~ ^(new|claimed|resuming)$ || ( "$STATUS" == running && "$STATUS_DETAIL" == working ) ]]; then
                 echo "::notice::fix session still working"
                 result "no_action: fix session still working"
+                exit 0
+              fi
+              if [[ "$STATUS" == running && ! "$STATUS_DETAIL" =~ ^(waiting_for_user|waiting_for_approval|finished)$ ]]; then
+                escalate "running fix session $SESSION has unknown activity (status_detail: ${STATUS_DETAIL:-missing})"
                 exit 0
               fi
               if jq -e '.origin != "api" and .parent_session_id == null and .service_user_id == null' "$RESPONSE" >/dev/null; then
