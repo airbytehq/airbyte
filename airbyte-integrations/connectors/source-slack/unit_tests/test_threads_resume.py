@@ -7,7 +7,6 @@ from urllib.parse import parse_qs, urlparse
 import freezegun
 
 from airbyte_cdk.models import SyncMode
-
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -20,7 +19,9 @@ _ONE_DAY = 86400
 
 
 def _catalog(stream_name):
-    return CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    return (
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    )
 
 
 def _history_requests(requests_mock):
