@@ -863,6 +863,373 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: eventAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: eventAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[eventAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /roles
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    profiles:
+      type: DeclarativeStream
+      name: profiles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /profiles
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/profiles"
+    duties:
+      type: DeclarativeStream
+      name: duties
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /duties
+          http_method: GET
+          request_parameters:
+            count: "false"
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/duties"
+    rulesets:
+      type: DeclarativeStream
+      name: rulesets
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /rulesets
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rulesets"
+    favorites:
+      type: DeclarativeStream
+      name: favorites
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /favorites
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/favorites"
+    mail_aliases:
+      type: DeclarativeStream
+      name: mail_aliases
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /mailAliases
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/mail_aliases"
   base_requester:
     type: HttpRequester
     url_base: https://api.outreach.io/api/v2/
@@ -934,6 +1301,14 @@ streams:
   - $ref: "#/definitions/streams/tasks"
   - $ref: "#/definitions/streams/templates"
   - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/profiles"
+  - $ref: "#/definitions/streams/duties"
+  - $ref: "#/definitions/streams/rulesets"
+  - $ref: "#/definitions/streams/favorites"
+  - $ref: "#/definitions/streams/mail_aliases"
 
 spec:
   type: Spec
@@ -1032,6 +1407,14 @@ metadata:
     tasks: false
     templates: false
     users: false
+    events: false
+    teams: false
+    roles: false
+    profiles: false
+    duties: false
+    rulesets: false
+    favorites: false
+    mail_aliases: false
   yamlComponents:
     streams:
       accounts:
@@ -1083,6 +1466,29 @@ metadata:
         - incrementalSync
         - recordSelector
       users:
+        - incrementalSync
+        - recordSelector
+      events:
+        - incrementalSync
+        - recordSelector
+      teams:
+        - incrementalSync
+        - recordSelector
+      roles:
+        - incrementalSync
+        - recordSelector
+      profiles:
+        - incrementalSync
+        - recordSelector
+      duties:
+        - recordSelector
+      rulesets:
+        - incrementalSync
+        - recordSelector
+      favorites:
+        - incrementalSync
+        - recordSelector
+      mail_aliases:
         - incrementalSync
         - recordSelector
     global:
@@ -6691,3 +7097,578 @@ schemas:
         type:
           - "null"
           - boolean
+  events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      body:
+        type:
+          - "null"
+          - string
+          - object
+        additionalProperties: true
+      call:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      eventAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      externalUrl:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      mailing:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      mailingId:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      opportunity:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      payload:
+        type:
+          - "null"
+          - object
+          - string
+        additionalProperties: true
+      plugin:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      prospect:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      requestCity:
+        type:
+          - "null"
+          - string
+      requestDevice:
+        type:
+          - "null"
+          - string
+      requestHost:
+        type:
+          - "null"
+          - string
+      requestProxied:
+        type:
+          - "null"
+          - boolean
+      requestRegion:
+        type:
+          - "null"
+          - string
+      task:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      user:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  teams:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      batches:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      color:
+        type:
+          - "null"
+          - string
+      contentCategories:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      scimExternalId:
+        type:
+          - "null"
+          - string
+      scimSource:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      users:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  roles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      externalId:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      name:
+        type:
+          - "null"
+          - string
+      parentRole:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  profiles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      globalId:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      isAdmin:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      scimExternalId:
+        type:
+          - "null"
+          - string
+      scimSource:
+        type:
+          - "null"
+          - string
+      specialId:
+        type:
+          - "null"
+          - string
+      systemInternal:
+        type:
+          - "null"
+          - boolean
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  duties:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      dutyType:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      symbolicName:
+        type:
+          - "null"
+          - string
+  rulesets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      applyCompletedStageIn:
+        type:
+          - "null"
+          - integer
+      autoResumeOotoProspects:
+        type:
+          - "null"
+          - boolean
+      autoResumeOotoProspectsExpiresIn:
+        type:
+          - "null"
+          - integer
+      autoResumeOotoProspectsIn:
+        type:
+          - "null"
+          - integer
+      bouncedStage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      callOptOutAction:
+        type:
+          - "null"
+          - string
+      callTaskPriority:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      callTaskPriorityFromClicks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      callTaskPriorityFromOpens:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      clicksNeededBeforeCallTaskCreated:
+        type:
+          - "null"
+          - integer
+      completedStage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deliveredStage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      dependentFields:
+        type:
+          - "null"
+          - array
+        items: {}
+      duplicateType:
+        type:
+          - "null"
+          - string
+      emailOptOutAction:
+        type:
+          - "null"
+          - string
+      finishedStage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      id:
+        type: integer
+      includeUnsubscribeLinks:
+        type:
+          - "null"
+          - boolean
+      meetingBookedAction:
+        type:
+          - "null"
+          - string
+      minimumProspectTouchedInterval:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      ootoAutoExtractionEnabled:
+        type:
+          - "null"
+          - boolean
+      opensNeededBeforeCallTaskCreated:
+        type:
+          - "null"
+          - integer
+      optedOutStage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      permitDuplicateProspects:
+        type:
+          - "null"
+          - string
+      repliedStage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceExclusivity:
+        type:
+          - "null"
+          - string
+      sequences:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      skipCallTasksWithInvalidPhone:
+        type:
+          - "null"
+          - boolean
+      smsOptOutAction:
+        type:
+          - "null"
+          - string
+      smsReceivedAction:
+        type:
+          - "null"
+          - string
+      startedStage:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      stepOverridesEnabled:
+        type:
+          - "null"
+          - boolean
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  favorites:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      id:
+        type: integer
+      target:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      targetId:
+        type:
+          - "null"
+          - integer
+      targetType:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  mail_aliases:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      canSend:
+        type:
+          - "null"
+          - boolean
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      email:
+        type:
+          - "null"
+          - string
+      emailHash:
+        type:
+          - "null"
+          - string
+      id:
+        type: integer
+      mailbox:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
