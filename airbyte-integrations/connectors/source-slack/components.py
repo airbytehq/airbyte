@@ -176,7 +176,15 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        """
+        Only legacy states (without a `channel_messages` parent state) need to be migrated.
+        States emitted by the current connector already carry per-channel `channel_messages`
+        cursors under `parent_state`; overwriting them would restart every channel from `start_date`.
+        """
+        if not stream_state:
+            return False
+        parent_state = stream_state.get("parent_state") or {}
+        return not parent_state.get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
