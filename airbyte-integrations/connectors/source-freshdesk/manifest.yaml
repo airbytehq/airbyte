@@ -901,6 +901,16 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+      transformations:
+        # The Freshdesk API has started returning SLA policy ids as numeric strings;
+        # cast them back to integers to match the declared schema and other streams.
+        - type: AddFields
+          condition: "{{ record.get('id') is string and record.get('id').isdigit() }}"
+          fields:
+            - path:
+                - id
+              value: "{{ record['id'] | int }}"
+              value_type: integer
       schema_loader:
         type: InlineSchemaLoader
         schema:
