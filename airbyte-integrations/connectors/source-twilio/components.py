@@ -44,6 +44,16 @@ class TwilioDateTimeTypeTransformer(TypeTransformer):
         return custom_transform_function
 
 
+class TwilioGlobalCursorStateMigration(StateMigration):
+    """Discard residual partition cursors only when saved state already uses a global cursor."""
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return stream_state.get("use_global_cursor") is True and bool(stream_state.get("state")) and bool(stream_state.get("states"))
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {key: value for key, value in stream_state.items() if key != "states"}
+
+
 class TwilioStateMigration(StateMigration):
     """
     Ensure legacy partitions include an empty `parent_slice` required by the SubstreamPartitionRouter.
