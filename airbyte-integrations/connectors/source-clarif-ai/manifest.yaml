@@ -57,11 +57,14 @@ definitions:
             page_size: 20
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -128,11 +131,14 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -198,11 +204,14 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
@@ -507,6 +516,19 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/app_concepts"
+  # Clarifai returns timestamps with nanosecond precision (9 fractional digits), which the
+  # cursor's `%f` directive (at most 6 digits) cannot parse. Without this, the cursor never
+  # observes a record and the state stays at `start_date`.
+  truncate_modified_at_to_microseconds:
+    type: AddFields
+    condition: "{{ record.get('modified_at') is string and record['modified_at']|length > 27 and record['modified_at'][19] == '.' and record['modified_at'].endswith('Z') }}"
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - modified_at
+        # AddFields evaluates the value before the condition, so it must tolerate a missing field.
+        value: "{{ (record.get('modified_at') or '')[:26] }}Z"
+        value_type: string
   base_requester:
     type: HttpRequester
     url_base: https://api.clarifai.com
