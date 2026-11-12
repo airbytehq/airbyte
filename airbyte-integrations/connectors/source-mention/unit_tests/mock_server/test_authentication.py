@@ -15,12 +15,11 @@ from unittest import TestCase
 
 import pytest
 
-from unit_tests.conftest import get_source
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from unit_tests.conftest import get_source
 
 
 _API_KEY = "test-access-token"
@@ -61,7 +60,6 @@ def test_account_me_sends_single_bearer_prefix_and_emits_account(configured_api_
 
 
 class TestBearerAuthentication(TestCase):
-
     @HttpMocker()
     def test_alert_sends_bearer_token_on_parent_and_child_requests(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
