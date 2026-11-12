@@ -419,10 +419,13 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
-            if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
-            else:
-                self._cursor_values = {account_id: ts_start}
+            if not self._cursor_values:
+                self._cursor_values = {}
+            # A sync that resumes from state re-reads the lookback window before the saved cursor. Those slices are
+            # older than the cursor, so they must not pull it back: a failure in the middle of the window would
+            # otherwise persist the earlier date and the next sync would look back from there, widening the re-read.
+            saved_cursor = self._cursor_values.get(account_id)
+            self._cursor_values[account_id] = max(saved_cursor, ts_start) if saved_cursor else ts_start
 
     def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
         """Generator of async jobs
