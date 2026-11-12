@@ -164,3 +164,41 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
         assert state["created_at"] >= previous_state_value
 
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
+
+
+def _refund_order_jsonl(order_id: int, order_created_at: str, order_updated_at: str, transaction_id: int, created_at: str, status: str) -> str:
+    order = json.loads(_order_jsonl(order_id, order_created_at, transaction_id, created_at))
+    order["order_updated_at"] = order_updated_at
+    order["transactions"][0]["kind"] = "REFUND"
+    order["transactions"][0]["status"] = status
+    return json.dumps(order)
+
+
+def test_transactions_graphql_emits_existing_refund_status_change_when_order_is_updated(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+) -> None:
+    state_value = "2026-10-22T14:59:10+00:00"
+    jsonl_lines = [
+        # refund created as PENDING before the state, now SUCCESS; its order was updated after the state -> emitted
+        _refund_order_jsonl(1, "2026-10-20T08:00:00Z", "2026-10-22T15:10:00Z", 1001, "2026-10-21T09:00:00Z", "SUCCESS"),
+        # refund and its order were last updated before the state (lookback window overlap) -> dropped
+        _refund_order_jsonl(2, "2026-10-20T08:00:00Z", "2026-10-22T14:30:00Z", 1002, "2026-10-21T09:00:00Z", "SUCCESS"),
+        # order updated exactly at the state value -> emitted
+        _refund_order_jsonl(3, "2026-10-20T08:00:00Z", "2026-10-22T14:59:10Z", 1003, "2026-10-21T09:00:00Z", "SUCCESS"),
+    ]
+
+    stream, test_records = _read_transactions(requests_mock, bulk_job_completed_response, auth_config, jsonl_lines, state_value=state_value)
+
+    assert [(record["id"], record["kind"], record["status"]) for record in test_records] == [
+        (1001, "REFUND", "SUCCESS"),
+        (1003, "REFUND", "SUCCESS"),
+    ]
+    assert all("order_updated_at" not in record for record in test_records)
+
+    # re-emitting older transactions must not move the `created_at` cursor backwards
+    state = {"created_at": state_value}
+    for record in test_records:
+        state = stream.get_updated_state(state, record)
+    assert state == {"created_at": state_value}
