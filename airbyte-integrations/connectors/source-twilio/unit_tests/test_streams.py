@@ -632,6 +632,109 @@ class TestConferenceParticipantsStream:
         assert len(records) == 0
 
 
+def _account_with_subresource(sid, subresource_key, path):
+    return {"sid": sid, "date_created": "2022-01-01T00:00:00Z", "subresource_uris": {subresource_key: f"/2010-04-01/Accounts/{sid}/{path}"}}
+
+
+class TestStalePartitionState:
+    @freeze_time("2026-11-12 12:00:00+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,path,cursor_field,lower_key,upper_key,global_cursor,lookback_seconds,expected_stale_partition_lower",
+        [
+            pytest.param(
+                "messages",
+                "Messages.json",
+                "date_sent",
+                "DateSent>",
+                "DateSent<",
+                "2026-11-09 10:00:00Z",
+                0,
+                "2026-11-09 10:00:00Z",
+                id="messages",
+            ),
+            pytest.param(
+                "messages",
+                "Messages.json",
+                "date_sent",
+                "DateSent>",
+                "DateSent<",
+                "2026-11-09 10:00:00Z",
+                3600,
+                "2026-11-09 09:00:00Z",
+                id="messages_with_sync_duration_lookback",
+            ),
+            pytest.param(
+                "recordings",
+                "Recordings.json",
+                "date_created",
+                "DateCreated>",
+                "DateCreated<",
+                "2026-11-09 10:00:00Z",
+                0,
+                "2026-11-09 10:00:00Z",
+                id="recordings",
+            ),
+        ],
+    )
+    def test_partition_cursor_older_than_global_cursor_resumes_from_global_cursor(
+        self,
+        stream_name,
+        path,
+        cursor_field,
+        lower_key,
+        upper_key,
+        global_cursor,
+        lookback_seconds,
+        expected_stale_partition_lower,
+        requests_mock,
+    ):
+        """A partition whose cursor never advanced (no recent records) must not drag every sync back to its stale cursor."""
+        requests_mock.get(
+            f"{BASE}/Accounts.json",
+            json={"accounts": [_account_with_subresource(sid, stream_name, path) for sid in ("AC123", "AC456")]},
+        )
+        requests_seen = []
+        lock = Lock()
+
+        def _callback(request, context):
+            query = parse_qs(urlparse(request.url).query)
+            with lock:
+                requests_seen.append((request.path.split("/")[3].upper(), query[lower_key][0], query[upper_key][0]))
+            return {stream_name: [], "next_page_uri": None}
+
+        requests_mock.get(f"{BASE}/Accounts/AC123/{path}", json=_callback)
+        requests_mock.get(f"{BASE}/Accounts/AC456/{path}", json=_callback)
+
+        def _partition(sid):
+            return {"subresource_uri": f"/2010-04-01/Accounts/{sid}/{path}", "parent_slice": {}}
+
+        input_state = {
+            "use_global_cursor": False,
+            "states": [
+                {"partition": _partition("AC123"), "cursor": {cursor_field: global_cursor}},
+                {"partition": _partition("AC456"), "cursor": {cursor_field: "2025-10-08 12:00:00Z"}},
+            ],
+            "state": {cursor_field: global_cursor},
+            "lookback_window": lookback_seconds,
+            "parent_state": {},
+        }
+        state = StateBuilder().with_stream_state(stream_name, input_state).build()
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2020-01-01T00:00:00Z"}, stream_name, SyncMode.incremental, state)
+
+        assert sorted(requests_seen) == [
+            ("AC123", global_cursor, "2026-11-12 12:00:00Z"),
+            ("AC456", expected_stale_partition_lower, "2026-11-12 12:00:00Z"),
+        ]
+        emitted_partition_cursors = {
+            entry["partition"]["subresource_uri"]: entry["cursor"] for entry in output.most_recent_state.stream_state.__dict__["states"]
+        }
+        assert emitted_partition_cursors == {
+            f"/2010-04-01/Accounts/AC123/{path}": {cursor_field: global_cursor},
+            f"/2010-04-01/Accounts/AC456/{path}": {cursor_field: expected_stale_partition_lower},
+        }
+
+
 class TestTwilioNestedStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_message_media_filters_num_media_zero(self, requests_mock):
