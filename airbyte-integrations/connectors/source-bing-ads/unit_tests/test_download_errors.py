@@ -21,9 +21,7 @@ Current [Tue, 10 Nov 2026 20:23:43 GMT]</AuthenticationErrorDetail></Error>"""
 @freeze_time("2026-11-10")
 @pytest.mark.parametrize("stream_name", ["app_install_ads", "ad_performance_report_daily"])
 @pytest.mark.parametrize("expired", [True, False], ids=["expired_signature", "unrelated_forbidden"])
-def test_download_errors(
-    stream_name, expired, config, mock_auth_token, mock_user_query, mock_account_query, requests_mock
-):
+def test_download_errors(stream_name, expired, config, mock_auth_token, mock_user_query, mock_account_query, requests_mock):
     download_url = "https://bingadsappsstorageprod.blob.core.windows.net/bulkdownloadresultfiles/report.gz?sig=test"
     requests_mock.post(
         "https://clientcenter.api.bingads.microsoft.com/CustomerManagement/v13/Accounts/Search",
@@ -58,9 +56,7 @@ def test_download_errors(
     error = output.errors[0].trace.error
     assert error.failure_type.value == ("transient_error" if expired else "config_error")
     assert error.message == (
-        "Bing Ads file download URL is expired."
-        if expired
-        else "Forbidden. You don't have permission to access this resource."
+        "Bing Ads file download URL is expired." if expired else "Forbidden. You don't have permission to access this resource."
     )
     assert download.call_count == 1
     if expired:
