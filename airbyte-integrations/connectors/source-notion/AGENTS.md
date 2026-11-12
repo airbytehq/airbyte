@@ -22,6 +22,10 @@ Pages and blocks that are not shared with the integration therefore drop out sil
 
 `users` has its own `DefaultErrorHandler` and does not skip 400 or 404: it keeps the rate-limit filter and backoff, then fails with a `config_error` when Notion answers `code: restricted_resource` (the integration lacks the "Read user information" capability). All other statuses use the CDK default mapping (5xx and 408 retried, other 4xx fail, unmapped codes such as 409 and 529 retried), with the CDK default of 5 retries. `unit_tests/test_error_handling.py` pins each case.
 
+## 3. `blocks` Filters Incremental Records in `BlocksRetriever`, Not in the Record Selector
+
+The CDK only attaches the client-side incremental filter (`ClientSideIncrementalRecordFilterDecorator`) to a record selector built by `create_simple_retriever`. The `blocks` record selector is nested in a `CustomRetriever`, so on CDK 7.47 that filter is never attached and the manifest's `is_client_side_incremental` does nothing for `blocks`. `BlocksRetriever` therefore does the filtering itself. It drops a block whose `last_edited_time` is earlier than the slice `start_time`, but only when that start comes from state, meaning it is later than the configured or default `start_date` (`DEFAULT_START_DATE_DAYS_AGO` must match the manifest default). First syncs and full refreshes are not filtered, so they still emit every block. The check runs after a block's children have been read, so an edited child of an unchanged parent is still emitted. `unit_tests/mock_server/test_blocks.py` pins this behaviour.
+
 ## Incremental Stream Considerations
 
 All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal, see above).
