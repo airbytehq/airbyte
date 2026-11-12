@@ -128,7 +128,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 - **403: access denied.** The error starts with `The YouTube Reporting API denied access:` followed by Google's message. Confirm that the authorized Google account owns or manages the channel and that the OAuth consent screen includes the required scope. If you set a Content Owner ID, confirm that the account can act on behalf of that content owner.
 - **Refresh token is invalid or expired.** Google rejected the refresh token, for example because it was revoked or expired. Re-authenticate the source on Airbyte Cloud, or create a new refresh token on Airbyte Open Source.
 - **Daily quota exhausted.** If the sync reports **Daily YouTube API project quota is exhausted.**, check your project's quota and try again after quota becomes available.
-- **No rows on the first sync.** YouTube may not have generated reports for newly created reporting jobs yet. Reports are typically available within 48 hours.
+- **No rows on the first sync.** YouTube may not have generated reports for newly created reporting jobs yet. Reports are typically available within 48 hours. Setup checks use the basic report; if the check reports that no stream slices were found for `channel_basic_a3`, wait for YouTube to generate a report and retry.
 - **Skipped report files.** If YouTube lists a report file but it can no longer be downloaded (HTTP 404), most likely because it passed its [retention period](#report-availability), the connector skips that file, records a message in the sync logs, and the rest of the sync continues. The rows in that file are not synced.
 - **Refresh token expires after 7 days.** This applies to External OAuth apps in **Testing** status, even when the channel's Google account is a test user. For ongoing syncs, move the app to **In production** according to [Google's publishing requirements](https://support.google.com/cloud/answer/15549945), then generate a new refresh token and update the source. While the app remains in **Testing**, generate a new refresh token whenever it expires.
 - **Content-owner reports are not available as streams.** The available streams are channel and playlist reports. To retrieve YouTube Data API information, use the separate [YouTube Data connector](/integrations/sources/youtube-data).
@@ -140,6 +140,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 2.0.4 | 2026-11-12 | TBD | Fixed setup checks and retired report versions while preserving existing stream names and data schemas |
 | 2.0.3 | 2026-11-05 | [91124](https://github.com/airbytehq/airbyte/pull/91124) | Promote the connector to Certified (Generally Available) support |
 | 2.0.2 | 2026-11-04 | [91024](https://github.com/airbytehq/airbyte/pull/91024) | Replace the icon with YouTube's official icon from brand.youtube and remove the added ANALYTICS wordmark |
 | 2.0.1 | 2026-11-04 | [90433](https://github.com/airbytehq/airbyte/pull/90433) | Merge the report download error handlers into one handler; no behaviour change |

@@ -14,6 +14,8 @@ Only report downloads handle a 404. The download requester puts an `action: IGNO
 
 **Why this matters:** The first read of a report stream can create a YouTube job, and data rows come from downloaded CSV files rather than the job or report listing responses. Emitted value types follow the stream schemas, so changing a schema type changes what destinations receive. A missing report file is skipped rather than failing the sync, so a sync can succeed with rows missing.
 
+The public stream names `channel_annotations_a1`, `channel_end_screens_a1`, and `channel_sharing_service_a1` are compatibility aliases: their `report_type_id` parameters select the corresponding supported `a2` reports. The vendor's current reports have the same columns, so stream names, schemas, primary keys, and cursors remain unchanged. Do not use these three stream names as API report type IDs. The connection check uses `channel_basic_a3`, not the annotations stream; it still needs an available report file to generate a download slice.
+
 ## 2. Incremental Cursor Lives on the Parent `report` Stream
 
 The parent `report` stream tracks `createTime` and sends it to YouTube as `createdAfter`. Its global substream cursor and the child streams' incremental dependency let each report stream download only files created since the prior sync. Child report streams retain their own `date` cursor in `%Y%m%d` format; `date` is a CSV column and part of each child's primary key.

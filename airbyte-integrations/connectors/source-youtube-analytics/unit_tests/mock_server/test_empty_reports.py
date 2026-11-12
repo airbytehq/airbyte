@@ -70,6 +70,11 @@ def test_report_csv_completes_with_or_without_data(stream_name: str, row_count: 
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
     job_id = f"job-{stream_name}"
     report_id = f"report-{stream_name}"
+    report_type_id = {
+        "channel_annotations_a1": "channel_annotations_a2",
+        "channel_end_screens_a1": "channel_end_screens_a2",
+        "channel_sharing_service_a1": "channel_sharing_service_a2",
+    }.get(stream_name, stream_name)
 
     with HttpMocker() as http_mocker:
         http_mocker.post(
@@ -78,7 +83,7 @@ def test_report_csv_completes_with_or_without_data(stream_name: str, row_count: 
         )
         http_mocker.get(
             YoutubeAnalyticsRequestBuilder.jobs_endpoint().build(),
-            HttpResponse(body=json.dumps({"jobs": [{"id": job_id, "reportTypeId": stream_name}]})),
+            HttpResponse(body=json.dumps({"jobs": [{"id": job_id, "reportTypeId": report_type_id}]})),
         )
         http_mocker.get(
             YoutubeAnalyticsRequestBuilder.reports_endpoint(job_id).with_created_after("1990-01-01T00:00:00.000000Z").build(),

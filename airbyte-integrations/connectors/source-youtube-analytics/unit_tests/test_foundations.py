@@ -76,7 +76,12 @@ def _register_token(mocker: requests_mock.Mocker) -> None:
 
 
 def _register_job(mocker: requests_mock.Mocker, stream: str = _STREAM) -> None:
-    mocker.get(f"{_API}/jobs", json={"jobs": [{"id": _JOB_ID, "reportTypeId": stream}]})
+    report_type_id = {
+        "channel_annotations_a1": "channel_annotations_a2",
+        "channel_end_screens_a1": "channel_end_screens_a2",
+        "channel_sharing_service_a1": "channel_sharing_service_a2",
+    }.get(stream, stream)
+    mocker.get(f"{_API}/jobs", json={"jobs": [{"id": _JOB_ID, "reportTypeId": report_type_id}]})
 
 
 def _read(config, stream: str = _STREAM):
