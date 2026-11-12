@@ -719,6 +719,325 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/stages"
+    sequence_templates:
+      type: DeclarativeStream
+      name: sequence_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sequenceTemplates
+          http_method: GET
+          request_parameters:
+            count: "false"
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sequence_templates"
+    content_categories:
+      type: DeclarativeStream
+      name: content_categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contentCategories
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/content_categories"
+    content_category_memberships:
+      type: DeclarativeStream
+      name: content_category_memberships
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contentCategoryMemberships
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/content_category_memberships"
+    content_category_ownerships:
+      type: DeclarativeStream
+      name: content_category_ownerships
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contentCategoryOwnerships
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/content_category_ownerships"
+    opportunity_stages:
+      type: DeclarativeStream
+      name: opportunity_stages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /opportunityStages
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/opportunity_stages"
+    opportunity_prospect_roles:
+      type: DeclarativeStream
+      name: opportunity_prospect_roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /opportunityProspectRoles
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/opportunity_prospect_roles"
+    task_priorities:
+      type: DeclarativeStream
+      name: task_priorities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /taskPriorities
+          http_method: GET
+          request_parameters:
+            count: "false"
+            sort: updatedAt
+            page[size]: "1000"
+            newFilterSyntax: "true"
+        record_selector:
+          $ref: "#/definitions/jsonapi_record_selector"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      transformations:
+        $ref: "#/definitions/jsonapi_flatten_transformations"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%_msZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updatedAt
+        is_data_feed: true
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: "filter[updatedAt][gte]"
+          inject_into: "request_parameter"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/task_priorities"
     tasks:
       type: DeclarativeStream
       name: tasks
@@ -934,6 +1253,13 @@ streams:
   - $ref: "#/definitions/streams/tasks"
   - $ref: "#/definitions/streams/templates"
   - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/sequence_templates"
+  - $ref: "#/definitions/streams/content_categories"
+  - $ref: "#/definitions/streams/content_category_memberships"
+  - $ref: "#/definitions/streams/content_category_ownerships"
+  - $ref: "#/definitions/streams/opportunity_stages"
+  - $ref: "#/definitions/streams/opportunity_prospect_roles"
+  - $ref: "#/definitions/streams/task_priorities"
 
 spec:
   type: Spec
@@ -1032,6 +1358,13 @@ metadata:
     tasks: false
     templates: false
     users: false
+    sequence_templates: false
+    content_categories: false
+    content_category_memberships: false
+    content_category_ownerships: false
+    opportunity_stages: false
+    opportunity_prospect_roles: false
+    task_priorities: false
   yamlComponents:
     streams:
       accounts:
@@ -1085,12 +1418,416 @@ metadata:
       users:
         - incrementalSync
         - recordSelector
+      sequence_templates:
+        - recordSelector
+      content_categories:
+        - incrementalSync
+        - recordSelector
+      content_category_memberships:
+        - incrementalSync
+        - recordSelector
+      content_category_ownerships:
+        - incrementalSync
+        - recordSelector
+      opportunity_stages:
+        - incrementalSync
+        - recordSelector
+      opportunity_prospect_roles:
+        - incrementalSync
+        - recordSelector
+      task_priorities:
+        - incrementalSync
+        - recordSelector
     global:
       - authenticator
   testedStreams: {}
   assist: {}
 
 schemas:
+  sequence_templates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      bounceCount:
+        type:
+          - "null"
+          - integer
+      clickCount:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deliverCount:
+        type:
+          - "null"
+          - integer
+      enabled:
+        type:
+          - "null"
+          - boolean
+      enabledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      failureCount:
+        type:
+          - "null"
+          - integer
+      interestedCount:
+        type:
+          - "null"
+          - integer
+      isReply:
+        type:
+          - "null"
+          - boolean
+      negativeReplyCount:
+        type:
+          - "null"
+          - integer
+      neutralReplyCount:
+        type:
+          - "null"
+          - integer
+      openCount:
+        type:
+          - "null"
+          - integer
+      optOutCount:
+        type:
+          - "null"
+          - integer
+      positiveReplyCount:
+        type:
+          - "null"
+          - integer
+      replyCount:
+        type:
+          - "null"
+          - integer
+      scheduleCount:
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      sequenceStep:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      template:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      updater:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  content_categories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      allowSequences:
+        type:
+          - "null"
+          - boolean
+      allowSnippets:
+        type:
+          - "null"
+          - boolean
+      allowTemplates:
+        type:
+          - "null"
+          - boolean
+      color:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      name:
+        type:
+          - "null"
+          - string
+      public:
+        type:
+          - "null"
+          - boolean
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      teams:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  content_category_memberships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      content:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      contentCategory:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  content_category_ownerships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      contentCategory:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      owner:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  opportunity_stages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      color:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      isClosed:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      order:
+        type:
+          - "null"
+          - integer
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      creator:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      opportunities:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  opportunity_prospect_roles:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      primary:
+        type:
+          - "null"
+          - boolean
+      role:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      opportunity:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      prospect:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  task_priorities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+      color:
+        type:
+          - "null"
+          - integer
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      name:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      weight:
+        type:
+          - "null"
+          - integer
+      sequenceSteps:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      tasks:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
   accounts:
     type: object
     $schema: http://json-schema.org/draft-07/schema#

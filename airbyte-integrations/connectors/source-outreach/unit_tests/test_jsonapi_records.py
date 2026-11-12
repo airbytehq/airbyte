@@ -47,10 +47,9 @@ def _legacy_flatten(element: dict) -> dict:
 def _query_params(stream_name: str, cursor: str = _START_CURSOR, page: int | None = None) -> dict:
     stream = _STREAMS[stream_name]
     requester = stream["retriever"]["requester"]
-    query_params = {
-        **requester["request_parameters"],
-        stream["incremental_sync"]["start_time_option"]["field_name"]: cursor,
-    }
+    query_params = dict(requester["request_parameters"])
+    if "incremental_sync" in stream:
+        query_params[stream["incremental_sync"]["start_time_option"]["field_name"]] = cursor
     if page is not None:
         query_params["page[number]"] = str(page)
     return query_params
@@ -145,7 +144,8 @@ def test_all_streams_flatten_jsonapi_records_exactly(stream_name: str) -> None:
         ),
     ]
     with HttpMocker() as http_mocker:
-        output = _read(http_mocker, stream_name, _response(resources))
+        sync_mode = SyncMode.incremental if "incremental_sync" in _STREAMS[stream_name] else SyncMode.full_refresh
+        output = _read(http_mocker, stream_name, _response(resources), sync_mode=sync_mode)
 
     assert not output.errors
     _assert_matches_legacy(output, resources)
