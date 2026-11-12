@@ -279,3 +279,109 @@ def test_blocks_retriever(requests_mock):
     source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
+
+
+_BLOCKS_CONFIG = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+_BLOCKS_CATALOG = ConfiguredAirbyteCatalogSerializer.load(
+    {
+        "streams": [
+            {
+                "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                "sync_mode": "incremental",
+                "destination_sync_mode": "append",
+            }
+        ]
+    }
+)
+
+
+def _list_response(results):
+    return {"object": "list", "results": results, "next_cursor": None, "has_more": False}
+
+
+def _page(page_id, last_edited_time):
+    return {"object": "page", "id": page_id, "last_edited_time": last_edited_time, "properties": {}}
+
+
+def _block(block_id, last_edited_time, has_children=False):
+    return {
+        "object": "block",
+        "id": block_id,
+        "last_edited_time": last_edited_time,
+        "has_children": has_children,
+        "type": "paragraph",
+        "parent": {"type": "page_id"},
+    }
+
+
+def _read_blocks(stream_state):
+    state = StateBuilder().with_stream_state("blocks", stream_state).build()
+    output = read(get_source(_BLOCKS_CONFIG, state), config=_BLOCKS_CONFIG, catalog=_BLOCKS_CATALOG, state=state)
+    assert not output.errors
+    return output
+
+
+def _block_children_requests(requests_mock, since=0):
+    return sorted(request.path for request in requests_mock.request_history[since:] if request.method == "GET")
+
+
+def test_blocks_incremental_read_with_state_emits_only_edited_blocks(requests_mock):
+    """
+    The second sync, run with the state of the first one, must only emit the blocks edited since then. It still walks
+    the whole block tree, so an edited block nested under blocks that were not edited (`block-1-2-1-1`) is not missed.
+    """
+    base_url = "https://api.notion.com/v1"
+    requests_mock.post(
+        f"{base_url}/search",
+        json=_list_response([_page("page-2", "2024-01-09T00:00:00.000Z"), _page("page-1", "2024-01-05T00:00:00.000Z")]),
+    )
+    requests_mock.get(
+        f"{base_url}/blocks/page-1/children",
+        json=_list_response(
+            [_block("block-1-1", "2024-01-01T00:00:00.000Z"), _block("block-1-2", "2024-01-03T00:00:00.000Z", has_children=True)]
+        ),
+    )
+    requests_mock.get(
+        f"{base_url}/blocks/block-1-2/children", json=_list_response([_block("block-1-2-1", "2024-01-02T00:00:00.000Z", has_children=True)])
+    )
+    requests_mock.get(f"{base_url}/blocks/block-1-2-1/children", json=_list_response([_block("block-1-2-1-1", "2024-01-02T00:00:00.000Z")]))
+    requests_mock.get(
+        f"{base_url}/blocks/page-2/children",
+        json=_list_response(
+            [_block("block-2-1", "2024-01-08T00:00:00.000Z", has_children=True), _block("block-2-2", "2024-01-09T00:00:00.000Z")]
+        ),
+    )
+    requests_mock.get(f"{base_url}/blocks/block-2-1/children", json=_list_response([_block("block-2-1-1", "2024-01-07T00:00:00.000Z")]))
+    all_children_requests = sorted(
+        f"/v1/blocks/{parent_id}/children" for parent_id in ["page-1", "block-1-2", "block-1-2-1", "page-2", "block-2-1"]
+    )
+
+    first_read = _read_blocks({})
+
+    assert sorted(record.record.data["id"] for record in first_read.records) == [
+        "block-1-1",
+        "block-1-2",
+        "block-1-2-1",
+        "block-1-2-1-1",
+        "block-2-1",
+        "block-2-1-1",
+        "block-2-2",
+    ]
+    assert _block_children_requests(requests_mock) == all_children_requests
+    first_state = first_read.most_recent_state.stream_state.__dict__
+    assert first_state["state"] == {"last_edited_time": "2024-01-09T00:00:00.000000Z"}
+
+    # Only the most deeply nested block of page-1 is edited between the two syncs
+    requests_mock.post(
+        f"{base_url}/search",
+        json=_list_response([_page("page-1", "2024-02-01T00:00:00.000Z"), _page("page-2", "2024-01-09T00:00:00.000Z")]),
+    )
+    requests_mock.get(f"{base_url}/blocks/block-1-2-1/children", json=_list_response([_block("block-1-2-1-1", "2024-02-01T00:00:00.000Z")]))
+    requests_before_second_read = len(requests_mock.request_history)
+
+    second_read = _read_blocks(first_state)
+
+    # block-2-2 was last edited exactly at the state value: the cursor comparison is inclusive, so it is emitted again
+    assert sorted(record.record.data["id"] for record in second_read.records) == ["block-1-2-1-1", "block-2-2"]
+    assert _block_children_requests(requests_mock, since=requests_before_second_read) == all_children_requests
+    assert second_read.most_recent_state.stream_state.__dict__["state"] == {"last_edited_time": "2024-02-01T00:00:00.000000Z"}

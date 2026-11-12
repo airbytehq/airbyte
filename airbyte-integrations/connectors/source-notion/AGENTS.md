@@ -27,3 +27,7 @@ Pages and blocks that are not shared with the integration therefore drop out sil
 All streams are defined declaratively in `manifest.yaml`. The only custom Python component is `BlocksRetriever` in `components.py` (recursive block traversal, see above).
 
 `pages`, `data_sources`, `comments`, and `blocks` use client-side incremental sync on `last_edited_time` (`definitions.client_side_incremental_sync`): records are still fetched from the API and filtered locally. `users` is full refresh only.
+
+`blocks` is the exception in how that filter is applied. The CDK only wires the client-side filter into the record selector of a `SimpleRetriever` it builds itself; for the `CustomRetriever` it passes `cursor` and `is_client_side_incremental_sync` as keyword arguments instead. `BlocksRetriever` declares both fields and drops the blocks the cursor considers already synced in `read_records`, after recursing into their children. Do not move that filter into the record selector or in front of the recursion: an edited child block under a parent block that was not edited would no longer be fetched. An incremental `blocks` sync therefore still requests the whole block tree and only emits the edited blocks. `unit_tests/test_components.py::test_blocks_incremental_read_with_state_emits_only_edited_blocks` pins this.
+
+`unit_tests/poetry.lock` must lock the same `airbyte-cdk` version as the `baseImage` in `metadata.yaml`. The `blocks` filter broke on a base image bump while the unit tests kept passing on an older locked CDK.
