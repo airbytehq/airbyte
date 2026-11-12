@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +81,35 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioMessagesStateMigration(StateMigration):
+    """
+    Migrates per-account messages cursors to a flat global cursor.
+
+    Initial:
+      {
+        "states": [{"cursor": {"date_sent": "2022-01-01T00:00:00Z"}}],
+        "state": {"date_sent": "2022-11-13T12:11:10Z"},
+        "use_global_cursor": false
+      }
+
+    Final:
+      {"date_sent": "2022-11-13T12:11:10Z"}
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state.get("states")) and stream_state.get("use_global_cursor") is not True
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if "date_sent" in stream_state.get("state", {}):
+            return {"date_sent": stream_state["state"]["date_sent"]}
+        cursors = [
+            state["cursor"]["date_sent"]
+            for state in stream_state.get("states", [])
+            if state.get("cursor", {}).get("date_sent")
+        ]
+        return {"date_sent": min(cursors, key=ab_datetime_parse)} if cursors else {}
 
 
 class TwilioAlertsStateMigration(StateMigration):
