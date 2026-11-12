@@ -47,6 +47,7 @@ class TwilioDateTimeTypeTransformer(TypeTransformer):
 class TwilioStateMigration(StateMigration):
     """
     Ensure legacy partitions include an empty `parent_slice` required by the SubstreamPartitionRouter.
+    Discard stale per-partition states when the global cursor is authoritative.
 
     Initial:
       {
@@ -73,11 +74,15 @@ class TwilioStateMigration(StateMigration):
     """
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if stream_state.get("use_global_cursor") and isinstance(stream_state.get("states"), list):
+            return {key: value for key, value in stream_state.items() if key != "states"}
         for state in stream_state.get("states", []):
             state["partition"]["parent_slice"] = {}
         return stream_state
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if stream_state.get("use_global_cursor") and isinstance(stream_state.get("states"), list):
+            return True
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
@@ -189,6 +194,7 @@ class TwilioMessageMediaStateMigration(StateMigration):
     so the state must retain the media-level `subresource_uri` and also include
     `parent_slice.subresource_uri` pointing to the Messages collection
     (e.g., “…/Messages.json”). States missing `partition.subresource_uri` are skipped.
+    Discard stale per-partition states when the global cursor is authoritative.
 
     Initial:
       {
@@ -218,6 +224,8 @@ class TwilioMessageMediaStateMigration(StateMigration):
     """
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if stream_state.get("use_global_cursor") and isinstance(stream_state.get("states"), list):
+            return {key: value for key, value in stream_state.items() if key != "states"}
         new_state = {"states": []}
         for state in stream_state.get("states", []):
             partition_state = {}
@@ -237,6 +245,8 @@ class TwilioMessageMediaStateMigration(StateMigration):
         return new_state
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if stream_state.get("use_global_cursor") and isinstance(stream_state.get("states"), list):
+            return True
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False

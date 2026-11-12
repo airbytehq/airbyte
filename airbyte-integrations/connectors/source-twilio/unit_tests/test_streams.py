@@ -7,7 +7,7 @@ from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
-from components import TwilioConferencesStateMigration
+from components import TwilioConferencesStateMigration, TwilioMessageMediaStateMigration, TwilioStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
@@ -87,6 +87,38 @@ def _alert_state_date(output):
     return output.most_recent_state.stream_state.__dict__["date_generated"]
 
 
+@pytest.mark.parametrize("migration_class", [TwilioStateMigration, TwilioMessageMediaStateMigration])
+@pytest.mark.parametrize(
+    "partitions",
+    [[], [{"partition": {"subresource_uri": "/Messages/SM123/Media.json", "parent_slice": {}}, "cursor": {"date_created": "2022-01-01"}}]],
+)
+def test_global_cursor_migration_preserves_global_fields(migration_class, partitions):
+    state = {
+        "use_global_cursor": True,
+        "state": {"date_created": "2022-11-14"},
+        "parent_state": {"messages": {"date_sent": "2022-11-14"}},
+        "lookback_window": 0,
+        "states": partitions,
+    }
+    migration = migration_class()
+    assert migration.should_migrate(state)
+    assert migration.migrate(state) == {key: value for key, value in state.items() if key != "states"}
+
+
+@pytest.mark.parametrize("migration_class", [TwilioStateMigration, TwilioMessageMediaStateMigration])
+@pytest.mark.parametrize(
+    "state",
+    [
+        {},
+        {"use_global_cursor": True, "state": {}},
+        {"use_global_cursor": False, "states": []},
+        {"use_global_cursor": False, "states": [{"partition": {"parent_slice": {}}, "cursor": {}}]},
+    ],
+)
+def test_global_cursor_migration_leaves_other_states_unchanged(migration_class, state):
+    assert not migration_class().should_migrate(state)
+
+
 class TestTwilioStream:
     def test_next_page_token(self, requests_mock):
         accounts_page_1_json = {
@@ -159,6 +191,42 @@ class TestTwilioStream:
 
 
 class TestIncrementalTwilioStream:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_messages_global_cursor_ignores_stale_partition_state(self, requests_mock):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        messages = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Messages.json",
+            json={"messages": [{"sid": "SM1", "date_sent": "2022-11-15T12:00:00Z"}]},
+        )
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "use_global_cursor": True,
+                    "state": {"date_sent": "2022-11-14T00:00:00Z"},
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-01-20T00:00:00Z"},
+                        }
+                    ],
+                    "lookback_window": 0,
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        query = parse_qs(urlparse(messages.request_history[0].url).query)
+        assert query["DateSent>"] == ["2022-11-14 00:00:00Z"]
+        assert [record.record.data["sid"] for record in output.records] == ["SM1"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert final_state["state"] == {"date_sent": "2022-11-15 12:00:00Z"}
+        assert "states" not in final_state
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_calls_includes_date_window_params(self, requests_mock):
         requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
