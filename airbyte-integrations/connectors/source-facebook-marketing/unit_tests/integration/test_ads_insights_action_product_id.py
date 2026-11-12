@@ -15,6 +15,7 @@ from source_facebook_marketing.streams.async_job import Status
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponse,
@@ -531,3 +532,58 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_failure_while_rereading_lookback_window_when_read_then_cursor_does_not_move_backwards(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        A sync that fails while re-reading the lookback window must not checkpoint a cursor older than the one it started with,
+        otherwise every failed sync widens the window that the next sync re-reads.
+        """
+        start_date = NOW - timedelta(days=40)
+        end_date = NOW.replace(hour=23, minute=59, second=59)
+        initial_cursor = (NOW - timedelta(days=1)).strftime(DATE_FORMAT)
+        # With a 2-day lookback window, a sync starting from `initial_cursor` re-reads [cursor - 2 days, today]
+        days = [NOW - timedelta(days=delta) for delta in (3, 2, 1, 0)]
+        report_run_ids = [f"157186006001950{i}" for i in range(len(days))]
+        job_ids = [f"104993737960160{i}" for i in range(len(days))]
+        config_ = config().with_start_date(start_date).with_end_date(end_date).with_insights_lookback_window(2)
+
+        def state(account_state: Dict[str, any]) -> List[AirbyteStateMessage]:
+            return StateBuilder().with_stream_state(_STREAM_NAME, {ACCOUNT_ID: account_state, "time_increment": 1}).build()
+
+        def emitted_account_state(output: EntrypointOutput) -> Dict[str, any]:
+            return AirbyteStreamStateSerializer.dump(output.most_recent_state)["stream_state"][ACCOUNT_ID]
+
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        for day, report_run_id in zip(days, report_run_ids):
+            http_mocker.post(_job_start_request(since=day, until=day).build(), _job_start_response(report_run_id))
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids))
+        insights_page = _insights_response().with_record(_ads_insights_action_product_id_record()).build()
+        insights_error = build_response(
+            body={"error": {"code": 100, "message": "Unsupported get request", "type": "GraphMethodException"}},
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+        # First sync: the first day of the lookback window is read, then reading the second one fails.
+        # The second sync reads every day successfully.
+        http_mocker.get(_get_insights_request(job_ids[0]).build(), insights_page)
+        http_mocker.get(_get_insights_request(job_ids[1]).build(), [insights_error, insights_page])
+        for job_id in job_ids[2:]:
+            http_mocker.get(_get_insights_request(job_id).build(), insights_page)
+
+        failed_output = self._read(config_, state=state({_CURSOR_FIELD: initial_cursor}), expecting_exception=True)
+
+        assert "Unsupported get request" in failed_output.errors[0].trace.error.message
+        assert len(failed_output.records) == 1
+        failed_sync_state = emitted_account_state(failed_output)
+        assert failed_sync_state == {_CURSOR_FIELD: initial_cursor, "slices": []}
+
+        # Second sync resumes from the state emitted by the failed one. HttpMocker rejects any request that is not mocked,
+        # so the only job windows that can be requested are the ones of the original lookback window.
+        output = self._read(config_, state=state(failed_sync_state))
+
+        assert len(output.errors) == 0
+        assert len(output.records) == len(days)
+        assert emitted_account_state(output) == {_CURSOR_FIELD: NOW.strftime(DATE_FORMAT), "slices": []}
