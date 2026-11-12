@@ -48,9 +48,7 @@ def test_lookup_stream_is_read_in_one_request_and_emits_each_value_once(stream_n
         return {"href": url, "collection": [] if over_cap else collection}
 
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-    source = YamlDeclarativeSource(
-        path_to_yaml=str(Path(__file__).parents[2] / "manifest.yaml"), config=CONFIG, catalog=catalog, state=[]
-    )
+    source = YamlDeclarativeSource(path_to_yaml=str(Path(__file__).parents[2] / "manifest.yaml"), config=CONFIG, catalog=catalog, state=[])
     with requests_mock.Mocker() as mocker:
         mocker.get(url, json=full_list_whatever_the_offset)
         output = read(source, config=CONFIG, catalog=catalog)
