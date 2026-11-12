@@ -634,6 +634,76 @@ class TestConferenceParticipantsStream:
 
 class TestTwilioNestedStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "messages_state,expected_lower_bound",
+        [
+            pytest.param(
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-01-01 00:00:00Z"},
+                        }
+                    ],
+                    "state": {"date_sent": "2022-11-14 08:00:00Z"},
+                    "lookback_window": 0,
+                },
+                "2022-11-14 08:00:00Z",
+                id="stale_partition_cursor_with_recent_global_cursor",
+            ),
+            pytest.param(
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-13T12:11:10Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-15T00:00:00Z"},
+                        },
+                    ]
+                },
+                "2022-11-13 12:11:10Z",
+                id="legacy_partition_state_without_global_cursor_uses_oldest_partition",
+            ),
+        ],
+    )
+    def test_messages_resumes_from_global_date_sent_cursor(self, messages_state, expected_lower_bound, requests_mock):
+        """`messages` must resume from the stream-level `date_sent` cursor, not from stale per-partition cursors.
+
+        Regression for stale per-partition `messages` state overriding a recent global cursor, which made every
+        incremental sync re-export the whole message history.
+        """
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+        messages_matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Messages.json",
+            json={
+                "messages": [
+                    {"sid": "SM1", "account_sid": "AC123", "date_sent": "2022-11-15T10:00:00Z"},
+                    {"sid": "SM2", "account_sid": "AC123", "date_sent": "2022-11-16T09:30:00Z"},
+                ]
+            },
+            status_code=200,
+        )
+
+        state = StateBuilder().with_stream_state("messages", messages_state).build()
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2000-11-15T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+        sent_windows = [
+            (parse_qs(urlparse(r.url).query)["DateSent>"][0], parse_qs(urlparse(r.url).query)["DateSent<"][0])
+            for r in messages_matcher.request_history
+        ]
+        assert sent_windows == [(expected_lower_bound, "2022-11-16 12:03:11Z")]
+        assert [record.record.data["sid"] for record in output.records] == ["SM1", "SM2"]
+
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert "states" not in final_state
+        assert final_state["state"] == {"date_sent": "2022-11-16 09:30:00Z"}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_message_media_filters_num_media_zero(self, requests_mock):
         ACCOUNTS_JSON = {
             "accounts": [

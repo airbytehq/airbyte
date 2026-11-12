@@ -4,7 +4,7 @@
 
 import copy
 from datetime import datetime, timezone
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -81,6 +81,91 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+_MESSAGES_CURSOR_FIELD = "date_sent"
+_MESSAGES_CURSOR_FORMATS = (
+    "%Y-%m-%d %H:%M:%SZ",
+    "%Y-%m-%dT%H:%M:%SZ",
+    "%Y-%m-%d",
+    "%Y-%m-%dT%H:%M:%S.%f%z",
+    "%a, %d %b %Y %H:%M:%S %z",
+)
+
+
+def _parse_messages_cursor(value: Any) -> Optional[datetime]:
+    if not isinstance(value, str):
+        return None
+    for cursor_format in _MESSAGES_CURSOR_FORMATS:
+        try:
+            parsed = datetime.strptime(value, cursor_format)
+        except ValueError:
+            continue
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+    return None
+
+
+class TwilioMessagesGlobalCursorStateMigration(StateMigration):
+    """
+    Collapse legacy per-partition `messages` state into the stream-level (global) `date_sent` cursor.
+
+    `messages` uses `global_substream_cursor: true`. With per-partition state, the CDK resumes every partition
+    from its own cursor and only uses the global `state` as a fallback for partitions without an entry, so a
+    stale partition cursor made the stream re-read its whole history even when the global cursor was recent.
+
+    The global `state` is only promoted by the CDK after a sync completes every partition, so it is used when
+    present. Without it, the oldest parseable partition cursor is used so that no partition skips records.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2025-01-01 00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "lookback_window": 120
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "lookback_window": 120
+      }
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state:
+            return False
+        return "states" in stream_state or stream_state.get("use_global_cursor") is False
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        global_cursor = stream_state.get("state") or {}
+        cursor_value = global_cursor.get(_MESSAGES_CURSOR_FIELD) if isinstance(global_cursor, Mapping) else None
+        if cursor_value is None:
+            cursor_value = self._oldest_partition_cursor(stream_state.get("states") or [])
+
+        migrated_state: dict[str, Any] = {"use_global_cursor": True}
+        if cursor_value is not None:
+            migrated_state["state"] = {_MESSAGES_CURSOR_FIELD: cursor_value}
+        if "lookback_window" in stream_state:
+            migrated_state["lookback_window"] = stream_state["lookback_window"]
+        if stream_state.get("parent_state"):
+            migrated_state["parent_state"] = stream_state["parent_state"]
+        return migrated_state
+
+    @staticmethod
+    def _oldest_partition_cursor(partition_states: list[Mapping[str, Any]]) -> Optional[str]:
+        oldest_value, oldest_datetime = None, None
+        for partition_state in partition_states:
+            value = (partition_state.get("cursor") or {}).get(_MESSAGES_CURSOR_FIELD)
+            parsed = _parse_messages_cursor(value)
+            if parsed is not None and (oldest_datetime is None or parsed < oldest_datetime):
+                oldest_value, oldest_datetime = value, parsed
+        return oldest_value
 
 
 class TwilioAlertsStateMigration(StateMigration):
