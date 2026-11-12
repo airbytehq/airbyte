@@ -94,9 +94,7 @@ def test_blocks_incremental_read(requests_mock, stream_state, start_date, expect
     assert [record.record.data["id"] for record in output.records] == expected_ids
     final_state = vars(output.state_messages[-1].state.stream.stream_state)
     assert final_state["use_global_cursor"] is True
-    assert final_state["state"]["last_edited_time"] == (
-        "2022-01-04T00:00:00.000000Z" if expected_ids else "2022-01-05T00:00:00.000000Z"
-    )
+    assert final_state["state"]["last_edited_time"] == ("2022-01-04T00:00:00.000000Z" if expected_ids else "2022-01-05T00:00:00.000000Z")
 
 
 def test_blocks_retriever_depth_restored_after_children(components_module):

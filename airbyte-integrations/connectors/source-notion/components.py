@@ -6,8 +6,8 @@ from typing import Any, Iterable, Mapping, Optional
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
+from airbyte_cdk.sources.streams.core import StreamData
 
 
 # maximum block hierarchy recursive request depth
@@ -68,8 +68,6 @@ class BlocksRetriever(SimpleRetriever):
                 stream_data["parent"]["sequence_number"] = sequence_number
 
             if self._incremental_record_filter is None or any(
-                self._incremental_record_filter.filter_records(
-                    records=[stream_data.data], stream_state={}, stream_slice=stream_slice
-                )
+                self._incremental_record_filter.filter_records(records=[stream_data.data], stream_state={}, stream_slice=stream_slice)
             ):
                 yield stream_data
