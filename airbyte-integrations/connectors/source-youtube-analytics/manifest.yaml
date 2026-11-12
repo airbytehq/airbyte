@@ -2,13 +2,39 @@ version: 6.42.0
 
 type: DeclarativeSource
 
+# The check lists report types rather than reading a report stream. A report stream only has
+# something to read once YouTube has generated a report file for its job, which takes up to
+# 48 hours after the job is created and never happens for a report type YouTube has retired,
+# so checking one fails every new setup with "no stream slices were found".
 check:
   type: CheckStream
   stream_names:
-    - channel_annotations_a1
+    - report_types
 
 definitions:
   streams:
+    report_types:
+      type: DeclarativeStream
+      name: report_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reportTypes
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reportTypes
+        paginator:
+          $ref: "#/definitions/next_page_token_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_types"
     jobs:
       type: DeclarativeStream
       name: jobs
@@ -628,6 +654,7 @@ streams:
   - $ref: "#/definitions/streams/playlist_playback_location_a2"
   - $ref: "#/definitions/streams/playlist_province_a2"
   - $ref: "#/definitions/streams/playlist_traffic_source_a2"
+  - $ref: "#/definitions/streams/report_types"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -755,6 +782,7 @@ metadata:
     playlist_playback_location_a2: false
     playlist_province_a2: false
     playlist_traffic_source_a2: false
+    report_types: false
   yamlComponents:
     global:
       - authenticator
@@ -2038,6 +2066,31 @@ schemas:
         type:
           - "null"
           - integer
+  report_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        description: ID of the report type, for example channel_basic_a3.
+        type: string
+      name:
+        description: Display name of the report type.
+        type:
+          - "null"
+          - string
+      deprecateTime:
+        description: When YouTube deprecated, or will deprecate, the report type. Absent for report types with no announced deprecation.
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      systemManaged:
+        description: Whether YouTube creates the reporting jobs for this report type itself.
+        type:
+          - "null"
+          - boolean
 
 api_budget:
   type: HTTPAPIBudget

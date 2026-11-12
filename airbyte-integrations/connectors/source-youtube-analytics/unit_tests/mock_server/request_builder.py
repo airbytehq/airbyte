@@ -42,6 +42,10 @@ class YoutubeAnalyticsRequestBuilder:
         )
 
     @classmethod
+    def report_types_endpoint(cls) -> "YoutubeAnalyticsRequestBuilder":
+        return cls("/reportTypes")
+
+    @classmethod
     def jobs_endpoint(cls) -> "YoutubeAnalyticsRequestBuilder":
         return cls("/jobs")
 
@@ -61,6 +65,9 @@ class YoutubeAnalyticsRequestBuilder:
 
     def with_created_after(self, created_after: str) -> "YoutubeAnalyticsRequestBuilder":
         return self.with_query_param("createdAfter", created_after)
+
+    def with_page_token(self, page_token: str) -> "YoutubeAnalyticsRequestBuilder":
+        return self.with_query_param("pageToken", page_token)
 
     def with_on_behalf_of_content_owner(self, content_owner_id: str) -> "YoutubeAnalyticsRequestBuilder":
         return self.with_query_param("onBehalfOfContentOwner", content_owner_id)

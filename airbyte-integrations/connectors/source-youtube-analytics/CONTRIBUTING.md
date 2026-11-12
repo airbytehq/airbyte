@@ -12,6 +12,7 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 4. **Error Mapping Depends on the Response Path** — Rejected credentials, a missing YouTube channel, denied access, and an invalid refresh token each produce a different error. The detailed guide explains what to check for each case.
 5. **Content Owner Parameter and Static Extra Request Parameters** — You can optionally retrieve data on behalf of a YouTube content owner. Keep request settings static where required so YouTube receives valid values.
 6. **Two Chained State Migrations** — Existing connections may have older saved progress that must be carried forward in order. The migration preserves report progress while allowing newly issued corrections to arrive.
+7. **The Connection Check Reads `report_types`, Not a Report Stream** — Setting up the source only needs working credentials. Report files take up to 48 hours to appear for a new account, so the check lists report types and never waits on, or creates, a reporting job.
 
 ## Testing
 
