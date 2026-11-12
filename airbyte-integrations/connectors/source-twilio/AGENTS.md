@@ -16,6 +16,13 @@ The Twilio REST API supports `DateCreated` filtering on many resource list endpo
 
 None identified yet.
 
+## Per-account state migration
+
+`TwilioStateMigration` adds missing empty `parent_slice` values and deduplicates matching partitions, keeping the latest parsed cursor.
+It raises stale or missing partition cursors to the global cursor, but preserves newer cursors and unparseable values.
+The global cursor is a safe floor because the CDK advances it only after every generated partition completes.
+Migration is idempotent; compare mixed cursor formats as datetimes, not strings.
+
 ## Alerts request window splitting
 
 The `alerts` stream handles Twilio's 10,000-result cap with a `SPLIT_REQUEST_WINDOW` response filter plus `request_window_splitting`:

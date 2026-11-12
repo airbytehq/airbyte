@@ -46,7 +46,10 @@ class TwilioDateTimeTypeTransformer(TypeTransformer):
 
 class TwilioStateMigration(StateMigration):
     """
-    Ensure legacy partitions include an empty `parent_slice` required by the SubstreamPartitionRouter.
+    Add missing `parent_slice`, deduplicate partitions, and floor their cursors at global state.
+
+    The CDK advances the global cursor only after the stream completes and every generated
+    partition was read to the end, so it is a safe lower bound for partition cursors.
 
     Initial:
       {
@@ -73,14 +76,44 @@ class TwilioStateMigration(StateMigration):
     """
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        for state in stream_state.get("states", []):
-            state["partition"]["parent_slice"] = {}
-        return stream_state
+        migrated = copy.deepcopy(stream_state)
+        states = []
+        for state in migrated.get("states", []):
+            state["partition"].setdefault("parent_slice", {})
+            self._advance_cursor(state, migrated.get("state", {}))
+            existing = next((entry for entry in states if entry["partition"] == state["partition"]), None)
+            if existing is None:
+                states.append(state)
+            else:
+                self._advance_cursor(existing, state.get("cursor", {}))
+        if "states" in migrated:
+            migrated["states"] = states
+        return migrated
+
+    @staticmethod
+    def _parse_cursor(value: Any) -> datetime | None:
+        if not isinstance(value, str):
+            return None
+        for date_format in ("%Y-%m-%d %H:%M:%SZ", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S.%f%z"):
+            try:
+                parsed = datetime.strptime(value, date_format)
+                return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)
+            except ValueError:
+                pass
+        return None
+
+    @classmethod
+    def _advance_cursor(cls, state, candidate):
+        cursor = state.get("cursor", {})
+        for field, value in candidate.items():
+            candidate_date = cls._parse_cursor(value)
+            current_date = cls._parse_cursor(cursor.get(field))
+            if candidate_date is not None and (field not in cursor or (current_date is not None and current_date < candidate_date)):
+                cursor[field] = value
+                state["cursor"] = cursor
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
-            return True
-        return False
+        return self.migrate(stream_state) != stream_state
 
 
 class TwilioAlertsStateMigration(StateMigration):
