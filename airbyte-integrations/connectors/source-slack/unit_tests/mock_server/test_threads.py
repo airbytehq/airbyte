@@ -7,12 +7,12 @@ from typing import Any, List, Mapping, Optional
 from urllib.parse import parse_qs, urlparse
 
 import pytest
-from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
+from unit_tests.conftest import get_source
 
 
 _CONVERSATIONS_LIST = re.compile(r"https://slack\.com/api/conversations\.list.*")
@@ -41,7 +41,9 @@ def _read(requests_mock, stream_name: str, config: Mapping[str, Any], channels: 
     requests_mock.post(_CONVERSATIONS_JOIN, json={"ok": True, "channel": {}})
     requests_mock.get(_CONVERSATIONS_HISTORY, json={"ok": True, "messages": []})
     requests_mock.get(_CONVERSATIONS_REPLIES, json={"ok": True, "messages": []})
-    catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    catalog = (
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    )
     airbyte_state = StateBuilder().with_stream_state(stream_name, state).build() if state else []
     output = read(get_source(config, stream_name, airbyte_state), config, catalog, airbyte_state)
     # parse the raw URL: requests_mock's `.qs` lowercases values, and Slack channel ids are upper case
@@ -53,7 +55,8 @@ def _channel_messages_state(cursors: Mapping[str, float]) -> Mapping[str, Any]:
     return {
         "use_global_cursor": False,
         "states": [
-            {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": str(cursor)}} for channel, cursor in cursors.items()
+            {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": str(cursor)}}
+            for channel, cursor in cursors.items()
         ],
         "state": {"float_ts": str(min(cursors.values()))},
         "lookback_window": 1,
@@ -70,14 +73,22 @@ _C2_CURSOR = 1690000000.0
     [
         pytest.param(
             # sync interrupted before any thread partition completed: only parent cursors were checkpointed
-            {"use_global_cursor": False, "states": [], "lookback_window": 1, "parent_state": {"channel_messages": _channel_messages_state({"C1": _C1_CURSOR, "C2": _C2_CURSOR})}},
+            {
+                "use_global_cursor": False,
+                "states": [],
+                "lookback_window": 1,
+                "parent_state": {"channel_messages": _channel_messages_state({"C1": _C1_CURSOR, "C2": _C2_CURSOR})},
+            },
             id="parent_state_only",
         ),
         pytest.param(
             {
                 "use_global_cursor": False,
                 "states": [
-                    {"partition": {"float_ts": "1699999000.0001", "parent_slice": {"channel": "C1", "parent_slice": {}}}, "cursor": {"float_ts": "1700000000"}},
+                    {
+                        "partition": {"float_ts": "1699999000.0001", "parent_slice": {"channel": "C1", "parent_slice": {}}},
+                        "cursor": {"float_ts": "1700000000"},
+                    },
                 ],
                 "state": {"float_ts": "1700000000"},
                 "lookback_window": 1,
