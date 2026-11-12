@@ -4,8 +4,11 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
+  # `report_types` needs valid credentials and API access but no report files and no job, so the
+  # check works for new accounts (a new job has no files for up to two days) and creates nothing
+  # in YouTube. Report streams would fail with "no stream slices were found" in those cases.
   stream_names:
-    - channel_annotations_a1
+    - report_types
 
 definitions:
   streams:
@@ -68,6 +71,29 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: createdAfter
+
+    report_types:
+      type: DeclarativeStream
+      name: report_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reportTypes
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reportTypes
+        paginator:
+          $ref: "#/definitions/next_page_token_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_types"
 
     base_report_stream:
       type: DeclarativeStream
@@ -628,6 +654,7 @@ streams:
   - $ref: "#/definitions/streams/playlist_playback_location_a2"
   - $ref: "#/definitions/streams/playlist_province_a2"
   - $ref: "#/definitions/streams/playlist_traffic_source_a2"
+  - $ref: "#/definitions/streams/report_types"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -755,6 +782,7 @@ metadata:
     playlist_playback_location_a2: false
     playlist_province_a2: false
     playlist_traffic_source_a2: false
+    report_types: false
   yamlComponents:
     global:
       - authenticator
@@ -762,6 +790,26 @@ metadata:
   assist: {}
 
 schemas:
+  report_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      deprecateTime:
+        type:
+          - "null"
+          - string
+        format: date-time
+      systemManaged:
+        type:
+          - "null"
+          - boolean
   channel_annotations_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#

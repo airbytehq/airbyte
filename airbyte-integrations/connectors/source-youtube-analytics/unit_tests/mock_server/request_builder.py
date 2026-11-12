@@ -46,6 +46,10 @@ class YoutubeAnalyticsRequestBuilder:
         return cls("/jobs")
 
     @classmethod
+    def report_types_endpoint(cls) -> "YoutubeAnalyticsRequestBuilder":
+        return cls("/reportTypes")
+
+    @classmethod
     def reports_endpoint(cls, job_id: str) -> "YoutubeAnalyticsRequestBuilder":
         return cls(f"/jobs/{job_id}/reports")
 
