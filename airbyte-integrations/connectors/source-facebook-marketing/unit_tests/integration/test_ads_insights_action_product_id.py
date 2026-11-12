@@ -15,6 +15,7 @@ from source_facebook_marketing.streams.async_job import Status
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponse,
@@ -531,3 +532,92 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @staticmethod
+    def _mock_daily_insight_jobs(http_mocker: HttpMocker, account_id: str, days: List[datetime]) -> None:
+        """Mock one async insight job per day, each returning a single record whose `date_start` is that day."""
+        report_run_ids = [f"15718600600195{index:02d}" for index in range(len(days))]
+        job_ids = [f"10499373796016{index:02d}" for index in range(len(days))]
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id, job_id in zip(days, report_run_ids, job_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+            http_mocker.get(
+                _get_insights_request(job_id).build(),
+                _insights_response()
+                .with_record(_ads_insights_action_product_id_record().with_cursor(day.strftime(DATE_FORMAT)))
+                .build(),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids, account_id=account_id))
+
+    @HttpMocker()
+    def test_given_state_when_read_lookback_window_then_checkpointed_cursor_never_goes_below_input_cursor(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        A sync re-reads `insights_lookback_window` days before the saved cursor. The state checkpointed while those older
+        days are read must keep the saved cursor: if it were lowered and the sync got interrupted, the next attempt would
+        resume from `lowered cursor - lookback` and re-read a wider window after every interruption.
+        """
+        account_id = "123123123"
+        lookback_window = 2
+        input_cursor = NOW - timedelta(days=1)  # 2023-01-09
+        # cursor - lookback (2023-01-07) up to today (2023-01-10)
+        days = [NOW - timedelta(days=offset) for offset in (3, 2, 1, 0)]
+        expected_days = [day.strftime(DATE_FORMAT) for day in days]
+        self._mock_daily_insight_jobs(http_mocker, account_id, days)
+
+        config_ = config().with_account_ids([account_id]).with_start_date(NOW - timedelta(days=9)).with_end_date(NOW)
+        config_.build()["insights_lookback_window"] = lookback_window
+        input_state = {account_id: {_CURSOR_FIELD: input_cursor.strftime(DATE_FORMAT), "slices": []}, "time_increment": 1}
+
+        output = self._read(config_, state=StateBuilder().with_stream_state(_STREAM_NAME, input_state).build())
+
+        # The whole lookback window is still read: one record per day, with no gap and no duplicate.
+        assert [record.record.data[_CURSOR_FIELD] for record in output.records] == expected_days
+        # One checkpoint per daily slice: the cursor holds at the input value, then moves forward only.
+        checkpointed_cursors = [
+            AirbyteStreamStateSerializer.dump(message.state.stream)["stream_state"][account_id][_CURSOR_FIELD]
+            for message in output.state_messages
+        ]
+        assert checkpointed_cursors == ["2023-01-09", "2023-01-09", "2023-01-09", "2023-01-10"]
+
+        # Resume from the first checkpoint, as the platform does when the attempt is interrupted after the first slice.
+        # Only the mocked days exist, so a job for any earlier day (a wider window) would not be matched and would fail the read.
+        interrupted_state = AirbyteStreamStateSerializer.dump(output.state_messages[0].state.stream)["stream_state"]
+        resumed_output = self._read(config_, state=StateBuilder().with_stream_state(_STREAM_NAME, interrupted_state).build())
+
+        assert [record.record.data[_CURSOR_FIELD] for record in resumed_output.records] == expected_days
+        assert AirbyteStreamStateSerializer.dump(resumed_output.most_recent_state)["stream_state"][account_id] == {
+            _CURSOR_FIELD: "2023-01-10",
+            "slices": [],
+        }
+
+    @HttpMocker()
+    def test_given_state_with_completed_slices_older_than_cursor_when_read_then_stale_slices_are_dropped_from_state(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        account_id = "123123123"
+        days = [NOW - timedelta(days=offset) for offset in (3, 2, 1, 0)]
+        self._mock_daily_insight_jobs(http_mocker, account_id, days)
+
+        config_ = config().with_account_ids([account_id]).with_start_date(NOW - timedelta(days=9)).with_end_date(NOW)
+        config_.build()["insights_lookback_window"] = 2
+        # 2023-01-03 and 2023-01-08 are leftovers at or before the cursor; they are re-read (or out of the window) anyway.
+        input_state = {account_id: {_CURSOR_FIELD: "2023-01-09", "slices": ["2023-01-03", "2023-01-08"]}, "time_increment": 1}
+
+        output = self._read(config_, state=StateBuilder().with_stream_state(_STREAM_NAME, input_state).build())
+
+        checkpointed_slices = [
+            AirbyteStreamStateSerializer.dump(message.state.stream)["stream_state"][account_id]["slices"]
+            for message in output.state_messages
+        ]
+        assert checkpointed_slices == [[], [], [], []]
+        assert [record.record.data[_CURSOR_FIELD] for record in output.records] == [day.strftime(DATE_FORMAT) for day in days]
