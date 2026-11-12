@@ -304,3 +304,26 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+@pytest.mark.parametrize("count, records_per_slice", [(10, 10), (10, 3)])
+def test_read_users_consecutive_syncs_emit_all_users(count, records_per_slice):
+    from airbyte_cdk.models import AirbyteStateMessageSerializer
+
+    source = SourceFaker()
+    config = {"count": count, "records_per_slice": records_per_slice, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    expected_ids = list(range(1, count + 1))
+
+    state = []
+    for _ in range(3):
+        messages = list(source.read(logger, config, catalog, state))
+        records = [message.record.data for message in messages if message.type is Type.RECORD]
+        assert [record["id"] for record in records] == expected_ids
+        final_state = [message.state for message in messages if message.type is Type.STATE][-1]
+        state = [AirbyteStateMessageSerializer.load(AirbyteStateMessageSerializer.dump(final_state))]
