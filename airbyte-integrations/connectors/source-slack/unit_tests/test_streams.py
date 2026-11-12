@@ -1115,7 +1115,9 @@ def _read_threads(requests_mock, config, stream_state):
     ),
 )
 @freezegun.freeze_time("2021-07-24T00:00:00Z")
-def test_threads_resume_requests_channel_history_from_saved_cursors(requests_mock, token_config, threads_state, expected_oldest_per_channel):
+def test_threads_resume_requests_channel_history_from_saved_cursors(
+    requests_mock, token_config, threads_state, expected_oldest_per_channel
+):
     token_config.pop("end_date")
     token_config["start_date"] = "2021-06-01T00:00:00Z"  # 1622505600, far before every saved cursor
 
