@@ -8,6 +8,17 @@ check:
     - accounts
 
 definitions:
+  download_error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+      - type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            error_message_contains: "Signature not valid in the specified time frame"
+            action: FAIL
+            failure_type: transient_error
+            error_message: "Bing Ads file download URL is expired."
   authenticator:
     type: OAuthAuthenticator
     refresh_request_body:
@@ -2657,6 +2668,7 @@ definitions:
     download_requester:
       type: CustomRequester
       class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
+      error_handler: "#/definitions/download_error_handler"
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
@@ -2724,6 +2736,7 @@ definitions:
         RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
     download_requester:
       type: HttpRequester
+      error_handler: "#/definitions/download_error_handler"
       url_base: "{{download_target}}"
       http_method: GET
     download_decoder:
