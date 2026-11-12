@@ -16,9 +16,8 @@ class MultipleAdvertiserIdsPerPartition(SubstreamPartitionRouter):
     Custom AdvertiserIdsPartitionRouter and AdvertiserIdPartitionRouter partition routers are used to get advertiser_ids
     as slices for streams where it uses as request param.
 
-    When using a sandbox account, it's impossible to get advertiser_ids via API.
-    In this case user need to provide advertiser_id in a config and connector need to use provided ids
-    and do not make requests to get this id.
+    When advertiser_id is provided in the config, use it to filter the sync to that advertiser
+    without fetching all accessible advertiser IDs from the API.
 
     When advertiser_id not provided components get slices as usual.
     Main difference between AdvertiserIdsPartitionRouter and AdvertiserIdPartitionRouter is

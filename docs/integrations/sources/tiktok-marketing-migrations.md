@@ -2,6 +2,25 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # TikTok Marketing Migration Guide
 
+## Upgrading to 6.0.0
+
+Version 6.0.0 removes **Sandbox Access Token** authentication. TikTok [announced that sandbox accounts will be deprecated by December 1, 2026](https://business-api.tiktok.com/portal/docs/sandbox-accounts/v1.3) and recommends using a production test account instead.
+
+This change affects every stream in a source configured with **Sandbox Access Token** (`credentials.auth_type: sandbox_access_token`). Existing production **OAuth2.0** sources require no configuration changes, schema refresh, or data clearing. Their stream schemas, primary keys, and incremental state are unchanged.
+
+Sandbox tokens do not authorize production advertisers. Airbyte cannot convert a sandbox account, token, or mock reporting data into production credentials or data automatically.
+
+### Migration steps
+
+Complete these steps before November 30, 2026:
+
+1. Choose a production TikTok Ads advertiser that you have permission to access. You can reuse an existing production advertiser; creating another account is not required.
+2. Create a new TikTok Marketing source using **OAuth2.0** and authorize the production advertiser. For Airbyte Open Source, provide the production application's **App ID**, **Secret**, and **Access Token**. See the [setup guide](tiktok-marketing.md#setup-guide).
+3. Optionally, set **Advertiser ID** to limit the source to that advertiser, and choose **Start date** for the production data you need.
+4. Create a new connection with a separate destination namespace or table prefix. Start with fresh connection state so sandbox cursors do not skip production history, and keep production records separate from existing sandbox mock data.
+5. Run the connection check, discover the streams, and run a sync. Verify that the destination contains the expected production data.
+6. Disable the old sandbox connection. Keep its existing destination tables if you still need the mock data; clearing or deleting those tables is not required for this upgrade.
+
 ## Upgrading to 5.0.0
 
 The `currency` field in the `pixels` stream's `events` array has been corrected from `boolean` to `string` type. The TikTok API returns currency as a string value (e.g. `"USD"`), so the previous `boolean` type was incorrect and caused transform errors during syncs.

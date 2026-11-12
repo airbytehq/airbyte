@@ -4,14 +4,13 @@ data:
     sl: 300
   allowedHosts:
     hosts:
-      - sandbox-ads.tiktok.com
       - business-api.tiktok.com
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.37.1@sha256:9ef4125a09cb4ce3a3ad12ffd326817ad6ddadb2957cced297bd731e3bc6b0e4
   connectorSubtype: api
   connectorType: source
   definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
-  dockerImageTag: 5.4.0
+  dockerImageTag: 6.0.0
   dockerRepository: airbyte/source-tiktok-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   externalDocumentationUrls:
@@ -39,13 +38,23 @@ data:
       enabled: true
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
       defaultRolloutMode: autopilot
       autopilotConfig:
         autoStart: true
         autoPromoteStages: true
         strategy: fast
     breakingChanges:
+      6.0.0:
+        message: >-
+          Sandbox Access Token authentication is no longer supported because TikTok is retiring
+          sandbox accounts by December 1, 2026. This affects all streams for sources using sandbox
+          authentication. Authorize a production advertiser using OAuth2.0 before upgrading;
+          sandbox tokens and data cannot be converted automatically. Existing production OAuth2.0
+          sources require no changes or data clearing. See
+          https://docs.airbyte.com/integrations/sources/tiktok-marketing-migrations#upgrading-to-600
+        upgradeDeadline: "2026-11-30"
+        deadlineAction: auto_upgrade
       5.0.0:
         message:
           The `currency` field in the `pixels` stream's `events` array has been corrected
@@ -126,8 +135,6 @@ data:
           id: 2a53fa01-351c-45af-84d8-a9f200a0c988
         - name: tiktok-marketing_prod_config_with_day_granularity_dev_null
           id: 35e62f0f-903a-4fcd-afc6-98259a4f2fea
-        - name: tiktok-marketing_sandbox_config_dev_null
-          id: 36e6778b-a04d-4356-a670-e41123fe9596
         - name: tiktok-marketing_config_dev_null
           id: 4da9b9c1-10bd-46c1-915b-bb3d1651153b
         - name: tiktok-marketing_new_config_prod_dev_null
@@ -136,17 +143,10 @@ data:
           id: 5b364ce8-b98d-4ccf-9a43-56ebd53d481a
         - name: tiktok-marketing_config_oauth_dev_null
           id: 60c12fbb-bc41-4df1-9b33-9a5455312b0e
-        - name: tiktok-marketing_new_config_sandbox_dev_null
-          id: 9aab8bf6-b4cd-4bad-b319-ed39bcddfe2a
         - name: tiktok-marketing_prod_config_day_dev_null
           id: bb8311bf-6def-4119-bf32-38c001a1e549
     - suite: unitTests
       testSecrets:
-        - name: SECRET_SOURCE-TIKTOK-MARKETING_SANDBOX_CREDS
-          fileName: sandbox_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS
           fileName: prod_config.json
           secretStore:
@@ -161,11 +161,6 @@ data:
       testSecrets:
         - name: SECRET_SOURCE-TIKTOK-MARKETING_CREDS
           fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-TIKTOK-MARKETING_NEW_CREDS
-          fileName: new_config_sandbox.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
@@ -196,11 +191,6 @@ data:
             alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_DAY_CREDS
           fileName: prod_config_day.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-TIKTOK-MARKETING_SANDBOX_CREDS
-          fileName: sandbox_config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store

@@ -19,16 +19,12 @@ This page contains the setup guide and reference information for the [TikTok Mar
 
 **For Airbyte Open Source:**
 
-For the Production environment (OAuth2.0):
+For production authentication (OAuth2.0):
 
 - Access token
 - Secret
 - App ID
 
-To access the Sandbox environment:
-
-- Access token
-- Advertiser ID
 <!-- /env:oss -->
 
 ## Setup guide
@@ -37,7 +33,6 @@ To access the Sandbox environment:
 
 1. [Create a TikTok For Business account](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855099573250). <!-- env:oss -->
 2. [Create a developer application](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855242728450).
-3. For a sandbox environment, [create a Sandbox Ad Account](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855331457026).
 <!-- /env:oss -->
 
 ### Step 2: Set up the source connector in Airbyte
@@ -67,7 +62,7 @@ To access the Sandbox environment:
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
-4. Select `OAuth2.0` or `Sandbox Access Token` as the authorization method, then enter the credentials from step 1. With `OAuth2.0`, the **Advertiser ID** is optional. Leave it empty to sync every advertiser the access token can reach, or set it to sync a single advertiser. With `Sandbox Access Token`, the **Advertiser ID** is required.
+4. Select `OAuth2.0` as the authorization method, then enter the credentials from step 1. The **Advertiser ID** is optional. Leave it empty to sync every advertiser the access token can reach, or set it to sync a single advertiser.
 5. Choose a **Start date**. Any data before this date is not replicated.
 6. Optionally, set an **End date** to limit how far forward the connector replicates data. If not set, the connector syncs data up to the current date.
 7. Optionally, adjust the **Attribution window** (default: 3 days, range: 0–364 days). This controls how far back the connector looks to update metrics for incremental report streams. A higher value helps capture delayed attribution data.

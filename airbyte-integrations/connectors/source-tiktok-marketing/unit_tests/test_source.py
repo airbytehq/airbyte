@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 import yaml
+from jsonschema import ValidationError, validate
 
 from airbyte_cdk.models import ConnectorSpecification, FailureType, Status, SyncMode
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
@@ -19,7 +20,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from .conftest import _YAML_FILE_PATH, get_source
 
 
-_PRODUCTION_ONLY_STREAMS = {
+_ADDITIONAL_PRODUCTION_STREAMS = {
     "advertiser_ids",
     "ads_reports_by_country_daily",
     "ad_groups_reports_by_country_daily",
@@ -55,8 +56,8 @@ def _walk_response_filters(value):
     "config, stream_len",
     [
         ({"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01"}, 44),
-        ({"access_token": "token", "environment": {"app_id": "1111", "secret": ""}, "start_date": "2021-04-01"}, 28),
-        ({"access_token": "token", "start_date": "2021-01-01", "environment": {"advertiser_id": "1111"}}, 28),
+        ({"access_token": "token", "environment": {"app_id": "1111", "secret": ""}, "start_date": "2021-04-01"}, 44),
+        ({"access_token": "token", "start_date": "2021-01-01", "environment": {"advertiser_id": "1111"}}, 44),
         (
             {
                 "access_token": "token",
@@ -83,53 +84,47 @@ def test_source_streams(config, stream_len):
 
 
 @pytest.mark.parametrize(
-    "config, expects_production_streams",
+    "config",
     [
-        (
-            {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": ""}},
-            False,
-        ),
-        (
-            {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": None}},
-            False,
-        ),
-        ({"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111"}}, False),
-        (
-            {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": "secret"}},
-            True,
-        ),
-        (
-            {
+        {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": ""}},
+        {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": None}},
+        {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111"}},
+        {"access_token": "token", "start_date": "2021-04-01", "environment": {"app_id": "1111", "secret": "secret"}},
+        {
+            "start_date": "2021-04-01",
+            "credentials": {
+                "auth_type": "oauth2.0",
+                "app_id": "1111",
+                "secret": "secret",
                 "access_token": "token",
-                "start_date": "2021-04-01",
-                "credentials": {"auth_type": "sandbox_access_token", "advertiser_id": "1111", "access_token": "token"},
             },
-            False,
-        ),
-        (
-            {
-                "access_token": "token",
-                "start_date": "2021-04-01",
-                "credentials": {
-                    "auth_type": "oauth2.0",
-                    "app_id": "1111",
-                    "secret": "secret",
-                    "access_token": "token",
-                },
-            },
-            True,
-        ),
+        },
     ],
 )
-def test_conditional_production_streams(config, expects_production_streams):
+def test_production_streams_available_for_current_and_legacy_configs(config):
     names = {stream.name for stream in get_source(config=config, state=None).streams(config=config)}
-    production_set = _PRODUCTION_ONLY_STREAMS
-
-    if expects_production_streams:
-        assert production_set <= names
-    else:
-        assert production_set.isdisjoint(names)
+    assert _ADDITIONAL_PRODUCTION_STREAMS <= names
     assert _COMMON_STREAMS <= names
+
+
+@pytest.mark.parametrize("auth_type", ["oauth2.0", "sandbox_access_token"])
+def test_spec_accepts_only_production_authentication(auth_type):
+    config = {
+        "credentials": {
+            "auth_type": auth_type,
+            "app_id": "1111",
+            "secret": "secret",
+            "access_token": "token",
+            "advertiser_id": "1111",
+        },
+        "start_date": "2021-04-01",
+    }
+    spec = get_source(config=config, state=None).spec(logger=None)
+    if auth_type == "sandbox_access_token":
+        with pytest.raises(ValidationError):
+            validate(config, spec.connectionSpecification)
+    else:
+        validate(config, spec.connectionSpecification)
 
 
 def test_source_spec(config):
@@ -177,8 +172,21 @@ def config_fixture():
     return config
 
 
-def test_source_check_connection_ok(config, requests_mock):
-    requests_mock.get(
+@pytest.mark.parametrize("advertiser_id", [None, "917429327"])
+@pytest.mark.parametrize("auth_type", ["legacy", "oauth2.0"])
+def test_source_check_connection_ok(config, requests_mock, advertiser_id, auth_type):
+    if auth_type == "oauth2.0":
+        config["credentials"] = {
+            "auth_type": "oauth2.0",
+            "app_id": "1111",
+            "secret": "secret",
+            "access_token": "NESTED_TOKEN",
+        }
+        if advertiser_id:
+            config["credentials"]["advertiser_id"] = advertiser_id
+    elif advertiser_id:
+        config["environment"] = {"advertiser_id": advertiser_id}
+    advertiser_ids_request = requests_mock.get(
         "https://business-api.tiktok.com/open_api/v1.3/oauth2/advertiser/get/",
         json={
             "code": 0,
@@ -204,6 +212,8 @@ def test_source_check_connection_ok(config, requests_mock):
     )
     logger_mock = MagicMock()
     assert get_source(config=config, state=None).check(logger_mock, config).status == Status.SUCCEEDED
+    assert advertiser_ids_request.called == (advertiser_id is None)
+    assert requests_mock.last_request.headers["Access-Token"] == ("NESTED_TOKEN" if auth_type == "oauth2.0" else "TOKEN")
 
 
 @pytest.mark.parametrize(
