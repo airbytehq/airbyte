@@ -24,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -531,3 +532,51 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_state_when_lookback_slices_complete_then_checkpointed_cursor_never_moves_below_input_cursor(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        The lookback window is re-read on every sync, but the cursor checkpointed after each lookback slice must not
+        drop below the cursor loaded from state. Otherwise an interrupted attempt persists the lower cursor and the
+        next attempt subtracts the lookback again, widening the re-read window on every interruption.
+        """
+        input_cursor = NOW - timedelta(days=2)  # 2023-01-08
+        lookback_days = 2
+        end_date = NOW - timedelta(days=1)  # 2023-01-09
+        expected_days = [input_cursor - timedelta(days=lookback_days) + timedelta(days=i) for i in range(4)]  # 01-06 .. 01-09
+        report_run_ids = [f"15718600600195{i:02d}" for i in range(len(expected_days))]
+        job_ids = [f"10499373796016{i:02d}" for i in range(len(expected_days))]
+
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        for day, report_run_id, job_id in zip(expected_days, report_run_ids, job_ids):
+            # every lookback day is still requested from the API
+            http_mocker.post(_job_start_request(since=day, until=day).build(), _job_start_response(report_run_id))
+            http_mocker.get(
+                _get_insights_request(job_id).build(),
+                _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids))
+
+        output = self._read(
+            config().with_start_date(NOW - timedelta(days=9)).with_end_date(end_date).with_insights_lookback_window(lookback_days),
+            state=StateBuilder()
+            .with_stream_state(_STREAM_NAME, {ACCOUNT_ID: {_CURSOR_FIELD: input_cursor.strftime(DATE_FORMAT), "slices": []}})
+            .build(),
+        )
+
+        checkpointed_states = [
+            AirbyteStreamStateSerializer.dump(message.state.stream).get("stream_state").get(ACCOUNT_ID, {})
+            for message in output.state_messages
+        ]
+        assert len(output.records) == len(expected_days)
+        assert [state.get(_CURSOR_FIELD) for state in checkpointed_states] == [
+            "2023-01-08",  # lookback slice 2023-01-06 done: cursor stays at the input value
+            "2023-01-08",  # lookback slice 2023-01-07 done
+            "2023-01-08",  # slice 2023-01-08 done
+            "2023-01-09",  # first slice past the input cursor advances it
+        ]
+        # contiguous completed slices are folded into the cursor instead of being carried in state
+        assert all(state.get("slices") == [] for state in checkpointed_states)
