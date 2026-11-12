@@ -17,9 +17,13 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 class AirbyteValueDeepCoercingMapperTest {
     private val mapper =
@@ -293,6 +297,42 @@ class AirbyteValueDeepCoercingMapperTest {
         }
     }
 
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("shortFractionalTimestampArgs")
+    fun testCoerceShortFractionalSecondsTimestamp(input: String, expected: OffsetDateTime) {
+        val (tzValue, tzChanges) = mapper.map(StringValue(input), TimestampTypeWithTimezone)
+        assertAll(
+            "Failed TimestampTypeWithTimezone for input $input",
+            { assertEquals(TimestampWithTimezoneValue(expected), tzValue) },
+            { assertEquals(emptyList<Meta.Change>(), tzChanges) },
+        )
+
+        val (ntzValue, ntzChanges) = mapper.map(StringValue(input), TimestampTypeWithoutTimezone)
+        assertAll(
+            "Failed TimestampTypeWithoutTimezone for input $input",
+            { assertEquals(TimestampWithoutTimezoneValue(expected.toLocalDateTime()), ntzValue) },
+            { assertEquals(emptyList<Meta.Change>(), ntzChanges) },
+        )
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("shortFractionalTimeArgs")
+    fun testCoerceShortFractionalSecondsTime(input: String, expected: OffsetTime) {
+        val (tzValue, tzChanges) = mapper.map(StringValue(input), TimeTypeWithTimezone)
+        assertAll(
+            "Failed TimeTypeWithTimezone for input $input",
+            { assertEquals(TimeWithTimezoneValue(expected), tzValue) },
+            { assertEquals(emptyList<Meta.Change>(), tzChanges) },
+        )
+
+        val (ntzValue, ntzChanges) = mapper.map(StringValue(input), TimeTypeWithoutTimezone)
+        assertAll(
+            "Failed TimeTypeWithoutTimezone for input $input",
+            { assertEquals(TimeWithoutTimezoneValue(expected.toLocalTime()), ntzValue) },
+            { assertEquals(emptyList<Meta.Change>(), ntzChanges) },
+        )
+    }
+
     @Test
     fun testCoerceNestedValue() {
         val (mappedValue, changes) =
@@ -418,4 +458,64 @@ class AirbyteValueDeepCoercingMapperTest {
     }
 
     private fun f(type: AirbyteType) = FieldType(type, nullable = true)
+
+    companion object {
+        @JvmStatic
+        fun shortFractionalTimestampArgs(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(
+                    "2026-11-11T17:01:52.4Z",
+                    OffsetDateTime.of(2026, 11, 11, 17, 1, 52, 400_000_000, ZoneOffset.UTC),
+                ),
+                Arguments.of(
+                    "2026-11-11T17:01:52.65Z",
+                    OffsetDateTime.of(2026, 11, 11, 17, 1, 52, 650_000_000, ZoneOffset.UTC),
+                ),
+                Arguments.of(
+                    "2026-11-11T17:01:52.05Z",
+                    OffsetDateTime.of(2026, 11, 11, 17, 1, 52, 50_000_000, ZoneOffset.UTC),
+                ),
+                Arguments.of(
+                    "2026-11-11T17:01:52.65+01:00",
+                    OffsetDateTime.of(2026, 11, 11, 17, 1, 52, 650_000_000, ZoneOffset.ofHours(1)),
+                ),
+                Arguments.of(
+                    "2026-11-11 17:01:52.4",
+                    OffsetDateTime.of(2026, 11, 11, 17, 1, 52, 400_000_000, ZoneOffset.UTC),
+                ),
+                Arguments.of(
+                    "2024/01/15 12:00:00.65",
+                    OffsetDateTime.of(2024, 1, 15, 12, 0, 0, 650_000_000, ZoneOffset.UTC),
+                ),
+            )
+
+        @JvmStatic
+        fun shortFractionalTimeArgs(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(
+                    "12:00:00.4Z",
+                    OffsetTime.of(12, 0, 0, 400_000_000, ZoneOffset.UTC),
+                ),
+                Arguments.of(
+                    "12:00:00.65Z",
+                    OffsetTime.of(12, 0, 0, 650_000_000, ZoneOffset.UTC),
+                ),
+                Arguments.of(
+                    "12:00:00.05Z",
+                    OffsetTime.of(12, 0, 0, 50_000_000, ZoneOffset.UTC),
+                ),
+                Arguments.of(
+                    "12:00:00.65+01:00",
+                    OffsetTime.of(12, 0, 0, 650_000_000, ZoneOffset.ofHours(1)),
+                ),
+                Arguments.of(
+                    "12:00:00.4",
+                    OffsetTime.of(12, 0, 0, 400_000_000, ZoneOffset.UTC),
+                ),
+                Arguments.of(
+                    "12:00:00.05",
+                    OffsetTime.of(12, 0, 0, 50_000_000, ZoneOffset.UTC),
+                ),
+            )
+    }
 }

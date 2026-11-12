@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.2.5 — 2026-11-12
+
+[#92616](https://github.com/airbytehq/airbyte/pull/92616) — Fix ([#92615](https://github.com/airbytehq/airbyte/issues/92615)): include missing 8-digit fractional second pattern (`[SSSSSSSS]`) in `DateTimeConverter.TIME_WITH_TIMEZONE_FORMATTER` (`legacy-source-integration-tests`).
+
 ### 1.2.4 — 2026-11-10
 
 [#91499](https://github.com/airbytehq/airbyte/pull/91499) — Release resources and exit when the output channel fails during partition cleanup.
