@@ -43,11 +43,7 @@ def test_events_continue_after_unavailable_or_empty_calendar(status: int) -> Non
             )
             for calendar in ("calendar-a", "calendar-b")
         }
-        body = (
-            {"request_id": "request", "error": {"type": "general", "message": "Not Found"}}
-            if status == 404
-            else {"data": []}
-        )
+        body = {"request_id": "request", "error": {"type": "general", "message": "Not Found"}} if status == 404 else {"data": []}
         http.get(requests["calendar-a"], HttpResponse(json.dumps(body), status))
         http.get(
             requests["calendar-b"],
