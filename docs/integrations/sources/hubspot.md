@@ -490,6 +490,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 - **Missing records** in CRM Search streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`):
   - If you notice missing records during incremental syncs, it may be due to irregularities in HubSpot's API behavior.
   - To mitigate this, configure the **CRM Search Lookback Window** in the source settings. This re-fetches data for a specified number of minutes before the state from the previous sync, helping to capture missing records.
+  - `contacts` and custom objects read their first incremental sync (and any sync after a reset or refresh) from the list endpoint instead of CRM Search. That sync can save a cursor later than the time it started. A record that was already read and was then edited before the sync finished is not picked up by the next sync. Set the **CRM Search Lookback Window** to at least the duration of that first sync, in minutes. With **Incremental | Append + Deduped**, the records fetched again are deduplicated.
 
 - **Missing records** in property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`):
   - HubSpot calculated properties (formula fields, rollup summaries, analytics properties) can emit timestamps ahead of user-initiated changes, causing the sync cursor to advance past records that have not yet been synced.
@@ -516,8 +517,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
-|:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :------------ | :----------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 6.14.2 | 2026-11-10 | [91806](https://github.com/airbytehq/airbyte/pull/91806) | Fix `deals` silently missing records in Full Refresh: read `deals` from the list endpoint when there is no state. |
 | 6.14.1 | 2026-11-04 | [90854](https://github.com/airbytehq/airbyte/pull/90854) | Fix `contacts` silently missing records: CRM Search now pages by record ID, and Full Refresh reads `contacts` from the list endpoint. |
 | 6.14.0 | 2026-11-04 | [88970](https://github.com/airbytehq/airbyte/pull/88970) | Add `listings` stream |
