@@ -738,9 +738,9 @@ def test_channels_stream_ok_false_error_handling(requests_mock, token_config, sl
     assert len(output.records) == 0
     assert len(output.errors) > 0
     error_messages = [trace.trace.error.message for trace in output.errors]
-    assert any(expected_error_message in msg for msg in error_messages), (
-        f"Expected error message containing '{expected_error_message}' not found in: {error_messages}"
-    )
+    assert any(
+        expected_error_message in msg for msg in error_messages
+    ), f"Expected error message containing '{expected_error_message}' not found in: {error_messages}"
     assert any(trace.trace.error.failure_type == expected_failure_type for trace in output.errors)
 
 
@@ -923,9 +923,9 @@ def test_channels_stream_ok_false_unrecognized_error_catch_all(requests_mock, to
     assert len(output.records) == 0
     assert len(output.errors) > 0
     error_messages = [trace.trace.error.message for trace in output.errors]
-    assert any("Slack API returned an unrecognized error: some_brand_new_error_code." in msg for msg in error_messages), (
-        f"Expected catch-all error message not found in: {error_messages}"
-    )
+    assert any(
+        "Slack API returned an unrecognized error: some_brand_new_error_code." in msg for msg in error_messages
+    ), f"Expected catch-all error message not found in: {error_messages}"
     assert any(trace.trace.error.failure_type == FailureType.system_error for trace in output.errors)
 
 
