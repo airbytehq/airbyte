@@ -68,7 +68,9 @@ def test_check_fails_with_the_no_channel_message_when_the_account_has_no_channel
         http_mocker.post(YoutubeAnalyticsRequestBuilder.token_request(), _TOKEN_RESPONSE)
         http_mocker.get(
             _report_types_request(),
-            HttpResponse(body=json.dumps({"error": {"code": 401, "message": "Unauthorized", "status": "UNAUTHENTICATED"}}), status_code=401),
+            HttpResponse(
+                body=json.dumps({"error": {"code": 401, "message": "Unauthorized", "status": "UNAUTHENTICATED"}}), status_code=401
+            ),
         )
 
         status = get_source(config).check(logging.getLogger("test"), config)
