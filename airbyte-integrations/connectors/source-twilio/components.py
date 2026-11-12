@@ -83,6 +83,26 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioMessagesStateMigration(StateMigration):
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return "states" in stream_state or ("state" in stream_state and not stream_state.get("use_global_cursor"))
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        new_state = {key: copy.deepcopy(value) for key, value in stream_state.items() if key != "states"}
+        cursor = new_state.get("state", {}).get("date_sent")
+        if not cursor:
+            cursors = [state.get("cursor", {}).get("date_sent") for state in stream_state.get("states", [])]
+            cursor = min(cursors, key=self._parse_cursor) if cursors and all(cursors) else None
+        new_state["state"] = {"date_sent": cursor} if cursor else {}
+        new_state["use_global_cursor"] = True
+        return new_state
+
+    @staticmethod
+    def _parse_cursor(value: str) -> datetime:
+        parsed = datetime.fromisoformat(value)
+        return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
