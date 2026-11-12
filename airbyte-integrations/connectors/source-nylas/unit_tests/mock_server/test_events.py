@@ -2,11 +2,12 @@
 
 import json
 
+from conftest import get_source
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-from conftest import get_source
 
 
 _API = "https://api.us.nylas.com"
