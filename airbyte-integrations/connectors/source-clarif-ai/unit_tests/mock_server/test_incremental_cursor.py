@@ -74,7 +74,5 @@ def test_substream_partition_state_advances_past_nanosecond_modified_at(stream_n
 
     assert [r.record.data["id"] for r in output.records] == [f"{stream_name}_1", f"{stream_name}_2"]
     state = output.most_recent_state.stream_state.__dict__
-    assert [(s["partition"]["app_id"], s["cursor"]) for s in state["states"]] == [
-        ("app1", {"modified_at": "2026-10-14T09:41:55.568082Z"})
-    ]
+    assert [(s["partition"]["app_id"], s["cursor"]) for s in state["states"]] == [("app1", {"modified_at": "2026-10-14T09:41:55.568082Z"})]
     assert state["state"] == {"modified_at": "2026-10-14T09:41:55.568082Z"}
