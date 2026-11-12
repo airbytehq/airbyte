@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -23,6 +24,9 @@ class BlocksRetriever(SimpleRetriever):
 
     """
 
+    cursor: Optional[Cursor] = None
+    is_client_side_incremental_sync: bool = False
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.current_block_depth = 0
@@ -31,6 +35,14 @@ class BlocksRetriever(SimpleRetriever):
         self,
         records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
+    ) -> Iterable[StreamData]:
+        yield from self._read_records(records_schema, stream_slice, stream_slice)
+
+    def _read_records(
+        self,
+        records_schema: Mapping[str, Any],
+        stream_slice: Optional[StreamSlice],
+        page_slice: Optional[StreamSlice],
     ) -> Iterable[StreamData]:
         # if reached recursive limit, don't read anymore
         if self.current_block_depth > MAX_BLOCK_DEPTH:
@@ -44,10 +56,15 @@ class BlocksRetriever(SimpleRetriever):
                     partition={"block_id": stream_data.data["id"], "parent_slice": {}},
                     cursor_slice=stream_slice.cursor_slice,
                 )
-                yield from self.read_records(records_schema, child_stream_slice)
+                yield from self._read_records(records_schema, child_stream_slice, page_slice)
                 self.current_block_depth -= 1
 
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
 
-            yield stream_data
+            if (
+                not self.is_client_side_incremental_sync
+                or self.cursor is None
+                or self.cursor.should_be_synced(Record(data=stream_data.data, stream_name=self.name, associated_slice=page_slice))
+            ):
+                yield stream_data

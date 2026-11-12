@@ -3,6 +3,8 @@
 #
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
@@ -16,6 +18,72 @@ state_test_records = [
     {"id": "2", "last_edited_time": "2022-01-03T00:00:00.000Z"},
     {"id": "3", "last_edited_time": "2022-01-04T00:00:00.000Z"},
 ]
+
+
+@pytest.mark.parametrize("with_state", [True, False])
+def test_blocks_incremental_filters_after_traversing_children(requests_mock, with_state):
+    old_time = "2021-01-01T00:00:00.000Z"
+    new_time = "2024-01-01T00:00:00.000Z"
+
+    def block(block_id, edited_time, has_children=False, parent="page-1"):
+        return {
+            "object": "block",
+            "id": block_id,
+            "parent": {"type": "page_id", "page_id": parent},
+            "last_edited_time": edited_time,
+            "has_children": has_children,
+            "type": "paragraph",
+            "paragraph": {},
+        }
+
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json={
+            "results": [{"object": "page", "id": "page-1", "last_edited_time": new_time, "properties": {}}],
+            "has_more": False,
+            "next_cursor": None,
+        },
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/page-1/children",
+        json={
+            "results": [block("old", old_time), block("new", new_time), block("oldparent", old_time, True)],
+            "has_more": False,
+            "next_cursor": None,
+        },
+    )
+    requests_mock.get(
+        "https://api.notion.com/v1/blocks/oldparent/children",
+        json={
+            "results": [block("newchild", new_time, parent="oldparent"), block("oldchild", old_time, parent="oldparent")],
+            "has_more": False,
+            "next_cursor": None,
+        },
+    )
+    config = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "blocks", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = (
+        StateBuilder()
+        .with_stream_state("blocks", {"use_global_cursor": True, "state": {"last_edited_time": "2023-01-01T00:00:00.000Z"}})
+        .build()
+        if with_state
+        else None
+    )
+    output = read(get_source(config, state), config=config, catalog=catalog, state=state)
+
+    expected_ids = {"new", "newchild"} if with_state else {"old", "new", "oldparent", "newchild", "oldchild"}
+    assert {record.record.data["id"] for record in output.records} == expected_ids
+    assert output.state_messages[-1].state.stream.stream_state.__dict__["state"]["last_edited_time"] == "2024-01-01T00:00:00.000000Z"
 
 
 def test_blocks_retriever_depth_restored_after_children(components_module):
