@@ -901,6 +901,14 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+      transformations:
+        # The API started returning `id` as a numeric string on this endpoint; keep it an integer as declared in the schema.
+        - type: AddFields
+          condition: "{{ record.get('id') is string }}"
+          fields:
+            - path:
+                - id
+              value: "{{ record['id'] | int(record['id']) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
