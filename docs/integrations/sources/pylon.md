@@ -112,9 +112,18 @@ An issue updated exactly at a shared window edge also generates two child partit
 
 ## Upgrade notes
 
+### Upgrading to 1.0.0
+
 Version 1.0.0 is a breaking change: `tags` on Accounts and Issues is now an array of strings, and eight timestamp fields on Accounts, Issues, Issue Messages, and Custom Fields are now typed as `date-time`. After upgrading, refresh the source schema; some destinations also require you to clear the affected streams. For the changed fields and upgrade steps, see the [Pylon migration guide](/integrations/sources/pylon-migrations#upgrading-to-100).
 
-Notes for earlier versions, including 0.0.8, are in the [Pylon migration guide](/integrations/sources/pylon-migrations#upgrading-to-008).
+### Upgrading to 0.0.8
+
+Connector version 0.0.8 switches the Issues stream from `GET /issues` (cursored on `created_at`) to `POST /issues/search` (cursored on `updated_at`) so that incremental syncs capture updates to existing issues, not just newly created ones. Connections upgrading from any earlier version automatically run a one-time state migration that rewinds the issues cursor and re-pulls history starting from:
+
+- the **Start Date** you configured, if it is set, or
+- **30 days before the first sync**, if Start Date is unset.
+
+If you need a longer backfill, set Start Date to the desired date before the first sync on 0.0.8. Subsequent syncs use the new `updated_at` cursor incrementally and do not re-pull history.
 
 ## Limitations & Troubleshooting
 

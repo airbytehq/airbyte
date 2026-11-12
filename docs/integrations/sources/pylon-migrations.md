@@ -45,15 +45,6 @@ With **Full Refresh | Overwrite**, `accounts` and `custom_fields` are fully rewr
 - The 8 timestamp columns in the preceding table are now timestamp columns instead of text. Update SQL, `dbt` models and dashboards that treat them as text, for example string comparisons, `LIKE`, substrings or casts from strings.
 - `tags` on `accounts` and `issues` is now an array of strings. Update anything that expects objects, such as `tags[0]:name`, or that worked around the old null values.
 
-## Upgrading to 0.0.8
-
-Connector version 0.0.8 switches the Issues stream from `GET /issues` (cursored on `created_at`) to `POST /issues/search` (cursored on `updated_at`) so that incremental syncs capture updates to existing issues, not just newly created ones. Connections upgrading from any earlier version automatically run a one-time state migration that rewinds the issues cursor and re-pulls history starting from:
-
-- the **Start Date** you configured, if it is set, or
-- **30 days before the first sync**, if Start Date is unset.
-
-If you need a longer backfill, set Start Date to the desired date before the first sync on 0.0.8. Subsequent syncs use the new `updated_at` cursor incrementally and do not re-pull history.
-
 ## Connector upgrade guide
 
 <MigrationGuide />
