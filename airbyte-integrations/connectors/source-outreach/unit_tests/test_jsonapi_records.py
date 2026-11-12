@@ -118,6 +118,52 @@ def _assert_matches_legacy(output, resources: list[dict]) -> None:
         assert not {"_flat", "attributes", "relationships", "type", "links"}.intersection(record)
 
 
+@pytest.mark.parametrize("stream_name", ["mailings", "accounts"])
+def test_refreshes_expired_access_token_mid_sync(stream_name: str) -> None:
+    token_request = HttpRequest(
+        _TOKEN_URL,
+        body="grant_type=refresh_token&client_id=test-client-id&client_secret=test-client-secret&refresh_token=test-refresh-token",
+    )
+    url = f"{_BASE_URL}{_STREAMS[stream_name]['retriever']['requester']['path']}"
+    resources = [_resource("refreshed-1", {"updatedAt": "2021-01-01T00:00:00.000Z"})]
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            token_request,
+            [
+                HttpResponse(body=json.dumps({"access_token": token, "expires_in": 3600}), status_code=200)
+                for token in ["token-A", "token-B"]
+            ],
+        )
+        http_mocker.get(
+            HttpRequest(url, query_params=_query_params(stream_name), headers={"Authorization": "Bearer token-A"}),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "errors": [
+                            {
+                                "id": "expiredAccessToken",
+                                "title": "Expired Access Token",
+                                "detail": "Please get a new access token and try again.",
+                            }
+                        ]
+                    }
+                ),
+                status_code=401,
+            ),
+        )
+        http_mocker.get(
+            HttpRequest(url, query_params=_query_params(stream_name), headers={"Authorization": "Bearer token-B"}),
+            _response(resources),
+        )
+        catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+        state = StateBuilder().build()
+        output = read(get_source(config=_CONFIG, state=state), _CONFIG, catalog, state)
+
+        assert [record.record.data["id"] for record in output.records] == ["refreshed-1"]
+        assert not output.errors
+        http_mocker.assert_number_of_calls(token_request, 2)
+
+
 @pytest.mark.parametrize("stream_name", sorted(_STREAMS))
 def test_all_streams_flatten_jsonapi_records_exactly(stream_name: str) -> None:
     resources = [
