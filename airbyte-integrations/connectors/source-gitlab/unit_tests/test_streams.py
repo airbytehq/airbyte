@@ -231,10 +231,13 @@ test_cases = (
     (
         "merge_request_commits",
         (
-            ("/api/v4/projects/p_1/merge_requests", [{"id": "mr_1", "iid": "mr_1", "project_id": "p_1"}]),
+            (
+                "/api/v4/projects/p_1/merge_requests",
+                [{"id": "mr_1", "iid": "mr_1", "project_id": "p_1", "updated_at": "2021-03-18T12:51:06Z"}],
+            ),
             ("/api/v4/projects/p_1/merge_requests/mr_1/commits", [{"id": "mrc_1"}]),
         ),
-        {"id": "mrc_1", "project_id": "p_1", "merge_request_iid": "mr_1"},
+        {"id": "mrc_1", "project_id": "p_1", "merge_request_iid": "mr_1", "merge_request_updated_at": "2021-03-18T12:51:06Z"},
     ),
 )
 
