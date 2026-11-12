@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7fbeaeea-2d0d-4f13-8200-fa228494d91c
-  dockerImageTag: 0.0.77
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-clarif-ai
   githubIssueLabel: source-clarif-ai
   icon: icon.svg
@@ -44,6 +44,23 @@ data:
       url: https://status.clarifai.com/
       type: status_page
   releases:
+    breakingChanges:
+      1.0.0:
+        message: >
+          The modified_at field in applications, datasets, and models now uses microsecond
+          precision so incremental state advances when Clarifai returns nanosecond timestamps.
+          Review and update downstream comparisons that require nine fractional digits before
+          upgrading; existing destination rows keep their previous precision. Other streams
+          are unaffected. No schema refresh or clear is required.
+          See the [migration guide](https://docs.airbyte.com/integrations/sources/clarif-ai-migrations#upgrading-to-100).
+        upgradeDeadline: "2026-11-27"
+        deadlineAction: disable
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - applications
+              - datasets
+              - models
     rolloutConfiguration:
       defaultRolloutMode: autopilot
       autopilotConfig:

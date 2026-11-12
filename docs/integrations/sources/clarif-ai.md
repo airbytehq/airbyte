@@ -15,9 +15,9 @@ API Documentation: https://docs.clarifai.com/api-guide/api-overview/helpful-api-
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| applications | id | DefaultPaginator | ✅ |   ❌  |
-| datasets | id | DefaultPaginator | ✅ |   ❌  |
-| models | id | DefaultPaginator | ✅ |   ❌  |
+| applications | id | DefaultPaginator | ✅ |   ✅  |
+| datasets | id | DefaultPaginator | ✅ |   ✅  |
+| models | id | DefaultPaginator | ✅ |   ✅  |
 | model_versions | id | DefaultPaginator | ✅ |   ❌  |
 | worklows | id | DefaultPaginator | ✅ |   ❌  |
 | app_inputs | id | DefaultPaginator | ✅ |   ❌  |
@@ -28,6 +28,13 @@ API Documentation: https://docs.clarifai.com/api-guide/api-overview/helpful-api-
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
+## Incremental sync
+
+For `applications`, `datasets`, and `models`, incremental state tracks the newest `modified_at`
+using microsecond precision. These list endpoints still reread their available records on each
+sync; advancing state does not reduce API requests or prevent repeated records in Append mode.
+See the [1.0.0 migration guide](clarif-ai-migrations.md#upgrading-to-100) before upgrading.
+
 ## Changelog
 
 <details>
@@ -35,6 +42,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.0 | 2026-11-12 | | Fixed incremental state advancement for applications, datasets, and models by normalizing modified_at timestamps to microsecond precision. |
 | 0.0.77 | 2026-11-10 | [91461](https://github.com/airbytehq/airbyte/pull/91461) | Update dependencies |
 | 0.0.76 | 2026-11-04 | [90341](https://github.com/airbytehq/airbyte/pull/90341) | Simplify error handler configuration with no behavior change |
 | 0.0.75 | 2026-11-03 | [90511](https://github.com/airbytehq/airbyte/pull/90511) | Update dependencies |
