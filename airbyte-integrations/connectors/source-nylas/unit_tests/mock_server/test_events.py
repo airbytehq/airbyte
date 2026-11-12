@@ -86,9 +86,9 @@ class TestEventsStream(TestCase):
         assert sorted(record.record.data["id"] for record in output.records) == ["event-1", "event-2"]
         assert not output.errors
         assert not any(log.log.level == "ERROR" for log in output.logs)
-        assert any("Calendar not found or not accessible" in log.log.message for log in output.logs), (
-            "expected the skipped 404 calendar to be logged"
-        )
+        assert any(
+            "Calendar not found or not accessible" in log.log.message for log in output.logs
+        ), "expected the skipped 404 calendar to be logged"
         # exactly one events request per calendar: the 404 is not retried
         http_mocker.assert_number_of_calls(subscribed_calendar_request, 1)
         http_mocker.assert_number_of_calls(owned_calendar_request, 1)
