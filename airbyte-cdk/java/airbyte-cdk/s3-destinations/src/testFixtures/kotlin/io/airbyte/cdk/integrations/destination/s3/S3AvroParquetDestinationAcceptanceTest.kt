@@ -30,7 +30,7 @@ protected constructor(
         supportsChangeCapture = true,
         expectNumericTimestamps = true,
         expectSchemalessObjectsCoercedToStrings = true,
-        expectUnionsPromotedToDisjointRecords = expectUnionsPromotedToDisjointRecords
+        expectUnionsPromotedToDisjointRecords = expectUnionsPromotedToDisjointRecords,
     ) {
     @ParameterizedTest
     @ArgumentsSource(NumberDataTypeTestArgumentProvider::class)
@@ -60,8 +60,9 @@ protected constructor(
 
     private fun retrieveExpectedDataTypes(stream: AirbyteStream): Map<String, Set<Schema.Type>> {
         val iterableNames = Iterable { stream.jsonSchema["properties"].fieldNames() }
-        val nameToNode: Map<String, JsonNode> =
-            iterableNames.associateWith { name: String -> getJsonNode(stream, name) }
+        val nameToNode: Map<String, JsonNode> = iterableNames.associateWith { name: String ->
+            getJsonNode(stream, name)
+        }
 
         return nameToNode.entries.associate { it.key to getExpectedSchemaType(it.value) }
     }
@@ -92,7 +93,7 @@ protected constructor(
 
     private fun compareAirbyteTypes(
         airbyteTypePropertyText: String?,
-        value: JsonSchemaType
+        value: JsonSchemaType,
     ): Boolean {
         if (airbyteTypePropertyText == null) {
             return value.jsonSchemaAirbyteType == null
@@ -104,7 +105,7 @@ protected constructor(
     private fun readCatalogFromFile(catalogFilename: String): AirbyteCatalog {
         return Jsons.deserialize(
             MoreResources.readResource(catalogFilename),
-            AirbyteCatalog::class.java
+            AirbyteCatalog::class.java,
         )
     }
 
@@ -118,7 +119,7 @@ protected constructor(
     @Throws(Exception::class)
     protected abstract fun retrieveDataTypesFromPersistedFiles(
         streamName: String,
-        namespace: String
+        namespace: String,
     ): Map<String, Set<Schema.Type>>
 
     protected fun getTypes(record: GenericData.Record): Map<String, Set<Schema.Type>> {

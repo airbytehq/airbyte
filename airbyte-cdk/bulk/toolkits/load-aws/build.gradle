@@ -1,4 +1,6 @@
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
+    // KGP >= 2.0.10 (KT-68278): testFixtures no longer inherits main's implementation deps.
+    testFixturesImplementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
 }

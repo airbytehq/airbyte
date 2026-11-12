@@ -14,9 +14,15 @@ from airbyte_cdk import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
+
+
+@pytest.fixture(autouse=True)
+def _isolated_request_cache(monkeypatch, tmp_path):
+    monkeypatch.setenv(ENV_REQUEST_CACHE_PATH, str(tmp_path))
 
 
 def _get_manifest_path() -> Path:

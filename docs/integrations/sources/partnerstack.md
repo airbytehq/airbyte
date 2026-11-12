@@ -76,6 +76,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
+| 0.3.13 | 2026-06-02 | [78876](https://github.com/airbytehq/airbyte/pull/78876) | Update dependencies |
 | 0.3.12 | 2026-03-10 | [74086](https://github.com/airbytehq/airbyte/pull/74086) | Add missing fields (test, metadata) to Transactions stream schema |
 | 0.3.11 | 2025-05-24 | [60453](https://github.com/airbytehq/airbyte/pull/60453) | Update dependencies |
 | 0.3.10 | 2025-05-10 | [60087](https://github.com/airbytehq/airbyte/pull/60087) | Update dependencies |

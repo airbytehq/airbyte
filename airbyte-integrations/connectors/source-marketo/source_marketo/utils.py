@@ -86,6 +86,12 @@ def format_value(value, schema):
     elif "boolean" in field_type:
         if isinstance(value, bool):
             return value
+        if isinstance(value, (int, float)):
+            # Activity attributes come from a JSON blob, so boolean fields can arrive as numeric 0/1
+            return bool(value)
+        if not isinstance(value, str):
+            # Return None for any other type instead of crashing on an unsupported value
+            return None
         return value.lower() == "true"
 
     return value

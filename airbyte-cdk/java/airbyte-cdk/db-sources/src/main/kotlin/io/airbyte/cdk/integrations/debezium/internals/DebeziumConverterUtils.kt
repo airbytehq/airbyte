@@ -52,7 +52,7 @@ class DebeziumConverterUtils private constructor() {
                     return LocalDateTime.parse(input).toString()
                 } catch (e: DateTimeParseException) {
                     LOGGER.warn { "Cannot convert value '$input' to LocalDateTime type" }
-                    return input.toString()
+                    return input
                 }
             }
             LOGGER.warn {

@@ -585,6 +585,14 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"bearer_token\"] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        # Capsule allows 4,000 requests/hour per user and answers 429 until the
+        # window resets; X-RateLimit-Reset is the reset time in UTC epoch seconds.
+        # https://developer.capsulecrm.com/v2/overview/handling-api-responses
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Reset
 
 streams:
   - $ref: "#/definitions/streams/users"

@@ -8,13 +8,13 @@ import io.airbyte.cdk.load.pipeline.RoundRobinInputPartitioner
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 import kotlin.math.min
 
 @Singleton
 class AzureBlobStorageObjectLoader(
     @Value("\${airbyte.destination.core.file-transfer.enabled}") isLegacyFileTransfer: Boolean,
-    config: AzureBlobStorageConfiguration<*>
+    config: AzureBlobStorageConfiguration<*>,
 ) : ObjectLoader {
     override val numPartWorkers: Int =
         if (isLegacyFileTransfer) {
@@ -26,6 +26,7 @@ class AzureBlobStorageObjectLoader(
     override val maxMemoryRatioReservedForParts: Double = config.maxMemoryRatioReservedForParts
     override val objectSizeBytes: Long = config.objectSizeBytes
     override val partSizeBytes: Long = config.partSizeBytes
+
     override fun socketPartSizeBytes(numberOfSockets: Int): Long {
         return min((numberOfSockets * 4), 20) * 1024L * 1024
     }

@@ -61,7 +61,7 @@ object DebugUtil {
             val message =
                 Jsons.deserialize(
                     MoreResources.readResource("debug_resources/state.json"),
-                    AirbyteStateMessage::class.java
+                    AirbyteStateMessage::class.java,
                 )
             return Jsons.jsonNode(listOf(message))
         }

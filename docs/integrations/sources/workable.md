@@ -58,6 +58,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.18 | 2026-11-09 | [91459](https://github.com/airbytehq/airbyte/pull/91459) | Fix check and discover failing on page size option configuration; upgrade base image to `source-declarative-manifest:7.47.0` |
+| 0.2.17 | 2026-06-02 | [79074](https://github.com/airbytehq/airbyte/pull/79074) | Update dependencies |
 | 0.2.16 | 2025-05-24 | [60781](https://github.com/airbytehq/airbyte/pull/60781) | Update dependencies |
 | 0.2.15 | 2025-05-10 | [59931](https://github.com/airbytehq/airbyte/pull/59931) | Update dependencies |
 | 0.2.14 | 2025-05-04 | [58918](https://github.com/airbytehq/airbyte/pull/58918) | Update dependencies |

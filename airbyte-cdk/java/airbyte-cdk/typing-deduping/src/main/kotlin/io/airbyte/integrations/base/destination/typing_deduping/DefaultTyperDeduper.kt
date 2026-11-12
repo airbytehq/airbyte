@@ -26,6 +26,7 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import org.apache.commons.lang3.tuple.Pair
 
 private val LOGGER = KotlinLogging.logger {}
+
 /**
  * An abstraction over SqlGenerator and DestinationHandler. Destinations will still need to call
  * `new CatalogParser(new FooSqlGenerator()).parseCatalog()`, but should otherwise avoid interacting
@@ -46,7 +47,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     private val parsedCatalog: ParsedCatalog,
     private val v1V2Migrator: DestinationV1V2Migrator,
     private val v2TableMigrator: V2TableMigrator,
-    private val migrations: List<Migration<DestinationState>>
+    private val migrations: List<Migration<DestinationState>>,
 ) : TyperDeduper {
 
     private lateinit var overwriteStreamsWithTmpTable: MutableSet<StreamId>
@@ -59,7 +60,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
             FutureUtils.countOfTypeAndDedupeThreads,
             BasicThreadFactory.Builder()
                 .namingPattern(IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME)
-                .build()
+                .build(),
         )
     private lateinit var destinationInitialStatuses:
         List<DestinationInitialStatus<DestinationState>>
@@ -69,14 +70,14 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         destinationHandler: DestinationHandler<DestinationState>,
         parsedCatalog: ParsedCatalog,
         v1V2Migrator: DestinationV1V2Migrator,
-        migrations: List<Migration<DestinationState>>
+        migrations: List<Migration<DestinationState>>,
     ) : this(
         sqlGenerator,
         destinationHandler,
         parsedCatalog,
         v1V2Migrator,
         NoopV2TableMigrator(),
-        migrations
+        migrations,
     )
 
     @Throws(Exception::class)
@@ -93,7 +94,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
             destinationHandler,
             v1V2Migrator,
             v2TableMigrator,
-            parsedCatalog
+            parsedCatalog,
         )
 
         destinationInitialStatuses =
@@ -101,7 +102,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 executorService,
                 destinationHandler,
                 migrations,
-                destinationHandler.gatherInitialState(parsedCatalog.streams)
+                destinationHandler.gatherInitialState(parsedCatalog.streams),
             )
 
         // Commit our destination states immediately.
@@ -113,7 +114,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         // reset flag
         // and finish it for us.
         destinationHandler.commitDestinationStates(
-            destinationInitialStatuses.associate { it.streamConfig.id to it.destinationState }
+            destinationInitialStatuses.associate { it.streamConfig.id to it.destinationState },
         )
     }
 
@@ -124,25 +125,25 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
 
         val prepareTablesFutureResult =
             CompletableFutures.allOf(
-                    destinationInitialStatuses.map { this.prepareTablesFuture(it) }
+                    destinationInitialStatuses.map { this.prepareTablesFuture(it) },
                 )
                 .toCompletableFuture()
                 .join()
         getResultsOrLogAndThrowFirst(
             "The following exceptions were thrown attempting to prepare tables:\n",
-            prepareTablesFutureResult
+            prepareTablesFutureResult,
         )
 
         // If we get here, then we've executed all soft resets. Force the soft reset flag to false.
         destinationHandler.commitDestinationStates(
             destinationInitialStatuses.associate {
                 it.streamConfig.id to it.destinationState.withSoftReset(false)
-            }
+            },
         )
     }
 
     private fun prepareTablesFuture(
-        initialState: DestinationInitialStatus<DestinationState>
+        initialState: DestinationInitialStatus<DestinationState>,
     ): CompletionStage<Unit> {
         // For each stream, make sure that its corresponding final table exists.
         // Also, for OVERWRITE streams, decide if we're writing directly to the final table, or into
@@ -176,8 +177,8 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                                         sqlGenerator.createTable(
                                             stream,
                                             TMP_OVERWRITE_TABLE_SUFFIX,
-                                            true
-                                        )
+                                            true,
+                                        ),
                                     )
                                 }
                                 LOGGER.info {
@@ -200,7 +201,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                             TyperDeduperUtil.executeSoftReset(
                                 sqlGenerator,
                                 destinationHandler,
-                                stream
+                                stream,
                             )
                         }
                     } else {
@@ -209,17 +210,17 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         }
                         // The table doesn't exist. Create it. Don't force.
                         destinationHandler.execute(
-                            sqlGenerator.createTable(stream, NO_SUFFIX, false)
+                            sqlGenerator.createTable(stream, NO_SUFFIX, false),
                         )
                     }
 
                     val maxRawTimestemp =
                         initialState.initialRawTableStatus.maxProcessedTimestamp.getOrDefault(
-                            Instant.MAX
+                            Instant.MAX,
                         )
                     val maxTempRawTimestemp =
                         initialState.initialTempRawTableStatus.maxProcessedTimestamp.getOrDefault(
-                            Instant.MAX
+                            Instant.MAX,
                         )
                     val ts = ObjectUtils.min(maxRawTimestemp, maxTempRawTimestemp)
                     initialRawTableStateByStream[stream.id] =
@@ -227,11 +228,11 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                             true,
                             initialState.initialRawTableStatus.hasUnprocessedRecords ||
                                 initialState.initialTempRawTableStatus.hasUnprocessedRecords,
-                            if (ts == Instant.MAX) Optional.empty() else Optional.of(ts)
+                            if (ts == Instant.MAX) Optional.empty() else Optional.of(ts),
                         )
 
                     streamsWithSuccessfulSetup.add(
-                        Pair.of(stream.id.originalNamespace, stream.id.originalName)
+                        Pair.of(stream.id.originalNamespace, stream.id.originalName),
                     )
                     return@supplyAsync
                 } catch (e: Exception) {
@@ -241,7 +242,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     throw RuntimeException(e)
                 }
             },
-            this.executorService
+            this.executorService,
         )
     }
 
@@ -271,7 +272,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     }
 
     private fun typeAndDedupeTask(
-        streamConfig: StreamConfig
+        streamConfig: StreamConfig,
     ): CompletableFuture<Optional<Exception>> {
         return CompletableFuture.supplyAsync(
             {
@@ -288,7 +289,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         destinationHandler,
                         streamConfig,
                         initialRawTableStatus.maxProcessedTimestamp,
-                        getFinalTableSuffix(streamConfig.id)
+                        getFinalTableSuffix(streamConfig.id),
                     )
                     return@supplyAsync Optional.empty<Exception>()
                 } catch (e: Exception) {
@@ -298,7 +299,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     return@supplyAsync Optional.of<Exception>(e)
                 }
             },
-            this.executorService
+            this.executorService,
         )
     }
 
@@ -338,7 +339,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         CompletableFuture.allOf(*typeAndDedupeTasks.toTypedArray()).join()
         FutureUtils.reduceExceptions(
             typeAndDedupeTasks,
-            "The Following Exceptions were thrown while typing and deduping tables:\n"
+            "The Following Exceptions were thrown while typing and deduping tables:\n",
         )
     }
 
@@ -355,7 +356,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         for (streamConfig in parsedCatalog.streams) {
             if (
                 !streamsWithSuccessfulSetup.contains(
-                    Pair.of(streamConfig.id.originalNamespace, streamConfig.id.originalName)
+                    Pair.of(streamConfig.id.originalNamespace, streamConfig.id.originalName),
                 ) ||
                     streamSyncSummaries
                         .getValue(streamConfig.id.asStreamDescriptor())
@@ -375,12 +376,12 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
         CompletableFuture.allOf(*tableCommitTasks.toTypedArray()).join()
         FutureUtils.reduceExceptions(
             tableCommitTasks,
-            "The Following Exceptions were thrown while committing final tables:\n"
+            "The Following Exceptions were thrown while committing final tables:\n",
         )
     }
 
     private fun commitFinalTableTask(
-        streamConfig: StreamConfig
+        streamConfig: StreamConfig,
     ): CompletableFuture<Optional<Exception>> {
         return CompletableFuture.supplyAsync(
             Supplier supplyAsync@{
@@ -403,7 +404,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 }
                 return@supplyAsync Optional.empty<Exception>()
             },
-            this.executorService
+            this.executorService,
         )
     }
 

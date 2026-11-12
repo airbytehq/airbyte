@@ -1,0 +1,13 @@
+[
+  {
+    "name": "DOCS",
+    "namespace": "PUBLIC",
+    "metadata": {
+      "columns": {
+        "ID": "io.airbyte.cdk.discover.StringFieldType",
+        "TAGS": "io.airbyte.cdk.discover.JsonArrayFieldType"
+      },
+      "primaryKeys": [["ID"]]
+    }
+  }
+]

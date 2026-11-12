@@ -4,5 +4,5 @@
 package io.airbyte.cdk.integrations.destination.gcs.credential
 
 enum class GcsCredentialType {
-    HMAC_KEY
+    HMAC_KEY,
 }

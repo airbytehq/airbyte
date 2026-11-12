@@ -2,13 +2,16 @@
 
 ## Overview
 
-The Firebase Realtime Database source supports Full Refresh sync. As the database data is stored as JSON objects and there are no records or tables, you can sync only one stream which you specifed as a JSON node path on your database at a time.
+The Firebase Realtime Database source supports Full Refresh sync of one stream per source. Configure **Node Path** to select the JSON node to sync. To sync multiple paths independently, create a source for each path.
 
 ### Resulting schema
 
-As mentioned above, fetched data is just a JSON objects. The resulting records conformed of two columns `key` and `value`. The `key`'s value is keys (string) of fetched JSON object. The `value`'s value is string representation of values (string representation of any JSON object) of fetched JSON object.
+The connector emits one record for each immediate child of the selected node, with two string fields:
 
-If your database has data as below at path `https://{your-database-name}.firebaseio.com/store-a/users.json` ...
+- `key`: the child's key.
+- `value`: the child's value serialized as JSON. Nested objects remain inside this string.
+
+For example, if `store-a/users` contains:
 
 ```json
 {
@@ -17,12 +20,16 @@ If your database has data as below at path `https://{your-database-name}.firebas
 }
 ```
 
-and you specified a `store-a/users` as a path in configuration, you would sync records like below ...
+Set **Node Path** to `store-a/users` to sync these records:
 
 ```json
-{"key": "liam", "value": "{\"address\": \"somewhere\", \"age\": 24}}"}
-{"key": "olivia", "value": "{\"address\": \"somewhere\", \"age\": 30}}"}
+[
+  {"key": "liam", "value": "{\"address\": \"somewhere\", \"age\": 24}"},
+  {"key": "olivia", "value": "{\"address\": \"somewhere\", \"age\": 30}"}
+]
 ```
+
+The stream name is the final segment of **Node Path**, with hyphens replaced by underscores. For this example, the stream name is `users`. If you leave **Node Path** empty, the connector uses **Database Name**, with hyphens replaced by underscores, as the stream name.
 
 ### Features
 
@@ -39,38 +46,37 @@ and you specified a `store-a/users` as a path in configuration, you would sync r
 
 To use the Firebase Realtime Database source, you'll need:
 
-- A Google Cloud Project with Firebase enabled
-- A Google Cloud Service Account with the "Firebase Realtime Database Viewer" roles in your Google Cloud project
-- A Service Account Key to authenticate into your Service Account
+- A Firebase project with a Realtime Database instance and its database URL.
+- A Google Cloud service account with the **Firebase Realtime Database Viewer** role (`roles/firebasedatabase.viewer`) in that project.
+- A service account key in JSON format.
 
-See the setup guide for more information about how to create the required resources.
+Select a node whose data is a JSON object keyed by child names, as shown in the record example. The connector expects key-value pairs at this level. Select the parent object rather than an individual scalar value.
 
 #### Service account
 
-In order for Airbyte to sync data from Firebase Realtime Database, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "Firebase Realtime Database Viewer" roles, which grants permissions to read from Firebase Realtime Database. We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions.
+1. [Create a service account](https://cloud.google.com/iam/docs/creating-managing-service-accounts), or use an existing one. A dedicated account makes it easier to manage and audit Airbyte's access.
+2. [Grant the service account access to your project](https://cloud.google.com/iam/docs/granting-changing-revoking-access#granting-console) with the [Firebase Realtime Database Viewer role](https://firebase.google.com/docs/projects/iam/roles-predefined-product#realtime-database). Use the service account's email address, such as `<account-name>@<project-name>.iam.gserviceaccount.com`, as the principal.
 
-The easiest way to create a Service Account is to follow Google Cloud's guide for [Creating a Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts). Once you've created the Service Account, make sure to keep its ID handy as you will need to reference it when granting roles. Service Account IDs typically take the form `<account-name>@<project-name>.iam.gserviceaccount.com`
-
-Then, add the service account as a Member in your Google Cloud Project with the "Firebase Realtime Database Viewer" role. To do this, follow the instructions for [Granting Access](https://cloud.google.com/iam/docs/granting-changing-revoking-access#granting-console) in the Google documentation. The email address of the member you are adding is the same as the Service Account ID you just created.
-
-At this point you should have a service account with the "Firebase Realtime Database" product-level permission.
+The connector authenticates through the [Firebase Admin SDK](https://firebase.google.com/docs/database/admin/start). Its connection check reads the database root's keys, even when **Node Path** selects a child node.
 
 #### Service account key
 
-Service Account Keys are used to authenticate as Google Service Accounts. For Airbyte to leverage the permissions you granted to the Service Account in the previous step, you'll need to provide its Service Account Keys. See the [Google documentation](https://cloud.google.com/iam/docs/service-accounts#service_account_keys) for more information about Keys.
+Follow Google's [Create and delete service account keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) guide to create and download a JSON key for the service account. Airbyte requires the contents of the JSON file, rather than its filename. After saving the credentials in Airbyte, delete the local copy of the downloaded file.
 
-Follow the [Creating and Managing Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) guide to create a key. Airbyte currently supports JSON Keys only, so make sure you create your key in that format. As soon as you created the key, make sure to download it, as that is the only time Google will allow you to see its contents. Once you've successfully configured Firebase Realtime Database as a source in Airbyte, delete this key from your computer.
+### Set up the Firebase Realtime Database source in Airbyte
 
-### Setup the Firebase Realtime Database source in Airbyte
+Create a Firebase Realtime Database source in Airbyte and enter the following settings:
 
-You should now have all the requirements needed to configure Firebase Realtime Database as a source in the UI. You'll need the following information to configure the Firebase Realtime Database source:
-
-- **Database Name**
+- **Database Name**: the name of your database (for databases in `us-central1`, this is the `<database_name>` in `https://<database_name>.firebaseio.com`). If your database is in another region (for example `europe-west1` or `asia-southeast1`), enter the full database URL or hostname instead, e.g. `https://<database_name>.europe-west1.firebasedatabase.app`. You can find the URL in the Firebase console; see [Realtime Database locations](https://firebase.google.com/docs/database/locations).
 - **Service Account Key JSON**: the contents of your Service Account Key JSON file.
-- **Node Path \[Optional\]**: node path in your database's data which you want to sync. default value is ""(root node).
-- **Buffer Size \[Optional\]**: number of records to fetch at one time (buffered). default value is 10000.
+- **Node Path \[Optional\]**: the path within the database to sync, such as `store-a/users`. Enter a node path without the database URL or a `.json` suffix. Leave it empty to sync the root node.
+- **Buffer Size \[Optional\]**: the number of child records to fetch per request. The default is `10000`. Use an integer of at least `2`: pagination includes the previous page's last key, so a buffer size of `1` stops after the first record.
 
-Once you've configured Firebase Realtime Database as a source, delete the Service Account Key from your computer.
+## Limitations
+
+- Each sync reads all records at the configured path.
+- An empty or nonexistent node produces no records.
+- Firebase limits each read response to 256 MB and queries to paths containing at most 75 million nodes. See [Realtime Database limits](https://firebase.google.com/docs/database/usage/limits) for current quotas. If a read exceeds the response size limit, reduce **Buffer Size** or select a smaller subtree with **Node Path**. Each request includes the child's nested data, so reducing **Buffer Size** can't split an oversized child value.
 
 ## IP allow list
 
@@ -83,6 +89,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.1.56 | 2026-11-11 | [90912](https://github.com/airbytehq/airbyte/pull/90912) | Drop support for Python 3.10; Python package installations require Python 3.11–3.13 |
+| 0.1.55 | 2026-11-10 | [91505](https://github.com/airbytehq/airbyte/pull/91505) | Update dependencies |
+| 0.1.54 | 2026-11-03 | [90548](https://github.com/airbytehq/airbyte/pull/90548) | Update dependencies |
+| 0.1.53 | 2026-10-27 | [89874](https://github.com/airbytehq/airbyte/pull/89874) | Update dependencies |
+| 0.1.52 | 2026-10-20 | [89214](https://github.com/airbytehq/airbyte/pull/89214) | Update dependencies |
+| 0.1.51 | 2026-10-13 | [79248](https://github.com/airbytehq/airbyte/pull/79248) | Update dependencies |
+| 0.1.50 | 2026-10-07 | [88178](https://github.com/airbytehq/airbyte/pull/88178) | Support databases outside `us-central1` by accepting a full database URL/hostname (`*.firebasedatabase.app`) in **Database Name**; upgrade to airbyte-cdk 7 / Python 3.13 so the image builds on the current base image |
+| 0.1.49 | 2026-06-02 | [78673](https://github.com/airbytehq/airbyte/pull/78673) | Update dependencies |
 | 0.1.48 | 2025-05-24 | [60381](https://github.com/airbytehq/airbyte/pull/60381) | Update dependencies |
 | 0.1.47 | 2025-05-10 | [59978](https://github.com/airbytehq/airbyte/pull/59978) | Update dependencies |
 | 0.1.46 | 2025-05-03 | [59371](https://github.com/airbytehq/airbyte/pull/59371) | Update dependencies |

@@ -42,7 +42,7 @@ class TableOperationsTestHarness(
     suspend fun createTestTableAndVerifyExists(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        stream: DestinationStream
+        stream: DestinationStream,
     ) {
         client.createTable(
             stream = stream,

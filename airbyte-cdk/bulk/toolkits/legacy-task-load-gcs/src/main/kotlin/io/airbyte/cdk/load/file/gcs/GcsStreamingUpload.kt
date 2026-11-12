@@ -26,7 +26,7 @@ class GcsStreamingUpload(
     private val storage: Storage,
     private val key: String,
     private val config: GcsClientConfiguration,
-    private val metadata: Map<String, String>
+    private val metadata: Map<String, String>,
 ) : StreamingUpload<GcsBlob> {
 
     private val log = KotlinLogging.logger {}

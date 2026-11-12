@@ -17,17 +17,17 @@ import java.util.stream.Stream
 class StandardStreamOperation<DestinationState : MinimumDestinationState>(
     private val storageOperation: StorageOperation<Stream<PartialAirbyteMessage>>,
     destinationInitialStatus: DestinationInitialStatus<DestinationState>,
-    disableTypeDedupe: Boolean = false
+    disableTypeDedupe: Boolean = false,
 ) :
     AbstractStreamOperation<DestinationState, Stream<PartialAirbyteMessage>>(
         storageOperation,
         destinationInitialStatus,
-        disableTypeDedupe
+        disableTypeDedupe,
     ) {
     override fun writeRecordsImpl(
         streamConfig: StreamConfig,
         suffix: String,
-        stream: Stream<PartialAirbyteMessage>
+        stream: Stream<PartialAirbyteMessage>,
     ) {
         storageOperation.writeToStage(streamConfig, suffix, stream)
     }

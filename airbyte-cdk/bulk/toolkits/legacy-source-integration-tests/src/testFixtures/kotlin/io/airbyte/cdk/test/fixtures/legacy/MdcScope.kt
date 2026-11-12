@@ -10,7 +10,6 @@ import org.slf4j.MDC
 /**
  * This class is an autoClosable class that will add some specific values into the log MDC. When
  * being close, it will restore the original MDC. It is advised to use it like that:
- *
  * <pre> ` try(final ScopedMDCChange scopedMDCChange = new ScopedMDCChange( new HashMap<String,
  * String>() {{ put("my", "value"); }} )) { ... } ` * </pre> *
  */
