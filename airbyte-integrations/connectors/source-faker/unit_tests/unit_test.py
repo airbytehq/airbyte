@@ -304,3 +304,50 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+def _users_catalog():
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    return ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+
+def _read_users(config, state):
+    records, states = [], []
+    for row in SourceFaker().read(logger, config, _users_catalog(), state):
+        if row.type is Type.RECORD:
+            records.append(row.record.data)
+        elif row.type is Type.STATE:
+            states.append(row.state)
+    return records, states
+
+
+def test_read_users_after_completed_sync_starts_a_new_pass():
+    """With always_updated, a sync that follows a completed sync must re-emit every user, not resume past the end."""
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+
+    first_records, first_states = _read_users(config, [])
+    assert [record["id"] for record in first_records] == list(range(1, 11))
+
+    second_records, second_states = _read_users(config, [first_states[-1]])
+    assert [record["id"] for record in second_records] == list(range(1, 11))
+
+    third_records, _ = _read_users(config, [second_states[-1]])
+    assert [record["id"] for record in third_records] == list(range(1, 11))
+
+
+def test_read_users_with_completed_7_3_0_state_starts_a_new_pass():
+    """State persisted by 7.3.0 after a completed sync carries loop_offset == count; the next sync must start over."""
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users", namespace=None),
+        stream_state=AirbyteStateBlob(seed=-1, updated_at="2024-01-01T00:00:00+00:00", loop_offset=10),
+    )
+    records, _ = _read_users(config, [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)])
+    assert [record["id"] for record in records] == list(range(1, 11))
