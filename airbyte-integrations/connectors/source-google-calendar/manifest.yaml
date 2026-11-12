@@ -112,6 +112,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: calendars/{{ stream_partition.calendar_id | urlencode }}
           http_method: GET
+          error_handler:
+            $ref: "#/definitions/calendar_child_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -403,6 +405,8 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: calendars/{{ stream_partition.calendar_id | urlencode }}/events
         http_method: GET
+        error_handler:
+          $ref: "#/definitions/calendar_child_error_handler"
         request_parameters:
           showDeleted: "true"
           maxResults: "2500"
@@ -479,6 +483,34 @@ definitions:
         parent_key: id
         partition_field: calendar_id
   error_filters:
+    forbidden:
+      type: HttpResponseFilter
+      http_codes:
+        - 403
+      action: FAIL
+      failure_type: config_error
+      error_message: "The authorized Google account lacks access to this calendar (the one set in \"Calendar Id\", or one listed in the account's calendar list) or the Calendar API is disabled."
+    not_found:
+      type: HttpResponseFilter
+      http_codes:
+        - 404
+      action: FAIL
+      failure_type: config_error
+      error_message: "Google Calendar could not find the requested resource. Verify the account's access to the Calendar API and, if Calendar Id is set, verify that calendar's ID and sharing permissions."
+    resource_gone:
+      type: HttpResponseFilter
+      predicate: "{{ '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string or 'fullSyncRequired' in response.get('error', {}) | string }}"
+      action: FAIL
+      failure_type: config_error
+      error_message: "Google Calendar reports that the requested resource no longer exists or requires a full re-sync. Check the account's access and any configured Calendar Id, then reset the events stream."
+    stale_position:
+      type: HttpResponseFilter
+      # Retention recovery re-reads once the saved cursor is older than 21 days.
+      http_codes:
+        - 410
+      action: FAIL
+      failure_type: transient_error
+      error_message: "Google Calendar rejected the saved sync position of the events stream as too old. Reset the events stream to re-read it now; otherwise syncs re-read automatically once the saved position is more than 21 days old."
     unauthorized:
       type: HttpResponseFilter
       http_codes:
@@ -522,6 +554,30 @@ definitions:
         - 503
         - 504
       action: RETRY
+  calendar_child_error_handler:
+    $ref: "#/definitions/base_requester/error_handler"
+    response_filters:
+      - $ref: "#/definitions/error_filters/unauthorized"
+      - $ref: "#/definitions/error_filters/rate_limited"
+      - $ref: "#/definitions/error_filters/quota_exhausted"
+      - $ref: "#/definitions/error_filters/insufficient_scope"
+      - $ref: "#/definitions/error_filters/forbidden"
+      - $ref: "#/definitions/skip_missing_calendar"
+      - $ref: "#/definitions/skip_deleted_calendar"
+      - $ref: "#/definitions/error_filters/resource_gone"
+      - $ref: "#/definitions/error_filters/stale_position"
+      - $ref: "#/definitions/error_filters/too_many_requests"
+      - $ref: "#/definitions/error_filters/server_errors"
+  skip_missing_calendar:
+    type: HttpResponseFilter
+    http_codes: [404]
+    action: IGNORE
+    error_message: "Skipped a calendar that no longer exists or is no longer shared with the account."
+  skip_deleted_calendar:
+    type: HttpResponseFilter
+    predicate: "{{ response.get('error', {}).get('code') in (410, '410') and '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string and 'fullSyncRequired' not in response.get('error', {}) | string }}"
+    action: IGNORE
+    error_message: "Skipped a calendar that was removed or is no longer shared with the account."
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/calendar/v3/
@@ -543,34 +599,10 @@ definitions:
         - $ref: "#/definitions/error_filters/rate_limited"
         - $ref: "#/definitions/error_filters/quota_exhausted"
         - $ref: "#/definitions/error_filters/insufficient_scope"
-        - type: HttpResponseFilter
-          http_codes:
-            - 403
-          action: FAIL
-          failure_type: config_error
-          error_message: "The authorized Google account lacks access to this calendar (the one set in \"Calendar Id\", or one listed in the account's calendar list) or the Calendar API is disabled."
-        - type: HttpResponseFilter
-          http_codes:
-            - 404
-          action: FAIL
-          failure_type: config_error
-          error_message: "A calendar was not found by the Google Calendar API: check the ID set in \"Calendar Id\" (or use 'primary'), or re-sync if a listed calendar was removed."
-        - type: HttpResponseFilter
-          # 410 with reason `deleted` (calendar removed) or `fullSyncRequired` (only possible with
-          # syncToken, which this connector does not send): the user must act, not wait.
-          # The `string` filter JSON-encodes the body, so match the JSON form of the reason.
-          predicate: "{{ '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string or 'fullSyncRequired' in response.get('error', {}) | string }}"
-          action: FAIL
-          failure_type: config_error
-          error_message: "The calendar configured in \"Calendar Id\" no longer exists or requires a full re-sync. Check the ID, then reset the events stream."
-        - type: HttpResponseFilter
-          # 410 updatedMinTooLongAgo: Google's window moved under a cursor that was within our
-          # margin. The retention guard re-reads once the cursor is older than 21 days.
-          http_codes:
-            - 410
-          action: FAIL
-          failure_type: transient_error
-          error_message: "Google Calendar rejected the saved sync position of the events stream as too old. Reset the events stream to re-read it now; otherwise syncs re-read automatically once the saved position is more than 21 days old."
+        - $ref: "#/definitions/error_filters/forbidden"
+        - $ref: "#/definitions/error_filters/not_found"
+        - $ref: "#/definitions/error_filters/resource_gone"
+        - $ref: "#/definitions/error_filters/stale_position"
         - $ref: "#/definitions/error_filters/too_many_requests"
         - $ref: "#/definitions/error_filters/server_errors"
 

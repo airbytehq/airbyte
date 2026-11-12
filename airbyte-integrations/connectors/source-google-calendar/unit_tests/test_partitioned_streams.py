@@ -97,6 +97,86 @@ def _stream_state(output) -> Mapping[str, Any]:
 # --- partitions ---------------------------------------------------------------------------
 
 
+@pytest.mark.parametrize(
+    "stream,sync_mode", [("events", SyncMode.full_refresh), ("events", SyncMode.incremental), ("calendars", SyncMode.full_refresh)]
+)
+@pytest.mark.parametrize("status,reason", [(404, "notFound"), (410, "deleted")])
+@pytest.mark.parametrize("configured", [False, True])
+def test_missing_child_calendar_is_skipped(stream: str, sync_mode: SyncMode, status: int, reason: str, configured: bool) -> None:
+    with HttpMocker() as http_mocker:
+        config = _config(calendarid=_ME) if configured else _config()
+        cursor = _days_ago(2) if sync_mode == SyncMode.incremental else None
+        state = (
+            StateBuilder()
+            .with_stream_state("events", {"use_global_cursor": True, "state": {"updated": cursor}, "lookback_window": 0})
+            .build()
+            if cursor
+            else None
+        )
+        if stream == "events" and configured:
+            http_mocker.get(HttpRequest(f"{_BASE_URL}/calendars/{_ENCODED[_ME]}"), _json({"id": _ME}))
+            calendars = [_ME]
+        else:
+            _mock_calendar_list(http_mocker, _ME, _HOLIDAYS, min_access_role="reader")
+            calendars = [_ME, _HOLIDAYS]
+        missing = _events_request(_ME, updated_min=cursor) if stream == "events" else HttpRequest(f"{_BASE_URL}/calendars/{_ENCODED[_ME]}")
+        http_mocker.get(missing, _error(status, reason))
+        if len(calendars) == 2:
+            request = (
+                _events_request(_HOLIDAYS, updated_min=cursor)
+                if stream == "events"
+                else HttpRequest(f"{_BASE_URL}/calendars/{_ENCODED[_HOLIDAYS]}")
+            )
+            body = {"items": [{"id": "e1", "updated": _days_ago(1)}]} if stream == "events" else {"id": _HOLIDAYS}
+            http_mocker.get(request, _json(body))
+
+        output = _read(http_mocker, stream, sync_mode, config, state=state)
+
+        assert output.errors == []
+        assert output.get_stream_statuses(stream)[-1].value == "COMPLETE"
+        assert all(log.log.level.value != "ERROR" for log in output.logs)
+        assert [r.record.data["calendar_id" if stream == "events" else "id"] for r in output.records] == (
+            [_HOLIDAYS] if len(calendars) == 2 else []
+        )
+        http_mocker.assert_number_of_calls(missing, 1)
+        assert any("Skipped a calendar" in log.log.message for log in output.logs)
+
+
+@pytest.mark.parametrize("stream", ["events", "acl", "freebusy"])
+@pytest.mark.parametrize("status,reason", [(404, "notFound"), (410, "deleted")])
+def test_missing_configured_calendar_fails_in_parent(stream: str, status: int, reason: str) -> None:
+    with HttpMocker() as http_mocker:
+        parent = HttpRequest(f"{_BASE_URL}/calendars/{_ENCODED[_ME]}")
+        http_mocker.get(parent, _error(status, reason))
+        http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        config = _config(calendarid=_ME)
+        catalog = CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build()
+
+        output = read(get_source(config), config, catalog, expecting_exception=True)
+
+        assert output.records == []
+        assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+        assert any("Calendar Id" in error.trace.error.message for error in output.errors)
+        http_mocker.assert_number_of_calls(parent, 1)
+
+
+def test_calendar_list_failure_is_not_skipped() -> None:
+    with HttpMocker() as http_mocker:
+        request = HttpRequest(
+            f"{_BASE_URL}/users/me/calendarList", query_params={"maxResults": "250", "showHidden": "true", "minAccessRole": "reader"}
+        )
+        http_mocker.get(request, _error(404, "notFound"))
+        http_mocker.post(_TOKEN_REQUEST, _TOKEN_RESPONSE)
+        config = _config()
+        catalog = CatalogBuilder().with_stream("events", SyncMode.full_refresh).build()
+
+        output = read(get_source(config), config, catalog, expecting_exception=True)
+
+        assert output.records == []
+        assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+        http_mocker.assert_number_of_calls(request, 1)
+
+
 @pytest.mark.parametrize("stream,role", [("calendars", "reader"), ("events", "reader"), ("acl", "owner"), ("freebusy", None)])
 @pytest.mark.parametrize("only_deleted", [False, True])
 @freezegun.freeze_time("2026-10-07T12:00:00Z")

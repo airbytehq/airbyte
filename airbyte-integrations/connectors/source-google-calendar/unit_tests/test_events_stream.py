@@ -515,13 +515,8 @@ def test_server_error_retries_then_succeeds(status_code):
             FailureType.transient_error,
             ("quota for this project or user is exhausted",),
         ),
-        (
-            _error_response(404, message="Not Found"),
-            FailureType.config_error,
-            ("was not found", "or use 'primary'", "re-sync if a listed calendar was removed"),
-        ),
     ],
-    ids=["401", "403-plain", "403-quotaExceeded", "403-dailyLimitExceeded", "403-quota-string-code", "403-quota-no-code", "404"],
+    ids=["401", "403-plain", "403-quotaExceeded", "403-dailyLimitExceeded", "403-quota-string-code", "403-quota-no-code"],
 )
 def test_non_retryable_errors_are_classified(response, failure_type, message_fragments):
     with HttpMocker() as http_mocker:
@@ -554,10 +549,9 @@ def test_410_updated_min_too_long_ago_is_transient():
         )
 
 
-@pytest.mark.parametrize("reason", ["deleted", "fullSyncRequired"])
-def test_410_deleted_or_full_sync_required_is_config_error(reason):
+def test_410_full_sync_required_is_config_error():
     with HttpMocker() as http_mocker:
-        http_mocker.get(_events_request(), _error_response(410, reason, message="Resource has been deleted"))
+        http_mocker.get(_events_request(), _error_response(410, "fullSyncRequired", message="Resource has been deleted"))
 
         output = _read_events(http_mocker, SyncMode.incremental, expecting_exception=True)
 
