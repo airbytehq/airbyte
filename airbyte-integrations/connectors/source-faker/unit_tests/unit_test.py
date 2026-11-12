@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from pathlib import Path
 
 import jsonschema
@@ -295,3 +296,34 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+def _run_check(config, tmp_path):
+    from airbyte_cdk.entrypoint import AirbyteEntrypoint
+
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config))
+    entrypoint = AirbyteEntrypoint(SourceFaker())
+    parsed_args = entrypoint.parse_args(["check", "--config", str(config_path)])
+    messages = [AirbyteMessageSerializer.load(json.loads(m)) for m in entrypoint.run(parsed_args)]
+    return [m.connectionStatus for m in messages if m.type == Type.CONNECTION_STATUS]
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param({"count": 5000, "seed": 42}, id="api_created_without_optional_settings"),
+        pytest.param({"count": 5000, "seed": 42, "records_per_slice": 1000}, id="parallelism_omitted"),
+        pytest.param({"count": 5000, "seed": 42, "parallelism": 2}, id="records_per_slice_omitted"),
+        pytest.param({}, id="empty_config"),
+    ],
+)
+def test_check_succeeds_when_optional_settings_are_omitted(config, tmp_path):
+    statuses = _run_check(config, tmp_path)
+    assert [(s.status.name, s.message) for s in statuses] == [("SUCCEEDED", None)]
+
+
+def test_check_still_rejects_explicit_zero_parallelism(tmp_path):
+    statuses = _run_check({"count": 5000, "records_per_slice": 1000, "parallelism": 0}, tmp_path)
+    assert len(statuses) == 1
+    assert statuses[0].status.name == "FAILED"
