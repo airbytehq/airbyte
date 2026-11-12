@@ -14,11 +14,11 @@ from airbyte_cdk.test.mock_http import HttpResponse
 
 EXPIRED_SAS_BODY = (
     '<?xml version="1.0" encoding="utf-8"?><Error><Code>AuthenticationFailed</Code>'
-    '<Message>Server failed to authenticate the request. Make sure the value of Authorization header is formed correctly '
-    'including the signature.\nRequestId:test-request\nTime:2024-05-06T00:00:00Z</Message>'
-    '<AuthenticationErrorDetail>Signature not valid in the specified time frame: '
-    'Start [2024-05-05T23:00:00Z] - Expiry [2024-05-05T23:10:00Z] - Current [2024-05-06T00:00:00Z]'
-    '</AuthenticationErrorDetail></Error>'
+    "<Message>Server failed to authenticate the request. Make sure the value of Authorization header is formed correctly "
+    "including the signature.\nRequestId:test-request\nTime:2024-05-06T00:00:00Z</Message>"
+    "<AuthenticationErrorDetail>Signature not valid in the specified time frame: "
+    "Start [2024-05-05T23:00:00Z] - Expiry [2024-05-05T23:10:00Z] - Current [2024-05-06T00:00:00Z]"
+    "</AuthenticationErrorDetail></Error>"
 )
 
 
