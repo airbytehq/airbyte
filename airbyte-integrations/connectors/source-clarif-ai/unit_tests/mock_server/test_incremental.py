@@ -19,10 +19,14 @@ _LATEST = "2026-10-14T09:41:55.568082Z"
 @pytest.mark.parametrize("stream_name", ["applications", "datasets", "models"])
 @pytest.mark.parametrize("empty", [False, True])
 def test_incremental_state(stream_name, empty):
-    records = [] if empty else [
-        {"id": "older", "modified_at": "2026-10-13T09:41:55Z"},
-        {"id": "newer", "modified_at": "2026-10-14T09:41:55.568082659Z"},
-    ]
+    records = (
+        []
+        if empty
+        else [
+            {"id": "older", "modified_at": "2026-10-13T09:41:55Z"},
+            {"id": "newer", "modified_at": "2026-10-14T09:41:55.568082659Z"},
+        ]
+    )
     with HttpMocker() as mocker:
         mocker.get(
             HttpRequest(_BASE_URL, query_params={"page": "1", "per_page": "20"}),
