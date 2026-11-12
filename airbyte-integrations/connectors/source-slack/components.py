@@ -176,11 +176,11 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        return "parent_state" not in stream_state
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        if not stream_state:
-            return {}
+        if not stream_state or not self.should_migrate(stream_state):
+            return stream_state
 
         start_date_state = ab_datetime_parse(self._config["start_date"]).timestamp()  # start date is required
         # for migrated state

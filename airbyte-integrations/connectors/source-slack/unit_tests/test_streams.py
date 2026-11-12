@@ -6,6 +6,7 @@ from copy import deepcopy
 from unittest.mock import MagicMock, Mock
 
 import pytest
+from freezegun import freeze_time
 from requests import Response
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType
@@ -19,6 +20,77 @@ from unit_tests.conftest import get_retriever, get_source, get_stream_by_name
 @pytest.fixture
 def authenticator(token_config):
     return TokenAuthenticator(token_config["credentials"]["api_token"])
+
+
+def _read_incremental_stream(stream_name, config, stream_state):
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": stream_name, "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state(stream_name, stream_state).build()
+    return read(get_source(config, stream_name, state), config=config, catalog=catalog, state=state)
+
+
+@freeze_time("2021-07-28T20:00:00Z")
+@pytest.mark.parametrize("use_global_cursor", [False, True])
+def test_threads_resume_preserves_parent_cursors(requests_mock, token_config, use_global_cursor):
+    saved_cursors = {"airbyte-for-beginners": 1627243200.0, "good-reads": 1627329600.0}
+    parent_state = (
+        {"use_global_cursor": True, "state": {"float_ts": "1627243200.0"}}
+        if use_global_cursor
+        else {
+            "states": [
+                {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": str(cursor)}}
+                for channel, cursor in saved_cursors.items()
+            ]
+        }
+    )
+    requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
+
+    output = _read_incremental_stream(
+        "threads", token_config, {"parent_state": {"channel_messages": parent_state}, "state": {"float_ts": "1627243200"}}
+    )
+
+    history_requests = [r for r in requests_mock.request_history if r.path == "/api/conversations.history"]
+    expected_cursors = {channel: 1627243200.0 for channel in saved_cursors} if use_global_cursor else saved_cursors
+    assert {r.qs["channel"][0]: float(r.qs["oldest"][0]) for r in history_requests} == {
+        channel: cursor - 86400 for channel, cursor in expected_cursors.items()
+    }
+    emitted_parent = output.most_recent_state.stream_state.parent_state["channel_messages"]
+    if use_global_cursor:
+        assert emitted_parent["use_global_cursor"] is True
+        assert float(emitted_parent["state"]["float_ts"]) >= 1627243200.0
+    else:
+        assert {
+            s["partition"]["channel"]: float(s["cursor"]["float_ts"]) for s in emitted_parent["states"]
+        } == saved_cursors
+
+
+@freeze_time("2021-07-23T20:00:00Z")
+def test_channel_messages_skips_archived_non_members(requests_mock, token_config):
+    token_config.update({"channel_filter": [], "join_channels": True, "include_archived_channels": True})
+    channels = [
+        {"id": "archived-non-member", "name": "archived-non-member", "is_archived": True, "is_member": False},
+        {"id": "archived-member", "name": "archived-member", "is_archived": True, "is_member": True},
+        {"id": "normal-non-member", "name": "normal-non-member", "is_archived": False, "is_member": False},
+    ]
+    requests_mock.get("https://slack.com/api/conversations.list", json={"ok": True, "channels": channels})
+    requests_mock.post("https://slack.com/api/conversations.join", json={"ok": True})
+    requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
+
+    _read_incremental_stream("channel_messages", token_config, {})
+
+    history_requests = [r for r in requests_mock.request_history if r.path == "/api/conversations.history"]
+    assert sorted(r.qs["channel"][0] for r in history_requests) == ["archived-member", "normal-non-member"]
+    join_requests = [r for r in requests_mock.request_history if r.path == "/api/conversations.join"]
+    assert [r.json() for r in join_requests] == [{"channel": "normal-non-member"}]
 
 
 @pytest.mark.parametrize(
