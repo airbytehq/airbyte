@@ -5,7 +5,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 ## Upgrading to 2.0.0
 
 :::danger Risk of permanent data loss
-The `chats` fields `deleted`, `update_timestamp` and `engagements` are no longer available after this upgrade. Chats that sync again arrive without these fields, so wherever a new row replaces the old one the stored values are lost, and a clear or a refresh removes the stored values for every chat. Export these columns before upgrading if you need them.
+The `chats` fields `deleted`, `update_timestamp` and `engagements` are no longer available after this upgrade. Chats that sync again arrive without these fields, so wherever a new row replaces the old one the stored values are lost, and a full refresh sync that overwrites the table, a clear or a refresh removes the stored values for every chat. If you need these columns, export them before upgrading and before the upgrade deadline of December 1, 2026, after which connections are upgraded automatically.
 :::
 
 Zendesk [stops serving its Incremental Exports API to third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498) such as Airbyte between December 2, 2026 and January 19, 2027. Version 2.0.0 moves the `chats` stream off that API: chats are now found with the [Search Chats](https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#search-chats) endpoint and fetched in full with the [List Chats](https://developer.zendesk.com/api-reference/live-chat/chat-api/chats/#list-chats) endpoint. Only the `chats` stream is affected.
@@ -20,7 +20,8 @@ What changed in the `chats` stream:
 What to do after upgrading:
 
 - If a connection syncs `chats` incrementally, Airbyte pauses it after the upgrade because its cursor field `update_timestamp` no longer exists in the source. Open the connection, refresh the source schema, accept the new cursor field `timestamp` and resume the connection. When Airbyte then asks whether to clear or refresh the `chats` stream, skip it: no clear is required, the migrated state continues the sync without re-reading from the start date, and a clear or refresh would remove the stored values of the three dropped fields.
-- If a connection syncs `chats` in full refresh mode, or does not sync `chats`, no action is required. Refreshing the source schema is optional and only removes the three dropped fields from the catalog.
+- If a connection syncs `chats` in full refresh mode, it is not paused and needs no schema action, but its first sync after the upgrade writes `chats` without `deleted`, `update_timestamp` and `engagements`. Export these columns first if you need them. Refreshing the source schema is optional and only removes the three dropped fields from the catalog.
+- If a connection does not sync `chats`, no action is required.
 - Update any downstream query, model or dashboard that reads `chats.deleted`, `chats.update_timestamp` or `chats.engagements`.
 
 ## Upgrading to 1.0.0

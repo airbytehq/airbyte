@@ -57,8 +57,9 @@ data:
           chats are no longer reported. Connections that sync `chats` incrementally are paused after the
           upgrade because their cursor field no longer exists: refresh the source schema and accept the
           new cursor to resume. Existing state is migrated automatically and no clear is required.
-          Connections that sync `chats` in full refresh mode and connections without the `chats` stream
-          need no action. See the migration guide:
+          Connections that sync `chats` in full refresh mode are not paused, but their first sync after
+          the upgrade writes `chats` without the three removed fields: export them before upgrading if
+          you need them. Connections without the `chats` stream need no action. See the migration guide:
           https://docs.airbyte.com/integrations/sources/zendesk-chat-migrations#upgrading-to-200
         upgradeDeadline: "2026-12-01"
         deadlineAction: auto_upgrade
