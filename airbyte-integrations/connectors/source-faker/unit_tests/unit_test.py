@@ -284,6 +284,35 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+@pytest.mark.parametrize(
+    "loop_offset",
+    [pytest.param(10, id="completed_pass"), pytest.param(25, id="count_lowered_since_last_pass")],
+)
+def test_read_users_after_completed_sync_starts_new_pass(loop_offset):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users", namespace=None),
+        stream_state=AirbyteStateBlob(updated_at="2024-01-01T00:00:00+00:00", loop_offset=loop_offset),
+    )
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+    messages = list(source.read(logger, config, catalog, state))
+
+    records = [row.record.data for row in messages if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == list(range(1, 11))
+    final_state = [row.state.stream.stream_state for row in messages if row.type is Type.STATE][-1]
+    assert final_state.loop_offset == 10
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
