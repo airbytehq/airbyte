@@ -4,7 +4,7 @@
 
 ## 1. Three-Level Job → Report → CSV Download Model
 
-Each report stream starts by listing jobs through the YouTube Reporting API's `/v1/jobs` endpoint. `JobRequester` filters the response to the job whose `reportTypeId` matches that stream. If none exists, it creates a reporting job named `Airbyte reporting job` and lists jobs again. This means a source read can write to YouTube by creating a job.
+Each report stream starts by listing jobs through the YouTube Reporting API's `/v1/jobs` endpoint. `JobRequester` filters the response to the job whose `reportTypeId` matches that stream. If none exists, it creates a reporting job named `Airbyte reporting job` and lists jobs again. This means a source read can write to YouTube by creating a job. `check` reads the `report_types` stream (`/v1/reportTypes`) instead of a report stream, so it creates no job and passes before YouTube has generated any report file for a new job (which can take up to 48 hours).
 
 The `report` stream lists files from `/jobs/{id}/reports` for each matching job. Each report stream then downloads the listed file using its `downloadUrl`. `CustomDecoder` uses `csv.DictReader`, so CSV values arrive as strings. The report streams' record selector sets `schema_normalization: Default`, which casts each value to the type its schema declares; a value that cannot be cast, such as an empty cell in an integer column, stays a string. An `AddFields` transformation also casts `date` to an integer.
 

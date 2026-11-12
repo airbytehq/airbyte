@@ -2,10 +2,13 @@ version: 6.42.0
 
 type: DeclarativeSource
 
+# `report_types` only lists the report types the account can access. Report streams cannot be
+# used here: their first read creates a reporting job, and YouTube needs up to 48 hours to
+# generate that job's first report file, so a new setup has no report to check against.
 check:
   type: CheckStream
   stream_names:
-    - channel_annotations_a1
+    - report_types
 
 definitions:
   streams:
@@ -95,6 +98,28 @@ definitions:
         - type: CustomStateMigration
           class_name: source_declarative_manifest.components.ReportsCreateTimeStateMigration
     
+    report_types:
+      type: DeclarativeStream
+      name: report_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reportTypes
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reportTypes
+        paginator:
+          $ref: "#/definitions/next_page_token_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_types"
     channel_annotations_a1:
       $ref: "#/definitions/streams/base_report_stream"
       name: channel_annotations_a1
@@ -628,6 +653,7 @@ streams:
   - $ref: "#/definitions/streams/playlist_playback_location_a2"
   - $ref: "#/definitions/streams/playlist_province_a2"
   - $ref: "#/definitions/streams/playlist_traffic_source_a2"
+  - $ref: "#/definitions/streams/report_types"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -762,6 +788,26 @@ metadata:
   assist: {}
 
 schemas:
+  report_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      deprecateTime:
+        type:
+          - "null"
+          - string
+        format: date-time
+      systemManaged:
+        type:
+          - "null"
+          - boolean
   channel_annotations_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
