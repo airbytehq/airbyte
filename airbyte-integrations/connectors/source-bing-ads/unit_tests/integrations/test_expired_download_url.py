@@ -7,12 +7,12 @@ Azure answers 403 ``AuthenticationFailed`` / ``Signature not valid in the specif
 permission problem, so it must not be reported as a ``config_error`` telling the user they lack permission.
 """
 
+import test_bulk_stream
+import test_hourly_reports
 from base_test import BaseTest
 from freezegun import freeze_time
 from protocol_helpers import read_helper
 from request_builder import RequestBuilder
-import test_bulk_stream
-import test_hourly_reports
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -38,8 +38,7 @@ def _assert_expired_download_url_error(output, stream_name: str) -> None:
     stream_error = trace_errors[0]
     assert (stream_error.failure_type, stream_error.message) == (
         FailureType.transient_error,
-        f"The Bing Ads download link for stream '{stream_name}' expired before the file could be downloaded. "
-        "The sync will retry.",
+        f"The Bing Ads download link for stream '{stream_name}' expired before the file could be downloaded. The sync will retry.",
     )
     assert not any("You don't have permission" in (error.message or "") for error in trace_errors)
 
