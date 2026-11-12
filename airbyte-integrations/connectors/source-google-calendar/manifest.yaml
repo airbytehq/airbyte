@@ -131,6 +131,7 @@ definitions:
                     $ref: "#/definitions/streams/calendarlist/retriever/record_selector"
                     record_filter:
                       type: RecordFilter
+                      # Parent-only: calendarlist emits deleted entries, but requesting them as child partitions would 404.
                       condition: "{{ not record.get('deleted', false) }}"
                   requester:
                     $ref: "#/definitions/streams/calendarlist/retriever/requester"
@@ -179,7 +180,7 @@ definitions:
               on_no_records: emit_parent
           record_filter:
             type: RecordFilter
-            # An empty list page would otherwise be emitted as a parent with no calendar id.
+            # Parent-only: skip empty pages without an id and deleted entries (child requests would 404); calendarlist still emits deletions.
             condition: "{{ record.get('id') and not record.get('deleted', false) }}"
         paginator:
           type: DefaultPaginator

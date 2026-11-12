@@ -98,6 +98,8 @@ With **Calendar Id** empty, `events` reads only calendars the account can read e
 
 Deleted events are replicated: cancelled events arrive with `status: "cancelled"` (`showDeleted=true`) and are stamped with an `updated` value so they replace the live row under Append + Deduped (see [Events sync behavior](#events-sync-behavior)).
 
+Deleted calendar-list entries appear in `calendarlist` with `deleted: true`, and deleted sharing rules appear in `acl` with `role: "none"`. Removed calendars are not read by `calendars`, `events`, `acl`, or `freebusy`; this prevents requests for calendars you no longer have access to. The full-refresh `calendars` stream has no deletion record of its own: a removed calendar drops out of the next snapshot, and its deletion is visible in `calendarlist`.
+
 ## Google user data
 
 Airbyte's use and transfer to any other app of information received from Google APIs will adhere to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
