@@ -19,9 +19,7 @@ def test_events_skips_calendar_not_found() -> None:
     }
     base_url = "https://api.us.nylas.com/v3/grants"
     event_params = {"limit": "50", "start": "1788220800", "end": "1788393600"}
-    holidays_request = HttpRequest(
-        url=f"{base_url}/grant_1/events", query_params={**event_params, "calendar_id": "cal_holidays"}
-    )
+    holidays_request = HttpRequest(url=f"{base_url}/grant_1/events", query_params={**event_params, "calendar_id": "cal_holidays"})
     with HttpMocker() as http_mocker:
         http_mocker.get(
             HttpRequest(url=base_url, query_params={"limit": "50"}),

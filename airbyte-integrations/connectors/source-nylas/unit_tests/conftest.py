@@ -13,6 +13,4 @@ pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 def get_source(config: Mapping[str, Any]) -> YamlDeclarativeSource:
     ci_path = Path("/airbyte/integration_code/source_declarative_manifest")
     source_path = ci_path if ci_path.exists() else Path(__file__).parent.parent
-    return YamlDeclarativeSource(
-        path_to_yaml=str(source_path / "manifest.yaml"), catalog=CatalogBuilder().build(), config=config, state=[]
-    )
+    return YamlDeclarativeSource(path_to_yaml=str(source_path / "manifest.yaml"), catalog=CatalogBuilder().build(), config=config, state=[])
