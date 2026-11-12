@@ -650,6 +650,11 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%d %H:%M:%SZ"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioStateMigration
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioStalePartitionStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:

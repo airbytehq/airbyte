@@ -17,3 +17,7 @@ None identified yet.
 ## Alerts request window splitting
 
 When an Alerts request window holds more than Twilio's 10,000-result limit, the `alerts` stream splits it in half and re-reads each half (up to 10 times), re-emitting up to 10,000 records per split. See `AGENTS.md` for the filter setup, duplicate handling, smallest window, and failure behavior.
+
+## Messages stale partition state
+
+Before each read, the `messages` stream drops saved per-account cursors that are older than the stream's global cursor, so those accounts resume from the global cursor instead of re-reading their history. See `AGENTS.md` for why the global cursor is safe to resume from and why `global_substream_cursor` isn't used.

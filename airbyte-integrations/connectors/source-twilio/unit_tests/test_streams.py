@@ -255,6 +255,84 @@ class TestIncrementalTwilioStream:
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
     @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stale_partition,stale_cursor",
+        [
+            pytest.param(
+                {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                "2022-01-05 00:00:00Z",
+                id="current_partition_shape",
+            ),
+            pytest.param(
+                {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                "2022-01-05T00:00:00Z",
+                id="legacy_partition_shape",
+            ),
+        ],
+    )
+    def test_messages_partition_cursor_older_than_global_cursor_resumes_from_global_cursor(
+        self, stale_partition, stale_cursor, requests_mock
+    ):
+        def _account(sid):
+            return {
+                "sid": sid,
+                "date_created": "2020-01-01T00:00:00Z",
+                "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"},
+            }
+
+        def _message(sid, account_sid, date_sent):
+            return {"sid": sid, "account_sid": account_sid, "date_sent": date_sent}
+
+        requests_mock.get(f"{BASE}/Accounts.json", json={"accounts": [_account("AC123"), _account("AC456")]}, status_code=200)
+        stale_account_matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Messages.json",
+            json={"messages": [_message("SM1", "AC123", "Wed, 16 Nov 2022 01:00:00 +0000")]},
+            status_code=200,
+        )
+        current_account_matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC456/Messages.json",
+            json={"messages": [_message("SM2", "AC456", "Wed, 16 Nov 2022 02:00:00 +0000")]},
+            status_code=200,
+        )
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "states": [
+                        {"partition": stale_partition, "cursor": {"date_sent": stale_cursor}},
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-11-15 00:00:00Z"},
+                        },
+                    ],
+                    "state": {"date_sent": "2022-11-15 00:00:00Z"},
+                    "lookback_window": 3600,
+                    "use_global_cursor": False,
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2022-01-01T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+        def _windows(matcher):
+            return [(r.qs["datesent>"], r.qs["datesent<"]) for r in matcher.request_history]
+
+        # The stale partition resumes from the global cursor minus the saved 1h lookback, in a single window,
+        # instead of walking monthly windows from 2022-01-05.
+        assert _windows(stale_account_matcher) == [(["2022-11-14 23:00:00z"], ["2022-11-16 12:03:11z"])]
+        assert _windows(current_account_matcher) == [(["2022-11-15 00:00:00z"], ["2022-11-16 12:03:11z"])]
+        assert sorted(record.record.data["sid"] for record in output.records) == ["SM1", "SM2"]
+
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["state"] == {"date_sent": "2022-11-16 02:00:00Z"}
+        assert sorted((s["partition"]["subresource_uri"], s["cursor"]["date_sent"]) for s in final_state["states"]) == [
+            ("/2010-04-01/Accounts/AC123/Messages.json", "2022-11-16 01:00:00Z"),
+            ("/2010-04-01/Accounts/AC456/Messages.json", "2022-11-16 02:00:00Z"),
+        ]
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
         parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")

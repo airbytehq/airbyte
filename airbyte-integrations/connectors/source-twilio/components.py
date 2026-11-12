@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -80,6 +80,60 @@ class TwilioStateMigration(StateMigration):
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
+        return False
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Drop per-partition cursors that are older than the stream's global cursor.
+
+    The CDK only advances the global cursor (`state`) after every partition has been read, so a
+    partition cursor older than it points at data that was already synced. Resuming from that
+    partition cursor re-reads the account's history. Without its entry, the partition resumes from
+    the global cursor, with the CDK's own `lookback_window` applied.
+
+    Initial:
+      {
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2022-01-05 00:00:00Z" }
+          },
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2022-11-15 00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-15 00:00:00Z" }
+      }
+
+    Final:
+      {
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2022-11-15 00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-15 00:00:00Z" }
+      }
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {**stream_state, "states": [state for state in stream_state["states"] if not self._is_stale(state, stream_state)]}
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and any(self._is_stale(state, stream_state) for state in stream_state.get("states", []))
+
+    @staticmethod
+    def _is_stale(partition_state: Mapping[str, Any], stream_state: Mapping[str, Any]) -> bool:
+        global_cursor = stream_state.get("state") or {}
+        partition_cursor = partition_state.get("cursor") or {}
+        for cursor_field, global_value in global_cursor.items():
+            global_datetime = ab_datetime_try_parse(str(global_value))
+            partition_datetime = ab_datetime_try_parse(str(partition_cursor.get(cursor_field, "")))
+            if global_datetime and partition_datetime and partition_datetime < global_datetime:
+                return True
         return False
 
 

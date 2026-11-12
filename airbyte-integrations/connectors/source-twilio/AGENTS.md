@@ -25,3 +25,12 @@ The `alerts` stream handles Twilio's 10,000-result cap with a `SPLIT_REQUEST_WIN
 - Each split halves the window at `PT1S` granularity and the CDK stops after 10 halvings, so the smallest window is the slice span / 1024: about 43 minutes with `P1M`, about 84 seconds with `P1D`.
 - Exhausted splitting (depth 10, or a window that can't shrink) fails as `transient_error` with `failure_message` appended to the CDK message.
 - Any other Alerts 400 hits the dedicated FAIL filter (`http_codes: [400]`, after the SPLIT filter) and fails as `system_error` with Twilio's own message.
+
+## Messages stale partition state
+
+`messages` keeps one cursor per account (`states`) plus a global cursor (`state`). `TwilioStalePartitionStateMigration` drops every per-account entry whose cursor is older than the global cursor before each read:
+
+- The CDK only advances the global cursor after every account has been read, so an older per-account cursor points at data that was already synced. Resuming from it re-reads that account's history.
+- A dropped account resumes from the global cursor minus the `lookback_window` saved in state (the previous sync's duration in seconds), which the CDK applies on its own.
+- Don't replace this with `global_substream_cursor: true`. The CDK reads `use_global_cursor` and `states` back from saved state, so existing connections would keep their stale entries, and the stream would lose per-account checkpointing during long syncs.
+- The other streams built on `base_nested_incremental_from_accounts_stream` don't run this migration.
