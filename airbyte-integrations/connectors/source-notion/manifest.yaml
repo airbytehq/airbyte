@@ -280,7 +280,13 @@ streams:
         $ref: "#/definitions/record_selector"
         record_filter:
           type: RecordFilter
-          condition: '{{ record["type"] not in ["child_page", "child_database", "ai_block"] }}'
+          # The cursor comparison is written out here because the CDK does not attach its client-side
+          # incremental filter to the record selector of a CustomRetriever. `start_time` is the stream
+          # state minus the lookback window (or the start date on a first sync); both sides are cut to
+          # milliseconds because Notion returns 3 fractional digits and the slice carries 6.
+          condition: >-
+            {{ record["type"] not in ["child_page", "child_database", "ai_block"]
+            and record["last_edited_time"][:23] >= stream_interval["start_time"][:23] }}
       paginator:
         $ref: "#/definitions/request_parameter_paginator"
         $parameters:
