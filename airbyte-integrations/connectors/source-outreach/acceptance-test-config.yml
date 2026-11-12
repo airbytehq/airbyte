@@ -21,10 +21,6 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
-          - name: "content_category_memberships"
-            bypass_reason: "The sandbox account has no content category memberships; live list and incremental filter requests return zero rows"
-          - name: "content_category_ownerships"
-            bypass_reason: "The sandbox account has no content category ownerships; live list and incremental filter requests return zero rows"
           - name: "sequence_states"
             bypass_reason: "Sandbox account cannot seed the stream"
           - name: "snippets"
