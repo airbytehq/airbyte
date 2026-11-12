@@ -1003,3 +1003,66 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+@pytest.mark.parametrize(
+    "stream_name,cursor_field,lower_key,upper_key,subresource_key",
+    [
+        pytest.param("messages", "date_sent", "DateSent>", "DateSent<", "messages", id="messages"),
+        pytest.param("recordings", "date_created", "DateCreated>", "DateCreated<", "recordings", id="recordings"),
+    ],
+)
+@freeze_time("2026-11-12 10:00:00+00:00")
+def test_partition_cursor_advances_past_first_slice(stream_name, cursor_field, lower_key, upper_key, subresource_key, requests_mock):
+    """
+    A per-partition read that spans several monthly slices must checkpoint the partition at the latest record it
+    emitted, not at the start of its first slice. Otherwise every following sync re-reads the partition's full history
+    even though the stream's global cursor is recent.
+    """
+    resource_path = {"messages": "Messages", "recordings": "Recordings"}[stream_name]
+    subresource_uri = f"/2010-04-01/Accounts/AC123/{resource_path}.json"
+    requests_mock.get(
+        f"{BASE}/Accounts.json",
+        json={"accounts": [{"sid": "AC123", "subresource_uris": {subresource_key: subresource_uri}}]},
+    )
+    records_by_month = {
+        "2026-08": {"sid": "XX_aug", cursor_field: "2026-08-15T00:00:00Z"},
+        "2026-10": {"sid": "XX_oct", cursor_field: "2026-10-20T08:30:00Z"},
+    }
+    requested_windows = []
+
+    def _callback(request, context):
+        query = parse_qs(urlparse(request.url).query)
+        lower, upper = query[lower_key][0], query[upper_key][0]
+        requested_windows.append((lower, upper))
+        record = records_by_month.get(lower[:7])
+        return {stream_name: [record] if record else []}
+
+    requests_mock.get(f"https://api.twilio.com{subresource_uri}", json=_callback)
+    partition = {"subresource_uri": subresource_uri, "parent_slice": {}}
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            stream_name,
+            {
+                "states": [{"partition": partition, "cursor": {cursor_field: "2026-07-01 00:00:00Z"}}],
+                "state": {cursor_field: "2026-07-01 00:00:00Z"},
+                "use_global_cursor": False,
+            },
+        )
+        .build()
+    )
+
+    output = read_from_stream({**TEST_CONFIG, "start_date": "2026-01-01T00:00:00Z"}, stream_name, SyncMode.incremental, state)
+
+    assert sorted(record.record.data["sid"] for record in output.records) == ["XX_aug", "XX_oct"]
+    assert sorted(requested_windows) == [
+        ("2026-07-01 00:00:00Z", "2026-07-31 23:59:59Z"),
+        ("2026-08-01 00:00:00Z", "2026-08-31 23:59:59Z"),
+        ("2026-09-01 00:00:00Z", "2026-09-30 23:59:59Z"),
+        ("2026-10-01 00:00:00Z", "2026-10-31 23:59:59Z"),
+        ("2026-11-01 00:00:00Z", "2026-11-12 10:00:00Z"),
+    ]
+    final_state = output.most_recent_state.stream_state.__dict__
+    assert final_state["states"] == [{"partition": partition, "cursor": {cursor_field: "2026-10-20 08:30:00Z"}}]
+    assert final_state["state"] == {cursor_field: "2026-10-20 08:30:00Z"}

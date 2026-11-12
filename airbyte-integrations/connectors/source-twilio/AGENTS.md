@@ -25,3 +25,7 @@ The `alerts` stream handles Twilio's 10,000-result cap with a `SPLIT_REQUEST_WIN
 - Each split halves the window at `PT1S` granularity and the CDK stops after 10 halvings, so the smallest window is the slice span / 1024: about 43 minutes with `P1M`, about 84 seconds with `P1D`.
 - Exhausted splitting (depth 10, or a window that can't shrink) fails as `transient_error` with `failure_message` appended to the CDK message.
 - Any other Alerts 400 hits the dedicated FAIL filter (`http_codes: [400]`, after the SPLIT filter) and fails as `system_error` with Twilio's own message.
+
+## Cursor granularity must match the datetime format
+
+`messages` and `recordings` format slice boundaries with `%Y-%m-%d %H:%M:%SZ` (whole seconds), so their `cursor_granularity` must be `PT1S`. The CDK only merges consecutive slices into one checkpoint when one slice's end plus the granularity equals the next slice's start. With a finer granularity (it was `PT0.000001S` up to 1.1.10) the slices never merge, each account's partition cursor stays at the start of its first slice, and every sync re-reads that account's whole history while the global cursor looks recent.
