@@ -9,7 +9,8 @@ check:
 
 definitions:
   download_error_handler:
-    type: DefaultErrorHandler
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.BingAdsDownloadErrorHandler
     response_filters:
       - type: HttpResponseFilter
         predicate: "{{ headers.get('x-ms-error-code') == 'AuthenticationFailed' }}"
