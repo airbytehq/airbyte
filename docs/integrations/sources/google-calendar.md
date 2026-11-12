@@ -110,7 +110,7 @@ With **Calendar Id** empty, `events` reads only calendars the account can read e
 
 Deleted events are replicated: cancelled events arrive with `status: "cancelled"` (`showDeleted=true`) and are stamped with an `updated` value so they replace the live row under Append + Deduped (see [Events sync behavior](#events-sync-behavior)).
 
-Deleted calendar-list entries appear in `calendarlist` with `deleted: true`, and deleted sharing rules appear in `acl` with `role: "none"`. Internal calendar-list reads do not request deleted entries and guard against using them as child partitions. Removed calendars are not read by `calendars`, `events`, `acl`, or `freebusy`; this prevents requests for calendars you no longer have access to. The full-refresh `calendars` stream has no deletion record of its own: a removed calendar drops out of the next snapshot, and its deletion is visible in `calendarlist`.
+Deleted calendar-list entries appear in `calendarlist` with `deleted: true`, and deleted sharing rules appear in `acl` with `role: "none"`. The `calendars`, `events`, `acl`, and `freebusy` streams skip calendars removed from the calendar list, so the connector doesn't request calendars you no longer have access to. The `calendars` stream has no deletion record of its own: a removed calendar drops out of the next snapshot, and its deletion is visible in `calendarlist`.
 
 ## Google user data
 
@@ -169,7 +169,7 @@ The `events` stream is incremental on the event's last modification time (`updat
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 1.2.0 | 2026-11-11 | [92016](https://github.com/airbytehq/airbyte/pull/92016) | Include calendar and ACL tombstones, expand schemas, and improve pagination and concurrency reliability. |
+| 1.2.0 | 2026-11-12 | [92016](https://github.com/airbytehq/airbyte/pull/92016) | Include calendar and ACL tombstones, expand schemas, and improve pagination and concurrency reliability. |
 | 1.1.0 | 2026-11-11 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative Google OAuth with granular read-only scopes and a custom-app authentication option; automatically migrate saved flat credentials (downgrading below 1.1.0 then needs them restored by hand); report a missing OAuth scope as a configuration error. |
 | 1.0.1 | 2026-11-10 | [91570](https://github.com/airbytehq/airbyte/pull/91570) | Update dependencies |
 | 1.0.0 | 2026-11-09 | [86470](https://github.com/airbytehq/airbyte/pull/86470) | Add `acl` and `freebusy` streams, read `events`/`acl`/`freebusy` from every calendar when `calendarid` is empty, change the `events` primary key to `[calendar_id, id]`, return calendar resources from `calendars`, change the `colors` primary key to `kind`, and type date and date-time fields (breaking, see the [migration guide](/integrations/sources/google-calendar-migrations)) |
