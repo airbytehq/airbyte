@@ -125,14 +125,26 @@ def _config() -> ConfigBuilder:
 @freeze_time(_NOW)
 class ChatsTest(TestCase):
     @HttpMocker()
-    def test_404_on_search_is_ignored(self, http_mocker: HttpMocker) -> None:
-        http_mocker.get(_search_request(*_WINDOWS[0]), HttpResponse(body='{"error": "Not Found"}', status_code=404))
-        _mock_empty_windows(http_mocker, _WINDOWS[1:])
+    def test_given_404_on_search_window_when_read_then_fail_without_moving_state_past_it(self, http_mocker: HttpMocker) -> None:
+        """
+        A 404 on a search window stops the sync. If it were ignored, the window would close as empty, the next window
+        would be searched (it is not mocked here) and its chats would move the state past the chats of the failed one.
+        """
+        chat = _chat(_chat_id(1), "2021-01-01T10:00:00Z")
+        http_mocker.get(_search_request(*_WINDOWS[0]), _search_response([_search_result(chat["id"], chat["timestamp"])]))
+        http_mocker.get(_search_request(*_WINDOWS[1]), HttpResponse(body='{"error": "Not Found"}', status_code=404))
 
-        output = read(_config())
+        output = read(_config(), expecting_exception=True, sync_mode=SyncMode.incremental)
 
-        assert len(output.records) == 0
-        assert not any(log.log.level == "ERROR" for log in output.logs)
+        assert any(
+            error.trace.error.failure_type == FailureType.system_error
+            and error.trace.error.message
+            == "Zendesk Search Chats request returned HTTP 404. Chats updated in the requested window cannot be read."
+            for error in output.errors
+        )
+        for state_message in output.state_messages:
+            parent_state = state_message.state.stream.stream_state.__dict__.get("parent_state") or {}
+            assert parent_state.get("chats_search", {}).get("search_window_end", _WINDOWS[0][1]) <= _WINDOWS[0][1]
 
     @HttpMocker()
     def test_when_read_then_chats_found_by_search_are_fetched_by_id(self, http_mocker: HttpMocker) -> None:

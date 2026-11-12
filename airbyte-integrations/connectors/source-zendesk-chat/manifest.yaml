@@ -289,9 +289,13 @@ definitions:
                 predicate: "{{ response.get('count', 0) >= 10000 }}"
                 action: SPLIT_REQUEST_WINDOW
                 error_message: "Search Chats returned {{ response.get('count') }} results, at or above Zendesk's 10,000-result cap."
+              # A search has no missing record to answer 404 for. Ignoring it would close the window as
+              # empty, and the state would move past the chats updated in it once a later window returns chats.
               - type: HttpResponseFilter
                 http_codes: [404]
-                action: IGNORE
+                action: FAIL
+                failure_type: system_error
+                error_message: "Zendesk Search Chats request returned HTTP 404. Chats updated in the requested window cannot be read."
               - type: HttpResponseFilter
                 http_codes: [401]
                 action: FAIL
