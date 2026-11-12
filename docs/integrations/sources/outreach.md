@@ -68,6 +68,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.55 | 2026-11-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Retry with a refreshed access token when Outreach returns 401 for an expired token mid-sync |
 | 1.1.54 | 2026-11-11 | [89085](https://github.com/airbytehq/airbyte/pull/89085) | Replace custom record extractor with declarative components; record output is unchanged |
 | 1.1.53 | 2026-11-10 | [91643](https://github.com/airbytehq/airbyte/pull/91643) | Update dependencies |
 | 1.1.52 | 2026-11-03 | [90625](https://github.com/airbytehq/airbyte/pull/90625) | Update dependencies |
