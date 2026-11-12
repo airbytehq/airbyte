@@ -1,4 +1,4 @@
-FROM clickhouse/clickhouse-server:24.8
+FROM clickhouse/clickhouse-server:22.5
 
 EXPOSE 8123
 EXPOSE 8443

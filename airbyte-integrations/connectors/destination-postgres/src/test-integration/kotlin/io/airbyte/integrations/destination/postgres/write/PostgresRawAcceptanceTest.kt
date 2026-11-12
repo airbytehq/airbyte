@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.postgres.write
 
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.ColumnDropBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
@@ -55,6 +56,7 @@ class PostgresRawAcceptanceTest :
             ),
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = false,
+        columnDropBehavior = ColumnDropBehavior.RETAIN,
         configUpdater = PostgresConfigUpdater(),
         recordMangler = PostgresExpectedRawRecordMapper,
     ) {

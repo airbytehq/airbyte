@@ -9,8 +9,8 @@ dependencies {
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
     testFixturesApi project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc')
-    testFixturesApi 'org.testcontainers:testcontainers:1.20.1'
-    testFixturesApi 'org.testcontainers:jdbc:1.20.1'
+    testFixturesApi 'org.testcontainers:testcontainers:1.21.4'
+    testFixturesApi 'org.testcontainers:jdbc:1.21.4'
     testFixturesApi 'org.apache.commons:commons-lang3:3.17.0'
     testFixturesApi ('io.airbyte:airbyte-api:0.55.2') { transitive = false }
     testFixturesApi 'com.networknt:json-schema-validator:1.5.1'

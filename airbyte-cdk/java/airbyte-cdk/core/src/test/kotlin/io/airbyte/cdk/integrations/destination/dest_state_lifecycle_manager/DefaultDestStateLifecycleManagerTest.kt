@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.destination.dest_state_lifecycle_manager
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamState
@@ -18,6 +19,10 @@ internal class DefaultDestStateLifecycleManagerTest {
     private lateinit var streamMgr: DestStateLifecycleManager
 
     @BeforeEach
+    @SuppressFBWarnings(
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        justification = "compiler-generated lateinit null check after the assignment",
+    )
     fun setup() {
         singleStateMgr = Mockito.mock(DestStateLifecycleManager::class.java)
         streamMgr = Mockito.mock(DestStateLifecycleManager::class.java)
@@ -127,13 +132,13 @@ internal class DefaultDestStateLifecycleManagerTest {
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(
-                    AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
+                    AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.LEGACY),
                 )
         private val GLOBAL_MESSAGE: AirbyteMessage =
             AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(
-                    AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                    AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL),
                 )
         private val STREAM_MESSAGE: AirbyteMessage =
             AirbyteMessage()
@@ -143,8 +148,8 @@ internal class DefaultDestStateLifecycleManagerTest {
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(
                             AirbyteStreamState()
-                                .withStreamDescriptor(StreamDescriptor().withName("users"))
-                        )
+                                .withStreamDescriptor(StreamDescriptor().withName("users")),
+                        ),
                 )
     }
 }

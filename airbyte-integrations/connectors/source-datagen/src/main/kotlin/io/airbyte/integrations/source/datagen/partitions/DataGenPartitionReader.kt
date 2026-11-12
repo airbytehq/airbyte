@@ -34,6 +34,7 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
     interface AcquiredResource : AutoCloseable {
         val resource: Resource.Acquired?
     }
+
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
@@ -58,9 +59,8 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
                 streamState.streamFeedBootstrap,
                 acquiredResources
                     .get()
-                    .filter { it.value.resource != null }
-                    .map { it.key to it.value.resource!! }
-                    .toMap()
+                    .mapNotNull { (key, value) -> value.resource?.let { key to it } }
+                    .toMap(),
             )
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
@@ -68,7 +68,9 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
     override suspend fun run() {
         log.info { "Starting data generation for partition $partitionId in stream ${stream.name}" }
 
-        val outputRoute = outputMessageRouter.recordAcceptors[stream.id]!!
+        val outputRoute =
+            outputMessageRouter.recordAcceptors[stream.id]
+                ?: throw IllegalStateException("No record acceptor found for stream ${stream.id}")
 
         val configuration = sharedState.configuration
         val sourceDataGenerator = configuration.flavor.dataGenerator
@@ -105,7 +107,7 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
             when (streamState.streamFeedBootstrap.dataChannelMedium) {
                 DataChannelMedium.SOCKET -> partitionId
                 DataChannelMedium.STDIO -> null
-            }
+            },
         )
     }
 

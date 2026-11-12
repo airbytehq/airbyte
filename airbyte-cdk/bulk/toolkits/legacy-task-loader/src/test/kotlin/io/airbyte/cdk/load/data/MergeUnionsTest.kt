@@ -21,11 +21,11 @@ class MergeUnionsTest {
                                 properties =
                                     linkedMapOf(
                                         "foo" to FieldType(StringType, false),
-                                        "bar" to FieldType(IntegerType, false)
-                                    )
+                                        "bar" to FieldType(IntegerType, false),
+                                    ),
                             ),
-                            nullable = false
-                        )
+                            nullable = false,
+                        ),
                 )
                 .withRecord()
                 .with(StringType, nameOverride = "foo")
@@ -50,11 +50,11 @@ class MergeUnionsTest {
                                 properties =
                                     linkedMapOf(
                                         "foo" to
-                                            FieldType(UnionType.of(StringType, IntegerType), false)
-                                    )
+                                            FieldType(UnionType.of(StringType, IntegerType), false),
+                                    ),
                             ),
-                            false
-                        )
+                            false,
+                        ),
                 )
                 .withRecord()
                 .with(StringType, nameOverride = "foo")
@@ -74,7 +74,7 @@ class MergeUnionsTest {
             SchemaRecordBuilder<Root>()
                 .withUnion(
                     expectedInstead =
-                        FieldType(UnionType.of(StringType, IntegerType), nullable = false)
+                        FieldType(UnionType.of(StringType, IntegerType), nullable = false),
                 )
                 .with(StringType)
                 .with(IntegerType)
@@ -91,7 +91,7 @@ class MergeUnionsTest {
             SchemaRecordBuilder<Root>()
                 .withUnion(
                     expectedInstead =
-                        FieldType(UnionType.of(StringType, IntegerType), nullable = false)
+                        FieldType(UnionType.of(StringType, IntegerType), nullable = false),
                 )
                 .with(StringType)
                 .with(UnionType.of(StringType, UnionType.of(IntegerType, StringType)))

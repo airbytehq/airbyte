@@ -18,6 +18,10 @@ The Zapier Supported Storage Connector can be used to sync your [Zapier](https:/
 
 - secret - The Storage by Zapier secret.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,7 @@ The Zapier Supported Storage Connector can be used to sync your [Zapier](https:/
 
 | Version | Date | Pull Request | Subject |
 |:--------|:-----------|:---------------------------------------------------------| |
+| 0.2.25 | 2026-11-09 | [91451](https://github.com/airbytehq/airbyte/pull/91451) | Update base image to source-declarative-manifest 7.47.0 |
 | 0.2.24 | 2025-05-24 | [60752](https://github.com/airbytehq/airbyte/pull/60752) | Update dependencies |
 | 0.2.23 | 2025-05-10 | [59548](https://github.com/airbytehq/airbyte/pull/59548) | Update dependencies |
 | 0.2.22 | 2025-04-26 | [58945](https://github.com/airbytehq/airbyte/pull/58945) | Update dependencies |

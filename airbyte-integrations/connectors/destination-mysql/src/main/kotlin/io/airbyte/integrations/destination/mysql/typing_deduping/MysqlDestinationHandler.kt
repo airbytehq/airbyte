@@ -38,6 +38,7 @@ class MysqlDestinationHandler(
     ) {
     override val stateTableUpdatedAtType: DataType<*> =
         DefaultDataType(SQLDialect.MYSQL, String::class.java, "datetime")
+
     override fun toJdbcTypeName(airbyteType: AirbyteType): String =
         // This is mostly identical to the postgres implementation, but swaps jsonb to json
         if (airbyteType is AirbyteProtocolType) {

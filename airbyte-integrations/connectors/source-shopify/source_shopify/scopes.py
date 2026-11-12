@@ -58,6 +58,7 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "PriceRules": ("read_price_rules",),
     # SCOPE: read_discounts
     "DiscountCodes": ("read_discounts",),
+    "DiscountCodesSync": ("read_discounts",),
     # SCOPE: read_locations
     "Locations": ("read_locations",),
     "MetafieldLocations": ("read_locations",),
@@ -76,6 +77,8 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "MetafieldBlogs": ("read_online_store_pages",),
     # SCOPE: read_shipping
     "Countries": ("read_shipping",),
+    # SCOPE: read_markets
+    "MarketCountries": ("read_markets",),
 }
 
 ALWAYS_PERMITTED_STREAMS: List[str] = [

@@ -10,6 +10,7 @@ from typing import Any, Iterable, List, Optional
 import psutil
 from wcmatch.glob import GLOBSTAR, globmatch
 
+from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import UploadableRemoteFile
 from source_sftp_bulk.client import SFTPClient
@@ -270,6 +271,8 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
                                 globs,
                             )
                             files_batch = []
+            except AirbyteTracedException:
+                raise
             except Exception as e:
                 logger.warning(f"Error listing directory {current_dir}: {e}")
                 continue

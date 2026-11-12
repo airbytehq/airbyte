@@ -1,4 +1,4 @@
-version: 6.41.3
+version: 6.48.15
 
 type: DeclarativeSource
 
@@ -19,7 +19,126 @@ check:
   stream_names:
     - campaigns
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 20
+
 definitions:
+  response_filters:
+    token_expired:
+      type: HttpResponseFilter
+      action: REFRESH_TOKEN_THEN_RETRY
+      http_codes:
+        - 401
+      error_message: >-
+        Apple Ads rejected the credentials (401) even after refreshing the
+        access token. The client secret JWT may have expired (Apple caps it at
+        180 days) or the API user lost access; generate a new client secret and
+        update the source.
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
+        {{ ' Apple said: ' ~ apple_message[:300] }}
+    invalid_request:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 400
+      failure_type: system_error
+      error_message: >-
+        Apple Ads rejected the request as invalid (400).
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
+        {{ ' Apple said: ' ~ apple_message[:300] }}
+    invalid_report_request:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 400
+      failure_type: config_error
+      error_message: >-
+        Apple Ads rejected the report request (400). Apple serves daily reports
+        for the last 90 days only: set the Start Date within that window, or
+        refresh the stream if it has not synced for a long time.
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
+        {{ ' Apple said: ' ~ apple_message[:300] }}
+    forbidden:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 403
+      failure_type: config_error
+      error_message: >-
+        Apple Ads denied access (403) for org {{ config.get('org_id') }}.
+        Check that the API user has an API role (for example API Account
+        Manager or API Account Read Only) on this organization.
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
+        {{ ' Apple said: ' ~ apple_message[:300] }}
+    not_found:
+      type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+        - 404
+      failure_type: system_error
+      error_message: >-
+        Apple Ads returned 404 for {{ request_url }}. A campaign or ad group may
+        have been deleted while the sync was running.
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string and first_error.get('message') else 'no error details returned' -%}
+        {{ ' Apple said: ' ~ apple_message[:300] }}
+    keyword_missing:
+      type: HttpResponseFilter
+      action: IGNORE
+      predicate: >-
+        {%- set apple_error = response.get('error') if response is mapping and response.get('error') is mapping else {} -%}
+        {%- set apple_errors = apple_error.get('errors') if apple_error.get('errors') is sequence and apple_error.get('errors') is not string and apple_error.get('errors') is not mapping else [] -%}
+        {%- set first_error = apple_errors[0] if apple_errors else {} -%}
+        {%- set apple_message = first_error.get('message') if first_error is mapping and first_error.get('message') is string else '' -%}
+        {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in apple_message }}
+  error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - $ref: "#/definitions/response_filters/token_expired"
+      - $ref: "#/definitions/response_filters/invalid_request"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
+  report_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: "{{ config.get('backoff_factor', 5) }}"
+    response_filters:
+      - $ref: "#/definitions/response_filters/token_expired"
+      - $ref: "#/definitions/response_filters/invalid_report_request"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
+  keywords_report_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: "{{ config.get('backoff_factor', 5) }}"
+    response_filters:
+      - $ref: "#/definitions/response_filters/keyword_missing"
+      - $ref: "#/definitions/response_filters/token_expired"
+      - $ref: "#/definitions/response_filters/invalid_report_request"
+      - $ref: "#/definitions/response_filters/forbidden"
+      - $ref: "#/definitions/response_filters/not_found"
   streams:
     campaigns:
       type: DeclarativeStream
@@ -39,17 +158,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -93,17 +202,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -157,17 +256,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -224,23 +313,11 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{ config['timezone'] or 'UTC' }}"
+            timeZone: "{{ config.get('timezone') or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/report_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -273,7 +350,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window}}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -333,23 +410,11 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{config['timezone'] or 'UTC' }}"
+            timeZone: "{{ config.get('timezone') or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/report_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -390,7 +455,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window}}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -451,26 +516,11 @@ definitions:
             selector: >-
               { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
               "ASCENDING" } ] }
-            timeZone: "{{ config['timezone'] or 'UTC' }}"
+            timeZone: "{{ config.get('timezone') or 'UTC' }}"
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: DefaultErrorHandler
-            max_retries: 10
-            response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                predicate: >-
-                  {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in
-                  response.error.errors[0].message }}
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 500
-                  - 429
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/keywords_report_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -511,7 +561,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window }}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -549,6 +599,156 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/keywords_report_daily"
+    ads:
+      type: DeclarativeStream
+      name: ads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /campaigns/{{ stream_slice.parent_slice.campaign_id }}/adgroups/{{
+            stream_slice.adgroup_id }}/ads
+          http_method: GET
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: adgroup_id
+              stream:
+                $ref: "#/definitions/streams/adgroups"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ads"
+    ads_report_daily:
+      type: DeclarativeStream
+      name: ads_report_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reports/campaigns/{{ stream_slice['campaign_id'] }}/ads
+          http_method: POST
+          request_headers:
+            X-AP-Context: orgId={{ config.org_id }}
+          request_body_json:
+            endTime: "{{ stream_slice.end_time }}"
+            groupBy: "[ 'countryOrRegion' ]"
+            selector: >-
+              { "orderBy": [ { "field": "countryOrRegion", "sortOrder":
+              "ASCENDING" } ] }
+            timeZone: "{{ config.get('timezone') or 'UTC' }}"
+            startTime: "{{ stream_slice.start_time }}"
+            granularity: DAILY
+          error_handler:
+            $ref: "#/definitions/report_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - reportingDataResponse
+              - row
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - offset
+            inject_into: body_json
+          page_size_option:
+            type: RequestOption
+            field_path:
+              - selector
+              - pagination
+              - limit
+            inject_into: body_json
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: campaign_id
+              stream:
+                $ref: "#/definitions/streams/campaigns"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.end_date or today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1D
+        cursor_granularity: P1D
+        global_substream_cursor: true
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - countryorregion
+              value: "{{ record.metadata.countryOrRegion }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ stream_slice.start_time }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - adId
+              value: "{{ record.metadata.adId }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ads_report_daily"
   base_requester:
     type: HttpRequester
     url_base: https://api.searchads.apple.com/api/v5
@@ -558,6 +758,17 @@ definitions:
       grant_type: client_credentials
       client_secret: "{{ config.client_secret }}"
       token_refresh_endpoint: "{{ config.get('token_refresh_endpoint', 'https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg') }}"
+      refresh_token_error_status_codes:
+        - 400
+        - 401
+      refresh_token_error_key: error
+      refresh_token_error_values:
+        - invalid_client
+        - invalid_grant
+        - invalid_request
+        - unauthorized_client
+        - unsupported_grant_type
+        - invalid_scope
       refresh_request_body: {}
 
 streams:
@@ -567,6 +778,8 @@ streams:
   - $ref: "#/definitions/streams/campaigns_report_daily"
   - $ref: "#/definitions/streams/adgroups_report_daily"
   - $ref: "#/definitions/streams/keywords_report_daily"
+  - $ref: "#/definitions/streams/ads"
+  - $ref: "#/definitions/streams/ads_report_daily"
 
 spec:
   type: Spec
@@ -578,8 +791,6 @@ spec:
       - client_id
       - start_date
       - client_secret
-      - timezone
-      - token_refresh_endpoint
     properties:
       org_id:
         type: integer
@@ -599,14 +810,19 @@ spec:
       client_id:
         type: string
         description: >-
-          A user identifier for the token request. See <a
-          href="https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api">here</a>
+          The client ID of your Apple Ads API user. Apple shows it in Account
+          Settings > API after you upload the user's public key. See <a
+          href="https://developer.apple.com/documentation/apple_ads/implementing-oauth-for-the-apple-search-ads-api">Implementing
+          OAuth for the Apple Ads API</a>.
         order: 2
         title: Client Id
         airbyte_secret: true
       start_date:
         type: string
-        description: Start getting data from that date.
+        description: >-
+          Start getting data from that date. Apple serves daily reports for the
+          last 90 days only, so report streams need a Start Date within that
+          window.
         order: 3
         title: Start Date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
@@ -615,8 +831,11 @@ spec:
       client_secret:
         type: string
         description: >-
-          A string that authenticates the user’s setup request. See <a
-          href="https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api">here</a>
+          A client secret JWT that you sign with the API user's private key
+          (ES256). Apple accepts a client secret for at most 180 days, so
+          generate a new one and update this field before it expires. See <a
+          href="https://developer.apple.com/documentation/apple_ads/implementing-oauth-for-the-apple-search-ads-api">Implementing
+          OAuth for the Apple Ads API</a>.
         order: 4
         title: Client Secret
         airbyte_secret: true
@@ -635,10 +854,11 @@ spec:
       backoff_factor:
         type: integer
         description: >-
-          This factor factor determines the delay increase factor between
-          retryable failures. Valid values are integers between 1 and 20.
+          Multiplier for the delay between retries of temporary Apple Ads API
+          errors on the report streams. Valid values are integers between 1 and 20.
         order: 6
         title: Exponential Backoff Factor
+        airbyte_hidden: true
         default: 5
         pattern: ^(20|1[0-9]|[1-9])$
         examples:
@@ -657,12 +877,26 @@ spec:
       token_refresh_endpoint:
         type: string
         description: >-
-          Token Refresh Endpoint. You should override the default value in scenarios 
-          where it's required to proxy requests to Apple's token endpoint
+          Apple's OAuth token endpoint. Change it only when requests to Apple's
+          token endpoint must go through a proxy.
         title: Token Refresh Endpoint
+        airbyte_hidden: true
         default: >-
           https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
         order: 8
+      num_workers:
+        type: integer
+        description: >-
+          The number of concurrent workers for syncing data. Increase this
+          value to speed up syncs for accounts with many campaigns and ad
+          groups, at the cost of higher API usage. Valid values are 1 to 20.
+        order: 9
+        title: Number of Workers
+        default: 2
+        minimum: 1
+        maximum: 20
+        examples:
+          - 5
     additionalProperties: true
 
 metadata:
@@ -673,6 +907,8 @@ metadata:
     campaigns_report_daily: false
     adgroups_report_daily: false
     keywords_report_daily: false
+    ads: false
+    ads_report_daily: false
   yamlComponents:
     streams:
       campaigns_report_daily:
@@ -681,47 +917,63 @@ metadata:
         - errorHandler
       keywords_report_daily:
         - errorHandler
+      ads_report_daily:
+        - errorHandler
     global:
       - authenticator
   testedStreams:
     campaigns:
-      streamHash: 695200dfcda5d952c3d0c21948db4780caa38393
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 14a00ce755695de8dc193eb1a19491e468b753e9
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     adgroups:
+      hasRecords: true
       streamHash: fe4a079447f9e32ab0e6bd33cbb87620aa946b70
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     keywords:
-      streamHash: 8419d91ef05fe6a37e6a731972cc63f7db413ec3
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 7bc6565891b12d47684dd135576639b4dc2aba1e
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     campaigns_report_daily:
-      streamHash: 0f716882a4c4cf2af1d32eaa5e4bfae1df650d1b
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 9f09efe0663862f9675ee9a02c7aaec8e9c7b59f
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     adgroups_report_daily:
-      streamHash: 55fd5a511833be4580713815c5bb721ad241f03b
+      hasRecords: true
+      streamHash: 8a54839404513a2fb36425e8b18b404320788ebc
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     keywords_report_daily:
+      hasRecords: false
+      streamHash: 769430fd94c04e7c700c117c5925a437ff4aec14
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ads:
       hasRecords: true
-      streamHash: 236c9e467ad57836f09f2bc7adc815eecbdf7d77
+      streamHash: c78be559d72e8ecdcb07d49d99112ef6f80f0ae1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    ads_report_daily:
+      hasRecords: true
+      streamHash: 92792b2b53e7c2d2ac91955197da57bdbf769cec
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -740,6 +992,10 @@ schemas:
         type: integer
       billingEvent:
         type: string
+      biddingStrategy:
+        type:
+          - string
+          - "null"
       budgetAmount:
         anyOf:
           - type: "null"
@@ -813,6 +1069,15 @@ schemas:
         type: array
         items:
           type: string
+      targetCpa:
+        anyOf:
+          - type: "null"
+          - type: object
+            properties:
+              amount:
+                type: string
+              currency:
+                type: string
   adgroups:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -820,6 +1085,14 @@ schemas:
     properties:
       automatedKeywordsOptIn:
         type: boolean
+      automatedKeywordsRequired:
+        type:
+          - boolean
+          - "null"
+      biddingStrategy:
+        type:
+          - string
+          - "null"
       campaignId:
         type: integer
       cpaGoal:
@@ -1332,3 +1605,271 @@ schemas:
         type: integer
       other:
         type: boolean
+  ads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      adGroupId:
+        type:
+          - number
+          - "null"
+      campaignId:
+        type:
+          - number
+          - "null"
+      creationTime:
+        type:
+          - string
+          - "null"
+      creativeId:
+        type:
+          - number
+          - "null"
+      creativeType:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      modificationTime:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      orgId:
+        type:
+          - number
+          - "null"
+      servingStateReasons:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      servingStatus:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  ads_report_daily:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          adDisplayStatus:
+            type:
+              - string
+              - "null"
+          adGroupId:
+            type:
+              - number
+              - "null"
+          adId:
+            type:
+              - number
+              - "null"
+          adName:
+            type:
+              - string
+              - "null"
+          adStatus:
+            type:
+              - string
+              - "null"
+          campaignId:
+            type:
+              - number
+              - "null"
+          countryOrRegion:
+            type:
+              - string
+              - "null"
+          creationTime:
+            type:
+              - string
+              - "null"
+          creativeId:
+            type:
+              - number
+              - "null"
+          creativeType:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          modificationTime:
+            type:
+              - string
+              - "null"
+          orgId:
+            type:
+              - number
+              - "null"
+          productPageId:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      adId:
+        type:
+          - number
+          - "null"
+      countryorregion:
+        type:
+          - string
+          - "null"
+      date:
+        type: string
+      granularity:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            avgCPT:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            date:
+              type:
+                - string
+                - "null"
+            impressions:
+              type:
+                - number
+                - "null"
+            localSpend:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            tapInstallCPI:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            tapInstallRate:
+              type:
+                - number
+                - "null"
+            tapInstalls:
+              type:
+                - number
+                - "null"
+            tapNewDownloads:
+              type:
+                - number
+                - "null"
+            tapRedownloads:
+              type:
+                - number
+                - "null"
+            taps:
+              type:
+                - number
+                - "null"
+            totalAvgCPI:
+              type:
+                - object
+                - "null"
+              properties:
+                amount:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+            totalInstallRate:
+              type:
+                - number
+                - "null"
+            totalInstalls:
+              type:
+                - number
+                - "null"
+            totalNewDownloads:
+              type:
+                - number
+                - "null"
+            totalRedownloads:
+              type:
+                - number
+                - "null"
+            ttr:
+              type:
+                - number
+                - "null"
+            viewInstalls:
+              type:
+                - number
+                - "null"
+            viewNewDownloads:
+              type:
+                - number
+                - "null"
+            viewRedownloads:
+              type:
+                - number
+                - "null"
+      other:
+        type:
+          - boolean
+          - "null"
+    required:
+      - date

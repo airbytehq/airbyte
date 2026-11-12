@@ -2,6 +2,42 @@
   "streams": [
     {
       "stream": {
+        "name": "audit_logs",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "macro_groups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "surveys",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "training_data",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "accounts",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -23,7 +59,7 @@
         "name": "issues",
         "json_schema": {},
         "source_defined_cursor": true,
-        "default_cursor_field": ["created_at"],
+        "default_cursor_field": ["updated_at"],
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",

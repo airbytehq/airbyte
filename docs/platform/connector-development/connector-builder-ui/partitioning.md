@@ -1,4 +1,4 @@
-# Partitioning
+# Partitions
 
 Partitioning is required when records of a stream are grouped into subsets that need to be queried separately to extract all records. This is common when APIs require specific parameters (like IDs or categories) to fetch different portions of the data.
 
@@ -122,3 +122,7 @@ Don't use partitioning for:
 - **Time-based incremental sync**: Use the Incremental Sync feature instead
 
 Partitioning is specifically for cases where the API requires different parameter values to access different subsets of the same logical data stream.
+
+## Related
+
+- *YAML Components*: [Partitions](/platform/connector-development/config-based/understanding-the-yaml-file/partition-router)

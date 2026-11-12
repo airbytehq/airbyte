@@ -15,6 +15,71 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
+@pytest.mark.parametrize(
+    "region, expected_url_base",
+    [
+        pytest.param("US", "https://api.iterable.com/api/", id="us_region"),
+        pytest.param("EU", "https://api.eu.iterable.com/api/", id="eu_region"),
+    ],
+)
+def test_url_base_by_region(region, expected_url_base):
+    stream = Campaigns(authenticator=None, region=region)
+    assert stream.url_base == expected_url_base
+
+
+def test_url_base_defaults_to_us():
+    stream = Campaigns(authenticator=None)
+    assert stream.url_base == "https://api.iterable.com/api/"
+
+
+@responses.activate
+def test_campaigns_paginates_from_first_request(config):
+    page_one = [{"id": index} for index in range(1000)]
+    page_two = [{"id": index} for index in range(1000, 1003)]
+    responses.get(
+        "https://api.iterable.com/api/campaigns",
+        json={"campaigns": page_one},
+        match=[responses.matchers.query_param_matcher({"page": "1", "pageSize": "1000"})],
+    )
+    responses.get(
+        "https://api.iterable.com/api/campaigns",
+        json={"campaigns": page_two},
+        match=[responses.matchers.query_param_matcher({"page": "2", "pageSize": "1000"})],
+    )
+
+    stream = next(filter(lambda item: item.name == "campaigns", SourceIterable().streams(config=config)))
+    stream.retriever.cursor = None
+
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert [record.data for record in records] == page_one + page_two
+    assert len(responses.calls) == 2
+    assert responses.calls[0].request.url.endswith("campaigns?page=1&pageSize=1000")
+    assert responses.calls[1].request.url.endswith("campaigns?page=2&pageSize=1000")
+
+
+@responses.activate
+def test_python_campaigns_helper_paginates():
+    page_one = [{"id": index} for index in range(1000)]
+    page_two = [{"id": index} for index in range(1000, 1003)]
+    responses.get(
+        "https://api.iterable.com/api/campaigns",
+        json={"campaigns": page_one},
+        match=[responses.matchers.query_param_matcher({"page": "1", "pageSize": "1000"})],
+    )
+    responses.get(
+        "https://api.iterable.com/api/campaigns",
+        json={"campaigns": page_two},
+        match=[responses.matchers.query_param_matcher({"page": "2", "pageSize": "1000"})],
+    )
+
+    stream = Campaigns(authenticator=None)
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert records == page_one + page_two
+    assert len(responses.calls) == 2
+
+
 def test_campaigns_metrics_csv():
     csv_string = "a,b,c,d\n1, 2,,3\n6,,1, 2\n"
     output = [{"a": 1, "b": 2, "d": 3}, {"a": 6, "c": 1, "d": 2}]
@@ -155,6 +220,16 @@ def test_campaigns_metric_slicer(config):
     expected = [{"campaign_ids": [1]}]
 
     assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh)) == expected
+
+
+@responses.activate
+def test_campaigns_metric_slicer_eu_region():
+    responses.get("https://api.eu.iterable.com/api/campaigns", json={"campaigns": [{"id": 2}]})
+
+    stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00", region="EU")
+    slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+
+    assert slices == [{"campaign_ids": [2]}]
 
 
 def test_templates_parse_response():

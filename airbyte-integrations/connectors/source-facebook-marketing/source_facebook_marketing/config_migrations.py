@@ -158,7 +158,11 @@ class MigrateSecretsPathInConnector:
             config["credentials"] = {
                 "auth_type": "Service",
             }
-        if "access_token" in config:
+        # Only migrate top-level access_token when credentials.access_token is not already set.
+        # Chrome autofill can inject saved passwords into the legacy top-level access_token field,
+        # and unconditionally copying it here would overwrite a valid OAuth token stored in credentials.
+        # See: https://github.com/airbytehq/oncall/issues/12978
+        if "access_token" in config and "access_token" not in config.get("credentials", {}):
             config["credentials"]["access_token"] = config.pop("access_token")
         if "client_id" in config:
             config["credentials"]["auth_type"] = "Client"

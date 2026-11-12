@@ -60,6 +60,10 @@ The Explore API has an account-based quota limit of 15 simultaneous reports (exe
 
 Please refer to the [getting started with the API](https://docs.talkdesk.com/docs/api-access) guide.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

@@ -108,7 +108,7 @@ class RouteEventTaskTest {
                     key = key,
                     value = Fixtures.record(),
                     postProcessingCallback = releaseMemCallback,
-                    context = expectedContext
+                    context = expectedContext,
                 )
 
             coVerify { fileQueue.publish(expected, partition) }
@@ -177,13 +177,13 @@ class RouteEventTaskTest {
             AirbyteMessage()
                 .withRecord(
                     AirbyteRecordMessage()
-                        .withData(Jsons.deserialize("""{"something": "has to give"}"""))
+                        .withData(Jsons.deserialize("""{"something": "has to give"}""")),
                 )
 
         private fun schema() =
             ObjectType(
                 properties =
-                    LinkedHashMap(mapOf("something" to FieldType(StringType, nullable = true)))
+                    LinkedHashMap(mapOf("something" to FieldType(StringType, nullable = true))),
             )
 
         fun stream(includeFiles: Boolean = true, schema: ObjectType = schema()) =

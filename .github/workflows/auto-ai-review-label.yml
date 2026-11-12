@@ -1,0 +1,28 @@
+# Triggers the AI Review workflow when the 'auto-ai-review' label is present.
+# Two triggers:
+#   1. Label added to a non-draft PR -> immediately call AI review.
+#   2. PR marked ready for review    -> call AI review if label is already set.
+# Draft PRs are skipped on `labeled` to avoid a double-dispatch: ai-review-command.yml
+# marks drafts as ready, which would re-trigger this workflow via `ready_for_review`.
+name: Auto AI Review on Label
+
+on:
+  pull_request:
+    types: [labeled, ready_for_review]
+
+run-name: "Auto AI Review for PR #${{ github.event.pull_request.number }}"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  dispatch-ai-review:
+    if: |
+      (github.event.action == 'labeled' && github.event.label.name == 'auto-ai-review' && github.event.pull_request.draft != true) ||
+      (github.event.action == 'ready_for_review' && contains(github.event.pull_request.labels.*.name, 'auto-ai-review'))
+    uses: ./.github/workflows/ai-review-command.yml
+    with:
+      pr: "${{ github.event.pull_request.number }}"
+    secrets: inherit

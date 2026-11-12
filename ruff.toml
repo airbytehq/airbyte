@@ -9,6 +9,7 @@ max-branches = 15 # Relaxed from default of 12
 [lint]
 select = [
     "I",    # isort replacement
+    "F821", # Pyflakes: undefined name
 ]
 
 # TODO: Re-enable these once we have time to address them

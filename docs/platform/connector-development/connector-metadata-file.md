@@ -221,9 +221,9 @@ To enable a test suite, add the suite name to the `connectorTestSuitesOptions` l
             alias: airbyte-connector-testing-secret-store
 ```
 
-#####  Default paths and conventions
- 
-The [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool will automatically locate specific test types based on established conventions and will automatically store secret files (when needed) in the established secrets directory - which should be already excluded from accidental git commits.
+##### Default paths and conventions
+
+The CI pipeline will automatically locate specific test types based on established conventions and will automatically store secret files (when needed) in the established secrets directory - which should be already excluded from accidental git commits.
 
 **Python connectors**
 Tests are discovered by Pytest and are expected to be located in:
@@ -232,7 +232,7 @@ Tests are discovered by Pytest and are expected to be located in:
 
 **Java connectors**
 No specific directory is determined. Which test will run is determined by the Gradle configuration of the connector.
-`airbyt-ci` runs the `test` Gradle task for the `unitTests` suite and the `integrationTest` Gradle task for the `integrationTests` suite.
+CI runs the `test` Gradle task for the `unitTests` suite and the `integrationTest` Gradle task for the `integrationTests` suite.
 
 **Acceptance tests**
 

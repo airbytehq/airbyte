@@ -321,6 +321,14 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.finnworlds.com/api/v1/
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          predicate: "{{ response.get('error') }}"
+          error_message: "Finnworlds API returned an error: {{ response.get('error') }}"
 
 streams:
   - $ref: "#/definitions/streams/bonds"

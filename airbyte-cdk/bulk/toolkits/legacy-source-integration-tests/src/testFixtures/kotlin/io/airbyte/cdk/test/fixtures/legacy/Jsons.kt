@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.google.common.base.Charsets
 import com.google.common.base.Preconditions
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
@@ -305,7 +304,7 @@ object Jsons {
     private fun replaceNested(
         json: JsonNode,
         keys: List<String>,
-        typedReplacement: BiConsumer<ObjectNode, String>
+        typedReplacement: BiConsumer<ObjectNode, String>,
     ) {
         Preconditions.checkArgument(!keys.isEmpty(), "Must pass at least one key")
         val nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size - 1))
@@ -363,7 +362,7 @@ object Jsons {
     fun flatten(node: JsonNode, applyFlattenToArray: Boolean = false): Map<String?, Any> {
         if (node.isObject) {
             val output: MutableMap<String, Any> = HashMap()
-            val it = node.fields()
+            val it = node.properties().iterator()
             while (it.hasNext()) {
                 val entry = it.next()
                 val field = entry.key

@@ -27,7 +27,7 @@ internal class AirbyteStreamStatusHolderTest {
             StreamDescriptor()
                 .withName(airbyteStreamNameAndNamespacePair.name)
                 .withNamespace(airbyteStreamNameAndNamespacePair.namespace),
-            traceMessage.streamStatus.streamDescriptor
+            traceMessage.streamStatus.streamDescriptor,
         )
     }
 
@@ -46,7 +46,7 @@ internal class AirbyteStreamStatusHolderTest {
             StreamDescriptor()
                 .withName(airbyteStreamNameAndNamespacePair.name)
                 .withNamespace(airbyteStreamNameAndNamespacePair.namespace),
-            traceMessage.streamStatus.streamDescriptor
+            traceMessage.streamStatus.streamDescriptor,
         )
     }
 }

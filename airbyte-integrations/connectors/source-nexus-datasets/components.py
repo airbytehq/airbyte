@@ -14,9 +14,11 @@ from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
 import requests
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 DATASET_PATH = "rest/3.1/analytics/dataset"
@@ -174,7 +176,7 @@ class FlexibleDecoder(Decoder):
             )
         if response.status_code == 202:
             self.logger.error("Dataset is not ready - try again later")
-            raise AirbyteTracedException(message="Dataset is not ready, try again later", failure_type=FailureType.config_error)
+            raise AirbyteTracedException(message="Dataset is not ready, try again later", failure_type=FailureType.transient_error)
         if response.status_code != 200:
             self.logger.error("Unexpected status code: %s", response.status_code)
             raise AirbyteTracedException(
@@ -184,6 +186,8 @@ class FlexibleDecoder(Decoder):
 
         content_type = response.headers.get("Content-Type", "").lower()
 
+        # The export is served from S3 as a file download whose Content-Type varies
+        # (e.g. "binary/octet-stream"), so match loosely on json / octet-stream.
         is_jsonl = any(
             ct in content_type
             for ct in (
@@ -191,6 +195,7 @@ class FlexibleDecoder(Decoder):
                 "application/x-jsonlines",
                 "application/x-jsonl+json",
                 "application/jsonl",
+                "octet-stream",
             )
         )
 

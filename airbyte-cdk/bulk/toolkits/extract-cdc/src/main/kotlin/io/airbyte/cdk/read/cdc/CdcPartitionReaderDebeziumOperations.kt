@@ -8,7 +8,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.Stream
 import org.apache.kafka.connect.source.SourceRecord
 
-interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
+interface CdcPartitionReaderDebeziumOperations<T : PartiallyOrdered<T>> {
 
     /**
      * Transforms a [DebeziumRecordKey] and a [DebeziumRecordValue] into a [DeserializedRecord].
@@ -36,7 +36,7 @@ interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
     /** Maps a Debezium state to an [OpaqueStateValue]. */
     fun serializeState(
         offset: DebeziumOffset,
-        schemaHistory: DebeziumSchemaHistory?
+        schemaHistory: DebeziumSchemaHistory?,
     ): OpaqueStateValue
 
     /** Tries to extract the WAL position from a [DebeziumRecordValue]. */

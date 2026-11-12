@@ -59,7 +59,7 @@ class JdbcPartitionReaderTest {
                                     And(
                                         GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
                                         LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
-                                    )
+                                    ),
                                 ),
                             ),
                             SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
@@ -68,15 +68,16 @@ class JdbcPartitionReaderTest {
                             idDateString(3, "2024-08-03", "are"),
                             idDateString(4, "2024-08-04", "you"),
                             idDateString(5, "2024-08-05", "today"),
-                        )
+                        ),
                     ),
                 maxSnapshotReadTime = Duration.ofMinutes(1),
             )
         val factory = sharedState.factory()
         val result = factory.create(stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound)))
         factory.assertFailures()
-        Assertions.assertTrue(result is DefaultJdbcCursorIncrementalPartition)
-        val partition = result as DefaultJdbcCursorIncrementalPartition
+        // Assertions.assertTrue(result is DefaultJdbcCursorIncrementalPartition)
+        Assertions.assertTrue(result is DefaultUnsplittableJdbcCursorIncrementalPartition)
+        val partition = result as DefaultUnsplittableJdbcCursorIncrementalPartition
         partition.streamState.cursorUpperBound = LocalDateCodec.encode(cursorUpperBound)
         partition.streamState.fetchSize = 2
         // Generate reader
@@ -88,7 +89,7 @@ class JdbcPartitionReaderTest {
         )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
-            reader.tryAcquireResources()
+            reader.tryAcquireResources(),
         )
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
@@ -106,7 +107,7 @@ class JdbcPartitionReaderTest {
             "hello how are you today",
             (partition.streamState.streamFeedBootstrap.outputConsumer as BufferingOutputConsumer)
                 .records()
-                .joinToString(separator = " ") { it.data["msg"].asText() }
+                .joinToString(separator = " ") { it.data["msg"].asText() },
         )
         // Release resources
         Assertions.assertEquals(
@@ -136,7 +137,7 @@ class JdbcPartitionReaderTest {
                                     And(
                                         GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
                                         LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
-                                    )
+                                    ),
                                 ),
                                 OrderBy(ts),
                                 Limit(4),
@@ -146,15 +147,21 @@ class JdbcPartitionReaderTest {
                             idDateString(2, "2024-08-02", "how"),
                             idDateString(3, "2024-08-03", "are"),
                             idDateString(4, "2024-08-04", "you"),
-                        )
+                        ),
                     ),
                 maxSnapshotReadTime = Duration.ofMinutes(1),
             )
-        val factory = sharedState.factory()
-        val result = factory.create(stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound)))
-        factory.assertFailures()
-        Assertions.assertTrue(result is DefaultJdbcCursorIncrementalPartition)
-        val partition = result as DefaultJdbcCursorIncrementalPartition
+        val bootstrap = stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound))
+        val streamState = DefaultJdbcStreamState(sharedState, bootstrap)
+        val partition =
+            DefaultJdbcCursorIncrementalPartition(
+                TestFixtures.MockSelectQueryGenerator,
+                streamState,
+                ts,
+                cursorLowerBound = LocalDateCodec.encode(cursorLowerBound),
+                isLowerBoundIncluded = true,
+                cursorUpperBound = null,
+            )
         partition.streamState.cursorUpperBound = LocalDateCodec.encode(cursorUpperBound)
         partition.streamState.fetchSize = 2
         partition.streamState.updateLimitState { it.up } // so we don't hit the limit
@@ -163,15 +170,15 @@ class JdbcPartitionReaderTest {
         // Acquire resources
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency,
-            factory.sharedState.concurrencyResource.available,
+            sharedState.concurrencyResource.available,
         )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
-            reader.tryAcquireResources()
+            reader.tryAcquireResources(),
         )
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
-            factory.sharedState.concurrencyResource.available,
+            sharedState.concurrencyResource.available,
         )
         // Run and simulate timing out
         runBlocking {
@@ -194,17 +201,17 @@ class JdbcPartitionReaderTest {
             "hello how",
             (partition.streamState.streamFeedBootstrap.outputConsumer as BufferingOutputConsumer)
                 .records()
-                .joinToString(separator = " ") { it.data["msg"].asText() }
+                .joinToString(separator = " ") { it.data["msg"].asText() },
         )
         // Release resources
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
-            factory.sharedState.concurrencyResource.available,
+            sharedState.concurrencyResource.available,
         )
         reader.releaseResources()
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency,
-            factory.sharedState.concurrencyResource.available,
+            sharedState.concurrencyResource.available,
         )
     }
 
@@ -224,7 +231,7 @@ class JdbcPartitionReaderTest {
                                     And(
                                         GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
                                         LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
-                                    )
+                                    ),
                                 ),
                                 OrderBy(ts),
                                 Limit(4),
@@ -234,15 +241,21 @@ class JdbcPartitionReaderTest {
                             idDateString(2, "2024-08-02", "how"),
                             idDateString(3, "2024-08-03", "are"),
                             idDateString(4, "2024-08-04", "you"),
-                        )
+                        ),
                     ),
                 maxSnapshotReadTime = Duration.ofSeconds(1),
             )
-        val factory = sharedState.factory()
-        val result = factory.create(stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound)))
-        factory.assertFailures()
-        Assertions.assertTrue(result is DefaultJdbcCursorIncrementalPartition)
-        val partition = result as DefaultJdbcCursorIncrementalPartition
+        val bootstrap = stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound))
+        val streamState = DefaultJdbcStreamState(sharedState, bootstrap)
+        val partition =
+            DefaultJdbcCursorIncrementalPartition(
+                TestFixtures.MockSelectQueryGenerator,
+                streamState,
+                ts,
+                cursorLowerBound = LocalDateCodec.encode(cursorLowerBound),
+                isLowerBoundIncluded = true,
+                cursorUpperBound = null,
+            )
         partition.streamState.cursorUpperBound = LocalDateCodec.encode(cursorUpperBound)
         partition.streamState.fetchSize = 2
         partition.streamState.updateLimitState { it.up } // so we don't hit the limit
@@ -251,15 +264,15 @@ class JdbcPartitionReaderTest {
         // Acquire resources
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency,
-            factory.sharedState.concurrencyResource.available,
+            sharedState.concurrencyResource.available,
         )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
-            readerResumable.tryAcquireResources()
+            readerResumable.tryAcquireResources(),
         )
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
-            factory.sharedState.concurrencyResource.available,
+            sharedState.concurrencyResource.available,
         )
 
         Assertions.assertThrows(TransientErrorException::class.java) {
@@ -286,7 +299,7 @@ class JdbcPartitionReaderTest {
                                     And(
                                         GreaterOrEqual(ts, LocalDateCodec.encode(cursorLowerBound)),
                                         LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound)),
-                                    )
+                                    ),
                                 ),
                             ),
                             SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
@@ -295,7 +308,7 @@ class JdbcPartitionReaderTest {
                             idDateString(3, "2024-08-03", "are"),
                             idDateString(4, "2024-08-04", "you"),
                             idDateString(5, "2024-08-05", "today"),
-                        )
+                        ),
                     ),
                 maxSnapshotReadTime = Duration.ofSeconds(1),
             )
@@ -303,8 +316,8 @@ class JdbcPartitionReaderTest {
         val result2 =
             factory2.create(stream2.bootstrap(opaqueStateValue(cursor = cursorLowerBound)))
         factory2.assertFailures()
-        Assertions.assertTrue(result2 is DefaultJdbcCursorIncrementalPartition)
-        val partition2 = result2 as DefaultJdbcCursorIncrementalPartition
+        Assertions.assertTrue(result2 is DefaultUnsplittableJdbcCursorIncrementalPartition)
+        val partition2 = result2 as DefaultUnsplittableJdbcCursorIncrementalPartition
         partition2.streamState.cursorUpperBound = LocalDateCodec.encode(cursorUpperBound)
         partition2.streamState.fetchSize = 2
         // Generate reader
@@ -312,7 +325,7 @@ class JdbcPartitionReaderTest {
         val readerNonResumable = JdbcNonResumablePartitionReader(partition2)
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
-            readerNonResumable.tryAcquireResources()
+            readerNonResumable.tryAcquireResources(),
         )
 
         Assertions.assertThrows(TransientErrorException::class.java) {

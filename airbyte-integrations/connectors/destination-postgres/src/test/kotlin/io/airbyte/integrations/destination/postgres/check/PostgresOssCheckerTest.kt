@@ -51,7 +51,7 @@ internal class PostgresOssCheckerTest {
                 stream = any<DestinationStream>(),
                 tableName = any<TableName>(),
                 columnNameMapping = any<ColumnNameMapping>(),
-                replace = true
+                replace = true,
             )
         }
     }
@@ -72,7 +72,7 @@ internal class PostgresOssCheckerTest {
 
         assertEquals(
             "Failed to insert expected rows into check table. Actual written: 0",
-            exception.message
+            exception.message,
         )
 
         coVerify(exactly = 1) { postgresAirbyteClient.createNamespace(schema) }
@@ -81,7 +81,7 @@ internal class PostgresOssCheckerTest {
                 stream = any<DestinationStream>(),
                 tableName = any<TableName>(),
                 columnNameMapping = any<ColumnNameMapping>(),
-                replace = true
+                replace = true,
             )
         }
         coVerify(exactly = 1) { postgresAirbyteClient.dropTable(any()) }

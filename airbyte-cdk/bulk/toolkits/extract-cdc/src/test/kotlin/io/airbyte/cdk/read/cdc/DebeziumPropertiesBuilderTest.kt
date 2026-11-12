@@ -5,7 +5,7 @@
 package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.StreamIdentifier
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.cdk.discover.OffsetDateTimeFieldType
 import io.airbyte.cdk.discover.StringFieldType
@@ -27,7 +27,7 @@ class DebeziumPropertiesBuilderTest {
                     mapOf(
                         "host" to "localhost",
                         "port" to "12345",
-                    )
+                    ),
                 )
                 .buildMap()
         Assertions.assertEquals(
@@ -35,17 +35,17 @@ class DebeziumPropertiesBuilderTest {
                 "database.host" to "localhost",
                 "database.port" to "12345",
             ),
-            actual
+            actual,
         )
     }
 
     @Test
     fun testWithStreams() {
-        fun stream(namespace: String, name: String, vararg fields: Field): Stream =
+        fun stream(namespace: String, name: String, vararg fields: EmittedField): Stream =
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor().withName(name).withNamespace(namespace)
+                        StreamDescriptor().withName(name).withNamespace(namespace),
                     ),
                 schema = fields.toSet() + setOf(TestMetaFieldDecorator.GlobalCursor),
                 configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
@@ -54,13 +54,18 @@ class DebeziumPropertiesBuilderTest {
             )
         val streams: List<Stream> =
             listOf(
-                stream("schema1", "table1", Field("k", IntFieldType), Field("v", StringFieldType)),
+                stream(
+                    "schema1",
+                    "table1",
+                    EmittedField("k", IntFieldType),
+                    EmittedField("v", StringFieldType),
+                ),
                 stream(
                     "schema2",
                     "table2",
-                    Field("id", IntFieldType),
-                    Field("ts", OffsetDateTimeFieldType),
-                    Field("msg", StringFieldType)
+                    EmittedField("id", IntFieldType),
+                    EmittedField("ts", OffsetDateTimeFieldType),
+                    EmittedField("msg", StringFieldType),
                 ),
             )
         val actual: Map<String, String> =
@@ -69,9 +74,9 @@ class DebeziumPropertiesBuilderTest {
             mapOf(
                 "table.include.list" to """\Qschema1.table1\E,\Qschema2.table2\E""",
                 "column.include.list" to
-                    """\Qschema1.table1\E\.(\Qk\E|\Qv\E),\Qschema2.table2\E\.(\Qid\E|\Qts\E|\Qmsg\E)"""
+                    """\Qschema1.table1\E\.(\Qk\E|\Qv\E),\Qschema2.table2\E\.(\Qid\E|\Qts\E|\Qmsg\E)""",
             ),
-            actual
+            actual,
         )
     }
 
@@ -84,7 +89,7 @@ class DebeziumPropertiesBuilderTest {
                 "name" to "_.-#L33T!-._",
                 "topic.prefix" to "_.-_L33T_-._",
             ),
-            actual
+            actual,
         )
     }
 
@@ -99,7 +104,7 @@ class DebeziumPropertiesBuilderTest {
             mapOf(
                 "offset.storage" to "org.apache.kafka.connect.storage.FileOffsetBackingStore",
             ),
-            b.buildMap()
+            b.buildMap(),
         )
         Assertions.assertTrue(b.expectsOffsetFile)
         b.withOffsetFile(validPath)
@@ -109,7 +114,7 @@ class DebeziumPropertiesBuilderTest {
                 "offset.storage" to "org.apache.kafka.connect.storage.FileOffsetBackingStore",
                 "offset.storage.file.filename" to ".",
             ),
-            b.buildMap()
+            b.buildMap(),
         )
     }
 
@@ -123,9 +128,9 @@ class DebeziumPropertiesBuilderTest {
         Assertions.assertEquals(
             mapOf(
                 "schema.history.internal" to "io.debezium.storage.file.history.FileSchemaHistory",
-                "schema.history.internal.store.only.captured.databases.ddl" to "true"
+                "schema.history.internal.store.only.captured.databases.ddl" to "true",
             ),
-            b.buildMap()
+            b.buildMap(),
         )
         Assertions.assertTrue(b.expectsSchemaHistoryFile)
         b.withSchemaHistoryFile(validPath)
@@ -135,7 +140,7 @@ class DebeziumPropertiesBuilderTest {
                 "schema.history.internal.store.only.captured.databases.ddl" to "true",
                 "schema.history.internal.file.filename" to ".",
             ),
-            b.buildMap()
+            b.buildMap(),
         )
     }
 }
