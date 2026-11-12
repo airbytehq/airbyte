@@ -15,6 +15,7 @@ from source_facebook_marketing.streams.async_job import Status
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponse,
@@ -531,3 +532,74 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_sync_fails_inside_lookback_window_when_read_then_cursor_does_not_move_backwards(self, http_mocker: HttpMocker) -> None:
+        """
+        Every incremental sync re-reads `insights_lookback_window` days before the saved cursor. If the sync fails after
+        finishing only the oldest lookback slices, the emitted state must keep the previously saved cursor instead of
+        regressing to the re-read slice; otherwise each failed sync widens the next sync's window by another lookback.
+        """
+        account_id = "123123123"
+        saved_cursor = NOW.replace(hour=0, minute=0, second=0)
+        lookback_day = saved_cursor - timedelta(days=1)
+        end_date = NOW.replace(hour=23, minute=59, second=59)
+        report_run_id_1 = "1571860060019500"
+        report_run_id_2 = "4571860060019599"
+        job_id_1 = "1049937379601600"
+        job_id_2 = "1049937379601699"
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        http_mocker.post(
+            _job_start_request(since=lookback_day, until=lookback_day).with_account_id(account_id).build(),
+            _job_start_response(report_run_id_1),
+        )
+        http_mocker.post(
+            _job_start_request(since=saved_cursor, until=saved_cursor).with_account_id(account_id).build(),
+            _job_start_response(report_run_id_2),
+        )
+        http_mocker.post(
+            _job_status_request([report_run_id_1, report_run_id_2]).build(),
+            _job_status_response([job_id_1, job_id_2], account_id=account_id),
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_1).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_2).build(),
+            build_response(
+                body={"error": {"code": 100, "message": "Invalid parameter", "type": "OAuthException"}},
+                status_code=HTTPStatus.BAD_REQUEST,
+            ),
+        )
+
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {account_id: {_CURSOR_FIELD: saved_cursor.strftime(DATE_FORMAT), "slices": []}, "time_increment": 1},
+            )
+            .build()
+        )
+        output = self._read(
+            config()
+            .with_account_ids([account_id])
+            .with_start_date(ab_datetime_parse(START_DATE))
+            .with_end_date(end_date)
+            .with_insights_lookback_window(1),
+            state=state,
+            expecting_exception=True,
+        )
+
+        assert len(output.records) == 1
+        emitted_cursors = [
+            AirbyteStreamStateSerializer.dump(message.state.stream).get("stream_state").get(account_id, {}).get(_CURSOR_FIELD)
+            for message in output.state_messages
+        ]
+        assert emitted_cursors, "a checkpoint should be emitted after the lookback slice completes"
+        assert set(emitted_cursors) == {saved_cursor.strftime(DATE_FORMAT)}
