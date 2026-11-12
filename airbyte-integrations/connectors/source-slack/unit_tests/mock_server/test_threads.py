@@ -35,7 +35,9 @@ def _config(token_config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
 
 
 def _read_threads(config: Mapping[str, Any], state: List[Any]) -> EntrypointOutput:
-    catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name("threads").with_sync_mode(SyncMode.incremental)).build()
+    catalog = (
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name("threads").with_sync_mode(SyncMode.incremental)).build()
+    )
     return read(get_source(config, "threads", state), config, catalog, state)
 
 
@@ -167,7 +169,9 @@ def test_archived_channels_bot_cannot_join_are_not_partitioned(requests_mock, to
     )
     requests_mock.get(_REPLIES_URL, json={"ok": True, "messages": [{"ts": str(message_ts), "thread_ts": str(message_ts)}]})
 
-    catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    catalog = (
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name).with_sync_mode(SyncMode.incremental)).build()
+    )
     output = read(get_source(config, stream_name, None), config, catalog, StateBuilder().build())
 
     assert not output.errors
