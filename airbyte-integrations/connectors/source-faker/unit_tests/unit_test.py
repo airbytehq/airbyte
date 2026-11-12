@@ -188,6 +188,36 @@ def test_read_products_count():
     assert [record["id"] for record in records] == list(range(1, 11))
 
 
+@pytest.mark.parametrize(
+    "products_count, records_per_slice",
+    [
+        pytest.param(50, 20, id="trailing_partial_slice"),
+        pytest.param(100, 30, id="full_catalog_with_trailing_partial_slice"),
+        pytest.param(40, 20, id="exact_multiple_of_slice"),
+        pytest.param(7, 20, id="fewer_products_than_one_slice"),
+        pytest.param(1, 1, id="single_product"),
+    ],
+)
+def test_read_products_emits_every_requested_product_across_slices(products_count, records_per_slice):
+    source = SourceFaker()
+    config = {"count": 1000, "seed": 7, "products_count": products_count, "records_per_slice": records_per_slice, "parallelism": 1}
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    messages = list(source.read(logger, config, catalog, {}))
+
+    records = [row.record.data for row in messages if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == list(range(1, products_count + 1))
+
+    # The final checkpoint must cover the last record emitted, including one from a trailing partial slice.
+    final_state = [row for row in messages if row.type is Type.STATE][-1].state.stream.stream_state
+    assert final_state.updated_at == records[-1]["updated_at"]
+    assert final_state.seed == 7
+
+
 def test_read_big_random_data():
     source = SourceFaker()
     config = {"count": 1000, "records_per_slice": 100, "parallelism": 1}
