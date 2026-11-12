@@ -13,15 +13,18 @@ from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, Muta
 
 import requests
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
 
@@ -683,3 +686,35 @@ class BingAdsReportDownloadRequester(HttpRequester):
                 exc_info=True,
             )
             return None
+
+
+@dataclass
+class BingAdsDownloadErrorHandler(DefaultErrorHandler):
+    """Error handler for report and bulk file downloads that classifies an expired download URL.
+
+    Files are downloaded from pre-signed Azure Blob Storage URLs that expire a few minutes
+    after Bing Ads returns them. Azure answers an expired URL with a 403 whose XML body holds
+    ``Signature not valid in the specified time frame``. That response says nothing about the
+    user's permissions, so it is reported as a transient error. The request is not retried
+    because a retry resends the same expired URL.
+
+    A declarative ``HttpResponseFilter`` is not used: it reads the response body of every
+    response, including the successful ones, which exhausts the streamed file before the
+    download decoder reads it. This handler reads the body of 403 responses only.
+    """
+
+    EXPIRED_URL_BODY_TEXT = "Signature not valid in the specified time frame"
+    EXPIRED_URL_ERROR_MESSAGE = "Bing Ads file download URL is expired."
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if (
+            isinstance(response_or_exception, requests.Response)
+            and response_or_exception.status_code == requests.codes.forbidden
+            and self.EXPIRED_URL_BODY_TEXT in response_or_exception.text
+        ):
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.transient_error,
+                error_message=self.EXPIRED_URL_ERROR_MESSAGE,
+            )
+        return super().interpret_response(response_or_exception)

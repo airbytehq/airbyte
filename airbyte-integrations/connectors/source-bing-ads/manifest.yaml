@@ -2613,6 +2613,13 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  # Classifies the 403 that Azure Blob Storage returns for an expired pre-signed download URL as a transient error.
+  # This is a custom component because HttpResponseFilter reads the body of every response, successful downloads
+  # included, which leaves nothing for the download decoder to read.
+  download_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.BingAdsDownloadErrorHandler
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2660,6 +2667,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2726,6 +2735,8 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        $ref: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
