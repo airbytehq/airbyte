@@ -260,6 +260,60 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @freeze_time("2026-06-30")
+    @pytest.mark.parametrize("name", [None, "custom_ad_insights"])
+    @pytest.mark.parametrize("empty_results", [False, True])
+    @pytest.mark.parametrize("interrupted", [False, True])
+    def test_lookback_refresh_never_regresses_cursor(self, mocker, api, name, empty_results, interrupted):
+        account_id = "123"
+        cursor = date(2026, 6, 1)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 6, 3),
+            insights_lookback_window=28,
+            name=name,
+        )
+        stream.state = {account_id: {"date_start": cursor.isoformat()}, "time_increment": 1}
+        states = [copy.deepcopy(stream.state)]
+        dates = list(stream._date_intervals(account_id))
+        assert dates[0] == cursor - timedelta(days=28)
+
+        for index, slice_date in enumerate(dates):
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = DateInterval(slice_date, slice_date)
+            row = mocker.Mock()
+            row.export_all_data.return_value = {"date_start": slice_date.isoformat(), "account_id": account_id}
+            job.get_result.return_value = [] if empty_results else [row]
+            records = stream.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice={"insight_job": job, "account_id": account_id},
+            )
+            if interrupted and index == 3:
+                job.get_result.side_effect = RuntimeError("Interrupted insights result request")
+                with pytest.raises(RuntimeError, match="Interrupted insights result request"):
+                    list(records)
+                states.append(copy.deepcopy(stream.state))
+                assert slice_date not in stream._completed_slices[account_id]
+                break
+            assert len(list(records)) == (0 if empty_results else 1)
+            states.append(copy.deepcopy(stream.state))
+
+        assert all(state[account_id]["date_start"] >= cursor.isoformat() for state in states)
+        expected_cursor = cursor if interrupted else date(2026, 6, 3)
+        assert states[-1][account_id]["date_start"] == expected_cursor.isoformat()
+        resumed = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 6, 3),
+            insights_lookback_window=28,
+            name=name,
+        )
+        resumed.state = states[-1]
+        assert resumed._next_cursor_values[account_id] == expected_cursor - timedelta(days=28)
+
     def test_read_records_add_account_id(self, mocker, api, some_config):
         rec_without_account = mocker.Mock()
         rec_without_account.export_all_data.return_value = {}
