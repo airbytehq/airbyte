@@ -10,7 +10,7 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Status, Type
 
 
 class MockLogger:
@@ -94,6 +94,27 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        {},
+        {"count": 5000, "seed": 42},
+        {"count": 5000, "seed": 42, "records_per_slice": 1000},
+        {"count": 5000, "seed": 42, "parallelism": 2},
+    ],
+)
+def test_check_succeeds_when_optional_settings_are_omitted(config):
+    status = SourceFaker().check(logger, config)
+    assert status.status == Status.SUCCEEDED, status.message
+
+
+@pytest.mark.parametrize("key", ["count", "records_per_slice", "parallelism"])
+def test_check_fails_when_setting_is_explicitly_zero(key):
+    status = SourceFaker().check(logger, {"count": 10, "seed": 42, key: 0})
+    assert status.status == Status.FAILED
+    assert status.message == f"'`{key}` must be a number greater than or equal to 1, got 0'"
 
 
 def test_read_small_random_data():
