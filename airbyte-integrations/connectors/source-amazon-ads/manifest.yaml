@@ -1869,7 +1869,7 @@ definitions:
                   - "costPerThousandImpressions"
                   - "detailPageViews"
                   - "detailPageViewsClicks"
-                  - "detailPageViewViews"
+                  - "detailPageViewsViews"
                   - "endDate"
                   - "frequencyAverage"
                   - "householdFrequencyAverage"
@@ -1953,7 +1953,7 @@ definitions:
                   - "costPerThousandImpressions"
                   - "detailPageViews"
                   - "detailPageViewsClicks"
-                  - "detailPageViewViews"
+                  - "detailPageViewsViews"
                   - "frequencyAverage"
                   - "householdFrequencyAverage"
                   - "householdReach"
@@ -6422,7 +6422,7 @@ schemas:
         type:
           - "null"
           - integer
-      detailPageViewViews:
+      detailPageViewsViews:
         type:
           - "null"
           - integer
@@ -6649,7 +6649,7 @@ schemas:
         type:
           - "null"
           - integer
-      detailPageViewViews:
+      detailPageViewsViews:
         type:
           - "null"
           - integer
