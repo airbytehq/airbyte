@@ -173,19 +173,33 @@ def test_read_products():
     assert state_rows_count in {1, 2}, "Expected 1 or 2 state messages per stream."
 
 
-def test_read_products_count():
+@pytest.mark.parametrize(
+    "extra_config, expected_ids",
+    [
+        pytest.param({"products_count": 10, "records_per_slice": 5}, list(range(1, 11)), id="exact_multiple_of_slice"),
+        pytest.param({"products_count": 50, "records_per_slice": 20}, list(range(1, 51)), id="partial_last_slice"),
+        pytest.param({"records_per_slice": 30}, list(range(1, 101)), id="default_products_count_partial_last_slice"),
+        pytest.param({"products_count": 7, "records_per_slice": 100}, list(range(1, 8)), id="slice_larger_than_products"),
+    ],
+)
+def test_read_products_count(extra_config, expected_ids):
+    """Every requested product is emitted, in order, even when the last slice is shorter than `records_per_slice`."""
     source = SourceFaker()
-    config = {"count": 999, "products_count": 10, "records_per_slice": 5, "parallelism": 1}
+    config = {"count": 999, "parallelism": 1, **extra_config}
     stream_dict = {
         "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
         "sync_mode": "incremental",
         "destination_sync_mode": "overwrite",
     }
     catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
-    iterator = source.read(logger, config, catalog, {})
+    messages = list(source.read(logger, config, catalog, {}))
 
-    records = [row.record.data for row in iterator if row.type is Type.RECORD]
-    assert [record["id"] for record in records] == list(range(1, 11))
+    records = [row.record.data for row in messages if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == expected_ids
+
+    # The final checkpoint must cover the last record emitted, including one from a short final slice.
+    states = [row.state.stream.stream_state for row in messages if row.type is Type.STATE]
+    assert states[-1].updated_at == records[-1]["updated_at"]
 
 
 def test_read_big_random_data():
