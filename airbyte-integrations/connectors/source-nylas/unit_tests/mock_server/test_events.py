@@ -1,16 +1,15 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import pytest
-
 from conftest import get_source
-from mock_server.config import ConfigBuilder
-from mock_server.request_builder import NylasRequestBuilder
-from mock_server.response_builder import NylasResponseBuilder
 
 from airbyte_cdk.models import AirbyteStreamStatus, FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
+from mock_server.config import ConfigBuilder
+from mock_server.request_builder import NylasRequestBuilder
+from mock_server.response_builder import NylasResponseBuilder
 
 
 @pytest.mark.parametrize("event_ids", [["event-1", "event-2"], []])
