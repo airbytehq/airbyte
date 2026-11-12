@@ -65,7 +65,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                           | Subject               |
 | :------ | :--------- | :----------------------------------------------------- | :-------------------- |
-| 0.2.26 | 2026-11-12 | TBD | Fixed the booking stream emitting a single record containing the whole API response instead of one record per booking. |
+| 0.2.26 | 2026-11-12 | [92255](https://github.com/airbytehq/airbyte/pull/92255) | Fixed the booking stream emitting a single record containing the whole API response instead of one record per booking. |
 | 0.2.25 | 2026-11-09 | [91439](https://github.com/airbytehq/airbyte/pull/91439) | Upgrade to source-declarative-manifest 7.47.0 |
 | 0.2.23 | 2026-06-02 | [79032](https://github.com/airbytehq/airbyte/pull/79032) | Update dependencies |
 | 0.2.22 | 2025-05-24 | [60757](https://github.com/airbytehq/airbyte/pull/60757) | Update dependencies |
