@@ -10,7 +10,7 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Status, Type
 
 
 class MockLogger:
@@ -94,6 +94,41 @@ def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param({"count": 5000, "seed": 42}, id="only_count_and_seed"),
+        pytest.param({"count": 5000, "seed": 42, "records_per_slice": 1000}, id="parallelism_omitted"),
+        pytest.param({"count": 5000, "seed": 42, "parallelism": 4}, id="records_per_slice_omitted"),
+        pytest.param({}, id="empty_config"),
+    ],
+)
+def test_check_succeeds_when_optional_settings_are_omitted(config):
+    status = SourceFaker().check(logger, config)
+
+    assert status.status is Status.SUCCEEDED
+    assert status.message is None
+
+
+@pytest.mark.parametrize(
+    "config, expected_message",
+    [
+        pytest.param({"count": 5000, "parallelism": 0}, "`parallelism` must be a number greater than or equal to 1, got 0", id="parallelism_zero"),
+        pytest.param(
+            {"count": 5000, "records_per_slice": 0},
+            "`records_per_slice` must be a number greater than or equal to 1, got 0",
+            id="records_per_slice_zero",
+        ),
+        pytest.param({"count": "ten"}, "`count` must be a number greater than or equal to 1, got 'ten'", id="count_not_a_number"),
+    ],
+)
+def test_check_still_rejects_invalid_settings_when_others_are_omitted(config, expected_message):
+    status = SourceFaker().check(logger, config)
+
+    assert status.status is Status.FAILED
+    assert status.message == repr(expected_message)
 
 
 def test_read_small_random_data():
