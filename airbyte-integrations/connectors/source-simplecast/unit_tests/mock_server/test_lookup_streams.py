@@ -2,11 +2,11 @@
 
 import pytest
 import requests_mock as requests_mock_lib
-from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
+from unit_tests.conftest import get_source
 
 
 _CONFIG = {"api_token": "test_token"}
