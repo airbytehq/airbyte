@@ -5,6 +5,7 @@
 from pathlib import Path
 
 import jsonschema
+import orjson
 import pytest
 import tomllib
 from packaging.specifiers import SpecifierSet
@@ -295,3 +296,33 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+def _run_check(config):
+    from airbyte_cdk.entrypoint import AirbyteEntrypoint
+    from airbyte_cdk.test.entrypoint_wrapper import make_file
+
+    config_file = make_file(Path(__file__).parent / "_check_config.json", config)
+    entrypoint = AirbyteEntrypoint(SourceFaker())
+    parsed_args = entrypoint.parse_args(["check", "--config", str(config_file)])
+    try:
+        messages = [AirbyteMessageSerializer.load(orjson.loads(m)) for m in entrypoint.run(parsed_args)]
+    finally:
+        Path(config_file).unlink(missing_ok=True)
+    return [m.connectionStatus for m in messages if m.type == Type.CONNECTION_STATUS]
+
+
+@pytest.mark.parametrize(
+    "config",
+    [
+        pytest.param({"count": 5000, "seed": 42}, id="api_created_source_without_optional_settings"),
+        pytest.param({"count": 10, "parallelism": 2}, id="records_per_slice_omitted"),
+        pytest.param({"count": 10, "records_per_slice": 5}, id="parallelism_omitted"),
+        pytest.param({}, id="empty_config"),
+    ],
+)
+def test_check_succeeds_when_optional_numeric_settings_are_omitted(config):
+    statuses = _run_check(config)
+    assert len(statuses) == 1
+    assert statuses[0].status.name == "SUCCEEDED", statuses[0].message
+
