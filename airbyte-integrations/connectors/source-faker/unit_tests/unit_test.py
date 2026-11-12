@@ -284,6 +284,56 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+def _read_users(config, state):
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    messages = list(SourceFaker().read(logger, config, catalog, state))
+    record_ids = [message.record.data["id"] for message in messages if message.type is Type.RECORD]
+    states = [message.state for message in messages if message.type is Type.STATE]
+    return record_ids, states
+
+
+def test_read_users_emits_all_users_on_every_sync_after_a_completed_sync():
+    """Each sync that follows a completed sync re-emits every user, given the state the previous sync emitted."""
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    all_user_ids = list(range(1, 11))
+
+    state = []
+    for _ in range(3):
+        record_ids, states = _read_users(config, state)
+        assert record_ids == all_user_ids
+        assert states[-1].stream.stream_state.loop_offset == 10
+        state = [states[-1]]
+
+
+@pytest.mark.parametrize(
+    "saved_loop_offset",
+    [
+        pytest.param(10, id="completed_sync_with_same_count"),
+        pytest.param(25, id="completed_sync_before_count_was_lowered"),
+    ],
+)
+def test_read_users_starts_over_when_saved_offset_is_at_or_past_count(saved_loop_offset):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users", namespace=None),
+        stream_state=AirbyteStateBlob(seed=-1, updated_at="2024-01-01T00:00:00+00:00", loop_offset=saved_loop_offset),
+    )
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+
+    record_ids, states = _read_users(config, state)
+
+    assert record_ids == list(range(1, 11))
+    assert states[-1].stream.stream_state.loop_offset == 10
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
