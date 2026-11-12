@@ -35,9 +35,7 @@ def test_check_succeeds_with_only_supported_reporting_jobs(tmp_path):
             HttpResponse(body="{}"),
         )
         http_mocker.get(
-            YoutubeAnalyticsRequestBuilder.reports_endpoint("job-1")
-            .with_created_after("1990-01-01T00:00:00.000000Z")
-            .build(),
+            YoutubeAnalyticsRequestBuilder.reports_endpoint("job-1").with_created_after("1990-01-01T00:00:00.000000Z").build(),
             HttpResponse(
                 body=json.dumps(
                     {
