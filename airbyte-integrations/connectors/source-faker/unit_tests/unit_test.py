@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from pathlib import Path
 
 import jsonschema
@@ -10,7 +11,15 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.entrypoint import AirbyteEntrypoint
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Status,
+    Type,
+)
 
 
 class MockLogger:
@@ -88,12 +97,32 @@ def test_source_streams():
         ({"count": 10, "records_per_slice": 5, "parallelism": 2}, True),
         ({"count": 10, "records_per_slice": 5, "parallelism": 0}, False),
         ({"count": "ten", "records_per_slice": 5, "parallelism": 2}, False),
+        ({"count": 5000, "seed": 42}, True),
+        ({}, True),
+        ({"count": 5000, "records_per_slice": 1000}, True),
+        ({"count": 5000, "records_per_slice": 0}, False),
     ],
 )
 def test_check_connection_validates_settings(config, valid):
     ok, error = SourceFaker().check_connection(logger, config)
     assert ok is valid
     assert (error is None) is valid
+
+
+def test_check_entrypoint_passes_when_optional_settings_are_omitted(tmp_path):
+    # Sources created through the API only send the settings they care about;
+    # omitted settings must use their defaults rather than fail the check.
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps({"count": 5000, "seed": 42}))
+
+    source = SourceFaker()
+    entrypoint = AirbyteEntrypoint(source)
+    parsed_args = entrypoint.parse_args(["check", "--config", str(config_path)])
+    messages = [AirbyteMessageSerializer.load(json.loads(line)) for line in entrypoint.run(parsed_args)]
+
+    statuses = [m.connectionStatus for m in messages if m.type == Type.CONNECTION_STATUS]
+    assert len(statuses) == 1
+    assert statuses[0].status == Status.SUCCEEDED, statuses[0].message
 
 
 def test_read_small_random_data():
