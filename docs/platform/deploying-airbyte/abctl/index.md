@@ -100,22 +100,22 @@ Use [Homebrew](https://brew.sh/) to install abctl.
 
     <a class="abctl-download button button--primary" data-architecture="linux" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" download>Latest Linux Release</a>
 
-3. Extract the archive. This creates a directory named `abctl`, which contains the executable and other needed files.
+3. Extract the archive. This creates a directory named `abctl-<version>-linux-<arch>`, which contains the executable and other needed files. Replace `<version>` with the downloaded version, including the `v` prefix, and `<arch>` with `amd64` or `arm64`.
 
     ```bash
-    tar -xvzf {name-of-file-downloaded.linux-*.tar.gz}
+    tar -xvzf abctl-<version>-linux-<arch>.tar.gz
     ```
 
 4. Make the extracted executable accessible. This allows you to run `abctl` as a command.
 
     ```bash
-    chmod +x abctl/abctl
+    chmod +x abctl-<version>-linux-<arch>/abctl
     ```
 
 5. Add `abctl` to your PATH. This allows you to run `abctl` from any directory in your terminal.
 
     ```bash
-    sudo mv abctl /usr/local/bin
+    sudo mv abctl-<version>-linux-<arch>/abctl /usr/local/bin
     ```
 
 6. Verify the installation. If this command prints the installed version of abctl, you can now use it to manage a local Airbyte instance.
@@ -171,7 +171,7 @@ abctl version
 By default, the curl installer places the `abctl` binary in `/usr/local/bin`. To install the binary elsewhere, set the `DIR_INSTALL` environment variable before running the installer.
 
 ```shell
-DIR_INSTALL=/apps/bin curl -LsfS https://get.airbyte.com | bash -
+curl -LsfS https://get.airbyte.com | DIR_INSTALL=/apps/bin bash -
 ```
 
 :::note
@@ -264,13 +264,12 @@ abctl local credentials --email YOUR_EMAIL --password YOUR_PASSWORD
 
 abctl returns something like this:
 
-```bash
-{
-  "email": "[YOUR EMAIL]",
-  "password": "[RANDOM PASSWORD]",
-  "client-id": "[RANDOM CLIENT-ID]",
-  "client-secret": "[RANDOM CLIENT-SECRET]"
-}
+```text
+Credentials:
+  Email: [YOUR EMAIL]
+  Password: [RANDOM PASSWORD]
+  Client-Id: [RANDOM CLIENT-ID]
+  Client-Secret: [RANDOM CLIENT-SECRET]
 ```
 
 ### Manage your local Kubernetes instance
@@ -281,10 +280,10 @@ To display Kubernetes deployment information, run:
 abctl local deployments
 ```
 
-If you need to restart Kubernetes, run:
+To restart a Kubernetes deployment, specify its name:
 
 ```bash
-abctl local deployments --restart
+abctl local deployments --restart airbyte-abctl-server
 ```
 
 ### Uninstall Airbyte
@@ -323,7 +322,7 @@ To display version information about the abctl tool, run `abctl version`.
 
 ```bash
 $ abctl version
-version: v0.19.0
+version: v0.30.4
 ```
 
 ## Help and debugging
@@ -389,7 +388,7 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
     | --chart-version     | latest  | The version of the Airbyte Helm chart to install. This is the **Helm chart version**, not the Airbyte platform version. Omit this flag to install the latest version. Mutually exclusive with `--chart`. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte-v2/airbyte). | 0.422.2                    |
     | --docker-email      | ""      | Docker email address to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_EMAIL`.                                                                                               | user@example.com          |
     | --docker-password   | ""      | Docker password to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_PASSWORD`.                                                                                                 | mypassword                 |
-    | --docker-server     | ""      | Docker server to authenticate against. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_SERVER`.                                                                                                                       | docker.io                 |
+    | --docker-server     | https://index.docker.io/v1/ | Docker server to authenticate against. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_SERVER`.                                                                                                                       | docker.io                 |
     | --docker-username   | ""      | Docker username to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_USERNAME`.                                                                                                 | myusername                 |
     | --insecure-cookies  | -       | Disables secure cookie requirements. Only set if using `--host` with an insecure (non `https`) connection.                                                                                                                                           | -                          |
     | --low-resource-mode | false   | Run Airbyte in low resource mode.                                                                                                                                                                                                                     | true                       |
@@ -471,7 +470,7 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
     For example:
     ```
     $ abctl version
-    version: v0.19.0
+    version: v0.30.4
     ```
 
 </details>

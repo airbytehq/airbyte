@@ -106,22 +106,22 @@ Use [Homebrew](https://brew.sh/) to install abctl.
 
     <a class="abctl-download button button--primary" data-architecture="linux" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" download>Latest Linux Release</a>
 
-3. Extract the archive. This creates a directory named `abctl`, which contains the executable and other needed files.
+3. Extract the archive. This creates a directory named `abctl-<version>-linux-<arch>`, which contains the executable and other needed files. Replace `<version>` with the downloaded version, including the `v` prefix, and `<arch>` with `amd64` or `arm64`.
 
     ```bash
-    tar -xvzf {name-of-file-downloaded.linux-*.tar.gz}
+    tar -xvzf abctl-<version>-linux-<arch>.tar.gz
     ```
 
 4. Make the extracted executable accessible. This allows you to run `abctl` as a command.
 
     ```bash
-    chmod +x abctl/abctl
+    chmod +x abctl-<version>-linux-<arch>/abctl
     ```
 
 5. Add `abctl` to your PATH. This allows you to run `abctl` from any directory in your terminal.
 
     ```bash
-    sudo mv abctl /usr/local/bin
+    sudo mv abctl-<version>-linux-<arch>/abctl /usr/local/bin
     ```
 
 6. Verify the installation. If this command prints the installed version of abctl, you can now use it to manage a local Airbyte instance.
@@ -196,7 +196,7 @@ Use [Homebrew](https://brew.sh/) to install abctl.
 
 1. Open Docker Desktop, [which you installed previously](#part-1-install-docker-desktop).
 
-2. Install Airbyte. To make Airbyte accessible outside `localhost`, specify the `--host` flag and provide a fully qualified domain name for Airbyte's host.
+2. Install Airbyte. By default, abctl creates an ingress rule that matches any host. To restrict the rule to the specified hostnames, use the `--host` flag.
 
     ```bash
     abctl local install --host example.com
