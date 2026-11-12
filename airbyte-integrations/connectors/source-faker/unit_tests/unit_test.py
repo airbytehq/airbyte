@@ -2,15 +2,24 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime
 from pathlib import Path
 
 import jsonschema
 import pytest
 import tomllib
 from packaging.specifiers import SpecifierSet
+from pytest_mock import MockerFixture
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteStateMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    Type,
+)
 
 
 class MockLogger:
@@ -304,3 +313,34 @@ def test_pyproject_requires_python_3_11_or_newer():
     python_spec = SpecifierSet(pyproject["tool"]["poetry"]["dependencies"]["python"])
     assert "3.10.12" not in python_spec
     assert "3.11.0" in python_spec
+
+
+@pytest.mark.parametrize("count,records_per_slice,parallelism", [(1000, 1000, 4), (10, 3, 1)])
+def test_read_users_repeats_completed_syncs(count: int, records_per_slice: int, parallelism: int, mocker: MockerFixture) -> None:
+    config = {
+        "count": count,
+        "seed": -1,
+        "records_per_slice": records_per_slice,
+        "always_updated": True,
+        "parallelism": parallelism,
+    }
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    clock = mocker.patch("source_faker.user_generator.datetime")
+    state = []
+
+    for day in range(1, 4):
+        clock.datetime.now.return_value = datetime(2026, 1, day)
+        messages = list(SourceFaker().read(logger, config, catalog, state))
+        records = [row.record.data for row in messages if row.type is Type.RECORD]
+        assert [record["id"] for record in records] == list(range(1, count + 1))
+        updated_at = f"2026-01-{day:02d}T00:00:00+00:00"
+        assert {record["updated_at"] for record in records} == {updated_at}
+
+        final_state = [AirbyteMessageSerializer.dump(row)["state"] for row in messages if row.type is Type.STATE][-1]
+        assert final_state["stream"]["stream_state"] == {"seed": -1, "updated_at": updated_at, "loop_offset": count}
+        state = [AirbyteStateMessageSerializer.load(final_state)]
