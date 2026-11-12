@@ -4,8 +4,11 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
+  # channel_basic_a3 is a current report type every channel has. YouTube retired
+  # channel_annotations_a1, so a job for it produces no report files and checking it always
+  # fails with "no stream slices were found".
   stream_names:
-    - channel_annotations_a1
+    - channel_basic_a3
 
 definitions:
   streams:
