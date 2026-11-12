@@ -12,10 +12,21 @@ check:
     - applications
 
 definitions:
+  normalize_modified_at:
+    type: AddFields
+    condition: "{{ record.get('modified_at') is not none }}"
+    fields:
+      - path:
+          - modified_at
+        value: >-
+          {{ format_datetime(record['modified_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
+          if record.get('modified_at') is not none else none }}
   streams:
     applications:
       type: DeclarativeStream
       name: applications
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
@@ -38,6 +49,7 @@ definitions:
                 error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
+          transform_before_filtering: true
           extractor:
             type: DpathExtractor
             field_path:
@@ -59,6 +71,7 @@ definitions:
             inject_on_first_request: true
       incremental_sync:
         type: DatetimeBasedCursor
+        is_client_side_incremental: true
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -78,6 +91,8 @@ definitions:
     datasets:
       type: DeclarativeStream
       name: datasets
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
@@ -101,6 +116,7 @@ definitions:
                 error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
+          transform_before_filtering: true
           extractor:
             type: DpathExtractor
             field_path:
@@ -130,6 +146,7 @@ definitions:
                 $ref: "#/definitions/streams/applications"
       incremental_sync:
         type: DatetimeBasedCursor
+        is_client_side_incremental: true
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -149,6 +166,8 @@ definitions:
     models:
       type: DeclarativeStream
       name: models
+      transformations:
+        - $ref: "#/definitions/normalize_modified_at"
       primary_key:
         - id
       retriever:
@@ -171,6 +190,7 @@ definitions:
                 error_message: Rate limits has been hit
         record_selector:
           type: RecordSelector
+          transform_before_filtering: true
           extractor:
             type: DpathExtractor
             field_path:
@@ -200,6 +220,7 @@ definitions:
                 $ref: "#/definitions/streams/applications"
       incremental_sync:
         type: DatetimeBasedCursor
+        is_client_side_incremental: true
         cursor_field: modified_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
