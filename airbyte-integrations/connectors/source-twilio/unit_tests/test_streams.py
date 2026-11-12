@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from copy import deepcopy
 from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
-from components import TwilioConferencesStateMigration
+from components import TwilioConferencesStateMigration, TwilioStalePartitionStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
@@ -19,6 +20,59 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 BASE = "https://api.twilio.com/2010-04-01"
 MONITOR_BASE = "https://monitor.twilio.com/v1"
+
+
+@pytest.mark.parametrize(
+    "global_value,partition_value,expected_change",
+    [
+        ("2022-11-15 00:00:00Z", "2022-11-14T23:59:59Z", True),
+        ("2022-11-15T00:00:00Z", "2022-11-14", True),
+        ("2022-11-15", "2022-11-14 00:00:00Z", True),
+        ("2022-11-15", "2022-11-15T00:00:00Z", False),
+        ("2022-11-15", "2022-11-16", False),
+        ("invalid", "2022-11-14", False),
+        ("2022-11-15", "invalid", False),
+        ("2022-11-15", None, False),
+    ],
+)
+def test_stale_partition_migration(global_value, partition_value, expected_change):
+    migration = TwilioStalePartitionStateMigration()
+    state = {
+        "state": {"date_sent": global_value},
+        "states": [
+            {"partition": {"subresource_uri": "messages"}, "cursor": {"date_sent": partition_value}},
+            {"partition": {"subresource_uri": "other"}, "cursor": {"date_sent": "2022-11-20"}},
+            {"partition": {"subresource_uri": "missing"}, "cursor": {}},
+        ],
+        "use_global_cursor": False,
+    }
+    original = deepcopy(state)
+    expected = deepcopy(state)
+    if expected_change:
+        expected["states"][0]["cursor"]["date_sent"] = global_value
+
+    assert migration.should_migrate(state) is expected_change
+    migrated = migration.migrate(state)
+    assert migrated == expected
+    assert state == original
+    assert not migration.should_migrate(migrated)
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        {},
+        {"states": []},
+        {"state": {"date_sent": "2022-11-15"}, "states": []},
+        {"states": [{"cursor": {"date_sent": "2022-11-14"}}]},
+        {"state": {}, "states": [{"cursor": {"date_sent": "2022-11-14"}}]},
+    ],
+)
+def test_stale_partition_migration_without_global_or_partition_state(state):
+    migration = TwilioStalePartitionStateMigration()
+    assert not migration.should_migrate(state)
+    assert migration.migrate(state) == state
+
 
 ACCOUNTS_JSON = {
     "accounts": [
@@ -159,6 +213,45 @@ class TestTwilioStream:
 
 
 class TestIncrementalTwilioStream:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,resource,cursor_key,request_key",
+        [("messages", "Messages", "date_sent", "DateSent"), ("recordings", "Recordings", "date_created", "DateCreated")],
+    )
+    @pytest.mark.parametrize("with_record", [False, True])
+    def test_stale_partition_starts_at_global_cursor(self, requests_mock, stream_name, resource, cursor_key, request_key, with_record):
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON)
+        partition = {"subresource_uri": f"/2010-04-01/Accounts/AC123/{resource}.json", "parent_slice": {}}
+        global_value = "2022-11-15 00:00:00Z"
+        record_value = "2022-11-15T12:00:00Z"
+        child = requests_mock.get(
+            f"{BASE}/Accounts/AC123/{resource}.json",
+            json={stream_name: [{"sid": "RE123", cursor_key: record_value}] if with_record else []},
+        )
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                stream_name,
+                {
+                    "states": [{"partition": partition, "cursor": {cursor_key: "2022-10-13T00:00:00Z"}}],
+                    "state": {cursor_key: global_value},
+                    "use_global_cursor": False,
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream(TEST_CONFIG, stream_name, SyncMode.incremental, state)
+
+        assert [parse_qs(urlparse(request.url).query) for request in child.request_history] == [
+            {f"{request_key}>": [global_value], f"{request_key}<": ["2022-11-16 12:03:11Z"], "PageSize": ["1000"]}
+        ]
+        emitted = output.most_recent_state.stream_state.__dict__
+        assert emitted["states"] == [
+            {"partition": partition, "cursor": {cursor_key: "2022-11-15 12:00:00Z" if with_record else global_value}}
+        ]
+        assert len(output.records) == int(with_record)
+
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_calls_includes_date_window_params(self, requests_mock):
         requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)

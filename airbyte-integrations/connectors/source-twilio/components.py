@@ -8,7 +8,49 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Raise stale partition cursors to the global cursor's lower bound.
+
+    Initial:
+      {
+        "states": [{"cursor": {"date_sent": "2022-11-01T00:00:00Z"}, "partition": {}}],
+        "state": {"date_sent": "2022-11-15 00:00:00Z"}
+      }
+
+    Final:
+      {
+        "states": [{"cursor": {"date_sent": "2022-11-15 00:00:00Z"}, "partition": {}}],
+        "state": {"date_sent": "2022-11-15 00:00:00Z"}
+      }
+    """
+
+    @staticmethod
+    def _stale_cursors(stream_state: Mapping[str, Any]):
+        global_state = stream_state.get("state", {})
+        if len(global_state) != 1:
+            return
+        cursor_key, global_value = next(iter(global_state.items()))
+        global_datetime = ab_datetime_try_parse(global_value)
+        if global_datetime is None:
+            return
+        for state in stream_state.get("states", []):
+            cursor = state.get("cursor", {})
+            partition_datetime = ab_datetime_try_parse(cursor.get(cursor_key))
+            if partition_datetime is not None and partition_datetime < global_datetime:
+                yield cursor, cursor_key, global_value
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return next(self._stale_cursors(stream_state), None) is not None
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        new_state = copy.deepcopy(stream_state)
+        for cursor, cursor_key, global_value in self._stale_cursors(new_state):
+            cursor[cursor_key] = global_value
+        return new_state
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
