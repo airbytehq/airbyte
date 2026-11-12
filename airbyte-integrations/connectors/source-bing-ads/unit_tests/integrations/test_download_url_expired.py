@@ -4,13 +4,13 @@ import json
 from base_test import BaseTest
 from config_builder import ConfigBuilder
 from freezegun import freeze_time
+from protocol_helpers import read_helper
 from request_builder import RequestBuilder
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.mock_http import HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
-from protocol_helpers import read_helper
 
 
 _EXPIRED_SAS_BODY = (
@@ -57,7 +57,9 @@ class TestDownloadUrlExpired(BaseTest):
             HttpResponse(json.dumps(find_template(resource="bulk_download", execution_folder=__file__)), 200),
         )
         self.http_mocker.post(
-            RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk").with_body('{"RequestId": "TestDownloadRequestId"}').build(),
+            RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk")
+            .with_body('{"RequestId": "TestDownloadRequestId"}')
+            .build(),
             HttpResponse(json.dumps(find_template(resource="bulk_status", execution_folder=__file__)), 200),
         )
         self.http_mocker.get(HttpRequest(url=_BULK_DOWNLOAD_URL), HttpResponse(_EXPIRED_SAS_BODY, 403, _EXPIRED_SAS_HEADERS))
@@ -76,7 +78,9 @@ class TestDownloadUrlExpired(BaseTest):
             HttpResponse(json.dumps(find_template(resource="generate_report", execution_folder=__file__)), 200),
         )
         self.http_mocker.post(
-            RequestBuilder(resource="GenerateReport/Poll", api="reporting").with_body(b'{"ReportRequestId": "thisisthereport_requestid"}').build(),
+            RequestBuilder(resource="GenerateReport/Poll", api="reporting")
+            .with_body(b'{"ReportRequestId": "thisisthereport_requestid"}')
+            .build(),
             HttpResponse(json.dumps(find_template(resource="generate_report_poll", execution_folder=__file__)), 200),
         )
         self.http_mocker.get(RequestBuilder().build_report_url(), HttpResponse(_EXPIRED_SAS_BODY, 403, _EXPIRED_SAS_HEADERS))
@@ -94,12 +98,16 @@ class TestDownloadUrlExpired(BaseTest):
             HttpResponse(json.dumps(find_template(resource="bulk_download", execution_folder=__file__)), 200),
         )
         self.http_mocker.post(
-            RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk").with_body('{"RequestId": "TestDownloadRequestId"}').build(),
+            RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk")
+            .with_body('{"RequestId": "TestDownloadRequestId"}')
+            .build(),
             HttpResponse(json.dumps(find_template(resource="bulk_status", execution_folder=__file__)), 200),
         )
         self.http_mocker.get(
             HttpRequest(url=_BULK_DOWNLOAD_URL),
-            HttpResponse('<?xml version="1.0"?><Error><Code>AuthorizationFailure</Code></Error>', 403, {"x-ms-error-code": "AuthorizationFailure"}),
+            HttpResponse(
+                '<?xml version="1.0"?><Error><Code>AuthorizationFailure</Code></Error>', 403, {"x-ms-error-code": "AuthorizationFailure"}
+            ),
         )
 
         catalog = CatalogBuilder().with_stream("budget", SyncMode.full_refresh).build()
