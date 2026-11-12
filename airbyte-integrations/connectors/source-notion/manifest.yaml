@@ -259,6 +259,8 @@ streams:
     incremental_sync:
       $ref: "#/definitions/client_side_incremental_sync"
       global_substream_cursor: true
+      # BlocksRetriever filters after traversing children to retain updated descendants.
+      is_client_side_incremental: false
     retriever:
       type: CustomRetriever
       class_name: "source_declarative_manifest.components.BlocksRetriever"

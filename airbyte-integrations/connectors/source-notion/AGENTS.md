@@ -8,7 +8,7 @@ The `BlocksRetriever` performs depth-first recursive fetching of Notion blocks. 
 
 A single page with deeply nested content (e.g., toggles inside toggles inside columns) can trigger dozens of additional API calls as the retriever walks the entire block tree. Each level of nesting adds another round of paginated API requests for that block's children.
 
-Cursor filtering happens only after visiting a block's children. An unchanged ancestor may contain an updated descendant, so filtering inside the record selector before recursion would lose that descendant. The custom retriever receives the CDK cursor and calls `should_be_synced` before yielding each block; this preserves the CDK's inclusive boundary and runtime lookback.
+Cursor filtering happens only after visiting a block's children. An unchanged ancestor may contain an updated descendant, so filtering inside the record selector before recursion would lose that descendant. The custom retriever uses the injected CDK cursor (or the concurrent stream slicer cursor on older CDKs) and calls `should_be_synced` before yielding each block; this preserves the CDK's inclusive boundary and runtime lookback. The blocks-specific `is_client_side_incremental: false` override disables automatic selector filtering on older CDKs; the custom retriever still filters emitted records.
 
 **Why this matters:** What looks like a single blocks stream read can fan out into a large number of API calls proportional to the depth and breadth of the block hierarchy. A page with 5 levels of nested blocks and 10 children per level could trigger hundreds of requests from a single parent page slice. The 30-level depth limit exists to prevent infinite recursion but is otherwise not enforced by Notion's API.
 

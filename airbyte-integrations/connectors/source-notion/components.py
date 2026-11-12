@@ -28,6 +28,8 @@ class BlocksRetriever(SimpleRetriever):
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
+        # Older CDKs expose the concurrent cursor only as the stream slicer.
+        self._record_cursor = self.cursor or (self.stream_slicer if isinstance(self.stream_slicer, Cursor) else None)
         self.current_block_depth = 0
 
     def read_records(
@@ -54,5 +56,5 @@ class BlocksRetriever(SimpleRetriever):
                 stream_data["parent"]["sequence_number"] = sequence_number
 
             # Traverse unchanged ancestors before filtering so updated descendants are still read.
-            if self.cursor is None or self.cursor.should_be_synced(stream_data):
+            if self._record_cursor is None or self._record_cursor.should_be_synced(stream_data):
                 yield stream_data
