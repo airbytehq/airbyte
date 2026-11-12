@@ -14,6 +14,7 @@ from source_facebook_marketing.streams.async_job import Status
 
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
@@ -34,6 +35,7 @@ from .utils import config, encode_request_body, read_output
 
 
 _STREAM_NAME = "ads_insights_action_product_id"
+START_DATE_DT = ab_datetime_parse(START_DATE)
 _CURSOR_FIELD = "date_start"
 _REPORT_RUN_ID = "1571860060019548"
 _JOB_ID = "1049937379601625"
@@ -531,3 +533,61 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_state_and_sync_fails_after_lookback_slice_when_read_then_cursor_does_not_move_backwards(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        A sync resuming from state re-reads the lookback window, so its first jobs start before the saved cursor.
+        If the sync fails after only those re-read slices complete, the emitted cursor must not regress below the
+        saved one; otherwise every failed sync pushes the next sync's start back by another lookback window.
+        """
+        account_id = "123123123"
+        saved_cursor = NOW - timedelta(days=2)  # 2023-01-08
+        lookback_days = 2
+        day_1 = saved_cursor - timedelta(days=2)  # 2023-01-06, first re-read slice
+        day_2 = saved_cursor - timedelta(days=1)  # 2023-01-07
+        day_3 = saved_cursor  # 2023-01-08
+        report_run_ids = ["1571860060019501", "1571860060019502", "1571860060019503"]
+        job_ids = ["1049937379601601", "1049937379601602", "1049937379601603"]
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id in zip([day_1, day_2, day_3], report_run_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids, account_id=account_id))
+        http_mocker.get(
+            _get_insights_request(job_ids[0]).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record().with_cursor(day_1.strftime(DATE_FORMAT))).build(),
+        )
+        http_mocker.get(
+            _get_insights_request(job_ids[1]).build(),
+            build_response(
+                body={"error": {"code": 100, "message": "Invalid parameter", "type": "OAuthException"}},
+                status_code=HTTPStatus.BAD_REQUEST,
+            ),
+        )
+
+        test_config = config().with_account_ids([account_id]).with_start_date(START_DATE_DT).with_end_date(day_3)
+        test_config._config["insights_lookback_window"] = lookback_days
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {account_id: {_CURSOR_FIELD: saved_cursor.strftime(DATE_FORMAT)}, "time_increment": 1},
+            )
+            .build()
+        )
+
+        output = self._read(test_config, state=state, expecting_exception=True)
+
+        assert [record.record.data[_CURSOR_FIELD] for record in output.records] == [day_1.strftime(DATE_FORMAT)]
+        stream_state = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state")
+        assert stream_state[account_id][_CURSOR_FIELD] == saved_cursor.strftime(DATE_FORMAT)
