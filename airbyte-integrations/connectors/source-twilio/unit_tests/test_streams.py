@@ -255,6 +255,75 @@ class TestIncrementalTwilioStream:
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
     @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "stream_name,resource,cursor_field,lower_key",
+        [
+            ("messages", "Messages", "date_sent", "DateSent>"),
+            ("recordings", "Recordings", "date_created", "DateCreated>"),
+        ],
+    )
+    def test_stale_partition_cursor_falls_back_to_global_cursor(self, stream_name, resource, cursor_field, lower_key, requests_mock):
+        """
+        AC1 has had no new records for a year, so its partition cursor is stale while the global cursor is recent.
+        AC1 must resume from the global cursor instead of re-reading a year of history; AC2, whose partition cursor
+        is newer than the global cursor, must keep its own cursor.
+        """
+        accounts = {
+            "accounts": [
+                {
+                    "sid": sid,
+                    "date_created": "2020-01-01T00:00:00Z",
+                    "subresource_uris": {stream_name: f"/2010-04-01/Accounts/{sid}/{resource}.json"},
+                }
+                for sid in ("AC1", "AC2")
+            ]
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts, status_code=200)
+        child_matchers = {
+            sid: requests_mock.get(
+                f"{BASE}/Accounts/{sid}/{resource}.json",
+                json={stream_name: [{"sid": f"{sid}-1", "account_sid": sid, cursor_field: "2022-11-15T10:00:00Z"}]},
+                status_code=200,
+            )
+            for sid in ("AC1", "AC2")
+        }
+
+        def _partition(sid):
+            return {"subresource_uri": f"/2010-04-01/Accounts/{sid}/{resource}.json", "parent_slice": {}}
+
+        stream_state = {
+            "use_global_cursor": False,
+            "states": [
+                {"partition": _partition("AC1"), "cursor": {cursor_field: "2021-11-20 08:00:00Z"}},
+                {"partition": _partition("AC2"), "cursor": {cursor_field: "2022-11-14 09:30:00Z"}},
+            ],
+            "state": {cursor_field: "2022-11-13 12:11:10Z"},
+            "lookback_window": 0,
+        }
+        state = StateBuilder().with_stream_state(stream_name, stream_state).build()
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2020-01-01T00:00:00Z"}, stream_name, SyncMode.incremental, state)
+
+        windows = {
+            sid: [
+                (parse_qs(urlparse(request.url).query)[lower_key][0], parse_qs(urlparse(request.url).query)[lower_key.replace(">", "<")][0])
+                for request in matcher.request_history
+            ]
+            for sid, matcher in child_matchers.items()
+        }
+        assert windows == {
+            "AC1": [("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z")],
+            "AC2": [("2022-11-14 09:30:00Z", "2022-11-16 12:03:11Z")],
+        }
+        assert sorted(record.record.data["sid"] for record in output.records) == ["AC1-1", "AC2-1"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["state"] == {cursor_field: "2022-11-15 10:00:00Z"}
+        assert sorted((s["partition"]["subresource_uri"], s["cursor"][cursor_field]) for s in final_state["states"]) == [
+            (f"/2010-04-01/Accounts/AC1/{resource}.json", "2022-11-15 10:00:00Z"),
+            (f"/2010-04-01/Accounts/AC2/{resource}.json", "2022-11-15 10:00:00Z"),
+        ]
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
         parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")

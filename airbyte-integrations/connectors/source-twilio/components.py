@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -240,6 +240,83 @@ class TwilioMessageMediaStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioStalePartitionStateMigration(StateMigration):
+    """
+    Drop per-partition cursors that are older than the stream's global cursor.
+
+    The concurrent per-partition cursor only advances a partition's cursor from the records it reads. A partition
+    (an account) that has no new records keeps its old cursor forever, while the global `state` cursor keeps moving.
+    On the next sync that old partition cursor wins over the global cursor, so the partition is re-read from a date
+    that can be many months old.
+
+    The CDK only advances the global cursor after a sync where every partition was read to the end of the sync, so
+    every partition has already been read past the global cursor. Removing a partition cursor that is older than the
+    global cursor makes that partition fall back to the global cursor (and the CDK's runtime `lookback_window`).
+    Partition cursors that are newer than or equal to the global cursor, or that cannot be parsed, are kept.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC1/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2025-01-01 00:00:00Z" }
+          },
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC2/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2026-05-20 10:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "lookback_window": 120
+      }
+
+    Final:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC2/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2026-05-20 10:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2026-05-20 10:00:00Z" },
+        "lookback_window": 120
+      }
+    """
+
+    @staticmethod
+    def _global_cursor_datetime(stream_state: Mapping[str, Any]) -> tuple[str, datetime] | None:
+        global_state = stream_state.get("state") if stream_state else None
+        if not isinstance(global_state, Mapping) or len(global_state) != 1:
+            return None
+        cursor_key, cursor_value = next(iter(global_state.items()))
+        parsed = ab_datetime_try_parse(str(cursor_value)) if cursor_value else None
+        return (cursor_key, parsed) if parsed else None
+
+    @staticmethod
+    def _is_stale(partition_state: Mapping[str, Any], cursor_key: str, global_cursor: datetime) -> bool:
+        cursor = partition_state.get("cursor")
+        if not isinstance(cursor, Mapping) or not cursor.get(cursor_key):
+            return False
+        parsed = ab_datetime_try_parse(str(cursor[cursor_key]))
+        return parsed is not None and parsed < global_cursor
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        global_cursor = self._global_cursor_datetime(stream_state)
+        if not global_cursor:
+            return False
+        cursor_key, global_datetime = global_cursor
+        return any(self._is_stale(state, cursor_key, global_datetime) for state in stream_state.get("states") or [])
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor_key, global_datetime = self._global_cursor_datetime(stream_state)
+        return {
+            **stream_state,
+            "states": [state for state in stream_state.get("states") or [] if not self._is_stale(state, cursor_key, global_datetime)],
+        }
 
 
 _CONFERENCE_STATUSES = ("init", "in-progress", "completed")
