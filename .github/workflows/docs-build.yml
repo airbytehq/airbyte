@@ -33,6 +33,7 @@ jobs:
         continue-on-error: true
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          persist-credentials: false
           fetch-depth: 2
 
       # If this step fails (e.g. the merge commit can't be checked out), the output
@@ -65,6 +66,7 @@ jobs:
       - name: Checkout Current Branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          persist-credentials: false
           fetch-depth: 0
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
@@ -133,6 +135,7 @@ jobs:
       - name: Checkout Current Branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          persist-credentials: false
           fetch-depth: 1
 
       - name: Deploy to Vercel

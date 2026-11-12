@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - name: markdownlint
         uses: reviewdog/action-markdownlint@8a6529a4b8ffbb3193a55a255bedd31989a67fc2 # v0.29.0
         with:
@@ -31,6 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          persist-credentials: false
           fetch-depth: 0
       - uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # Pinned to V2.1.1
         continue-on-error: true # Always pass, even if reviewdog can't post annotations (e.g., fork PRs with read-only tokens)

@@ -44,6 +44,7 @@ jobs:
       - name: Checkout Current Branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          persist-credentials: false
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref }}
           fetch-depth: 1
