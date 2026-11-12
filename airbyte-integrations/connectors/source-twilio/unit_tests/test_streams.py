@@ -1003,3 +1003,85 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+_NESTED_DATETIME_STREAMS = [
+    pytest.param("messages", "Messages.json", "date_sent", "DateSent>", "DateSent<", id="messages"),
+    pytest.param("recordings", "Recordings.json", "date_created", "DateCreated>", "DateCreated<", id="recordings"),
+]
+
+
+def _register_windowed_records(requests_mock, resource, data_field, cursor_field, lower_key, upper_key):
+    """Return one record per requested window, dated on the 15th of the window's month, and record each window."""
+    windows = []
+
+    def _callback(request, context):
+        query = parse_qs(urlparse(request.url).query)
+        lower, upper = query[lower_key][0], query[upper_key][0]
+        windows.append((lower, upper))
+        return {data_field: [{"sid": f"SID-{lower}", cursor_field: f"{lower[:8]}15T10:00:00Z"}]}
+
+    requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+    requests_mock.get(f"{BASE}/Accounts/AC123/{resource}", json=_callback, status_code=200)
+    return windows
+
+
+def _partition_state(resource, cursor_field, cursor_value):
+    return {
+        "partition": {"subresource_uri": f"/2010-04-01/Accounts/AC123/{resource}", "parent_slice": {}},
+        "cursor": {cursor_field: cursor_value},
+    }
+
+
+class TestNestedDatetimeStreamsState:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize("stream_name,resource,cursor_field,lower_key,upper_key", _NESTED_DATETIME_STREAMS)
+    def test_partition_cursor_advances_to_newest_record_across_slices(
+        self, stream_name, resource, cursor_field, lower_key, upper_key, requests_mock
+    ):
+        windows = _register_windowed_records(requests_mock, resource, stream_name, cursor_field, lower_key, upper_key)
+        state = (
+            StateBuilder()
+            .with_stream_state(stream_name, {"states": [_partition_state(resource, cursor_field, "2022-08-01 00:00:00Z")]})
+            .build()
+        )
+
+        output = read_from_stream(TEST_CONFIG, stream_name, SyncMode.incremental, state)
+
+        assert sorted(windows) == [
+            ("2022-08-01 00:00:00Z", "2022-08-31 23:59:59Z"),
+            ("2022-09-01 00:00:00Z", "2022-09-30 23:59:59Z"),
+            ("2022-10-01 00:00:00Z", "2022-10-31 23:59:59Z"),
+            ("2022-11-01 00:00:00Z", "2022-11-16 12:03:11Z"),
+        ]
+        assert sorted(record.record.data["sid"] for record in output.records) == [f"SID-{lower}" for lower, _ in sorted(windows)]
+        final_state = output.most_recent_state.stream_state.__dict__
+        # The partition must checkpoint the newest record of the whole sync, not only of its oldest slice.
+        assert [partition["cursor"] for partition in final_state["states"]] == [{cursor_field: "2022-11-15 10:00:00Z"}]
+        assert final_state["state"] == {cursor_field: "2022-11-15 10:00:00Z"}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize("stream_name,resource,cursor_field,lower_key,upper_key", _NESTED_DATETIME_STREAMS)
+    def test_stale_partition_cursor_resumes_from_newer_global_cursor(
+        self, stream_name, resource, cursor_field, lower_key, upper_key, requests_mock
+    ):
+        windows = _register_windowed_records(requests_mock, resource, stream_name, cursor_field, lower_key, upper_key)
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                stream_name,
+                {
+                    "use_global_cursor": False,
+                    "states": [_partition_state(resource, cursor_field, "2022-08-01 00:00:00Z")],
+                    "state": {cursor_field: "2022-11-14 00:00:00Z"},
+                    "lookback_window": 3600,
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream(TEST_CONFIG, stream_name, SyncMode.incremental, state)
+
+        # Resume from the global cursor minus the stored lookback, not from the stale partition cursor.
+        assert windows == [("2022-11-13 23:00:00Z", "2022-11-16 12:03:11Z")]
+        assert [record.record.data["sid"] for record in output.records] == ["SID-2022-11-13 23:00:00Z"]
