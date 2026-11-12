@@ -97,7 +97,7 @@ jobs:
           # When publishing, we build and push a multi-arch image
 
       - name: Run Vulnerability Scan
-        uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           image: "${{ steps.vars.outputs.FULL_IMAGE_REF }}"
           output-format: "table"

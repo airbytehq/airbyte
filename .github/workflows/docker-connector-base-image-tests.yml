@@ -84,7 +84,7 @@ jobs:
             ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run Java Base Image Vulnerability Scan
-        uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           image: "ghcr.io/airbytehq/java-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
           output-format: "table"
@@ -131,7 +131,7 @@ jobs:
             ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run Python Base Image Vulnerability Scan
-        uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           image: "ghcr.io/airbytehq/python-connector-base:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
           output-format: "table"
@@ -242,7 +242,7 @@ jobs:
           airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
-        uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
           output-format: "table"
@@ -330,7 +330,7 @@ jobs:
           airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
-        uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
           output-format: "table"
@@ -415,7 +415,7 @@ jobs:
           airbyte-cdk image test --image=ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}
 
       - name: Run ${{ matrix.connector }} Image Vulnerability Scan
-        uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
         with:
           image: "ghcr.io/airbytehq/${{ matrix.connector }}:draft-pr-${{ github.event.pull_request.number }}-build${{ github.run_number }}"
           output-format: "table"
