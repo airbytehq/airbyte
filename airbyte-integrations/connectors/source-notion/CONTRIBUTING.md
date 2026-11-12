@@ -12,6 +12,10 @@ A single page with deeply nested content (e.g., toggles inside toggles inside co
 
 These streams share one error handler that skips every 400 (the invalid `start_cursor` case) and every 404 (objects not shared with the integration), regardless of the message, and treats 429 as rate limited using the `Retry-After` header. The `users` stream does not skip them; it fails with a configuration error when the integration lacks the "Read user information" capability. See `AGENTS.md` for the filter order and its limits.
 
+## 3. Blocks Incremental Sync Filters After the Full Block Tree Walk
+
+On an incremental sync with saved state, the `blocks` stream still requests every page and every block (including the children of blocks that did not change), then emits only the blocks whose `last_edited_time` is at or after the saved cursor. Full refresh and first incremental syncs emit every block, including blocks last edited before `start_date`. See `AGENTS.md` for why the filter runs inside `BlocksRetriever`.
+
 ## Incremental Stream Considerations
 
 The Notion API supports `filter` with `last_edited_time` for databases and pages. The connector uses Python custom components referenced from the manifest.
