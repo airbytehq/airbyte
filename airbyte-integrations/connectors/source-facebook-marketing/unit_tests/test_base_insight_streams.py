@@ -56,6 +56,53 @@ def async_job_mock_fixture(mocker):
 
 
 class TestBaseInsightsStream:
+    @freeze_time("2023-02-05")
+    @pytest.mark.parametrize("name", [None, "custom_insights"])
+    @pytest.mark.parametrize("empty", [False, True], ids=["records", "empty"])
+    def test_lookback_cursor_never_regresses_after_interruption(self, mocker, api, name, empty):
+        account_id = "123"
+        saved_cursor = date(2023, 2, 1)
+        stream = AdsInsights(
+            api=api,
+            account_ids=[account_id],
+            start_date=datetime(2023, 1, 1),
+            end_date=datetime(2023, 2, 3),
+            insights_lookback_window=28,
+            name=name,
+        )
+        stream.state = {account_id: {"date_start": saved_cursor.isoformat()}, "time_increment": 1}
+        intervals = list(stream._date_intervals(account_id))
+        assert intervals[0] == saved_cursor - timedelta(days=28)
+
+        def read_slice(start, fail=False):
+            job = mocker.Mock(spec=InsightAsyncJob)
+            job.interval = DateInterval(start, start)
+            record = mocker.Mock()
+            record.export_all_data.return_value = {"date_start": start.isoformat(), "ad_id": "456"}
+            job.get_result.return_value = [] if empty else [record]
+            if fail:
+                job.get_result.side_effect = RuntimeError("AdReportRun failed")
+            return list(
+                stream.read_records(
+                    sync_mode=SyncMode.incremental,
+                    stream_slice={"insight_job": job, "account_id": account_id},
+                )
+            )
+
+        records = read_slice(intervals[0])
+        assert len(records) == (0 if empty else 1)
+        assert stream.state[account_id]["date_start"] == saved_cursor.isoformat()
+
+        checkpoint = copy.deepcopy(stream.state)
+        with pytest.raises(RuntimeError, match="AdReportRun failed"):
+            read_slice(intervals[1], fail=True)
+        assert stream.state == checkpoint
+
+        for start in intervals[1:]:
+            read_slice(start)
+            assert stream.state[account_id]["date_start"] == max(saved_cursor, start).isoformat()
+        assert stream.state[account_id]["date_start"] == "2023-02-03"
+
     def test_init(self, api, some_config):
         stream = AdsInsights(
             api=api,

@@ -12,7 +12,7 @@ from unittest import TestCase
 import freezegun
 from source_facebook_marketing.streams.async_job import Status
 
-from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -437,6 +437,35 @@ class TestFullRefresh(TestCase):
 
 @freezegun.freeze_time(NOW.isoformat())
 class TestIncremental(TestCase):
+    @freezegun.freeze_time("2023-02-05")
+    @HttpMocker()
+    def test_read_only_first_lookback_slice_preserves_saved_cursor(self, http_mocker: HttpMocker) -> None:
+        saved_cursor = "2023-01-29"
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        http_mocker.post(_job_start_request().build(), _job_start_response(_REPORT_RUN_ID))
+        http_mocker.post(_job_status_request(_REPORT_RUN_ID).build(), _job_status_response(_JOB_ID))
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        state = [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamStateSerializer.load(
+                    {
+                        "stream_descriptor": {"name": _STREAM_NAME},
+                        "stream_state": {ACCOUNT_ID: {_CURSOR_FIELD: saved_cursor}, "time_increment": 1},
+                    }
+                ),
+            )
+        ]
+
+        output = self._read(config(), state=state)
+
+        assert len(output.records) == 1
+        assert AirbyteStreamStateSerializer.dump(output.most_recent_state)["stream_state"][ACCOUNT_ID][_CURSOR_FIELD] == saved_cursor
+
     @staticmethod
     def _read(
         config_: ConfigBuilder,
