@@ -170,6 +170,28 @@ class TestSourceFacebookMarketing:
         assert fb_marketing.get_custom_insights_streams(api, config)
 
     @pytest.mark.parametrize(
+        "top_level,custom,expected",
+        [
+            pytest.param(True, {}, True, id="inherits-top-level-when-omitted"),
+            pytest.param(False, {"include_incrementality": True}, True, id="per-insight-enabled"),
+            pytest.param(True, {"include_incrementality": True}, True, id="both-enabled"),
+            pytest.param(False, {}, False, id="disabled-by-default"),
+            pytest.param(False, {"include_incrementality": False}, False, id="both-disabled"),
+            pytest.param(True, {"include_incrementality": False}, True, id="false-falls-back-to-top-level"),
+        ],
+    )
+    def test_custom_insights_include_incrementality(self, api, config, fb_marketing, top_level, custom, expected):
+        config["include_incrementality"] = top_level
+        config["custom_insights"] = [{"name": "Incrementality", "fields": ["account_id"], **custom}]
+
+        stream = next(stream for stream in fb_marketing.streams(config) if stream.name == "custom_incrementality")
+
+        expected_windows = ["1d_click", "7d_click", "28d_click", "1d_view"]
+        if expected:
+            expected_windows.append("incrementality")
+        assert stream.request_params()["action_attribution_windows"] == expected_windows
+
+    @pytest.mark.parametrize(
         "breakdowns",
         [
             pytest.param(["publisher_platform", "device_platform", "age", "gender", "country"], id="configured-order"),
