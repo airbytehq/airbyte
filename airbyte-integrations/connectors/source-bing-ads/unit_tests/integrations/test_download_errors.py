@@ -82,6 +82,9 @@ def test_download_failure_classification(requests_mock, stream_name, error_code,
     if expected_failure == FailureType.transient_error:
         assert error.message == f"Bing Ads download link for stream '{stream_name}' is outside its validity period."
     else:
-        assert error.message == "HTTP Status Code: 403. Error: Forbidden. You don't have permission to access this resource."
+        # The unit-test CDK and runtime image CDK differ in their HTTP status prefix.
+        assert error.message.removeprefix("HTTP Status Code: 403. Error: ") == (
+            "Forbidden. You don't have permission to access this resource."
+        )
     assert detail in error.internal_message
     assert download.call_count == 1
