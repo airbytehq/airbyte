@@ -47,4 +47,3 @@ def test_sla_policy_ids_are_integers() -> None:
 )
 def test_sla_policy_ids_preserve_other_values(records: list[dict], expected_ids: list) -> None:
     assert _read_ids(records) == expected_ids
-
