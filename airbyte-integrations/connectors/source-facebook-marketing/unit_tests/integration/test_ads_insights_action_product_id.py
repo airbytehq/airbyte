@@ -151,6 +151,8 @@ def _job_start_request(
     since: Optional[datetime] = None,
     until: Optional[datetime] = None,
     fields: Optional[List[str]] = None,
+    include_incrementality: bool = False,
+    filter_statuses: bool = True,
 ) -> RequestBuilder:
     since = since.strftime(DATE_FORMAT) if since else START_DATE[:10]
     until = until.strftime(DATE_FORMAT) if until else END_DATE[:10]
@@ -184,6 +186,10 @@ def _job_start_request(
         ],
         "time_range": {"since": since, "until": until},
     }
+    if include_incrementality:
+        body["action_attribution_windows"].append("incrementality")
+    if not filter_statuses:
+        body.pop("filtering")
     return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=account_id).with_body(encode_request_body(body))
 
 
@@ -247,6 +253,41 @@ def _ads_insights_action_product_id_record() -> RecordBuilder:
 
 @freezegun.freeze_time("2023-01-10T00:00:00Z")
 class TestFullRefresh(TestCase):
+    @HttpMocker()
+    def test_custom_insights_inherit_top_level_incrementality(self, http_mocker: HttpMocker) -> None:
+        config_builder = config()
+        config_builder.build().update(
+            {
+                "include_incrementality": True,
+                "custom_insights": [
+                    {
+                        "name": "Incrementality",
+                        "fields": ["impressions"],
+                        "breakdowns": ["product_id"],
+                        "action_breakdowns": [],
+                    }
+                ],
+            }
+        )
+        http_mocker.get(get_account_request().build(), get_account_response())
+        http_mocker.get(_update_api_throttle_limit_request().build(), _update_api_throttle_limit_response())
+        http_mocker.post(
+            _job_start_request(fields=["impressions"], include_incrementality=True, filter_statuses=False).build(),
+            _job_start_response(_REPORT_RUN_ID),
+        )
+        http_mocker.post(_job_status_request(_REPORT_RUN_ID).build(), _job_status_response(_JOB_ID))
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+
+        output = read_output(
+            config_builder=config_builder,
+            stream_name="custom_incrementality",
+            sync_mode=SyncMode.full_refresh,
+        )
+        assert len(output.records) == 1
+
     @staticmethod
     def _read(config_: ConfigBuilder, expecting_exception: bool = False, json_schema: Optional[Dict[str, any]] = None) -> EntrypointOutput:
         return read_output(
