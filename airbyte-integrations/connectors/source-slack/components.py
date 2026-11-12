@@ -176,9 +176,11 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        return "channel_messages" not in stream_state.get("parent_state", {})
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if not self.should_migrate(stream_state):
+            return stream_state
         if not stream_state:
             return {}
 
