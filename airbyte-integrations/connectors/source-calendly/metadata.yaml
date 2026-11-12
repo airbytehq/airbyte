@@ -17,15 +17,15 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b8f2cbee-b073-4dd8-9b80-97d7bae967a4
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.2.1
   dockerRepository: airbyte/source-calendly
   githubIssueLabel: source-calendly
   icon: icon.svg
   license: ELv2
   name: Calendly
   releaseDate: 2025-01-27
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   maxSecondsBetweenMessages: 3600
   suggestedStreams:
     streams:
@@ -47,8 +47,8 @@ data:
     - language:manifest-only
     - cdk:low-code
   ab_internal:
-    ql: 100
-    sl: 100
+    ql: 300
+    sl: 200
   externalDocumentationUrls:
     - title: Calendly OpenAPI specification
       url: https://developer.calendly.com/openapi/calendly-api.yaml

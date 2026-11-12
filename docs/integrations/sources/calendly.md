@@ -181,6 +181,7 @@ Version 1.0.0 is a breaking change. Before you upgrade from 0.x, read the [1.0.0
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 1.2.1 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Certify the connector |
 | 1.1.0 | 2026-11-12 | [91296](https://github.com/airbytehq/airbyte/pull/91296) | Add OAuth authentication as the default; personal access tokens remain available and existing configurations keep working |
 | 1.0.0 | 2026-11-11 | [90864](https://github.com/airbytehq/airbyte/pull/90864) | Fix incremental syncs missing new bookings and cancellations by using updated_at as the scheduled_events cursor, and declare date-time and integer types on existing fields |
 | 0.4.2 | 2026-11-10 | [91376](https://github.com/airbytehq/airbyte/pull/91376) | Update dependencies |
