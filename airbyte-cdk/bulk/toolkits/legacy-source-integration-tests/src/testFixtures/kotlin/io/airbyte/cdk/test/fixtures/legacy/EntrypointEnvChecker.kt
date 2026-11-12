@@ -26,7 +26,7 @@ object EntrypointEnvChecker {
         jobId: String,
         jobAttempt: Int,
         jobRoot: Path,
-        imageName: String
+        imageName: String,
     ): String? {
         val process =
             processFactory.create(
@@ -44,11 +44,10 @@ object EntrypointEnvChecker {
                 emptyMap(),
                 emptyMap(),
                 emptyMap(),
-                emptyMap()
+                emptyMap(),
             )
 
-        val stdout =
-            BufferedReader(InputStreamReader(process!!.inputStream, StandardCharsets.UTF_8))
+        val stdout = BufferedReader(InputStreamReader(process.inputStream, StandardCharsets.UTF_8))
 
         var outputLine: String? = null
 
@@ -66,7 +65,7 @@ object EntrypointEnvChecker {
             val splits = outputLine.split("=".toRegex(), limit = 2).toTypedArray()
             if (splits.size != 2) {
                 throw RuntimeException(
-                    "String could not be split into multiple segments: $outputLine"
+                    "String could not be split into multiple segments: $outputLine",
                 )
             } else {
                 splits[1].trim()

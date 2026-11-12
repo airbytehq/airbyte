@@ -33,7 +33,7 @@ val log = KotlinLogging.logger {}
 
 @SuppressFBWarnings(
     value = ["NP_NONNULL_PARAM_VIOLATION"],
-    justification = "suspend and fb's non-null analysis don't play well"
+    justification = "suspend and fb's non-null analysis don't play well",
 )
 @Singleton
 class ClickhouseAirbyteClient(
@@ -52,7 +52,7 @@ class ClickhouseAirbyteClient(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        replace: Boolean
+        replace: Boolean,
     ) {
         execute(
             sqlGenerator.createTable(
@@ -75,7 +75,7 @@ class ClickhouseAirbyteClient(
     override suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         val columnNames = columnNameMapping.values.toSet()
         execute(
@@ -91,7 +91,7 @@ class ClickhouseAirbyteClient(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
-        targetTableName: TableName
+        targetTableName: TableName,
     ) {
         throw NotImplementedError("We rely on Clickhouse's table engine for deduping")
     }
@@ -125,7 +125,7 @@ class ClickhouseAirbyteClient(
 
     override fun computeSchema(
         stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
     ): TableSchema {
         return TableSchema(stream.tableSchema.columnSchema.finalSchema)
     }
@@ -191,6 +191,12 @@ class ClickhouseAirbyteClient(
 
     override suspend fun countTable(tableName: TableName): Long? {
         try {
+            // The direct-load status gatherer probes generated temporary tables on every
+            // sync. Those tables are normally absent after a successful cleanup, so avoid
+            // issuing a failing COUNT query just to discover that expected state.
+            if (!tableExists(tableName)) {
+                return null
+            }
             val sql = sqlGenerator.countTable(tableName, "cnt")
             val response = query(sql)
             val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(response)

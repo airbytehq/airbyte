@@ -35,7 +35,7 @@ To ensure your source and destination credentials remain isolated, Airbyte uses 
 
 - Cloud: All Workspaces
 
-- Core and Self-Managed Enterprise:
+- Core:
 
     - Version 1.2.0 or later to copy files.
 

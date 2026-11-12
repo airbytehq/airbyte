@@ -18,7 +18,7 @@ class ObjectStorageDestinationCleaner<T : RemoteObject<*>> {
         client: ObjectStorageClient<T>,
         pathFactory: ObjectStoragePathFactory,
     ) {
-        val prefix = pathFactory.getFinalDirectory(stream).toString()
+        val prefix = pathFactory.getFinalDirectory(stream)
         runBlocking {
             withContext(Dispatchers.IO) { client.list(prefix).collect { client.delete(it) } }
         }

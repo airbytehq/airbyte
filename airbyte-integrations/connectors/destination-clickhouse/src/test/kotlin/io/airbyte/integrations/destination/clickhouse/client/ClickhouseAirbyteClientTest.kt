@@ -47,7 +47,7 @@ class ClickhouseAirbyteClientTest {
                 client,
                 clickhouseSqlGenerator,
                 tempTableNameGenerator,
-            )
+            ),
         )
 
     @Test
@@ -70,6 +70,19 @@ class ClickhouseAirbyteClientTest {
         clickhouseAirbyteClient.query(DUMMY_SENTENCE)
 
         coVerify { client.query(DUMMY_SENTENCE) }
+    }
+
+    @Test
+    fun `test count table skips query when table is absent`() = runTest {
+        val tableName = TableName("namespace", "temporary_table")
+        coEvery { clickhouseAirbyteClient.tableExists(tableName) } returns false
+
+        val count = clickhouseAirbyteClient.countTable(tableName)
+
+        Assertions.assertNull(count)
+        coVerify(exactly = 1) { clickhouseAirbyteClient.tableExists(tableName) }
+        verify(exactly = 0) { clickhouseSqlGenerator.countTable(any(), any()) }
+        coVerify(exactly = 0) { client.query(any()) }
     }
 
     private fun mockCHSchemaWithAirbyteColumns() {
@@ -151,8 +164,8 @@ class ClickhouseAirbyteClientTest {
                         "something" to
                             ColumnTypeChange(
                                 ColumnType("IrrelevantValue", false),
-                                ColumnType("IrrelevantValue", true)
-                            )
+                                ColumnType("IrrelevantValue", true),
+                            ),
                     ),
                 columnsToDrop = mapOf("test" to ColumnType("String", true)),
                 columnsToRetain = emptyMap(),

@@ -21,7 +21,7 @@ class BasicTestDataComparator(private val nameResolver: Function<String?, List<S
         while (expectedIterator.hasNext() && actualIterator.hasNext()) {
             val expectedData = expectedIterator.next()
             val actualData = actualIterator.next()
-            val expectedDataIterator = expectedData.fields()
+            val expectedDataIterator = expectedData.properties().iterator()
             LOGGER.info("Expected row {}", expectedData)
             LOGGER.info("Actual row   {}", actualData)
             Assertions.assertEquals(expectedData.size(), actualData.size(), "Unequal row size")

@@ -18,7 +18,7 @@ class HubSpotConfigurationFactory :
                 OAuthCredentialsConfig(
                     oauthCredentials.clientId,
                     oauthCredentials.clientSecret,
-                    oauthCredentials.refreshToken
+                    oauthCredentials.refreshToken,
                 ),
             objectStorageConfig = pojo.objectStorageConfig.toObjectStorageConfig(),
         )

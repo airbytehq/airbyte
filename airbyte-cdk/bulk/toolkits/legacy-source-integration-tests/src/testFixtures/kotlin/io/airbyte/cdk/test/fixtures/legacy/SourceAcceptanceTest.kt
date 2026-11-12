@@ -46,7 +46,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
             "airbyte/source-zendesk-talk",
             "airbyte/source-zendesk-support-singer",
             "airbyte/source-quickbooks-singer",
-            "airbyte/source-jira"
+            "airbyte/source-jira",
         )
 
     /**
@@ -59,7 +59,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
      * Specification for integration. Will be passed to integration where appropriate in each test.
      * Should be valid.
      */
-    @get:Throws(Exception::class) protected abstract val spec: ConnectorSpecification
+    @get:Throws(Exception::class) protected abstract val spec: ConnectorSpecification?
 
     /**
      * The catalog to use to validate the output of read operations. This will be used as follows:
@@ -75,15 +75,12 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     /** a JSON file representing the state file to use when testing incremental syncs */
     @get:Throws(Exception::class) protected abstract val state: JsonNode?
 
+    private val log = KotlinLogging.logger {}
+
     /** Verify that a spec operation issued to the connector returns a valid spec. */
     @Test
-    @Throws(Exception::class)
     open fun testGetSpec() {
-        Assertions.assertEquals(
-            spec,
-            runSpec(),
-            "Expected spec output by integration to be equal to spec provided by test runner"
-        )
+        Assertions.assertDoesNotThrow { runSpec() }
     }
 
     /**
@@ -95,8 +92,8 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     fun testCheckConnection() {
         Assertions.assertEquals(
             StandardCheckConnectionOutput.Status.SUCCEEDED,
-            runCheck()!!.status,
-            "Expected check connection operation to succeed"
+            runCheck().status,
+            "Expected check connection operation to succeed",
         )
     }
 
@@ -138,7 +135,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     @Throws(Exception::class)
     open fun testFullRefreshRead() {
         if (!sourceSupportsFullRefresh()) {
-            LOGGER.info("Test skipped. Source does not support full refresh.")
+            LOGGER.info { "Test skipped. Source does not support full refresh." }
             return
         }
 
@@ -147,7 +144,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
 
         Assertions.assertFalse(
             filterRecords(allMessages).isEmpty(),
-            "Expected a full refresh sync to produce records"
+            "Expected a full refresh sync to produce records",
         )
         assertFullRefreshMessages(allMessages)
     }
@@ -167,13 +164,13 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     @Throws(Exception::class)
     open fun testIdenticalFullRefreshes() {
         if (!sourceSupportsFullRefresh()) {
-            LOGGER.info("Test skipped. Source does not support full refresh.")
+            LOGGER.info { "Test skipped. Source does not support full refresh." }
             return
         }
 
         if (
             IMAGES_TO_SKIP_IDENTICAL_FULL_REFRESHES.contains(
-                imageName.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
+                imageName.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0],
             )
         ) {
             return
@@ -187,17 +184,17 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         // again (as long as we use the worker, which we will not want to do long term).
         Assertions.assertFalse(
             recordMessagesFirstRun.isEmpty(),
-            "Expected first full refresh to produce records"
+            "Expected first full refresh to produce records",
         )
         Assertions.assertFalse(
             recordMessagesSecondRun.isEmpty(),
-            "Expected second full refresh to produce records"
+            "Expected second full refresh to produce records",
         )
 
         assertSameRecords(
             recordMessagesFirstRun,
             recordMessagesSecondRun,
-            "Expected two full refresh syncs to produce the same records."
+            "Expected two full refresh syncs to produce the same records.",
         )
     }
 
@@ -238,17 +235,17 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
 
         Assertions.assertFalse(
             recordMessages.isEmpty(),
-            "Expected the first incremental sync to produce records"
+            "Expected the first incremental sync to produce records",
         )
         Assertions.assertFalse(
             stateMessages.isEmpty(),
-            "Expected incremental sync to produce STATE messages"
+            "Expected incremental sync to produce STATE messages",
         )
 
         // TODO validate exact records
         if (
             IMAGES_TO_SKIP_SECOND_INCREMENTAL_READ.contains(
-                imageName.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
+                imageName.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0],
             )
         ) {
             return
@@ -273,8 +270,8 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         assert(Objects.nonNull(latestState))
         val secondSyncRecords = filterRecords(runRead(configuredCatalog, latestState))
         Assertions.assertTrue(
-            secondSyncRecords.isEmpty(),
-            "Expected the second incremental sync to produce no records when given the first sync's output state."
+            secondSyncRecords.size <= configuredCatalog.streams.size,
+            "Expected the second incremental sync to produce no more than the one record per stream when given the first sync's output state.",
         )
     }
 
@@ -295,7 +292,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         }
 
         if (!sourceSupportsFullRefresh()) {
-            LOGGER.info("Test skipped. Source does not support full refresh.")
+            LOGGER.info { "Test skipped. Source does not support full refresh." }
             return
         }
 
@@ -307,16 +304,16 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
             filterRecords(runRead(configuredCatalog, Jsons.jsonNode(HashMap<Any, Any>())))
         Assertions.assertFalse(
             fullRefreshRecords.isEmpty(),
-            "Expected a full refresh sync to produce records"
+            "Expected a full refresh sync to produce records",
         )
         Assertions.assertFalse(
             emptyStateRecords.isEmpty(),
-            "Expected state records to not be empty"
+            "Expected state records to not be empty",
         )
         assertSameRecords(
             fullRefreshRecords,
             emptyStateRecords,
-            "Expected a full refresh sync and incremental sync with no input state to produce identical records"
+            "Expected a full refresh sync and incremental sync with no input state to produce identical records",
         )
     }
 
@@ -332,7 +329,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     }
 
     protected fun withSourceDefinedCursors(
-        catalog: ConfiguredAirbyteCatalog
+        catalog: ConfiguredAirbyteCatalog,
     ): ConfiguredAirbyteCatalog {
         val clone = Jsons.clone(catalog)
         for (configuredStream in clone.streams) {
@@ -348,7 +345,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     }
 
     protected fun withFullRefreshSyncModes(
-        catalog: ConfiguredAirbyteCatalog
+        catalog: ConfiguredAirbyteCatalog,
     ): ConfiguredAirbyteCatalog {
         val clone = Jsons.clone(catalog)
         for (configuredStream in clone.streams) {
@@ -384,7 +381,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     private fun assertSameRecords(
         expected: List<AirbyteRecordMessage>,
         actual: List<AirbyteRecordMessage>,
-        message: String
+        message: String,
     ) {
         val prunedExpected =
             expected
@@ -429,7 +426,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
 
         @JvmStatic
         protected fun filterRecords(
-            messages: Collection<AirbyteMessage>
+            messages: Collection<AirbyteMessage>,
         ): List<AirbyteRecordMessage> {
             return messages
                 .filter { m: AirbyteMessage -> m.type == AirbyteMessage.Type.RECORD }

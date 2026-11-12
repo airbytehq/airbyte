@@ -177,10 +177,21 @@ definitions:
               type: RequestOption
               inject_into: request_parameter
               field_name: access_token
-            request_parameters:
-              limit: 100
           path: campaigns
           http_method: GET
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
         record_selector:
           type: RecordSelector
           extractor:
@@ -222,10 +233,21 @@ definitions:
               type: RequestOption
               inject_into: request_parameter
               field_name: access_token
-            request_parameters:
-              limit: 100
           path: activities
           http_method: GET
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
         record_selector:
           type: RecordSelector
           extractor:
@@ -382,10 +404,21 @@ definitions:
               type: RequestOption
               inject_into: request_parameter
               field_name: access_token
-            request_parameters:
-              limit: 100
           path: unsubscribes
           http_method: GET
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
         record_selector:
           type: RecordSelector
           extractor:
@@ -586,10 +619,21 @@ streams:
             type: RequestOption
             inject_into: request_parameter
             field_name: access_token
-          request_parameters:
-            limit: 100
         path: campaigns
         http_method: GET
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
       record_selector:
         type: RecordSelector
         extractor:
@@ -630,10 +674,21 @@ streams:
             type: RequestOption
             inject_into: request_parameter
             field_name: access_token
-          request_parameters:
-            limit: 100
         path: activities
         http_method: GET
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
       record_selector:
         type: RecordSelector
         extractor:
@@ -789,10 +844,21 @@ streams:
             type: RequestOption
             inject_into: request_parameter
             field_name: access_token
-          request_parameters:
-            limit: 100
         path: unsubscribes
         http_method: GET
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
       record_selector:
         type: RecordSelector
         extractor:

@@ -242,7 +242,9 @@ CONFIG_ERRORS = [
     (
         "error_400_invalid_oauth_access_token_cannot_parse",
         "The access token for this connection is invalid or corrupted. "
-        "Please re-authenticate your Facebook connection in Airbyte. "
+        "This may be caused by browser autofill overwriting the OAuth token with saved credentials. "
+        "Please re-authenticate your Facebook connection by clicking 'Authenticate your account' and saving the configuration. "
+        "See https://docs.airbyte.com/integrations/sources/facebook-marketing#connection-check-fails-with-invalid-access-token-after-re-authenticating for details. "
         "If re-authentication does not resolve the issue, go to facebook.com > Settings > Business Integrations, "
         "remove the Airbyte app, and then re-authenticate again.",
         {
@@ -630,6 +632,65 @@ class TestRealErrors:
         assert list(record_gen) == [{"account_id": "unknown_account", "id": "act_unknown_account"}]
 
 
+class TestNoneApiErrorMessage:
+    """Regression tests for oncall/issues/11621: TypeError when api_error_message() returns None."""
+
+    @freezegun.freeze_time("2011-12-31")
+    def test_retry_logic_does_not_crash_when_api_error_message_is_none(self, some_config, requests_mock):
+        """A 400 response with no 'message' in the error body must not raise TypeError in should_retry_api_error."""
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["account_id", "account_currency"],
+            insights_lookback_window=28,
+        )
+        requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
+        response_no_message = {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "type": "OAuthException",
+                    "code": 100,
+                }
+            },
+        }
+        requests_mock.register_uri("GET", f"{act_url}insights", [response_no_message])
+
+        with pytest.raises(AirbyteTracedException):
+            slice_ = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))[0]
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_, stream_state={}))
+
+    def test_retry_logic_does_not_crash_for_ad_creatives_when_api_error_message_is_none(self, some_config, requests_mock):
+        """Non-insights streams also go through the same retry path; verify no TypeError."""
+        requests_mock.reset_mock()
+        api = API(access_token=some_config["access_token"], page_size=100)
+        stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+
+        requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
+        response_no_message = {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "type": "OAuthException",
+                    "code": 100,
+                }
+            },
+        }
+        requests_mock.register_uri("GET", f"{act_url}adcreatives", [response_no_message])
+
+        with pytest.raises(AirbyteTracedException):
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh,
+                    stream_state={},
+                    stream_slice={"account_id": account_id},
+                )
+            )
+
+
 def test_traced_exception_with_api_error():
     error = FacebookRequestError(
         message="Some error occurred",
@@ -660,3 +721,81 @@ def test_traced_exception_without_api_error():
     assert isinstance(result, AirbyteTracedException)
     assert result.message == "Error code 408: Call was unsuccessful. The Facebook API has imploded."
     assert result.failure_type == FailureType.system_error
+
+
+ERROR_USER_TITLE = "First Dof Value Should Match Object Story Spec Field"
+ERROR_USER_MSG = (
+    "For a Degrees of freedom enabled ad, the first value of Asset Feed Spec field "
+    "should match the corresponding field in Object Story Spec."
+)
+
+
+@pytest.mark.parametrize(
+    "error_body, expected_message",
+    (
+        (
+            {
+                "message": "Invalid parameter",
+                "code": 100,
+                "error_subcode": 2446211,
+                "error_user_title": ERROR_USER_TITLE,
+                "error_user_msg": ERROR_USER_MSG,
+            },
+            f"Error code 100 (subcode 2446211): Invalid parameter. Facebook details: {ERROR_USER_TITLE}. {ERROR_USER_MSG}",
+        ),
+        (
+            {
+                "message": "Invalid parameter",
+                "code": 100,
+                "error_user_title": ERROR_USER_TITLE,
+                "error_user_msg": ERROR_USER_MSG,
+            },
+            f"Error code 100: Invalid parameter. Facebook details: {ERROR_USER_TITLE}. {ERROR_USER_MSG}",
+        ),
+        (
+            {
+                "message": "Invalid parameter",
+                "code": 100,
+                "error_subcode": 2446211,
+                "error_user_msg": ERROR_USER_MSG,
+            },
+            f"Error code 100 (subcode 2446211): Invalid parameter. Facebook details: {ERROR_USER_MSG}",
+        ),
+        (
+            {"message": "Invalid parameter", "code": 100, "error_subcode": 2446211},
+            "Error code 100: Invalid parameter.",
+        ),
+        (
+            {
+                "message": "Invalid parameter",
+                "code": 100,
+                "error_subcode": 2446211,
+                "error_user_title": ERROR_USER_TITLE,
+                "error_user_msg": ERROR_USER_TITLE,
+            },
+            f"Error code 100 (subcode 2446211): Invalid parameter. Facebook details: {ERROR_USER_TITLE}.",
+        ),
+    ),
+    ids=(
+        "title_and_msg_with_subcode",
+        "title_and_msg_without_subcode",
+        "msg_only_with_subcode",
+        "no_user_fields_with_subcode",
+        "duplicate_title_and_msg",
+    ),
+)
+def test_traced_exception_fallback_includes_user_facing_details(error_body, expected_message):
+    error = FacebookRequestError(
+        message="Call was not successful",
+        request_context={},
+        http_status=400,
+        http_headers={},
+        body=json.dumps({"error": error_body}),
+    )
+
+    result = traced_exception(error)
+
+    assert isinstance(result, AirbyteTracedException)
+    assert result.message == expected_message
+    assert result.failure_type == FailureType.system_error
+    assert result.internal_message == "Invalid parameter"

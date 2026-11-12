@@ -4,23 +4,35 @@
 
 import json
 from dataclasses import dataclass
-from typing import List
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 from requests.exceptions import ChunkedEncodingError, StreamConsumedError
 from source_google_ads.components import (
     ClickViewHttpRequester,
     CustomGAQueryHttpRequester,
     CustomGAQuerySchemaLoader,
+    FlattenNestedDictsTransformation,
     GoogleAdsRetriever,
     GoogleAdsStreamingDecoder,
+    SerializeMessageFieldsTransformation,
+    TimeoutHTTPAdapter,
 )
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
+from airbyte_cdk.sources.declarative.retrievers.request_window_splitting import RequestWindowSplitting
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
+    CustomFormatConcurrentStreamStateConverter,
+)
+from airbyte_cdk.sources.streams.http.request_window_split_exception import RequestWindowSplitRequiredException
 from airbyte_cdk.sources.types import StreamSlice
 
 from .conftest import Obj, get_source
@@ -267,6 +279,35 @@ class TestGoogleAdsStreamingDecoder:
         out = self._decode_all(decoder, resp)
         assert out == {"results": msg[0]["results"]}
 
+    def test_preserves_multibyte_characters_split_across_chunks(self, decoder):
+        msg = [{"results": [{"text": "café"}]}]
+        raw = json.dumps(msg, ensure_ascii=False).encode("utf-8")
+        split = raw.index("é".encode("utf-8")) + 1
+
+        records = list(decoder._parse_records_from_stream([raw[:split], raw[split:]]))
+
+        assert records == msg[0]["results"]
+        assert "\ufffd" not in records[0]["text"]
+
+    def test_preserves_multibyte_character_split_byte_by_byte_across_chunks(self, decoder):
+        msg = [{"results": [{"text": "smile 😀"}]}]
+        raw = json.dumps(msg, ensure_ascii=False).encode("utf-8")
+        emoji = "😀".encode("utf-8")
+        emoji_start = raw.index(emoji)
+        chunks = [
+            raw[:emoji_start],
+            bytes([emoji[0]]),
+            bytes([emoji[1]]),
+            bytes([emoji[2]]),
+            bytes([emoji[3]]),
+            raw[emoji_start + len(emoji) :],
+        ]
+
+        records = list(decoder._parse_records_from_stream(chunks))
+
+        assert records == msg[0]["results"]
+        assert "\ufffd" not in records[0]["text"]
+
     def test_braces_inside_strings_do_not_confuse_depth(self, decoder):
         """Braces and brackets inside string values must not break item boundary tracking."""
         tricky_text = "note: has braces { like this } and [also arrays]"
@@ -488,46 +529,179 @@ class TestGoogleAdsStreamingDecoder:
             mock_stream.assert_called_once()
 
 
-class TestGoogleAdsRetriever:
-    def test_chunked_encoding_error_splits_slice(self):
-        """
-        Verify that GoogleAdsRetriever splits the slice when ChunkedEncodingError occurs.
-        A 14-day slice should be split into two 7-day slices.
-        """
-        retriever = GoogleAdsRetriever(
-            name="test_stream",
-            primary_key="id",
-            requester=MagicMock(),
-            record_selector=MagicMock(),
-            config={},
-            parameters={},
-        )
+def _daily_cursor(datetime_format: str = "%Y-%m-%d", cursor_granularity: Optional[timedelta] = timedelta(days=1)) -> ConcurrentCursor:
+    """By default the shape of the incremental Google Ads streams' cursor: `%Y-%m-%d` dates with `cursor_granularity: P1D`."""
+    return ConcurrentCursor(
+        stream_name="test_stream",
+        stream_namespace=None,
+        stream_state={},
+        message_repository=MagicMock(),
+        connector_state_manager=MagicMock(),
+        connector_state_converter=CustomFormatConcurrentStreamStateConverter(datetime_format=datetime_format, is_sequential_state=True),
+        cursor_field=CursorField(cursor_field_key="segments.date"),
+        slice_boundary_fields=("start_time", "end_time"),
+        start=datetime(2026, 1, 1, tzinfo=timezone.utc),
+        end_provider=lambda: datetime(2026, 2, 1, tzinfo=timezone.utc),
+        cursor_granularity=cursor_granularity,
+    )
 
+
+def _google_ads_retriever(cursor=None) -> GoogleAdsRetriever:
+    return GoogleAdsRetriever(
+        name="test_stream",
+        primary_key="id",
+        requester=MagicMock(),
+        record_selector=MagicMock(),
+        config={},
+        parameters={},
+        cursor=cursor,
+    )
+
+
+class TestGoogleAdsRetriever:
+    def test_given_cursor_then_splitter_is_bound_to_it(self):
+        cursor = _daily_cursor()
+
+        retriever = _google_ads_retriever(cursor)
+
+        assert retriever.request_window_splitter == cursor.split_request_window
+        assert retriever.request_window_splitting == RequestWindowSplitting()
+
+    def test_given_no_cursor_then_no_splitter(self):
+        """Full refresh streams have no splittable cursor, so they only ever retry in place."""
+        retriever = _google_ads_retriever()
+
+        assert retriever.request_window_splitter is None
+
+    @pytest.mark.parametrize(
+        "error", [ChunkedEncodingError, requests.exceptions.ConnectionError], ids=["chunked_encoding_error", "read_timeout"]
+    )
+    def test_chunked_encoding_error_on_splittable_window_raises_split_required(self, error):
+        """
+        A 14-day window can still be halved, so the error is handed to the CDK as a split request instead of
+        being retried here. The read is attempted once; the CDK then reads each half. A stream stalled past the
+        idle timeout raises requests' ConnectionError from iter_content and is handled the same way.
+        """
+        retriever = _google_ads_retriever(_daily_cursor())
         call_count = 0
-        slices_processed = []
 
         def mock_read_pages(*args, **kwargs):
             nonlocal call_count
             call_count += 1
-            stream_slice = args[1] if len(args) > 1 else kwargs.get("stream_slice")
-            slices_processed.append(stream_slice)
-            if call_count == 1:
-                raise ChunkedEncodingError("simulated network error")
-            yield MagicMock()
+            raise error("simulated network error")
+            yield
 
         stream_slice = StreamSlice(
             partition={"customer_id": "123"},
             cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-14"},
         )
 
-        with patch.object(retriever.__class__.__bases__[0], "_read_pages", side_effect=mock_read_pages):
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=mock_read_pages):
+            with pytest.raises(RequestWindowSplitRequiredException) as exc_info:
+                list(retriever._read_pages(MagicMock(), stream_slice))
+
+        assert call_count == 1
+        assert isinstance(exc_info.value.__cause__, error)
+        assert "test_stream" in exc_info.value.internal_message
+
+    def test_can_split_window_agrees_with_the_cursor(self):
+        """The probe uses the cursor's own `split_request_window`, so it answers exactly as the CDK will."""
+        cursor = _daily_cursor()
+        retriever = _google_ads_retriever(cursor)
+        two_weeks = StreamSlice(partition={"customer_id": "123"}, cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-14"})
+        one_day = StreamSlice(partition={"customer_id": "123"}, cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-01"})
+
+        assert retriever._can_split_window(two_weeks) is True
+        assert cursor.split_request_window(two_weeks) == [
+            StreamSlice(partition={"customer_id": "123"}, cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-07"}),
+            StreamSlice(partition={"customer_id": "123"}, cursor_slice={"start_time": "2026-01-08", "end_time": "2026-01-14"}),
+        ]
+        assert retriever._can_split_window(one_day) is False
+        assert cursor.split_request_window(one_day) is None
+
+    def test_can_split_window_is_false_without_cursor(self):
+        retriever = _google_ads_retriever()
+        stream_slice = StreamSlice(partition={"customer_id": "123"}, cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-14"})
+
+        assert retriever._can_split_window(stream_slice) is False
+
+    @pytest.mark.parametrize(
+        "error", [ChunkedEncodingError, requests.exceptions.ConnectionError], ids=["chunked_encoding_error", "read_timeout"]
+    )
+    def test_chunked_encoding_error_on_one_day_window_with_cursor_retries_in_place(self, error):
+        """At the 1-day floor the cursor cannot split, so the retriever falls back to its own retries."""
+        retriever = _google_ads_retriever(_daily_cursor())
+        call_count = 0
+
+        def mock_read_pages_with_error(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count < 3:
+                raise error("simulated network error")
+            yield MagicMock()
+
+        stream_slice = StreamSlice(
+            partition={"customer_id": "123"},
+            cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-01"},
+        )
+
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=mock_read_pages_with_error):
             records = list(retriever._read_pages(MagicMock(), stream_slice))
-            assert len(records) == 2
-            assert call_count == 3
-            assert slices_processed[1].cursor_slice["start_time"] == "2026-01-01"
-            assert slices_processed[1].cursor_slice["end_time"] == "2026-01-07"
-            assert slices_processed[2].cursor_slice["start_time"] == "2026-01-08"
-            assert slices_processed[2].cursor_slice["end_time"] == "2026-01-14"
+
+        assert len(records) == 1
+        assert call_count == 3
+
+    def test_chunked_encoding_error_on_one_day_window_fails_after_exactly_three_retries(self):
+        """A drop that persists at the 1-day floor is read 1 + MAX_RETRIES times, then fails as a transient error."""
+        retriever = _google_ads_retriever(_daily_cursor())
+        call_count = 0
+
+        def mock_read_pages_always_fails(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            raise ChunkedEncodingError("persistent network error")
+            yield
+
+        stream_slice = StreamSlice(partition={"customer_id": "123"}, cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-01"})
+
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=mock_read_pages_always_fails):
+            with pytest.raises(AirbyteTracedException) as exc_info:
+                list(retriever._read_pages(MagicMock(), stream_slice))
+
+        assert call_count == 4
+        assert exc_info.value.failure_type.value == "transient_error"
+        assert exc_info.value.message == (
+            "Response stream was interrupted. The slice is already at minimum size (1 day) and 3 retries were exhausted."
+        )
+        assert isinstance(exc_info.value.__cause__, ChunkedEncodingError)
+
+    def test_criterion_full_refresh_slice_retries_instead_of_failing_to_parse_dates(self):
+        """
+        The criterion streams' full refresh branch carries a `%Y-%m-%d %H:%M:%S.%f` start_date..now window and a cursor
+        without `cursor_granularity`, so its splitter cannot split it. It used to raise a ValueError parsing the boundaries
+        as `%Y-%m-%d`; now it is retried in place and fails with the full refresh wording, not the 1-day one.
+        """
+        retriever = _google_ads_retriever(_daily_cursor(datetime_format="%Y-%m-%d %H:%M:%S.%f", cursor_granularity=None))
+        call_count = 0
+
+        def mock_read_pages_always_fails(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            raise ChunkedEncodingError("simulated network error")
+            yield
+
+        stream_slice = StreamSlice(
+            partition={"customer_id": "123"},
+            cursor_slice={"start_time": "2026-01-01 00:00:00.000000", "end_time": "2026-01-14 23:59:59.999999"},
+        )
+
+        with patch.object(SimpleRetriever, "_read_pages", side_effect=mock_read_pages_always_fails):
+            with pytest.raises(AirbyteTracedException) as exc_info:
+                list(retriever._read_pages(MagicMock(), stream_slice))
+
+        assert retriever.request_window_splitter is not None
+        assert call_count == 4
+        assert exc_info.value.message == "Response stream was interrupted. 3 retries were exhausted."
 
     def test_chunked_encoding_error_retries_on_minimum_slice(self):
         """
@@ -624,77 +798,6 @@ class TestGoogleAdsRetriever:
             records = list(retriever._read_pages(MagicMock(), stream_slice))
             assert len(records) == 2
             assert call_count == 1
-
-    def test_split_slice_returns_correct_halves(self):
-        """
-        Verify that _split_slice correctly splits a date range in half.
-        """
-        retriever = GoogleAdsRetriever(
-            name="test_stream",
-            primary_key="id",
-            requester=MagicMock(),
-            record_selector=MagicMock(),
-            config={},
-            parameters={},
-        )
-
-        stream_slice = StreamSlice(
-            partition={"customer_id": "123"},
-            cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-14"},
-        )
-
-        result = retriever._split_slice(stream_slice)
-        assert result is not None
-        first_slice, second_slice = result
-
-        assert first_slice.cursor_slice["start_time"] == "2026-01-01"
-        assert first_slice.cursor_slice["end_time"] == "2026-01-07"
-        assert second_slice.cursor_slice["start_time"] == "2026-01-08"
-        assert second_slice.cursor_slice["end_time"] == "2026-01-14"
-
-    def test_split_slice_returns_none_for_single_day(self):
-        """
-        Verify that _split_slice returns None for a single day slice.
-        """
-        retriever = GoogleAdsRetriever(
-            name="test_stream",
-            primary_key="id",
-            requester=MagicMock(),
-            record_selector=MagicMock(),
-            config={},
-            parameters={},
-        )
-
-        stream_slice = StreamSlice(
-            partition={"customer_id": "123"},
-            cursor_slice={"start_time": "2026-01-01", "end_time": "2026-01-01"},
-        )
-
-        result = retriever._split_slice(stream_slice)
-        assert result is None
-
-    def test_split_slice_returns_none_for_non_date_slice(self):
-        """
-        Verify that _split_slice returns None for slices without date fields.
-        This allows full refresh streams (which don't have date boundaries) to be retried
-        without slice splitting.
-        """
-        retriever = GoogleAdsRetriever(
-            name="test_stream",
-            primary_key="id",
-            requester=MagicMock(),
-            record_selector=MagicMock(),
-            config={},
-            parameters={},
-        )
-
-        stream_slice = StreamSlice(
-            partition={"customer_id": "123"},
-            cursor_slice={},
-        )
-
-        result = retriever._split_slice(stream_slice)
-        assert result is None
 
     def test_chunked_encoding_error_retries_on_full_refresh_slice(self):
         """
@@ -797,7 +900,7 @@ def _get_google_ads_retriever_streams():
         retriever = stream_def.get("retriever", {})
         inc_sync = stream_def.get("incremental_sync")
         if retriever.get("class_name") == _GOOGLE_ADS_RETRIEVER_CLASS and inc_sync:
-            streams.append((stream_def["name"], inc_sync["datetime_format"]))
+            streams.append((stream_def["name"], inc_sync))
     return streams
 
 
@@ -813,14 +916,58 @@ def _get_built_streams_with_google_ads_retriever(config):
 
 
 @pytest.mark.parametrize(
-    "stream_name,datetime_format",
-    [pytest.param(name, fmt, id=name) for name, fmt in _get_google_ads_retriever_streams()],
+    "stream_name,incremental_sync",
+    [pytest.param(name, inc, id=name) for name, inc in _get_google_ads_retriever_streams()],
 )
-def test_custom_retriever_streams_have_expected_date_format(stream_name, datetime_format):
-    assert datetime_format == GoogleAdsRetriever.DATE_FORMAT, (
-        f"Stream {stream_name} uses datetime_format={datetime_format!r} "
-        f"but GoogleAdsRetriever.DATE_FORMAT={GoogleAdsRetriever.DATE_FORMAT!r}"
-    )
+def test_custom_retriever_incremental_streams_declare_cursor_granularity(stream_name, incremental_sync):
+    """
+    The CDK only validates `request_window_splitting` for a SimpleRetriever declared in YAML; GoogleAdsRetriever
+    wires it in Python, so this is the load-time guard. Without `cursor_granularity` the cursor can never split
+    and every ChunkedEncodingError would fall through to 3 retries and a failure.
+    """
+    assert incremental_sync.get("cursor_granularity"), f"Stream {stream_name} has no cursor_granularity, so its window could never be split"
+
+
+_CRITERION_STREAMS = {"ad_group_criterion", "ad_listing_group_criterion", "campaign_criterion"}
+
+
+@pytest.mark.parametrize(
+    "custom_queries",
+    [
+        pytest.param([], id="static_streams"),
+        pytest.param(
+            [{"query": "SELECT campaign.id, segments.date FROM campaign", "table_name": "custom_incremental", "primary_key": None}],
+            id="custom_gaql_stream",
+        ),
+    ],
+)
+def test_built_google_ads_retriever_streams_split_with_their_own_cursor(custom_queries):
+    """
+    The factory, not the test, hands the cursor to GoogleAdsRetriever: every built incremental stream must split with
+    its own (per-partition) cursor, streams without incremental_sync (FinalStateCursor) must not, and the criterion full
+    refresh branch has a cursor but no cursor_granularity, so it cannot split either. Covers the dynamic custom GAQL
+    streams and StateDelegatingStream branches the YAML guard above does not see.
+    """
+    config = {**_DEFAULT_CONFIG, "custom_queries_array": custom_queries}
+    checked = set()
+    for stream in get_source(config).streams(config):
+        retriever = stream._stream_partition_generator._partition_factory._retriever
+        if not isinstance(retriever, GoogleAdsRetriever):
+            continue
+        checked.add(stream.name)
+        if isinstance(stream.cursor, FinalStateCursor):
+            assert retriever.request_window_splitter is None, stream.name
+            continue
+        assert retriever.request_window_splitter == stream.cursor.split_request_window, stream.name
+        if stream.name in _CRITERION_STREAMS:
+            window = {"start_time": "2024-01-01 00:00:00.000000", "end_time": "2024-01-14 23:59:59.999999"}
+            assert not retriever._can_split_window(StreamSlice(partition={"customer_id": "customers/1"}, cursor_slice=window)), stream.name
+        else:
+            window = {"start_time": "2024-01-01", "end_time": "2024-01-14"}
+            assert retriever._can_split_window(StreamSlice(partition={"customer_id": "customers/1"}, cursor_slice=window)), stream.name
+    assert _CRITERION_STREAMS <= checked
+    if custom_queries:
+        assert "custom_incremental" in checked
 
 
 @pytest.mark.parametrize(
@@ -830,13 +977,13 @@ def test_custom_retriever_streams_have_expected_date_format(stream_name, datetim
 def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
-        f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, " f"got {type(extractor.decoder).__name__}"
-    )
+    assert isinstance(
+        extractor.decoder, GoogleAdsStreamingDecoder
+    ), f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
 
 
 @pytest.mark.parametrize(
-    "stream_name,retriever",
+    "stream_name, retriever",
     [
         pytest.param(name, ret, id=name)
         for name, ret in _get_built_streams_with_google_ads_retriever(_DYNAMIC_STREAM_CONFIG)
@@ -846,6 +993,282 @@ def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriev
 def test_dynamic_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Dynamic stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
-        f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, " f"got {type(extractor.decoder).__name__}"
-    )
+    assert isinstance(
+        extractor.decoder, GoogleAdsStreamingDecoder
+    ), f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
+
+
+class TestSerializeMessageFieldsTransformation:
+    """Tests for SerializeMessageFieldsTransformation.
+
+    This transformation serializes MESSAGE-type fields to JSON strings before
+    FlattenNestedDictsTransformation runs, preventing nested dict values from
+    being flattened into sub-keys that don't exist in the schema (causing NULL).
+    """
+
+    def setup_method(self):
+        """Reset class-level state before each test."""
+        CustomGAQuerySchemaLoader._all_message_fields = set()
+
+    def test_serializes_nested_dict_message_field_to_json_string(self):
+        """MESSAGE-type dict fields are serialized to JSON strings."""
+        CustomGAQuerySchemaLoader._all_message_fields = {"change_event.old_resource"}
+        record = {
+            "change_event": {
+                "old_resource": {"campaign": {"name": "test_campaign", "id": "123"}},
+                "change_date_time": "2024-01-01",
+            }
+        }
+        transformation = SerializeMessageFieldsTransformation()
+        transformation.transform(record)
+
+        assert record["change_event"]["old_resource"] == json.dumps({"campaign": {"name": "test_campaign", "id": "123"}})
+        assert record["change_event"]["change_date_time"] == "2024-01-01"
+
+    def test_serializes_multiple_message_fields(self):
+        """Multiple MESSAGE-type fields are all serialized."""
+        CustomGAQuerySchemaLoader._all_message_fields = {
+            "change_event.old_resource",
+            "change_event.new_resource",
+        }
+        record = {
+            "change_event": {
+                "old_resource": {"campaign": {"name": "old"}},
+                "new_resource": {"campaign": {"name": "new"}},
+                "change_date_time": "2024-01-01",
+            }
+        }
+        transformation = SerializeMessageFieldsTransformation()
+        transformation.transform(record)
+
+        assert record["change_event"]["old_resource"] == json.dumps({"campaign": {"name": "old"}})
+        assert record["change_event"]["new_resource"] == json.dumps({"campaign": {"name": "new"}})
+        assert record["change_event"]["change_date_time"] == "2024-01-01"
+
+    def test_no_op_when_no_message_fields(self):
+        """No transformation when _all_message_fields is empty."""
+        CustomGAQuerySchemaLoader._all_message_fields = set()
+        record = {"change_event": {"old_resource": {"campaign": {"name": "test"}}}}
+        original = json.dumps(record)
+
+        transformation = SerializeMessageFieldsTransformation()
+        transformation.transform(record)
+
+        assert json.dumps(record) == original
+
+    def test_no_op_when_field_not_in_record(self):
+        """Gracefully handles fields declared as MESSAGE but missing from record."""
+        CustomGAQuerySchemaLoader._all_message_fields = {"change_event.old_resource"}
+        record = {"change_event": {"change_date_time": "2024-01-01"}}
+
+        transformation = SerializeMessageFieldsTransformation()
+        transformation.transform(record)
+
+        assert record == {"change_event": {"change_date_time": "2024-01-01"}}
+
+    def test_no_op_when_parent_path_missing(self):
+        """Gracefully handles missing parent path in nested field."""
+        CustomGAQuerySchemaLoader._all_message_fields = {"change_event.old_resource"}
+        record = {"other_field": "value"}
+
+        transformation = SerializeMessageFieldsTransformation()
+        transformation.transform(record)
+
+        assert record == {"other_field": "value"}
+
+    def test_serializes_list_of_dicts(self):
+        """MESSAGE-type list fields have each dict element serialized."""
+        CustomGAQuerySchemaLoader._all_message_fields = {"ad_group.targeting_setting"}
+        record = {
+            "ad_group": {
+                "targeting_setting": [
+                    {"target_restriction": {"type": "KEYWORD"}},
+                    {"target_restriction": {"type": "AUDIENCE"}},
+                ],
+            }
+        }
+
+        transformation = SerializeMessageFieldsTransformation()
+        transformation.transform(record)
+
+        assert record["ad_group"]["targeting_setting"] == [
+            json.dumps({"target_restriction": {"type": "KEYWORD"}}),
+            json.dumps({"target_restriction": {"type": "AUDIENCE"}}),
+        ]
+
+    def test_skips_non_dict_values(self):
+        """Non-dict values in MESSAGE fields are left unchanged."""
+        CustomGAQuerySchemaLoader._all_message_fields = {"change_event.old_resource"}
+        record = {"change_event": {"old_resource": "already_a_string"}}
+
+        transformation = SerializeMessageFieldsTransformation()
+        transformation.transform(record)
+
+        assert record["change_event"]["old_resource"] == "already_a_string"
+
+    def test_end_to_end_serialize_then_flatten_preserves_message_fields(self):
+        """
+        End-to-end test demonstrating the fix:
+        Without SerializeMessageFieldsTransformation, FlattenNestedDictsTransformation
+        would flatten change_event.old_resource into sub-keys not in the schema,
+        causing the original field to be lost (NULL).
+
+        With serialization first, the MESSAGE field becomes a JSON string that
+        flattening treats as a leaf value and preserves.
+        """
+        CustomGAQuerySchemaLoader._all_message_fields = {
+            "change_event.old_resource",
+            "change_event.new_resource",
+        }
+
+        record = {
+            "change_event": {
+                "old_resource": {"campaign": {"name": "old_name", "id": "123"}},
+                "new_resource": {"campaign": {"name": "new_name", "id": "123"}},
+                "change_date_time": "2024-01-15 10:30:00",
+                "resource_type": "CAMPAIGN",
+            }
+        }
+
+        # Step 1: Serialize MESSAGE fields
+        serialize = SerializeMessageFieldsTransformation()
+        serialize.transform(record)
+
+        # After serialization, MESSAGE fields are JSON strings
+        assert isinstance(record["change_event"]["old_resource"], str)
+        assert isinstance(record["change_event"]["new_resource"], str)
+
+        # Step 2: Flatten nested dicts
+        flatten = FlattenNestedDictsTransformation()
+        flatten.transform(record)
+
+        # After flattening, the serialized values are preserved as dot-separated keys
+        assert record["change_event.old_resource"] == json.dumps({"campaign": {"name": "old_name", "id": "123"}})
+        assert record["change_event.new_resource"] == json.dumps({"campaign": {"name": "new_name", "id": "123"}})
+        assert record["change_event.change_date_time"] == "2024-01-15 10:30:00"
+        assert record["change_event.resource_type"] == "CAMPAIGN"
+
+    def test_without_serialization_flatten_destroys_message_fields(self):
+        """
+        Demonstrates the bug: without serialization, FlattenNestedDictsTransformation
+        recursively flattens MESSAGE fields into sub-keys like
+        'change_event.old_resource.campaign.name' which don't exist in the schema,
+        and the original 'change_event.old_resource' key is removed.
+        """
+        record = {
+            "change_event": {
+                "old_resource": {"campaign": {"name": "old_name", "id": "123"}},
+                "change_date_time": "2024-01-15 10:30:00",
+            }
+        }
+
+        flatten = FlattenNestedDictsTransformation()
+        flatten.transform(record)
+
+        # Bug: original field is gone, replaced by deeply-flattened sub-keys
+        assert "change_event.old_resource" not in record
+        assert "change_event.old_resource.campaign.name" in record
+        assert "change_event.old_resource.campaign.id" in record
+
+    def test_schema_loader_populates_message_fields(self, config_for_custom_query_tests, mocker):
+        """CustomGAQuerySchemaLoader.get_json_schema() populates _all_message_fields
+        with fields that have MESSAGE data type."""
+        CustomGAQuerySchemaLoader._all_message_fields = set()
+
+        query_object = MagicMock(
+            return_value={
+                "change_event.old_resource": Obj(data_type=Obj(name="MESSAGE"), is_repeated=False),
+                "change_event.new_resource": Obj(data_type=Obj(name="MESSAGE"), is_repeated=False),
+                "change_event.change_date_time": Obj(data_type=Obj(name="STRING"), is_repeated=False),
+            }
+        )
+        mocker.patch(
+            "source_google_ads.components.CustomGAQuerySchemaLoader.google_ads_client",
+            return_value=Obj(get_fields_metadata=query_object),
+        )
+
+        config = config_for_custom_query_tests
+        config["custom_queries_array"][0]["query"] = (
+            "SELECT change_event.old_resource, change_event.new_resource, change_event.change_date_time FROM change_event"
+        )
+
+        schema_loader = CustomGAQuerySchemaLoader(
+            config=config, query=config["custom_queries_array"][0]["query"], cursor_field="{{ False }}"
+        )
+        schema = schema_loader.get_json_schema()
+
+        # MESSAGE fields are tracked
+        assert "change_event.old_resource" in CustomGAQuerySchemaLoader._all_message_fields
+        assert "change_event.new_resource" in CustomGAQuerySchemaLoader._all_message_fields
+        # Non-MESSAGE fields are not tracked
+        assert "change_event.change_date_time" not in CustomGAQuerySchemaLoader._all_message_fields
+
+        # MESSAGE fields map to "string" type in schema
+        assert schema["properties"]["change_event.old_resource"] == {"type": ["string", "null"]}
+        assert schema["properties"]["change_event.new_resource"] == {"type": ["string", "null"]}
+
+
+def _stream_to_retriever(stream):
+    """Return the underlying retriever for either a top-level concurrent stream or a parent declarative stream."""
+    factory = getattr(getattr(stream, "_stream_partition_generator", None), "_partition_factory", None)
+    if factory is not None and hasattr(factory, "_retriever"):
+        return factory._retriever
+    return getattr(stream, "retriever", None)
+
+
+def _collect_retrievers(config):
+    """Yield `(stream_name, retriever)` tuples for every stream the source builds, including parent streams reached via `SubstreamPartitionRouter`."""
+    source = get_source(config)
+    seen: set = set()
+    pairs: list = []
+
+    def visit(name, retriever):
+        if retriever is None or id(retriever) in seen:
+            return
+        seen.add(id(retriever))
+        pairs.append((name, retriever))
+        partition_router = getattr(retriever, "stream_slicer", None) or getattr(retriever, "partition_router", None)
+        if isinstance(partition_router, SubstreamPartitionRouter):
+            for parent_config in partition_router.parent_stream_configs:
+                parent_stream = parent_config.stream
+                visit(parent_stream.name, _stream_to_retriever(parent_stream))
+
+    for stream in source.streams(config):
+        visit(stream.name, _stream_to_retriever(stream))
+
+    return pairs
+
+
+@pytest.mark.parametrize(
+    "stream_name,retriever",
+    [pytest.param(name, ret, id=name) for name, ret in _collect_retrievers(_DEFAULT_CONFIG)],
+)
+def test_every_stream_has_timeout_adapter_mounted(stream_name, retriever):
+    """Every stream's HTTP session must mount `TimeoutHTTPAdapter` on `https://`.
+
+    Guards against regressions of the heartbeat-timeout class of failures where a
+    stream's session lacked a default socket-level idle timeout and worker threads
+    hung indefinitely on unresponsive Google Ads API calls. Covers data streams,
+    custom GAQL streams, criterion streams, and parent streams reached via
+    `SubstreamPartitionRouter` (e.g. `customer_client`, `accessible_accounts`).
+    """
+    requester = retriever.requester
+    session = requester._http_client._session
+    adapter = session.adapters.get("https://")
+    assert isinstance(
+        adapter, TimeoutHTTPAdapter
+    ), f"Stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"
+
+
+@pytest.mark.parametrize(
+    "stream_name,retriever",
+    [pytest.param(name, ret, id=name) for name, ret in _collect_retrievers(_DYNAMIC_STREAM_CONFIG) if name == "test_custom_query"],
+)
+def test_dynamic_streams_have_timeout_adapter_mounted(stream_name, retriever):
+    """Dynamic (custom GAQL) streams must also mount `TimeoutHTTPAdapter` on `https://`."""
+    requester = retriever.requester
+    session = requester._http_client._session
+    adapter = session.adapters.get("https://")
+    assert isinstance(
+        adapter, TimeoutHTTPAdapter
+    ), f"Dynamic stream {stream_name}: expected TimeoutHTTPAdapter on `https://`, got {type(adapter).__name__}"

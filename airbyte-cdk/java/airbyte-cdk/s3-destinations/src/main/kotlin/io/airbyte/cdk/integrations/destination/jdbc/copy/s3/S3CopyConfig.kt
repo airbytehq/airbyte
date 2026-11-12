@@ -26,7 +26,7 @@ class S3CopyConfig(val purgeStagingData: Boolean, val s3Config: S3DestinationCon
         fun getS3CopyConfig(config: JsonNode): S3CopyConfig {
             return S3CopyConfig(
                 shouldPurgeStagingData(config),
-                S3DestinationConfig.Companion.getS3DestinationConfig(config)
+                S3DestinationConfig.Companion.getS3DestinationConfig(config),
             )
         }
     }

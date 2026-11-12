@@ -1,0 +1,128 @@
+name: Auto-close stale discussions
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *"
+
+jobs:
+  close-stale-discussions:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Close stale discussions with no response after 14 days
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          CUTOFF_DATE=$(date -u -d '14 days ago' '+%Y-%m-%dT%H:%M:%SZ')
+          BOT_MARKER="we'll close this as part of our housekeeping"
+          CLOSE_COMMENT="No response received in 14 days — closing as part of ongoing housekeeping. Feel free to reopen if this is still relevant. Thank you!"
+          CLOSED=0
+          SKIPPED=0
+          CURSOR=""
+
+          echo "Looking for discussions with housekeeping comment older than $CUTOFF_DATE..."
+
+          while true; do
+            AFTER=""
+            if [ -n "$CURSOR" ]; then
+              AFTER=", after: \"$CURSOR\""
+            fi
+
+            RESULT=$(gh api graphql -f query="
+              {
+                repository(owner: \"airbytehq\", name: \"airbyte\") {
+                  discussions(first: 50, states: OPEN, orderBy: {field: UPDATED_AT, direction: ASC}${AFTER}) {
+                    nodes {
+                      id
+                      number
+                      title
+                      updatedAt
+                      comments(last: 1) {
+                        nodes {
+                          body
+                          createdAt
+                        }
+                      }
+                    }
+                    pageInfo {
+                      hasNextPage
+                      endCursor
+                    }
+                  }
+                }
+              }
+            ")
+
+            HAS_NEXT=$(echo "$RESULT" | jq -r '.data.repository.discussions.pageInfo.hasNextPage')
+            CURSOR=$(echo "$RESULT" | jq -r '.data.repository.discussions.pageInfo.endCursor')
+
+            DISCUSSIONS=$(echo "$RESULT" | jq -c '.data.repository.discussions.nodes[]')
+
+            while IFS= read -r DISC; do
+              [ -z "$DISC" ] && continue
+
+              DISC_ID=$(echo "$DISC" | jq -r '.id')
+              DISC_NUM=$(echo "$DISC" | jq -r '.number')
+              LAST_COMMENT_BODY=$(echo "$DISC" | jq -r '.comments.nodes[0].body // ""')
+              LAST_COMMENT_DATE=$(echo "$DISC" | jq -r '.comments.nodes[0].createdAt // ""')
+
+              # Check if last comment is the housekeeping prompt and is older than 14 days
+              if echo "$LAST_COMMENT_BODY" | grep -q "$BOT_MARKER"; then
+                if [ -n "$LAST_COMMENT_DATE" ] && [ "$LAST_COMMENT_DATE" \< "$CUTOFF_DATE" ]; then
+                  echo "Closing #$DISC_NUM (housekeeping comment from $LAST_COMMENT_DATE)"
+
+                  # Close discussion first — if this fails, the BOT_MARKER comment
+                  # remains as last comment so the discussion will be retried next run
+                  gh api graphql -f query="
+                    mutation {
+                      closeDiscussion(input: {discussionId: \"$DISC_ID\", reason: OUTDATED}) {
+                        discussion { id }
+                      }
+                    }
+                  " > /dev/null 2>&1 || { echo "Failed to close #$DISC_NUM, skipping"; SKIPPED=$((SKIPPED + 1)); sleep 1; continue; }
+
+                  # Add closing comment only after successful close
+                  gh api graphql -f query="
+                    mutation {
+                      addDiscussionComment(input: {discussionId: \"$DISC_ID\", body: \"$CLOSE_COMMENT\"}) {
+                        comment { id }
+                      }
+                    }
+                  " > /dev/null 2>&1 || true
+
+                  CLOSED=$((CLOSED + 1))
+                  sleep 1
+                else
+                  SKIPPED=$((SKIPPED + 1))
+                fi
+              fi
+            done <<< "$DISCUSSIONS"
+
+            if [ "$HAS_NEXT" != "true" ]; then
+              break
+            fi
+
+            # Safety: stop after processing too many pages
+            if [ "$CLOSED" -gt 500 ]; then
+              echo "Reached 500 closures, stopping for safety."
+              break
+            fi
+          done
+
+          echo "## Stale Discussions Auto-Close Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Closed: $CLOSED" >> $GITHUB_STEP_SUMMARY
+          echo "- Skipped (not yet 14 days): $SKIPPED" >> $GITHUB_STEP_SUMMARY
+          echo ""
+          echo "Done. Closed $CLOSED discussions, skipped $SKIPPED."

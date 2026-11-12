@@ -33,7 +33,7 @@ class DataGenSourcePartitionsCreatorFactory(val partitionFactory: DataGenSourceP
 
 @Singleton
 class DataGenSourcePartitionsCreatorFactorySupplier(
-    val factory: DataGenSourcePartitionsCreatorFactory
+    val factory: DataGenSourcePartitionsCreatorFactory,
 ) : PartitionsCreatorFactorySupplier<DataGenSourcePartitionsCreatorFactory> {
     override fun get() = factory
 }

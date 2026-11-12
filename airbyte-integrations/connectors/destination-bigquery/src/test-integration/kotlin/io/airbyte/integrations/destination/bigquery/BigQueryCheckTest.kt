@@ -20,12 +20,12 @@ class BigQueryCheckTest :
             mapOf(
                 CheckTestConfig(
                     BigQueryDestinationTestUtils.createConfig(
-                        "secrets/credentials-badproject.json"
+                        "secrets/credentials-badproject.json",
                     ),
                     name = "bad project",
                 ) to
                     Pattern.compile(
-                        "Access Denied: Project fake: User does not have bigquery.datasets.create permission in project fake"
+                        "Access Denied: Project fake: User does not have bigquery.datasets.create permission in project fake",
                     ),
                 // these tests somehow hang in CI.
                 // CheckTestConfig(
@@ -48,7 +48,7 @@ class BigQueryCheckTest :
                 //     ),
                 //     name = "gcs bad copy permission",
                 // ) to Pattern.compile("Permission bigquery.tables.updateData denied on table"),
-                ),
+            ),
         additionalMicronautEnvs = additionalMicronautEnvs,
     ) {
     @Test

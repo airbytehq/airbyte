@@ -43,10 +43,10 @@ class GlueCredentialsProvider private constructor(private val delegate: AwsCrede
                     AWS_CREDENTIALS_MODE_STATIC_CREDS -> {
                         if (accessKey != null && secretKey != null) {
                             StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create(accessKey, secretKey)
+                                AwsBasicCredentials.create(accessKey, secretKey),
                             )
                         } else {
-                            DefaultCredentialsProvider.create()
+                            DefaultCredentialsProvider.builder().build()
                         }
                     }
                     AWS_CREDENTIALS_MODE_ASSUME_ROLE -> {
@@ -55,24 +55,24 @@ class GlueCredentialsProvider private constructor(private val delegate: AwsCrede
                                 StsClient.builder()
                                     .credentialsProvider(
                                         StaticCredentialsProvider.create(
-                                            AwsBasicCredentials.create(accessKey, secretKey)
-                                        )
+                                            AwsBasicCredentials.create(accessKey, secretKey),
+                                        ),
                                     )
                                     .region(Region.of(properties[ASSUME_ROLE_REGION]))
-                                    .build()
+                                    .build(),
                             )
                             .refreshRequest(
                                 AssumeRoleRequest.builder()
                                     .externalId(properties[ASSUME_ROLE_EXTERNAL_ID])
                                     .roleArn(properties[ASSUME_ROLE_ARN])
                                     .roleSessionName(AIRBYTE_STS_SESSION_NAME)
-                                    .build()
+                                    .build(),
                             )
                             .build()
                     }
                     else -> {
                         throw IllegalArgumentException(
-                            "Invalid GlueCredentialsProvider mode: $mode"
+                            "Invalid GlueCredentialsProvider mode: $mode",
                         )
                     }
                 }
