@@ -54,21 +54,14 @@ def test_refresh_expired_access_token(after_refresh: str) -> None:
         )
         for number in (1, 2)
     ]
-    records = (
-        [{"id": "account-1", "attributes": {"updatedAt": "2021-01-01T00:00:00.000Z"}}] if after_refresh == "record" else []
-    )
-    response = (
-        _EXPIRED_TOKEN if after_refresh == "unauthorized" else HttpResponse(body=json.dumps({"data": records}), status_code=200)
-    )
+    records = [{"id": "account-1", "attributes": {"updatedAt": "2021-01-01T00:00:00.000Z"}}] if after_refresh == "record" else []
+    response = _EXPIRED_TOKEN if after_refresh == "unauthorized" else HttpResponse(body=json.dumps({"data": records}), status_code=200)
     catalog = CatalogBuilder().with_stream("accounts", SyncMode.incremental).build()
 
     with HttpMocker() as http_mocker:
         http_mocker.post(
             token_request,
-            [
-                HttpResponse(body=json.dumps({"access_token": f"token-{number}", "expires_in": 7200}), status_code=200)
-                for number in (1, 2)
-            ],
+            [HttpResponse(body=json.dumps({"access_token": f"token-{number}", "expires_in": 7200}), status_code=200) for number in (1, 2)],
         )
         http_mocker.get(requests[0], _EXPIRED_TOKEN)
         http_mocker.get(requests[1], response)
