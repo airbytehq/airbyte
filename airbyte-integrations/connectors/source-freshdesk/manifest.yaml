@@ -888,6 +888,8 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+          # Freshdesk now returns sla_policies `id` as a string; cast to the declared integer type.
+          schema_normalization: Default
         paginator:
           type: DefaultPaginator
           page_token_option:
