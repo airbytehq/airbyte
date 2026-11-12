@@ -44,9 +44,7 @@ def test_blocks_incremental_filters_each_record_after_traversing_children(reques
     state = StateBuilder().with_stream_state("blocks", {"state": {"last_edited_time": cursor}, "use_global_cursor": True}).build()
     output = read(get_source(config, state), config=config, catalog=catalog, state=state)
 
-    expected_ids = (
-        {"old-parent-new-child", "new-parent-new-child", "new-parent", "boundary"} if response_case == "mixed" else set()
-    )
+    expected_ids = {"old-parent-new-child", "new-parent-new-child", "new-parent", "boundary"} if response_case == "mixed" else set()
     assert {record.record.data["id"] for record in output.records} == expected_ids
     assert len(output.records) == len(expected_ids)
     emitted_state = output.most_recent_state.stream_state.__dict__
