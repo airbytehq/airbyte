@@ -12,7 +12,7 @@ from salesforce_describe_response_builder import SalesforceDescribeResponseBuild
 from source_salesforce.api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS
 from source_salesforce.streams import DEFAULT_LOOKBACK_SECONDS
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteStreamStatus, FailureType, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from integration.utils import create_base_url, given_authentication, given_stream, read
@@ -70,6 +70,30 @@ def _calculate_start_time(start_time: datetime) -> datetime:
 class FullRefreshTest(TestCase):
     def setUp(self) -> None:
         self._config = ConfigBuilder().client_id(_CLIENT_ID).client_secret(_CLIENT_SECRET).refresh_token(_REFRESH_TOKEN)
+
+    @HttpMocker()
+    def test_given_not_found_when_read_then_fail_with_config_error_without_retry(self, http_mocker: HttpMocker) -> None:
+        given_authentication(http_mocker, _CLIENT_ID, _CLIENT_SECRET, _REFRESH_TOKEN, _INSTANCE_URL)
+        given_stream(http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
+        request = create_http_request(_STREAM_NAME, [_A_FIELD_NAME])
+        salesforce_message = "The requested resource does not exist"
+        http_mocker.get(
+            request,
+            HttpResponse(json.dumps([{"errorCode": "NOT_FOUND", "message": salesforce_message}]), status_code=404),
+        )
+
+        output = read(_STREAM_NAME, SyncMode.full_refresh, self._config, expecting_exception=True)
+
+        assert not output.records
+        assert output.get_stream_statuses(_STREAM_NAME)[-1] == AirbyteStreamStatus.INCOMPLETE
+        assert output.errors
+        error = output.errors[0].trace.error
+        assert error.failure_type == FailureType.config_error
+        assert error.message == (
+            "Salesforce object not found. The requested resource does not exist in this Salesforce instance. "
+            f"Error message from Salesforce: {salesforce_message}"
+        )
+        http_mocker.assert_number_of_calls(request, 1)
 
     @HttpMocker()
     def test_given_error_on_fetch_chunk_of_properties_when_read_then_retry(self, http_mocker: HttpMocker) -> None:
