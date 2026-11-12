@@ -339,3 +339,24 @@ def test_spec_declares_google_oauth_and_optional_num_workers(config):
         "credentials",
         "client_id",
     ]
+
+
+def test_check_succeeds_for_an_account_with_no_retired_report_job(config):
+    """`check` must probe a report type YouTube still generates.
+
+    `channel_annotations_a1` was retired on 2025-10-31: YouTube no longer produces its report
+    files, so a check on it found no job and no reports, and failed every new setup with
+    "no stream slices were found". This account has the `channel_basic_a3` job and its files only.
+    """
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        _register_job(mocker, "channel_basic_a3")
+        create_job = mocker.post(f"{_API}/jobs", json={"id": "job-retired"})
+        reports = mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-01T00:00:00Z")]})
+        mocker.get(_download_url("r1"), text="date,channel_id,video_id,views\n20261001,channel-1,video-1,3\n")
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+
+    assert status.status == Status.SUCCEEDED, status.message
+    assert not create_job.called
+    assert reports.called
