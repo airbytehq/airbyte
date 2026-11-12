@@ -482,9 +482,7 @@ def test_lookback_does_not_regress_cursor(interrupted: bool, empty: bool, lookba
         http_mocker.get(_get_insights_request(job_id).build(), response)
     http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids))
 
-    output = TestIncremental._read(
-        config().with_start_date(start_date).with_end_date(NOW), state=state, expecting_exception=interrupted
-    )
+    output = TestIncremental._read(config().with_start_date(start_date).with_end_date(NOW), state=state, expecting_exception=interrupted)
 
     assert len(output.records) == (0 if empty else (1 if interrupted else 30))
     saved_cursor = AirbyteStreamStateSerializer.dump(output.most_recent_state)["stream_state"][ACCOUNT_ID][_CURSOR_FIELD]
