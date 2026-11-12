@@ -55,7 +55,7 @@ The Monday.com GraphQL API supports filtering by `updated_at` on boards and item
 - `from_date` and `to_date` are inclusive, minute-granular (`%Y-%m-%dT%H:%M`), and must be sent together. They only work on the root `updates` query, not on updates nested under `boards`.
 - A slice that starts at the `start_datetime` epoch (`1970-01-01T00:00:00Z`, meaning no state yet) sends no filter, so full refresh and first incremental syncs read every update. There is no `start_date` in the spec and no `step`, so each sync is a single slice from the saved state to now.
 - The filter is on creation date only. `updated_at`/`edited_at` can't be filtered, so edits to an update and new replies on an update are only picked up while the parent update was created within the `lookback_window` (`P1D`). Older edits and replies need a full refresh.
-- `items_per_page: 100` must stay on the stream. Without it no `limit` is sent, monday returns its default of 25 and `PageIncrement` (page size 100) stops after the first page.
+- `items_per_page: 100` must stay on the stream; see section 4.
 
 ### Future incremental stream candidates
 
