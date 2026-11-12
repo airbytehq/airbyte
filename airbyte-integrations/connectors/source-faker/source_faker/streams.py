@@ -108,6 +108,12 @@ class Users(Stream, IncrementalMixin):
         # instead of regenerating them.
         loop_offset = self.state.get("loop_offset", 0)
 
+        # A `loop_offset` at or past `count` is the final state of a completed
+        # sync written by connector versions up to 7.3.0. There is nothing left
+        # to resume, so this sync starts a new pass over all users.
+        if loop_offset >= self.count:
+            loop_offset = 0
+
         median_record_byte_size = 450
         yield generate_estimate(self.name, self.count - loop_offset, median_record_byte_size)
 
@@ -125,7 +131,10 @@ class Users(Stream, IncrementalMixin):
 
                 self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
 
-            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
+            # Every user was emitted, so the next sync has nothing to resume: point
+            # `loop_offset` back at the first user. Only the checkpoints above, written
+            # while a sync is still in progress, carry a non-zero resume position.
+            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": 0}
 
 
 class Purchases(Stream, IncrementalMixin):

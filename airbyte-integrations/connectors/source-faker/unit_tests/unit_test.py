@@ -284,6 +284,73 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+def _read_users(config, state):
+    """Run a real incremental read of `users` and return (emitted user ids, emitted stream states)."""
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    messages = list(SourceFaker().read(logger, config, catalog, state))
+    ids = [message.record.data["id"] for message in messages if message.type is Type.RECORD]
+    states = [message.state for message in messages if message.type is Type.STATE]
+    return ids, states
+
+
+def _users_state(**stream_state):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    return [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="users", namespace=None), stream_state=AirbyteStateBlob(**stream_state)
+            ),
+        )
+    ]
+
+
+def test_read_users_emits_all_users_on_every_consecutive_sync():
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    all_ids = list(range(1, 11))
+
+    first_ids, first_states = _read_users(config, {})
+    assert first_ids == all_ids
+
+    # Each following sync starts from the state the previous completed sync emitted.
+    second_ids, second_states = _read_users(config, [first_states[-1]])
+    assert second_ids == all_ids
+
+    third_ids, third_states = _read_users(config, [second_states[-1]])
+    assert third_ids == all_ids
+
+    # A completed sync leaves nothing to resume, so its final state points back at the first user.
+    for final_state in (first_states[-1], second_states[-1], third_states[-1]):
+        assert final_state.stream.stream_state.loop_offset == 0
+
+    # Raising `count` after a completed sync must not look like an interrupted sync that resumes at user 11.
+    raised_ids, _ = _read_users({**config, "count": 20}, [third_states[-1]])
+    assert raised_ids == list(range(1, 21))
+
+
+@pytest.mark.parametrize(
+    "saved_loop_offset, expected_ids",
+    [
+        pytest.param(10, list(range(1, 11)), id="completed-sync-state-from-7.3.0-or-older"),
+        pytest.param(25, list(range(1, 11)), id="completed-sync-state-then-count-lowered"),
+    ],
+)
+def test_read_users_with_saved_loop_offset(saved_loop_offset, expected_ids):
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    state = _users_state(seed=-1, updated_at="2024-01-01T00:00:00+00:00", loop_offset=saved_loop_offset)
+
+    ids, _ = _read_users(config, state)
+
+    assert ids == expected_ids
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
