@@ -24,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -531,3 +532,75 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_sync_interrupted_within_lookback_window_when_read_then_cursor_does_not_move_backward(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        A sync re-reads the lookback window (cursor - insights_lookback_window) before reaching new data.
+        If it fails after finishing only some lookback slices, the checkpointed cursor must not regress
+        below the cursor the sync started from; otherwise every failed sync widens the next sync's window.
+        """
+        account_id = "123123123"
+        previous_cursor = NOW - timedelta(days=2)  # 2023-01-08
+        lookback_slice = NOW - timedelta(days=3)  # 2023-01-07, re-read only because of the lookback window
+        report_run_id_1 = "1571860060019500"
+        report_run_id_2 = "4571860060019599"
+        job_id_1 = "1049937379601600"
+        job_id_2 = "1049937379601699"
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        http_mocker.post(
+            _job_start_request(since=lookback_slice, until=lookback_slice).with_account_id(account_id).build(),
+            _job_start_response(report_run_id_1),
+        )
+        http_mocker.post(
+            _job_start_request(since=previous_cursor, until=previous_cursor).with_account_id(account_id).build(),
+            _job_start_response(report_run_id_2),
+        )
+        http_mocker.post(
+            _job_status_request([report_run_id_1, report_run_id_2]).build(),
+            _job_status_response([job_id_1, job_id_2], account_id=account_id),
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_1).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        http_mocker.get(
+            _get_insights_request(job_id_2).build(),
+            build_response(
+                body={"error": {"code": 100, "message": "Invalid parameter", "type": "OAuthException"}},
+                status_code=HTTPStatus.BAD_REQUEST,
+            ),
+        )
+
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                _STREAM_NAME,
+                {account_id: {_CURSOR_FIELD: previous_cursor.strftime(DATE_FORMAT)}, "time_increment": 1},
+            )
+            .build()
+        )
+        output = self._read(
+            config()
+            .with_account_ids([account_id])
+            .with_start_date(NOW - timedelta(days=9))
+            .with_end_date(previous_cursor)
+            .with_insights_lookback_window(1),
+            state=state,
+            expecting_exception=True,
+        )
+
+        assert len(output.records) == 1
+        emitted_cursors = [
+            AirbyteStreamStateSerializer.dump(message.state.stream).get("stream_state").get(account_id, {}).get(_CURSOR_FIELD)
+            for message in output.state_messages
+        ]
+        assert emitted_cursors, "expected at least one state checkpoint before the failure"
+        assert all(cursor == previous_cursor.strftime(DATE_FORMAT) for cursor in emitted_cursors), emitted_cursors
