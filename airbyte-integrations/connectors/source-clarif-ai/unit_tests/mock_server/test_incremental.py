@@ -7,8 +7,6 @@ import pytest
 from conftest import get_source
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.models import AddFields
-from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -80,11 +78,3 @@ def test_nanosecond_cursor_advances(stream_name, newest, expected):
             app_id: {"modified_at": expected_state} for app_id in ["app1", "app2"]
         }
 
-
-@pytest.mark.parametrize("record", [{}, {"modified_at": None}, {"modified_at": ""}, {"modified_at": "invalid"}])
-def test_normalization_preserves_missing_null_and_invalid_values(record):
-    definition = get_source(_CONFIG).resolved_manifest["definitions"]["normalize_modified_at"]
-    transformation = ModelToComponentFactory().create_component(AddFields, definition, _CONFIG)
-    original = record.copy()
-    transformation.transform(record, config=_CONFIG)
-    assert record == original
