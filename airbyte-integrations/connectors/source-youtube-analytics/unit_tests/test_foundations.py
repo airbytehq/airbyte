@@ -294,11 +294,11 @@ def test_expired_refresh_token_tells_the_user_to_re_authenticate(config):
     assert "Refresh token is invalid or expired" in status.message
 
 
-def test_check_succeeds_when_the_retired_annotations_report_has_no_files(config):
-    """YouTube no longer generates `channel_annotations_a1` files, so its job lists no reports.
+def test_check_succeeds_when_the_annotations_job_has_no_report_files(config):
+    """The check must not depend on `channel_annotations_a1`, which YouTube has superseded.
 
-    The check must not depend on that report: an account whose `channel_basic_a3` job has a
-    report file is a working source.
+    An account whose `channel_annotations_a1` job lists no report files, but whose
+    `channel_basic_a3` job has one, is a working source.
     """
     annotations_job_id = "job-annotations"
     with requests_mock.Mocker() as mocker:
