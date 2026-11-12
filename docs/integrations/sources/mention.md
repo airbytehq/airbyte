@@ -37,7 +37,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.75-rc.1 | 2026-11-12 | TBD | Fixed authentication so valid access tokens can retrieve account, alert, mention, and other stream data. |
+| 0.0.75-rc.1 | 2026-11-12 | [92719](https://github.com/airbytehq/airbyte/pull/92719) | Fixed authentication so valid access tokens can retrieve account, alert, mention, and other stream data. |
 | 0.0.74 | 2026-11-10 | [91601](https://github.com/airbytehq/airbyte/pull/91601) | Update dependencies |
 | 0.0.73 | 2026-11-03 | [90624](https://github.com/airbytehq/airbyte/pull/90624) | Update dependencies |
 | 0.0.72 | 2026-10-27 | [89995](https://github.com/airbytehq/airbyte/pull/89995) | Update dependencies |
