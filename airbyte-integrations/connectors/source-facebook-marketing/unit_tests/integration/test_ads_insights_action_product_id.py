@@ -13,6 +13,7 @@ import freezegun
 from source_facebook_marketing.streams.async_job import Status
 
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -531,3 +532,61 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_sync_fails_inside_lookback_window_when_read_then_cursor_does_not_move_backwards(self, http_mocker: HttpMocker) -> None:
+        """A sync that fails while re-reading the lookback window must not checkpoint a cursor older than the one it started with.
+
+        Otherwise every failed sync starts `insights_lookback_window` days before an ever older cursor, re-reading a wider window.
+        """
+        account_id = "123123123"
+        lookback_window = 2
+        saved_cursor = NOW - timedelta(days=1)
+        # the window that is re-read on every sync: [saved_cursor - lookback_window, NOW]
+        days = [NOW - timedelta(days=offset) for offset in (3, 2, 1, 0)]
+        report_run_ids = ["1571860060019501", "1571860060019502", "1571860060019503", "1571860060019504"]
+        job_ids = ["1049937379601601", "1049937379601602", "1049937379601603", "1049937379601604"]
+        records_page = _insights_response().with_record(_ads_insights_action_product_id_record()).build()
+        job_download_failure = build_response(
+            body={"error": {"code": 100, "message": "Unsupported get request.", "type": "GraphMethodException"}},
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(_update_api_throttle_limit_request().with_account_id(account_id).build(), _update_api_throttle_limit_response())
+        for day, report_run_id in zip(days, report_run_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids, account_id=account_id))
+        http_mocker.get(_get_insights_request(job_ids[0]).build(), records_page)
+        # the second day of the window fails on the first sync only
+        http_mocker.get(_get_insights_request(job_ids[1]).build(), [job_download_failure, records_page])
+        http_mocker.get(_get_insights_request(job_ids[2]).build(), records_page)
+        http_mocker.get(_get_insights_request(job_ids[3]).build(), records_page)
+
+        config_ = (
+            config()
+            .with_account_ids([account_id])
+            .with_start_date(NOW - timedelta(days=9))
+            .with_end_date(NOW)
+            .with_insights_lookback_window(lookback_window)
+        )
+        saved_state = {account_id: {_CURSOR_FIELD: saved_cursor.strftime(DATE_FORMAT)}}
+        initial_state = StateBuilder().with_stream_state(_STREAM_NAME, saved_state).build()
+
+        failed_sync = self._read(config_, state=initial_state, expecting_exception=True)
+
+        assert [error.trace.error.message for error in failed_sync.errors][0] == "Error code 100: Unsupported get request.."
+        assert len(failed_sync.records) == 1
+        state_after_failure = AirbyteStreamStateSerializer.dump(failed_sync.most_recent_state)["stream_state"]
+        assert state_after_failure[account_id][_CURSOR_FIELD] == saved_cursor.strftime(DATE_FORMAT)
+
+        # HttpMocker rejects unmatched requests, so the next sync can only start jobs for the same four days.
+        next_sync = self._read(config_, state=StateBuilder().with_stream_state(_STREAM_NAME, state_after_failure).build())
+
+        assert next_sync.errors == []
+        assert len(next_sync.records) == 4
+        state_after_success = AirbyteStreamStateSerializer.dump(next_sync.most_recent_state)["stream_state"]
+        assert state_after_success[account_id] == {_CURSOR_FIELD: NOW.strftime(DATE_FORMAT), "slices": []}
