@@ -5,6 +5,7 @@
 from copy import deepcopy
 from unittest.mock import MagicMock, Mock
 
+import freezegun
 import pytest
 from requests import Response
 
@@ -1022,3 +1023,138 @@ def test_channel_members_error_handler_response_action(token_config, status_code
     mocked_response.headers = {"Content-Type": "application/json"}
     mocked_response.json.return_value = response_json
     assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
+
+
+_THREADS_INCREMENTAL_CATALOG = ConfiguredAirbyteCatalogSerializer.load(
+    {
+        "streams": [
+            {
+                "stream": {"name": "threads", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                "sync_mode": "incremental",
+                "destination_sync_mode": "append",
+            }
+        ]
+    }
+)
+
+# `channel_messages` parent state as the threads stream emits it: one cursor per channel.
+_PER_CHANNEL_PARENT_STATE = {
+    "use_global_cursor": False,
+    "states": [
+        {"partition": {"channel": "airbyte-for-beginners", "parent_slice": {}}, "cursor": {"float_ts": "1626900000.0001"}},
+        {"partition": {"channel": "good-reads", "parent_slice": {}}, "cursor": {"float_ts": "1626950000.0001"}},
+    ],
+    "lookback_window": 0,
+    "parent_state": {},
+}
+
+
+def _read_threads(requests_mock, config, stream_state):
+    """Reads `threads` incrementally; every channel has one thread whose parent message is at 1627000000.000100."""
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history",
+        json={"ok": True, "messages": [{"ts": "1627000000.000100", "thread_ts": "1627000000.000100", "reply_count": 1}]},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.replies",
+        json={"ok": True, "messages": [{"ts": "1627000000.000100"}, {"ts": "1627000100.000100"}]},
+    )
+    state = StateBuilder().with_stream_state("threads", stream_state).build()
+    output = read(get_source(config, "threads", state), config=config, catalog=_THREADS_INCREMENTAL_CATALOG, state=state)
+    history_requests = {
+        request.qs["channel"][0]: request.qs["oldest"][0]
+        for request in requests_mock.request_history
+        if request.path == "/api/conversations.history"
+    }
+    return output, history_requests
+
+
+@pytest.mark.parametrize(
+    "threads_state, expected_oldest_per_channel",
+    (
+        pytest.param(
+            {"use_global_cursor": True, "lookback_window": 0, "parent_state": {"channel_messages": _PER_CHANNEL_PARENT_STATE}},
+            # each channel's own cursor minus the 1 day lookback window
+            {"airbyte-for-beginners": "1626813600.0001", "good-reads": "1626863600.0001"},
+            id="interrupted_sync_with_global_cursor",
+        ),
+        pytest.param(
+            {
+                "use_global_cursor": True,
+                "state": {"float_ts": "1627000100"},
+                "lookback_window": 0,
+                "parent_state": {"channel_messages": _PER_CHANNEL_PARENT_STATE},
+            },
+            {"airbyte-for-beginners": "1626813600.0001", "good-reads": "1626863600.0001"},
+            id="completed_sync_with_global_cursor",
+        ),
+        pytest.param(
+            {
+                "use_global_cursor": False,
+                "states": [
+                    {
+                        "partition": {"float_ts": "1626900000.000100", "parent_slice": {"channel": "good-reads", "parent_slice": {}}},
+                        "cursor": {"float_ts": "1626990000"},
+                    }
+                ],
+                "lookback_window": 0,
+                "parent_state": {"channel_messages": _PER_CHANNEL_PARENT_STATE},
+            },
+            {"airbyte-for-beginners": "1626813600.0001", "good-reads": "1626863600.0001"},
+            id="per_partition_state",
+        ),
+        pytest.param(
+            {"use_global_cursor": True, "state": {"float_ts": "1627000100"}, "lookback_window": 0},
+            # No parent state saved: fall back to the global threads cursor. The lookback window is applied once by the
+            # state migration and once by the parent stream, hence 2 days.
+            {"airbyte-for-beginners": "1626827300.0", "good-reads": "1626827300.0"},
+            id="global_cursor_without_parent_state",
+        ),
+    ),
+)
+@freezegun.freeze_time("2021-07-24T00:00:00Z")
+def test_threads_resume_requests_channel_history_from_saved_cursors(requests_mock, token_config, threads_state, expected_oldest_per_channel):
+    token_config.pop("end_date")
+    token_config["start_date"] = "2021-06-01T00:00:00Z"  # 1622505600, far before every saved cursor
+
+    output, history_requests = _read_threads(requests_mock, token_config, threads_state)
+
+    assert not output.errors
+    assert history_requests == expected_oldest_per_channel
+    assert sorted((record.record.data["channel_id"], record.record.data["ts"]) for record in output.records) == [
+        ("airbyte-for-beginners", "1627000000.000100"),
+        ("airbyte-for-beginners", "1627000100.000100"),
+        ("good-reads", "1627000000.000100"),
+        ("good-reads", "1627000100.000100"),
+    ]
+    emitted_parent_cursors = {
+        state["partition"]["channel"]: state["cursor"]["float_ts"]
+        for state in output.most_recent_state.stream_state.parent_state["channel_messages"]["states"]
+    }
+    assert emitted_parent_cursors == {"airbyte-for-beginners": "1627000000.0001", "good-reads": "1627000000.0001"}
+
+
+@freezegun.freeze_time("2021-07-24T00:00:00Z")
+def test_threads_skips_archived_channels_the_bot_is_not_a_member_of(requests_mock, token_config):
+    token_config.pop("end_date")
+    token_config.update({"include_archived_channels": True, "join_channels": True, "channel_filter": []})
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=999&types=public_channel&exclude_archived=false",
+        json={
+            "channels": [
+                {"id": "C_LIVE", "name": "live", "is_member": True, "is_archived": False},
+                {"id": "C_ARCHIVED_MEMBER", "name": "archived-member", "is_member": True, "is_archived": True},
+                {"id": "C_ARCHIVED_NOT_MEMBER", "name": "archived-not-member", "is_member": False, "is_archived": True},
+            ]
+        },
+    )
+
+    output, history_requests = _read_threads(requests_mock, token_config, {})
+
+    assert not output.errors
+    # requests_mock lower-cases query string values
+    assert sorted(history_requests) == ["c_archived_member", "c_live"]
+    assert sorted({record.record.data["channel_id"] for record in output.records}) == ["C_ARCHIVED_MEMBER", "C_LIVE"]

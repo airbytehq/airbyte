@@ -182,11 +182,20 @@ class ThreadsStateMigration(StateMigration):
         if not stream_state:
             return {}
 
+        # A state emitted by this stream already carries the `channel_messages` parent state with one cursor per channel.
+        # Keep it as is, so a resumed sync continues each channel from where it left off. The parent stream applies the
+        # lookback window on top of those cursors by itself.
+        if stream_state.get("parent_state", {}).get("channel_messages"):
+            return stream_state
+
         start_date_state = ab_datetime_parse(self._config["start_date"]).timestamp()  # start date is required
         # for migrated state
         if stream_state.get("states"):
             for state in stream_state["states"]:
                 start_date_state = max(start_date_state, float(state.get("cursor", {}).get("float_ts", start_date_state)))
+        # for state that switched to the global cursor, which has no `states`
+        if isinstance(stream_state.get("state"), Mapping) and stream_state["state"].get("float_ts"):
+            start_date_state = max(start_date_state, float(stream_state["state"]["float_ts"]))
         # for old-stype state
         if stream_state.get("float_ts"):
             start_date_state = max(start_date_state, float(stream_state["float_ts"]))
