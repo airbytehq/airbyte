@@ -284,6 +284,43 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+@pytest.mark.parametrize(
+    "previous_sync_state",
+    [
+        pytest.param(None, id="state_from_previous_sync"),
+        pytest.param({"seed": -1, "updated_at": "2024-01-01T00:00:00+00:00", "loop_offset": 10}, id="completed_state_from_7_3_0"),
+    ],
+)
+def test_read_users_after_completed_sync_emits_all_users_again(previous_sync_state):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+
+    if previous_sync_state is None:
+        first_sync = list(source.read(logger, config, catalog, {}))
+        assert [row.record.data["id"] for row in first_sync if row.type is Type.RECORD] == list(range(1, 11))
+        previous_sync_state = [row for row in first_sync if row.type is Type.STATE][-1].state.stream.stream_state.__dict__
+
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users", namespace=None),
+        stream_state=AirbyteStateBlob(**previous_sync_state),
+    )
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+    second_sync = list(source.read(logger, config, catalog, state))
+
+    assert [row.record.data["id"] for row in second_sync if row.type is Type.RECORD] == list(range(1, 11))
+    final_state = [row for row in second_sync if row.type is Type.STATE][-1].state.stream.stream_state.__dict__
+    assert "loop_offset" not in final_state
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
