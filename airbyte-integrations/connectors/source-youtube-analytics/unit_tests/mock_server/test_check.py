@@ -16,7 +16,9 @@ from airbyte_cdk.test.entrypoint_wrapper import _run_command, make_file
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
-@pytest.mark.parametrize("csv", ["date,channel_id,views\n", "date,channel_id,views\n20261109,channel-1,3\n"], ids=["header-only", "one-row"])
+@pytest.mark.parametrize(
+    "csv", ["date,channel_id,views\n", "date,channel_id,views\n20261109,channel-1,3\n"], ids=["header-only", "one-row"]
+)
 @freezegun.freeze_time("2026-11-12T00:00:00Z")
 def test_check_succeeds_when_annotations_report_type_is_retired(tmp_path: Path, csv: str) -> None:
     config = ConfigBuilder().build()
@@ -29,7 +31,12 @@ def test_check_succeeds_when_annotations_report_type_is_retired(tmp_path: Path, 
             YoutubeAnalyticsRequestBuilder.jobs_endpoint().build(),
             HttpResponse(
                 body=json.dumps(
-                    {"jobs": [{"id": job_id, "reportTypeId": "channel_basic_a3"}, {"id": "job-combined", "reportTypeId": "channel_combined_a3"}]}
+                    {
+                        "jobs": [
+                            {"id": job_id, "reportTypeId": "channel_basic_a3"},
+                            {"id": "job-combined", "reportTypeId": "channel_combined_a3"},
+                        ]
+                    }
                 )
             ),
         )
