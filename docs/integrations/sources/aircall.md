@@ -175,7 +175,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 1.1.2 | 2026-11-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Mark the connector as certified |
+| 1.1.2 | 2026-11-12 | [92573](https://github.com/airbytehq/airbyte/pull/92573) | Mark the connector as certified |
 | 1.1.1 | 2026-11-12 | [92571](https://github.com/airbytehq/airbyte/pull/92571) | Upgrade to `source-declarative-manifest` 7.48.0 |
 | 1.1.0 | 2026-11-11 | [92012](https://github.com/airbytehq/airbyte/pull/92012) | Add user_numbers, IVR options on calls and opt-in conversation intelligence streams |
 | 1.0.0 | 2026-11-11 | [90838](https://github.com/airbytehq/airbyte/pull/90838) | Add primary keys to `calls` and `contacts`, key `webhooks` on `webhook_id`, make `numbers` and `teams` full refresh only, and declare the column types the Aircall API documents |
