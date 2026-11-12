@@ -57,6 +57,8 @@ definitions:
             page_size: 20
             start_from_page: 1
             inject_on_first_request: true
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -128,6 +130,8 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -198,6 +202,8 @@ definitions:
               partition_field: app_id
               stream:
                 $ref: "#/definitions/streams/applications"
+      transformations:
+        - $ref: "#/definitions/truncate_modified_at_to_microseconds"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified_at
@@ -507,6 +513,19 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/app_concepts"
+  truncate_modified_at_to_microseconds:
+    type: AddFields
+    condition: >-
+      {{ record.get('modified_at') and '.' in record['modified_at'] and
+      record['modified_at'].split('.')[1] | length > 7 }}
+    fields:
+      - type: AddedFieldDefinition
+        path:
+          - modified_at
+        value_type: string
+        value: >-
+          {% set parts = (record.get('modified_at') or '').split('.') %}{{
+          parts[0] ~ '.' ~ parts[1][:6] ~ 'Z' if parts | length > 1 else '' }}
   base_requester:
     type: HttpRequester
     url_base: https://api.clarifai.com
