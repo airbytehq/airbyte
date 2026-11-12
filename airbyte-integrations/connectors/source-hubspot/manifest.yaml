@@ -3333,8 +3333,8 @@ spec:
           How far back (in minutes) to re-fetch records during incremental syncs
           for CRM Search streams (e.g. contacts, companies, deals, tickets).
           Set this if you notice missing records in CRM Search streams to recover
-          data that may be delayed by the HubSpot API. For contacts and custom
-          objects, set it to at least the duration of the first incremental
+          data that may be delayed by the HubSpot API. For contacts, deals and
+          custom objects, set it to at least the duration of the first incremental
           sync, so edits made while that sync was running are not missed.
           Does not affect property history streams.
         examples:

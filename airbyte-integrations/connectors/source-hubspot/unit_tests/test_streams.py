@@ -357,13 +357,22 @@ def test_deals_full_refresh_emits_deal_modified_after_sync_start(requests_mock, 
     assert not search_bounds
 
 
-def _contact(contact_id, updated_at):
+# (stream name, object type, CRM Search cursor property, associations) for the streams that switch between the list
+# endpoint (no state) and CRM Search (with state).
+LIST_AND_SEARCH_CRM_STREAMS = [
+    ("contacts", "contact", "lastmodifieddate", ("contacts", "companies")),
+    ("deals", "deal", "hs_lastmodifieddate", ("companies", "contacts", "line_items")),
+]
+LIST_AND_SEARCH_CRM_STREAM_IDS = [stream[0] for stream in LIST_AND_SEARCH_CRM_STREAMS]
+
+
+def _crm_record(record_id, updated_at, cursor_property):
     return {
-        "id": contact_id,
+        "id": record_id,
         "createdAt": "2022-03-01T00:00:00.000Z",
         "updatedAt": updated_at,
         "archived": False,
-        "properties": {"hs_object_id": contact_id, "lastmodifieddate": updated_at},
+        "properties": {"hs_object_id": record_id, cursor_property: updated_at},
     }
 
 
@@ -371,19 +380,19 @@ def _to_ms(timestamp):
     return int(datetime.datetime.fromisoformat(timestamp.replace("Z", "+00:00")).timestamp() * 1000)
 
 
-def _mock_contacts_metadata(requests_mock):
-    mock_dynamic_schema_requests_with_skip(requests_mock, ["contact"])
-    mock_v3_properties(requests_mock, "contact", [{"name": "hs_object_id", "type": "number"}])
+def _mock_crm_metadata(requests_mock, entity, associations):
+    mock_dynamic_schema_requests_with_skip(requests_mock, [entity])
+    mock_v3_properties(requests_mock, entity, [{"name": "hs_object_id", "type": "number"}])
     requests_mock.get(
-        "https://api.hubapi.com/properties/v2/contact/properties",
+        f"https://api.hubapi.com/properties/v2/{entity}/properties",
         json=[{"name": "hs_object_id", "type": "number"}],
     )
-    for association in ("contacts", "companies"):
-        requests_mock.post(f"https://api.hubapi.com/crm/v4/associations/contact/{association}/batch/read", json={"results": []})
+    for association in associations:
+        requests_mock.post(f"https://api.hubapi.com/crm/v4/associations/{entity}/{association}/batch/read", json={"results": []})
 
 
-def _filtered_contact_search(contacts, on_request=None):
-    """Answer CRM Search like HubSpot does: apply the request's `lastmodifieddate` and `hs_object_id` filters."""
+def _filtered_crm_search(records, cursor_property, on_request=None):
+    """Answer CRM Search like HubSpot does: apply the request's cursor-property and `hs_object_id` filters."""
 
     def search_response(request, context):
         if on_request:
@@ -391,8 +400,8 @@ def _filtered_contact_search(contacts, on_request=None):
         bounds = {(f["propertyName"], f["operator"]): int(f["value"]) for f in request.json()["filters"]}
         results = [
             record
-            for record in contacts
-            if bounds[("lastmodifieddate", "GTE")] <= _to_ms(record["updatedAt"]) <= bounds[("lastmodifieddate", "LTE")]
+            for record in records
+            if bounds[(cursor_property, "GTE")] <= _to_ms(record["updatedAt"]) <= bounds[(cursor_property, "LTE")]
             and int(record["id"]) >= bounds[("hs_object_id", "GTE")]
         ]
         return json.dumps({"results": results, "total": len(results)})
@@ -405,67 +414,85 @@ SCAN_END = "2022-03-10T14:10:00.000Z"
 
 
 @pytest.mark.parametrize(
-    "lookback_minutes, edited_contact_recovered",
+    "stream_name, entity, cursor_property, associations", LIST_AND_SEARCH_CRM_STREAMS, ids=LIST_AND_SEARCH_CRM_STREAM_IDS
+)
+@pytest.mark.parametrize(
+    "lookback_minutes, edited_record_recovered",
     [(0, False), (10, True)],
     ids=["no-lookback-loses-mid-scan-edit", "lookback-covering-first-sync-recovers-edit"],
 )
-def test_contacts_first_sync_state_overshoot_is_covered_by_lookback_window(
-    requests_mock, config, lookback_minutes, edited_contact_recovered
+def test_crm_first_sync_state_overshoot_is_covered_by_lookback_window(
+    requests_mock, config, lookback_minutes, edited_record_recovered, stream_name, entity, cursor_property, associations
 ):
-    """Without state, contacts reads the list endpoint and saves the newest `updatedAt` it saw, which can be after the
-    sync started. A contact read early and edited later in the same scan is then below the saved state, so the next
+    """Without state, the stream reads the list endpoint and saves the newest `updatedAt` it saw, which can be after
+    the sync started. A record read early and edited later in the same scan is then below the saved state, so the next
     incremental search skips it unless `lookback_window` covers the length of the first sync. The docs recommend that
     setting; this test pins both the loss and the mitigation.
     """
-    _mock_contacts_metadata(requests_mock)
+    _mock_crm_metadata(requests_mock, entity, associations)
     config["start_date"] = "2022-03-01T00:00:00Z"
     config["lookback_window"] = lookback_minutes
 
-    # Sync 1 starts at 14:00 with no state, and the scan takes until 14:10. Contact 1 is read before its 14:03 edit;
-    # contact 2 is edited at 14:08, before the scan reaches it, so it is read with that newer timestamp.
+    # Sync 1 starts at 14:00 with no state, and the scan takes until 14:10. Record 1 is read before its 14:03 edit;
+    # record 2 is edited at 14:08, before the scan reaches it, so it is read with that newer timestamp.
     with freezegun.freeze_time(SYNC_START) as clock:
 
         def list_response(request, context):
             clock.move_to(SCAN_END)
             return json.dumps(
-                {"results": [_contact("1", "2022-03-03T00:00:00.000Z"), _contact("2", "2022-03-10T14:08:00.000Z")], "paging": {}}
+                {
+                    "results": [
+                        _crm_record("1", "2022-03-03T00:00:00.000Z", cursor_property),
+                        _crm_record("2", "2022-03-10T14:08:00.000Z", cursor_property),
+                    ],
+                    "paging": {},
+                }
             )
 
-        requests_mock.get("https://api.hubapi.com/crm/v3/objects/contact", text=list_response)
-        first_sync = read_from_stream(config, "contacts", SyncMode.incremental)
+        requests_mock.get(f"https://api.hubapi.com/crm/v3/objects/{entity}", text=list_response)
+        first_sync = read_from_stream(config, stream_name, SyncMode.incremental)
 
     assert {record.record.data["id"] for record in first_sync.records} == {"1", "2"}
     first_sync_state = first_sync.state_messages[-1].state.stream.stream_state.__dict__
     assert _to_ms(first_sync_state["updatedAt"]) > _to_ms(SYNC_START), "the list path should save a cursor past the sync start"
 
     # Sync 2 uses CRM Search and starts from the saved cursor, minus the lookback window.
-    contacts_now = [_contact("1", "2022-03-10T14:03:00.000Z"), _contact("2", "2022-03-10T14:08:00.000Z")]
-    requests_mock.post("https://api.hubapi.com/crm/v3/objects/contact/search", text=_filtered_contact_search(contacts_now))
-    state = StateBuilder().with_stream_state("contacts", first_sync_state).build()
+    records_now = [
+        _crm_record("1", "2022-03-10T14:03:00.000Z", cursor_property),
+        _crm_record("2", "2022-03-10T14:08:00.000Z", cursor_property),
+    ]
+    requests_mock.post(f"https://api.hubapi.com/crm/v3/objects/{entity}/search", text=_filtered_crm_search(records_now, cursor_property))
+    state = StateBuilder().with_stream_state(stream_name, first_sync_state).build()
     with freezegun.freeze_time("2022-03-10T15:00:00Z"):
-        second_sync = read_from_stream(config, "contacts", SyncMode.incremental, state)
+        second_sync = read_from_stream(config, stream_name, SyncMode.incremental, state)
 
     second_sync_ids = {record.record.data["id"] for record in second_sync.records}
-    assert ("1" in second_sync_ids) is edited_contact_recovered
+    assert ("1" in second_sync_ids) is edited_record_recovered
     assert "2" in second_sync_ids
 
 
-def test_contacts_search_path_state_stays_at_or_before_sync_start(requests_mock, config):
-    """With state, contacts uses CRM Search, whose `lastmodifieddate` upper bound is the sync start. A contact edited
+@pytest.mark.parametrize(
+    "stream_name, entity, cursor_property, associations", LIST_AND_SEARCH_CRM_STREAMS, ids=LIST_AND_SEARCH_CRM_STREAM_IDS
+)
+def test_crm_search_path_state_stays_at_or_before_sync_start(requests_mock, config, stream_name, entity, cursor_property, associations):
+    """With state, the stream uses CRM Search, whose cursor-property upper bound is the sync start. A record edited
     during the scan is left for the next sync instead of moving the cursor past earlier edits, so the overshoot above
     is specific to the no-state list path.
     """
-    _mock_contacts_metadata(requests_mock)
+    _mock_crm_metadata(requests_mock, entity, associations)
     config["start_date"] = "2022-03-01T00:00:00Z"
-    contacts_now = [_contact("1", "2022-03-03T00:00:00.000Z"), _contact("2", "2022-03-10T14:08:00.000Z")]
+    records_now = [
+        _crm_record("1", "2022-03-03T00:00:00.000Z", cursor_property),
+        _crm_record("2", "2022-03-10T14:08:00.000Z", cursor_property),
+    ]
 
     with freezegun.freeze_time(SYNC_START) as clock:
         requests_mock.post(
-            "https://api.hubapi.com/crm/v3/objects/contact/search",
-            text=_filtered_contact_search(contacts_now, on_request=lambda: clock.move_to(SCAN_END)),
+            f"https://api.hubapi.com/crm/v3/objects/{entity}/search",
+            text=_filtered_crm_search(records_now, cursor_property, on_request=lambda: clock.move_to(SCAN_END)),
         )
-        state = StateBuilder().with_stream_state("contacts", {"updatedAt": "2022-03-02T00:00:00.000Z"}).build()
-        output = read_from_stream(config, "contacts", SyncMode.incremental, state)
+        state = StateBuilder().with_stream_state(stream_name, {"updatedAt": "2022-03-02T00:00:00.000Z"}).build()
+        output = read_from_stream(config, stream_name, SyncMode.incremental, state)
 
     assert {record.record.data["id"] for record in output.records} == {"1"}
     saved_state = output.state_messages[-1].state.stream.stream_state.__dict__

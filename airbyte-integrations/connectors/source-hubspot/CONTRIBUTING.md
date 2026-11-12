@@ -132,7 +132,7 @@ incremental sync of a new connection and any sync after a reset or refresh; full
 state and is unaffected. Do not "fix" this with an `end_datetime` on the no-state sub-stream: the
 client-side filter would then drop records edited mid-sync, which is the full-refresh loss the list
 endpoint avoids. Until the saved cursor is capped at the sync start, users should set `lookback_window`
-to at least the duration of a no-state sync. `test_contacts_first_sync_state_overshoot_is_covered_by_lookback_window`
+to at least the duration of a no-state sync. `test_crm_first_sync_state_overshoot_is_covered_by_lookback_window`
 covers both the loss and the mitigation.
 
 When `prefix_colliding_custom_objects` is enabled, custom objects whose name matches a built-in stream are exposed as `custom_object_<name>`. It is opt-in because, with the flag off, a colliding custom object replaces the built-in stream at read time (the CDK resolves streams by name and dynamic streams come last), and some existing connections depend on that. When adding a built-in stream, update the built-in name list in `definitions.custom_object_stream_name` in `manifest.yaml`; `test_custom_objects_never_collide_with_any_builtin_stream` guards it.
