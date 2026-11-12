@@ -873,6 +873,12 @@ definitions:
       name: sla_policies
       primary_key:
         - id
+      transformations:
+        - type: AddFields
+          condition: "{{ record.get('id') is string and record['id'].isdecimal() }}"
+          fields:
+            - path: ["id"]
+              value: "{{ record.get('id') | int }}"
       retriever:
         type: SimpleRetriever
         requester:
