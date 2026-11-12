@@ -261,6 +261,26 @@ def test_read_with_seed():
     assert records[0].record.data["email"] == "alleged2069+1@example.com"
 
 
+def test_read_users_starts_new_pass_after_completed_sync():
+    source = SourceFaker()
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append_dedup",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    messages = list(source.read(logger, config, catalog, {}))
+    records = [row.record.data for row in messages if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == list(range(1, config["count"] + 1))
+
+    states = [row.state for row in messages if row.type is Type.STATE]
+    assert len(states) > 1
+    iterator = source.read(logger, config, catalog, [states[-1]])
+    records = [row.record.data for row in iterator if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == list(range(1, config["count"] + 1))
+
+
 def test_read_users_resumes_from_checkpoint():
     from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
     from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
