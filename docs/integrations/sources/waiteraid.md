@@ -65,7 +65,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                           | Subject               |
 | :------ | :--------- | :----------------------------------------------------- | :-------------------- |
-| 0.2.26 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix `booking` stream to emit one record per booking instead of a single wrapper record |
+| 0.2.26 | 2026-11-12 | [92730](https://github.com/airbytehq/airbyte/pull/92730) | Fix `booking` stream to emit one record per booking instead of a single wrapper record |
 | 0.2.25 | 2026-11-09 | [91439](https://github.com/airbytehq/airbyte/pull/91439) | Upgrade to source-declarative-manifest 7.47.0 |
 | 0.2.23 | 2026-06-02 | [79032](https://github.com/airbytehq/airbyte/pull/79032) | Update dependencies |
 | 0.2.22 | 2025-05-24 | [60757](https://github.com/airbytehq/airbyte/pull/60757) | Update dependencies |
