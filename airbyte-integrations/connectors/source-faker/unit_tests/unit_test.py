@@ -173,6 +173,28 @@ def test_read_products():
     assert state_rows_count in {1, 2}, "Expected 1 or 2 state messages per stream."
 
 
+@pytest.mark.parametrize("products_count, records_per_slice", [(50, 20), (40, 20), (10, 20), (0, 20)])
+def test_read_products_pagination(products_count, records_per_slice):
+    config = {
+        "count": 1000,
+        "seed": 7,
+        "products_count": products_count,
+        "records_per_slice": records_per_slice,
+        "always_updated": True,
+        "parallelism": 4,
+    }
+    stream_dict = {
+        "stream": {"name": "products", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["full_refresh"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    iterator = SourceFaker().read(logger, config, catalog, {})
+
+    product_ids = [row.record.data["id"] for row in iterator if row.type is Type.RECORD and row.record.stream == "products"]
+    assert product_ids == list(range(1, products_count + 1))
+
+
 def test_read_products_count():
     source = SourceFaker()
     config = {"count": 999, "products_count": 10, "records_per_slice": 5, "parallelism": 1}
