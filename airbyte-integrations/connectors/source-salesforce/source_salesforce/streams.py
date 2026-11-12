@@ -69,7 +69,13 @@ from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStre
 from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce, SalesforceTokenProvider
+from .api import (
+    _REQUEST_TIMEOUT_SECONDS,
+    PARENT_SALESFORCE_OBJECTS,
+    UNSUPPORTED_FILTERING_STREAMS,
+    Salesforce,
+    SalesforceTokenProvider,
+)
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .rate_limiting import (
     BulkNotSupportedException,
@@ -128,6 +134,12 @@ class SalesforceStream(HttpStream, ABC):
                 token_provider=SalesforceTokenProvider(self.sf_api),
             ),
         )
+
+    @property
+    def use_tcp_keepalive(self) -> bool:
+        # A dropped connection fails in about two minutes instead of blocking the read forever. The client built in
+        # __init__ reuses HttpStream's session, so it gets keepalive too.
+        return True
 
     def read_records(
         self,
@@ -415,7 +427,7 @@ class RestSalesforceStream(SalesforceStream):
                 stream_slice=stream_slice,
                 next_page_token=next_page_token,
             ),
-            request_kwargs={},
+            request_kwargs={"timeout": _REQUEST_TIMEOUT_SECONDS},
         )
 
 
@@ -644,6 +656,9 @@ class BulkSalesforceStream(SalesforceStream):
             disable_retries=False,
             message_repository=self._message_repository,
             use_cache=False,
+            connect_timeout_in_seconds=_REQUEST_TIMEOUT_SECONDS[0],
+            read_timeout_in_seconds=_REQUEST_TIMEOUT_SECONDS[1],
+            use_tcp_keepalive=True,
             decoder=decoder,
             stream_response=False,
         )
@@ -668,6 +683,9 @@ class BulkSalesforceStream(SalesforceStream):
             disable_retries=False,
             message_repository=self._message_repository,
             use_cache=False,
+            connect_timeout_in_seconds=_REQUEST_TIMEOUT_SECONDS[0],
+            read_timeout_in_seconds=_REQUEST_TIMEOUT_SECONDS[1],
+            use_tcp_keepalive=True,
             decoder=decoder,
             stream_response=False,
         )
@@ -694,6 +712,9 @@ class BulkSalesforceStream(SalesforceStream):
             disable_retries=False,
             message_repository=self._message_repository,
             use_cache=False,
+            connect_timeout_in_seconds=_REQUEST_TIMEOUT_SECONDS[0],
+            read_timeout_in_seconds=_REQUEST_TIMEOUT_SECONDS[1],
+            use_tcp_keepalive=True,
             stream_response=True,
         )
         download_retriever = SimpleRetriever(
@@ -751,6 +772,9 @@ class BulkSalesforceStream(SalesforceStream):
             disable_retries=False,
             message_repository=self._message_repository,
             use_cache=False,
+            connect_timeout_in_seconds=_REQUEST_TIMEOUT_SECONDS[0],
+            read_timeout_in_seconds=_REQUEST_TIMEOUT_SECONDS[1],
+            use_tcp_keepalive=True,
             stream_response=False,
         )
         delete_requester = HttpRequester(
@@ -766,6 +790,9 @@ class BulkSalesforceStream(SalesforceStream):
             disable_retries=False,
             message_repository=self._message_repository,
             use_cache=False,
+            connect_timeout_in_seconds=_REQUEST_TIMEOUT_SECONDS[0],
+            read_timeout_in_seconds=_REQUEST_TIMEOUT_SECONDS[1],
+            use_tcp_keepalive=True,
             stream_response=False,
         )
         status_extractor = DpathExtractor(
