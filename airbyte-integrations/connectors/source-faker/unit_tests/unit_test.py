@@ -284,6 +284,44 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+def test_read_users_two_consecutive_syncs():
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 4, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    state = {}
+    for _ in range(2):
+        messages = list(SourceFaker().read(logger, config, catalog, state))
+        records = [row.record.data for row in messages if row.type is Type.RECORD]
+        assert [record["id"] for record in records] == list(range(1, config["count"] + 1))
+        state = [row.state for row in messages if row.type is Type.STATE][-1:]
+    assert state[0].stream.stream_state.loop_offset == 0
+
+
+@pytest.mark.parametrize("loop_offset", [10, 11])
+def test_read_users_legacy_completed_state(loop_offset):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 4, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users", namespace=None),
+        stream_state=AirbyteStateBlob(updated_at="2024-01-01T00:00:00+00:00", loop_offset=loop_offset),
+    )
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+    records = [row.record.data for row in SourceFaker().read(logger, config, catalog, state) if row.type is Type.RECORD]
+    assert [record["id"] for record in records] == list(range(1, config["count"] + 1))
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
