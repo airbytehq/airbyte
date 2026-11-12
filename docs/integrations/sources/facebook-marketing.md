@@ -533,7 +533,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.13 | 2026-11-11 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix insights streams cursor moving backwards after an interrupted sync, which made later syncs re-read an ever-wider date range |
+| 6.1.13 | 2026-11-11 | [92402](https://github.com/airbytehq/airbyte/pull/92402) | Fix insights streams cursor moving backwards after an interrupted sync, which made later syncs re-read an ever-wider date range |
 | 6.1.12 | 2026-11-04 | [90852](https://github.com/airbytehq/airbyte/pull/90852) | Build the insights stream schema once per stream instead of for every record, which speeds up insights syncs, most of all custom insights |
 | 6.1.11 | 2026-11-04 | [90896](https://github.com/airbytehq/airbyte/pull/90896) | Raise minimum supported Python version to 3.11 |
 | 6.1.10 | 2026-11-04 | [90974](https://github.com/airbytehq/airbyte/pull/90974) | Update CDK to 7.45 |
