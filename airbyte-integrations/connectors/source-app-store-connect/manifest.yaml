@@ -67,8 +67,13 @@ definitions:
         type: DefaultPaginator
         page_token_option:
           type: RequestPath
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
+          page_size: 200
           cursor_value: "{{ response.get('links', {}).get('next') }}"
           stop_condition: "{{ not response.get('links', {}).get('next') }}"
     DailyReportDateField:
@@ -1820,6 +1825,32 @@ streams:
         type: object
         $schema: http://json-schema.org/draft-07/schema#
         properties:
+          id:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          attributes:
+            type:
+              - object
+              - "null"
+            properties:
+              checksum:
+                type:
+                  - string
+                  - "null"
+              sizeInBytes:
+                type:
+                  - integer
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
           app_id:
             type:
               - string
@@ -2302,7 +2333,6 @@ streams:
           $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_parameters:
           sort: "-createdDate"
-          limit: "200"
       record_selector:
         type: RecordSelector
         extractor:
@@ -2778,6 +2808,32 @@ streams:
         type: object
         $schema: http://json-schema.org/draft-07/schema#
         properties:
+          id:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          attributes:
+            type:
+              - object
+              - "null"
+            properties:
+              checksum:
+                type:
+                  - string
+                  - "null"
+              sizeInBytes:
+                type:
+                  - integer
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
           app_id:
             type:
               - string
@@ -3539,6 +3595,32 @@ streams:
         type: object
         $schema: http://json-schema.org/draft-07/schema#
         properties:
+          id:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          attributes:
+            type:
+              - object
+              - "null"
+            properties:
+              checksum:
+                type:
+                  - string
+                  - "null"
+              sizeInBytes:
+                type:
+                  - integer
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
           app_id:
             type:
               - string
@@ -4269,6 +4351,32 @@ streams:
         type: object
         $schema: http://json-schema.org/draft-07/schema#
         properties:
+          id:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          attributes:
+            type:
+              - object
+              - "null"
+            properties:
+              checksum:
+                type:
+                  - string
+                  - "null"
+              sizeInBytes:
+                type:
+                  - integer
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+            additionalProperties: true
           app_id:
             type:
               - string
