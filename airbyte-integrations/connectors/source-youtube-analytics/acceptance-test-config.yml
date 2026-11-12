@@ -33,8 +33,18 @@ acceptance_tests:
             bypass_reason: "The test channel has no US province-level traffic; every report file is header-only."
           - name: channel_sharing_service_a1
             bypass_reason: "The test channel's videos have no shares; every report file is header-only."
+          - name: playlist_basic_a2
+            bypass_reason: "The test account has no playlist analytics records in its rolling test window; the unchanged snapshot also returns zero records."
+          - name: playlist_combined_a2
+            bypass_reason: "The test account has no playlist analytics records in its rolling test window; the unchanged snapshot also returns zero records."
+          - name: playlist_device_os_a2
+            bypass_reason: "The test account has no playlist analytics records in its rolling test window; the unchanged snapshot also returns zero records."
+          - name: playlist_playback_location_a2
+            bypass_reason: "The test account has no playlist analytics records in its rolling test window; the unchanged snapshot also returns zero records."
           - name: playlist_province_a2
-            bypass_reason: "The test channel has playlist traffic but no US province-level playlist traffic; every report file is header-only."
+            bypass_reason: "The test account has no province-level playlist records in its rolling test window."
+          - name: playlist_traffic_source_a2
+            bypass_reason: "The test account has no playlist analytics records in its rolling test window; the unchanged snapshot also returns zero records."
   incremental:
     tests:
       - config_path: "secrets/config.json"
