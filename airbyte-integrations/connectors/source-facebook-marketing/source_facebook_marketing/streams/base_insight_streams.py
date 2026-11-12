@@ -278,7 +278,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = self._slices_ahead_of_cursor(account_id)
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -286,7 +286,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._completed_slices:
             for account_id in self._account_ids:
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = self._slices_ahead_of_cursor(account_id)
 
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
@@ -294,6 +294,11 @@ class AdsInsights(FBMarketingIncrementalStream):
             return new_state
 
         return {}
+
+    def _slices_ahead_of_cursor(self, account_id: str) -> List[str]:
+        """Completed slices worth saving: the ones after the cursor, which finished before an earlier slice did."""
+        cursor_value = self._cursor_values.get(account_id) if self._cursor_values else None
+        return sorted(d.isoformat() for d in self._completed_slices[account_id] if not cursor_value or d > cursor_value)
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -320,8 +325,14 @@ class AdsInsights(FBMarketingIncrementalStream):
             )
             for account_id in self._account_ids
         }
+        # Slices at or before the cursor say nothing the cursor does not already say. Loading them would only let
+        # `_advance_cursor` walk over lookback dates that were not re-read in this sync yet.
         self._completed_slices = {
-            account_id: set(ab_datetime_parse(v).date() for v in transformed_state.get(account_id, {}).get("slices", []))
+            account_id: {
+                slice_start
+                for slice_start in (ab_datetime_parse(v).date() for v in transformed_state.get(account_id, {}).get("slices", []))
+                if not self._cursor_values[account_id] or slice_start > self._cursor_values[account_id]
+            }
             for account_id in self._account_ids
         }
 
@@ -419,10 +430,13 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
-            if self._cursor_values:
-                self._cursor_values[account_id] = ts_start
-            else:
-                self._cursor_values = {account_id: ts_start}
+            if not self._cursor_values:
+                self._cursor_values = {}
+            # The sync starts `insights_lookback_period` before the saved cursor, so the first slices to finish are
+            # older than the cursor. The cursor must not follow them back: a checkpoint with an earlier cursor makes
+            # the next attempt subtract the lookback period again and re-read a wider range after every interruption.
+            saved_cursor = self._cursor_values.get(account_id)
+            self._cursor_values[account_id] = max(saved_cursor, ts_start) if saved_cursor else ts_start
 
     def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
         """Generator of async jobs

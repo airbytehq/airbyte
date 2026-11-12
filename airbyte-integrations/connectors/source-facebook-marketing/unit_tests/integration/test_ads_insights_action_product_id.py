@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Union
 from unittest import TestCase
 
 import freezegun
+import pytest
 from source_facebook_marketing.streams.async_job import Status
 
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
@@ -24,6 +25,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -531,3 +533,88 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+
+@freezegun.freeze_time(NOW.isoformat())
+@pytest.mark.parametrize(
+    "saved_slices",
+    [
+        pytest.param([], id="no_saved_slices"),
+        pytest.param(["2023-01-04"], id="stale_saved_slice_below_cursor"),
+    ],
+)
+def test_given_state_when_rereading_lookback_window_then_checkpoints_never_go_below_saved_cursor(saved_slices: List[str]) -> None:
+    """
+    The saved cursor is 2023-01-05 and the lookback window is 2 days, so 2023-01-03..2023-01-06 are requested.
+    The 2023-01-04 report finishes last. Every checkpoint emitted along the way can be the one the platform keeps
+    if the attempt is interrupted, so none of them may carry a cursor below the saved one: a lower cursor makes the
+    next attempt subtract the lookback window again and re-read a wider range.
+    """
+    account_id = "123123123"
+    saved_cursor = "2023-01-05"
+    days = [ab_datetime_parse(f"2023-01-0{day}T00:00:00Z") for day in (3, 4, 5, 6)]
+    report_run_ids = [f"157186006001950{index}" for index in range(len(days))]
+    job_ids = [f"104993737960160{index}" for index in range(len(days))]
+    late_index = 1  # the 2023-01-04 report is still running on the first status poll
+
+    with HttpMocker() as http_mocker:
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id, job_id in zip(days, report_run_ids, job_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+            http_mocker.get(
+                _get_insights_request(job_id).build(),
+                _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+            )
+        http_mocker.post(
+            _job_status_request(report_run_ids).build(),
+            build_response(
+                body=[
+                    {
+                        "body": json.dumps(
+                            {
+                                "id": job_id,
+                                "account_id": account_id,
+                                "async_status": Status.RUNNING if index == late_index else Status.COMPLETED,
+                                "async_percent_completion": 50 if index == late_index else 100,
+                            }
+                        )
+                    }
+                    for index, job_id in enumerate(job_ids)
+                ],
+                status_code=HTTPStatus.OK,
+            ),
+        )
+        http_mocker.post(
+            _job_status_request(job_ids[late_index]).build(),  # after the first poll the job is addressed by the id that poll returned
+            _job_status_response(job_ids[late_index], account_id=account_id),
+        )
+
+        output = read_output(
+            config_builder=config()
+            .with_account_ids([account_id])
+            .with_start_date(ab_datetime_parse("2022-12-01T00:00:00Z"))
+            .with_end_date(ab_datetime_parse("2023-01-06T23:59:59Z"))
+            .with_insights_lookback_window(2),
+            stream_name=_STREAM_NAME,
+            sync_mode=SyncMode.incremental,
+            state=StateBuilder()
+            .with_stream_state(_STREAM_NAME, {account_id: {_CURSOR_FIELD: saved_cursor, "slices": saved_slices}, "time_increment": 1})
+            .build(),
+        )
+
+    assert len(output.records) == len(days)
+    checkpoints = [AirbyteStreamStateSerializer.dump(message.state.stream)["stream_state"][account_id] for message in output.state_messages]
+    # one checkpoint per finished report, in the order they finish: 01-03, 01-05, 01-06 and at last 01-04
+    assert checkpoints == [
+        {_CURSOR_FIELD: saved_cursor, "slices": []},
+        {_CURSOR_FIELD: saved_cursor, "slices": []},
+        {_CURSOR_FIELD: saved_cursor, "slices": ["2023-01-06"]},
+        {_CURSOR_FIELD: "2023-01-06", "slices": []},
+    ]

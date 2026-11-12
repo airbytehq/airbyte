@@ -300,8 +300,8 @@ class TestBaseInsightsStream:
                 {
                     AdsInsights.cursor_field: "2010-10-03",
                     "slices": [
-                        "2010-01-01",
-                        "2010-01-02",
+                        "2010-10-05",
+                        "2010-10-06",
                     ],
                     "time_increment": 1,
                 },
@@ -309,8 +309,8 @@ class TestBaseInsightsStream:
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
                         "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-05",
+                            "2010-10-06",
                         ],
                     },
                     "time_increment": 1,
@@ -329,15 +329,15 @@ class TestBaseInsightsStream:
             (
                 {
                     "slices": [
-                        "2010-01-01",
-                        "2010-01-02",
+                        "2010-10-05",
+                        "2010-10-06",
                     ]
                 },
                 {
                     "unknown_account": {
                         "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-05",
+                            "2010-10-06",
                         ]
                     }
                 },
@@ -348,8 +348,8 @@ class TestBaseInsightsStream:
                     "unknown_account": {
                         AdsInsights.cursor_field: "2010-10-03",
                         "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-05",
+                            "2010-10-06",
                         ],
                     },
                     "time_increment": 1,
@@ -368,8 +368,8 @@ class TestBaseInsightsStream:
                 {
                     "unknown_account": {
                         "slices": [
-                            "2010-01-01",
-                            "2010-01-02",
+                            "2010-10-05",
+                            "2010-10-06",
                         ]
                     }
                 },
@@ -378,7 +378,7 @@ class TestBaseInsightsStream:
         ],
     )
     def test_state(self, api, state, result_state, some_config):
-        """State setter/getter should work with all combinations"""
+        """State setter/getter should work with all combinations (saved slices after the cursor are kept as they are)"""
         stream = AdsInsights(
             api=api,
             account_ids=some_config["account_ids"],
