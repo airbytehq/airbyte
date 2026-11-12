@@ -220,7 +220,8 @@ class InsightConfig(BaseModel):
         title="Include Incrementality",
         description=(
             "If enabled, the incrementality attribution window will be included in the action attribution windows for this custom insight. "
-            "This allows you to retrieve incrementality data for action metrics."
+            "This allows you to retrieve incrementality data for action metrics. "
+            "Enabling the top-level Include Incrementality option also enables it for every custom insight."
         ),
         default=False,
     )
@@ -390,7 +391,7 @@ class ConnectorConfig(BaseConfig):
         title="Include Incrementality",
         order=13,
         description=(
-            "If enabled, the incrementality attribution window will be included in the action attribution windows for all built-in insight streams. "
+            "If enabled, the incrementality attribution window will be included in the action attribution windows for all built-in insight streams and all custom insights. "
             "This allows you to retrieve incrementality data for action metrics. "
             "See the Facebook Marketing API documentation for more details: "
             "https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/"
