@@ -26,6 +26,10 @@ The Nylas platform provides an integration layer that makes it easy to connect a
 | scheduled_messages | schedule_id | No pagination | ✅ |  ❌  |
 | threads | id | DefaultPaginator | ✅ |  ✅  |
 
+### Calendars without readable events
+
+Nylas can list a calendar in the `calendars` stream and still return `404 Not Found` when the connector asks for that calendar's events. This has been reported for a subscribed public holidays calendar on a Google grant. The `events` stream skips such a calendar, logs the skip at `INFO` level, and continues with the other calendars.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -37,6 +41,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.78 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix `events` stream failing when Nylas returns 404 for one calendar; that calendar is now skipped and the other calendars sync |
 | 0.0.77 | 2026-11-10 | [91646](https://github.com/airbytehq/airbyte/pull/91646) | Update dependencies |
 | 0.0.76 | 2026-11-03 | [90678](https://github.com/airbytehq/airbyte/pull/90678) | Update dependencies |
 | 0.0.75 | 2026-10-27 | [90023](https://github.com/airbytehq/airbyte/pull/90023) | Update dependencies |
