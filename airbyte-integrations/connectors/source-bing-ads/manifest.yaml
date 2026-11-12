@@ -2613,6 +2613,20 @@ definitions:
         class_name: source_declarative_manifest.components.BulkStreamsStateMigration
       - type: LegacyToPerPartitionStateMigration
 
+  # Downloads use a short-lived pre-signed Azure Blob Storage URL and send no user credentials, so a 403 means
+  # the link expired or is no longer valid, not that the user lacks permission (the CDK default for 403).
+  # Match on the status code only: body-based filters (error_message_contains, predicate) read the body of
+  # every response, which consumes successful streamed downloads before the decoder sees them.
+  expired_download_link_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        http_codes:
+          - 403
+        error_message: Bing Ads rejected the file download link as expired or no longer valid.
+
   # base retrievers
   basic_async_retriever:
     type: AsyncRetriever
@@ -2660,6 +2674,7 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler: "#/definitions/expired_download_link_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2726,6 +2741,7 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/expired_download_link_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
