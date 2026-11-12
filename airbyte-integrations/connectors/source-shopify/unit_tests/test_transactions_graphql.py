@@ -6,16 +6,16 @@ import json
 from typing import List
 
 import pytest
-from source_shopify.streams.streams import TransactionsGraphql
+from source_shopify.streams.streams import Transactions, TransactionsGraphql
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(order_id: int, order_updated_at: str, transaction_id: int, transaction_created_at: str) -> str:
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
-        f'"order_created_at":"{order_created_at}","transactions":['
+        f'"order_updated_at":"{order_updated_at}","transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
         f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
         f'"processedAt":"{transaction_created_at}","gateway":"bogus","paymentId":"c25048437719229.1",'
@@ -60,15 +60,15 @@ def test_transactions_graphql_emits_transactions_predating_state_with_new_order(
         stream_state_cache.cached_state.pop("transactions", None)
 
     assert sorted(record["id"] for record in test_records) == [1001, 1003]
-    assert all("order_created_at" not in record for record in test_records)
+    assert all("order_updated_at" not in record for record in test_records)
 
 
-def _order_jsonl_without_order_created_at(order_jsonl: str, keep_key_as_null: bool) -> str:
+def _order_jsonl_without_order_updated_at(order_jsonl: str, keep_key_as_null: bool) -> str:
     order = json.loads(order_jsonl)
     if keep_key_as_null:
-        order["order_created_at"] = None
+        order["order_updated_at"] = None
     else:
-        order.pop("order_created_at")
+        order.pop("order_updated_at")
     return json.dumps(order)
 
 
@@ -84,7 +84,7 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
     finally:
         stream_state_cache.cached_state.pop("transactions", None)
 
-    assert all("order_created_at" not in record for record in records)
+    assert all("order_updated_at" not in record for record in records)
     return stream, records
 
 
@@ -94,25 +94,25 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
         pytest.param(
             _order_jsonl(1, "2026-09-11T05:49:43Z", 1001, "2026-09-11T05:07:00Z"),
             [1001],
-            id="order_created_at_equal_to_state_is_emitted",
+            id="order_updated_at_equal_to_state_is_emitted",
         ),
         pytest.param(
-            _order_jsonl_without_order_created_at(
+            _order_jsonl_without_order_updated_at(
                 _order_jsonl(1, "2026-09-11T06:27:00Z", 1001, "2026-09-11T05:07:00Z"), keep_key_as_null=False
             ),
             [],
-            id="missing_order_created_at_is_dropped",
+            id="missing_order_updated_at_is_dropped",
         ),
         pytest.param(
-            _order_jsonl_without_order_created_at(
+            _order_jsonl_without_order_updated_at(
                 _order_jsonl(1, "2026-09-11T06:27:00Z", 1001, "2026-09-11T05:07:00Z"), keep_key_as_null=True
             ),
             [],
-            id="null_order_created_at_is_dropped",
+            id="null_order_updated_at_is_dropped",
         ),
     ],
 )
-def test_transactions_graphql_older_than_state_order_created_at_edge_cases(
+def test_transactions_graphql_older_than_state_order_updated_at_edge_cases(
     requests_mock,
     bulk_job_completed_response,
     auth_config,
@@ -141,9 +141,9 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
     newer_order = _order_jsonl(2, "2026-09-11T06:30:00Z", 1002, "2026-09-11T06:31:00Z")
     syncs = [
         ([predating_order], [1001]),
-        # the cursor has not moved past the first order's createdAt yet -> re-emitted
+        # the cursor has not moved past the first order's updatedAt yet -> re-emitted
         ([predating_order, newer_order], [1001, 1002]),
-        # the cursor moved past the first order's createdAt -> no longer emitted
+        # the cursor moved past the first order's updatedAt -> no longer emitted
         ([predating_order, newer_order], [1002]),
     ]
 
@@ -164,3 +164,87 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
         assert state["created_at"] >= previous_state_value
 
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
+
+
+def _refund_jsonl(order_updated_at: str, status: str) -> str:
+    # the refund was created before the saved state
+    order = json.loads(_order_jsonl(7, order_updated_at, 7001, "2026-09-11T05:07:00Z"))
+    order["transactions"][0].update({"kind": "REFUND", "status": status})
+    return json.dumps(order)
+
+
+def test_transactions_graphql_emits_status_change_of_transaction_predating_state(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+) -> None:
+    state_value = "2026-09-11T05:49:43+00:00"
+    syncs = [
+        # the refund settles after the saved state: the order's `updatedAt` moves, the refund's `createdAt` does not
+        ("2026-09-11T06:15:00Z", "SUCCESS", [(7001, "SUCCESS")]),
+        # the order was last updated before the saved state (only fetched through the lookback window) -> not re-emitted
+        ("2026-09-11T05:30:00Z", "SUCCESS", []),
+    ]
+    for order_updated_at, status, expected in syncs:
+        stream, test_records = _read_transactions(
+            requests_mock,
+            bulk_job_completed_response,
+            auth_config,
+            [_refund_jsonl(order_updated_at, status)],
+            state_value=state_value,
+        )
+        assert [(record["id"], record["status"]) for record in test_records] == expected
+        assert all("order_updated_at" not in record for record in test_records)
+        # the BULK query asks for the order's `updatedAt`, the only signal that an existing transaction changed
+        bulk_query = next(request for request in requests_mock.request_history if request.method == "POST").json()["query"]
+        assert "order_updated_at: updatedAt" in bulk_query
+        # re-emitting an older transaction never moves the cursor backwards
+        state = {"created_at": state_value}
+        for record in test_records:
+            state = stream.get_updated_state(state, record)
+        assert state == {"created_at": state_value}
+
+
+def test_transactions_rest_emits_status_change_of_transaction_predating_state(requests_mock, auth_config) -> None:
+    stream = Transactions(auth_config)
+    state = {"created_at": "2026-09-11T05:49:43+00:00", "orders": {"updated_at": "2026-09-11T05:50:00+00:00"}}
+
+    # the only order updated since the saved state: its refund, created before the saved state, has settled
+    orders_request = requests_mock.get(
+        f"{stream.url_base}orders.json",
+        json={"orders": [{"id": 7, "updated_at": "2026-09-11T06:15:00+00:00"}]},
+    )
+    # the parent `orders` stream also reads the deleted orders
+    requests_mock.get(f"{stream.url_base}events.json", json={"events": []})
+    requests_mock.get(
+        f"{stream.url_base}orders/7/transactions.json",
+        json={
+            "transactions": [
+                {"id": 7000, "order_id": 7, "kind": "sale", "status": "success", "created_at": "2026-09-10T08:00:00+00:00"},
+                {"id": 7001, "order_id": 7, "kind": "refund", "status": "success", "created_at": "2026-09-11T05:07:00+00:00"},
+            ]
+        },
+    )
+
+    stream_state_cache.cached_state.pop("transactions", None)
+    stream_state_cache.cached_state.pop("orders", None)
+    try:
+        test_records = [
+            record
+            for stream_slice in stream.stream_slices(stream_state=state, sync_mode=SyncMode.incremental)
+            for record in stream.read_records(stream_state=state, stream_slice=stream_slice, sync_mode=SyncMode.incremental)
+        ]
+        updated_state = dict(state)
+        for record in test_records:
+            updated_state = stream.get_updated_state(updated_state, record)
+    finally:
+        stream_state_cache.cached_state.pop("transactions", None)
+        stream_state_cache.cached_state.pop("orders", None)
+
+    # only the orders updated since the saved parent state are sliced
+    assert orders_request.call_count == 1
+    assert orders_request.last_request.qs["updated_at_min"] == ["2026-09-11t05:50:00+00:00"]
+    assert [(record["id"], record["status"]) for record in test_records] == [(7000, "success"), (7001, "success")]
+    # re-emitting older transactions never moves the cursor backwards, the parent state follows the sliced order
+    assert updated_state["created_at"] == "2026-09-11T05:49:43+00:00"
+    assert updated_state["orders"]["updated_at"] == "2026-09-11T06:15:00+00:00"

@@ -425,6 +425,12 @@ class Transactions(IncrementalShopifySubstream):
     data_field = "transactions"
     cursor_field = "created_at"
 
+    def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
+        # A transaction has no `updated_at`, and its `created_at` does not move when it changes (e.g. a refund going
+        # from `pending` to `success`). The slices are the orders updated since the last sync, so every transaction
+        # of a sliced order is emitted to deliver those changes.
+        return True
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
@@ -440,14 +446,17 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
         return "transactions"
 
     def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
-        # transactions of offsite payments can predate their order, so they are first exported with the newly created order
-        order_created_at = record.get("order_created_at")
-        return bool(order_created_at) and order_created_at >= state_value
+        # A transaction has no `updatedAt`, and its `createdAt` does not move when it changes (e.g. a refund going
+        # from `PENDING` to `SUCCESS`), while its order's `updatedAt` does. Transactions of the orders updated since
+        # the saved state are emitted to deliver those changes. This also covers the transactions of offsite payments,
+        # which can predate their order and are first exported with the newly created order.
+        order_updated_at = record.get("order_updated_at")
+        return bool(order_updated_at) and order_updated_at >= state_value
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            # `order_created_at` is only used for state comparison, it should not be part of the output
-            record.pop("order_created_at", None)
+            # `order_updated_at` is only used for state comparison, it should not be part of the output
+            record.pop("order_updated_at", None)
             yield record
 
     def get_json_schema(self) -> Mapping[str, Any]:
