@@ -255,6 +255,67 @@ class TestIncrementalTwilioStream:
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
     @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_messages_partition_cursor_behind_stream_cursor_does_not_reread_history(self, requests_mock):
+        """
+        AC123's partition cursor is ten months behind the stream-level cursor and has no `parent_slice` (legacy shape).
+        AC456's partition cursor is ahead of it. AC123 must resume from the stream-level cursor minus the stored
+        lookback window (one hour), and AC456 from its own cursor.
+        """
+        accounts = {
+            "accounts": [
+                {"sid": sid, "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"}} for sid in ("AC123", "AC456")
+            ]
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts)
+        stale_account = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Messages.json",
+            json={"messages": [{"sid": "SM1", "date_sent": "Tue, 15 Nov 2022 09:30:00 +0000"}]},
+        )
+        fresh_account = requests_mock.get(
+            f"{BASE}/Accounts/AC456/Messages.json",
+            json={"messages": [{"sid": "SM2", "date_sent": "Wed, 16 Nov 2022 01:00:00 +0000"}]},
+        )
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": "2022-01-10T00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-11-15 12:00:00Z"},
+                        },
+                    ],
+                    "state": {"date_sent": "2022-11-15 10:00:00Z"},
+                    "lookback_window": 3600,
+                    "use_global_cursor": False,
+                },
+            )
+            .build()
+        )
+
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2000-11-15T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+        def _windows(matcher):
+            queries = [parse_qs(urlparse(request.url).query) for request in matcher.request_history]
+            return [(query["DateSent>"][0], query["DateSent<"][0]) for query in queries]
+
+        assert _windows(stale_account) == [("2022-11-15 09:00:00Z", "2022-11-16 12:03:11Z")]
+        assert _windows(fresh_account) == [("2022-11-15 12:00:00Z", "2022-11-16 12:03:11Z")]
+        assert sorted(record.record.data["sid"] for record in output.records) == ["SM1", "SM2"]
+
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert {entry["partition"]["subresource_uri"]: entry["cursor"]["date_sent"] for entry in final_state["states"]} == {
+            "/2010-04-01/Accounts/AC123/Messages.json": "2022-11-15 09:30:00Z",
+            "/2010-04-01/Accounts/AC456/Messages.json": "2022-11-16 01:00:00Z",
+        }
+        assert final_state["state"] == {"date_sent": "2022-11-16 01:00:00Z"}
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
         parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")

@@ -3,12 +3,12 @@
 #
 
 import copy
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -81,6 +81,78 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioMessagesStateMigration(TwilioStateMigration):
+    """
+    On top of `TwilioStateMigration`, move `messages` partition cursors that fell behind the stream-level
+    cursor up to it, so a stale partition entry does not make the stream re-read history it already synced.
+
+    The CDK only advances the stream-level `state` after a sync in which every partition was read to the end,
+    and stores that sync's duration as `lookback_window` (seconds). A partition cursor older than
+    `state - lookback_window` therefore points at data that was already read, and is raised to that floor.
+    Partition cursors at or after the floor are left as they are.
+
+    Initial:
+      {
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2022-01-10 00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-15 10:00:00Z" },
+        "lookback_window": 3600
+      }
+
+    Final:
+      {
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2022-11-15 09:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-15 10:00:00Z" },
+        "lookback_window": 3600
+      }
+    """
+
+    _CURSOR_FIELD = "date_sent"
+    _CURSOR_FORMAT = "%Y-%m-%d %H:%M:%SZ"
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        if super().should_migrate(stream_state):
+            stream_state = super().migrate(stream_state)
+        floor = self._floor(stream_state)
+        for state in stream_state.get("states", []):
+            if self._is_stale(state, floor):
+                state["cursor"][self._CURSOR_FIELD] = floor.strftime(self._CURSOR_FORMAT)
+        return stream_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if super().should_migrate(stream_state):
+            return True
+        floor = self._floor(stream_state)
+        return any(self._is_stale(state, floor) for state in (stream_state or {}).get("states", []))
+
+    def _floor(self, stream_state: Mapping[str, Any]) -> datetime | None:
+        """The earliest point a partition still has to be read from, or None when there is no stream-level cursor."""
+        if not stream_state or stream_state.get("use_global_cursor"):
+            return None
+        global_state = stream_state.get("state")
+        if not isinstance(global_state, Mapping):
+            return None
+        global_cursor = ab_datetime_try_parse(str(global_state.get(self._CURSOR_FIELD, "")))
+        if global_cursor is None:
+            return None
+        return global_cursor - timedelta(seconds=int(stream_state.get("lookback_window") or 0))
+
+    def _is_stale(self, partition_state: Mapping[str, Any], floor: datetime | None) -> bool:
+        if floor is None:
+            return False
+        cursor = ab_datetime_try_parse(str((partition_state.get("cursor") or {}).get(self._CURSOR_FIELD, "")))
+        return cursor is not None and cursor < floor
 
 
 class TwilioAlertsStateMigration(StateMigration):
