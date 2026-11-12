@@ -3,8 +3,10 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -23,8 +25,24 @@ class BlocksRetriever(SimpleRetriever):
 
     """
 
+    cursor: Optional[Cursor] = None
+    is_client_side_incremental_sync: bool = False
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
+        record_filter = self.record_selector.record_filter
+        # Custom retrievers do not receive the CDK's client-side cursor filter in all versions.
+        if (
+            self.is_client_side_incremental_sync
+            and self.cursor
+            and not isinstance(record_filter, ClientSideIncrementalRecordFilterDecorator)
+        ):
+            self.record_selector.record_filter = ClientSideIncrementalRecordFilterDecorator(
+                cursor=self.cursor,
+                config=self.config,
+                parameters=parameters,
+                condition=record_filter.condition if record_filter else "",
+            )
         self.current_block_depth = 0
 
     def read_records(
