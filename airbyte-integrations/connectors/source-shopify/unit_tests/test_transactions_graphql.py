@@ -164,3 +164,68 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
         assert state["created_at"] >= previous_state_value
 
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
+
+
+def _with_order_updated_at(order_jsonl: str, order_updated_at: str, status: str) -> str:
+    order = json.loads(order_jsonl)
+    order["order_updated_at"] = order_updated_at
+    for transaction in order["transactions"]:
+        transaction["kind"] = "REFUND"
+        transaction["status"] = status
+    return json.dumps(order)
+
+
+def test_transactions_graphql_emits_status_change_of_transaction_older_than_state(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+) -> None:
+    # Sync 1: the refund is created as PENDING on an order created before it, both newer than state -> emitted.
+    # Sync 2: the refund becomes SUCCESS later; Shopify bumps the order's `updatedAt`, so the BULK job returns
+    # the order again. The refund's `created_at` and the order's `created_at` are both older than the state now,
+    # the updated refund must still be emitted, otherwise the destination keeps the stale PENDING status.
+    pending_refund = _with_order_updated_at(
+        _order_jsonl(1, "2026-10-22T10:00:00Z", 1001, "2026-10-22T12:00:00Z"), "2026-10-22T12:00:00Z", "PENDING"
+    )
+    # unrelated new transaction that advances the state past the refund's `created_at`
+    newer_order = _with_order_updated_at(
+        _order_jsonl(2, "2026-10-22T14:16:17Z", 1002, "2026-10-22T14:16:17Z"), "2026-10-22T14:16:17Z", "SUCCESS"
+    )
+    succeeded_refund = _with_order_updated_at(
+        _order_jsonl(1, "2026-10-22T10:00:00Z", 1001, "2026-10-22T12:00:00Z"), "2026-10-22T15:05:00Z", "SUCCESS"
+    )
+    # an order not updated since the state (only reachable through the lookback window) is still dropped
+    stale_order = _with_order_updated_at(
+        _order_jsonl(3, "2026-10-22T09:00:00Z", 1003, "2026-10-22T09:00:00Z"), "2026-10-22T13:00:00Z", "SUCCESS"
+    )
+
+    stream, first_sync = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [pending_refund, newer_order],
+        state_value="2026-10-22T11:00:00+00:00",
+    )
+    assert [(record["id"], record["status"]) for record in first_sync] == [(1001, "PENDING"), (1002, "SUCCESS")]
+    state = {"created_at": "2026-10-22T11:00:00+00:00"}
+    for record in first_sync:
+        state = stream.get_updated_state(state, record)
+    assert state == {"created_at": "2026-10-22T14:16:17+00:00"}
+
+    stream, second_sync = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [stale_order, succeeded_refund],
+        state_value=state["created_at"],
+    )
+    assert [(record["id"], record["status"]) for record in second_sync] == [(1001, "SUCCESS")]
+    assert all("order_updated_at" not in record for record in second_sync)
+    for record in second_sync:
+        state = stream.get_updated_state(state, record)
+    # re-emitting an older transaction never moves the state backwards
+    assert state == {"created_at": "2026-10-22T14:16:17+00:00"}
+
+    # the BULK query must request the order's `updatedAt` for this comparison
+    bulk_query = requests_mock.request_history[0].json()["query"]
+    assert "order_updated_at: updatedAt" in bulk_query
