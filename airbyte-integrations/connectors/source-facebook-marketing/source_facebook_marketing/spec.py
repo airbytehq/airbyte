@@ -216,13 +216,14 @@ class InsightConfig(BaseModel):
         default=60,
     )
 
-    include_incrementality: bool = Field(
+    include_incrementality: Optional[bool] = Field(
         title="Include Incrementality",
         description=(
             "If enabled, the incrementality attribution window will be included in the action attribution windows for this custom insight. "
-            "This allows you to retrieve incrementality data for action metrics."
+            "This allows you to retrieve incrementality data for action metrics. "
+            "If not set, this custom insight uses the top-level Include Incrementality setting."
         ),
-        default=False,
+        default=None,
     )
 
     include_engaged_view: bool = Field(
@@ -390,7 +391,8 @@ class ConnectorConfig(BaseConfig):
         title="Include Incrementality",
         order=13,
         description=(
-            "If enabled, the incrementality attribution window will be included in the action attribution windows for all built-in insight streams. "
+            "If enabled, the incrementality attribution window will be included in the action attribution windows for all built-in insight streams "
+            "and for custom insights that do not set their own Include Incrementality value. "
             "This allows you to retrieve incrementality data for action metrics. "
             "See the Facebook Marketing API documentation for more details: "
             "https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/"

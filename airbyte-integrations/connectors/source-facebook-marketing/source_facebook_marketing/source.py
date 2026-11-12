@@ -358,7 +358,10 @@ class SourceFacebookMarketing(AbstractSource):
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
-                include_incrementality=insight.include_incrementality,
+                # An explicit per-insight value wins, so a custom insight can still opt out when the top-level option is enabled.
+                include_incrementality=(
+                    config.include_incrementality if insight.include_incrementality is None else insight.include_incrementality
+                ),
                 include_engaged_view=insight.include_engaged_view,
             )
             streams.append(stream)
