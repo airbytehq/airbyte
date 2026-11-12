@@ -4,8 +4,12 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
+  # The check must use a report type YouTube still generates: a stream whose job lists no report
+  # files has no stream slices, which fails the check. `channel_annotations_a1` has been
+  # superseded by `channel_annotations_a2` in YouTube's channel reports reference, so it is not
+  # used here; `channel_basic_a3` is the current user activity report.
   stream_names:
-    - channel_annotations_a1
+    - channel_basic_a3
 
 definitions:
   streams:

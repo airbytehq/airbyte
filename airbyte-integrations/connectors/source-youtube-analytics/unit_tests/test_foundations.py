@@ -294,6 +294,35 @@ def test_expired_refresh_token_tells_the_user_to_re_authenticate(config):
     assert "Refresh token is invalid or expired" in status.message
 
 
+def test_check_succeeds_when_the_retired_annotations_report_has_no_files(config):
+    """YouTube no longer generates `channel_annotations_a1` files, so its job lists no reports.
+
+    The check must not depend on that report: an account whose `channel_basic_a3` job has a
+    report file is a working source.
+    """
+    annotations_job_id = "job-annotations"
+    with requests_mock.Mocker() as mocker:
+        _register_token(mocker)
+        mocker.get(
+            f"{_API}/jobs",
+            json={
+                "jobs": [
+                    {"id": annotations_job_id, "reportTypeId": "channel_annotations_a1"},
+                    {"id": _JOB_ID, "reportTypeId": _STREAM},
+                ]
+            },
+        )
+        annotations_reports = mocker.get(f"{_API}/jobs/{annotations_job_id}/reports", json={})
+        basic_reports = mocker.get(f"{_API}/jobs/{_JOB_ID}/reports", json={"reports": [_listing("r1", "2026-10-01T00:00:00Z")]})
+        download = mocker.get(_download_url("r1"), text="date,channel_id,views\n20261001,channel-1,3\n")
+
+        status = get_source(config).check(logging.getLogger("test"), config)
+
+    assert status.message is None
+    assert status.status == Status.SUCCEEDED
+    assert (annotations_reports.call_count, basic_reports.call_count, download.call_count) == (0, 1, 1)
+
+
 @pytest.mark.parametrize("stream", _EMPTY_STREAMS)
 def test_empty_stream_with_header_only_report_reads_cleanly(config, stream):
     """These streams have no rows for the CI channel; a header-only report file yields no records and no error."""
