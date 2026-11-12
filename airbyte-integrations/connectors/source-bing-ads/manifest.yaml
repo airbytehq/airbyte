@@ -2660,6 +2660,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
       report_poll_authenticator: "#/definitions/authenticator"
+      error_handler:
+        $ref: "#/definitions/download_url_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2678,6 +2680,19 @@ definitions:
         CustomerId: "'{{ stream_partition.extra_fields['ParentCustomerId'] }}'"
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       authenticator: "#/definitions/authenticator"
+  # Report and bulk files are downloaded from pre-signed Azure Blob Storage URLs. When the URL's
+  # SAS signature has expired, Azure responds 403 with the `x-ms-error-code: AuthenticationFailed`
+  # header. This is not a permissions problem, so classify it as transient instead of letting it
+  # fall through to the CDK's default 403 "You don't have permission" config_error.
+  # The match uses only the header predicate (no http_codes) so other 403s keep the default handling.
+  download_url_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        predicate: "{{ headers.get('x-ms-error-code') == 'AuthenticationFailed' }}"
+        error_message: Bing Ads file download URL is expired.
   basic_bulk_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -2726,6 +2741,8 @@ definitions:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        $ref: "#/definitions/download_url_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
