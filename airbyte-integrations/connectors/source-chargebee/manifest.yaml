@@ -25,19 +25,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -103,19 +91,7 @@ definitions:
           request_parameters:
             updated_at[between]: "{% if stream_slice['start_time'] | int > 0 %}'[{{ stream_slice['start_time'] }}, {{ stream_slice['end_time'] }}]'{% endif %}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -185,19 +161,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -258,19 +222,7 @@ definitions:
           request_parameters:
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -329,24 +281,14 @@ definitions:
           path: /customers/{{ stream_slice.id }}/contacts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 404
-                    action: IGNORE
-                    error_message: Entity unavailable. Customer may have been deleted.
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+                error_message: Entity unavailable. Customer may have been deleted.
+              - $ref: "#/definitions/configuration_incompatible_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -408,19 +350,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -482,19 +412,7 @@ definitions:
             sort_by[asc]: occurred_at
             occurred_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -553,19 +471,7 @@ definitions:
           path: /gifts
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -623,19 +529,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -698,19 +592,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -773,19 +655,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -848,19 +718,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -923,19 +781,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -998,19 +844,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1073,19 +907,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1147,19 +969,7 @@ definitions:
             sort_by[asc]: created_at
             created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1222,24 +1032,14 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 404
-                    action: IGNORE
-                    error_message: Entity unavailable. Subscription may have been deleted.
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+                error_message: Entity unavailable. Subscription may have been deleted.
+              - $ref: "#/definitions/configuration_incompatible_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1369,19 +1169,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1440,19 +1228,7 @@ definitions:
           path: /unbilled_charges
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1510,19 +1286,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1585,19 +1349,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1656,15 +1408,13 @@ definitions:
           path: /quotes/{{ stream_slice.id }}/quote_line_groups
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    http_codes:
-                      - 404
-                    action: IGNORE
-                    error_message: Entity unavailable. Quote may have been deleted.
+            type: DefaultErrorHandler
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+                error_message: Entity unavailable. Quote may have been deleted.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1722,19 +1472,7 @@ definitions:
           path: /site_migration_details
           http_method: GET
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1791,19 +1529,7 @@ definitions:
             sort_by[asc]: created_at
             created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1866,19 +1592,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1941,19 +1655,7 @@ definitions:
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
-                    action: IGNORE
-                    error_message: Stream is available only for Product Catalog 1.0
-              - type: DefaultErrorHandler
-                max_retries: 10
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2000,6 +1702,19 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/differential_price"
+  configuration_incompatible_filter:
+    type: HttpResponseFilter
+    predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
+    action: IGNORE
+    error_message: Stream is available only for Product Catalog 1.0
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+    response_filters:
+      - $ref: "#/definitions/configuration_incompatible_filter"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['site'] }}.chargebee.com/api/v2
