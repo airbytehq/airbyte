@@ -20,6 +20,4 @@ def get_source(config):
     manifest_folder = Path("/airbyte/integration_code/source_declarative_manifest")
     if not manifest_folder.exists():
         manifest_folder = Path(__file__).parent.parent
-    return YamlDeclarativeSource(
-        path_to_yaml=str(manifest_folder / "manifest.yaml"), config=config, catalog=CatalogBuilder().build()
-    )
+    return YamlDeclarativeSource(path_to_yaml=str(manifest_folder / "manifest.yaml"), config=config, catalog=CatalogBuilder().build())
