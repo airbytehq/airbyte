@@ -284,6 +284,57 @@ def test_read_users_resumes_from_checkpoint():
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
 
 
+def _read_users(config, state):
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "append",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    messages = list(SourceFaker().read(logger, config, catalog, state))
+    record_ids = [message.record.data["id"] for message in messages if message.type is Type.RECORD]
+    states = [message.state for message in messages if message.type is Type.STATE]
+    return record_ids, states
+
+
+@pytest.mark.parametrize(
+    "first_count, second_count",
+    [
+        pytest.param(10, 10, id="same_count"),
+        pytest.param(10, 15, id="count_raised_between_syncs"),
+        pytest.param(10, 4, id="count_lowered_between_syncs"),
+    ],
+)
+def test_users_sync_after_completed_sync_emits_all_users_again(first_count, second_count):
+    first_ids, first_states = _read_users({"count": first_count, "records_per_slice": 5, "parallelism": 1}, [])
+    assert first_ids == list(range(1, first_count + 1))
+
+    # Feed the state emitted by the completed sync back in, as the platform does.
+    second_ids, second_states = _read_users({"count": second_count, "records_per_slice": 5, "parallelism": 1}, [first_states[-1]])
+
+    assert second_ids == list(range(1, second_count + 1))
+    final_state = second_states[-1].stream.stream_state
+    assert final_state.loop_offset == 0
+    assert final_state.updated_at >= first_states[-1].stream.stream_state.updated_at
+
+
+@pytest.mark.parametrize("count", [pytest.param(10, id="offset_equals_count"), pytest.param(4, id="offset_beyond_count")])
+def test_users_sync_with_completed_state_from_earlier_version_emits_all_users(count):
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
+    # Completed syncs on versions up to 7.3.0 saved `loop_offset == count`.
+    stream_state = AirbyteStreamState(
+        stream_descriptor=StreamDescriptor(name="users", namespace=None),
+        stream_state=AirbyteStateBlob(seed=None, updated_at="2024-01-01T00:00:00+00:00", loop_offset=10),
+    )
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
+
+    record_ids, _ = _read_users({"count": count, "records_per_slice": 5, "parallelism": 1}, state)
+
+    assert record_ids == list(range(1, count + 1))
+
+
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()

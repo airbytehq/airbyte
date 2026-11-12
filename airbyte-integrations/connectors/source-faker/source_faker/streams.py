@@ -107,6 +107,11 @@ class Users(Stream, IncrementalMixin):
         # already emitted, so an interrupted sync continues where it stopped
         # instead of regenerating them.
         loop_offset = self.state.get("loop_offset", 0)
+        if loop_offset >= self.count:
+            # The previous sync emitted every user, so this state is not a mid-sync
+            # checkpoint: start a new pass. States written by completed syncs of
+            # earlier versions carry `loop_offset == count`.
+            loop_offset = 0
 
         median_record_byte_size = 450
         yield generate_estimate(self.name, self.count - loop_offset, median_record_byte_size)
@@ -125,7 +130,9 @@ class Users(Stream, IncrementalMixin):
 
                 self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
 
-            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
+            # The pass is complete: reset the offset so the next sync starts over
+            # even if `count` is raised in the meantime.
+            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": 0}
 
 
 class Purchases(Stream, IncrementalMixin):
