@@ -62,3 +62,11 @@ The migrations in the manifest run in order. `ReportsStateMigration` converts pr
 The new parent value can only move the cursor backward relative to the file's actual `createTime`: the old value represents a data day or earlier timestamp, while the report file is generated later. That can cause a one-time re-listing, but cannot skip a report. Legacy values that cannot be parsed, such as `99999999` in `unit_tests/test_state_migration.py`, are dropped from the parent cursor, so the stream falls back to its configured start time. `integration_tests/abnormal_state.json` uses the parseable future date `20991231`, which migrates to a 2099 `createTime` so the future-state acceptance test reads no records. The migration tests are in `unit_tests/test_state_migration.py`; end-to-end cursor and correction coverage is in `unit_tests/mock_server/test_incremental_reports.py`.
 
 **Why this matters:** The migration order preserves both old state formats and per-partition cursors while moving incremental tracking to report creation time. Reordering or changing the conversions can cause unnecessary re-reads or make the source skip corrected report files.
+
+## 7. Connection Check Uses `reporting_jobs`, Not a Report Stream
+
+`check` runs `CheckStream` against `reporting_jobs`, a plain `jobs.list` read through `ContentOwnerRequester`. It sends one `GET /v1/jobs`, creates no job, and passes when the list is empty. Credential, no-channel and permission failures still surface through `base_error_handler`.
+
+A report stream cannot be the check stream. Its slices come from the `report` parent, so it has none until YouTube has generated a report file. A new job has no files for up to 48 hours, and a job for a report type YouTube has retired never gets one. In both cases the CDK fails the check with `no stream slices were found`. `unit_tests/mock_server/test_check.py` covers a new account and an account whose jobs have no files.
+
+**Why this matters:** Pointing the check back at a report stream blocks source setup for new accounts, and for every account if YouTube retires that report type.

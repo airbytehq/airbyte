@@ -2,10 +2,13 @@ version: 6.42.0
 
 type: DeclarativeSource
 
+# The check lists reporting jobs, which succeeds for any account that can use the Reporting API.
+# It must not use a report stream: those have no slices until YouTube has generated a report
+# file, which takes up to 48 hours for a new job and never happens for a retired report type.
 check:
   type: CheckStream
   stream_names:
-    - channel_annotations_a1
+    - reporting_jobs
 
 definitions:
   streams:
@@ -30,6 +33,30 @@ definitions:
             condition: "{{ record['reportTypeId'] == parameters['report_type_id'] }}"
         paginator:
           $ref: "#/definitions/next_page_token_paginator"
+    # The account's reporting jobs as YouTube lists them. Unlike the internal `jobs` parent
+    # above, this never creates a job and is not filtered to one report type.
+    reporting_jobs:
+      type: DeclarativeStream
+      name: reporting_jobs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: jobs
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - jobs
+        paginator:
+          $ref: "#/definitions/next_page_token_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reporting_jobs"
     report:
       type: DeclarativeStream
       name: report
@@ -628,6 +655,7 @@ streams:
   - $ref: "#/definitions/streams/playlist_playback_location_a2"
   - $ref: "#/definitions/streams/playlist_province_a2"
   - $ref: "#/definitions/streams/playlist_traffic_source_a2"
+  - $ref: "#/definitions/streams/reporting_jobs"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -755,6 +783,7 @@ metadata:
     playlist_playback_location_a2: false
     playlist_province_a2: false
     playlist_traffic_source_a2: false
+    reporting_jobs: false
   yamlComponents:
     global:
       - authenticator
@@ -762,6 +791,43 @@ metadata:
   assist: {}
 
 schemas:
+  reporting_jobs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: The ID YouTube assigned to the reporting job.
+      reportTypeId:
+        type:
+          - "null"
+          - string
+        description: The type of report the job creates, for example channel_basic_a3.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the job. Jobs created by Airbyte are named "Airbyte reporting job".
+      createTime:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+        description: When the job was created.
+      expireTime:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+        description: When the job expires and stops generating reports, if YouTube has scheduled that.
+      systemManaged:
+        type:
+          - "null"
+          - boolean
+        description: Whether YouTube manages the job. Only content owners have system-managed jobs.
   channel_annotations_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#

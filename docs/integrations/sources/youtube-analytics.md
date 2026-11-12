@@ -86,8 +86,9 @@ The YouTube Analytics source connector supports the following [sync modes](https
 - [playlist_playback_location_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-playback-locations)
 - [playlist_province_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-province)
 - [playlist_traffic_source_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-traffic-sources)
+- [reporting_jobs](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/list) - The reporting jobs scheduled for the channel or content owner, one per report type. Full refresh only.
 
-Each report stream provides one YouTube bulk report. Incremental syncs download only report files YouTube created since the previous sync and also pick up files YouTube re-issues with corrected data. A re-issued file replaces an earlier report for the same days, so use **Incremental | Append + Deduped** for report streams. With **Incremental | Append**, the original rows and the corrected rows are both kept in the destination.
+Each report stream provides one YouTube bulk report. The `reporting_jobs` stream is the exception: it lists the reporting jobs themselves, and Airbyte also uses it to test the connection when you set up the source, so setup does not depend on YouTube having generated any report yet. Incremental syncs download only report files YouTube created since the previous sync and also pick up files YouTube re-issues with corrected data. A re-issued file replaces an earlier report for the same days, so use **Incremental | Append + Deduped** for report streams. With **Incremental | Append**, the original rows and the corrected rows are both kept in the destination.
 
 ## Report availability
 
@@ -140,6 +141,7 @@ The optional **Number of Concurrent Workers** setting controls how many report f
 
 | Version | Date | Pull Request | Subject |
 | :----------- | :----------- | :--------------------------------------------------------- | :---------------------------------------------------- |
+| 2.1.0 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix source setup failing with `no stream slices were found` by checking the connection against the account's reporting jobs instead of the `channel_annotations_a1` report, and add the `reporting_jobs` stream |
 | 2.0.3 | 2026-11-05 | [91124](https://github.com/airbytehq/airbyte/pull/91124) | Promote the connector to Certified (Generally Available) support |
 | 2.0.2 | 2026-11-04 | [91024](https://github.com/airbytehq/airbyte/pull/91024) | Replace the icon with YouTube's official icon from brand.youtube and remove the added ANALYTICS wordmark |
 | 2.0.1 | 2026-11-04 | [90433](https://github.com/airbytehq/airbyte/pull/90433) | Merge the report download error handlers into one handler; no behaviour change |
