@@ -34,7 +34,7 @@ We add some metadata columns for CDC sources which all begin with the `_ab_cdc_`
 - [Postgres](/integrations/sources/postgres) \(For a quick video overview of CDC on Postgres, click [here](https://www.youtube.com/watch?v=NMODvLgZvuE&ab_channel=Airbyte)\)
 - [MySQL](/integrations/sources/mysql)
 - [Microsoft SQL Server / MSSQL](/integrations/sources/mssql)
-- [MongoDB](/integrations/sources/mongodb-v2)
+- [MongoDB](/integrations/sources/mongodb)
 
 ## Coming Soon
 

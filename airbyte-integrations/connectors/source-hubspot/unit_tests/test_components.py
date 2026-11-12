@@ -2,21 +2,27 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import json
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+import freezegun
 import pytest
 import requests
 import yaml
 from requests import Response
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+from .conftest import mock_v3_properties, read_from_stream
 
 
 EXPECTED_TOKEN_ENDPOINT = "https://api.hubapi.com/oauth/2026-03/token"
@@ -200,6 +206,184 @@ def test_hubspot_rename_properties_transformation(components_module):
         == expected_properties["properties_hs_v2_latest_time_in_contractsent"]
     )
     assert dynamic_properties_record["properties"] == expected_properties["properties"]
+
+
+def test_deal_pipelines_v1_shape_transformation(components_module):
+    pipeline = {
+        "label": "New Business Pipeline",
+        "displayOrder": 3,
+        "id": "b9152945-a594-4835-9676-a6f405fecd71",
+        "stages": [
+            {
+                "label": "Initial Qualification",
+                "displayOrder": 0,
+                "metadata": {"isClosed": "false", "probability": "0.1"},
+                "id": "9567448",
+                "createdAt": "2021-01-14T14:52:53.956Z",
+                "updatedAt": "2023-04-04T14:59:14.263Z",
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "archived": False,
+            },
+            {
+                "label": "Negotiation",
+                "displayOrder": 1,
+                "metadata": {"isClosed": "false", "probability": "0.5"},
+                "id": "9567449",
+                "createdAt": "2021-01-14T14:52:53.956Z",
+                "updatedAt": "2023-04-04T14:59:14.263Z",
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "archived": False,
+            },
+        ],
+        "createdAt": "2021-01-14T14:52:53.956Z",
+        "updatedAt": "2023-04-04T14:59:14.263Z",
+        "archived": False,
+    }
+    expected = {
+        "label": "New Business Pipeline",
+        "displayOrder": 3,
+        "pipelineId": "b9152945-a594-4835-9676-a6f405fecd71",
+        "stages": [
+            {
+                "label": "Initial Qualification",
+                "displayOrder": 0,
+                "metadata": {"isClosed": "false", "probability": "0.1"},
+                "stageId": "9567448",
+                "createdAt": 1610635973956,
+                "updatedAt": 1680620354263,
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "active": True,
+            },
+            {
+                "label": "Negotiation",
+                "displayOrder": 1,
+                "metadata": {"isClosed": "false", "probability": "0.5"},
+                "stageId": "9567449",
+                "createdAt": 1610635973956,
+                "updatedAt": 1680620354263,
+                "writePermissions": "CRM_PERMISSIONS_ENFORCEMENT",
+                "active": True,
+            },
+        ],
+        "createdAt": 1610635973956,
+        "updatedAt": 1680620354263,
+        "active": True,
+        "objectType": "DEAL",
+        "objectTypeId": "0-3",
+        "default": False,
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline == expected
+
+
+@pytest.mark.parametrize(
+    "pipeline_id, is_default",
+    [
+        ("default", True),
+        ("b9152945-a594-4835-9676-a6f405fecd71", False),
+    ],
+)
+def test_deal_pipelines_default_pipeline_and_epoch_dates(components_module, pipeline_id, is_default):
+    pipeline = {
+        "id": pipeline_id,
+        "createdAt": "1970-01-01T00:00:00Z",
+        "updatedAt": "1970-01-01T00:00:00Z",
+        "archived": False,
+        "stages": [],
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline["default"] is is_default
+    assert pipeline["createdAt"] == 0
+    assert pipeline["updatedAt"] == 0
+
+
+def test_deal_pipelines_archived_flags_and_null_dates(components_module):
+    pipeline = {
+        "id": "b9152945-a594-4835-9676-a6f405fecd71",
+        "createdAt": None,
+        "updatedAt": 123,
+        "archived": True,
+        "stages": [
+            {
+                "id": "stage",
+                "createdAt": 0,
+                "updatedAt": None,
+                "archived": True,
+            }
+        ],
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline["active"] is False
+    assert pipeline["createdAt"] is None
+    assert pipeline["updatedAt"] == 123
+    assert pipeline["stages"][0]["active"] is False
+    assert pipeline["stages"][0]["createdAt"] == 0
+    assert pipeline["stages"][0]["updatedAt"] is None
+
+
+@pytest.mark.parametrize(
+    "timestamp, expected",
+    [
+        ("2021-01-14T14:52:53Z", 1610635973000),
+        ("2021-01-14T14:52:53", 1610635973000),
+        ("2021-01-14T14:52:53+00:00", 1610635973000),
+        ("2021-01-14T09:52:53-05:00", 1610635973000),
+    ],
+)
+def test_deal_pipelines_iso_dates_with_timezone_offsets(components_module, timestamp, expected):
+    pipeline = {
+        "id": "pipeline",
+        "createdAt": timestamp,
+        "updatedAt": timestamp,
+        "archived": False,
+        "stages": [],
+    }
+
+    components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert pipeline["createdAt"] == expected
+    assert pipeline["updatedAt"] == expected
+
+
+@pytest.mark.parametrize(
+    "invalid_value",
+    ["not-a-date", 1.5, True],
+    ids=["unparseable_string", "float", "bool"],
+)
+def test_deal_pipelines_invalid_timestamp_raises_traced_exception(components_module, invalid_value):
+    pipeline = {
+        "id": "pipeline",
+        "createdAt": invalid_value,
+        "updatedAt": None,
+        "archived": False,
+        "stages": [],
+    }
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        components_module.DealPipelinesV1ShapeTransformation().transform(pipeline)
+
+    assert exc_info.value.failure_type == FailureType.system_error
+    assert "createdAt" in exc_info.value.internal_message
+    assert repr(invalid_value) in exc_info.value.internal_message
+
+
+def test_deal_pipelines_naive_parser_datetime_is_treated_as_utc(components_module, monkeypatch):
+    parsed_datetime = datetime(2021, 1, 14, 14, 52, 53)
+    monkeypatch.setattr(components_module, "ab_datetime_parse", lambda _: parsed_datetime)
+
+    assert (
+        components_module.DealPipelinesV1ShapeTransformation._to_epoch_milliseconds(
+            "2021-01-14T14:52:53",
+            "createdAt",
+        )
+        == 1610635973000
+    )
 
 
 def test_property_history_extractor(components_module):
@@ -684,35 +868,45 @@ def test_entity_schema_normalization(components_module, original_value, field_sc
     "json_response,last_page_size,last_record,last_page_token_value,expected_next_page_token",
     [
         pytest.param(
-            {"paging": {"next": {"after": 1200}}}, 200, {"id": 5000}, {"after": 1000}, {"after": 1200}, id="test_next_page_on_first_chunk"
+            {"paging": {"next": {"after": 200}}},
+            200,
+            {"id": 5000},
+            {"after": 0},
+            {"after": 0, "id": 5001},
+            id="full_page_continues_by_id",
         ),
         pytest.param(
-            {"paging": {"next": {"after": 1200}}},
+            {"paging": {"next": {"after": 100}}},
             100,
             {"id": 5000},
-            {"after": 1000},
+            {"after": 0},
+            {"after": 0, "id": 5001},
+            id="short_page_with_paging_continues_by_id",
+        ),
+        pytest.param(
+            {"paging": {"next": {"after": 200}}},
+            0,
+            {"id": 5000},
+            {"after": 0},
             None,
-            id="test_stop_paging_when_last_page_is_less_than_page_size",
+            id="empty_page_stops",
         ),
+        pytest.param({}, 200, {"id": 5000}, {"after": 0}, None, id="no_paging_stops"),
         pytest.param(
-            {"paging": {"next": {"after": 1200}}}, 0, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_last_page_size_is_zero"
-        ),
-        pytest.param({}, 200, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_no_after_in_response"),
-        pytest.param(
-            {"paging": {"next": {"after": 10000}}},
+            {"paging": {"next": {"after": 200}}},
             200,
-            {"id": 25000},
-            {"after": 9800},
-            {"after": 0, "id": 25001},
-            id="test_reset_page_and_move_to_next_chunk",
+            {"id": "5000"},
+            {"after": 200},
+            {"after": 0, "id": 5001},
+            id="string_id_is_converted_to_integer",
         ),
         pytest.param(
             {"paging": {"next": {"after": 200}}},
             200,
-            {"id": 30000},
-            {"after": 0, "id": 25001},
-            {"after": 200, "id": 25001},
-            id="test_next_page_on_next_chunk_of_records",
+            None,
+            {"after": 0},
+            None,
+            id="missing_last_record_stops",
         ),
     ],
 )
@@ -732,6 +926,48 @@ def test_crm_search_pagination_strategy(
     )
 
     assert actual_next_page_token == expected_next_page_token
+
+
+@freezegun.freeze_time("2022-03-10T14:42:00Z")
+def test_crm_search_pagination_tracks_last_id_when_result_set_shifts(requests_mock, config):
+    records = [
+        {
+            "id": str(record_id),
+            "createdAt": "2022-02-25T16:43:11Z",
+            "updatedAt": "2022-03-05T16:43:11Z",
+            "properties": {"hs_object_id": str(record_id), "lastmodifieddate": "2022-03-05T16:43:11Z"},
+        }
+        for record_id in range(1, 451)
+    ]
+    request_count = 0
+
+    def search_response(request, context):
+        nonlocal records, request_count
+        body = request.json()
+        lower_bound = next(filter_value["value"] for filter_value in body["filters"] if filter_value["propertyName"] == "hs_object_id")
+        filtered_records = [record for record in records if int(record["properties"]["hs_object_id"]) >= int(lower_bound)]
+        after = int(body["after"])
+        page = filtered_records[after : after + body["limit"]]
+        response = {"results": page}
+        if after + body["limit"] < len(filtered_records):
+            response["paging"] = {"next": {"after": str(after + body["limit"])}}
+        if request_count == 0:
+            records = [record for record in records if record["id"] != "10"]
+        request_count += 1
+        return json.dumps(response)
+
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    mock_v3_properties(requests_mock, "contact", [{"name": "hs_object_id", "type": "number"}])
+    requests_mock.get("https://api.hubapi.com/properties/v2/contact/properties", json=[{"name": "hs_object_id", "type": "number"}])
+    requests_mock.post("https://api.hubapi.com/crm/v3/objects/contact/search", text=search_response)
+    requests_mock.post("/crm/v4/associations/contact/contacts/batch/read", json={"results": []})
+    requests_mock.post("/crm/v4/associations/contact/companies/batch/read", json={"results": []})
+
+    state = StateBuilder().with_stream_state("contacts", {"updatedAt": "2022-02-24T16:43:11Z"}).build()
+    output = read_from_stream(config, "contacts", SyncMode.incremental, state)
+
+    record_ids = [int(message.record.data["id"]) for message in output.records]
+    assert record_ids == list(range(1, 451))
 
 
 def test_build_associations_retriever_uses_rate_limited_for_429():

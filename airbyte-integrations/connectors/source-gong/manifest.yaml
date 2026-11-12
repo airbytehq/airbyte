@@ -306,6 +306,16 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /stats/activity/scorecards
           http_method: POST
+          # Gong's POST /stats/activity/scorecards only returns manually
+          # reviewed scorecards unless `filter.reviewMethod` is sent. Scorecards
+          # scored by Gong's AI (AUTOMATIC) are therefore silently dropped, and
+          # since they now make up the vast majority of scorecards, the stream
+          # looks almost empty. `scorecards_review_method` lets the user pick
+          # MANUAL, AUTOMATIC or BOTH; it defaults to MANUAL, which is the
+          # historical behaviour, so existing connections are unaffected.
+          request_body_json:
+            filter:
+              reviewMethod: "{{ config.get('scorecards_review_method', 'MANUAL') }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -664,6 +674,19 @@ spec:
         default: 0
         minimum: 0
         order: 3
+      scorecards_review_method:
+        type: string
+        title: Scorecards Review Method
+        description: >-
+          Which answered scorecards to fetch. Gong only returns manually
+          reviewed scorecards by default; scorecards scored by Gong's AI must
+          be requested explicitly. MANUAL keeps the historical behaviour.
+        enum:
+          - MANUAL
+          - AUTOMATIC
+          - BOTH
+        default: MANUAL
+        order: 4
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0

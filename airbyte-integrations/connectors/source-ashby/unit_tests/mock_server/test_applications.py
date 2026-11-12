@@ -9,9 +9,11 @@ incremental sync pages the full list and keeps applications updated at most
 """
 
 import json
+import logging
 from typing import Any, Dict, List
 from unittest import TestCase
 
+from jsonschema import Draft7Validator, FormatChecker
 from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import AirbyteStateMessage, SyncMode
@@ -44,6 +46,12 @@ def _read(sync_mode: SyncMode, state: List[AirbyteStateMessage] = None) -> Entry
     config = ConfigBuilder().build()
     catalog = CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
     return read(get_source(config=config, state=state), config=config, catalog=catalog, state=state or [])
+
+
+def _discovered_schema() -> Dict[str, Any]:
+    config = ConfigBuilder().build()
+    catalog = get_source(config=config).discover(logging.getLogger("airbyte"), config)
+    return {stream.name: stream for stream in catalog.streams}[_STREAM_NAME].json_schema
 
 
 class TestApplications(TestCase):
@@ -85,6 +93,26 @@ class TestApplications(TestCase):
         assert second_sync.errors == []
         assert {r.record.data["id"] for r in second_sync.records} == {"app-1", "app-2", "app-3"}
         assert second_sync.most_recent_state.stream_state.__dict__ == {"updatedAt": "2024-05-02T00:00:00.000000Z"}
+
+    def test_emits_archived_application_with_object_archive_reason_matching_schema(self):
+        archive_reason = {
+            "id": "reason-1",
+            "text": "Failed Phone Screen",
+            "reasonType": "RejectedByOrg",
+            "isArchived": False,
+            "customFields": [],
+        }
+        application = {"id": "app-archived", "status": "Archived", "archiveReason": archive_reason}
+        with HttpMocker() as http_mocker:
+            http_mocker.post(_applications_request(), _page([application]))
+
+            output = _read(SyncMode.full_refresh)
+
+        assert output.errors == []
+        record = output.records[0].record.data
+        assert record["archiveReason"] == archive_reason
+        errors = list(Draft7Validator(_discovered_schema(), format_checker=FormatChecker()).iter_errors(record))
+        assert errors == []
 
     def test_full_refresh_emits_applications_without_updated_at(self):
         with HttpMocker() as http_mocker:

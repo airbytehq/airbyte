@@ -1,14 +1,46 @@
-{
-  "tickets": {
-    "updated_at": "2121-10-12T07:07:29Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tickets"
+      },
+      "stream_state": {
+        "updated_at": "2121-10-12T07:07:29Z"
+      }
+    }
   },
-  "problems": {
-    "updated_at": "2121-10-12T04:09:54Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "problems"
+      },
+      "stream_state": {
+        "updated_at": "2121-10-12T04:09:54Z"
+      }
+    }
   },
-  "changes": {
-    "updated_at": "2121-10-12T04:09:54Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "changes"
+      },
+      "stream_state": {
+        "updated_at": "2121-10-12T04:09:54Z"
+      }
+    }
   },
-  "releases": {
-    "updated_at": "2121-10-12T04:09:54Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "releases"
+      },
+      "stream_state": {
+        "updated_at": "2121-10-12T04:09:54Z"
+      }
+    }
   }
-}
+]
