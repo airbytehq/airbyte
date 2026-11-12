@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Report and Bulk Download Links Expire
+
+Report and bulk files are downloaded from pre-signed Azure Blob Storage (SAS) URLs returned by the Reporting/Bulk API, which expire a few minutes after they are issued. An expired link returns HTTP 403 with the `x-ms-error-code: AuthenticationFailed` header. `BingAdsReportDownloadRequester` re-polls for a fresh report URL right before downloading. Both download requesters use `download_requester_error_handler`, which reports a remaining expiry as a `transient_error` naming the stream (from `$parameters.stream_name`), not as the CDK default 403 `config_error` ("You don't have permission to access this resource").
+
+**Why this matters:** The expiry is not a permissions or credentials problem. Re-authenticating does not help, and a `config_error` would send the failure to the user instead of retrying it. Retrying the same URL in-process cannot succeed, so the handler fails the attempt rather than retrying it.
