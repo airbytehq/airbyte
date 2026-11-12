@@ -260,6 +260,63 @@ class TestBaseInsightsStream:
 
         assert len(records) == 3
 
+    @freeze_time("2026-11-01")
+    @pytest.mark.parametrize("with_records", [False, True])
+    @pytest.mark.parametrize(
+        "completed_days,expected_day",
+        [
+            pytest.param([], 28, id="no-completed-slices"),
+            pytest.param(list(range(10)), 28, id="interrupted-in-order"),
+            pytest.param([5, 3, 1, 0, 2], 28, id="interrupted-out-of-order"),
+            pytest.param(list(range(31)), 30, id="advances-in-order"),
+            pytest.param(list(range(30, -1, -1)), 30, id="advances-out-of-order"),
+        ],
+    )
+    def test_read_records_lookback_cursor_is_monotonic(self, mocker, api, some_config, completed_days, expected_day, with_records):
+        account_id = some_config["account_ids"][0]
+        start = date(2026, 9, 1)
+        cursor = start + timedelta(days=28)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 9, 1),
+            end_date=datetime(2026, 10, 10),
+            insights_lookback_window=28,
+        )
+        stream.state = {account_id: {"date_start": cursor.isoformat(), "slices": []}}
+        previous_cursor = cursor.isoformat()
+        for day in completed_days:
+            slice_date = start + timedelta(days=day)
+            job = mocker.Mock(spec=AsyncJob)
+            job.interval = DateInterval(slice_date, slice_date)
+            record = mocker.Mock()
+            record.export_all_data.return_value = {"account_id": account_id}
+            job.get_result.return_value = [record] if with_records else []
+            assert list(
+                stream.read_records(
+                    sync_mode=SyncMode.incremental,
+                    stream_slice={"insight_job": job, "account_id": account_id},
+                )
+            ) == ([{"account_id": account_id}] if with_records else [])
+            state = stream.state[account_id]
+            assert state["date_start"] >= previous_cursor
+            assert all(slice_date > state["date_start"] for slice_date in state["slices"])
+            previous_cursor = state["date_start"]
+
+        assert stream.state[account_id]["date_start"] == (start + timedelta(days=expected_day)).isoformat()
+        saved_state = stream.state
+        failed_job = mocker.Mock(spec=AsyncJob)
+        failed_job.interval = DateInterval(start, start)
+        failed_job.get_result.side_effect = RuntimeError("Interrupted job")
+        with pytest.raises(RuntimeError, match="Interrupted job"):
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.incremental,
+                    stream_slice={"insight_job": failed_job, "account_id": account_id},
+                )
+            )
+        assert stream.state == saved_state
+
     def test_read_records_add_account_id(self, mocker, api, some_config):
         rec_without_account = mocker.Mock()
         rec_without_account.export_all_data.return_value = {}
@@ -397,6 +454,11 @@ class TestBaseInsightsStream:
 
         result_state = state if not result_state else result_state
         result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
+        for account_state in result_state.values():
+            if isinstance(account_state, dict) and account_state.get(AdsInsights.cursor_field):
+                account_state["slices"] = [
+                    slice_date for slice_date in account_state["slices"] if slice_date > account_state[AdsInsights.cursor_field]
+                ]
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
