@@ -2,9 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime, timedelta
+from threading import Lock
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
+from components import TwilioConferencesStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
@@ -32,10 +35,56 @@ ACCOUNTS_JSON = {
     ],
 }
 
+ALERTS_LIMIT_ERROR_JSON = {"message": "Invalid page and pageSize combination, data is limited to 10,000 results", "status": 400}
+ALERTS_INVALID_START_DATE_JSON = {"message": "Invalid StartDate", "status": 400}
+ALERTS_SPLIT_FAILURE_MESSAGE = (
+    "The Twilio Alerts API returns at most 10,000 Alert records per request window. Choose a shorter Slice Step Duration so the "
+    "window can be split further (with 1 Day it can shrink to about 84 seconds). If Slice Step Duration is already 1 Day, "
+    "deselect the alerts stream."
+)
+
 
 def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
     return read(get_source(cfg, state), cfg, catalog, state, expecting_exception)
+
+
+def _register_alerts_callback(requests_mock):
+    requests = []
+    response_handler = {"callback": None}
+    requests_lock = Lock()
+
+    def _callback(request, context):
+        query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+        request_info = {key: query[key][0] for key in ("StartDate", "EndDate", "PageSize", "PageToken", "Page") if key in query}
+        with requests_lock:
+            requests.append(request_info)
+        response, status_code = response_handler["callback"](request_info)
+        context.status_code = status_code
+        return response
+
+    requests_mock.get(f"{MONITOR_BASE}/Alerts", json=_callback)
+    return requests, response_handler
+
+
+def _alerts_response(records=(), next_page_url=None):
+    return {"alerts": list(records), "meta": {"next_page_url": next_page_url}}, 200
+
+
+def _alert_record(sid, date_generated):
+    return {"sid": sid, "date_generated": date_generated}
+
+
+def _alert_window(request):
+    return request.get("StartDate"), request.get("EndDate")
+
+
+def _parse_alert_date(value):
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def _alert_state_date(output):
+    return output.most_recent_state.stream_state.__dict__["date_generated"]
 
 
 class TestTwilioStream:
@@ -206,24 +255,450 @@ class TestIncrementalTwilioStream:
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
     @freeze_time("2022-11-16 12:03:11+00:00")
-    def test_alerts_pagination_limit_error_message(self, requests_mock):
-        requests_mock.get(
-            f"{MONITOR_BASE}/Alerts",
-            json={
-                "code": 400,
-                "message": "Invalid page and pageSize combination, data is limited to 10,000 results",
-            },
-            status_code=400,
+    def test_messages_cursor_advances_across_windows(self, requests_mock):
+        """Regression for the stuck-cursor bug (oncall #12688).
+
+        `messages` uses a second-precision ``datetime_format`` (``%Y-%m-%d %H:%M:%SZ``). If
+        ``cursor_granularity`` is finer than that (e.g. ``PT0.000001S``), each slice end
+        (``next_start - granularity``) is truncated to the second when formatted, opening a
+        ~1s gap between consecutive slice intervals that ``merge_intervals`` cannot bridge.
+        The per-partition cursor then never advances past the first window and the stream
+        re-reads its whole history every sync. With a matching granularity (``PT1S``) the
+        intervals merge and the cursor advances to the newest record.
+
+        The assertion checks the cursor lands on the *newest record across every window* (not
+        merely that it moved), so a partial-advance regression where only some slices merge
+        would still fail.
+        """
+        requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+
+        # Each monthly window returns one record dated at its lower bound (DateSent>),
+        # echoed back in the ISO 'T' form the connector normalizes records to.
+        windows = []
+
+        def _messages(request, context):
+            lower = parse_qs(urlparse(request.url).query, keep_blank_values=True).get("DateSent>", ["1970-01-01 00:00:00Z"])[0]
+            windows.append(lower)
+            context.status_code = 200
+            return {"messages": [{"sid": "SM", "date_sent": lower.replace(" ", "T")}]}
+
+        requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json=_messages)
+
+        # Saved per-partition state a few months back -> several monthly windows are generated.
+        saved_cursor = "2022-08-16 00:00:00Z"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "messages",
+                {
+                    "states": [
+                        {
+                            "partition": {"parent_slice": {}, "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": saved_cursor},
+                        }
+                    ],
+                    "state": {"date_sent": saved_cursor},
+                    "use_global_cursor": False,
+                },
+            )
+            .build()
         )
 
-        output = read_from_stream(TEST_CONFIG, "alerts", SyncMode.incremental, expecting_exception=True)
+        output = read_from_stream(TEST_CONFIG, "messages", SyncMode.incremental, state)
+
+        # The sync must span several windows, otherwise the multi-slice merge isn't exercised.
+        assert len(set(windows)) >= 3, f"expected multiple date windows, got {sorted(set(windows))}"
+
+        # The newest record returned across all windows (records sit at each window's lower bound).
+        # Window bounds and the stored cursor share the second-precision format, so a string
+        # comparison is exact and order-preserving.
+        newest_record = max(windows)
+
+        # Emitted per-partition cursor must land on that newest record -- i.e. every slice merged
+        # and the cursor advanced fully, not just past the first window.
+        final = output.most_recent_state.stream_state.__dict__
+        partition_cursor = final["states"][0]["cursor"]["date_sent"]
+        assert partition_cursor == newest_record, (
+            f"per-partition cursor did not advance to the newest record: "
+            f"cursor={partition_cursor!r}, newest_record={newest_record!r}, saved={saved_cursor!r}"
+        )
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_split_request_window_one_level(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
+        child1 = ("2022-11-15T00:00:00Z", "2022-11-15T11:59:59Z")
+        child2 = ("2022-11-15T12:00:00Z", "2022-11-15T23:59:59Z")
+        partition2 = ("2022-11-16T00:00:00Z", "2022-11-16T12:03:11Z")
+        next_page_url = (
+            "https://monitor.twilio.com/v1/Alerts?StartDate=2022-11-15T00:00:00Z"
+            "&EndDate=2022-11-15T23:59:59Z&PageSize=1000&Page=1&PageToken=PT1"
+        )
+        parent_record = _alert_record("parent-page-1", "2022-11-15T01:00:00Z")
+        child1_record = _alert_record("child-1", "2022-11-15T05:00:00Z")
+        child2_record = _alert_record("child-2", "2022-11-15T20:00:00Z")
+        partition2_record = _alert_record("partition-2", "2022-11-16T12:03:11Z")
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def split_response(request):
+            window = _alert_window(request)
+            if window == parent and request.get("PageToken") == "PT1":
+                return ALERTS_LIMIT_ERROR_JSON, 400
+            if window == parent:
+                return _alerts_response([parent_record], next_page_url)
+            if window == child1:
+                return _alerts_response([parent_record, child1_record])
+            if window == child2:
+                return _alerts_response([child2_record])
+            if window == partition2:
+                return _alerts_response([partition2_record])
+            raise AssertionError(f"Unexpected Alerts request: {request}")
+
+        response_handler["callback"] = split_response
+        output = read_from_stream(config, "alerts", SyncMode.incremental)
+
+        expected_windows = {parent, child1, child2, partition2}
+        first_page_requests = [request for request in requests if not request.get("PageToken") and not request.get("Page")]
+        assert {_alert_window(request) for request in first_page_requests} == expected_windows
+        assert all(request.get("PageSize") == "1000" for request in first_page_requests)
+        page_token_requests = [request for request in requests if request.get("PageToken")]
+        assert len(page_token_requests) == 1
+        assert page_token_requests[0].get("PageToken") == "PT1"
+        assert _alert_window(page_token_requests[0]) == parent
+        assert _parse_alert_date(child1[1]) + timedelta(seconds=1) == _parse_alert_date(child2[0])
+        assert _parse_alert_date(parent[0]) == _parse_alert_date(child1[0])
+        assert _parse_alert_date(child2[1]) == _parse_alert_date(parent[1])
+        assert not output.errors
+        emitted_sids = [message.record.data["sid"] for message in output.records]
+        assert {"parent-page-1", "child-1", "child-2", "partition-2"} <= set(emitted_sids)
+
+        split_state = _alert_state_date(output)
+        assert split_state == "2022-11-16T12:03:11Z"
+
+        def baseline_response(request):
+            window = _alert_window(request)
+            if window == parent:
+                return _alerts_response([parent_record, child1_record, child2_record])
+            if window == partition2:
+                return _alerts_response([partition2_record])
+            raise AssertionError(f"Unexpected baseline Alerts request: {request}")
+
+        response_handler["callback"] = baseline_response
+        baseline_output = read_from_stream(config, "alerts", SyncMode.incremental)
+        assert not baseline_output.errors
+        assert _alert_state_date(baseline_output) == split_state
+        assert split_state == "2022-11-16T12:03:11Z"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_split_request_window_nested(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
+        child1 = ("2022-11-15T00:00:00Z", "2022-11-15T11:59:59Z")
+        grandchild1 = ("2022-11-15T00:00:00Z", "2022-11-15T05:59:59Z")
+        grandchild2 = ("2022-11-15T06:00:00Z", "2022-11-15T11:59:59Z")
+        child2 = ("2022-11-15T12:00:00Z", "2022-11-15T23:59:59Z")
+        partition2 = ("2022-11-16T00:00:00Z", "2022-11-16T12:03:11Z")
+        next_page_url = (
+            "https://monitor.twilio.com/v1/Alerts?StartDate=2022-11-15T00:00:00Z"
+            "&EndDate=2022-11-15T23:59:59Z&PageSize=1000&Page=1&PageToken=PT1"
+        )
+        parent_record = _alert_record("parent-page-1", "2022-11-15T01:00:00Z")
+        grandchild1_record = _alert_record("grandchild-1", "2022-11-15T03:00:00Z")
+        grandchild2_record = _alert_record("grandchild-2", "2022-11-15T10:00:00Z")
+        child2_record = _alert_record("child-2", "2022-11-15T20:00:00Z")
+        partition2_record = _alert_record("partition-2", "2022-11-16T12:03:11Z")
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def split_response(request):
+            window = _alert_window(request)
+            if window == parent and request.get("PageToken") == "PT1":
+                return ALERTS_LIMIT_ERROR_JSON, 400
+            if window == parent:
+                return _alerts_response([parent_record], next_page_url)
+            if window == child1:
+                return ALERTS_LIMIT_ERROR_JSON, 400
+            if window == grandchild1:
+                return _alerts_response([parent_record, grandchild1_record])
+            if window == grandchild2:
+                return _alerts_response([grandchild2_record])
+            if window == child2:
+                return _alerts_response([child2_record])
+            if window == partition2:
+                return _alerts_response([partition2_record])
+            raise AssertionError(f"Unexpected Alerts request: {request}")
+
+        response_handler["callback"] = split_response
+        output = read_from_stream(config, "alerts", SyncMode.incremental)
+
+        expected_windows = {parent, child1, grandchild1, grandchild2, child2, partition2}
+        first_page_requests = [request for request in requests if not request.get("PageToken") and not request.get("Page")]
+        assert {_alert_window(request) for request in first_page_requests} == expected_windows
+        assert all(request.get("PageSize") == "1000" for request in first_page_requests)
+        page_token_requests = [request for request in requests if request.get("PageToken")]
+        assert len(page_token_requests) == 1
+        assert _alert_window(page_token_requests[0]) == parent
+        assert _parse_alert_date(grandchild1[1]) + timedelta(seconds=1) == _parse_alert_date(grandchild2[0])
+        assert _parse_alert_date(grandchild2[1]) + timedelta(seconds=1) == _parse_alert_date(child2[0])
+        assert _parse_alert_date(parent[0]) == _parse_alert_date(grandchild1[0])
+        assert _parse_alert_date(child2[1]) == _parse_alert_date(parent[1])
+        assert not output.errors
+        emitted_sids = {message.record.data["sid"] for message in output.records}
+        assert {
+            "parent-page-1",
+            "grandchild-1",
+            "grandchild-2",
+            "child-2",
+            "partition-2",
+        } <= emitted_sids
+        split_state = _alert_state_date(output)
+        assert split_state == "2022-11-16T12:03:11Z"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_split_request_window_exhausted_at_min_window(self, requests_mock):
+        incoming_cursor = "2022-11-16T12:03:08Z"
+        state = (
+            StateBuilder()
+            .with_stream_state(
+                "alerts",
+                {"states": [{"partition": {}, "cursor": {"date_generated": incoming_cursor}}]},
+            )
+            .build()
+        )
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def always_fail(_request):
+            return ALERTS_LIMIT_ERROR_JSON, 400
+
+        response_handler["callback"] = always_fail
+        output = read_from_stream(TEST_CONFIG, "alerts", SyncMode.incremental, state, expecting_exception=True)
 
         assert not output.records
         assert output.errors
-        assert output.errors[0].trace.error.failure_type == FailureType.config_error
-        assert "Twilio Alerts request exceeds the 10,000-result pagination limit." in output.get_formatted_error_message()
-        assert "in the source configuration" in output.get_formatted_error_message()
-        assert "fewer Alert records per slice" in output.get_formatted_error_message()
+        assert output.errors[0].trace.error.failure_type == FailureType.transient_error
+        assert ALERTS_SPLIT_FAILURE_MESSAGE in output.get_formatted_error_message()
+        windows = [_alert_window(request) for request in requests]
+        assert all(start <= end for start, end in windows)
+        assert any(start == end for start, end in windows)
+        assert windows[-1] == (incoming_cursor, incoming_cursor)
+        state_dates = [
+            message.state.stream.stream_state.__dict__.get("date_generated")
+            for message in output.state_messages
+            if message.state and message.state.stream
+        ]
+        assert all(date is None or date <= incoming_cursor for date in state_dates)
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_split_request_window_exhausted_at_max_depth(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def always_fail(_request):
+            return ALERTS_LIMIT_ERROR_JSON, 400
+
+        response_handler["callback"] = always_fail
+        output = read_from_stream(config, "alerts", SyncMode.incremental, expecting_exception=True)
+
+        assert not output.records
+        assert output.errors
+        assert output.errors[0].trace.error.failure_type == FailureType.transient_error
+        assert ALERTS_SPLIT_FAILURE_MESSAGE in output.get_formatted_error_message()
+        window_count = len({_alert_window(request) for request in requests})
+        assert window_count == 22
+        assert window_count < 100
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_other_400_is_not_split(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
+        partition2 = ("2022-11-16T00:00:00Z", "2022-11-16T12:03:11Z")
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def response_for_request(request):
+            if _alert_window(request) == parent:
+                return ALERTS_INVALID_START_DATE_JSON, 400
+            if _alert_window(request) == partition2:
+                return _alerts_response()
+            raise AssertionError(f"Unexpected Alerts request: {request}")
+
+        response_handler["callback"] = response_for_request
+        output = read_from_stream(config, "alerts", SyncMode.incremental, expecting_exception=True)
+
+        assert output.errors
+        failure = output.errors[0].trace.error
+        assert failure.failure_type == FailureType.system_error
+        assert failure.message == "Twilio rejected the Alerts request: Invalid StartDate"
+        assert sorted(_alert_window(request) for request in requests) == [parent, partition2]
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_split_request_window_checkpoints_split_partition(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
+        child1 = ("2022-11-15T00:00:00Z", "2022-11-15T11:59:59Z")
+        child2 = ("2022-11-15T12:00:00Z", "2022-11-15T23:59:59Z")
+        partition2 = ("2022-11-16T00:00:00Z", "2022-11-16T12:03:11Z")
+        next_page_url = (
+            "https://monitor.twilio.com/v1/Alerts?StartDate=2022-11-15T00:00:00Z"
+            "&EndDate=2022-11-15T23:59:59Z&PageSize=1000&Page=1&PageToken=PT1"
+        )
+        parent_record = _alert_record("parent-page-1", "2022-11-15T01:00:00Z")
+        child1_record = _alert_record("child-1", "2022-11-15T05:00:00Z")
+        child2_record = _alert_record("child-2", "2022-11-15T20:00:00Z")
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def split_response(request):
+            window = _alert_window(request)
+            if window == parent and request.get("PageToken") == "PT1":
+                return ALERTS_LIMIT_ERROR_JSON, 400
+            if window == parent:
+                return _alerts_response([parent_record], next_page_url)
+            if window == child1:
+                return _alerts_response([parent_record, child1_record])
+            if window == child2:
+                return _alerts_response([child2_record])
+            if window == partition2:
+                # Empty, so the final state can only come from the split partition.
+                return _alerts_response()
+            raise AssertionError(f"Unexpected Alerts request: {request}")
+
+        response_handler["callback"] = split_response
+        output = read_from_stream(config, "alerts", SyncMode.incremental)
+
+        assert not output.errors
+        assert sorted(_alert_window(request) for request in requests) == sorted([parent, parent, child1, child2, partition2])
+        # child1 re-reads the parent's first page, so its record is emitted twice.
+        assert sorted(message.record.data["sid"] for message in output.records) == ["child-1", "child-2", "parent-page-1", "parent-page-1"]
+        assert _alert_state_date(output) == "2022-11-15T20:00:00Z"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_alerts_split_request_window_later_child_failure_does_not_checkpoint(self, requests_mock):
+        config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
+        parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
+        child1 = ("2022-11-15T00:00:00Z", "2022-11-15T11:59:59Z")
+        child2 = ("2022-11-15T12:00:00Z", "2022-11-15T23:59:59Z")
+        partition2 = ("2022-11-16T00:00:00Z", "2022-11-16T12:03:11Z")
+        child1_record = _alert_record("child-1", "2022-11-15T05:00:00Z")
+        partition2_record = _alert_record("partition-2", "2022-11-16T01:00:00Z")
+        requests, response_handler = _register_alerts_callback(requests_mock)
+
+        def split_response(request):
+            window = _alert_window(request)
+            if window == parent:
+                return ALERTS_LIMIT_ERROR_JSON, 400
+            if window == child1:
+                return _alerts_response([child1_record])
+            if window == child2:
+                return ALERTS_INVALID_START_DATE_JSON, 400
+            if window == partition2:
+                return _alerts_response([partition2_record])
+            raise AssertionError(f"Unexpected Alerts request: {request}")
+
+        response_handler["callback"] = split_response
+        output = read_from_stream(config, "alerts", SyncMode.incremental, expecting_exception=True)
+
+        assert sorted(_alert_window(request) for request in requests) == sorted([parent, child1, child2, partition2])
+        failure = output.errors[0].trace.error
+        assert failure.failure_type == FailureType.system_error
+        assert failure.message == "Twilio rejected the Alerts request: Invalid StartDate"
+        assert sorted(message.record.data["sid"] for message in output.records) == ["child-1", "partition-2"]
+        # The partition whose second child failed is never checkpointed, so the state stays at the start date.
+        assert _alert_state_date(output) == "2022-11-15T00:00:00Z"
+
+
+class TestConferenceParticipantsStream:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conference_participants_only_requests_active_conferences(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+
+        requested_statuses = []
+
+        def _match_active_status(req):
+            q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
+            status = q.get("Status")
+            if status in (["init"], ["in-progress"]):
+                requested_statuses.extend(status)
+                return True
+            return False
+
+        conferences_matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={
+                "conferences": [
+                    {
+                        "sid": "CF2",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T11:00:00Z",
+                        "status": "in-progress",
+                        "subresource_uris": {
+                            "participants": "/2010-04-01/Accounts/AC123/Conferences/CF2/Participants.json",
+                        },
+                    }
+                ]
+            },
+            status_code=200,
+            additional_matcher=_match_active_status,
+        )
+
+        # Participants for in-progress conference CF2
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences/CF2/Participants.json",
+            json={
+                "participants": [
+                    {
+                        "call_sid": "CA2",
+                        "conference_sid": "CF2",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T11:01:00Z",
+                        "date_updated": "2022-11-15T11:05:00Z",
+                        "status": "connected",
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
+
+        assert conferences_matcher.called, "Should request conferences with an active Status filter"
+        assert set(requested_statuses) == {"init", "in-progress"}, "Should request both init and in-progress conferences"
+        assert len(records) >= 1
+        assert records[0].record.data["conference_sid"] == "CF2"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conference_participants_empty_parent_returns_no_records(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={"conferences": []},
+            status_code=200,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
+
+        assert len(records) == 0
 
 
 class TestTwilioNestedStream:
@@ -284,6 +759,89 @@ class TestTwilioNestedStream:
         assert media_matcher.called, "Media endpoint for SM1 was not called"
         assert len(records) == 1, f"Expected 1 media record (only from SM1), got {len(records)}"
 
+    def test_services_stream_reads_from_conversations_api(self, requests_mock):
+        """`services` must hit the Conversations API, not the deprecated Programmable Chat API.
+
+        Twilio's Programmable Chat REST API (`chat.twilio.com/v2`) reaches end of life on
+        June 1, 2026, so the connector routes `services` to `conversations.twilio.com/v1/Services`.
+        """
+        chat_matcher = requests_mock.get("https://chat.twilio.com/v2/Services", status_code=410)
+        conversations_matcher = requests_mock.get(
+            "https://conversations.twilio.com/v1/Services",
+            json={
+                "services": [
+                    {
+                        "sid": "IS11111111111111111111111111111111",
+                        "account_sid": "AC123",
+                        "friendly_name": "Default Conversations Service",
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": "https://conversations.twilio.com/v1/Services/IS11111111111111111111111111111111",
+                        "links": {},
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        records = read_from_stream(TEST_CONFIG, "services", SyncMode.full_refresh).records
+
+        assert conversations_matcher.called, "`services` should call the Conversations API endpoint"
+        assert not chat_matcher.called, "`services` must not call the deprecated Programmable Chat API endpoint"
+        assert len(records) == 1
+
+    def test_roles_stream_reads_from_conversations_api(self, requests_mock):
+        """`roles` must hit the Conversations API, not the deprecated Programmable Chat API.
+
+        The Conversations API preserves Service and Role SIDs, so existing primary keys are
+        unchanged, but the request base URL must be `conversations.twilio.com/v1`.
+        """
+        service_sid = "IS11111111111111111111111111111111"
+        requests_mock.get(
+            "https://conversations.twilio.com/v1/Services",
+            json={
+                "services": [
+                    {
+                        "sid": service_sid,
+                        "account_sid": "AC123",
+                        "friendly_name": "Default Conversations Service",
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": f"https://conversations.twilio.com/v1/Services/{service_sid}",
+                        "links": {},
+                    }
+                ]
+            },
+            status_code=200,
+        )
+        chat_roles_matcher = requests_mock.get(f"https://chat.twilio.com/v2/Services/{service_sid}/Roles", status_code=410)
+        conversations_roles_matcher = requests_mock.get(
+            f"https://conversations.twilio.com/v1/Services/{service_sid}/Roles",
+            json={
+                "roles": [
+                    {
+                        "sid": "RL22222222222222222222222222222222",
+                        "account_sid": "AC123",
+                        "chat_service_sid": service_sid,
+                        "friendly_name": "service admin",
+                        "type": "service",
+                        "permissions": ["editAnyMessage"],
+                        "date_created": "2022-01-01T00:00:00Z",
+                        "date_updated": "2022-01-02T00:00:00Z",
+                        "url": f"https://conversations.twilio.com/v1/Services/{service_sid}/Roles/RL22222222222222222222222222222222",
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        records = read_from_stream(TEST_CONFIG, "roles", SyncMode.full_refresh).records
+
+        assert conversations_roles_matcher.called, "`roles` should call the Conversations API endpoint"
+        assert not chat_roles_matcher.called, "`roles` must not call the deprecated Programmable Chat API endpoint"
+        assert len(records) == 1
+        assert records[0].record.data["chat_service_sid"] == service_sid
+
     @pytest.mark.parametrize(
         "stream_name, expected_count",
         [
@@ -320,3 +878,197 @@ class TestTwilioNestedStream:
         records = read_from_stream(TEST_CONFIG, stream_name, SyncMode.full_refresh).records
 
         assert len(records) == expected_count
+
+
+@pytest.mark.parametrize(
+    "input_state,expected_state,should_migrate",
+    [
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="single_partition_duplicated_for_all_statuses",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="multiple_partitions_each_duplicated_with_own_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                ]
+            },
+            True,
+            id="partition_without_cursor_gets_empty_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            None,
+            False,
+            id="already_migrated_no_op",
+        ),
+        pytest.param(
+            {},
+            None,
+            False,
+            id="empty_state_no_op",
+        ),
+    ],
+)
+def test_conferences_state_migration(input_state, expected_state, should_migrate):
+    migration = TwilioConferencesStateMigration()
+    assert migration.should_migrate(input_state) == should_migrate
+    if should_migrate:
+        assert migration.migrate(input_state) == expected_state

@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.table
 
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.apache.commons.codec.digest.DigestUtils
 
@@ -32,6 +33,14 @@ open class DefaultTempTableNameGenerator(
     private val affixSeparator: String = "",
     private val hashLength: Int = 32,
 ) : TempTableNameGenerator {
+    /**
+     * The constructor Micronaut instantiates the singleton through; it builds the same instance as
+     * the all-defaults primary constructor. inject-kotlin 4.8-4.10 emits unverifiable bytecode for
+     * a constructor that combines default values with primitive parameters, which makes Micronaut
+     * drop the bean silently, so the injectable constructor must not declare defaults.
+     */
+    @Inject constructor() : this(internalNamespace = null)
+
     override fun generate(originalName: TableName): TableName {
         val shortNamespace =
             originalName.namespace.takeFirstAndLastNChars(affixLength, separator = affixSeparator)

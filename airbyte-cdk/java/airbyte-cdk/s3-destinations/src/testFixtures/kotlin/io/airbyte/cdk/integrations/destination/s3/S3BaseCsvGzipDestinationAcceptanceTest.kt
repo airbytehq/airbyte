@@ -16,8 +16,8 @@ import java.util.zip.GZIPInputStream
 abstract class S3BaseCsvGzipDestinationAcceptanceTest : S3BaseCsvDestinationAcceptanceTest() {
     override val formatConfig: JsonNode?
         get() = // config without compression defaults to GZIP
-        Jsons.jsonNode(
-                mapOf("format_type" to outputFormat, "flattening" to Flattening.ROOT_LEVEL.value)
+            Jsons.jsonNode(
+                mapOf("format_type" to outputFormat, "flattening" to Flattening.ROOT_LEVEL.value),
             )
 
     @Throws(IOException::class)

@@ -1,5 +1,15 @@
 # Delighted
 
+:::warning
+
+## Deprecation Notice
+
+The Delighted source connector is archived and is no longer available in the Airbyte Cloud or Open Source connector catalogs. Delighted permanently shut down on July 1, 2026, following its June 30, 2026 sunset. Its API is no longer available, so existing connections cannot sync data.
+
+See the [Delighted Sunset FAQ](https://help.delighted.com/article/840-delighted-sunset-faq) for details. Disable existing Delighted connections. If you previously migrated your data to another platform, configure a separate connector for that platform; changing this connector's credentials will not restore access to Delighted.
+
+:::
+
 This page contains the setup guide and reference information for the [Delighted](https://delighted.com/) source connector.
 
 ## Prerequisites
@@ -47,6 +57,10 @@ This source is capable of syncing the following core streams:
 - [Survey Responses](https://app.delighted.com/docs/api/listing-survey-responses)
 - [Unsubscribed People](https://app.delighted.com/docs/api/listing-unsubscribed-people)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -54,6 +68,12 @@ This source is capable of syncing the following core streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 0.4.46 | 2026-10-07 | [88199](https://github.com/airbytehq/airbyte/pull/88199) | Archive connector following the Delighted platform shutdown |
+| 0.4.45 | 2026-06-30 | [81033](https://github.com/airbytehq/airbyte/pull/81033) | Update dependencies |
+| 0.4.44 | 2026-06-23 | [80405](https://github.com/airbytehq/airbyte/pull/80405) | Update dependencies |
+| 0.4.43 | 2026-06-16 | [79798](https://github.com/airbytehq/airbyte/pull/79798) | Update dependencies |
+| 0.4.42 | 2026-06-09 | [79239](https://github.com/airbytehq/airbyte/pull/79239) | Update dependencies |
+| 0.4.41 | 2026-06-02 | [78666](https://github.com/airbytehq/airbyte/pull/78666) | Update dependencies |
 | 0.4.40 | 2026-04-28 | [77166](https://github.com/airbytehq/airbyte/pull/77166) | Update dependencies |
 | 0.4.39 | 2026-04-21 | [75097](https://github.com/airbytehq/airbyte/pull/75097) | Update dependencies |
 | 0.4.38 | 2026-03-03 | [74151](https://github.com/airbytehq/airbyte/pull/74151) | Update dependencies |

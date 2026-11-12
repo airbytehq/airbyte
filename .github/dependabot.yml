@@ -18,6 +18,15 @@ updates:
     commit-message:
       prefix: "chore(deps): "
     open-pull-requests-limit: 10
+    groups:
+      # The Kotlin Gradle plugin, kotlin-bom and KSP ship together: KSP embeds a Kotlin
+      # compiler front end, and a bump of one without the other breaks Micronaut's
+      # bean-definition generation. One PR for all of them (see the root build.gradle
+      # for the KSP version ceiling).
+      kotlin-toolchain:
+        patterns:
+          - "org.jetbrains.kotlin*"
+          - "com.google.devtools.ksp*"
 
   # Docker base images - scan from root
   - package-ecosystem: docker

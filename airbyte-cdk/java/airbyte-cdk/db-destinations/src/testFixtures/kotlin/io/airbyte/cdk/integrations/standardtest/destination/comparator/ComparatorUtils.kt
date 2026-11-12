@@ -10,7 +10,7 @@ object ComparatorUtils {
     fun getActualValueByExpectedKey(
         expectedKey: String?,
         actualJsonNode: JsonNode,
-        nameResolver: Function<String?, List<String?>>
+        nameResolver: Function<String?, List<String?>>,
     ): JsonNode? {
         for (actualKey in nameResolver.apply(expectedKey)) {
             if (actualJsonNode.has(actualKey)) {

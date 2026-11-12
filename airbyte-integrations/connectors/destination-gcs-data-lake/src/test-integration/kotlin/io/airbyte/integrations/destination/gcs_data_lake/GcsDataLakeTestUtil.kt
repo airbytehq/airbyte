@@ -25,8 +25,8 @@ object GcsDataLakeTestUtil {
         getConfig(
             ValidatedJsonUtils.parseOne(
                 GcsDataLakeSpecification::class.java,
-                Files.readString(path)
-            )
+                Files.readString(path),
+            ),
         )
 
     fun getConfig(spec: ConfigurationSpecification) =
@@ -38,14 +38,13 @@ object GcsDataLakeTestUtil {
         tableIdGenerator: TableIdGenerator = SimpleTableIdGenerator(config.namespace),
     ): Catalog {
         // Create utility instances for test
-        val icebergUtil =
-            IcebergUtil(tableIdGenerator, AirbyteValueCoercer(useFastTimestampParsing = true))
+        val icebergUtil = IcebergUtil(tableIdGenerator, AirbyteValueCoercer())
         val gcsDataLakeCatalogUtil = GcsDataLakeCatalogUtil(icebergUtil)
 
         val properties = gcsDataLakeCatalogUtil.toCatalogProperties(config)
         return icebergUtil.createCatalog(
             io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_CATALOG_NAME,
-            properties
+            properties,
         )
     }
 }

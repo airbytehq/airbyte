@@ -21,7 +21,7 @@ class BulkLoadCompletedUploadPartitioner<K : WithStream, T, U : RemoteObject<*>>
     ObjectLoaderCompletedUploadPartitioner<K, T, StreamKey, U> {
     override fun getOutputKey(
         inputKey: K,
-        output: ObjectLoaderUploadCompleter.UploadResult<U>
+        output: ObjectLoaderUploadCompleter.UploadResult<U>,
     ): StreamKey {
         return StreamKey(inputKey.stream)
     }

@@ -442,6 +442,17 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
+          predicate: "{{ 'token' in (response.get('error', {}).get('message', '') | lower) }}"
+          error_message: >-
+            Customerly rejected the API access token ({{ response.get('error', {}).get('message', '') }}).
+            Tokens are deactivated when the teammate who created them is removed from the project.
+            Generate a new access token under Project Settings > Installation > Public API and update the connector configuration.
 
 streams:
   - $ref: "#/definitions/streams/users"

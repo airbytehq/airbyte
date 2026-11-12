@@ -1,5 +1,20 @@
 # Shopify Migration Guide
 
+## Upgrading to 4.0.0
+
+This version adds `"format": "date-time"` to datetime fields that were previously declared as plain strings.
+
+Two of these are top-level stream fields, so typed destinations will change the corresponding column type from string/VARCHAR to timestamp-with-timezone:
+
+- `orders.processed_at`
+- `order_refunds.processed_at`
+
+The remaining annotated fields are nested inside the `orders.refunds[].transactions[]` and `order_refunds.transactions[]` arrays, which typed destinations already store as a single JSON column. Those cause no column type change.
+
+**Required action:** Refresh the source schema, then clear and resync the `orders` and `order_refunds` streams.
+
+**Also review:** any downstream SQL, dbt models, or BI dashboards that treat `processed_at` as text. String comparisons, `LIKE` filters, and text concatenation on these columns will need to be updated to timestamp semantics. On PostgreSQL the column change is applied as `ALTER TABLE ... ALTER COLUMN "processed_at" TYPE timestamp with time zone USING "processed_at"::timestamp with time zone`, which rewrites the table under an exclusive lock and will fail if any existing row holds a value that cannot be cast to a timestamp.
+
 ## Upgrading to 3.0.0
 
 This version contains schema changes for the following streams:

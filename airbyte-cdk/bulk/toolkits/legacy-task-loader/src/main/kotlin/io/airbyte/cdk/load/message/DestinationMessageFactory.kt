@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -24,14 +25,15 @@ class DestinationMessageFactory(
     @Value("\${airbyte.destination.core.file-transfer.enabled}")
     private val fileTransferEnabled: Boolean,
     @Named("requireCheckpointIdOnRecordAndKeyOnState")
-    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean = false,
+    private val requireCheckpointIdOnRecordAndKeyOnState: Boolean,
     private val namespaceMapper: NamespaceMapper,
     private val uuidGenerator: UUIDGenerator,
 ) {
+    private val log = KotlinLogging.logger {}
 
     fun fromAirbyteProtocolMessage(
         message: AirbyteMessage,
-        serializedSizeBytes: Long
+        serializedSizeBytes: Long,
     ): DestinationMessage {
         fun toLong(value: Any?, name: String): Long? {
             return value?.let {
@@ -53,7 +55,7 @@ class DestinationMessageFactory(
                 val descriptor =
                     namespaceMapper.map(
                         namespace = message.record.namespace,
-                        name = message.record.stream
+                        name = message.record.stream,
                     )
                 val stream = catalog.getStream(descriptor)
                 if (fileTransferEnabled) {
@@ -89,7 +91,7 @@ class DestinationMessageFactory(
                             val idSource =
                                 (message.record.additionalProperties[Meta.CHECKPOINT_ID_NAME]
                                     ?: throw IllegalStateException(
-                                        "Expected `partition_id` on record"
+                                        "Expected `partition_id` on record",
                                     ))
                             CheckpointId(idSource as String)
                         } else {
@@ -129,21 +131,16 @@ class DestinationMessageFactory(
                                     message.trace.emittedAt?.toLong() ?: 0L,
                                 )
                             }
-                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE ->
-                            // The source declared this stream incomplete (i.e. failed).
-                            // Let the sync end naturally so the failure is attributed to the
-                            // source, not the destination.
-                            if (fileTransferEnabled) {
-                                DestinationFileStreamIncomplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
-                            } else {
-                                DestinationRecordStreamIncomplete(
-                                    stream,
-                                    message.trace.emittedAt?.toLong() ?: 0L,
-                                )
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE -> {
+                            // Drop INCOMPLETE — same as the orchestrator does in STDIO
+                            // mode. The source will exit non-zero and the orchestrator
+                            // will shut down the destination.
+                            log.warn {
+                                "Received INCOMPLETE stream status for " +
+                                    "${descriptor.namespace}:${descriptor.name}. Ignoring."
                             }
+                            Ignored
+                        }
                         else -> Undefined
                     }
                 } else {
@@ -193,9 +190,9 @@ class DestinationMessageFactory(
                                 serializedSizeBytes = serializedSizeBytes,
                                 checkpointKey =
                                     keyFromAdditionalPropertiesMaybe(
-                                        message.state.additionalProperties
+                                        message.state.additionalProperties,
                                     ),
-                                streamCheckpoints = snapshotStreamCheckpoints(message.state)
+                                streamCheckpoints = snapshotStreamCheckpoints(message.state),
                             )
                         } else {
                             GlobalCheckpoint(
@@ -213,8 +210,8 @@ class DestinationMessageFactory(
                                 serializedSizeBytes = serializedSizeBytes,
                                 checkpointKey =
                                     keyFromAdditionalPropertiesMaybe(
-                                        message.state.additionalProperties
-                                    )
+                                        message.state.additionalProperties,
+                                    ),
                             )
                         }
                     }
@@ -266,7 +263,7 @@ class DestinationMessageFactory(
         }
 
     private fun fromAirbyteStreamState(
-        streamState: AirbyteStreamState
+        streamState: AirbyteStreamState,
     ): CheckpointMessage.Checkpoint {
         val descriptor =
             namespaceMapper.map(
@@ -307,7 +304,7 @@ class DestinationMessageFactory(
                         } else {
                             null
                         },
-                    name = message.record.streamName
+                    name = message.record.streamName,
                 )
             val stream = catalog.getStream(descriptor)
             DestinationRecord(
@@ -329,7 +326,7 @@ data object ProbeMessage : DestinationMessage {
     override fun asProtocolMessage(): AirbyteMessage {
         throw UnsupportedOperationException(
             "ProbeMessage cannot be converted to AirbyteMessage. " +
-                "It is only used by the source to verify that the data channel is open."
+                "It is only used by the source to verify that the data channel is open.",
         )
     }
 }

@@ -1,0 +1,20 @@
+{
+  "payload": {
+    "ItemData": [
+      {
+        "SellerSKU": "SKU-TEST-001",
+        "FulfillmentNetworkSKU": "X001ABCDEF",
+        "QuantityShipped": 10,
+        "QuantityReceived": 8,
+        "QuantityInCase": 0,
+        "ReleaseDate": "2024-02-15",
+        "PrepDetailsList": [
+          {
+            "PrepInstruction": "Polybagging",
+            "PrepOwner": "SELLER"
+          }
+        ]
+      }
+    ]
+  }
+}

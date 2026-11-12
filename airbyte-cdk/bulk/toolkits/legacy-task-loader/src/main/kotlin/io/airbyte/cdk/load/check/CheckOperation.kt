@@ -51,7 +51,7 @@ class CheckOperation<T : ConfigurationSpecification, C : DestinationConfiguratio
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
                     .withConnectionStatus(
                         AirbyteConnectionStatus()
-                            .withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
+                            .withStatus(AirbyteConnectionStatus.Status.SUCCEEDED),
                     )
             outputConsumer.accept(successMessage)
         } catch (t: Throwable) {
