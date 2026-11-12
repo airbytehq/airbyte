@@ -12,9 +12,13 @@ from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(
+    order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str, order_updated_at: str = None
+) -> str:
+    updated_at_field = f'"order_updated_at":"{order_updated_at}",' if order_updated_at is not None else ""
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
+        f"{updated_at_field}"
         f'"order_created_at":"{order_created_at}","transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
         f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
@@ -85,7 +89,32 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
         stream_state_cache.cached_state.pop("transactions", None)
 
     assert all("order_created_at" not in record for record in records)
+    assert all("order_updated_at" not in record for record in records)
     return stream, records
+
+
+@pytest.mark.parametrize(
+    "order_updated_at, expected_ids",
+    [
+        ("2026-09-11T06:27:00Z", [1001]),
+        ("2026-09-11T05:49:43Z", [1001]),
+        ("2026-09-11T04:00:00Z", []),
+        (None, []),
+    ],
+)
+def test_transactions_graphql_emits_updated_status_for_updated_order(
+    requests_mock, bulk_job_completed_response, auth_config, order_updated_at, expected_ids
+) -> None:
+    _, records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [_order_jsonl(1, "2026-09-11T04:00:00Z", 1001, "2026-09-11T05:07:00Z", order_updated_at)],
+        state_value="2026-09-11T05:49:43+00:00",
+    )
+
+    assert [record["id"] for record in records] == expected_ids
+    assert all(record["status"] == "SUCCESS" for record in records)
 
 
 @pytest.mark.parametrize(
