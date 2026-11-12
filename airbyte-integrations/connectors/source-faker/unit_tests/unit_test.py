@@ -10,7 +10,18 @@ import tomllib
 from packaging.specifiers import SpecifierSet
 from source_faker import SourceFaker
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStreamSerializer,
+    StreamDescriptor,
+    Type,
+)
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
 
 
 class MockLogger:
@@ -282,6 +293,52 @@ def test_read_users_resumes_from_checkpoint():
 
     records = [row.record.data for row in iterator if row.type is Type.RECORD]
     assert [record["id"] for record in records] == [6, 7, 8, 9, 10]
+
+
+@pytest.mark.parametrize("persisted_state", ["final", "legacy", "beyond_count"])
+def test_read_users_restarts_after_completed_pass(persisted_state):
+    config = {"count": 10, "records_per_slice": 5, "parallelism": 1, "seed": 100, "always_updated": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    first_read = list(SourceFaker().read(logger, config, catalog, {}))
+    first_records = [row.record.data for row in first_read if row.type is Type.RECORD]
+    assert [record["id"] for record in first_records] == list(range(1, config["count"] + 1))
+    final_state = [row.state for row in first_read if row.type is Type.STATE][-1]
+    expected_state = {"seed": config["seed"], "updated_at": first_records[-1]["updated_at"], "loop_offset": config["count"]}
+    assert final_state.stream.stream_state.__dict__ == expected_state
+
+    if persisted_state == "final":
+        state = [final_state]
+    else:
+        legacy_state = dict(expected_state)
+        if persisted_state == "beyond_count":
+            legacy_state["loop_offset"] += 5
+        state = [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name="users", namespace=None),
+                    stream_state=AirbyteStateBlob(**legacy_state),
+                ),
+            )
+        ]
+
+    second_read = list(SourceFaker().read(logger, config, catalog, state))
+    second_records = [row.record.data for row in second_read if row.type is Type.RECORD]
+    print(f"{persisted_state}: first read={len(first_records)}, second read={len(second_records)}")
+    assert [record["id"] for record in second_records] == list(range(1, config["count"] + 1))
+    second_state = [row.state for row in second_read if row.type is Type.STATE][-1]
+    assert second_state.stream.stream_state.__dict__ == {
+        "seed": config["seed"],
+        "updated_at": second_records[-1]["updated_at"],
+        "loop_offset": config["count"],
+    }
+    estimates = [row.trace.estimate for row in second_read if row.type is Type.TRACE and row.trace.estimate]
+    assert estimates[0].row_estimate == config["count"]
 
 
 def test_ensure_no_purchases_without_users():
