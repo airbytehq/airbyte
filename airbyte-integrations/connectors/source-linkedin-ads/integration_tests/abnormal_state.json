@@ -16,14 +16,14 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "lastModified": "2050-01-03T00:00:00+0000" },
+      "stream_state": { "lastModified": "2050-01-03" },
       "stream_descriptor": { "name": "campaigns" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "lastModifiedAt": "2050-01-01T00:00:00+0000" },
+      "stream_state": { "lastModifiedAt": 2524608000000 },
       "stream_descriptor": { "name": "creatives" }
     }
   },
@@ -107,7 +107,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "lastModified": "2050-01-01T00:00:00+0000" },
+      "stream_state": { "lastModified": 2524608000001 },
       "stream_descriptor": { "name": "conversions" }
     }
   }
