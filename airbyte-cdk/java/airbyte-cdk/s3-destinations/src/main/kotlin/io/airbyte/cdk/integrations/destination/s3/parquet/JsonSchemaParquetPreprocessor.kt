@@ -16,7 +16,7 @@ class JsonSchemaParquetPreprocessor : JsonSchemaIdentityMapper() {
             return when (AirbyteJsonSchemaType.fromJsonSchema(schema)) {
                 AirbyteJsonSchemaType.NULL ->
                     throw IllegalStateException(
-                        "Null typed fields in disjoint unions not supported"
+                        "Null typed fields in disjoint unions not supported",
                     )
                 AirbyteJsonSchemaType.BOOLEAN -> "boolean"
                 AirbyteJsonSchemaType.INTEGER -> "integer"
@@ -43,7 +43,7 @@ class JsonSchemaParquetPreprocessor : JsonSchemaIdentityMapper() {
                 // was invoked before this preprocessor.
                 AirbyteJsonSchemaType.UNKNOWN ->
                     throw IllegalStateException(
-                        "JSON fields should be converted to string upstream of this processor"
+                        "JSON fields should be converted to string upstream of this processor",
                     )
             }
         }

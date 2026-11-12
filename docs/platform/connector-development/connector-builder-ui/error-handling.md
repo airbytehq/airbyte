@@ -292,3 +292,7 @@ If your error handler is not working as expected:
 3. **Test with simple conditions**: Start with HTTP status codes before adding complex predicates
 4. **Use custom error messages**: Include response details to understand what's happening
 5. **Check logs**: Review sync logs to see which error handlers are being triggered
+
+## Related
+
+- *YAML Components*: [Error Handling](/platform/connector-development/config-based/understanding-the-yaml-file/error-handling)

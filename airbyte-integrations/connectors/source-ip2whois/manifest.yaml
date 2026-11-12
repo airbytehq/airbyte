@@ -21,6 +21,8 @@ definitions:
           request_parameters:
             key: "{{ config['api_key'] }}"
             domain: "{{ config['domain'] }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -283,6 +285,36 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.ip2whois.com
+  error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 400
+          - 404
+        error_message: >-
+          IP2WHOIS could not look up the domain '{{ config.get('domain', '') }}':
+          {{ response.get('error', {}).get('error_message') or 'no error message returned' }}
+          Enter a registered domain name (for example airbyte.com) in the Domain field.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        http_codes:
+          - 401
+        error_message: >-
+          IP2WHOIS rejected the API key:
+          {{ response.get('error', {}).get('error_message') or 'no error message returned' }}
+          Check the API key in the source settings; you can find it in your ip2location.io dashboard.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        predicate: "{{ response.get('error', {}).get('error_code') in [10002, 10003, 10004] }}"
+        error_message: >-
+          IP2WHOIS rejected the request:
+          {{ response.get('error', {}).get('error_message') }}
+          Check that the API key is active and that your plan still has WHOIS lookup credits.
 streams:
   - type: DeclarativeStream
     name: whois
@@ -298,6 +330,8 @@ streams:
         request_parameters:
           key: "{{ config['api_key'] }}"
           domain: "{{ config['domain'] }}"
+        error_handler:
+          $ref: "#/definitions/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -562,7 +596,9 @@ spec:
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    required: []
+    required:
+      - api_key
+      - domain
     properties:
       api_key:
         type: string

@@ -15,7 +15,7 @@ sealed interface CredentialsConfig {
 class OAuthCredentialsConfig(
     val clientId: String,
     val clientSecret: String,
-    val refreshToken: String
+    val refreshToken: String,
 ) : CredentialsConfig {
     override val type: String = "OAuth"
 }

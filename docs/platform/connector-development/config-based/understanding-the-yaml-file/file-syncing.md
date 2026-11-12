@@ -1,4 +1,4 @@
-# File syncing
+# File Syncing
 
 File syncing enables connectors to download and transfer files from API sources when an API endpoint returns a file. This capability supports all common file formats including documents, images, and structured data.
 
@@ -111,7 +111,7 @@ The `filename_extractor` supports Jinja templating with access to record data, a
 
 ## Usage example
 
-Here's how the [Zendesk Support connector](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-zendesk-support/source_zendesk_support/manifest.yaml) uses file syncing for article attachments.
+Here's how the [Zendesk Support connector](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-zendesk-support/manifest.yaml) uses file syncing for article attachments.
 
 ```yaml title="manifest.yaml"
 streams:

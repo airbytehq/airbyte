@@ -1,6 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import json
+import logging
 from unittest import TestCase
 
 from config_builder import ConfigBuilder
@@ -68,3 +69,23 @@ class TestRoutingSettingsStream(TestCase):
 
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
+    def test_401_error_has_connector_specific_message(self, http_mocker: HttpMocker):
+        http_mocker.get(
+            HttpRequest(f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/routing_settings/account"),
+            HttpResponse(
+                body=json.dumps({"error": {"message": "Unauthorized"}}),
+                status_code=401,
+            ),
+        )
+
+        config = _config()
+        source = get_source(config)
+        status = source.check(logging.getLogger("test"), config)
+
+        assert (
+            status.status.value == "FAILED"
+            and status.message
+            and "Zendesk Chat access token is invalid, expired, or missing the required read and chat scopes." in status.message
+        )

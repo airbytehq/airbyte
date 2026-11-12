@@ -7,6 +7,16 @@ enterprise-connector: true
 
 <HideInUI>
 
+:::info We no longer sell this connector
+
+Airbyte no longer sells this connector, but we continue to support it if you purchased it in the past.
+
+:::
+
+</HideInUI>
+
+<HideInUI>
+
 This page contains the setup guide and reference information for the [SharePoint Enterprise](https://portal.azure.com) source connector.
 
 </HideInUI>
@@ -25,7 +35,7 @@ This page contains the setup guide and reference information for the [SharePoint
 1. Click Sources and then click + New source.
 2. On the Set up the source page, select SharePoint Enterprise from the Source type dropdown.
 3. Enter a name for the SharePoint Enterprise connector.
-4. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+4. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'. 'SHARED_ITEMS' and 'ALL' use Microsoft's sharedWithMe API, which stops returning data after November 2026. Files shared from a SharePoint site can still be synced by selecting 'ACCESSIBLE_DRIVES' and entering that site's Site URL (this syncs the whole document library). Files shared from another user's OneDrive can't be synced after the retirement.
 5. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 6. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
 7. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
@@ -78,27 +88,24 @@ This source requires **Application permissions**. Follow these [instructions](ht
 If you plan to use the Replicate Permissions ACL feature, you must also add these permissions: User.Read.All, Group.Read.All, Application.Read.All, and Device.Read.All.
 :::
 
-### Step 2: Set up the Microsoft SharePoint connector in Airbyte
+### Step 2: Set up the SharePoint Enterprise connector in Airbyte
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. Click **Sources** and then click **+ New source**.
-3. On the **Set up** the source page, select **Microsoft SharePoint** from the Source type dropdown.
-4. Enter the name for the Microsoft SharePoint connector.
-5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
-6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
-7. Switch to **Service Key Authentication**
-8. For **User Principal Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user. Special characters such as a period, comma, space, and the at sign (@) are converted to underscores (_).
-9. Enter **Tenant ID**, **Client ID** and **Client secret**.
-10. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
-11. Add a stream:
+1. Click **Sources** and then click **+ New source**.
+2. On the **Set up** the source page, select **SharePoint Enterprise** from the Source type dropdown.
+3. Enter the name for the SharePoint Enterprise connector.
+4. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'. Service Key Authentication can't list items shared with you, so 'SHARED_ITEMS' isn't supported and 'ALL' only searches accessible drives. To sync files shared from a SharePoint site, select 'ACCESSIBLE_DRIVES' and enter that site's Site URL (this syncs the whole document library).
+5. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
+6. Switch to **Service Key Authentication**
+7. For **User Principal Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user. Special characters such as a period, comma, space, and the at sign (@) are converted to underscores (_).
+8. Enter **Tenant ID**, **Client ID** and **Client secret**.
+9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+10. Add a stream:
     1. Write the **File Type**
     2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
     3. Give a **Name** to the stream
     4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
     5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-12. Click **Set up source**
-
-<!-- /env:oss -->
+11. Click **Set up source**
 
 ## Path Patterns
 
@@ -152,7 +159,7 @@ As you can probably tell, there are many ways to achieve the same goal with path
 
 ## User Schema
 
-When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
+When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the Document file type format.**
 
 Providing a schema allows for more control over the output of this stream. Without a provided schema, columns and datatypes will be inferred from the first created file in the bucket matching your path pattern and suffix. This will probably be fine in most cases but there may be situations you want to enforce a schema instead, e.g.:
 
@@ -221,11 +228,7 @@ The Avro parser uses the [Fastavro library](https://fastavro.readthedocs.io/en/l
 
 There are currently no options for JSONL parsing.
 
-### Document File Type Format (Experimental)
-
-:::warning
-The Document file type format is currently an experimental feature and not subject to SLAs. Use at your own risk.
-:::
+### Document File Type Format
 
 The Document file type format is a special format that allows you to extract text from Markdown, TXT, PDF, Word, Powerpoint and Google documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
 
@@ -242,9 +245,7 @@ Before parsing each document, the connector exports Word Document files to Docx 
 :::info
 
 The raw file replication feature has the following requirements and limitations:
-- **Supported Airbyte Versions:**
-  - Cloud: All Workspaces
-  - OSS / Enterprise: `v1.2.0` or later
+
 - **Max File Size:** `1GB` per file
 - **Supported Destinations:**
   - S3: `v1.4.0` or later
@@ -317,7 +318,11 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                           | Subject                                                                   |
 |:--------|:-----------|:-------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.3.0 | 2025-05-21 | [161](https://github.com/airbytehq/airbyte-enterprise/pull/161) | Add permissions sync support |
+| 0.3.3 | 2026-10-30 | [476](https://github.com/airbytehq/airbyte-enterprise/pull/476) | Handle Microsoft Graph `sharedWithMe` deprecation: clearer errors for shared items, skip shared items for Service Key auth |
+| 0.3.2 | 2026-03-30 | [392](https://github.com/airbytehq/airbyte-enterprise/pull/392) | Support `start_date` format without microseconds |
+| 0.3.1 | 2026-02-11 | [381](https://github.com/airbytehq/airbyte-enterprise/pull/381) | Bump CDK to 7.9.3 to fix permissions stream primary key |
+| 0.3.0 | 2025-10-06 | [199](https://github.com/airbytehq/airbyte-enterprise/pull/199) | Define OAuth scopes in the setup page |
+| 0.2.1 | 2025-08-29 | [217](https://github.com/airbytehq/airbyte-enterprise/pull/217) | Increase memory for check |
 | 0.2.0 | 2025-04-30 | [144](https://github.com/airbytehq/airbyte-enterprise/pull/144) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
 | 0.1.0 | 2025-04-10 | [134](https://github.com/airbytehq/airbyte-enterprise/pull/134) | New source |
 

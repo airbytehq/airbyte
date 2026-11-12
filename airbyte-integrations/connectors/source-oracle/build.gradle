@@ -18,5 +18,5 @@ application {
 dependencies {
     implementation "com.oracle.database.jdbc:ojdbc8-production:19.7.0.0"
 
-    testImplementation 'org.testcontainers:oracle-xe:1.19.4'
+    testImplementation 'org.testcontainers:oracle-xe:1.21.4'
 }

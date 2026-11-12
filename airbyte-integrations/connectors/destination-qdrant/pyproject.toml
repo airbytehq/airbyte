@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-qdrant"
-version = "0.1.41"
+version = "0.1.42"
 description = "Airbyte destination implementation for Qdrant."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "ELv2"
@@ -17,10 +17,11 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_qdrant"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = { version = "< 3", extras = ["vector-db-based"] }
+python = "^3.10,<3.12"
+airbyte-cdk = { version = ">=7.7.0,<8.0.0", extras = ["vector-db-based"] }
 qdrant-client = "*"
 fastembed = "< 0.3"
+onnxruntime = "< 1.24"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"

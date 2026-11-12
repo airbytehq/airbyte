@@ -1,4 +1,4 @@
-# Incremental Syncs
+# Incremental Sync
 
 An incremental sync is a sync which pulls only the data that has changed since the previous sync (as opposed to all the data available in the data source).
 
@@ -24,8 +24,7 @@ During the sync, records are read from the API according to these time windows a
 
 Upon a successful sync, the final stream state will be the datetime of the last record emitted. On the subsequent sync, the connector will fetch records whose cursor value begins on that datetime and onward.
 
-Refer to the schema for both [`DatetimeBasedCursor`](reference.md#/definitions/DatetimeBasedCursor) and [`MinMaxDatetime`](reference.md#/definitions/MinMaxDatetime) in the YAML reference for more details.
-
+Refer to the schema for both [`DatetimeBasedCursor`](reference/DatetimeBasedCursor.md) and [`MinMaxDatetime`](reference/MinMaxDatetime.md) in the YAML reference for more details.
 
 Example:
 
@@ -146,7 +145,7 @@ Summary
 
 Choose the option that best fits your data structure and sync requirements to optimize performance and data integrity.
 
-## More readings
+## Related
 
+- *No-Code Connector Builder*: [Incremental Sync](/platform/connector-development/connector-builder-ui/incremental-sync)
 - [Incremental reads](../../cdk-python/incremental-stream.md)
-- Many of the concepts discussed here are described in the [No-Code Connector Builder docs](../../connector-builder-ui/incremental-sync.md) as well, with more examples.

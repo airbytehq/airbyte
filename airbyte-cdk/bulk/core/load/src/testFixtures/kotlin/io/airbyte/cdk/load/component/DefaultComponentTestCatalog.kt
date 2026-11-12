@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.v0.SyncMode
  * - Airbyte metadata columns
  *
  * Usage in connector test config factory:
+ *
  * @Singleton @Primary fun catalog() = DefaultComponentTestCatalog.make()
  */
 object DefaultComponentTestCatalog {
@@ -33,13 +34,13 @@ object DefaultComponentTestCatalog {
                     jsonNodeFactory.objectNode().apply {
                         set<Nothing>(
                             "id",
-                            jsonNodeFactory.objectNode().apply { put("type", "integer") }
+                            jsonNodeFactory.objectNode().apply { put("type", "integer") },
                         )
                         set<Nothing>(
                             "name",
-                            jsonNodeFactory.objectNode().apply { put("type", "string") }
+                            jsonNodeFactory.objectNode().apply { put("type", "string") },
                         )
-                    }
+                    },
                 )
             }
 

@@ -674,13 +674,11 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          max_retries: 5
-          backoff_strategies:
-            - type: ConstantBackoffStrategy
-              backoff_time_in_seconds: 62
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 62
 streams:
   - $ref: "#/definitions/streams/adjustments"
   - $ref: "#/definitions/streams/customers"

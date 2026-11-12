@@ -40,9 +40,8 @@ class MarketoStream(HttpStream, ABC):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
         self.start_date = config["start_date"]
-        # this is done for test purposes, the field is not exposed to spec.json!
         self.end_date = config.get("end_date")
-        self.window_in_days = config.get("window_in_days", 30)
+        self.window_in_days = self._validate_window_in_days(config.get("window_in_days", 30))
         self._url_base = config["domain_url"].rstrip("/") + "/"
         self.stream_name = stream_name
         self.param = param
@@ -55,6 +54,16 @@ class MarketoStream(HttpStream, ABC):
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         return None
+
+    @staticmethod
+    def _validate_window_in_days(window_in_days: int) -> int:
+        if not isinstance(window_in_days, int) or not 1 <= window_in_days <= 31:
+            raise AirbyteTracedException(
+                message='Field "window_in_days" must be an integer from 1 to 31.',
+                internal_message=f"Invalid window_in_days value: {window_in_days!r}.",
+                failure_type=FailureType.config_error,
+            )
+        return window_in_days
 
     def path(self, **kwargs) -> str:
         return f"rest/v1/{self.name}.json"
@@ -70,6 +79,9 @@ class MarketoStream(HttpStream, ABC):
         if next_page_token:
             params.update(**next_page_token)
         return params
+
+    def request_kwargs(self, **kwargs) -> Mapping[str, Any]:
+        return {"stream": True, "timeout": (30, 300)}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         data = response.json().get(self.data_field, [])
@@ -146,7 +158,7 @@ class IncrementalMarketoStream(MarketoStream):
         end_date = pendulum.parse(self.end_date) if self.end_date else pendulum.now()
         while start_date < end_date:
             # the amount of days for each data-chunk beginning from start_date
-            end_date_slice = start_date.add(days=self.window_in_days)
+            end_date_slice = min(start_date.add(days=self.window_in_days), end_date)
 
             date_slice = {
                 "startAt": to_datetime_str(start_date),
@@ -167,6 +179,12 @@ class MarketoExportBase(IncrementalMarketoStream):
     # Polling Job Status - https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
     # The status is only updated once every 60 seconds
     poll_interval = 60
+
+    # Marketo's Bulk Extract API honors only a single date-range filter per export
+    # job. Subclasses set `filter_field` to the Marketo field that matches their
+    # `cursor_field`, so incremental slices are bounded by the same field used to
+    # advance the cursor.
+    filter_field = "createdAt"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -198,13 +216,21 @@ class MarketoExportBase(IncrementalMarketoStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"bulk/v1/{self.stream_name}/export/{stream_slice['id']}/file.json"
 
+    def request_kwargs(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        return {"stream": True, "timeout": (30, 300)}
+
     def stream_slices(
         self, sync_mode, stream_state: MutableMapping[str, Any] = None, **kwargs
     ) -> Iterable[Optional[MutableMapping[str, any]]]:
         date_slices = super().stream_slices(sync_mode, stream_state, **kwargs)
 
         for date_slice in date_slices:
-            param = {"fields": [], "filter": {"createdAt": date_slice}}
+            param = {"fields": [], "filter": {self.filter_field: date_slice}}
             param["fields"].extend(self.stream_fields)
             param["filter"].update(self.stream_filter)
 
@@ -224,8 +250,15 @@ class MarketoExportBase(IncrementalMarketoStream):
                 self.start_export(stream_slice)
 
             elif status in ["Cancelled", "Failed"]:
-                # Cancelled and failed exports fail the current sync.
-                raise Exception(status)
+                raise AirbyteTracedException(
+                    message=f'Marketo bulk export job for stream "{self.name}" {status.lower()}.',
+                    internal_message=(
+                        f'Export job {stream_slice.get("id")} for stream "{self.name}" '
+                        f"(date range {stream_slice.get('startAt')} to {stream_slice.get('endAt')}) "
+                        f"entered terminal status: {status}."
+                    ),
+                    failure_type=FailureType.transient_error,
+                )
 
             elif status == "Completed":
                 return True
@@ -404,6 +437,10 @@ class Leads(MarketoExportBase):
     """
 
     cursor_field = "updatedAt"
+    # Filter leads by `updatedAt` so that updates to pre-existing leads are
+    # captured by incremental syncs. Marketo's Bulk Lead Extract honors only a
+    # single filter per export, so the filter field must match the cursor.
+    filter_field = "updatedAt"
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config, self.name)

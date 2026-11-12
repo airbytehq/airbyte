@@ -3,8 +3,8 @@ version: 6.41.5
 type: DeclarativeSource
 
 description: |-
-  Website: https://studio.nebius.com/
-  API Reference: https://studio.nebius.com/docs/api-reference
+  Website: https://tokenfactory.nebius.com/
+  API Reference: https://docs.tokenfactory.nebius.com/api-reference/introduction
 
 check:
   type: CheckStream
@@ -61,6 +61,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v1/files
           http_method: GET
+          request_parameters:
+            limit: "{{ config['limit'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -202,7 +204,7 @@ definitions:
           $ref: "#/schemas/batch_results"
   base_requester:
     type: HttpRequester
-    url_base: https://api.studio.nebius.com
+    url_base: https://api.tokenfactory.nebius.com
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
@@ -288,7 +290,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
   assist:
-    docsUrl: https://studio.nebius.com/docs/api-reference
+    docsUrl: https://docs.tokenfactory.nebius.com/api-reference/introduction
 
 schemas:
   models:
