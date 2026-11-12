@@ -1,11 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - datadoghq.com
-      - us3.datadoghq.com
-      - us5.datadoghq.com
-      - datadoghq.eu
-      - ddog-gov.com
+      - api.${site}
   remoteRegistries:
     pypi:
       enabled: false
@@ -31,9 +27,18 @@ data:
   githubIssueLabel: source-datadog
   icon: datadog.svg
   license: ELv2
+  maxSecondsBetweenMessages: 3600
   name: Datadog
   releaseDate: 2023-08-27
   releaseStage: alpha
+  suggestedStreams:
+    streams:
+      - metrics
+      - dashboards
+      - monitors
+      - incidents
+      - service_level_objectives
+      - users
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/datadog
   tags:
@@ -43,6 +48,7 @@ data:
     sl: 100
     ql: 100
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: datadog_config_dev_null
@@ -55,7 +61,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.47.0@sha256:b2ecb78040d4c4b42fa3537488d68a3b195f64b5fefcbc48ac0591479591a3f0
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.48.0@sha256:cf202b16aef3395e0bdbaa1a2e66ff6aaf123f8836e6324743ded50c4b8d6586
   externalDocumentationUrls:
     - title: Datadog API reference
       url: https://docs.datadoghq.com/api/latest/
@@ -69,4 +75,13 @@ data:
     - title: Datadog Status
       url: https://status.datadoghq.com/
       type: status_page
+    - title: Datadog API v1 OpenAPI spec
+      url: https://raw.githubusercontent.com/DataDog/datadog-api-client-python/master/.generator/schemas/v1/openapi.yaml
+      type: openapi_spec
+    - title: Datadog API v2 OpenAPI spec
+      url: https://raw.githubusercontent.com/DataDog/datadog-api-client-python/master/.generator/schemas/v2/openapi.yaml
+      type: openapi_spec
+    - title: Datadog API client repository
+      url: https://github.com/DataDog/datadog-api-client-python
+      type: spec_repository
 metadataSpecVersion: "1.0"

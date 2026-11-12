@@ -2,8 +2,6 @@ version: 6.33.4
 
 type: DeclarativeSource
 
-description: removed `is_read_only` attribute from dashboards stream schema
-
 check:
   type: CheckStream
   stream_names:
@@ -414,16 +412,16 @@ spec:
       query:
         type: string
         description: >-
-          The search query. This just applies to Incremental syncs. If empty,
-          it'll collect all logs.
+          The search query. This applies to the logs stream in every sync mode.
+          If empty, it'll collect all logs.
         order: 2
         title: Query
       start_date:
         type: string
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
-          this date will not be replicated. This just applies to Incremental
-          syncs.
+          this date will not be replicated. This applies to the logs stream in
+          every sync mode.
         order: 3
         title: Start date
         default: "2023-12-01T00:00:00Z"
@@ -439,6 +437,10 @@ spec:
           - us5.datadoghq.com
           - datadoghq.eu
           - ddog-gov.com
+          - us2.ddog-gov.com
+          - ap1.datadoghq.com
+          - ap2.datadoghq.com
+          - uk1.datadoghq.com
         order: 4
         title: Site
         default: datadoghq.com
@@ -446,9 +448,9 @@ spec:
         type: string
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Data after this
-          date will  not be replicated. An empty value will represent the
-          current datetime for each  execution. This just applies to Incremental
-          syncs.
+          date will not be replicated. An empty value will represent the current
+          datetime for each execution. This applies to the logs stream in every
+          sync mode.
         order: 5
         title: End date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
@@ -683,6 +685,15 @@ schemas:
           - string
           - "null"
         description: Dashboard identifier.
+        readOnly: true
+      is_read_only:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          Whether this dashboard is read-only. If true, only the author and
+          admins can make changes to it. Datadog has deprecated this property in
+          favor of the Restriction Policies API, but still returns it.
         readOnly: true
       layout_type:
         type:
@@ -1262,11 +1273,19 @@ schemas:
             type:
               - string
               - "null"
+          id:
+            type:
+              - integer
+              - "null"
           name:
             type:
               - string
               - "null"
       deleted:
+        type:
+          - string
+          - "null"
+      draft_status:
         type:
           - string
           - "null"
@@ -1284,11 +1303,23 @@ schemas:
             - "null"
           additionalProperties: true
           properties:
+            active:
+              type:
+                - boolean
+                - "null"
             end:
               type:
                 - integer
                 - "null"
+            groups:
+              type:
+                - array
+                - "null"
             id:
+              type:
+                - integer
+                - "null"
+            monitor_id:
               type:
                 - integer
                 - "null"
@@ -1778,6 +1809,11 @@ schemas:
             type:
               - string
               - "null"
+      sli_specification:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
       tags:
         type:
           - array
@@ -1901,7 +1937,7 @@ schemas:
         type:
           - string
           - "null"
-        description: Creation date of the Synthetic test.
+        description: Modification date of the Synthetic test.
         format: date-time
         readOnly: true
       monitor_id:
@@ -1992,6 +2028,13 @@ schemas:
         description: Attributes of user object returned by the API.
         additionalProperties: true
         properties:
+          allowed_login_methods:
+            type:
+              - array
+              - "null"
+            description: Login methods allowed for the user.
+            items:
+              type: string
           created_at:
             type:
               - string
@@ -2018,6 +2061,24 @@ schemas:
               - string
               - "null"
             description: URL of the user's icon.
+          is_access_configurable_bot:
+            type:
+              - boolean
+              - "null"
+            description: Whether the user is an access-configurable bot.
+          last_login_time:
+            type:
+              - string
+              - "null"
+            description: >-
+              Time of the user's most recent login. Null if the user has never
+              logged in.
+            format: date-time
+          mfa_enabled:
+            type:
+              - boolean
+              - "null"
+            description: Whether multi-factor authentication is enabled for the user.
           modified_at:
             type:
               - string
@@ -2044,6 +2105,11 @@ schemas:
               - string
               - "null"
             description: Title of the user.
+          uuid:
+            type:
+              - string
+              - "null"
+            description: UUID of the user.
           verified:
             type:
               - boolean

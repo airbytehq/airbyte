@@ -1,0 +1,22 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-datadog-tests"
+version = "0.0.1"
+description = "Unit tests for source-datadog"
+authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11,<3.13"
+# Keep in step with the base image in ../metadata.yaml.
+airbyte-cdk = "7.48.0"
+pytest = "^8"
+
+# This table also keeps pytest from picking up the pytest.ini at the repo root.
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This class is experimental*",
+]

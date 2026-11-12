@@ -5,8 +5,6 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "manifest.yaml"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.4.15" # Set default start and end date for incremental sync
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -22,13 +20,17 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
           - name: audit_logs
-            bypass_reason: Sandbox account can't seed this stream
+            bypass_reason: The test key's role cannot read the audit trail yet
           - name: incident_teams
-            bypass_reason: Sandbox account can't seed this stream
-          - name: service_level_objectives
-            bypass_reason: Sandbox account can't seed this stream
+            bypass_reason: The vendor removed this endpoint; the breaking release replaces the stream
           - name: logs
-            bypass_reason: Sandbox account can't seed this stream
+            bypass_reason: Seed log lines age out of the test organization's 15-day retention
+          - name: downtimes
+            bypass_reason: The v1 list cannot return downtimes made with the v2 API; the breaking release moves the stream
+          - name: incidents
+            bypass_reason: The test organization holds no incident
+          - name: synthetic_tests
+            bypass_reason: The test organization holds no Synthetic test
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
