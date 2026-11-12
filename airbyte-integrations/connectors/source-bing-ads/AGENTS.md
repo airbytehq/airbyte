@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Expired Download Links Are Transient, Not Permission Errors
+
+Bulk and report file downloads can return Azure XML errors containing `Signature not valid in the specified time frame`. The shared download error handler classifies this detail as `transient_error` with an expiry-specific message. It fails the download instead of retrying the same expired URL. Other authentication and permission errors retain the default classification; `AuthenticationFailed` alone does not establish expiry.
+
+**Why this matters:** Re-authentication does not resolve an expired download link. Retrying the same URL cannot refresh it, and matching every 403 or `AuthenticationFailed` error would hide genuine permission or signature problems.
