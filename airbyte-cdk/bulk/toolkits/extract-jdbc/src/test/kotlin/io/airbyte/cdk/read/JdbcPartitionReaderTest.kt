@@ -9,6 +9,7 @@ import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.LocalDateCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.TestFixtures.assertFailures
@@ -20,6 +21,9 @@ import io.airbyte.cdk.read.TestFixtures.opaqueStateValue
 import io.airbyte.cdk.read.TestFixtures.sharedState
 import io.airbyte.cdk.read.TestFixtures.stream
 import io.airbyte.cdk.read.TestFixtures.ts
+import io.mockk.every
+import io.mockk.mockk
+import java.io.IOException
 import java.time.Duration
 import java.time.LocalDate
 import kotlin.time.Duration.Companion.seconds
@@ -31,6 +35,45 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class JdbcPartitionReaderTest {
+
+    @Test
+    fun testReleaseResourcesWhenOutputCloseFails() {
+        val sharedState = sharedState(maxConcurrency = 1)
+        val streamState =
+            DefaultJdbcStreamState(sharedState, stream(withPK = false).bootstrap(null))
+        val partition =
+            DefaultJdbcCursorIncrementalPartition(
+                TestFixtures.MockSelectQueryGenerator,
+                streamState,
+                ts,
+                cursorLowerBound = LocalDateCodec.encode(cursorLowerBound),
+                isLowerBoundIncluded = true,
+                cursorUpperBound = null,
+            )
+        val reader = JdbcResumablePartitionReader(partition)
+        Assertions.assertEquals(
+            PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
+            reader.tryAcquireResources(),
+        )
+        Assertions.assertEquals(0, sharedState.concurrencyResource.available)
+        val failure = IOException("Broken pipe")
+        reader.outputMessageRouter =
+            mockk<OutputMessageRouter> {
+                every { close() } throws failure
+            }
+
+        Assertions.assertSame(
+            failure,
+            Assertions.assertThrows(IOException::class.java) { reader.releaseResources() },
+        )
+        Assertions.assertEquals(1, sharedState.concurrencyResource.available)
+        Assertions.assertEquals(
+            PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
+            reader.tryAcquireResources(),
+        )
+        reader.releaseResources()
+        Assertions.assertEquals(1, sharedState.concurrencyResource.available)
+    }
 
     val cursorLowerBound: LocalDate = LocalDate.parse("2024-08-01")
     val cursorCheckpoint: LocalDate = LocalDate.parse("2024-08-02")
