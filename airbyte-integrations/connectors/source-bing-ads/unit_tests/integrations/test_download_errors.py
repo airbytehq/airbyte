@@ -62,7 +62,7 @@ def test_download_error(stream_name, expired):
         expected_message = (
             "Bing Ads file download URL is expired."
             if expired
-            else "HTTP Status Code: 403. Error: Forbidden. You don't have permission to access this resource."
+            else "Forbidden. You don't have permission to access this resource."
         )
         assert any(error.failure_type == expected_failure and expected_message in error.message for error in errors), errors
         assert not output.records
