@@ -12,11 +12,11 @@ tests read the root `account_me` stream and its `alert` substream through the re
 from typing import Any, Dict
 
 import pytest
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from unit_tests.conftest import get_source
 
 
 _TOKEN = "test-mention-token"
