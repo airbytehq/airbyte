@@ -2,6 +2,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from typing import Dict
 
 from airbyte_cdk.test.mock_http import HttpRequest
@@ -44,6 +45,10 @@ class YoutubeAnalyticsRequestBuilder:
     @classmethod
     def jobs_endpoint(cls) -> "YoutubeAnalyticsRequestBuilder":
         return cls("/jobs")
+
+    @classmethod
+    def create_job_request(cls, report_type_id: str) -> HttpRequest:
+        return HttpRequest(url=f"{cls.BASE_URL}/jobs", body=json.dumps({"name": "Airbyte reporting job", "reportTypeId": report_type_id}))
 
     @classmethod
     def reports_endpoint(cls, job_id: str) -> "YoutubeAnalyticsRequestBuilder":

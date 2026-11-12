@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - channel_annotations_a1
+    - jobs
 
 definitions:
   streams:
@@ -608,6 +608,31 @@ definitions:
       class_name: source_declarative_manifest.components.CustomDecoder
 
 streams:
+  - type: DeclarativeStream
+    name: jobs
+    primary_key: id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: jobs
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [jobs]
+      paginator:
+        $ref: "#/definitions/next_page_token_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: ["null", string]
+          reportTypeId:
+            type: ["null", string]
+        additionalProperties: true
   - $ref: "#/definitions/streams/channel_annotations_a1"
   - $ref: "#/definitions/streams/channel_basic_a3"
   - $ref: "#/definitions/streams/channel_cards_a1"
