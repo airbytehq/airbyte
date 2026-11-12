@@ -901,6 +901,12 @@ definitions:
             page_size: 100
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['id'] | int if record.get('id') is string and record['id'].isdigit() else record.get('id') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
