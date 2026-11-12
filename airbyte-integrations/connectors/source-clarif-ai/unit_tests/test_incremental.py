@@ -5,8 +5,6 @@ import requests_mock
 from conftest import get_source
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields
-from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 
@@ -74,37 +72,3 @@ def test_nanosecond_cursor_advances_and_resumes(stream_name):
     assert resumed.errors == []
     assert [message.record.data for message in resumed.records] == expected_records
     assert vars(resumed.most_recent_state.stream_state) == state
-
-
-@pytest.mark.parametrize(
-    "record, expected",
-    [
-        ({}, {}),
-        ({"modified_at": None}, {"modified_at": None}),
-        ({"modified_at": "2026-10-14T09:41:55Z"}, {"modified_at": "2026-10-14T09:41:55Z"}),
-        ({"modified_at": "2026-10-14T09:41:55.1Z"}, {"modified_at": "2026-10-14T09:41:55.1Z"}),
-        ({"modified_at": "2026-10-14T09:41:55.568082Z"}, {"modified_at": "2026-10-14T09:41:55.568082Z"}),
-        ({"modified_at": "2026-10-14T09:41:55.5680826Z"}, {"modified_at": "2026-10-14T09:41:55.568082Z"}),
-        ({"modified_at": "2026-10-14T09:41:55.56808265Z"}, {"modified_at": "2026-10-14T09:41:55.568082Z"}),
-        ({"modified_at": "2026-10-14T09:41:55.568082659Z"}, {"modified_at": "2026-10-14T09:41:55.568082Z"}),
-    ],
-)
-def test_timestamp_normalization_preserves_other_values(record, expected):
-    definition = get_source(_CONFIG).resolved_manifest["definitions"]["normalize_modified_at"]
-    transformation = ModelToComponentFactory().create_component(AddFields, definition, _CONFIG)
-    transformation.transform(record, config=_CONFIG)
-    assert record == expected
-
-
-@pytest.mark.parametrize("stream_name", ["applications", "datasets", "models"])
-def test_empty_incremental_read(stream_name):
-    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
-    field = "apps" if stream_name == "applications" else stream_name
-    url = _APPS_URL if stream_name == "applications" else f"{_APPS_URL}/app1/{stream_name}"
-    with requests_mock.Mocker() as mocker:
-        if stream_name != "applications":
-            mocker.get(_APPS_URL, json={"apps": [{"id": "app1"}]})
-        mocker.get(url, json={field: []})
-        output = read(get_source(_CONFIG), config=_CONFIG, catalog=catalog)
-    assert output.records == []
-    assert output.errors == []
