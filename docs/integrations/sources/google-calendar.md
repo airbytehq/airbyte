@@ -145,7 +145,6 @@ Expand to see details about Google Calendar connector limitations and troublesho
 ### Troubleshooting
 
 - If the calendar specified by **Calendar Id** does not exist, its validation fails immediately. If a calendar disappears or becomes unshared after discovery, `calendars` and `events` log that it was skipped and continue with other calendars. The `calendars` stream always reads listed calendars, independently of **Calendar Id**. A failure to read the calendar list itself is not skipped.
-
 - If syncs start failing with a rejected refresh token (`invalid_grant`) about a week after setup, the OAuth app's consent screen is probably an **External** app in **Testing**, whose refresh tokens expire after 7 days. Set its publishing status to **In production**, generate a new refresh token, and paste it into **Refresh token**.
 - If a sync fails with a missing OAuth scope error, a permission was left unchecked on Google's consent screen, or the refresh token was issued without one of the scopes in [Google Calendar setup](#set-up-google-calendar). Re-authenticate and allow every requested permission, generate a new refresh token with the required scopes, or deselect the stream.
 - Check out common troubleshooting issues for the Google Calendar source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
@@ -171,7 +170,7 @@ The `events` stream is incremental on the event's last modification time (`updat
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 1.2.1 | 2026-11-12 | — | Skip removed or unshared calendars during child reads while preserving configured-calendar validation. |
+| 1.2.1 | 2026-11-12 | [92532](https://github.com/airbytehq/airbyte/pull/92532) | Skip removed or unshared calendars during child reads while preserving configured-calendar validation. |
 | 1.2.0 | 2026-11-11 | [92016](https://github.com/airbytehq/airbyte/pull/92016) | Include calendar and ACL tombstones, expand schemas, and improve pagination and concurrency reliability. |
 | 1.1.0 | 2026-11-11 | [86469](https://github.com/airbytehq/airbyte/pull/86469) | Add declarative Google OAuth, custom-app authentication, credential migration, and missing-scope errors. |
 | 1.0.1 | 2026-11-10 | [91570](https://github.com/airbytehq/airbyte/pull/91570) | Update dependencies |

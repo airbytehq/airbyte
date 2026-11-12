@@ -483,6 +483,17 @@ definitions:
         parent_key: id
         partition_field: calendar_id
   error_filters:
+    skip_missing_calendar:
+      type: HttpResponseFilter
+      http_codes:
+        - 404
+      action: IGNORE
+      error_message: "Skipped a calendar that no longer exists or is no longer shared with the account."
+    skip_deleted_calendar:
+      type: HttpResponseFilter
+      predicate: "{{ response.get('error', {}).get('code') in (410, '410') and '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string and 'fullSyncRequired' not in response.get('error', {}) | string }}"
+      action: IGNORE
+      error_message: "Skipped a calendar that was removed or is no longer shared with the account."
     forbidden:
       type: HttpResponseFilter
       http_codes:
@@ -499,13 +510,14 @@ definitions:
       error_message: "Google Calendar could not find the requested resource. Verify the account's access to the Calendar API and, if Calendar Id is set, verify that calendar's ID and sharing permissions."
     resource_gone:
       type: HttpResponseFilter
+      # fullSyncRequired requires syncToken (not sent); string JSON-encodes the body, so match the JSON reason.
       predicate: "{{ '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string or 'fullSyncRequired' in response.get('error', {}) | string }}"
       action: FAIL
       failure_type: config_error
       error_message: "Google Calendar reports that the requested resource no longer exists or requires a full re-sync. Check the account's access and any configured Calendar Id, then reset the events stream."
     stale_position:
       type: HttpResponseFilter
-      # Retention recovery re-reads once the saved cursor is older than 21 days.
+      # updatedMinTooLongAgo: retention recovery re-reads once the saved cursor is older than 21 days.
       http_codes:
         - 410
       action: FAIL
@@ -562,22 +574,12 @@ definitions:
       - $ref: "#/definitions/error_filters/quota_exhausted"
       - $ref: "#/definitions/error_filters/insufficient_scope"
       - $ref: "#/definitions/error_filters/forbidden"
-      - $ref: "#/definitions/skip_missing_calendar"
-      - $ref: "#/definitions/skip_deleted_calendar"
+      - $ref: "#/definitions/error_filters/skip_missing_calendar"
+      - $ref: "#/definitions/error_filters/skip_deleted_calendar"
       - $ref: "#/definitions/error_filters/resource_gone"
       - $ref: "#/definitions/error_filters/stale_position"
       - $ref: "#/definitions/error_filters/too_many_requests"
       - $ref: "#/definitions/error_filters/server_errors"
-  skip_missing_calendar:
-    type: HttpResponseFilter
-    http_codes: [404]
-    action: IGNORE
-    error_message: "Skipped a calendar that no longer exists or is no longer shared with the account."
-  skip_deleted_calendar:
-    type: HttpResponseFilter
-    predicate: "{{ response.get('error', {}).get('code') in (410, '410') and '\\\"reason\\\": \\\"deleted\\\"' in response.get('error', {}) | string and 'fullSyncRequired' not in response.get('error', {}) | string }}"
-    action: IGNORE
-    error_message: "Skipped a calendar that was removed or is no longer shared with the account."
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/calendar/v3/
