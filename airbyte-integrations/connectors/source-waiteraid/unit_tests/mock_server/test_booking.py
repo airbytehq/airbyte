@@ -51,4 +51,3 @@ def test_read_empty_bookings_emits_no_records(http_mocker: HttpMocker):
     assert output.errors == []
     assert output.records == []
     http_mocker.assert_number_of_calls(request, 1)
-
