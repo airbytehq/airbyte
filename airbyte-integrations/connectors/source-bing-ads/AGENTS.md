@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Download Requesters Must Not Use Response Filters That Read the Body
+
+Bulk and report files are downloaded from pre-signed Azure Blob Storage URLs with streamed responses, and the decoders read `response.raw`. A declarative `HttpResponseFilter` with `predicate` or `error_message_contains` parses the body of every response, including successful ones, which consumes the stream and makes the download emit zero records. The download requesters therefore use `BingAdsDownloadErrorHandler`, which only reads the body of 403 responses to detect an expired download URL (`Signature not valid in the specified time frame`) and report it as a `transient_error`.
+
+**Why this matters:** Adding a body-matching response filter to a download requester looks harmless and silently drops all records of the bulk and report streams.
