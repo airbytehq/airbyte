@@ -2,7 +2,7 @@
 
 This page contains the setup guide and reference information for the Zendesk Chat source connector.
 
-:::warning Zendesk ends incremental exports for third-party integrations (notice dated 2026-11-03)
+:::warning Zendesk ends incremental exports for third-party integrations (announced 2026-09-22)
 Zendesk [stops serving its Incremental Exports API to third-party integrations](https://support.zendesk.com/hc/en-us/articles/11275429993498) such as Airbyte between December 2, 2026 and January 19, 2027. Blocked requests return HTTP 403.
 
 - The `chats` stream no longer uses incremental exports as of connector version 2.0.0 and keeps working. See the [migration guide](zendesk-chat-migrations.md#upgrading-to-200).
