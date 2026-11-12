@@ -3,7 +3,7 @@
 #
 
 import json
-from typing import List
+from typing import List, Optional
 
 import pytest
 from source_shopify.streams.streams import TransactionsGraphql
@@ -12,12 +12,21 @@ from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from airbyte_cdk.models import SyncMode
 
 
-def _order_jsonl(order_id: int, order_created_at: str, transaction_id: int, transaction_created_at: str) -> str:
+def _order_jsonl(
+    order_id: int,
+    order_created_at: str,
+    transaction_id: int,
+    transaction_created_at: str,
+    order_updated_at: Optional[str] = None,
+    kind: str = "SALE",
+    status: str = "SUCCESS",
+) -> str:
+    order_updated_at = order_updated_at or order_created_at
     return (
         f'{{"__typename":"Order","id":"gid:\\/\\/shopify\\/Order\\/{order_id}","currency":"USD",'
-        f'"order_created_at":"{order_created_at}","transactions":['
+        f'"order_created_at":"{order_created_at}","order_updated_at":"{order_updated_at}","transactions":['
         f'{{"id":"gid:\\/\\/shopify\\/OrderTransaction\\/{transaction_id}","errorCode":null,"test":true,'
-        f'"kind":"SALE","amount":"57.23","createdAt":"{transaction_created_at}","status":"SUCCESS",'
+        f'"kind":"{kind}","amount":"57.23","createdAt":"{transaction_created_at}","status":"{status}",'
         f'"processedAt":"{transaction_created_at}","gateway":"bogus","paymentId":"c25048437719229.1",'
         f'"accountNumber":"1","formattedGateway":"bogus","manuallyCapturable":false,"receipt":"{{}}",'
         f'"parentTransaction":null,"authorization":null,'
@@ -63,12 +72,13 @@ def test_transactions_graphql_emits_transactions_predating_state_with_new_order(
     assert all("order_created_at" not in record for record in test_records)
 
 
-def _order_jsonl_without_order_created_at(order_jsonl: str, keep_key_as_null: bool) -> str:
+def _order_jsonl_without_order_timestamps(order_jsonl: str, keep_key_as_null: bool) -> str:
     order = json.loads(order_jsonl)
-    if keep_key_as_null:
-        order["order_created_at"] = None
-    else:
-        order.pop("order_created_at")
+    for key in ("order_created_at", "order_updated_at"):
+        if keep_key_as_null:
+            order[key] = None
+        else:
+            order.pop(key)
     return json.dumps(order)
 
 
@@ -84,7 +94,7 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
     finally:
         stream_state_cache.cached_state.pop("transactions", None)
 
-    assert all("order_created_at" not in record for record in records)
+    assert all("order_created_at" not in record and "order_updated_at" not in record for record in records)
     return stream, records
 
 
@@ -97,18 +107,18 @@ def _read_transactions(requests_mock, bulk_job_completed_response, auth_config, 
             id="order_created_at_equal_to_state_is_emitted",
         ),
         pytest.param(
-            _order_jsonl_without_order_created_at(
+            _order_jsonl_without_order_timestamps(
                 _order_jsonl(1, "2026-09-11T06:27:00Z", 1001, "2026-09-11T05:07:00Z"), keep_key_as_null=False
             ),
             [],
-            id="missing_order_created_at_is_dropped",
+            id="missing_order_timestamps_are_dropped",
         ),
         pytest.param(
-            _order_jsonl_without_order_created_at(
+            _order_jsonl_without_order_timestamps(
                 _order_jsonl(1, "2026-09-11T06:27:00Z", 1001, "2026-09-11T05:07:00Z"), keep_key_as_null=True
             ),
             [],
-            id="null_order_created_at_is_dropped",
+            id="null_order_timestamps_are_dropped",
         ),
     ],
 )
@@ -164,3 +174,40 @@ def test_transactions_graphql_re_emission_of_transactions_predating_order_is_bou
         assert state["created_at"] >= previous_state_value
 
     assert state == {"created_at": "2026-09-11T06:31:00+00:00"}
+
+
+def test_transactions_graphql_emits_status_change_of_transaction_older_than_state(
+    requests_mock,
+    bulk_job_completed_response,
+    auth_config,
+) -> None:
+    state_value = "2026-10-22T14:59:10+00:00"
+    pending_refund = dict(
+        order_created_at="2026-10-20T09:00:00Z", transaction_id=1001, transaction_created_at="2026-10-22T10:00:00Z", kind="REFUND"
+    )
+
+    # first sync: the refund is newer than the state and is emitted as PENDING
+    _, first_records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [_order_jsonl(1, status="PENDING", order_updated_at="2026-10-22T10:00:00Z", **pending_refund)],
+        state_value="2026-10-22T09:00:00+00:00",
+    )
+    assert [(record["id"], record["status"]) for record in first_records] == [(1001, "PENDING")]
+
+    # next sync: the refund became SUCCESS, which updated its order after the saved state,
+    # while the refund and its order were both created before the saved state
+    _, test_records = _read_transactions(
+        requests_mock,
+        bulk_job_completed_response,
+        auth_config,
+        [
+            _order_jsonl(1, status="SUCCESS", order_updated_at="2026-10-22T15:10:00Z", **pending_refund),
+            # transaction of an order last updated before the saved state -> dropped
+            _order_jsonl(2, "2026-10-20T09:00:00Z", 1002, "2026-10-22T10:00:00Z", order_updated_at="2026-10-22T14:00:00Z"),
+        ],
+        state_value=state_value,
+    )
+
+    assert [(record["id"], record["status"]) for record in test_records] == [(1001, "SUCCESS")]
