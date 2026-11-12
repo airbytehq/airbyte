@@ -1003,3 +1003,109 @@ def test_conferences_state_migration(input_state, expected_state, should_migrate
     assert migration.should_migrate(input_state) == should_migrate
     if should_migrate:
         assert migration.migrate(input_state) == expected_state
+
+
+MESSAGES_PARTITION = {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}}
+
+
+def _register_messages_window_recorder(requests_mock):
+    windows = []
+
+    def _callback(request, context):
+        query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+        windows.append((query["DateSent>"][0], query["DateSent<"][0]))
+        context.status_code = 200
+        return {"messages": [{"sid": f"SM{len(windows)}", "date_sent": "2022-11-16T10:00:00Z"}], "next_page_uri": None}
+
+    requests_mock.get(f"{BASE}/Accounts/AC123/Messages.json", json=_callback)
+    return windows
+
+
+@freeze_time("2022-11-16 12:03:11+00:00")
+@pytest.mark.parametrize(
+    "persisted_state",
+    [
+        pytest.param(
+            {
+                "use_global_cursor": False,
+                "states": [{"partition": MESSAGES_PARTITION, "cursor": {"date_sent": "2021-06-01T00:00:00Z"}}],
+                "state": {"date_sent": "2022-11-13T12:11:10Z"},
+                "lookback_window": 0,
+            },
+            id="stale_partition_cursor_with_recent_global_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {"subresource_uri": MESSAGES_PARTITION["subresource_uri"]},
+                        "cursor": {"date_sent": "2021-06-01T00:00:00Z"},
+                    }
+                ],
+                "state": {"date_sent": "2022-11-13T12:11:10Z"},
+            },
+            id="legacy_partition_without_parent_slice_with_recent_global_cursor",
+        ),
+        pytest.param(
+            {"use_global_cursor": True, "state": {"date_sent": "2022-11-13T12:11:10Z"}, "lookback_window": 0},
+            id="already_global_state",
+        ),
+    ],
+)
+def test_messages_incremental_read_resumes_from_global_cursor(persisted_state, requests_mock):
+    requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
+    windows = _register_messages_window_recorder(requests_mock)
+    state = StateBuilder().with_stream_state("messages", persisted_state).build()
+
+    output = read_from_stream({**TEST_CONFIG, "start_date": "2000-01-01T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+    assert windows == [("2022-11-13 12:11:10Z", "2022-11-16 12:03:11Z")]
+    assert [record.record.data["sid"] for record in output.records] == ["SM1"]
+    final_state = output.most_recent_state.stream_state.__dict__
+    assert final_state["use_global_cursor"] is True
+    assert "states" not in final_state
+    assert final_state["state"] == {"date_sent": "2022-11-16 10:00:00Z"}
+
+
+@freeze_time("2022-11-16 12:03:11+00:00")
+def test_messages_per_partition_state_without_global_cursor_resumes_all_accounts_from_oldest_cursor(requests_mock):
+    accounts = {
+        "accounts": [
+            {"sid": sid, "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"}} for sid in ("AC123", "AC456")
+        ]
+    }
+    requests_mock.get(f"{BASE}/Accounts.json", json=accounts, status_code=200)
+    windows = {}
+
+    def _callback(request, context):
+        query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+        account_sid = urlparse(request.url).path.split("/")[3]
+        windows.setdefault(account_sid, []).append((query["DateSent>"][0], query["DateSent<"][0]))
+        context.status_code = 200
+        return {"messages": [{"sid": f"SM-{account_sid}", "date_sent": "2022-11-16T10:00:00Z"}]}
+
+    for sid in ("AC123", "AC456"):
+        requests_mock.get(f"{BASE}/Accounts/{sid}/Messages.json", json=_callback)
+    persisted_state = {
+        "states": [
+            {
+                "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                "cursor": {"date_sent": "2022-11-15T00:00:00Z"},
+            },
+            {
+                "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json", "parent_slice": {}},
+                "cursor": {"date_sent": "2022-11-14 06:00:00Z"},
+            },
+        ]
+    }
+    state = StateBuilder().with_stream_state("messages", persisted_state).build()
+
+    output = read_from_stream({**TEST_CONFIG, "start_date": "2000-01-01T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+    expected_window = [("2022-11-14 06:00:00Z", "2022-11-16 12:03:11Z")]
+    assert windows == {"AC123": expected_window, "AC456": expected_window}
+    assert sorted(record.record.data["sid"] for record in output.records) == ["SM-AC123", "SM-AC456"]
+    final_state = output.most_recent_state.stream_state.__dict__
+    assert final_state["use_global_cursor"] is True
+    assert "states" not in final_state
+    assert final_state["state"] == {"date_sent": "2022-11-16 10:00:00Z"}

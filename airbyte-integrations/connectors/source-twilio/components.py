@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_try_parse
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -240,6 +240,76 @@ class TwilioMessageMediaStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
+
+class TwilioMessagesGlobalStateMigration(StateMigration):
+    """
+    Collapse `messages` state into a single global `date_sent` cursor.
+
+    `messages` used to keep a cursor per account partition. The CDK reads a partition from its own entry in `states`
+    and only falls back to the global `state` for partitions missing from that list, so a stale partition cursor
+    made syncs re-read up to 400 days of messages even when the global cursor was recent. The stream now uses
+    `global_substream_cursor`, and this migration converts any persisted per-partition state to that shape.
+
+    The global `state` is kept when present: the CDK only advances it after every partition finished reading, so it
+    is never ahead of any partition. Without it, the oldest partition cursor is used so no partition loses data.
+
+    Initial:
+      {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": { "subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {} },
+            "cursor": { "date_sent": "2021-06-01T00:00:00Z" }
+          }
+        ],
+        "state": { "date_sent": "2022-11-13T12:11:10Z" },
+        "lookback_window": 120
+      }
+
+    Final:
+      {
+        "use_global_cursor": true,
+        "state": { "date_sent": "2022-11-13T12:11:10Z" },
+        "lookback_window": 120
+      }
+    """
+
+    _CURSOR_FIELD = "date_sent"
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor_value = self._global_cursor_value(stream_state)
+        migrated_state: dict[str, Any] = {"use_global_cursor": True}
+        if cursor_value is not None:
+            migrated_state["state"] = {self._CURSOR_FIELD: cursor_value}
+        if "lookback_window" in stream_state:
+            migrated_state["lookback_window"] = stream_state["lookback_window"]
+        if stream_state.get("parent_state"):
+            migrated_state["parent_state"] = copy.deepcopy(stream_state["parent_state"])
+        return migrated_state
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state:
+            return False
+        return "states" in stream_state or stream_state.get("use_global_cursor") is not True
+
+    def _global_cursor_value(self, stream_state: Mapping[str, Any]) -> Any:
+        global_state = stream_state.get("state")
+        if isinstance(global_state, Mapping) and global_state.get(self._CURSOR_FIELD):
+            return global_state[self._CURSOR_FIELD]
+        if stream_state.get(self._CURSOR_FIELD):
+            return stream_state[self._CURSOR_FIELD]
+
+        partition_values = [
+            state["cursor"][self._CURSOR_FIELD]
+            for state in stream_state.get("states", [])
+            if isinstance(state.get("cursor"), Mapping) and state["cursor"].get(self._CURSOR_FIELD)
+        ]
+        parsed_values = [(ab_datetime_try_parse(str(value)), value) for value in partition_values]
+        parsed_values = [(parsed, value) for parsed, value in parsed_values if parsed is not None]
+        if not parsed_values:
+            return None
+        return min(parsed_values, key=lambda parsed_and_value: parsed_and_value[0])[1]
 
 
 _CONFERENCE_STATUSES = ("init", "in-progress", "completed")
