@@ -425,6 +425,12 @@ class Transactions(IncrementalShopifySubstream):
     data_field = "transactions"
     cursor_field = "created_at"
 
+    def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
+        # a transaction has no `updated_at` and its `created_at` never changes, but its `status` does (e.g. a refund going
+        # from `pending` to `success`). Only the orders updated since the previous sync are requested, so every transaction
+        # of these orders is emitted to deliver such changes, even when the cursor already moved past its `created_at`.
+        return True
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
@@ -440,13 +446,15 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
         return "transactions"
 
     def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
-        # transactions of offsite payments can predate their order, so they are first exported with the newly created order
-        order_created_at = record.get("order_created_at")
-        return bool(order_created_at) and order_created_at >= state_value
+        # a transaction has no `updatedAt` and its `createdAt` never changes, but its `status` does (e.g. a refund going
+        # from `PENDING` to `SUCCESS`). The BULK job only returns the orders updated since the previous sync, so every
+        # transaction of these orders is emitted to deliver such changes, even when the cursor already moved past its
+        # `created_at`. This also covers the transactions of offsite payments, which can predate their order.
+        return True
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            # `order_created_at` is only used for state comparison, it should not be part of the output
+            # `order_created_at` is queried along with the order, it is not part of the stream schema
             record.pop("order_created_at", None)
             yield record
 

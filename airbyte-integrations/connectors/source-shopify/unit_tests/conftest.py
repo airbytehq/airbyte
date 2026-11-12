@@ -1626,7 +1626,7 @@ def collection_products_response_expected_result():
 
 @pytest.fixture
 def transactions_response_expected_result():
-    return {
+    sale = {
         "id": 5721110872253,
         "error_code": None,
         "test": True,
@@ -1665,6 +1665,19 @@ def transactions_response_expected_result():
         "parent_id": None,
         "shop_url": "test-shop",
     }
+    # the refund predates the `start_date`, it is still emitted because its order is part of the requested slice
+    refund = {
+        **sale,
+        "id": 5721170968765,
+        "kind": "REFUND",
+        "created_at": "2022-06-15T13:25:42+00:00",
+        "processed_at": "2022-06-15T13:25:42+00:00",
+        "payment_id": "c25048437719229.2",
+        "authorization": None,
+        "admin_graphql_api_id": "gid://shopify/OrderTransaction/5721170968765",
+        "parent_id": 5721110872253,
+    }
+    return [refund, sale]
 
 
 @pytest.fixture
