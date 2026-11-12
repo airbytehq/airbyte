@@ -255,6 +255,81 @@ class TestIncrementalTwilioStream:
         assert sum(m.call_count for m in child_matchers) == len(windows)
 
     @freeze_time("2022-11-16 12:03:11+00:00")
+    @pytest.mark.parametrize(
+        "incoming_state,expected_lower_bound",
+        [
+            pytest.param(
+                {
+                    "use_global_cursor": False,
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2021-12-01 00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json", "parent_slice": {}},
+                            "cursor": {"date_sent": "2022-11-15 10:00:00Z"},
+                        },
+                    ],
+                    "state": {"date_sent": "2022-11-15 10:00:00Z"},
+                    "lookback_window": 0,
+                },
+                "2022-11-15 10:00:00Z",
+                id="stale_partition_cursor_with_recent_global_cursor",
+            ),
+            pytest.param(
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-14T00:00:00Z"},
+                        },
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC456/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-15T10:00:00Z"},
+                        },
+                    ]
+                },
+                "2022-11-14 00:00:00Z",
+                id="legacy_per_partition_state_without_global_cursor",
+            ),
+        ],
+    )
+    def test_messages_resume_every_account_from_one_global_cursor(self, incoming_state, expected_lower_bound, requests_mock):
+        accounts = {
+            "accounts": [
+                {"sid": sid, "subresource_uris": {"messages": f"/2010-04-01/Accounts/{sid}/Messages.json"}} for sid in ("AC123", "AC456")
+            ]
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts, status_code=200)
+
+        message_requests = []
+        requests_lock = Lock()
+
+        def _messages(request, context):
+            query = parse_qs(urlparse(request.url).query, keep_blank_values=True)
+            account_sid = urlparse(request.url).path.split("/")[3]
+            with requests_lock:
+                message_requests.append((account_sid, query["DateSent>"][0], query["DateSent<"][0]))
+            return {"messages": [{"sid": f"SM-{account_sid}", "account_sid": account_sid, "date_sent": "2022-11-16T08:00:00Z"}]}
+
+        for sid in ("AC123", "AC456"):
+            requests_mock.get(f"{BASE}/Accounts/{sid}/Messages.json", json=_messages)
+
+        state = StateBuilder().with_stream_state("messages", incoming_state).build()
+        output = read_from_stream({**TEST_CONFIG, "start_date": "2020-01-01T00:00:00Z"}, "messages", SyncMode.incremental, state)
+
+        assert sorted(message_requests) == [
+            ("AC123", expected_lower_bound, "2022-11-16 12:03:11Z"),
+            ("AC456", expected_lower_bound, "2022-11-16 12:03:11Z"),
+        ]
+        assert sorted(record.record.data["sid"] for record in output.records) == ["SM-AC123", "SM-AC456"]
+        final_state = output.most_recent_state.stream_state.__dict__
+        assert final_state["use_global_cursor"] is True
+        assert final_state["state"] == {"date_sent": "2022-11-16 08:00:00Z"}
+        assert "states" not in final_state
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
     def test_alerts_split_request_window_one_level(self, requests_mock):
         config = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z", "slice_step_duration": "P1D"}
         parent = ("2022-11-15T00:00:00Z", "2022-11-15T23:59:59Z")
