@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Download Requesters Cannot Use Response Filters
+
+Report and bulk files are streamed from pre-signed Azure Blob Storage URLs, and the decoders read them from `response.raw`. A declarative `HttpResponseFilter` parses the body of every response it evaluates, including successful ones, which drains the stream before the decoder runs. The download requesters therefore use the `BingAdsDownloadErrorHandler` component, which only reads the body of a 403. It classifies the storage service's expired-URL response (`x-ms-error-code: AuthenticationFailed` with `Signature not valid in the specified time frame`) as a transient error and leaves every other response to the default handling.
+
+**Why this matters:** Adding a `predicate` or `error_message_contains` filter to a download requester makes successful downloads emit zero records with no error. An expired download URL is also not a permission problem, so it must not fall through to the default 403 `config_error`.

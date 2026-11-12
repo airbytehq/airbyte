@@ -13,15 +13,18 @@ from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, Muta
 
 import requests
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
 
@@ -571,6 +574,41 @@ class BingAdsGzipCsvDecoder(Decoder):
         csv_reader = csv.DictReader(text_stream)
         for row in csv_reader:
             yield row
+
+
+EXPIRED_DOWNLOAD_URL_ERROR_MESSAGE = "Bing Ads file download URL is expired."
+
+
+@dataclass
+class BingAdsDownloadErrorHandler(DefaultErrorHandler):
+    """Error handler for report and bulk file downloads.
+
+    Bing Ads hands out pre-signed Azure Blob Storage URLs that are only valid for a few minutes. Once a URL is
+    past its expiry, the storage service answers 403 ``AuthenticationFailed``. That is not a permission problem
+    with the user's credentials, and resending the same URL cannot succeed, so the download fails as a transient
+    error instead of going through the default 403 handling. Every other response is handled by the default
+    error handler.
+
+    Only the body of a 403 is read here. The body of a successful response must stay untouched because the
+    decoders stream the file from ``response.raw``.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response) and self._is_expired_download_url(response_or_exception):
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.transient_error,
+                error_message=EXPIRED_DOWNLOAD_URL_ERROR_MESSAGE,
+            )
+        return super().interpret_response(response_or_exception)
+
+    @staticmethod
+    def _is_expired_download_url(response: requests.Response) -> bool:
+        return (
+            response.status_code == 403
+            and response.headers.get("x-ms-error-code") == "AuthenticationFailed"
+            and "Signature not valid in the specified time frame" in response.text
+        )
 
 
 BING_ADS_REPORTING_POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
