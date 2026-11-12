@@ -2,6 +2,12 @@
 
 # source-bing-ads: Unique Behaviors
 
+## Download URLs Expire After About Ten Minutes
+
+Report and bulk files use short-lived Azure SAS download URLs. The polling requester registers the URL and its authenticated polling context in a lock-protected registry. Immediately before downloading, the download requester consumes that context and re-polls for a fresh URL, falling back to the original URL if re-polling fails. Re-polls do not register another context.
+
+The CDK does not forward `creation_response` to the download slice, so the download requester cannot rebuild the polling request from that slice alone. Download HTTP 403 responses are reported as transient errors because these pre-signed URLs do not use user authentication. The error filter matches only the status code, avoiding body inspection that would consume successful streaming downloads.
+
 ## 1. Duplicate Records from Predicate-Based Filtering
 
 When the connector is configured with `account_names` predicates (e.g., filter accounts containing "Airbyte" AND accounts containing "Plumbing"), a single account matching multiple predicates will be returned once per matching predicate. The `DuplicatedRecordsFilter` component deduplicates these by tracking seen record IDs and only emitting each record once.

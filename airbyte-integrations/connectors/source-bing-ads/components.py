@@ -9,20 +9,20 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
+from threading import Lock
 from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
 
 logger = logging.getLogger(__name__)
@@ -573,7 +573,42 @@ class BingAdsGzipCsvDecoder(Decoder):
             yield row
 
 
-BING_ADS_REPORTING_POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
+_DOWNLOAD_POLL_CONTEXTS = {}
+_DOWNLOAD_POLL_CONTEXTS_LOCK = Lock()
+
+
+@dataclass
+class BingAdsPollingRequester(HttpRequester):
+    download_url_fields: List[str] = None
+    request_headers: Optional[Mapping[str, str]] = None
+    request_body_json: Optional[Mapping[str, Any]] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self.request_options_provider = InterpolatedRequestOptionsProvider(
+            config=self.config,
+            parameters=parameters,
+            request_headers=self.request_headers,
+            request_body_json=self.request_body_json,
+        )
+        super().__post_init__(parameters)
+
+    def extract_download_url(self, response: requests.Response) -> Optional[str]:
+        value = response.json()
+        for field in self.download_url_fields or []:
+            if not isinstance(value, Mapping):
+                return None
+            value = value.get(field)
+        return value if isinstance(value, str) and value else None
+
+    def send_request(self, *args, register_download: bool = True, **kwargs) -> Optional[requests.Response]:
+        response = super().send_request(*args, **kwargs)
+        if register_download and response is not None:
+            url = self.extract_download_url(response)
+            stream_slice = kwargs.get("stream_slice")
+            if url and stream_slice:
+                with _DOWNLOAD_POLL_CONTEXTS_LOCK:
+                    _DOWNLOAD_POLL_CONTEXTS[url] = (self, stream_slice)
+        return response
 
 
 @dataclass
@@ -586,8 +621,6 @@ class BingAdsReportDownloadRequester(HttpRequester):
     immediately before each download, preventing ``AuthenticationFailed`` errors
     from Azure Blob Storage.
     """
-
-    report_poll_authenticator: Optional[DeclarativeAuthenticator] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         # When instantiated via create_custom_component, stream_response is not
@@ -635,51 +668,22 @@ class BingAdsReportDownloadRequester(HttpRequester):
         )
 
     def _get_fresh_download_url(self, stream_slice: StreamSlice) -> Optional[str]:
-        """Re-poll Bing Ads Reporting API to obtain a fresh SAS download URL."""
-        creation_response = stream_slice.extra_fields.get("creation_response", {})
-        report_request_id = creation_response.get("ReportRequestId")
-        if not report_request_id:
-            logger.warning("No ReportRequestId in creation_response; using existing download URL")
+        with _DOWNLOAD_POLL_CONTEXTS_LOCK:
+            context = _DOWNLOAD_POLL_CONTEXTS.pop(stream_slice.extra_fields.get("download_target"), None)
+        if not context:
+            logger.warning("No polling context for download; using existing download URL")
             return None
-
-        account_id = stream_slice.partition.get("account_id", "")
-        parent_customer_id = stream_slice.extra_fields.get("ParentCustomerId", "")
-        developer_token = self.config.get("developer_token", "")
-
-        headers: Dict[str, str] = {
-            "Content-Type": "application/json",
-            "DeveloperToken": str(developer_token),
-            "CustomerId": str(parent_customer_id),
-            "CustomerAccountId": str(account_id),
-        }
-
+        polling_requester, polling_slice = context
         try:
-            if self.report_poll_authenticator:
-                auth_header = self.report_poll_authenticator.get_auth_header()
-                headers.update(auth_header)
-
-            http_client = HttpClient(
-                name="bing_ads_report_repoll",
-                logger=logger,
-            )
-            _, response = http_client.send_request(
-                http_method="POST",
-                url=BING_ADS_REPORTING_POLL_URL,
-                headers=headers,
-                json={"ReportRequestId": str(report_request_id)},
-                request_kwargs={"timeout": 30},
-            )
-            data = response.json()
-            fresh_url = data.get("ReportRequestStatus", {}).get("ReportDownloadUrl")
+            response = polling_requester.send_request(stream_slice=polling_slice, register_download=False)
+            fresh_url = polling_requester.extract_download_url(response) if response is not None else None
             if fresh_url:
-                logger.info("Obtained fresh download URL via re-poll for report request %s", report_request_id)
                 return fresh_url
-            logger.warning("Re-poll did not return a ReportDownloadUrl for report request %s", report_request_id)
+            logger.warning("Re-poll did not return a download URL; using existing download URL")
             return None
         except Exception:
             logger.warning(
-                "Re-poll failed for report request %s; falling back to existing download URL",
-                report_request_id,
+                "Re-poll failed; falling back to existing download URL",
                 exc_info=True,
             )
             return None

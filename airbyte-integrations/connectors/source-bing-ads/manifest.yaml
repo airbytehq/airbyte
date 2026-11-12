@@ -2614,6 +2614,14 @@ definitions:
       - type: LegacyToPerPartitionStateMigration
 
   # base retrievers
+  download_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [403]
+        action: FAIL
+        failure_type: transient_error
+        error_message: "The Bing Ads download link expired before the file could be downloaded. The sync will retry."
   basic_async_retriever:
     type: AsyncRetriever
     partition_router:
@@ -2642,7 +2650,9 @@ definitions:
         - ReportRequestStatus
         - Status
     polling_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsPollingRequester
+      download_url_fields: [ReportRequestStatus, ReportDownloadUrl]
       url_base: https://reporting.api.bingads.microsoft.com/
       path: Reporting/v13/GenerateReport/Poll
       http_method: POST
@@ -2659,7 +2669,7 @@ definitions:
       class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
-      report_poll_authenticator: "#/definitions/authenticator"
+      error_handler: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
@@ -2710,7 +2720,9 @@ definitions:
         - RequestStatus
     polling_requester:
       # https://learn.microsoft.com/en-ie/advertising/bulk-service/getbulkdownloadstatus?view=bingads-13&tabs=prod&pivots=rest
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsPollingRequester
+      download_url_fields: [ResultFileUrl]
       url_base: https://bulk.api.bingads.microsoft.com/
       path: Bulk/v13/BulkDownloadStatus/Query
       http_method: POST
@@ -2723,9 +2735,11 @@ definitions:
       request_body_json:
         RequestId: "'{{ creation_response['DownloadRequestId'] }}'"
     download_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler: "#/definitions/download_error_handler"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
