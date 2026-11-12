@@ -49,7 +49,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
-| 7.3.1 | 2026-11-12 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fixed connection check failing when optional settings such as `records_per_slice` or `parallelism` are left out of the config |
+| 7.3.1 | 2026-11-12 | [92253](https://github.com/airbytehq/airbyte/pull/92253) | Fixed connection check failing when optional settings such as `records_per_slice` or `parallelism` are left out of the config |
 | 7.2.2 | 2026-11-10 | [90918](https://github.com/airbytehq/airbyte/pull/90918) | Raised the minimum supported Python version to 3.11 |
 | 7.2.1 | 2026-07-10 | [81653](https://github.com/airbytehq/airbyte/pull/81653) | chore(source-faker): dummy version bump for progressive rollout (autopilot) testing |
 | 7.2.0 | 2026-07-09 | [81556](https://github.com/airbytehq/airbyte/pull/81556) | Promoted release candidate to GA |
