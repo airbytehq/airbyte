@@ -3,7 +3,7 @@
 #
 
 import pytest
-from conftest import create_zip_from_csv, find_stream, get_source
+from conftest import create_zip_from_csv, find_stream, get_retriever, get_source
 from freezegun import freeze_time
 
 from airbyte_cdk.models import SyncMode
@@ -103,8 +103,9 @@ def test_get_updated_state_new_state_daily_weekly_monthly(stream_name, mock_auth
     source = get_source(TEST_CONFIG, state)
     output = read(source, TEST_CONFIG, catalog, state)
 
-    updated_state = output.most_recent_state.stream_state.state["TimePeriod"]
-    assert updated_state == "2023-01-01"
+    states = output.most_recent_state.stream_state.states
+    assert {state["partition"]["account_id"] for state in states} == {"1", "2", "3"}
+    assert all(state["cursor"]["TimePeriod"] == "2023-01-01" for state in states)
 
 
 def test_get_report_record_timestamp_without_aggregation(config, mock_user_query, mock_auth_token):
@@ -112,14 +113,17 @@ def test_get_report_record_timestamp_without_aggregation(config, mock_user_query
     record = {"Date": "08/13/2024"}
     expected_record = {"Date": "2024-08-13"}
     transformed_record = list(
-        stream_report.retriever.record_selector.filter_and_transform(all_data=[record], stream_state={}, stream_slice={}, records_schema={})
+        get_retriever(stream_report).record_selector.filter_and_transform(
+            all_data=[record], stream_state={}, stream_slice={}, records_schema={}
+        )
     )[0]
     assert transformed_record["Date"] == expected_record["Date"]
 
 
 def test_search_query_performance_primary_key_distinguishes_rows_by_all_requested_dimensions(config):
     stream = find_stream("search_query_performance_report_daily", config)
-    assert stream.primary_key == [
+    primary_key = [path[0] for path in stream.as_airbyte_stream().source_defined_primary_key]
+    assert primary_key == [
         "TimePeriod",
         "CustomerId",
         "AccountId",
@@ -181,7 +185,7 @@ def test_search_query_performance_primary_key_distinguishes_rows_by_all_requeste
         "GoalType": "Event",
     }
 
-    assert tuple(record[field] for field in stream.primary_key) != tuple(duplicate_old_key_record[field] for field in stream.primary_key)
+    assert tuple(record[field] for field in primary_key) != tuple(duplicate_old_key_record[field] for field in primary_key)
 
 
 @freeze_time("2024-01-01")

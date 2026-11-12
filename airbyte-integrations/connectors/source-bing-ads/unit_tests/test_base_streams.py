@@ -3,7 +3,7 @@
 #
 
 import pytest
-from conftest import find_stream, get_source
+from conftest import find_stream, get_retriever, get_source, get_stream_slices
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
@@ -82,7 +82,7 @@ ALL_AD_TYPES = ["AppInstall", "DynamicSearch", "ExpandedText", "Hotel", "Image",
 def test_accounts_transform_tax_fields(config, record, expected):
     stream = find_stream("accounts", config)
     transformed_record = list(
-        stream.retriever.record_selector.filter_and_transform(all_data=[record], stream_state={}, stream_slice={}, records_schema={})
+        get_retriever(stream).record_selector.filter_and_transform(all_data=[record], stream_state={}, stream_slice={}, records_schema={})
     )[0]
     if expected.get("TaxCertificate"):
         assert transformed_record["TaxCertificate"] == expected["TaxCertificate"]
@@ -94,7 +94,7 @@ def test_accounts_transform_tax_fields(config, record, expected):
 def test_campaigns_request_params(config):
     campaigns = find_stream("campaigns", config)
     stream_slice = StreamSlice(partition={"account_id": "account_id"}, cursor_slice={})
-    request_params = campaigns.retriever.requester.get_request_body_json(stream_slice=stream_slice)
+    request_params = get_retriever(campaigns).requester.get_request_body_json(stream_slice=stream_slice)
     assert request_params
     assert request_params["AccountId"] == "account_id"
     assert request_params["CampaignType"] == ALL_CAMPAIGN_TYPES
@@ -136,7 +136,7 @@ def test_campaigns_read_returns_every_documented_campaign_type(campaign_type, mo
 
 def test_campaigns_stream_slices(config, logger_mock, mock_auth_token, mock_user_query, mock_account_query):
     campaigns = find_stream("campaigns", config)
-    slices = campaigns.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={})
+    slices = get_stream_slices(campaigns)
     assert list(slices) == [
         {"account_id": 1, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}},
         {"account_id": 2, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}},
@@ -157,7 +157,7 @@ def test_adgroups_stream_slices(mock_auth_token, mock_user_query, mock_account_q
         },
     )
     ad_groups = find_stream("ad_groups", config)
-    stream_slices = list(ad_groups.retriever.stream_slicer.stream_slices())
+    stream_slices = get_stream_slices(ad_groups)
     assert stream_slices == [
         {"campaign_id": [1], "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}}]},
         {"campaign_id": [2], "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "", "user_id": 1, "parent_slice": {}}}]},
@@ -172,7 +172,7 @@ def test_ads_request_body_data(mock_auth_token, config):
         "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "AccountName", "user_id": 1, "parent_slice": {}}}],
     }
 
-    request_params = ads.retriever.requester.get_request_body_json(stream_slice=stream_slice)
+    request_params = get_retriever(ads).requester.get_request_body_json(stream_slice=stream_slice)
     assert request_params == {
         "AdTypes": ALL_AD_TYPES,
         "ReturnAdditionalFields": "ImpressionTrackingUrls,Videos,LongHeadlines",
@@ -188,7 +188,7 @@ def test_ads_request_includes_every_documented_ad_type(ad_type, mock_auth_token,
         "parent_slice": [{"account_id": 1, "parent_slice": {"account_name": "AccountName", "user_id": 1, "parent_slice": {}}}],
     }
 
-    assert ad_type in ads.retriever.requester.get_request_body_json(stream_slice=stream_slice)["AdTypes"]
+    assert ad_type in get_retriever(ads).requester.get_request_body_json(stream_slice=stream_slice)["AdTypes"]
 
 
 def test_ads_stream_slices(mock_auth_token, mock_user_query, mock_account_query, requests_mock, config):
@@ -215,7 +215,7 @@ def test_ads_stream_slices(mock_auth_token, mock_user_query, mock_account_query,
         },
     )
     ads = find_stream("ads", config)
-    stream_slices = list(ads.retriever.stream_slicer.stream_slices())
+    stream_slices = get_stream_slices(ads)
     assert stream_slices == [
         {
             "ad_group_id": [1],
@@ -319,7 +319,7 @@ def test_transform(mock_auth_token, config):
         "Videos": None,
     }
     transformed_record = list(
-        ads_stream.retriever.record_selector.filter_and_transform(
+        get_retriever(ads_stream).record_selector.filter_and_transform(
             all_data=[
                 record,
             ],

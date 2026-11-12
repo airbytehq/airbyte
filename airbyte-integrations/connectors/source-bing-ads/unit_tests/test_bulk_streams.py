@@ -3,7 +3,7 @@
 #
 
 import pytest
-from conftest import find_stream
+from conftest import find_stream, get_retriever, get_stream_slices
 from freezegun import freeze_time
 
 from airbyte_cdk.models import SyncMode
@@ -30,7 +30,7 @@ def test_bulk_stream_stream_slices(mock_auth_token, mock_user_query, mock_accoun
             "Errors": None,
         },
     )
-    slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+    slices = get_stream_slices(stream)
     assert slices == [
         {"account_id": "1", "start_time": "2020-01-01T00:00:00.000+0000", "end_time": "2025-01-01T00:00:00.000+0000"},
         {"account_id": "2", "start_time": "2020-01-01T00:00:00.000+0000", "end_time": "2025-01-01T00:00:00.000+0000"},
@@ -53,7 +53,7 @@ def test_bulk_stream_transform(mock_auth_token, mock_user_query, mock_account_qu
         extra_fields={"ParentCustomerId": "Parent_Customer_Id"},
     )
     transformed_record = list(
-        stream.retriever.record_selector.filter_and_transform(
+        get_retriever(stream).record_selector.filter_and_transform(
             all_data=[record], stream_state={}, stream_slice=stream_slice, records_schema={}
         )
     )[0]
@@ -108,7 +108,7 @@ def test_bulk_stream_start_date(
             "Errors": None,
         },
     )
-    slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
+    slices = get_stream_slices(stream)
     assert slices
     if stream_state:
         account_id_from_state = list(stream_state.keys())[0]

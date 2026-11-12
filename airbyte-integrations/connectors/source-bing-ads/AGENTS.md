@@ -29,3 +29,9 @@ The `campaigns` stream calls `GetCampaignsByAccountId`, which only returns campa
 The `ads` stream has the same behavior: `GetAdsByAdGroupId` only returns ads whose type is listed in the required `AdTypes` request field, so the manifest sends every documented [AdType](https://learn.microsoft.com/en-us/advertising/campaign-management-service/adtype?view=bingads-13) value. Keep both lists in sync with Microsoft's value sets.
 
 **Why this matters:** A missing type is silent data loss. Campaigns or ads of that type are never returned, there is no error or warning, and their ad groups and ads are also missing because `ad_groups` and `ads` are child streams of `campaigns`.
+
+## 5. Download URLs Expire Independently of Completed Jobs
+
+Report and bulk downloads use short-lived Azure SAS URLs. The download requesters re-poll the completed job immediately before downloading, using `ReportRequestId` for reports and `DownloadRequestId` for bulk jobs. If Azure returns HTTP 403 with `AuthenticationFailed` and `Signature not valid in the specified time frame`, the requester closes the response, re-polls, and retries the download once. Persistent expiry raises a stream-specific transient error; other 403 responses keep their permission/configuration classification.
+
+**Why this matters:** Retrying the same expired URL cannot recover the download. Keep the refresh at the download boundary and preserve the narrow expiry match so genuine authorization failures remain visible.

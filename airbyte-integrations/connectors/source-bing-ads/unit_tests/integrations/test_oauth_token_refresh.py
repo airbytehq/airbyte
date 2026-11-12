@@ -1,13 +1,15 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 import json
 
+import pytest
 from base_test import BaseTest
 from client_builder import build_request, build_request_2
 from protocol_helpers import read_helper
 from request_builder import RequestBuilder
 
-from airbyte_cdk.models import SyncMode, Type
+from airbyte_cdk.models import AirbyteMessageSerializer, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
@@ -20,6 +22,10 @@ class TestOAuthTokenRefresh(BaseTest):
     """Verify that the authenticator's refresh_token_updater causes
     CONTROL / CONNECTOR_CONFIG messages to be emitted so that
     rotated Microsoft refresh tokens are persisted back to config."""
+
+    @pytest.fixture(autouse=True)
+    def _capture_stdout(self, capsys) -> None:
+        self._capsys = capsys
 
     def _auth_client(self, http_mocker: HttpMocker) -> None:
         response = HttpResponse(
@@ -46,7 +52,15 @@ class TestOAuthTokenRefresh(BaseTest):
 
     def _read_accounts(self, config):
         catalog = CatalogBuilder().with_stream("accounts", SyncMode.full_refresh).build()
-        return read_helper(config=config, catalog=catalog)
+        output = read_helper(config=config, catalog=catalog)
+        # CDK 7 writes config updates directly to stdout rather than yielding them.
+        control_messages = [
+            line
+            for line in self._capsys.readouterr().out.splitlines()
+            if line.startswith("{") and json.loads(line).get("type") == "CONTROL"
+        ]
+        messages = [json.dumps(AirbyteMessageSerializer.dump(message)) for message in output.get_message_iterator()]
+        return EntrypointOutput(messages=[*messages, *control_messages])
 
     def _written_back_config(self, output):
         control_messages = output.get_message_by_types([Type.CONTROL])

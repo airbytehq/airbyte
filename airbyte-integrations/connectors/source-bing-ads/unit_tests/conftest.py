@@ -164,6 +164,19 @@ def find_stream(stream_name, config, state=None):
     raise ValueError(f"Stream {stream_name} not found")
 
 
+def get_retriever(stream):
+    """Access the actual retriever inside the CDK 7 concurrent stream wrapper."""
+    return stream._stream_partition_generator._partition_factory._retriever
+
+
+def get_stream_slices(stream):
+    """Return input slices before async jobs are submitted."""
+    slicer = stream._stream_partition_generator._stream_slicer
+    if hasattr(slicer, "job_orchestrator_factory"):
+        slicer = slicer.stream_slicer
+    return [dict(s.partition) | dict(s.cursor_slice) for s in slicer.stream_slices()]
+
+
 def create_zip_from_csv(filename: str) -> bytes:
     """
     Creates a zip file containing a CSV file from the resource/response folder.

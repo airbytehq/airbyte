@@ -331,7 +331,7 @@ class CustomReportSummary(BaseTest):
         output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
-        assert output.most_recent_state.stream_state.state["TimePeriod"] == self.start_date
+        assert output.most_recent_state.stream_state.states[0]["cursor"]["TimePeriod"] == self.start_date
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_with_state_from_given_csv_file(self):
@@ -340,7 +340,7 @@ class CustomReportSummary(BaseTest):
         output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
-        assert output.most_recent_state.stream_state.state["TimePeriod"] == self.start_date
+        assert output.most_recent_state.stream_state.states[0]["cursor"]["TimePeriod"] == self.start_date
 
 
 class CustomReportDayOfWeek(BaseTest):
@@ -442,7 +442,7 @@ class CustomReportDayOfWeek(BaseTest):
         output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
-        assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
+        assert output.most_recent_state.stream_state.states[0]["cursor"]["TimePeriod"] == "2024-05-06"
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_with_state_from_given_csv_file(self):
@@ -451,7 +451,7 @@ class CustomReportDayOfWeek(BaseTest):
         output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
-        assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
+        assert output.most_recent_state.stream_state.states[0]["cursor"]["TimePeriod"] == "2024-05-06"
 
 
 class CustomReportHourOfDay(BaseTest):
@@ -553,7 +553,7 @@ class CustomReportHourOfDay(BaseTest):
         output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
-        assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
+        assert output.most_recent_state.stream_state.states[0]["cursor"]["TimePeriod"] == "2024-05-06"
 
     @freeze_time("2024-05-06")
     def test_return_records_incrementally_with_state_from_given_csv_file(self):
@@ -562,4 +562,4 @@ class CustomReportHourOfDay(BaseTest):
         output = self.read_stream(self.stream_name, SyncMode.incremental, self._config, self.report_file, state)
         assert len(output.records) == self.records_number
         # state is not updated as records don't have a cursor field
-        assert output.most_recent_state.stream_state.state["TimePeriod"] == "2024-05-06"
+        assert output.most_recent_state.stream_state.states[0]["cursor"]["TimePeriod"] == "2024-05-06"
