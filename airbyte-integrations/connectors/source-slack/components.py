@@ -176,7 +176,14 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        """
+        Only legacy state shapes need migrating: the pre-low-code `{"float_ts": ...}` cursor and per-partition
+        thread states saved without `parent_state`. State emitted by the current connector already carries
+        per-channel `channel_messages` cursors under `parent_state`; migrating it would replace those cursors with
+        a single global value (falling back to `start_date` when no thread partition has completed yet), forcing
+        every channel to be re-read from the beginning.
+        """
+        return bool(stream_state) and "parent_state" not in stream_state
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
