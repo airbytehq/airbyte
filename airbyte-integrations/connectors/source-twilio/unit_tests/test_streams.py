@@ -261,7 +261,9 @@ class TestIncrementalTwilioStream:
             ("recordings", "/Accounts/AC123/Recordings.json", "date_created", "DateCreated>", "DateCreated<"),
         ],
     )
-    def test_per_partition_cursor_advances_across_monthly_slices(self, stream_name, path, cursor_field, lower_key, upper_key, requests_mock):
+    def test_per_partition_cursor_advances_across_monthly_slices(
+        self, stream_name, path, cursor_field, lower_key, upper_key, requests_mock
+    ):
         """
         A per-partition cursor older than the global cursor must advance to the latest record once the
         partition is re-read, so the next sync resumes from it instead of re-reading the same history again.
