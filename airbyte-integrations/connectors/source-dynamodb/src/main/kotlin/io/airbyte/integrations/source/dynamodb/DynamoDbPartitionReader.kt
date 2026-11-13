@@ -132,6 +132,7 @@ class DynamoDbPartitionReader(
             "table '${stream.name}'" +
                 (if (partition.totalSegments > 1) " segment $segment/${partition.totalSegments}"
                 else "")
+        val throttlingKey = "${stream.id}/$segment/${partition.totalSegments}"
         log.info {
             "Scanning $label" +
                 (startKey?.let { " from key ${DynamoDbJson.itemToDynamoDbJson(it)}" } ?: "")
@@ -144,7 +145,10 @@ class DynamoDbPartitionReader(
                 val request: ScanRequest =
                     if (startKey == null) baseRequest
                     else baseRequest.toBuilder().exclusiveStartKey(startKey).build()
-                val response: ScanResponse = sharedState.client.scan(request)
+                val response: ScanResponse =
+                    sharedState.throttlingBackoff.call(throttlingKey, label) {
+                        sharedState.client.scan(request)
+                    }
                 for (item: Map<String, AttributeValue> in response.items()) {
                     val changes = HashMap<EmittedField, FieldValueChange>(0)
                     accept(toPayload(item, changes), changes.ifEmpty { null })

@@ -112,9 +112,19 @@ airbyte:
             error: config
             output: "Could not reach the DynamoDB endpoint. Please check the configured endpoint and region."
 
-          - pattern: "(?i).*(ProvisionedThroughputExceededException|Throughput exceeds the current capacity|Rate of requests exceeds the allowed throughput|ThrottlingException|Too Many Requests).*"
+          # Raised once DynamoDbThrottlingBackoff has given up: the scan was throttled without a
+          # single successful request for a long time, so the table's limit is too low for the
+          # configured concurrency. The message names no exception class, only the AWS text.
+          - pattern: "(?i).*Throughput exceeds the maximum OnDemandThroughput.*"
             input-example: >-
-              software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughputExceededException: The level of
-              configured provisioned throughput for the table was exceeded. Consider increasing your provisioning
-              level with the UpdateTable API. (Service: DynamoDb, Status Code: 400, Request ID: ABC)
+              Throughput exceeds the maximum OnDemandThroughput configured on table or index (Service: DynamoDb,
+              Status Code: 400, Request ID: ABC) (SDK Attempt Count: 9)
+            error: config
+            output: "DynamoDB kept throttling the scan because it exceeded the maximum on-demand read throughput configured on the table or index. Lower 'Max Concurrent Queries to Database' in the source configuration, or raise or remove the table's maximum read request units."
+
+          - pattern: "(?i).*(ProvisionedThroughputExceededException|Throughput exceeds the current capacity|Rate of requests exceeds the allowed throughput|ThrottlingException|Too Many Requests|level of configured provisioned throughput|throttl).*"
+            input-example: >-
+              The level of configured provisioned throughput for the table was exceeded. Consider increasing your
+              provisioning level with the UpdateTable API. (Service: DynamoDb, Status Code: 400, Request ID: ABC)
             error: transient
+            output: "DynamoDB kept throttling the scan because it exceeded the table's read capacity. Lower 'Max Concurrent Queries to Database' in the source configuration, or raise the table's read capacity."
