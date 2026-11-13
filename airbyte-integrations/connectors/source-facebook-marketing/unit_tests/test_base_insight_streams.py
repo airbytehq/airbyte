@@ -396,7 +396,8 @@ class TestBaseInsightsStream:
         actual_state = stream.state
 
         result_state = state if not result_state else result_state
-        result_state[some_config["account_ids"][0]]["slices"] = result_state[some_config["account_ids"][0]].get("slices", [])
+        account_state = result_state[some_config["account_ids"][0]]
+        account_state["slices"] = [s for s in account_state.get("slices", []) if s > account_state.get(AdsInsights.cursor_field, "")]
         result_state["time_increment"] = 1
 
         assert actual_state == result_state
