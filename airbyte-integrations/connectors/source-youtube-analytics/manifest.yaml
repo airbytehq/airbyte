@@ -4,8 +4,13 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
+  # A report stream cannot be used here: its slices are the report files YouTube has already
+  # generated, and a newly created reporting job has none for up to 48 hours, so `check` would
+  # fail with "no stream slices were found" on every new source. Listing the reporting jobs
+  # validates the credentials and the channel or content owner without depending on report
+  # files, and without creating a job.
   stream_names:
-    - channel_annotations_a1
+    - reporting_jobs
 
 definitions:
   streams:
@@ -68,6 +73,31 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: createdAfter
+
+    # The account's reporting jobs as YouTube lists them. Unlike the `jobs` parent above it does
+    # not filter by report type and never creates a job, so it is safe to read during `check`.
+    reporting_jobs:
+      type: DeclarativeStream
+      name: reporting_jobs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: jobs
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - jobs
+        paginator:
+          $ref: "#/definitions/next_page_token_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/reporting_jobs"
 
     base_report_stream:
       type: DeclarativeStream
@@ -628,6 +658,7 @@ streams:
   - $ref: "#/definitions/streams/playlist_playback_location_a2"
   - $ref: "#/definitions/streams/playlist_province_a2"
   - $ref: "#/definitions/streams/playlist_traffic_source_a2"
+  - $ref: "#/definitions/streams/reporting_jobs"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -755,6 +786,7 @@ metadata:
     playlist_playback_location_a2: false
     playlist_province_a2: false
     playlist_traffic_source_a2: false
+    reporting_jobs: false
   yamlComponents:
     global:
       - authenticator
@@ -2038,6 +2070,38 @@ schemas:
         type:
           - "null"
           - integer
+
+  reporting_jobs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      reportTypeId:
+        type:
+          - "null"
+          - string
+      createTime:
+        type:
+          - "null"
+          - string
+        format: date-time
+      expireTime:
+        type:
+          - "null"
+          - string
+        format: date-time
+      systemManaged:
+        type:
+          - "null"
+          - boolean
 
 api_budget:
   type: HTTPAPIBudget
