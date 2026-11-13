@@ -14,7 +14,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 _BASE_URL = "https://api.aircall.io/v1"
-_CONFIG = {"api_id": "test-id", "api_token": "test-token"}
+_CONFIG = {"credentials": {"auth_type": "api_key", "api_id": "test-id", "api_token": "test-token"}}
 
 
 @pytest.fixture(scope="module")

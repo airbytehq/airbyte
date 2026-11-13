@@ -17,7 +17,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 _BASE_URL = "https://api.aircall.io/v1"
 # One 365-day calls window, so a read makes a single calls request.
-_CONFIG = {"api_id": "test-id", "api_token": "test-token", "window_in_days": 365}
+_CONFIG = {"credentials": {"auth_type": "api_key", "api_id": "test-id", "api_token": "test-token"}, "window_in_days": 365}
 _CI_CONFIG = {**_CONFIG, "include_conversation_intelligence": True}
 _NOW = "2026-11-03T00:00:00Z"
 _DAY = 86400
@@ -288,7 +288,7 @@ def test_403_without_ai_assist_is_a_config_error_naming_the_option(stream_name: 
 
 
 @pytest.mark.parametrize("stream_name", _STREAM_NAMES)
-def test_401_keeps_the_api_key_message(stream_name: str) -> None:
+def test_401_keeps_the_credentials_message(stream_name: str) -> None:
     with freeze_time(_NOW), HttpMocker() as http_mocker:
         _mock_calls(http_mocker, [{"id": 812, "started_at": _epoch(_NOW) - _DAY}])
         http_mocker.get(_child_request(stream_name, 812), _json({"message": "Unauthorized"}, 401))
@@ -297,7 +297,7 @@ def test_401_keeps_the_api_key_message(stream_name: str) -> None:
 
         error = output.errors[0].trace.error
         assert error.failure_type == FailureType.config_error
-        assert error.message.startswith("Aircall rejected the API ID and API token (HTTP 401).")
+        assert error.message.startswith("Aircall rejected the credentials (HTTP 401).")
 
 
 @pytest.mark.parametrize("stream_name", _STREAM_NAMES)
@@ -311,7 +311,7 @@ def test_gateway_403_keeps_the_credentials_message(stream_name: str) -> None:
         error = output.errors[0].trace.error
         assert error.failure_type == FailureType.config_error
         url = f"{_BASE_URL}/calls/812/{_STREAMS[stream_name][0]}"
-        assert error.message.startswith(f"Aircall returned HTTP 403 for {url}. Check that the API ID and API token")
+        assert error.message.startswith(f"Aircall returned HTTP 403 for {url}. If you use OAuth, re-authenticate the connector")
 
 
 def _summary(call_id: int) -> HttpResponse:
