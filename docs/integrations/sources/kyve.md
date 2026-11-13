@@ -44,7 +44,8 @@ Every stream uses the same schema:
 - The connector only reads finalized bundles.
 - The connector downloads bundle data from the storage provider that the bundle was uploaded to. It supports Arweave, Irys, and the KYVE storage provider. If a bundle uses any other storage provider, the sync fails.
 - If none of the gateways for a bundle's storage provider respond, the connector logs an error and skips that bundle.
-- The connector verifies each downloaded bundle against the data hash recorded on the KYVE chain. If the hashes don't match, the sync fails.
+- If a downloaded bundle can't be decompressed, the connector logs an error and skips that bundle.
+- The connector verifies each downloaded bundle against the data hash recorded on the KYVE chain. If the hashes don't match, the sync fails. Bundles with no recorded data hash, such as some legacy bundles, are synced without this check.
 
 ## IP allow list
 
