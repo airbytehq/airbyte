@@ -176,7 +176,15 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        """
+        Only migrate states that do not carry the parent `channel_messages` state yet.
+        States emitted by the current connector already hold per-channel cursors under
+        `parent_state.channel_messages`; overwriting them would restart every channel from the
+        `start_date`/global cursor on each new attempt.
+        """
+        if not stream_state:
+            return False
+        return not (stream_state.get("parent_state") or {}).get("channel_messages")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not stream_state:
