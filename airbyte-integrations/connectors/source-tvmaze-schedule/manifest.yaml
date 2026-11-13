@@ -149,7 +149,7 @@ definitions:
                   type:
                     - number
                     - "null"
-                dvdCountry:
+                dvdCountry: {}
                 ended:
                   type:
                     - string
@@ -228,7 +228,7 @@ definitions:
                       type:
                         - string
                         - "null"
-                    officialSite:
+                    officialSite: {}
                 officialSite:
                   type:
                     - string
@@ -277,7 +277,7 @@ definitions:
                   type:
                     - string
                     - "null"
-                webChannel:
+                webChannel: {}
                 weight:
                   type:
                     - number
@@ -616,7 +616,7 @@ definitions:
               type:
                 - number
                 - "null"
-            image:
+            image: {}
             name:
               type:
                 - string
@@ -628,7 +628,7 @@ definitions:
             rating:
               type: object
               properties:
-                average:
+                average: {}
             runtime:
               type:
                 - number
@@ -665,7 +665,7 @@ definitions:
                   type:
                     - number
                     - "null"
-                dvdCountry:
+                dvdCountry: {}
                 ended:
                   type:
                     - string
@@ -681,7 +681,7 @@ definitions:
                       type:
                         - number
                         - "null"
-                    tvrage:
+                    tvrage: {}
                 genres:
                   type: array
                   items:
@@ -737,8 +737,8 @@ definitions:
                       type:
                         - string
                         - "null"
-                    officialSite:
-                officialSite:
+                    officialSite: {}
+                officialSite: {}
                 premiered:
                   type:
                     - string
@@ -746,7 +746,7 @@ definitions:
                 rating:
                   type: object
                   properties:
-                    average:
+                    average: {}
                 runtime:
                   type:
                     - number
@@ -780,7 +780,7 @@ definitions:
                   type:
                     - string
                     - "null"
-                webChannel:
+                webChannel: {}
                 weight:
                   type:
                     - number
@@ -945,7 +945,7 @@ schemas:
             type:
               - number
               - "null"
-          dvdCountry:
+          dvdCountry: {}
           ended:
             type:
               - string
@@ -1024,7 +1024,7 @@ schemas:
                 type:
                   - string
                   - "null"
-              officialSite:
+              officialSite: {}
           officialSite:
             type:
               - string
@@ -1073,7 +1073,7 @@ schemas:
             type:
               - string
               - "null"
-          webChannel:
+          webChannel: {}
           weight:
             type:
               - number
@@ -1346,7 +1346,7 @@ schemas:
         type:
           - number
           - "null"
-      image:
+      image: {}
       name:
         type:
           - string
@@ -1358,7 +1358,7 @@ schemas:
       rating:
         type: object
         properties:
-          average:
+          average: {}
       runtime:
         type:
           - number
@@ -1395,7 +1395,7 @@ schemas:
             type:
               - number
               - "null"
-          dvdCountry:
+          dvdCountry: {}
           ended:
             type:
               - string
@@ -1411,7 +1411,7 @@ schemas:
                 type:
                   - number
                   - "null"
-              tvrage:
+              tvrage: {}
           genres:
             type: array
             items:
@@ -1467,8 +1467,8 @@ schemas:
                 type:
                   - string
                   - "null"
-              officialSite:
-          officialSite:
+              officialSite: {}
+          officialSite: {}
           premiered:
             type:
               - string
@@ -1476,7 +1476,7 @@ schemas:
           rating:
             type: object
             properties:
-              average:
+              average: {}
           runtime:
             type:
               - number
@@ -1510,7 +1510,7 @@ schemas:
             type:
               - string
               - "null"
-          webChannel:
+          webChannel: {}
           weight:
             type:
               - number
