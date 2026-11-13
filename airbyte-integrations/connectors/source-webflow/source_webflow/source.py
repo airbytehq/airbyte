@@ -50,7 +50,7 @@ class WebflowStream(HttpStream, ABC):
     # Bug reported at: https://github.com/airbytehq/airbyte/issues/13283
     @property
     def authenticator(self) -> WebflowTokenAuthenticator:
-        return self._session.auth
+        return self._http_client._session.auth
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -170,9 +170,9 @@ class CollectionContents(WebflowStream):
     def __init__(self, site_id: str = None, collection_id: str = None, collection_name: str = None, **kwargs):
         """override __init__ to add collection-related variables"""
         self.site_id = site_id
-        super().__init__(**kwargs)
         self.collection_name = collection_name
         self.collection_id = collection_id
+        super().__init__(**kwargs)
 
     @property
     def name(self) -> str:
@@ -230,7 +230,7 @@ class CollectionContents(WebflowStream):
         """
 
         collection_id = self.collection_id
-        schema_stream = CollectionSchema(authenticator=self._session.auth, collection_id=collection_id)
+        schema_stream = CollectionSchema(authenticator=self._http_client._session.auth, collection_id=collection_id)
         schema_records = schema_stream.read_records(sync_mode="full_refresh")
 
         # each record corresponds to a property in the json schema. So we loop over each of these properties
