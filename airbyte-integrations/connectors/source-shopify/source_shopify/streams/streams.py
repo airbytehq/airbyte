@@ -425,6 +425,11 @@ class Transactions(IncrementalShopifySubstream):
     data_field = "transactions"
     cursor_field = "created_at"
 
+    def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
+        # A transaction can change after it is created (e.g. a refund going from `pending` to `success`) and has no `updated_at`.
+        # Only its order is updated, so every transaction of an order updated since the last sync is emitted.
+        return True
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
@@ -440,15 +445,10 @@ class TransactionsGraphql(IncrementalShopifyGraphQlBulkStream):
         return "transactions"
 
     def should_emit_record_older_than_state(self, record: Mapping[str, Any], state_value: Any) -> bool:
-        # transactions of offsite payments can predate their order, so they are first exported with the newly created order
-        order_created_at = record.get("order_created_at")
-        return bool(order_created_at) and order_created_at >= state_value
-
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for record in super().read_records(*args, **kwargs):
-            # `order_created_at` is only used for state comparison, it should not be part of the output
-            record.pop("order_created_at", None)
-            yield record
+        # A transaction can change after it is created (e.g. a refund going from `PENDING` to `SUCCESS`) and has no `updatedAt`,
+        # and the transaction of an offsite payment can predate its order. The BULK query only returns the orders updated since
+        # the saved state, so every transaction of these orders is emitted.
+        return True
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
