@@ -134,7 +134,7 @@ This stream retrieves details for each product individually using the parent `li
 | Parameter                  | Value                       |
 | :------------------------- | :-------------------------- |
 | Dispute Start Date Range   | Timestamp with TZ (with ms) |
-| Number of days per request | Max 180, default 7          |
+| Number of days per request | Max 31, default 7           |
 | Pagination                 | Page token                  |
 | Page size                  | 50 (F)                      |
 | Full Refresh               | Yes                         |
@@ -160,7 +160,7 @@ The `start_date` from the connector configuration is passed to the PayPal API as
 | Parameter                  | Value                     |
 | :------------------------- | :------------------------ |
 | Start Date                 | Timestamp with TZ (no ms) |
-| Number of days per request | Default 7                 |
+| Number of days per request | Max 31, default 7         |
 | Pagination                 | Cursor-based              |
 | Page size                  | 20 (F)                    |
 | Full Refresh               | Yes                       |
