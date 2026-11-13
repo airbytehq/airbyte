@@ -117,15 +117,22 @@ if $do_publish; then
 
   if dockerhub_tag_exists "${docker_repository}" "$docker_tag"; then
     echo "ℹ️  Skipping publish — tag ${docker_repository}:${docker_tag} already exists."
-    exit
+  else
+    echo "${docker_repository}:${docker_tag} image does not exists on Docker. Publishing..."
+    ./gradlew -Pdocker.publish \
+              -DciMode=true \
+              -Psbom=false \
+              -Pdocker.tag="${docker_tag}" \
+              ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
   fi
 
-  echo "${docker_repository}:${docker_tag} image does not exists on Docker. Publishing..."
-  ./gradlew -Pdocker.publish \
-            -DciMode=true \
-            -Psbom=false \
-            -Pdocker.tag="${docker_tag}" \
-            ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
+  if [[ "$semver_suffix" == "none" &&
+        "$base_tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ &&
+        "$docker_tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    image_digest=$(docker buildx imagetools inspect "${docker_repository}:${docker_tag}" --format '{{.Manifest.Digest}}')
+    echo "Updating ${docker_repository}:latest to ${docker_repository}@${image_digest}"
+    docker buildx imagetools create --prefer-index=false --tag "${docker_repository}:latest" "${docker_repository}@${image_digest}"
+  fi
 else
   echo "DRY RUN: Would build & publish ${connector} with tag ${docker_tag}"
 fi

@@ -32,11 +32,11 @@ class JdbcSelectQuerierTest {
 
     init {
         h2.execute(
-            """CREATE TABLE kv (
+            """
+            |CREATE TABLE kv (
             |k INT PRIMARY KEY, 
             |v VARCHAR(60))
-            |
-            """
+            |"""
                 .trimMargin()
                 .replace('\n', ' '),
         )

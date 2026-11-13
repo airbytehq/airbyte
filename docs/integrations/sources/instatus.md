@@ -1,11 +1,10 @@
 # Instatus
 
-This page contains the setup guide and reference information for the [Instatus](https://instatus.com/) source connector. The connector uses the [Instatus REST API](https://instatus.com/help/api) to sync data about your status pages, including components, incidents, maintenances, subscribers, and metrics.
+This page contains the setup guide and reference information for the Instatus source connector.
 
 ## Prerequisites
 
-- An Instatus account that owns or has access to the status pages you want to sync.
-- An Instatus API key.
+To set up Instatus, you need an API key. Requests to the [Instatus API](https://instatus.com/help/api) use Bearer authentication.
 
 ## Setup guide
 
@@ -15,47 +14,41 @@ This page contains the setup guide and reference information for the [Instatus](
 2. Go to **User settings** > **Developer settings**, or open the [Developer settings](https://dashboard.instatus.com/developer) page directly.
 3. Copy your API key.
 
-The connector discovers all status pages that the API key can access, so you don't need to provide page IDs. If the Instatus API returns a `401 Unauthorized` error for a page, the connector skips that page's data instead of failing the sync. To make sure the connector syncs everything, use an API key that belongs to an owner of the status pages you want to sync.
+The connector discovers page IDs through the `status_pages` stream. Some page-level requests, including component and incident requests, ignore `401 Unauthorized` responses, so a successful sync doesn't guarantee that all page data was accessible.
 
 ### Step 2: Set up the Instatus connector in Airbyte
 
-1. In Airbyte, go to **Sources** and select **Instatus**.
-2. Enter a name for the source.
-3. In **Rest API Key**, paste the API key from Step 1.
-4. Click **Set up source**.
+Configure the Instatus source's **Rest API Key** field with the API key from Step 1.
 
 ## Supported sync modes
 
 The Instatus source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 
-The connector doesn't support incremental syncs.
+## Supported Streams
 
-## Supported streams
-
-| Stream | Instatus API reference | Description |
-| :----- | :--------------------- | :---------- |
-| `status_pages` | [Status pages](https://instatus.com/help/api/status-pages) | Status pages that the API key can access. Other streams use this stream to discover page IDs. |
-| `page_components` | [Components](https://instatus.com/help/api/components) | Components for each status page. |
-| `incidents` | [Incidents](https://instatus.com/help/api/incidents) | Incidents for each status page. |
-| `incident_updates` | [Incident updates](https://instatus.com/help/api/incident-updates) | Individual updates for each incident. The connector requests each update separately. |
-| `maintenances` | [Maintenances](https://instatus.com/help/api/maintenances) | Scheduled maintenances for each status page. |
-| `maintenance_updates` | [Maintenance updates](https://instatus.com/help/api/maintenance-updates) | Individual updates for each maintenance. The connector requests each update separately. |
-| `templates` | [Templates](https://instatus.com/help/api/templates) | Templates for each status page. |
-| `team` | [Teammates](https://instatus.com/help/api/teammates) | Team members for each status page. |
-| `subscribers` | [Subscribers](https://instatus.com/help/api/subscribers) | Subscribers for each status page. |
-| `metrics` | [Metrics](https://instatus.com/help/api/metrics) | Metrics for each status page. |
-| `user` | [User profile](https://instatus.com/help/api/user-profile) | Profile of the user who owns the API key. |
-| `public_data` | [Public data](https://instatus.com/help/api/public-data) | Public summary for each status page, read from `https://<subdomain>.instatus.com/summary.json`. |
+- [Status pages](https://instatus.com/help/api/status-pages)
+- [Components](https://instatus.com/help/api/components)
+- [Incidents](https://instatus.com/help/api/incidents)
+- [Incident updates](https://instatus.com/help/api/incident-updates)
+- [Maintenances](https://instatus.com/help/api/maintenances)
+- [Maintenance updates](https://instatus.com/help/api/maintenance-updates)
+- [Templates](https://instatus.com/help/api/templates)
+- [Team](https://instatus.com/help/api/teammates)
+- [Subscribers](https://instatus.com/help/api/subscribers)
+- [Metrics](https://instatus.com/help/api/metrics)
+- [User](https://instatus.com/help/api/user-profile)
+- [Public data](https://instatus.com/help/api/public-data)
 
 ## Limitations
 
-- **Pagination:** The connector doesn't paginate. Each request returns only the first page of results, and the Instatus API returns 50 records per page by default. As a result, the connector syncs at most 50 status pages, and at most 50 records per status page for the `page_components`, `incidents`, `maintenances`, `templates`, `team`, `subscribers`, and `metrics` streams. The `incident_updates` and `maintenance_updates` streams only include updates for the incidents and maintenances in those first 50 records.
-- **Rate limits:** If the Instatus API returns a `429 Too Many Requests` response, the connector waits for the duration in the `Retry-After` header and retries the request.
+- **Pagination**: List requests don't paginate. For example, the [v1 incidents endpoint](https://instatus.com/help/api/incidents) defaults to 50 incidents per page. The connector reads only that initial response, so additional incidents and their `incident_updates` can be omitted.
+- **Rate limits**: Component and incident requests retry HTTP `429` responses using the `Retry-After` header.
 
-## Data type mapping
+## Tutorials
+
+### Data type mapping
 
 | Integration Type    | Airbyte Type | Notes |
 | :------------------ | :----------- | :---- |
@@ -63,6 +56,15 @@ The connector doesn't support incremental syncs.
 | `integer`, `number` | `number`     |       |
 | `array`             | `array`      |       |
 | `object`            | `object`     |       |
+
+### Features
+
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
+| SSL connection    | Yes                  |       |
+| Namespaces        | No                   |       |
 
 ## IP allow list
 
@@ -75,6 +77,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 0.2.20 | 2026-11-10 | [91571](https://github.com/airbytehq/airbyte/pull/91571) | Update dependencies |
+| 0.2.19 | 2026-11-03 | [90602](https://github.com/airbytehq/airbyte/pull/90602) | Update dependencies |
+| 0.2.18 | 2026-10-27 | [89961](https://github.com/airbytehq/airbyte/pull/89961) | Update dependencies |
+| 0.2.17 | 2026-10-20 | [78787](https://github.com/airbytehq/airbyte/pull/78787) | Update dependencies |
 | 0.2.16 | 2026-10-16 | [88959](https://github.com/airbytehq/airbyte/pull/88959) | Update to source-declarative-manifest 7.37.0 and CDK v7 for unit tests |
 | 0.2.15 | 2025-05-24 | [60617](https://github.com/airbytehq/airbyte/pull/60617) | Update dependencies |
 | 0.2.14 | 2025-05-10 | [59859](https://github.com/airbytehq/airbyte/pull/59859) | Update dependencies |

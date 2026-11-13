@@ -1,0 +1,42 @@
+[
+  {
+    "login": "aqua_hoshino",
+    "id": 18150645,
+    "node_id": "MDQ6VXNlcjE=",
+    "avatar_url": "https://github.com/images/error/octocat_happy.gif",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/aqua_hoshino",
+    "html_url": "https://github.com/aqua_hoshino",
+    "followers_url": "https://api.github.com/users/aqua_hoshino/followers",
+    "following_url": "https://api.github.com/users/aqua_hoshino/following{/other_user}",
+    "gists_url": "https://api.github.com/users/aqua_hoshino/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/aqua_hoshino/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/aqua_hoshino/subscriptions",
+    "organizations_url": "https://api.github.com/users/aqua_hoshino/orgs",
+    "repos_url": "https://api.github.com/users/octocat/repos",
+    "events_url": "https://api.github.com/users/aqua_hoshino/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/aqua_hoshino/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  {
+    "login": "akane_kurokawa",
+    "id": 18150651,
+    "node_id": "MDQ6VXNlcjE4MTUwNjUx",
+    "avatar_url": "https://avatars.githubusercontent.com/u/18150651?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/akane_kurokawa",
+    "html_url": "https://github.com/akane_kurokawa",
+    "followers_url": "https://api.github.com/users/akane_kurokawa/followers",
+    "following_url": "https://api.github.com/users/akane_kurokawa/following{/other_user}",
+    "gists_url": "https://api.github.com/users/akane_kurokawa/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/akane_kurokawa/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/akane_kurokawa/subscriptions",
+    "organizations_url": "https://api.github.com/users/akane_kurokawa/orgs",
+    "repos_url": "https://api.github.com/users/akane_kurokawa/repos",
+    "events_url": "https://api.github.com/users/akane_kurokawa/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/akane_kurokawa/received_events",
+    "type": "User",
+    "site_admin": false
+  }
+]

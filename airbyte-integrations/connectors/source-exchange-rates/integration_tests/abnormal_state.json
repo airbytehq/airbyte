@@ -1,5 +1,13 @@
-{
-  "exchange_rates": {
-    "date": "2121-05-18"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "exchange_rates"
+      },
+      "stream_state": {
+        "date": "2121-05-18"
+      }
+    }
   }
-}
+]

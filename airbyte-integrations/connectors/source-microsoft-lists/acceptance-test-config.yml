@@ -11,7 +11,6 @@ acceptance_tests:
       # `check` reports FAILED. Switch back to `status: succeed` once the secret is rotated.
       - config_path: secrets/config.json
         status: failed
-        timeout_seconds: 7200
   discovery:
     bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
   basic_read:

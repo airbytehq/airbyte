@@ -68,7 +68,7 @@ class BigQueryReadApiStateTest {
                      "projects/p/locations/us/sessions/CAIS/streams/s4"]},
                    "bigquery_read_streams_completed_through":1,
                    "bigquery_read_streams_complete":[3],
-                   "bigquery_read_stream_offsets":{"2":1300000}}"""
+                   "bigquery_read_stream_offsets":{"2":1300000}}""",
             ),
             json,
         )
@@ -109,15 +109,15 @@ class BigQueryReadApiStateTest {
         Assertions.assertNull(BigQueryReadApiState.parseOrNull(null))
         Assertions.assertNull(BigQueryReadApiState.parseOrNull(Jsons.nullNode()))
         Assertions.assertNull(
-            BigQueryReadApiState.parseOrNull(Jsons.readTree("""{"primary_key":{},"cursors":{}}"""))
+            BigQueryReadApiState.parseOrNull(Jsons.readTree("""{"primary_key":{},"cursors":{}}""")),
         )
         Assertions.assertNull(
             BigQueryReadApiState.parseOrNull(
-                Jsons.readTree("""{"stream_name":"t","cursor_field":["id"],"cursor":"3"}""")
-            )
+                Jsons.readTree("""{"stream_name":"t","cursor_field":["id"],"cursor":"3"}"""),
+            ),
         )
         Assertions.assertNull(
-            BigQueryReadApiState.parseOrNull(Jsons.readTree("""{"bigquery_read_session":null}"""))
+            BigQueryReadApiState.parseOrNull(Jsons.readTree("""{"bigquery_read_session":null}""")),
         )
     }
 
@@ -129,7 +129,7 @@ class BigQueryReadApiStateTest {
         val stream =
             Stream(
                 StreamIdentifier.from(
-                    StreamDescriptor().withName("event").withNamespace("amplitude")
+                    StreamDescriptor().withName("event").withNamespace("amplitude"),
                 ),
                 setOf(EmittedField("id", BigQueryLongFieldType)),
                 ConfiguredSyncMode.FULL_REFRESH,
@@ -157,7 +157,7 @@ class BigQueryReadApiStateTest {
         val expired: BigQueryReadApiState =
             inFlight.copy(session = inFlight.session.copy(expiresAt = "2026-09-22T07:59:59Z"))
         Assertions.assertTrue(
-            factory.plan(stream, expired.toOpaqueStateValue()) is BigQueryReadApiPlan.Fresh
+            factory.plan(stream, expired.toOpaqueStateValue()) is BigQueryReadApiPlan.Fresh,
         )
         // The extract-jdbc toolkit's completed snapshot: nothing left to do.
         Assertions.assertEquals(
@@ -167,13 +167,13 @@ class BigQueryReadApiStateTest {
         // A mid-way query-API state or a legacy state: start over on this path.
         Assertions.assertTrue(
             factory.plan(stream, Jsons.readTree("""{"primary_key":{"id":123},"cursors":{}}"""))
-                is BigQueryReadApiPlan.Fresh
+                is BigQueryReadApiPlan.Fresh,
         )
         Assertions.assertTrue(
             factory.plan(
                 stream,
-                Jsons.readTree("""{"stream_name":"event","cursor_field":["id"],"cursor":"3"}""")
-            ) is BigQueryReadApiPlan.Fresh
+                Jsons.readTree("""{"stream_name":"event","cursor_field":["id"],"cursor":"3"}"""),
+            ) is BigQueryReadApiPlan.Fresh,
         )
     }
 
@@ -208,21 +208,21 @@ class BigQueryReadApiStateTest {
         val bound =
             BigQueryReadApiState.CursorBound(
                 "updated_at",
-                Jsons.textNode("2024-01-10T20:53:31.000000")
+                Jsons.textNode("2024-01-10T20:53:31.000000"),
             )
         val snapshotTime = Instant.parse("2026-09-22T07:59:58.123456Z")
         val progress =
             BigQueryReadApiTableProgress(
                 session,
                 snapshotTime = snapshotTime,
-                cursorUpperBound = bound
+                cursorUpperBound = bound,
             )
         progress.markComplete(0)
         val state: BigQueryReadApiState = progress.snapshot()
         val json: JsonNode = Jsons.readTree(Jsons.writeValueAsString(state.toOpaqueStateValue()))
         Assertions.assertEquals(
             "2026-09-22T07:59:58.123456Z",
-            json["bigquery_read_snapshot_time"].asText()
+            json["bigquery_read_snapshot_time"].asText(),
         )
         Assertions.assertEquals(
             Jsons.readTree("""{"cursor":"updated_at","value":"2024-01-10T20:53:31.000000"}"""),
@@ -240,8 +240,8 @@ class BigQueryReadApiStateTest {
         val fullRefresh: JsonNode =
             Jsons.readTree(
                 Jsons.writeValueAsString(
-                    BigQueryReadApiTableProgress(session).snapshot().toOpaqueStateValue()
-                )
+                    BigQueryReadApiTableProgress(session).snapshot().toOpaqueStateValue(),
+                ),
             )
         Assertions.assertFalse(fullRefresh.has("bigquery_read_snapshot_time"))
         Assertions.assertFalse(fullRefresh.has("bigquery_read_cursor_upper_bound"))
@@ -253,7 +253,7 @@ class BigQueryReadApiStateTest {
         val incremental =
             Stream(
                 StreamIdentifier.from(
-                    StreamDescriptor().withName("users").withNamespace("rodi_proto_type_test")
+                    StreamDescriptor().withName("users").withNamespace("rodi_proto_type_test"),
                 ),
                 setOf(EmittedField("id", BigQueryLongFieldType), updatedAt),
                 ConfiguredSyncMode.INCREMENTAL,
@@ -278,39 +278,40 @@ class BigQueryReadApiStateTest {
         val unbounded: BigQueryReadApiState =
             parsed.copy(snapshotTime = null, cursorUpperBound = null)
         Assertions.assertTrue(
-            factory.plan(incremental, unbounded.toOpaqueStateValue()) is BigQueryReadApiPlan.Fresh
+            factory.plan(incremental, unbounded.toOpaqueStateValue()) is BigQueryReadApiPlan.Fresh,
         )
         val otherCursor: BigQueryReadApiState =
             parsed.copy(
-                cursorUpperBound = BigQueryReadApiState.CursorBound("id", Jsons.numberNode(1))
+                cursorUpperBound = BigQueryReadApiState.CursorBound("id", Jsons.numberNode(1)),
             )
         Assertions.assertTrue(
-            factory.plan(incremental, otherCursor.toOpaqueStateValue()) is BigQueryReadApiPlan.Fresh
+            factory.plan(incremental, otherCursor.toOpaqueStateValue())
+                is BigQueryReadApiPlan.Fresh,
         )
         // The query API's cursor checkpoint and its snapshot in progress: not this path's.
         Assertions.assertTrue(
             factory.plan(
                 incremental,
                 Jsons.readTree(
-                    """{"primary_key":{},"cursors":{"updated_at":"2024-01-03T00:00:00.000000"}}"""
-                )
-            ) is BigQueryReadApiPlan.Decline
+                    """{"primary_key":{},"cursors":{"updated_at":"2024-01-03T00:00:00.000000"}}""",
+                ),
+            ) is BigQueryReadApiPlan.Decline,
         )
         Assertions.assertTrue(
             factory.plan(
                 incremental,
                 Jsons.readTree(
-                    """{"primary_key":{"id":7},"cursors":{"updated_at":"2024-01-03T00:00:00.000000"}}"""
-                )
-            ) is BigQueryReadApiPlan.Decline
+                    """{"primary_key":{"id":7},"cursors":{"updated_at":"2024-01-03T00:00:00.000000"}}""",
+                ),
+            ) is BigQueryReadApiPlan.Decline,
         )
         Assertions.assertTrue(
             factory.plan(
                 incremental,
                 Jsons.readTree(
-                    """{"stream_name":"users","cursor_field":["updated_at"],"cursor":"2024-01-03T00:00:00Z"}"""
-                )
-            ) is BigQueryReadApiPlan.Decline
+                    """{"stream_name":"users","cursor_field":["updated_at"],"cursor":"2024-01-03T00:00:00Z"}""",
+                ),
+            ) is BigQueryReadApiPlan.Decline,
         )
         // A completed full refresh snapshot: the incremental snapshot starts over.
         Assertions.assertEquals(

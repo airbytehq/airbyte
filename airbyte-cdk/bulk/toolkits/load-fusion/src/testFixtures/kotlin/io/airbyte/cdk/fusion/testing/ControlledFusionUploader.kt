@@ -75,7 +75,7 @@ class ControlledFusionUploader : FusionUploader {
             }
         pending.forEach {
             it.result.completeExceptionally(
-                IllegalStateException("ControlledFusionUploader closed before upload completed")
+                IllegalStateException("ControlledFusionUploader closed before upload completed"),
             )
         }
     }

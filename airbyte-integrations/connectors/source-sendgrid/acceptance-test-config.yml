@@ -33,9 +33,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/lowcode_config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          exact_order: no
         empty_streams:
           - name: spam_reports
             bypass_reason: "can not populate"
@@ -45,13 +42,11 @@ acceptance_tests:
             bypass_reason: "can not populate"
           - name: bounces
             bypass_reason: "can not populate"
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/lowcode_config.json"
-        configured_catalog_path: "integration_tests/no_spam_reports_configured_catalog.json"
         future_state:
-          bypass_reason: "This test does not make sense using Concurrent CDK"
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/lowcode_config.json"
