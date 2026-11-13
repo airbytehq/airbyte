@@ -3,12 +3,12 @@
 import json
 
 import pytest
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import AirbyteMessageSerializer, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
-from unit_tests.conftest import get_source
 
 
 _CONFIG = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
