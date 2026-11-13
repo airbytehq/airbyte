@@ -83,6 +83,27 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioMessagesStateMigration(TwilioStateMigration):
+    """Use the completed global checkpoint without stale partition overrides.
+
+    Partition-only states retain their individual cursors until a successful read
+    supplies a global checkpoint, so accounts with less progress are not skipped.
+    """
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated_state = copy.deepcopy(dict(stream_state))
+        if migrated_state.get("state", {}).get("date_sent"):
+            migrated_state.pop("states", None)
+            migrated_state["use_global_cursor"] = True
+            return migrated_state
+        return super().migrate(migrated_state)
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if stream_state.get("state", {}).get("date_sent"):
+            return "states" in stream_state or not stream_state.get("use_global_cursor", False)
+        return super().should_migrate(stream_state)
+
+
 class TwilioAlertsStateMigration(StateMigration):
     """
     Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
