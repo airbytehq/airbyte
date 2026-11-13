@@ -178,6 +178,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.2.1 | 2026-11-13 | [92573](https://github.com/airbytehq/airbyte/pull/92573) | Mark the connector as certified |
 | 1.2.0 | 2026-11-13 | [92571](https://github.com/airbytehq/airbyte/pull/92571) | Add the Power Dialer `dialer_campaigns` and `dialer_campaign_phone_numbers` streams, back off exponentially on 5xx, and upgrade to `source-declarative-manifest` 7.48.0 |
 | 1.1.0 | 2026-11-11 | [92012](https://github.com/airbytehq/airbyte/pull/92012) | Add user_numbers, IVR options on calls and opt-in conversation intelligence streams |
 | 1.0.0 | 2026-11-11 | [90838](https://github.com/airbytehq/airbyte/pull/90838) | Add primary keys to `calls` and `contacts`, key `webhooks` on `webhook_id`, make `numbers` and `teams` full refresh only, and declare the column types the Aircall API documents |
