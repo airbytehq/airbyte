@@ -8,7 +8,7 @@ This page guides you through setting up the [HubSpot](https://www.hubspot.com/) 
 
 ## Prerequisites
 
-- A HubSpot account with a [HubSpot app](https://developers.hubspot.com/docs/api/oauth-quickstart-guide) configured for OAuth authentication
+- A HubSpot account
 - Airbyte version 1.8 or later, or Airbyte Cloud
 - For Custom Objects: a HubSpot Enterprise subscription
 
@@ -79,7 +79,7 @@ The HubSpot destination connector supports the following objects:
 
 ### Rate limiting
 
-The connector respects [HubSpot's API rate limits](https://developers.hubspot.com/docs/api/usage-details). Rate limits depend on your HubSpot subscription tier. For public OAuth apps, each account is limited to 110 requests every 10 seconds. If the connector encounters rate limiting, it retries requests with exponential backoff.
+For public OAuth apps, HubSpot limits each account to [110 requests every 10 seconds](https://developers.hubspot.com/docs/api/usage-details). If the connector encounters rate limiting, it retries requests, using the `Retry-After` header when available and exponential backoff otherwise.
 
 ### Batch size
 
@@ -103,7 +103,7 @@ To create a unique value property in HubSpot:
 
 ### App verification
 
-HubSpot requires [more than 60 installations](https://developers.hubspot.com/docs/guides/apps/marketplace/certification-requirements#value) to verify an app. When installing the app, you might see the message "You're connecting to an unverified app." This is expected and doesn't affect functionality.
+When installing the app, you might see the message "You're connecting to an unverified app." This is expected and doesn't affect functionality.
 
 ### Scopes for unsupported objects
 
@@ -111,7 +111,7 @@ During app installation, you might see scopes related to objects this connector 
 
 ### 403 Forbidden error
 
-HubSpot requires specific [OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes) for each API endpoint. Each object type requires access to its corresponding scope. If you receive a 403 error, verify that your OAuth app has the required scopes for the objects you are syncing.
+HubSpot requires specific [OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes) for each API endpoint. Each object type requires access to its corresponding scope to sync data.
 
 ### Supported property types
 
@@ -127,7 +127,7 @@ The connector maps the following HubSpot property types:
 | `date`         | Date                    |
 | `datetime`     | Timestamp with timezone |
 
-Properties with types not in the preceding table, such as `object_coordinates`, read-only properties, and calculated properties, are excluded from the sync.
+For properties that are not matching keys, the connector excludes `object_coordinates`, properties with read-only values, and calculated properties.
 
 ## Namespace support
 
