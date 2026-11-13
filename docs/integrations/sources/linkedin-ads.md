@@ -9,7 +9,8 @@ This page contains the setup guide and reference information for the [LinkedIn A
 ## Prerequisites
 
 - A LinkedIn Ads account with permission to access data from accounts you want to sync.
-- A start date in the format YYYY-MM-DD. The connector doesn't replicate data from before this date.
+- The authenticated member must have an [ad account role](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users#account-user-roles) that permits reading campaign data and reports, such as `VIEWER`.
+- A start date in the format YYYY-MM-DD (UTC) for incremental streams. Full Refresh-only streams are not filtered by this date.
 
 ## Setup guide
 
@@ -33,7 +34,9 @@ To authenticate the connector in Airbyte Open Source, you will need to create a 
    - Client Secret
    - Refresh Token (expires after 12 months)
 
-2. Access Token (expires after 60 days)
+2. Access Token (valid for 60 days by default)
+
+[Programmatic refresh tokens](https://learn.microsoft.com/en-us/linkedin/shared/authentication/programmatic-refresh-tokens) are available to approved Marketing Developer Platform partners. If your application cannot obtain a refresh token, use **Access Token** authentication instead. Refreshing an access token does not extend the refresh token's lifetime. When the refresh token expires, reauthorize your application. LinkedIn can revoke either token before its expiration date.
 
 You can follow the steps laid out below to create the application and obtain the necessary credentials. For an overview of the LinkedIn authentication process, see the [official documentation](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication?context=linkedin%2Fcontext).
 
@@ -60,21 +63,16 @@ You can follow the steps laid out below to create the application and obtain the
 
 2. Click the **OAuth 2.0 tools** link in the **Understanding authentication and OAuth 2.0** section on the right side of the page.
 3. Click **Create token**.
-4. Select the scopes you want to use for your app. The connector requires the following scopes:
+4. Select scopes for the streams you want to sync:
    - `r_ads` - Read ad accounts and related data
    - `r_ads_reporting` - Read ad analytics and reporting data
-   - `r_basicprofile` - Read basic profile information
-   - `r_liteprofile` - Read lite profile information
-   - `r_emailaddress` - Read email address
    - `r_organization_social` - Read organization social data
    - `r_organization_admin` - Read organization admin data
-   - `r_events` - Read events data
-   - `r_1st_connections_size` - Read first-degree connection count
    - `r_marketing_leadgen_automation` - Read lead gen form data
    - `r_ads_leadgen_automation` - Read lead gen automation data
 
    Not all scopes may be available depending on your LinkedIn API program access level. At a minimum, you need `r_ads` and `r_ads_reporting` to sync ad account data and analytics. The **Videos** stream also needs `r_organization_social`; see [Videos](#videos).
-5. Click **Request access token**. You will be redirected to an authorization page. Use your LinkedIn credentials to log in and authorize your app and obtain your **Access Token** and **Refresh Token**.
+5. Click **Request access token**. You will be redirected to an authorization page. Use your LinkedIn credentials to log in and authorize your app to obtain an **Access Token**. For applications approved for programmatic refresh tokens, use the [authorization code flow](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow) to obtain a **Refresh Token** as well.
 
 :::caution
 These tokens will not be displayed again, so make sure to copy them and store them securely.
@@ -116,7 +114,7 @@ If either of your tokens expire, you can generate new ones by returning to Linke
   2. **Access Token:** Enter your **Access Token**. Please note that the access token expires after 60 days.
   <!-- /env:oss -->
 
-6. For **Start Date**, use the provided datepicker or enter a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
+6. For **Start Date**, use the provided datepicker or enter a UTC date in the format YYYY-MM-DD. This sets the initial cursor for incremental streams; it does not filter Full Refresh-only streams.
 7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector will replicate data from all accounts accessible using your credentials.
 8. (Optional) For **Lookback Window**, enter the number of days before the last saved cursor that each incremental sync re-fetches. The window applies to every incremental stream, so it captures late-arriving analytics values (such as conversions or attribution updates) as well as entities whose `lastModified` timestamp changed after the previous sync. The default is 0, which re-fetches nothing.
 9. (Optional) For **Number of Workers**, enter the number of concurrent workers for syncing ad analytics streams. The default is 3. Increasing this value may improve sync speed but could also increase the risk of hitting API rate limits.
@@ -141,7 +139,7 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 
 ## Supported sync modes
 
-The LinkedIn Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The LinkedIn Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes). The `accounts`, `organizations`, `lead_forms`, `lead_form_responses`, and `videos` streams support Full Refresh only. All other built-in streams and configured custom report streams also support incremental sync.
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -171,6 +169,8 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Ad Analytics by Member Seniority](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Region](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Company](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
+- Custom analytics reports: `custom_<Report Name>` (one stream per **Custom Ad Analytics Reports** entry)
+- Custom statistics reports: `custom_statistics_<Report Name>` (one stream per **Custom Ad Statistics Reports** entry)
 
 :::info
 
@@ -180,13 +180,15 @@ The `Organizations` stream returns the organization access control (ACL) records
 
 :::info
 
-For Ad Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Creative`, the `pivot` column name is renamed to `pivotValue` to handle the data normalization correctly and avoid name conflicts with certain destinations. This field contains the ID of the associated entity as a [URN](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/urns). Please refer to the [LinkedIn documentation](https://learn.microsoft.com/en-us/linkedin/marketing/urn-resolution?view=li-lms-2023-05) for the format of the URN value for the Ad Analytics streams.
+Ad analytics records include `pivotValues`, an array of values for the report's pivot categories, and `string_of_pivot_values`, the comma-separated values used in the primary key. Entity pivots can contain [URNs](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/urns). The connector renames a returned `pivot` field to `_pivot` to avoid conflicts with destination reserved words.
 
 :::
 
 ## Performance considerations
 
 ### Rate limits
+
+LinkedIn applies daily limits at both the application and member level. Limits vary by endpoint and are not published as universal quotas. Separately, [Ad Analytics limits](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting#limits) allow 45 million metric values in a five-minute window. For this specific data-volume limit, the connector waits 330 seconds before retrying; other retryable errors use exponential backoff.
 
 LinkedIn Ads has Official Rate Limits for API Usage, [more information here](https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits?context=linkedin/marketing/context). Rate limited requests will receive a 429 response. These limits reset at midnight UTC every day. In rare cases, LinkedIn may also return a 429 response as part of infrastructure protection. API service will return to normal automatically. In such cases, you will receive the following error message:
 
@@ -222,9 +224,13 @@ The LinkedIn Ads API does not return records that have no values for any of the 
 
 ## Limitations
 
+### Reporting history and privacy
+
+[LinkedIn's reporting retention limits](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting#retention) apply even if you configure an earlier **Start Date**. Performance data is retained for 10 years, and professional demographic data for 2 years. Professional demographic metrics are approximate to protect member privacy.
+
 ### Lead forms and Lead form responses
 
-The **Lead forms** and **Lead form responses** streams support Full Refresh sync mode only. Incremental sync is not available for these streams due to limitations in how the LinkedIn API handles time-range filtering for lead data.
+The **Lead forms** and **Lead form responses** streams support Full Refresh sync mode only. The connector does not configure incremental cursors for these streams.
 
 ### Videos
 
@@ -258,7 +264,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 6.2.12 | 2026-11-13 | [92988](https://github.com/airbytehq/airbyte/pull/92988) | Run connection checks without custom connector code. |
 | 6.2.11 | 2026-11-10 | [86483](https://github.com/airbytehq/airbyte/pull/86483) | Replace YAML anchors with declarative `$ref` for the shared analytics property list (no functional change) |
 | 6.2.10 | 2026-11-10 | [91628](https://github.com/airbytehq/airbyte/pull/91628) | Update dependencies |
-| 6.2.9 | 2026-10-30 | [90258](https://github.com/airbytehq/airbyte/pull/90258) | Explain authentication and missing scopes in connection checks |
+| 6.2.9 | 2026-11-03 | [90258](https://github.com/airbytehq/airbyte/pull/90258) | Explain authentication and missing scopes in connection checks |
 | 6.2.8 | 2026-11-03 | [89292](https://github.com/airbytehq/airbyte/pull/89292) | Update dependencies |
 | 6.2.7 | 2026-11-02 | [90379](https://github.com/airbytehq/airbyte/pull/90379) | Restore the creatives stream's DNS retry diagnostic while preserving rate-limit and server-error handling. |
 | 6.2.6 | 2026-10-13 | [88690](https://github.com/airbytehq/airbyte/pull/88690) | Update dependencies |
