@@ -73,20 +73,20 @@ class ClickhouseCoercer : ValueCoercer {
             is NumberValue ->
                 if (abValue.value <= DECIMAL128_MIN || abValue.value >= DECIMAL128_MAX) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else ValidationResult.Valid
             is IntegerValue ->
                 if (abValue.value < INT64_MIN || abValue.value > INT64_MAX) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else ValidationResult.Valid
             is DateValue -> {
                 val days = abValue.value.toEpochDay()
                 if (days < DATE32_MIN || days > DATE32_MAX) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else ValidationResult.Valid
             }
@@ -94,7 +94,7 @@ class ClickhouseCoercer : ValueCoercer {
                 val seconds = abValue.value.toEpochSecond()
                 if (seconds < DATETIME64_MIN || seconds > DATETIME64_MAX) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else ValidationResult.Valid
             }
@@ -102,7 +102,7 @@ class ClickhouseCoercer : ValueCoercer {
                 val seconds = abValue.value.toEpochSecond(ZoneOffset.UTC)
                 if (seconds < DATETIME64_MIN || seconds > DATETIME64_MAX) {
                     ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
                     )
                 } else ValidationResult.Valid
             }

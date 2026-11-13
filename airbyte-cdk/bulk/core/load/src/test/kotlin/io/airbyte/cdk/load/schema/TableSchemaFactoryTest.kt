@@ -34,7 +34,7 @@ class TableSchemaFactoryTest {
     fun `creates correct StreamTableSchema`(
         inputSchema: Map<String, FieldType>,
         importType: ImportType,
-        columnNameMapping: Map<String, String>
+        columnNameMapping: Map<String, String>,
     ) {
         val factory = TableSchemaFactory(mapper, colNameResolver)
         val finalTableName = TableName("namespace", "table")
@@ -74,7 +74,7 @@ class TableSchemaFactoryTest {
                         "name" to FieldType(StringType, false),
                     ),
                     Append,
-                    mapOf("id" to "id_final", "name" to "name_final")
+                    mapOf("id" to "id_final", "name" to "name_final"),
                 ),
                 Arguments.of(
                     mapOf(
@@ -83,7 +83,7 @@ class TableSchemaFactoryTest {
                         "updated_at" to FieldType(StringType, false),
                     ),
                     Dedupe(listOf(listOf("id")), listOf("updated_at")),
-                    mapOf("id" to "id", "name" to "name", "updated_at" to "updated_at")
+                    mapOf("id" to "id", "name" to "name", "updated_at" to "updated_at"),
                 ),
                 Arguments.of(emptyMap<String, FieldType>(), Append, emptyMap<String, String>()),
                 Arguments.of(
@@ -93,13 +93,13 @@ class TableSchemaFactoryTest {
                         "data" to FieldType(StringType, false),
                     ),
                     Dedupe(listOf(listOf("id1", "id2")), emptyList()),
-                    mapOf("id1" to "id1", "id2" to "id2", "data" to "data")
+                    mapOf("id1" to "id1", "id2" to "id2", "data" to "data"),
                 ),
                 Arguments.of(
                     mapOf("value" to FieldType(StringType, false)),
                     Append,
-                    mapOf("value" to "value")
-                )
+                    mapOf("value" to "value"),
+                ),
             )
     }
 }

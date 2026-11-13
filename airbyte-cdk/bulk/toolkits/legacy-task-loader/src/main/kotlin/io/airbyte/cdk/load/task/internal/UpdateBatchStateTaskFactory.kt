@@ -23,7 +23,7 @@ class UpdateBatchStateTask(
     private val inputQueue: QueueReader<BatchUpdate>,
     private val syncManager: SyncManager,
     private val checkpointManager: CheckpointManager,
-    private val launcher: DestinationTaskLauncher
+    private val launcher: DestinationTaskLauncher,
 ) : Task {
     private val log = KotlinLogging.logger {}
 

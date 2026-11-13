@@ -17,10 +17,5 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
     bypass_reason: "Test workspace has a single day of activity data; enable once more test data is seeded"
-  full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"

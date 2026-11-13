@@ -6,46 +6,206 @@
         "name": "accounting_transactions"
       },
       "stream_state": {
-        "b_freshbooks": {
-          "freshbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooksDesktop",
+                "businessUuid": "BIZ-8dc6d7d7-7108-4a53-af0d-2fbeb35d824a",
+                "connectionId": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "connectionUuid": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "createdAt": "2022-12-30T19:06:43Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_47294f1a-d476-41ae-b02b-d301c19098c5"
+                },
+                "serviceName": "quickbooksDesktop",
+                "status": "active",
+                "syncTime": 317.627,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-11-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_freshbooks",
+                "businessUuid": "BIZ-9f311f9c-7f75-4f59-94e1-be72d96594a8",
+                "connectionId": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "connectionUuid": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "createdAt": "2022-12-30T19:08:30Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_31025b5c-875b-4069-a473-61ca65cff89b"
+                },
+                "serviceName": "freshbooks",
+                "status": "active",
+                "syncTime": 1586.32,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-11-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_dynamicsBusinessCentral",
+                "businessUuid": "BIZ-cb178512-7c0a-461d-b4ca-b20cdbdd0dc6",
+                "connectionId": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "connectionUuid": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "createdAt": "2022-12-30T19:10:12Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_bea65a9e-c506-46b2-af43-5c0f9180ba6b"
+                },
+                "serviceName": "dynamicsBusinessCentral",
+                "status": "active",
+                "syncTime": 154.063,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_oracleNetsuite",
+                "businessUuid": "BIZ-5cadd8bd-360c-4212-9d01-89dbeec5878c",
+                "connectionId": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "connectionUuid": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "createdAt": "2022-12-30T19:10:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_9ba04269-cc48-4efd-9550-1348072da36a"
+                },
+                "serviceName": "oracleNetsuite",
+                "status": "active",
+                "syncTime": 860,
+                "updatedAt": "2024-08-02T07:47:33Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-11-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageBusinessCloud",
+                "businessUuid": "BIZ-c5c3461e-fc62-4119-ab07-bda5919ac9ed",
+                "connectionId": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "connectionUuid": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "createdAt": "2022-12-30T19:11:36Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_36e064a5-22d5-428f-9444-87a91d1bebc6"
+                },
+                "serviceName": "sageBusinessCloud",
+                "status": "active",
+                "syncTime": 304.649,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-11-02T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageIntacct",
+                "businessUuid": "BIZ-f46fbd78-96c0-49f9-915e-d5c4658e0bcf",
+                "connectionId": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "connectionUuid": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "createdAt": "2022-12-30T19:13:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5c665699-2167-4597-b3be-cd3530044a25"
+                },
+                "serviceName": "sageIntacct",
+                "status": "active",
+                "syncTime": 152.724,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "postedDate": "2099-11-02T00:00:00.000000+0000"
         },
-        "b_oracleNetsuite": {
-          "oracleNetsuite": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_sageBusinessCloud": {
-          "sageBusinessCloud": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooksDesktop": {
-          "quickbooksDesktop": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_sageIntacct": {
-          "sageIntacct": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooks": {
-          "quickbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_xero": {
-          "xero": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_dynamicsBusinessCentral": {
-          "dynamicsBusinessCentral": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 143,
+        "parent_state": {}
       }
     }
   },
@@ -56,11 +216,35 @@
         "name": "bank_transfers"
       },
       "stream_state": {
-        "b_xero": {
-          "xero": {
-            "date": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-12-01T00:00:00.000000+0000"
+            }
           }
-        }
+        ],
+        "lookback_window": 0,
+        "parent_state": {}
       }
     }
   },
@@ -71,46 +255,206 @@
         "name": "bills"
       },
       "stream_state": {
-        "b_freshbooks": {
-          "freshbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooksDesktop",
+                "businessUuid": "BIZ-8dc6d7d7-7108-4a53-af0d-2fbeb35d824a",
+                "connectionId": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "connectionUuid": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "createdAt": "2022-12-30T19:06:43Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_47294f1a-d476-41ae-b02b-d301c19098c5"
+                },
+                "serviceName": "quickbooksDesktop",
+                "status": "active",
+                "syncTime": 317.627,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_freshbooks",
+                "businessUuid": "BIZ-9f311f9c-7f75-4f59-94e1-be72d96594a8",
+                "connectionId": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "connectionUuid": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "createdAt": "2022-12-30T19:08:30Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_31025b5c-875b-4069-a473-61ca65cff89b"
+                },
+                "serviceName": "freshbooks",
+                "status": "active",
+                "syncTime": 1586.32,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-22T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_dynamicsBusinessCentral",
+                "businessUuid": "BIZ-cb178512-7c0a-461d-b4ca-b20cdbdd0dc6",
+                "connectionId": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "connectionUuid": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "createdAt": "2022-12-30T19:10:12Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_bea65a9e-c506-46b2-af43-5c0f9180ba6b"
+                },
+                "serviceName": "dynamicsBusinessCentral",
+                "status": "active",
+                "syncTime": 154.063,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-22T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_oracleNetsuite",
+                "businessUuid": "BIZ-5cadd8bd-360c-4212-9d01-89dbeec5878c",
+                "connectionId": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "connectionUuid": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "createdAt": "2022-12-30T19:10:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_9ba04269-cc48-4efd-9550-1348072da36a"
+                },
+                "serviceName": "oracleNetsuite",
+                "status": "active",
+                "syncTime": 860,
+                "updatedAt": "2024-08-02T07:47:33Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-12-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageBusinessCloud",
+                "businessUuid": "BIZ-c5c3461e-fc62-4119-ab07-bda5919ac9ed",
+                "connectionId": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "connectionUuid": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "createdAt": "2022-12-30T19:11:36Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_36e064a5-22d5-428f-9444-87a91d1bebc6"
+                },
+                "serviceName": "sageBusinessCloud",
+                "status": "active",
+                "syncTime": 304.649,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-19T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-27T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageIntacct",
+                "businessUuid": "BIZ-f46fbd78-96c0-49f9-915e-d5c4658e0bcf",
+                "connectionId": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "connectionUuid": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "createdAt": "2022-12-30T19:13:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5c665699-2167-4597-b3be-cd3530044a25"
+                },
+                "serviceName": "sageIntacct",
+                "status": "active",
+                "syncTime": 152.724,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-20T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "postedDate": "2099-10-28T00:00:00.000000+0000"
         },
-        "b_oracleNetsuite": {
-          "oracleNetsuite": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_sageBusinessCloud": {
-          "sageBusinessCloud": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooksDesktop": {
-          "quickbooksDesktop": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_sageIntacct": {
-          "sageIntacct": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooks": {
-          "quickbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_xero": {
-          "xero": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_dynamicsBusinessCentral": {
-          "dynamicsBusinessCentral": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 45,
+        "parent_state": {}
       }
     }
   },
@@ -121,26 +465,110 @@
         "name": "bills_credit_notes"
       },
       "stream_state": {
-        "b_quickbooks": {
-          "quickbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_oracleNetsuite",
+                "businessUuid": "BIZ-5cadd8bd-360c-4212-9d01-89dbeec5878c",
+                "connectionId": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "connectionUuid": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "createdAt": "2022-12-30T19:10:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_9ba04269-cc48-4efd-9550-1348072da36a"
+                },
+                "serviceName": "oracleNetsuite",
+                "status": "active",
+                "syncTime": 860,
+                "updatedAt": "2024-08-02T07:47:33Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-21T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-21T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageIntacct",
+                "businessUuid": "BIZ-f46fbd78-96c0-49f9-915e-d5c4658e0bcf",
+                "connectionId": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "connectionUuid": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "createdAt": "2022-12-30T19:13:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5c665699-2167-4597-b3be-cd3530044a25"
+                },
+                "serviceName": "sageIntacct",
+                "status": "active",
+                "syncTime": 152.724,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-13T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "postedDate": "2099-10-28T00:00:00.000000+0000"
         },
-        "b_sageIntacct": {
-          "sageIntacct": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_xero": {
-          "xero": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_oracleNetsuite": {
-          "oracleNetsuite": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 24,
+        "parent_state": {}
       }
     }
   },
@@ -151,46 +579,206 @@
         "name": "bills_payments"
       },
       "stream_state": {
-        "b_freshbooks": {
-          "freshbooks": {
-            "date": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooksDesktop",
+                "businessUuid": "BIZ-8dc6d7d7-7108-4a53-af0d-2fbeb35d824a",
+                "connectionId": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "connectionUuid": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "createdAt": "2022-12-30T19:06:43Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_47294f1a-d476-41ae-b02b-d301c19098c5"
+                },
+                "serviceName": "quickbooksDesktop",
+                "status": "active",
+                "syncTime": 317.627,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_freshbooks",
+                "businessUuid": "BIZ-9f311f9c-7f75-4f59-94e1-be72d96594a8",
+                "connectionId": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "connectionUuid": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "createdAt": "2022-12-30T19:08:30Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_31025b5c-875b-4069-a473-61ca65cff89b"
+                },
+                "serviceName": "freshbooks",
+                "status": "active",
+                "syncTime": 1586.32,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_dynamicsBusinessCentral",
+                "businessUuid": "BIZ-cb178512-7c0a-461d-b4ca-b20cdbdd0dc6",
+                "connectionId": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "connectionUuid": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "createdAt": "2022-12-30T19:10:12Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_bea65a9e-c506-46b2-af43-5c0f9180ba6b"
+                },
+                "serviceName": "dynamicsBusinessCentral",
+                "status": "active",
+                "syncTime": 154.063,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_oracleNetsuite",
+                "businessUuid": "BIZ-5cadd8bd-360c-4212-9d01-89dbeec5878c",
+                "connectionId": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "connectionUuid": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "createdAt": "2022-12-30T19:10:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_9ba04269-cc48-4efd-9550-1348072da36a"
+                },
+                "serviceName": "oracleNetsuite",
+                "status": "active",
+                "syncTime": 860,
+                "updatedAt": "2024-08-02T07:47:33Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-04T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageBusinessCloud",
+                "businessUuid": "BIZ-c5c3461e-fc62-4119-ab07-bda5919ac9ed",
+                "connectionId": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "connectionUuid": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "createdAt": "2022-12-30T19:11:36Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_36e064a5-22d5-428f-9444-87a91d1bebc6"
+                },
+                "serviceName": "sageBusinessCloud",
+                "status": "active",
+                "syncTime": 304.649,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-25T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageIntacct",
+                "businessUuid": "BIZ-f46fbd78-96c0-49f9-915e-d5c4658e0bcf",
+                "connectionId": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "connectionUuid": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "createdAt": "2022-12-30T19:13:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5c665699-2167-4597-b3be-cd3530044a25"
+                },
+                "serviceName": "sageIntacct",
+                "status": "active",
+                "syncTime": 152.724,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "date": "2099-10-28T00:00:00.000000+0000"
         },
-        "b_oracleNetsuite": {
-          "oracleNetsuite": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_sageBusinessCloud": {
-          "sageBusinessCloud": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooksDesktop": {
-          "quickbooksDesktop": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_sageIntacct": {
-          "sageIntacct": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooks": {
-          "quickbooks": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_xero": {
-          "xero": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_dynamicsBusinessCentral": {
-          "dynamicsBusinessCentral": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 48,
+        "parent_state": {}
       }
     }
   },
@@ -201,16 +789,62 @@
         "name": "deposits"
       },
       "stream_state": {
-        "b_quickbooks": {
-          "quickbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-16T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-21T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "postedDate": "2099-10-21T00:00:00.000000+0000"
         },
-        "b_xero": {
-          "xero": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 15,
+        "parent_state": {}
       }
     }
   },
@@ -221,21 +855,86 @@
         "name": "estimates"
       },
       "stream_state": {
-        "b_freshbooks": {
-          "freshbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-20T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_freshbooks",
+                "businessUuid": "BIZ-9f311f9c-7f75-4f59-94e1-be72d96594a8",
+                "connectionId": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "connectionUuid": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "createdAt": "2022-12-30T19:08:30Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_31025b5c-875b-4069-a473-61ca65cff89b"
+                },
+                "serviceName": "freshbooks",
+                "status": "active",
+                "syncTime": 1586.32,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-15T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-15T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "postedDate": "2099-10-20T00:00:00.000000+0000"
         },
-        "b_xero": {
-          "xero": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooks": {
-          "quickbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 19,
+        "parent_state": {}
       }
     }
   },
@@ -246,51 +945,230 @@
         "name": "invoices"
       },
       "stream_state": {
-        "b_freshbooks": {
-          "freshbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooksDesktop",
+                "businessUuid": "BIZ-8dc6d7d7-7108-4a53-af0d-2fbeb35d824a",
+                "connectionId": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "connectionUuid": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "createdAt": "2022-12-30T19:06:43Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_47294f1a-d476-41ae-b02b-d301c19098c5"
+                },
+                "serviceName": "quickbooksDesktop",
+                "status": "active",
+                "syncTime": 317.627,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_freshbooks",
+                "businessUuid": "BIZ-9f311f9c-7f75-4f59-94e1-be72d96594a8",
+                "connectionId": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "connectionUuid": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "createdAt": "2022-12-30T19:08:30Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_31025b5c-875b-4069-a473-61ca65cff89b"
+                },
+                "serviceName": "freshbooks",
+                "status": "active",
+                "syncTime": 1586.32,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-11-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_dynamicsBusinessCentral",
+                "businessUuid": "BIZ-cb178512-7c0a-461d-b4ca-b20cdbdd0dc6",
+                "connectionId": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "connectionUuid": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "createdAt": "2022-12-30T19:10:12Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_bea65a9e-c506-46b2-af43-5c0f9180ba6b"
+                },
+                "serviceName": "dynamicsBusinessCentral",
+                "status": "active",
+                "syncTime": 154.063,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-20T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_oracleNetsuite",
+                "businessUuid": "BIZ-5cadd8bd-360c-4212-9d01-89dbeec5878c",
+                "connectionId": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "connectionUuid": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "createdAt": "2022-12-30T19:10:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_9ba04269-cc48-4efd-9550-1348072da36a"
+                },
+                "serviceName": "oracleNetsuite",
+                "status": "active",
+                "syncTime": 860,
+                "updatedAt": "2024-08-02T07:47:33Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-19T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageBusinessCloud",
+                "businessUuid": "BIZ-c5c3461e-fc62-4119-ab07-bda5919ac9ed",
+                "connectionId": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "connectionUuid": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "createdAt": "2022-12-30T19:11:36Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_36e064a5-22d5-428f-9444-87a91d1bebc6"
+                },
+                "serviceName": "sageBusinessCloud",
+                "status": "active",
+                "syncTime": 304.649,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-11-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageIntacct",
+                "businessUuid": "BIZ-f46fbd78-96c0-49f9-915e-d5c4658e0bcf",
+                "connectionId": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "connectionUuid": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "createdAt": "2022-12-30T19:13:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5c665699-2167-4597-b3be-cd3530044a25"
+                },
+                "serviceName": "sageIntacct",
+                "status": "active",
+                "syncTime": 152.724,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_wave",
+                "businessUuid": "BIZ-80e19977-9e6d-4e84-bc7b-12ee475f3e4e",
+                "connectionId": "CON-bd9d871c-58f5-4ccc-924a-8cf45b1b955f",
+                "connectionUuid": "CON-bd9d871c-58f5-4ccc-924a-8cf45b1b955f",
+                "createdAt": "2022-12-30T19:14:18Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_cd70abfe-97bd-4b54-bde8-123cdb11c881"
+                },
+                "serviceName": "wave",
+                "status": "active",
+                "syncTime": 13.255,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-11-02T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "postedDate": "2099-11-02T00:00:00.000000+0000"
         },
-        "b_oracleNetsuite": {
-          "oracleNetsuite": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_sageBusinessCloud": {
-          "sageBusinessCloud": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooksDesktop": {
-          "quickbooksDesktop": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_sageIntacct": {
-          "sageIntacct": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_wave": {
-          "wave": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooks": {
-          "quickbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_xero": {
-          "xero": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_dynamicsBusinessCentral": {
-          "dynamicsBusinessCentral": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 54,
+        "parent_state": {}
       }
     }
   },
@@ -301,36 +1179,158 @@
         "name": "invoices_credit_notes"
       },
       "stream_state": {
-        "b_freshbooks": {
-          "freshbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-27T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_freshbooks",
+                "businessUuid": "BIZ-9f311f9c-7f75-4f59-94e1-be72d96594a8",
+                "connectionId": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "connectionUuid": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "createdAt": "2022-12-30T19:08:30Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_31025b5c-875b-4069-a473-61ca65cff89b"
+                },
+                "serviceName": "freshbooks",
+                "status": "active",
+                "syncTime": 1586.32,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_dynamicsBusinessCentral",
+                "businessUuid": "BIZ-cb178512-7c0a-461d-b4ca-b20cdbdd0dc6",
+                "connectionId": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "connectionUuid": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "createdAt": "2022-12-30T19:10:12Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_bea65a9e-c506-46b2-af43-5c0f9180ba6b"
+                },
+                "serviceName": "dynamicsBusinessCentral",
+                "status": "active",
+                "syncTime": 154.063,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-20T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_oracleNetsuite",
+                "businessUuid": "BIZ-5cadd8bd-360c-4212-9d01-89dbeec5878c",
+                "connectionId": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "connectionUuid": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "createdAt": "2022-12-30T19:10:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_9ba04269-cc48-4efd-9550-1348072da36a"
+                },
+                "serviceName": "oracleNetsuite",
+                "status": "active",
+                "syncTime": 860,
+                "updatedAt": "2024-08-02T07:47:33Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-11-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-20T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageIntacct",
+                "businessUuid": "BIZ-f46fbd78-96c0-49f9-915e-d5c4658e0bcf",
+                "connectionId": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "connectionUuid": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "createdAt": "2022-12-30T19:13:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5c665699-2167-4597-b3be-cd3530044a25"
+                },
+                "serviceName": "sageIntacct",
+                "status": "active",
+                "syncTime": 152.724,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-18T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "postedDate": "2099-11-01T00:00:00.000000+0000"
         },
-        "b_sageIntacct": {
-          "sageIntacct": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_oracleNetsuite": {
-          "oracleNetsuite": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooks": {
-          "quickbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_xero": {
-          "xero": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_dynamicsBusinessCentral": {
-          "dynamicsBusinessCentral": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 35,
+        "parent_state": {}
       }
     }
   },
@@ -341,46 +1341,206 @@
         "name": "invoices_payments"
       },
       "stream_state": {
-        "b_freshbooks": {
-          "freshbooks": {
-            "date": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooksDesktop",
+                "businessUuid": "BIZ-8dc6d7d7-7108-4a53-af0d-2fbeb35d824a",
+                "connectionId": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "connectionUuid": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "createdAt": "2022-12-30T19:06:43Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_47294f1a-d476-41ae-b02b-d301c19098c5"
+                },
+                "serviceName": "quickbooksDesktop",
+                "status": "active",
+                "syncTime": 317.627,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_freshbooks",
+                "businessUuid": "BIZ-9f311f9c-7f75-4f59-94e1-be72d96594a8",
+                "connectionId": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "connectionUuid": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "createdAt": "2022-12-30T19:08:30Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_31025b5c-875b-4069-a473-61ca65cff89b"
+                },
+                "serviceName": "freshbooks",
+                "status": "active",
+                "syncTime": 1586.32,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_dynamicsBusinessCentral",
+                "businessUuid": "BIZ-cb178512-7c0a-461d-b4ca-b20cdbdd0dc6",
+                "connectionId": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "connectionUuid": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "createdAt": "2022-12-30T19:10:12Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_bea65a9e-c506-46b2-af43-5c0f9180ba6b"
+                },
+                "serviceName": "dynamicsBusinessCentral",
+                "status": "active",
+                "syncTime": 154.063,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-21T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_oracleNetsuite",
+                "businessUuid": "BIZ-5cadd8bd-360c-4212-9d01-89dbeec5878c",
+                "connectionId": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "connectionUuid": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "createdAt": "2022-12-30T19:10:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_9ba04269-cc48-4efd-9550-1348072da36a"
+                },
+                "serviceName": "oracleNetsuite",
+                "status": "active",
+                "syncTime": 860,
+                "updatedAt": "2024-08-02T07:47:33Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageBusinessCloud",
+                "businessUuid": "BIZ-c5c3461e-fc62-4119-ab07-bda5919ac9ed",
+                "connectionId": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "connectionUuid": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "createdAt": "2022-12-30T19:11:36Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_36e064a5-22d5-428f-9444-87a91d1bebc6"
+                },
+                "serviceName": "sageBusinessCloud",
+                "status": "active",
+                "syncTime": 304.649,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageIntacct",
+                "businessUuid": "BIZ-f46fbd78-96c0-49f9-915e-d5c4658e0bcf",
+                "connectionId": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "connectionUuid": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "createdAt": "2022-12-30T19:13:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5c665699-2167-4597-b3be-cd3530044a25"
+                },
+                "serviceName": "sageIntacct",
+                "status": "active",
+                "syncTime": 152.724,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "date": "2099-10-28T00:00:00.000000+0000"
         },
-        "b_oracleNetsuite": {
-          "oracleNetsuite": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_sageBusinessCloud": {
-          "sageBusinessCloud": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooksDesktop": {
-          "quickbooksDesktop": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_sageIntacct": {
-          "sageIntacct": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooks": {
-          "quickbooks": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_xero": {
-          "xero": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_dynamicsBusinessCentral": {
-          "dynamicsBusinessCentral": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 49,
+        "parent_state": {}
       }
     }
   },
@@ -391,36 +1551,182 @@
         "name": "journal_entries"
       },
       "stream_state": {
-        "b_freshbooks": {
-          "freshbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooksDesktop",
+                "businessUuid": "BIZ-8dc6d7d7-7108-4a53-af0d-2fbeb35d824a",
+                "connectionId": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "connectionUuid": "CON-5df49317-b6b4-4e4f-b5c9-5b3e52d08a06",
+                "createdAt": "2022-12-30T19:06:43Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_47294f1a-d476-41ae-b02b-d301c19098c5"
+                },
+                "serviceName": "quickbooksDesktop",
+                "status": "active",
+                "syncTime": 317.627,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-16T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_freshbooks",
+                "businessUuid": "BIZ-9f311f9c-7f75-4f59-94e1-be72d96594a8",
+                "connectionId": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "connectionUuid": "CON-3c837b60-4166-47c2-bb69-55f18d592cf8",
+                "createdAt": "2022-12-30T19:08:30Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_31025b5c-875b-4069-a473-61ca65cff89b"
+                },
+                "serviceName": "freshbooks",
+                "status": "active",
+                "syncTime": 1586.32,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-12-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_oracleNetsuite",
+                "businessUuid": "BIZ-5cadd8bd-360c-4212-9d01-89dbeec5878c",
+                "connectionId": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "connectionUuid": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "createdAt": "2022-12-30T19:10:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_9ba04269-cc48-4efd-9550-1348072da36a"
+                },
+                "serviceName": "oracleNetsuite",
+                "status": "active",
+                "syncTime": 860,
+                "updatedAt": "2024-08-02T07:47:33Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-16T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageBusinessCloud",
+                "businessUuid": "BIZ-c5c3461e-fc62-4119-ab07-bda5919ac9ed",
+                "connectionId": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "connectionUuid": "CON-34844415-3abb-4c4d-8a05-cf34dab3e92b",
+                "createdAt": "2022-12-30T19:11:36Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_36e064a5-22d5-428f-9444-87a91d1bebc6"
+                },
+                "serviceName": "sageBusinessCloud",
+                "status": "active",
+                "syncTime": 304.649,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-16T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageIntacct",
+                "businessUuid": "BIZ-f46fbd78-96c0-49f9-915e-d5c4658e0bcf",
+                "connectionId": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "connectionUuid": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "createdAt": "2022-12-30T19:13:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5c665699-2167-4597-b3be-cd3530044a25"
+                },
+                "serviceName": "sageIntacct",
+                "status": "active",
+                "syncTime": 152.724,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "postedDate": "2099-10-28T00:00:00.000000+0000"
         },
-        "b_sageIntacct": {
-          "sageIntacct": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_oracleNetsuite": {
-          "oracleNetsuite": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooks": {
-          "quickbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_sageBusinessCloud": {
-          "sageBusinessCloud": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooksDesktop": {
-          "quickbooksDesktop": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 42,
+        "parent_state": {}
       }
     }
   },
@@ -431,31 +1737,134 @@
         "name": "purchase_orders"
       },
       "stream_state": {
-        "b_sageIntacct": {
-          "sageIntacct": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-27T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_dynamicsBusinessCentral",
+                "businessUuid": "BIZ-cb178512-7c0a-461d-b4ca-b20cdbdd0dc6",
+                "connectionId": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "connectionUuid": "CON-e6d88eca-8d47-40b4-acaf-dc0016ff33c9",
+                "createdAt": "2022-12-30T19:10:12Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_bea65a9e-c506-46b2-af43-5c0f9180ba6b"
+                },
+                "serviceName": "dynamicsBusinessCentral",
+                "status": "active",
+                "syncTime": 154.063,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-21T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_oracleNetsuite",
+                "businessUuid": "BIZ-5cadd8bd-360c-4212-9d01-89dbeec5878c",
+                "connectionId": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "connectionUuid": "CON-d712e1a4-abd8-4539-a433-44863080b307",
+                "createdAt": "2022-12-30T19:10:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_9ba04269-cc48-4efd-9550-1348072da36a"
+                },
+                "serviceName": "oracleNetsuite",
+                "status": "active",
+                "syncTime": 860,
+                "updatedAt": "2024-08-02T07:47:33Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_sageIntacct",
+                "businessUuid": "BIZ-f46fbd78-96c0-49f9-915e-d5c4658e0bcf",
+                "connectionId": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "connectionUuid": "CON-2c9419df-0262-4e48-b346-0b6866549652",
+                "createdAt": "2022-12-30T19:13:47Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5c665699-2167-4597-b3be-cd3530044a25"
+                },
+                "serviceName": "sageIntacct",
+                "status": "active",
+                "syncTime": 152.724,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "postedDate": "2099-10-18T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "postedDate": "2099-10-28T00:00:00.000000+0000"
         },
-        "b_oracleNetsuite": {
-          "oracleNetsuite": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_quickbooks": {
-          "quickbooks": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_xero": {
-          "xero": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        },
-        "b_dynamicsBusinessCentral": {
-          "dynamicsBusinessCentral": {
-            "postedDate": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 31,
+        "parent_state": {}
       }
     }
   },
@@ -466,16 +1875,62 @@
         "name": "refunds"
       },
       "stream_state": {
-        "b_quickbooks": {
-          "quickbooks": {
-            "date": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_xero",
+                "businessUuid": "BIZ-1f5aefca-4a73-41da-a000-2b1aa124ca0c",
+                "connectionId": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "connectionUuid": "CON-eabf2e75-c217-4e13-ab36-98c46f226480",
+                "createdAt": "2022-12-30T19:07:46Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_039a5680-8883-48ff-b8b5-42431d97d02b"
+                },
+                "serviceName": "xero",
+                "status": "active",
+                "syncTime": 54.814,
+                "updatedAt": "2026-08-21T21:08:32Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-10-28T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_quickbooks",
+                "businessUuid": "BIZ-fc80d402-4ff3-4b77-80e1-5f674d6cc43c",
+                "connectionId": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "connectionUuid": "CON-96e0f6ce-e48c-4559-8223-3a2008b6a62d",
+                "createdAt": "2022-12-30T19:12:52Z",
+                "firstRecordDate": "2017-01-01T00:00:00.000Z",
+                "isMockData": true,
+                "serviceAccountRef": {
+                  "id": "SB_ACCOUNT_ID_5d1608bc-8a8c-46b5-aa9c-4af0cc72e26c"
+                },
+                "serviceName": "quickbooks",
+                "status": "active",
+                "syncTime": 69.715,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "date": "2099-11-02T00:00:00.000000+0000"
+            }
           }
+        ],
+        "state": {
+          "date": "2099-11-02T00:00:00.000000+0000"
         },
-        "b_xero": {
-          "xero": {
-            "date": "2099-01-01T00:00:00.000Z"
-          }
-        }
+        "lookback_window": 13,
+        "parent_state": {}
       }
     }
   },
@@ -486,11 +1941,59 @@
         "name": "commerce_disputes"
       },
       "stream_state": {
-        "b_square": {
-          "square": {
-            "createdDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_shopify",
+                "businessUuid": "BIZ-d33f3d4a-9027-4840-89ff-d7424dc9a0da",
+                "connectionId": "CON-60240e71-da04-403c-8105-ced2b7c2fa4c",
+                "connectionUuid": "CON-60240e71-da04-403c-8105-ced2b7c2fa4c",
+                "createdAt": "2022-12-30T19:17:26Z",
+                "firstRecordDate": "2021-06-23T01:09:26.000Z",
+                "isMockData": false,
+                "serviceAccountRef": {
+                  "id": "airbyte-integration-test"
+                },
+                "serviceName": "shopify",
+                "status": "active",
+                "syncTime": 91.442,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "createdDate": "2099-12-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_square",
+                "businessUuid": "BIZ-a0735546-ab7c-487c-8601-7a5e95571c7f",
+                "connectionId": "CON-ff93cd59-73a7-4bfc-b3c9-eb5e0a9ccf2d",
+                "connectionUuid": "CON-ff93cd59-73a7-4bfc-b3c9-eb5e0a9ccf2d",
+                "createdAt": "2023-01-04T18:43:19Z",
+                "firstRecordDate": "2021-06-10T09:58:41.000Z",
+                "isMockData": false,
+                "serviceAccountRef": {
+                  "id": "LH2XR7AMG39HX"
+                },
+                "serviceName": "square",
+                "status": "active",
+                "syncTime": 187.494,
+                "updatedAt": "2023-01-31T22:34:07Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "createdDate": "2099-12-01T00:00:00.000000+0000"
+            }
           }
-        }
+        ],
+        "lookback_window": 0,
+        "parent_state": {}
       }
     }
   },
@@ -501,11 +2004,59 @@
         "name": "commerce_orders"
       },
       "stream_state": {
-        "b_square": {
-          "square": {
-            "createdDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_shopify",
+                "businessUuid": "BIZ-d33f3d4a-9027-4840-89ff-d7424dc9a0da",
+                "connectionId": "CON-60240e71-da04-403c-8105-ced2b7c2fa4c",
+                "connectionUuid": "CON-60240e71-da04-403c-8105-ced2b7c2fa4c",
+                "createdAt": "2022-12-30T19:17:26Z",
+                "firstRecordDate": "2021-06-23T01:09:26.000Z",
+                "isMockData": false,
+                "serviceAccountRef": {
+                  "id": "airbyte-integration-test"
+                },
+                "serviceName": "shopify",
+                "status": "active",
+                "syncTime": 91.442,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "createdDate": "2099-12-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_square",
+                "businessUuid": "BIZ-a0735546-ab7c-487c-8601-7a5e95571c7f",
+                "connectionId": "CON-ff93cd59-73a7-4bfc-b3c9-eb5e0a9ccf2d",
+                "connectionUuid": "CON-ff93cd59-73a7-4bfc-b3c9-eb5e0a9ccf2d",
+                "createdAt": "2023-01-04T18:43:19Z",
+                "firstRecordDate": "2021-06-10T09:58:41.000Z",
+                "isMockData": false,
+                "serviceAccountRef": {
+                  "id": "LH2XR7AMG39HX"
+                },
+                "serviceName": "square",
+                "status": "active",
+                "syncTime": 187.494,
+                "updatedAt": "2023-01-31T22:34:07Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "createdDate": "2099-12-01T00:00:00.000000+0000"
+            }
           }
-        }
+        ],
+        "lookback_window": 0,
+        "parent_state": {}
       }
     }
   },
@@ -516,11 +2067,59 @@
         "name": "commerce_products"
       },
       "stream_state": {
-        "b_square": {
-          "square": {
-            "createdDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_shopify",
+                "businessUuid": "BIZ-d33f3d4a-9027-4840-89ff-d7424dc9a0da",
+                "connectionId": "CON-60240e71-da04-403c-8105-ced2b7c2fa4c",
+                "connectionUuid": "CON-60240e71-da04-403c-8105-ced2b7c2fa4c",
+                "createdAt": "2022-12-30T19:17:26Z",
+                "firstRecordDate": "2021-06-23T01:09:26.000Z",
+                "isMockData": false,
+                "serviceAccountRef": {
+                  "id": "airbyte-integration-test"
+                },
+                "serviceName": "shopify",
+                "status": "active",
+                "syncTime": 91.442,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "createdDate": "2099-12-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_square",
+                "businessUuid": "BIZ-a0735546-ab7c-487c-8601-7a5e95571c7f",
+                "connectionId": "CON-ff93cd59-73a7-4bfc-b3c9-eb5e0a9ccf2d",
+                "connectionUuid": "CON-ff93cd59-73a7-4bfc-b3c9-eb5e0a9ccf2d",
+                "createdAt": "2023-01-04T18:43:19Z",
+                "firstRecordDate": "2021-06-10T09:58:41.000Z",
+                "isMockData": false,
+                "serviceAccountRef": {
+                  "id": "LH2XR7AMG39HX"
+                },
+                "serviceName": "square",
+                "status": "active",
+                "syncTime": 187.494,
+                "updatedAt": "2023-01-31T22:34:07Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "createdDate": "2099-12-01T00:00:00.000000+0000"
+            }
           }
-        }
+        ],
+        "lookback_window": 0,
+        "parent_state": {}
       }
     }
   },
@@ -531,11 +2130,59 @@
         "name": "commerce_transactions"
       },
       "stream_state": {
-        "b_square": {
-          "square": {
-            "createdDate": "2099-01-01T00:00:00.000Z"
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_shopify",
+                "businessUuid": "BIZ-d33f3d4a-9027-4840-89ff-d7424dc9a0da",
+                "connectionId": "CON-60240e71-da04-403c-8105-ced2b7c2fa4c",
+                "connectionUuid": "CON-60240e71-da04-403c-8105-ced2b7c2fa4c",
+                "createdAt": "2022-12-30T19:17:26Z",
+                "firstRecordDate": "2021-06-23T01:09:26.000Z",
+                "isMockData": false,
+                "serviceAccountRef": {
+                  "id": "airbyte-integration-test"
+                },
+                "serviceName": "shopify",
+                "status": "active",
+                "syncTime": 91.442,
+                "updatedAt": "2023-01-31T22:34:05Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "createdDate": "2099-12-01T00:00:00.000000+0000"
+            }
+          },
+          {
+            "partition": {
+              "connection": {
+                "businessName": "b_square",
+                "businessUuid": "BIZ-a0735546-ab7c-487c-8601-7a5e95571c7f",
+                "connectionId": "CON-ff93cd59-73a7-4bfc-b3c9-eb5e0a9ccf2d",
+                "connectionUuid": "CON-ff93cd59-73a7-4bfc-b3c9-eb5e0a9ccf2d",
+                "createdAt": "2023-01-04T18:43:19Z",
+                "firstRecordDate": "2021-06-10T09:58:41.000Z",
+                "isMockData": false,
+                "serviceAccountRef": {
+                  "id": "LH2XR7AMG39HX"
+                },
+                "serviceName": "square",
+                "status": "active",
+                "syncTime": 187.494,
+                "updatedAt": "2023-01-31T22:34:07Z"
+              },
+              "parent_slice": {}
+            },
+            "cursor": {
+              "createdDate": "2099-12-01T00:00:00.000000+0000"
+            }
           }
-        }
+        ],
+        "lookback_window": 0,
+        "parent_state": {}
       }
     }
   }

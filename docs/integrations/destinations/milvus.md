@@ -7,25 +7,25 @@ This page guides you through the process of setting up the [Milvus](https://milv
 There are three parts to this:
 
 - Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
-- Embedding - convert the text into a vector representation using a pre-trained model. See [Embedding](#embedding) for the available services and models.
+- Embedding - convert the text into a vector representation using a pre-trained model (Currently, OpenAI's `text-embedding-ada-002` and Cohere's `embed-english-light-v2.0` are supported.)
 - Indexing - store the vectors in a vector database for similarity search
 
 ## Prerequisites
 
 To use the Milvus destination, you'll need:
 
-- Either a running self-managed Milvus instance or a [Zilliz Cloud](https://zilliz.com/) account.
-- Access to an embedding service, unless you use the Fake embedder for testing. Depending on the embedding method you choose, this is an OpenAI account, an Azure OpenAI deployment, a Cohere account, or a service that exposes an OpenAI-compatible embedding API.
+- An account with API access for OpenAI or Cohere (depending on which embedding method you want to use)
+- Either a running self-managed Milvus instance or a [Zilliz](https://zilliz.com/) account
 
 You'll need the following information to configure the destination:
 
-- **Public Endpoint** - The endpoint of your Milvus instance, for example `https://my-instance.zone.zillizcloud.com` or `tcp://my-local-milvus:19530`.
-- **Authentication** - An API token, a username and password, or no authentication. Zilliz Cloud clusters use an API token. Self-managed instances use a username and password if you [enabled authentication](https://milvus.io/docs/authenticate.md), and no authentication otherwise.
-- **Collection Name** - The name of the collection to load data into.
+- **Embedding service API Key** - The API key for your OpenAI or Cohere account
+- **Public Endpoint** - The URL of your Milvus instance
+- **Authentication** - An API token, a username and password, or no authentication. Use no authentication only for local test clusters, not clusters with public IP addresses.
+- **Collection Name** - The name of the collection to load data into
 - **Database Name** - Optional. Leave empty to use the default database.
-- The credentials for your embedding service, such as an OpenAI API key.
 
-On Airbyte Cloud, the endpoint must start with `https://` and authentication must be enabled. The connection check fails otherwise. Self-managed Airbyte has no such restriction.
+On Airbyte Cloud, the endpoint must start with `https://` and authentication must be enabled; otherwise, the connection check fails.
 
 ## Supported sync modes
 
@@ -41,7 +41,7 @@ On Airbyte Cloud, the endpoint must start with `https://` and authentication mus
 
 ### Processing
 
-Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Options around configuring the chunking process use the [LangChain Python library](https://python.langchain.com/docs/concepts/text_splitters/).
+Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Options around configuring the chunking process use the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
 
 When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
 
@@ -53,17 +53,11 @@ The stream name gets added as a metadata field `_ab_stream` to each document. If
 
 The connector can use one of the following embedding methods:
 
-1. OpenAI - using the [OpenAI API](https://platform.openai.com/docs/api-reference/embeddings), the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [rate limits of your OpenAI account](https://platform.openai.com/docs/guides/rate-limits).
+1. OpenAI - using [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
 
-2. Azure OpenAI - using an [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/reference) deployment of the `text-embedding-ada-002` model with **1536 dimensions**. Configure the API key, the resource base URL, and the name of your model deployment.
+2. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
 
-3. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
-
-4. OpenAI-compatible - using any service that implements the OpenAI embedding API. Configure the base URL, the model name, and the number of dimensions the model produces. Use this option for self-hosted embedding services. The API key is optional, so this also works with services that don't require authentication.
-
-5. Fake - generates random embeddings with **1536 dimensions**. Use it to test a pipeline without incurring embedding costs. Don't use it in production, because the vectors are meaningless for similarity search.
-
-The number of dimensions produced by your embedding configuration must match the dimensionality of the vector field in the collection. The connection check fails if they don't match.
+For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
 
 ### Indexing
 
@@ -71,15 +65,14 @@ If the specified collection doesn't exist, the connector will create it for you 
 
 If you want to change any of these settings, create a new collection in your Milvus instance yourself. Make sure that
 
-- The primary key field is set to [auto_id](https://milvus.io/docs/create_collection.md). Collections without `auto_id` are not supported.
-- There is a float vector field with the dimensionality your embedding configuration produces, and [a configured index](https://milvus.io/docs/build_index.md) on it. Set the **Vector Field** option to its name if it isn't `vector`. The connector writes each chunk's text to the field named in the **Text Field** option, `text` by default.
-- Dynamic fields are enabled, so the connector can write chunk text and metadata fields that aren't part of the schema.
+- The primary key field is set to [auto_id](https://milvus.io/docs/create_collection.md)
+- There is a vector field with the correct dimensionality (1536 for OpenAI, 1024 for Cohere) and [a configured index](https://milvus.io/docs/build_index.md)
 
 If the record contains a field with the same name as the primary key, it will be prefixed with an underscore so Milvus can control the primary key internally.
 
 ### Setting up a collection
 
-When using Zilliz Cloud, this can be done using the UI - in this case only the collection name and the vector dimensionality needs to be configured, the vector field with index will be automatically created under the name `vector`. You can also use the [Create Collection API](https://docs.zilliz.com/reference/restful/create-collection-v2), which accepts the same options.
+To create a collection using the Zilliz Cloud REST API, see the [Create Collection API reference](https://docs.zilliz.com/reference/restful/create-collection-v2). Configure the collection to match the requirements in [Indexing](#indexing).
 
 When using a self-hosted Milvus cluster, the collection needs to be created using the Milvus CLI or Python client. The following commands will create a collection set up for loading data via Airbyte:
 
@@ -97,23 +90,7 @@ collection.create_index(field_name="vector", index_params={ "metric_type":"L2", 
 
 ### LangChain integration
 
-To query the indexed data from a [LangChain](https://docs.langchain.com/oss/python/integrations/vectorstores/milvus) vector store, use the following code. It requires the `langchain-milvus` and `langchain-openai` packages.
-
-```python
-from langchain_milvus import Milvus
-from langchain_openai import OpenAIEmbeddings
-
-embeddings = OpenAIEmbeddings(api_key="my-key", model="text-embedding-ada-002")
-vector_store = Milvus(
-    embedding_function=embeddings,
-    collection_name="my-collection",
-    connection_args={"uri": "my-zilliz-endpoint", "token": "my-api-key"},
-)
-vector_store.fields.append("text")
-# append every metadata field you need, for example "_ab_stream"
-
-vector_store.similarity_search("test")
-```
+For query examples, see the official [LangChain Milvus integration guide](https://docs.langchain.com/oss/python/integrations/vectorstores/milvus). Use the embedding model and collection field names configured for your Airbyte destination.
 
 ## Namespace support
 
@@ -126,6 +103,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                             |
 |:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.63 | 2026-10-14 | [88972](https://github.com/airbytehq/airbyte/pull/88972) | Preserve the platform-provided state message `id` so syncs no longer fail with "State message does not contain id" |
 | 0.0.62 | 2026-09-29 | [87038](https://github.com/airbytehq/airbyte/pull/87038) | Pin setuptools below 82, since pymilvus 2.3.0 imports `pkg_resources` at module load |
 | 0.0.61 | 2026-08-13 | [84362](https://github.com/airbytehq/airbyte/pull/84362) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.0.60 | 2026-07-02 | [81383](https://github.com/airbytehq/airbyte/pull/81383) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
@@ -174,8 +152,8 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 | 0.0.17 | 2024-06-25 | [40446](https://github.com/airbytehq/airbyte/pull/40446) | Update dependencies |
 | 0.0.16 | 2024-06-22 | [40161](https://github.com/airbytehq/airbyte/pull/40161) | Update dependencies |
 | 0.0.15 | 2024-05-20 | [38276](https://github.com/airbytehq/airbyte/pull/38276) | Replace AirbyteLogger with logging.Logger |
-| 0.0.14  | 2024-04-16 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Update CDK & pytest version to fix security vulnerabilities                                                                                         |
-| 0.0.13  | 2024-03-26 | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Move to poetry; Fix tests                                                                                                                           |
+| 0.0.14  | 2024-04-16  | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Update CDK & pytest version to fix security vulnerabilities                                                                                         |
+| 0.0.13  | 2024-03-26  | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Move to poetry; Fix tests                                                                                                                           |
 | 0.0.12  | 2023-12-11 | [#33303](https://github.com/airbytehq/airbyte/pull/33303) | Fix bug with embedding special tokens                                                                                                               |
 | 0.0.11  | 2023-12-01 | [#32697](https://github.com/airbytehq/airbyte/pull/32697) | Allow omitting raw text                                                                                                                             |
 | 0.0.10  | 2023-11-16 | [#32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources                                                                                                            |

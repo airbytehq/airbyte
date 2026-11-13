@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery
 
-import com.google.api.gax.retrying.RetrySettings
+import com.google.auth.Credentials
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryOptions
@@ -26,6 +26,8 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.WriteOperation
 import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
+import io.airbyte.integrations.destination.bigquery.copy.BigqueryCopyWriter
+import io.airbyte.integrations.destination.bigquery.copy.BigqueryS3Copy
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploader
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploaderStep
@@ -51,6 +53,17 @@ import java.nio.charset.StandardCharsets
 
 private val logger = KotlinLogging.logger {}
 
+internal fun bigqueryOptionsBuilder(
+    projectId: String,
+    credentials: Credentials,
+): BigQueryOptions.Builder =
+    BigQueryOptions.newBuilder()
+        .setProjectId(projectId)
+        .setCredentials(credentials)
+        .setHeaderProvider(BigQueryUtils.headerProvider)
+        .setRetrySettings(BigQueryRetryPolicy.retrySettings)
+        .setResultRetryAlgorithm(BigQueryRetryPolicy.resultRetryAlgorithm)
+
 @Factory
 class BigqueryBeansFactory {
     @Singleton fun getConfig(config: DestinationConfiguration) = config as BigqueryConfiguration
@@ -71,7 +84,7 @@ class BigqueryBeansFactory {
         return BigQueryBulkOneShotUploaderStep(
             bigQueryOneShotUploader,
             taskFactory,
-            numInputPartitions
+            numInputPartitions,
         )
     }
 
@@ -104,6 +117,9 @@ class BigqueryBeansFactory {
         // we use a different type depending on whether we're in legacy raw tables vs
         // direct-load tables mode.
         streamStateStore: StreamStateStore<*>,
+        catalog: DestinationCatalog,
+        archive: BigqueryS3Copy,
+        syncManager: SyncManager,
     ): DestinationWriter {
         val destinationHandler =
             BigQueryDatabaseHandler(
@@ -116,17 +132,22 @@ class BigqueryBeansFactory {
             // force smart cast
             @Suppress("UNCHECKED_CAST")
             streamStateStore as StreamStateStore<TypingDedupingExecutionConfig>
-            return TypingDedupingWriter(
-                names,
-                BigqueryTypingDedupingDatabaseInitialStatusGatherer(bigquery),
-                destinationHandler,
-                BigqueryRawTableOperations(bigquery),
-                TypingDedupingFinalTableOperations(
-                    NoopTypingDedupingSqlGenerator,
+            return BigqueryCopyWriter(
+                TypingDedupingWriter(
+                    names,
+                    BigqueryTypingDedupingDatabaseInitialStatusGatherer(bigquery),
                     destinationHandler,
+                    BigqueryRawTableOperations(bigquery),
+                    TypingDedupingFinalTableOperations(
+                        NoopTypingDedupingSqlGenerator,
+                        destinationHandler,
+                    ),
+                    disableTypeDedupe = true,
+                    streamStateStore = streamStateStore,
                 ),
-                disableTypeDedupe = true,
-                streamStateStore = streamStateStore,
+                catalog,
+                archive,
+                syncManager,
             )
         } else {
             val sqlTableOperations =
@@ -148,26 +169,31 @@ class BigqueryBeansFactory {
             val tempTableNameGenerator =
                 DefaultTempTableNameGenerator(internalNamespace = config.internalTableDataset)
 
-            return DirectLoadTableWriter(
-                internalNamespace = config.internalTableDataset,
-                names = names,
-                stateGatherer =
-                    BigqueryDirectLoadDatabaseInitialStatusGatherer(
-                        bigquery,
-                        tempTableNameGenerator
-                    ),
-                destinationHandler = destinationHandler,
-                nativeTableOperations =
-                    BigqueryDirectLoadNativeTableOperations(
-                        bigquery,
-                        sqlTableOperations,
-                        destinationHandler,
-                        projectId = config.projectId,
-                        tempTableNameGenerator,
-                    ),
-                sqlTableOperations = sqlTableOperations,
-                streamStateStore = streamStateStore,
-                tempTableNameGenerator,
+            return BigqueryCopyWriter(
+                DirectLoadTableWriter(
+                    internalNamespace = config.internalTableDataset,
+                    names = names,
+                    stateGatherer =
+                        BigqueryDirectLoadDatabaseInitialStatusGatherer(
+                            bigquery,
+                            tempTableNameGenerator,
+                        ),
+                    destinationHandler = destinationHandler,
+                    nativeTableOperations =
+                        BigqueryDirectLoadNativeTableOperations(
+                            bigquery,
+                            sqlTableOperations,
+                            destinationHandler,
+                            projectId = config.projectId,
+                            tempTableNameGenerator,
+                        ),
+                    sqlTableOperations = sqlTableOperations,
+                    streamStateStore = streamStateStore,
+                    tempTableNameGenerator,
+                ),
+                catalog,
+                archive,
+                syncManager,
             )
         }
     }
@@ -188,41 +214,26 @@ class BigqueryBeansFactory {
                 // The JSON credential can either be a raw JSON object, or a serialized JSON object.
                 GoogleCredentials.fromStream(
                     ByteArrayInputStream(
-                        config.credentialsJson.toByteArray(StandardCharsets.UTF_8)
+                        config.credentialsJson.toByteArray(StandardCharsets.UTF_8),
                     ),
                 )
             }
-        return BigQueryOptions.newBuilder()
-            .setProjectId(config.projectId)
-            .setCredentials(credentials)
-            .setHeaderProvider(BigQueryUtils.headerProvider)
-            .setRetrySettings(
-                RetrySettings.newBuilder()
-                    // Most of the values are default. We need to override them all if we want to
-                    // set a different value for `setMaxAttempts`..............
-                    .setInitialRetryDelayDuration(java.time.Duration.ofMillis(1000L))
-                    .setMaxRetryDelayDuration(java.time.Duration.ofMillis(32_000L))
-                    .setTotalTimeoutDuration(java.time.Duration.ofMillis(60_000L))
-                    .setInitialRpcTimeoutDuration(java.time.Duration.ofMillis(50_000L))
-                    .setRpcTimeoutMultiplier(1.0)
-                    .setMaxRpcTimeoutDuration(java.time.Duration.ofMillis(50_000L))
-                    .setMaxAttempts(15)
-                    .setRetryDelayMultiplier(1.5)
-                    .build()
-            )
-            .build()
-            .service
+        return bigqueryOptionsBuilder(config.projectId, credentials).build().service
     }
 
     @Singleton
     @Named("jobProjectBigquery")
-    fun getJobProjectBigqueryClient(
-        config: BigqueryConfiguration,
-        bigquery: BigQuery,
-    ): BigQuery =
+    fun getJobProjectBigqueryClient(config: BigqueryConfiguration, bigquery: BigQuery): BigQuery =
         if (config.jobProjectId == config.projectId) {
             bigquery
         } else {
-            bigquery.options.toBuilder().setProjectId(config.jobProjectId).build().service
+            bigquery.options
+                .toBuilder()
+                .setProjectId(config.jobProjectId)
+                .setHeaderProvider(BigQueryUtils.headerProvider)
+                .setRetrySettings(BigQueryRetryPolicy.retrySettings)
+                .setResultRetryAlgorithm(BigQueryRetryPolicy.resultRetryAlgorithm)
+                .build()
+                .service
         }
 }

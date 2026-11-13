@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data from the [Mailersend](https://developers.mailersend.com/#mailersend-api). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch.
+This source can sync data from the [Mailersend](https://developers.mailersend.com/#mailersend-api). The `activity` stream is synced incrementally in daily windows using the `created_at` field.
 
 ## This Source Supports the Following Streams
 
@@ -13,13 +13,19 @@ This source can sync data from the [Mailersend](https://developers.mailersend.co
 | Feature           | Supported?\(Yes/No\) | Notes |
 | :---------------- | :------------------- | :---- |
 | Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | No                   |       |
+| Incremental Sync  | Yes                  | `activity` is incremental on `created_at` |
 
 ### Performance considerations
 
 MailerSend has a default [rate limit](https://developers.mailersend.com/general.html#api-response) of 60 requests per minute on general API endpoints.
 
 ## Getting started
+
+### Requirements
+
+- A MailerSend [API token](https://www.mailersend.com/help/managing-api-tokens) with permission to read activity.
+- The ID of the domain whose activity you want to sync (`domain_id`). You can find it with the [Domains API](https://developers.mailersend.com/api/v1/email/domains#get-a-list-of-domains) or in the MailerSend dashboard URL.
+- A `start_date` Unix timestamp. The MailerSend activity API only returns events within your plan's data retention window (1–30 days depending on plan), so requests for windows older than that may be rejected by the API.
 
 ## IP allow list
 
@@ -32,6 +38,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
+| 0.2.26 | 2026-10-07 | [PR](https://github.com/airbytehq/airbyte/pull/88279) | Fix `activity` stream: send required `date_to` parameter, use `limit` instead of unsupported `page_size`, parse `created_at` cursor format, stop re-fetching page 1 |
 | 0.2.25 | 2025-05-24 | [60696](https://github.com/airbytehq/airbyte/pull/60696) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59865](https://github.com/airbytehq/airbyte/pull/59865) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59278](https://github.com/airbytehq/airbyte/pull/59278) | Update dependencies |
