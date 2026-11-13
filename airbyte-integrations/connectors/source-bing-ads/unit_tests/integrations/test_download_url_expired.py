@@ -70,7 +70,9 @@ class TestDownloadUrlExpired(BaseTest):
             HttpResponse(json.dumps(find_template(resource="bulk_download", execution_folder=__file__)), 200),
         )
         self.http_mocker.post(
-            RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk").with_body('{"RequestId": "TestDownloadRequestId"}').build(),
+            RequestBuilder(resource="Bulk/v13/BulkDownloadStatus/Query", api="bulk")
+            .with_body('{"RequestId": "TestDownloadRequestId"}')
+            .build(),
             HttpResponse(json.dumps(find_template(resource="bulk_status", execution_folder=__file__)), 200),
         )
         download_request = RequestBuilder(resource="path/to/bulk/resultquery/url", api="bulk").build()
