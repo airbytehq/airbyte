@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "arXiv paper identifier, including version when provided by the API."
+    },
+    "title": {
+      "type": ["null", "string"],
+      "description": "Paper title."
+    },
+    "authors": {
+      "type": ["null", "array"],
+      "description": "Paper author names.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "abstract": {
+      "type": ["null", "string"],
+      "description": "Paper abstract."
+    },
+    "published": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "Initial publication timestamp."
+    },
+    "updated": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "Most recent update timestamp."
+    },
+    "categories": {
+      "type": ["null", "array"],
+      "description": "arXiv category identifiers associated with the paper.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "doi": {
+      "type": ["null", "string"],
+      "description": "Digital Object Identifier when present."
+    },
+    "journal_ref": {
+      "type": ["null", "string"],
+      "description": "Journal reference when present."
+    },
+    "links": {
+      "type": ["null", "array"],
+      "description": "Links included in the arXiv Atom entry.",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "href": {
+            "type": ["null", "string"]
+          },
+          "rel": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}
