@@ -23,7 +23,7 @@ Setting up a MongoDB source takes four steps:
 ### Requirements
 
 - A **replica set** or a **sharded cluster** (connected through `mongos`). A standalone `mongod` has no oplog and therefore no change streams: Full Refresh works against it, but an Incremental sync fails when the change stream is opened. A single-node replica set is fine for development: see [Convert a Standalone to a Replica Set](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/).
-- MongoDB 4.4 or later. The connector is tested against MongoDB 7.0. Deletes carry the deleted document only on MongoDB 6.0 or later with [pre-images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images) enabled on the collection.
+- MongoDB 4.4 or later. The connector is tested against MongoDB 4.4, 5.0, 6.0, 7.0 and 8.0. Deletes carry the deleted document only on MongoDB 6.0 or later with [pre-images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images) enabled on the collection.
 - On MongoDB Atlas, a dedicated cluster (M10 tier or above). Shared tiers (M0, M2, M5) do not support the operations the connector relies on and may fail during connection setup.
 - An oplog large enough to cover the gap between two syncs, with margin. See [MongoDB Oplog and Change Streams](https://docs.airbyte.com/integrations/sources/mongodb/mongodb-troubleshooting#mongodb-oplog-and-change-streams).
 
@@ -172,7 +172,7 @@ In Airbyte, go to **Sources**, click **+ New source** and choose **MongoDB**. Th
 
 Leave the advanced settings at their defaults unless you have a reason to change them; they are described under [Configuration Parameters](#configuration-parameters).
 
-Click **Set up source**. Airbyte tests the connection before saving: it checks that the cluster can be reached with the credentials and that the user can list the collections of the configured databases (a database the user cannot read is named in the error). A standalone server passes the test with a warning in the logs; only its Incremental syncs fail. Airbyte then discovers the collections and, when **Schema Enforced** is on, samples their documents to build the schema (see [Schema Enforcement](#schema-enforcement)); on a cluster with many collections this can take a few minutes.
+Click **Set up source**. Airbyte tests the connection before saving: it checks that the cluster can be reached with the credentials and that the user can read at least one collection in the configured databases. If the user can read no collection in any of them, the test fails and the error names the databases it can't read. A standalone server passes the test with a warning in the logs; only its Incremental syncs fail. Airbyte then discovers the collections and, when **Schema Enforced** is on, samples their documents to build the schema (see [Schema Enforcement](#schema-enforcement)); on a cluster with many collections this can take a few minutes.
 
 ### Step 4: Allow inbound traffic from Airbyte
 
@@ -187,7 +187,7 @@ Each collection is a stream that can be synced in **Full Refresh** or **Incremen
 
 ### Full Refresh
 
-A full refresh reads the whole collection, ordered by `_id`, on every sync. The read is checkpointed as it goes, about every gigabyte of documents: a sync that fails part way through (because of a network error, for example) continues from the last checkpointed `_id` instead of starting over.
+A full refresh reads the whole collection, ordered by `_id`, on every sync. The read is checkpointed as it goes, about every 10 minutes: a sync that fails part way through (because of a network error, for example) continues from the last checkpointed `_id` instead of starting over.
 
 ### Incremental (CDC)
 
