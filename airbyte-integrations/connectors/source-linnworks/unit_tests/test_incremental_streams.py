@@ -138,9 +138,12 @@ def date(*args):
         ),
     ],
 )
-def test_processed_orders_stream_slices(patch_incremental_base_class, now, stream_state, slice_count, expected_from_date, expected_to_date):
+def test_processed_orders_stream_slices(
+    patch_incremental_base_class, mocker, now, stream_state, slice_count, expected_from_date, expected_to_date
+):
     start_date = date(2050, 1, 1)
-    pendulum.set_test_now(pendulum.parse(now if now else start_date))
+    frozen_now = pendulum.parse(now if now else start_date)
+    mocker.patch.object(pendulum, "tomorrow", lambda tz="local": frozen_now.in_timezone(tz).start_of("day").add(days=1))
 
     stream = ProcessedOrders(start_date=start_date)
     stream_slices = list(stream.stream_slices(stream_state))

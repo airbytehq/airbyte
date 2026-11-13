@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
+from source_linnworks.source import LinnworksAuthenticator
 from source_linnworks.streams import LinnworksStream, StockItems, StockLocationDetails, StockLocations
 
 
@@ -150,3 +151,47 @@ def test_stock_items_request_params(mocker, requests_mock, next_page_token, expe
     assert ("NextPageTokenKey" in params) == expected
     if next_page_token:
         assert next_page_token.items() <= params.items()
+
+
+AUTH_URL = "https://api.linnworks.net/api/Auth/AuthorizeByApplication"
+SERVER = "https://eu-ext.linnworks.net"
+
+
+@pytest.fixture
+def authenticator(requests_mock):
+    requests_mock.post(AUTH_URL, json={"Token": "the_token", "Server": SERVER, "TTL": 1800})
+    return LinnworksAuthenticator(application_id="xxx", application_secret="yyy", token="zzz")
+
+
+def test_url_base_uses_authenticator_server(authenticator):
+    stream = StockLocations(authenticator=authenticator)
+
+    assert stream.url_base == SERVER
+
+
+def test_stock_locations_read_records(authenticator, requests_mock):
+    requests_mock.post(f"{SERVER}/api/Inventory/GetStockLocations", json=[{"StockLocationIntId": 1}, {"StockLocationIntId": 2}])
+    stream = StockLocations(authenticator=authenticator)
+
+    records = list(stream.read_only_records())
+
+    assert [record["StockLocationIntId"] for record in records] == [1, 2]
+    assert requests_mock.request_history[-1].headers["Authorization"] == "the_token"
+
+
+def test_stock_items_read_records_stops_on_bad_request(authenticator, requests_mock):
+    items_url = f"{SERVER}/api/Stock/GetStockItemsFull"
+    first_page = [{"StockItemIntId": n} for n in range(StockItems.page_size)]
+    requests_mock.post(
+        items_url,
+        [
+            {"json": first_page, "status_code": 200},
+            {"json": {"Code": None, "Message": "Page out of range"}, "status_code": 400},
+        ],
+    )
+    stream = StockItems(authenticator=authenticator)
+
+    records = list(stream.read_only_records())
+
+    assert len(records) == StockItems.page_size
+    assert [r.qs["pagenumber"] for r in requests_mock.request_history if r.url.startswith(items_url)] == [["1"], ["2"]]

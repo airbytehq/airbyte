@@ -2,10 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import timedelta
 from unittest.mock import MagicMock
 
 import pytest
 from source_linnworks.source import LinnworksAuthenticator, SourceLinnworks
+
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 
 @pytest.fixture
@@ -105,3 +108,22 @@ def test_streams(mocker):
     streams = source.streams(config_mock)
     expected_streams_number = 5
     assert len(streams) == expected_streams_number
+
+
+def test_authenticator_reuses_token_until_expiry(config, requests_mock):
+    config = config["config"]
+    authenticator = LinnworksAuthenticator(
+        token_refresh_endpoint="http://dummy",
+        application_id=config["application_id"],
+        application_secret=config["application_secret"],
+        token=config["token"],
+    )
+    requests_mock.post("http://dummy", json={"Token": "the_token", "Server": "http://xx-ext.dummy", "TTL": 1800})
+
+    before = ab_datetime_now()
+    assert authenticator.get_auth_header() == {"Authorization": "the_token"}
+    assert authenticator.get_server() == "http://xx-ext.dummy"
+
+    assert not authenticator.token_has_expired()
+    assert before + timedelta(seconds=1800) <= authenticator.get_token_expiry_date() <= ab_datetime_now() + timedelta(seconds=1800)
+    assert requests_mock.call_count == 1

@@ -5,7 +5,7 @@
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
@@ -14,14 +14,17 @@ import vcr
 from requests.auth import AuthBase
 from vcr.cassette import Cassette
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 
 
 class LinnworksStream(HttpStream, ABC):
     http_method = "POST"
 
-    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, start_date: str = None):
+    def __init__(self, authenticator: Optional[AuthBase] = None, start_date: str = None):
         super().__init__(authenticator=authenticator)
 
         self._authenticator = authenticator
@@ -29,7 +32,7 @@ class LinnworksStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return self._session.auth.get_server()
+        return self._authenticator.get_server()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -109,6 +112,18 @@ class StockItems(LinnworksStream):
     page_size = 200
 
     raise_on_http_errors = False
+
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        # Linnworks answers 400 when paging past the last page; ignore it so parse_response can end the stream.
+        error_mapping = {
+            **DEFAULT_ERROR_MAPPING,
+            400: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.system_error,
+                error_message="Received HTTP 400 from Linnworks stock items endpoint; ignoring response.",
+            ),
+        }
+        return HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping)
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
