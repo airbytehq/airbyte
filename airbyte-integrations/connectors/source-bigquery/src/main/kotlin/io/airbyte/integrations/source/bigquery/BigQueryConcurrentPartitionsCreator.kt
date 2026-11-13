@@ -105,7 +105,10 @@ class BigQueryConcurrentPartitionsCreator(
     private val operations: BigQuerySourceOperations,
 ) :
     JdbcConcurrentPartitionsCreator<
-        DefaultJdbcSharedState, DefaultJdbcStreamState, DefaultJdbcPartition>(
+        DefaultJdbcSharedState,
+        DefaultJdbcStreamState,
+        DefaultJdbcPartition,
+    >(
         partition,
         partitionFactory,
     ) {
@@ -247,12 +250,15 @@ class BigQueryConcurrentPartitionsCreatorFactory(
     private val operations: BigQuerySourceOperations,
 ) :
     JdbcPartitionsCreatorFactory<
-        DefaultJdbcSharedState, DefaultJdbcStreamState, DefaultJdbcPartition>(
+        DefaultJdbcSharedState,
+        DefaultJdbcStreamState,
+        DefaultJdbcPartition,
+    >(
         bigQueryPartitionFactory,
     ) {
 
     override fun partitionsCreator(
-        partition: DefaultJdbcPartition
+        partition: DefaultJdbcPartition,
     ): JdbcPartitionsCreator<DefaultJdbcSharedState, DefaultJdbcStreamState, DefaultJdbcPartition> =
         BigQueryConcurrentPartitionsCreator(
             partition,

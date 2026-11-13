@@ -107,7 +107,7 @@ class BigqueryCopyWiringTest {
             listOf("ORGANIZATION", "WORKSPACE", "SOURCE", "CONNECTION", "DESTINATION").forEach {
                 put(
                     "AIRBYTE_${it}_ID",
-                    if (enabled == "true") UUID(0, 42).toString() else "invalid-environment-id"
+                    if (enabled == "true") UUID(0, 42).toString() else "invalid-environment-id",
                 )
             }
             if (enabled == "true") {
@@ -150,11 +150,11 @@ object BigqueryCopyWiringProbe {
                         if (args.single() == "disabled") {
                             assertSame(
                                 DisabledBigqueryS3Copy,
-                                context.getBean(BigqueryS3Copy::class.java)
+                                context.getBean(BigqueryS3Copy::class.java),
                             )
                             assertInstanceOf(
                                 BigqueryCopyCheckpointConsumer::class.java,
-                                context.getBean(CheckpointManager::class.java).outputConsumer
+                                context.getBean(CheckpointManager::class.java).outputConsumer,
                             )
                             return@use
                         }
@@ -176,7 +176,7 @@ object BigqueryCopyWiringProbe {
                                 archiveConfig.workspaceId,
                                 archiveConfig.sourceId,
                                 archiveConfig.connectionId,
-                                archiveConfig.destinationId
+                                archiveConfig.destinationId,
                             ),
                         )
                         assertEquals("platform-bucket", archiveConfig.bucket)
@@ -206,7 +206,7 @@ object BigqueryCopyWiringProbe {
                         "https://example.com/bigquery",
                     "airbyte.destination.core.data-channel.format" to "JSONL",
                     "airbyte.destination.core.data-channel.medium" to "STDIO",
-                )
+                ),
             )
             .build()
 

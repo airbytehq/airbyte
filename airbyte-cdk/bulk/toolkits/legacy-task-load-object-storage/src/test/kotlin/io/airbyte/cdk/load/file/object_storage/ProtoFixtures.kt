@@ -103,19 +103,19 @@ abstract class ProtoFixtures(private val addUnknownTypeToSchema: Boolean) {
                 encoder.encode(LocalDate.parse("2025-06-17"), LeafAirbyteSchemaType.DATE),
                 encoder.encode(
                     OffsetTime.parse("23:59:59+02:00"),
-                    LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                    LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
                 ),
                 encoder.encode(
                     LocalTime.parse("23:59:59"),
-                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
                 ),
                 encoder.encode(
                     OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
-                    LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                    LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
                 ),
                 encoder.encode(
                     LocalDateTime.parse("2025-06-17T23:59:59"),
-                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                 ),
                 encoder.encode("""["a","b"]""".toByteArray(), LeafAirbyteSchemaType.JSONB),
                 encoder.encode("""{"k":"v"}""".toByteArray(), LeafAirbyteSchemaType.JSONB),
@@ -134,33 +134,33 @@ abstract class ProtoFixtures(private val addUnknownTypeToSchema: Boolean) {
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
                         .setField("x")
                         .setChange(
-                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED
+                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED,
                         )
                         .setReason(
                             AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
-                                .DESTINATION_SERIALIZATION_ERROR
+                                .DESTINATION_SERIALIZATION_ERROR,
                         ),
                 )
                 .addChanges(
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
                         .setField("y")
                         .setChange(
-                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED
+                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.NULLED,
                         )
                         .setReason(
                             AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
-                                .SOURCE_SERIALIZATION_ERROR
+                                .SOURCE_SERIALIZATION_ERROR,
                         ),
                 )
                 .addChanges(
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
                         .setField("z")
                         .setChange(
-                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.TRUNCATED
+                            AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeType.TRUNCATED,
                         )
                         .setReason(
                             AirbyteRecordMessageMetaOuterClass.AirbyteRecordChangeReasonType
-                                .SOURCE_RECORD_SIZE_LIMITATION
+                                .SOURCE_RECORD_SIZE_LIMITATION,
                         ),
                 )
                 .build()

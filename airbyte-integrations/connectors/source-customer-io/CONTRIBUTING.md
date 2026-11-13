@@ -8,8 +8,10 @@ For general guidance on contributing to Airbyte connectors, see the
 Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
 1. **The App API Is API-Key-Only** - every request sends the App API key as a bearer token.
-   Customer.io offers OAuth only for its MCP server ([auth.md](https://docs.customer.io/auth.md)),
-   so there is no OAuth flow to add. A wrong Region fails with 401 like an invalid key
+   Customer.io's authorization-code OAuth serves only its MCP server ([auth.md](https://docs.customer.io/auth.md)),
+   and its client-credentials token exchange serves only the CLI's APIs
+   ([service accounts](https://docs.customer.io/ai/cli/service-accounts/)), so there is no OAuth flow to
+   add for the App API. A wrong Region fails with 401 like an invalid key
    ([data centers](https://docs.customer.io/accounts/settings/data-centers/#specifying-your-region-in-the-api)).
    Details in AGENTS.md section 1.
 2. **HTTP Errors Are Classified on the Shared Base Requester** - 401 and 403 fail as configuration
@@ -18,17 +20,20 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    or backs off exponentially when the header is absent, for at most 30 retries; 5xx retry; a 404
    on a substream request (its parent automation, broadcast, one-time send or segment was deleted
    mid-sync) skips that parent's records; anything else follows the CDK default mapping. Details in AGENTS.md section 2.
-3. **One Shared Request Budget and Three Workers** - `api_budget` allows 10 requests per second
+3. **One Shared Request Budget and Configurable Workers** - `api_budget` allows 10 requests per second
    ([rate limits](https://docs.customer.io/integrations/api/app/#rate-limits)), the App API limit
-   shared by the whole workspace (`components.responses.InboxPreviewReadRateLimited` in the
-   [OpenAPI spec](https://docs.customer.io/files/journeys-app.json)), and `concurrency_level` runs
-   3 workers. Substreams send one request per parent record. Details in AGENTS.md section 3.
-4. **Incremental Sync Is Client-Side With a One-Hour Lookback, Except `messages`** - only
+   shared by the whole workspace, writes included
+   ([Design Studio rate limits](https://docs.customer.io/integrations/api/design-studio/#rate-limits)), and
+   `concurrency_level` runs `num_workers` workers (default 3, 2 to 10; one worker can deadlock the CDK).
+   Successful responses carry no rate-limit headers, so the budget cannot follow the API's own count; a 429
+   carries `Retry-After`. Substreams send one request per parent record.
+   Details in AGENTS.md section 3.
+4. **Incremental Sync Is Client-Side With a Lookback, Except `messages`** - only
    `listMessages` filters by time ([OpenAPI spec](https://docs.customer.io/files/journeys-app.json)),
    so `messages` reads server-side windows (item 17); every other incremental stream reads its
    full list and keeps records whose `updated`, `updated_at` or `timestamp` (epoch seconds) is at or after the saved
-   cursor minus one hour, so Incremental | Append stores the last hour's records again on every
-   sync. `activities` stops at the first page with no activity in that window, which relies on its
+   cursor minus one hour (`activities`: minus `activities_lookback_days`, default 7), so Incremental |
+   Append stores the lookback's records again on every sync. `activities` stops at the first page with no activity in that window, which relies on its
    newest-first order (item 18). A new campaign's or broadcast's actions start from the
    stream-wide cursor, not the Start Date. `newsletter_variants`, `sender_identities`,
    `segment_usage`, `subscription_topics`, `object_types`, `workspaces` and `reporting_webhooks`
@@ -41,10 +46,11 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 5. **Substream Parents Are Inline Copies Without a Cursor** - the parent list each substream reads
    ignores Start Date on purpose, because a parent last updated before Start Date can still have
    child records that changed later. Details in AGENTS.md section 5.
-6. **Action IDs May Arrive as JSON Strings** - `campaigns_actions.id` is a JSON string although the
+6. **Some IDs Arrive as JSON Strings** - `campaigns_actions.id` is a JSON string although the
    [OpenAPI spec](https://docs.customer.io/files/journeys-app.json) documents an integer, so joins
    with `campaigns.actions[].id` need a cast; `broadcast_actions` casts its `id` to the documented
-   integer. `from_id` and `reply_to_id` are integers, as documented. Details in AGENTS.md section 6.
+   integer, and `campaigns` casts a `webhook_id` that arrives as a string of digits. `from_id` and
+   `reply_to_id` are integers, as documented. Details in AGENTS.md section 6.
 7. **Language and A/B Variants Are Separate Records** - `broadcast_actions` has one record per
    language variant of a message
    ([broadcastActions](https://docs.customer.io/integrations/api/app/tag/broadcasts/broadcastactions/)),
@@ -65,12 +71,12 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 10. **`campaigns_actions` Logs a Harmless Parent-State Warning** - "Parent state handling is not
     supported for CartesianProductStreamSlicer." comes from the one-element `partition_router` list
     and needs no action. Details in AGENTS.md section 10.
-11. **Four `campaigns` Fields Are Untyped** - `audience.person_filters`,
-    `audience.relationship_filters`, `object_attribute_triggers` and
-    `relationship_attribute_triggers` are typed `object` in the
-    [OpenAPI spec](https://docs.customer.io/files/journeys-app.json), but every example there is a
-    JSON string and no live record shows them, so the schema leaves them untyped. Details in
-    AGENTS.md section 11.
+11. **Five Fields Are Untyped** - `audience.person_filters`, `audience.relationship_filters`,
+    `object_attribute_triggers` and `relationship_attribute_triggers` on `campaigns` are typed
+    `object` in the [OpenAPI spec](https://docs.customer.io/files/journeys-app.json), but every
+    example there is a JSON string and no live record shows them; `campaigns_actions.payload_android`
+    is undocumented and absent from the test workspace. So the schema leaves all five untyped.
+    Details in AGENTS.md section 11.
 12. **`subscription_topics` Is Empty Until Topics Are Added** - the list is empty when the workspace
     has no topics ([getTopics](https://docs.customer.io/integrations/api/app/tag/subscription-center/gettopics/)),
     as in the test workspace. Topics exist before the subscription center can be enabled
@@ -108,7 +114,10 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
     ([listActivities](https://docs.customer.io/integrations/api/app/tag/activities/listactivities/)),
     so the read stops at the first page with no activity in the cursor window. That relies on the
     newest-first order by `timestamp` seen live, so a block of backdated events can hide newer
-    ones. Every request sends `deleted=true`, and a page of only future-dated activities does not
+    ones. Every sync re-reads `activities_lookback_days` (default 7, 1 to 30) before the cursor, because an
+    activity's `timestamp` can be well before Customer.io processes it
+    ([filtering logs](https://docs.customer.io/messaging/people/filtering-logs/)); later arrivals are
+    skipped. Every request sends `deleted=true`, and a page of only future-dated activities does not
     stop the read. Details in AGENTS.md section 18.
 19. **`people` Searches Every Profile, Then Fetches 100 at a Time** - a search for everyone with a
     `cio_id` ([getPeopleFilter](https://docs.customer.io/integrations/api/app/tag/customers/getpeoplefilter/))
@@ -131,6 +140,13 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 22. **The Personal-Data Streams Stay Out of `suggestedStreams`** - the five streams of items 17 to
     21 carry end-user data, so new connections leave them unselected; connections that propagate all
     field and stream changes still add them on upgrade. Details in AGENTS.md section 22.
+23. **Eleven Lists Return Everything in One Response** - `listCampaigns`, `listBroadcasts`,
+    `listTransactional`, `listSegments`, `listSnippets`, `listWebhooks`, `listWorkspaces`, `getTopics`,
+    `getObjectTypes`, `getCollections` and `listNewsletterVariants` take no page-size, page or cursor
+    parameter and return no `next` ([OpenAPI spec](https://docs.customer.io/files/journeys-app.json)), so
+    their streams and the inline parents have no paginator. The paginated lists request the documented
+    maximum page size; `listCampaignActions` serves 10 actions per page, and `listNewsletters` and
+    `listSenders` document no maximum, so they request 100. Details in AGENTS.md section 23.
 
 ## Testing notes
 

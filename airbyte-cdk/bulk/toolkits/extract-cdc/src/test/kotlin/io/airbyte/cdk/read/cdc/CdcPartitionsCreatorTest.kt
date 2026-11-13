@@ -151,7 +151,7 @@ class CdcPartitionsCreatorTest {
         every { globalFeedBootstrap.resetAll() } returns Unit
         every { creatorOps.deserializeState(Jsons.objectNode()) } returns
             ResetDebeziumWarmStartState(
-                "Saved offset no longer present on the server, auto-resetting"
+                "Saved offset no longer present on the server, auto-resetting",
             )
         upperBoundReference.set(null)
 
@@ -165,7 +165,7 @@ class CdcPartitionsCreatorTest {
         // resetReason should be set
         Assertions.assertEquals(
             "Saved offset no longer present on the server, auto-resetting",
-            reset.get()
+            reset.get(),
         )
     }
 }

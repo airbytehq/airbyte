@@ -26,21 +26,21 @@ class SchemalessTypesToJsonStringTest {
                 .with(
                     ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
                     ObjectTypeWithoutSchema,
-                    StringValue("""{"foo":"bar"}""")
+                    StringValue("""{"foo":"bar"}"""),
                 )
                 .with(
                     addressJson.deserializeToNode().toAirbyteValue(),
                     ObjectTypeWithEmptySchema,
-                    StringValue(addressJson)
+                    StringValue(addressJson),
                 )
                 .with(
                     ArrayValue(listOf(StringValue("hello"), StringValue("world"))),
                     ArrayTypeWithoutSchema,
-                    StringValue("""["hello","world"]""")
+                    StringValue("""["hello","world"]"""),
                 )
                 .with(
                     ArrayValue(listOf(StringValue("hello"), StringValue("world"))),
-                    ArrayType(FieldType(StringType, nullable = false))
+                    ArrayType(FieldType(StringType, nullable = false)),
                 )
                 .build()
         val mapper = SchemalessValuesToJsonString()
@@ -57,25 +57,25 @@ class SchemalessTypesToJsonStringTest {
                 .with(
                     ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
                     ObjectTypeWithEmptySchema,
-                    StringValue("""{"foo":"bar"}""")
+                    StringValue("""{"foo":"bar"}"""),
                 )
                 .withRecord()
                 .with(IntegerValue(42), IntegerType)
                 .with(
                     ObjectValue(linkedMapOf("foo" to StringValue("bar"))),
                     ObjectTypeWithoutSchema,
-                    StringValue("""{"foo":"bar"}""")
+                    StringValue("""{"foo":"bar"}"""),
                 )
                 .endRecord()
                 .with(
                     ArrayValue(listOf(StringValue("hello"), StringValue("world"))),
                     ArrayTypeWithoutSchema,
-                    StringValue("""["hello","world"]""")
+                    StringValue("""["hello","world"]"""),
                 )
                 .endRecord()
                 .with(
                     ArrayValue(listOf(StringValue("hello"), StringValue("world"))),
-                    ArrayType(FieldType(StringType, nullable = false))
+                    ArrayType(FieldType(StringType, nullable = false)),
                 )
                 .build()
         val mapper = SchemalessValuesToJsonString()

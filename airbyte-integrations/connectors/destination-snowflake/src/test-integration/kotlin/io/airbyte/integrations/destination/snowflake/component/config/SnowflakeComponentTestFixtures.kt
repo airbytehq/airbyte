@@ -39,7 +39,7 @@ object SnowflakeComponentTestFixtures {
                 "UNION" to ColumnType("VARIANT", true),
                 "LEGACY_UNION" to ColumnType("VARIANT", true),
                 "UNKNOWN" to ColumnType("VARIANT", true),
-            )
+            ),
         )
     val allTypesColumnNameMapping =
         ColumnNameMapping(TableOperationsFixtures.ALL_TYPES_MAPPING.transformColumns())

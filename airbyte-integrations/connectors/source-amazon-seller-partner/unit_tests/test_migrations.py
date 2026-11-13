@@ -3,10 +3,12 @@
 #
 
 import json
+import logging
 from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
+from jsonschema import validate
 
 from .conftest import get_source
 
@@ -160,6 +162,51 @@ class TestMigrations:
         finally:
             with self.test_migrated_config_path.open("w") as f:
                 json.dump(config_copy, f)
+
+
+REMOVED_SETTLEMENT_REPORT_OPTIONS_CONFIG = {
+    "refresh_token": "refresh_token",
+    "lwa_app_id": "amzn1.application-oa2-client.lwa_app_id",
+    "lwa_client_secret": "amzn1.oa2-cs.v1.lwa_client_secret",
+    "replication_start_date": "2022-09-01T00:00:00Z",
+    "aws_environment": "PRODUCTION",
+    "region": "US",
+    "account_type": "Seller",
+    "report_options_list": [
+        {
+            "report_name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE",
+            "stream_name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE",
+            "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}],
+        },
+        {
+            "report_name": "GET_LEDGER_DETAIL_VIEW_DATA",
+            "stream_name": "GET_LEDGER_DETAIL_VIEW_DATA",
+            "options_list": [{"option_name": "aggregatedByTimePeriod", "option_value": "DAILY"}],
+        },
+    ],
+}
+
+
+def test_given_report_options_for_removed_settlement_report_when_migrated_then_entry_removed_and_config_valid(tmp_path):
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(REMOVED_SETTLEMENT_REPORT_OPTIONS_CONFIG))
+    source = get_source(dict(REMOVED_SETTLEMENT_REPORT_OPTIONS_CONFIG), config_path=str(config_path))
+
+    migrated_config = load_config(config_path)
+    assert migrated_config["report_options_list"] == REMOVED_SETTLEMENT_REPORT_OPTIONS_CONFIG["report_options_list"][1:]
+    validate(instance=migrated_config, schema=source.spec(logging.getLogger()).connectionSpecification)
+
+
+def test_given_only_removed_settlement_report_options_when_migrated_then_report_options_list_empty(tmp_path):
+    config = dict(REMOVED_SETTLEMENT_REPORT_OPTIONS_CONFIG)
+    config["report_options_list"] = REMOVED_SETTLEMENT_REPORT_OPTIONS_CONFIG["report_options_list"][:1]
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config))
+    source = get_source(dict(config), config_path=str(config_path))
+
+    migrated_config = load_config(config_path)
+    assert migrated_config["report_options_list"] == []
+    validate(instance=migrated_config, schema=source.spec(logging.getLogger()).connectionSpecification)
 
 
 class TestTransformations:

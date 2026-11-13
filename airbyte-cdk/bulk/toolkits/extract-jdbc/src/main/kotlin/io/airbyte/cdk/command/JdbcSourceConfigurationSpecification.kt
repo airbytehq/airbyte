@@ -48,7 +48,7 @@ abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification
     @JsonPropertyDescription(
         "The list of schemas to sync from. " +
             "If not specified, all accessible schemas will be synced. " +
-            "The exact meaning depends on the database (schema names, database names, etc.)."
+            "The exact meaning depends on the database (schema names, database names, etc.).",
     )
     @JsonSchemaInject(json = """{"order":1,"always_show":true,"group":"optional"}""")
     var schemas: List<String>? = null
@@ -57,7 +57,7 @@ abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification
     @JsonSchemaTitle("Table Filters")
     @JsonPropertyDescription(
         "Optional filters to include only specific tables from specific schemas. " +
-            "Works in combination with the 'Schemas' config above."
+            "Works in combination with the 'Schemas' config above.",
     )
     @JsonSchemaInject(json = """{"order":2,"always_show":true,"group":"optional"}""")
     var tableFilters: List<TableFilter>? = emptyList()
@@ -67,7 +67,7 @@ abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification
     @JsonPropertyDescription(
         "Additional properties to pass to the JDBC URL string when connecting to the database " +
             "formatted as 'key=value' pairs separated by the symbol '&'. " +
-            "(example: key1=value1&key2=value2&key3=value3)."
+            "(example: key1=value1&key2=value2&key3=value3).",
     )
     @JsonSchemaInject(json = """{"order":3,"group":"optional"}""")
     var jdbcUrlParams: String? = null
@@ -95,7 +95,7 @@ class TableFilter {
     @JsonSchemaTitle("Schema Name")
     @JsonPropertyDescription(
         "The name of the schema to apply this filter to. " +
-            "Should match a schema defined in \"Schemas\" field above."
+            "Should match a schema defined in \"Schemas\" field above.",
     )
     @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
     lateinit var schemaName: String
@@ -104,7 +104,7 @@ class TableFilter {
     @JsonSchemaTitle("Table Filter Patterns")
     @JsonPropertyDescription(
         "List of table name patterns to include from this schema. " +
-            "Should be a SQL LIKE pattern."
+            "Should be a SQL LIKE pattern.",
     )
     @JsonSchemaInject(json = """{"order":2,"always_show":true,"minItems":1}""")
     lateinit var patterns: List<String>
