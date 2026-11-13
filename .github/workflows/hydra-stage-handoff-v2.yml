@@ -778,7 +778,13 @@ jobs:
               SESSION_URL=$(jq -er '.url // .session_url // empty' "$RESPONSE")
               result "started: $SESSION_URL"
               ;;
-            429) result "failed: capacity exhausted (HTTP 429)"; echo "::error::Escalation session rate limit exhausted"; exit 1 ;;
+            429)
+              result "failed: capacity exhausted (HTTP 429)"
+              echo "::error::Escalation session rate limit exhausted; removing marker so a later wake can retry"
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/comments/$MARKER_ID" --silent \
+                || echo "::warning::Couldn't remove marker comment $MARKER_ID; retry with force: true"
+              exit 1
+              ;;
             5*|000) result "failed: outcome uncertain (HTTP $HTTP)"; echo "::error::Escalation session outcome uncertain; keeping marker, check sessions before retrying with force: true"; exit 1 ;;
             *)
               result "failed: rejected (HTTP $HTTP)"
