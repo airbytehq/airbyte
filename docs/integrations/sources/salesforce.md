@@ -413,7 +413,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 | 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | Skip time-based slicing for full refresh syncs |
 | 2.7.17 | 2026-02-11 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
-| 2.7.16-rc.1 | 2025-10-27 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
+| 2.7.16-rc.1 | 2025-10-28 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
 | 2.7.15 | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records |
 | 2.7.14 | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
 | 2.7.13 | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
