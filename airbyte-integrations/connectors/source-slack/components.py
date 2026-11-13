@@ -176,11 +176,11 @@ class ThreadsStateMigration(StateMigration):
         self._config = config
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return True
+        return "channel_messages" not in stream_state.get("parent_state", {})
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        if not stream_state:
-            return {}
+        if not stream_state or not self.should_migrate(stream_state):
+            return stream_state
 
         start_date_state = ab_datetime_parse(self._config["start_date"]).timestamp()  # start date is required
         # for migrated state
@@ -190,6 +190,8 @@ class ThreadsStateMigration(StateMigration):
         # for old-stype state
         if stream_state.get("float_ts"):
             start_date_state = max(start_date_state, float(stream_state["float_ts"]))
+        if stream_state.get("state", {}).get("float_ts"):
+            start_date_state = max(start_date_state, float(stream_state["state"]["float_ts"]))
 
         lookback_window = timedelta(days=self._config.get("lookback_window", 0))  # lookback window in days
         final_state = {"float_ts": (ab_datetime_parse(int(start_date_state)) - lookback_window).timestamp()}

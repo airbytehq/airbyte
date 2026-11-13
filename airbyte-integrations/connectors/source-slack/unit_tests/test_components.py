@@ -135,6 +135,14 @@ def test_join_channel_read_other_error_logs_warning(requests_mock, token_config,
             {"float_ts": 7270161422.0},
         ),
         (
+            {"states": [], "state": {"float_ts": "1753263870"}},
+            {"float_ts": 1753177470.0},
+        ),
+        (
+            {"float_ts": 1753263849, "state": {"float_ts": "1753263870"}},
+            {"float_ts": 1753177470.0},
+        ),
+        (
             {
                 "states": [
                     {
@@ -155,11 +163,23 @@ def test_join_channel_read_other_error_logs_warning(requests_mock, token_config,
             {"float_ts": 1753177470.0},
         ),
     ),
-    ids=["no_state", "old_format_state", "new_format_state"],
+    ids=["no_state", "old_format_state", "global_cursor_state", "mixed_cursor_state", "new_format_state"],
 )
 def test_threads_state_migration(token_config, threads_stream_state, expected_parent_state):
     stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
     assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
+
+
+@pytest.mark.parametrize(
+    "parent_state", [{}, {"states": []}, {"states": [{"partition": {"channel": "C001"}, "cursor": {"float_ts": "1753263870"}}]}]
+)
+def test_threads_state_migration_preserves_existing_parent_state(token_config, components_module, parent_state):
+    state = {"states": [], "parent_state": {"channel_messages": parent_state}}
+    migration = components_module.ThreadsStateMigration(token_config)
+
+    assert not migration.should_migrate(state)
+    assert migration.migrate(state) is state
+    assert state["parent_state"]["channel_messages"] == parent_state
 
 
 def test_read_records_yields_all_channels_when_join_disabled(token_config, requests_mock, components_module):
