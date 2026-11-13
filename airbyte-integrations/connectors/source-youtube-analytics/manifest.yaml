@@ -4,11 +4,36 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
+  # `report_types` only lists report types, so it works before YouTube has generated any report
+  # file and does not create a reporting job. Report streams have no slices until a job's first
+  # report is posted (up to ~48 hours), and retired report types never get new files.
   stream_names:
-    - channel_annotations_a1
+    - report_types
 
 definitions:
   streams:
+    report_types:
+      type: DeclarativeStream
+      name: report_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reportTypes
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reportTypes
+        paginator:
+          $ref: "#/definitions/next_page_token_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_types"
     jobs:
       type: DeclarativeStream
       name: jobs
@@ -608,6 +633,7 @@ definitions:
       class_name: source_declarative_manifest.components.CustomDecoder
 
 streams:
+  - $ref: "#/definitions/streams/report_types"
   - $ref: "#/definitions/streams/channel_annotations_a1"
   - $ref: "#/definitions/streams/channel_basic_a3"
   - $ref: "#/definitions/streams/channel_cards_a1"
@@ -735,6 +761,7 @@ spec:
 
 metadata:
   autoImportSchema:
+    report_types: false
     channel_annotations_a1: false
     channel_basic_a3: false
     channel_cards_a1: false
@@ -762,6 +789,26 @@ metadata:
   assist: {}
 
 schemas:
+  report_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+      name:
+        type:
+          - "null"
+          - string
+      deprecateTime:
+        type:
+          - "null"
+          - string
+        format: date-time
+      systemManaged:
+        type:
+          - "null"
+          - boolean
   channel_annotations_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#

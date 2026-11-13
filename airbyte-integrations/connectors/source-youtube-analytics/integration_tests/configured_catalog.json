@@ -2,6 +2,15 @@
   "streams": [
     {
       "stream": {
+        "name": "report_types",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "channel_annotations_a1",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
