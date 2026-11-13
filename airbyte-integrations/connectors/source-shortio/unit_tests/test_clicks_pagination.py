@@ -1,12 +1,13 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import logging
 from datetime import datetime, timedelta, timezone
 
 import pytest
 import requests_mock
 from _helpers import get_source
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 
@@ -94,6 +95,29 @@ def test_clicks_terminates_on_full_first_page_with_same_timestamp() -> None:
         assert len(mocker.request_history) == 1
 
     assert [record.record.data for record in output.records] == page
+
+
+@pytest.mark.parametrize("first_page", [[], [_click(index) for index in range(30)]])
+def test_clicks_treats_not_found_as_no_records(first_page: list[dict]) -> None:
+    responses = ([{"json": first_page}] if first_page else []) + [{"status_code": 404, "text": ""}]
+    with requests_mock.Mocker() as mocker:
+        mocker.post(_LAST_CLICKS_URL, responses)
+        output = _sync()
+        assert len(mocker.request_history) == (2 if first_page else 1)
+        if first_page:
+            assert mocker.request_history[-1].json()["beforeDate"] == first_page[-1]["dt"]
+
+    assert [record.record.data for record in output.records] == first_page
+
+
+def test_check_succeeds_when_clicks_returns_not_found() -> None:
+    with requests_mock.Mocker() as mocker:
+        mocker.get("https://api.short.io/api/links", json={"links": []})
+        mocker.post(_LAST_CLICKS_URL, status_code=404, text="")
+        result = get_source(config=_CONFIG).check(logging.getLogger("test"), _CONFIG)
+        assert mocker.call_count == 2
+
+    assert result.status == Status.SUCCEEDED
 
 
 @pytest.mark.parametrize("page", [[], [_click(0)], [_click(index) for index in range(29)]])

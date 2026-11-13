@@ -269,6 +269,13 @@ definitions:
         url_base: "https://statistics.short.io/statistics/"
         http_method: "POST"
         path: "domain/{{ config['domain_id'] }}/last_clicks"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [404]
+              action: IGNORE
+              error_message: "No clicks are available."
         authenticator:
           type: "ApiKeyAuthenticator"
           header: "Authorization"
@@ -971,6 +978,13 @@ streams:
         url_base: "https://statistics.short.io/statistics/"
         http_method: "POST"
         path: "domain/{{ config['domain_id'] }}/last_clicks"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [404]
+              action: IGNORE
+              error_message: "No clicks are available."
         authenticator:
           type: "ApiKeyAuthenticator"
           header: "Authorization"
