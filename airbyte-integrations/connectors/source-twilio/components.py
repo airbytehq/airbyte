@@ -118,7 +118,11 @@ class TwilioMessagesGlobalStateMigration(StateMigration):
     cursor_field = "date_sent"
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return bool(stream_state) and stream_state.get("use_global_cursor") is not True and ("states" in stream_state or "state" in stream_state)
+        return (
+            bool(stream_state)
+            and stream_state.get("use_global_cursor") is not True
+            and ("states" in stream_state or "state" in stream_state)
+        )
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         cursor_value = (stream_state.get("state") or {}).get(self.cursor_field)
