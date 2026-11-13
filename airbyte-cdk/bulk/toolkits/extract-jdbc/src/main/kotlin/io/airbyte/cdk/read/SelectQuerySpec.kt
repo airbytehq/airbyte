@@ -53,7 +53,7 @@ data class FromSample(
     val sampleSize: Int,
     val where: WhereNode? =
         null, // Include where clause because we want to apply all filters to the inner sample
-// query, so we don't do sampling on the whole table all the time.
+    // query, so we don't do sampling on the whole table all the time.
 ) : FromNode {
     val sampleRatePercentage: BigDecimal
         get() = sampleRate.multiply(BigDecimal.valueOf(100L))
@@ -166,14 +166,13 @@ fun WhereClauseNode.optimize(): WhereClauseNode =
     when (this) {
         is WhereClauseLeafNode -> this
         is And -> {
-            val optimizedConj: List<WhereClauseNode> =
-                conj.flatMap {
-                    when (val optimized: WhereClauseNode = it.optimize()) {
-                        is And -> optimized.conj
-                        is Or -> if (optimized.disj.isEmpty()) listOf() else listOf(optimized)
-                        else -> listOf(optimized)
-                    }
+            val optimizedConj: List<WhereClauseNode> = conj.flatMap {
+                when (val optimized: WhereClauseNode = it.optimize()) {
+                    is And -> optimized.conj
+                    is Or -> if (optimized.disj.isEmpty()) listOf() else listOf(optimized)
+                    else -> listOf(optimized)
                 }
+            }
             if (optimizedConj.size == 1) {
                 optimizedConj.first()
             } else {
@@ -181,14 +180,13 @@ fun WhereClauseNode.optimize(): WhereClauseNode =
             }
         }
         is Or -> {
-            val optimizedDisj: List<WhereClauseNode> =
-                disj.flatMap {
-                    when (val optimized: WhereClauseNode = it.optimize()) {
-                        is Or -> optimized.disj
-                        is And -> if (optimized.conj.isEmpty()) listOf() else listOf(optimized)
-                        else -> listOf(optimized)
-                    }
+            val optimizedDisj: List<WhereClauseNode> = disj.flatMap {
+                when (val optimized: WhereClauseNode = it.optimize()) {
+                    is Or -> optimized.disj
+                    is And -> if (optimized.conj.isEmpty()) listOf() else listOf(optimized)
+                    else -> listOf(optimized)
                 }
+            }
             if (optimizedDisj.size == 1) {
                 optimizedDisj.first()
             } else {

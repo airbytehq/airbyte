@@ -234,6 +234,42 @@ class JiraAgileResponseBuilder:
         return HttpResponse(body=json.dumps(response_body), status_code=self._status_code)
 
 
+class JiraSoftwareIssuesResponseBuilder:
+    """Builder for creating Jira Software API issue responses."""
+
+    def __init__(self):
+        """Initialize the response builder."""
+        self._records: List[Dict[str, Any]] = []
+        self._next_page_token: Optional[str] = None
+        self._status_code: int = 200
+
+    def with_records(self, records: List[Dict[str, Any]]) -> "JiraSoftwareIssuesResponseBuilder":
+        """Add records to the response."""
+        self._records = records
+        return self
+
+    def with_next_page_token(self, next_page_token: Optional[str]) -> "JiraSoftwareIssuesResponseBuilder":
+        """Set the cursor for the next page."""
+        self._next_page_token = next_page_token
+        return self
+
+    def with_status_code(self, status_code: int) -> "JiraSoftwareIssuesResponseBuilder":
+        """Set the HTTP status code."""
+        self._status_code = status_code
+        return self
+
+    def build(self) -> HttpResponse:
+        """Build the HTTP response."""
+        response_body: Dict[str, Any] = {
+            "issues": self._records,
+            "isLast": self._next_page_token is None,
+        }
+        if self._next_page_token is not None:
+            response_body["nextPageToken"] = self._next_page_token
+
+        return HttpResponse(body=json.dumps(response_body), status_code=self._status_code)
+
+
 class JiraJqlResponseBuilder:
     """
     Builder for creating JQL search responses (issues stream).
