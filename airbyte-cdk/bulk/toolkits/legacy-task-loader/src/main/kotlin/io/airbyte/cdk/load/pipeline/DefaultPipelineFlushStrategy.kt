@@ -11,7 +11,7 @@ import jakarta.inject.Singleton
 /**
  * This composes the two built-in flush strategies
  * - if the record-batch-size-override is set, flush every record (ignore the actual value, this is
- * just to make some of our unit tests work)
+ *   just to make some of our unit tests work)
  * - if the data held in flight > the configured max data age, flush
  *
  * NOTE: If you override this, you must at least provide the microbatch behavior to keep tests from
@@ -28,7 +28,7 @@ import jakarta.inject.Singleton
 class DefaultPipelineFlushStrategy(
     @Value("\${airbyte.destination.core.record-batch-size-override:null}")
     private val microBatchOverride: Long? = null,
-    private val config: DestinationConfiguration
+    private val config: DestinationConfiguration,
 ) : PipelineFlushStrategy {
     override fun shouldFlush(inputCount: Long, dataAgeMs: Long): Boolean {
         // This shouldn't happen, but if it does, we should definitely not flush.
