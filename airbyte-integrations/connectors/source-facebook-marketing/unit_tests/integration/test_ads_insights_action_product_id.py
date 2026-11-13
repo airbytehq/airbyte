@@ -24,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
@@ -531,3 +532,76 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    def _read_lookback_window_from_state(self, http_mocker: HttpMocker, account_id: str, account_state: Dict[str, any]) -> EntrypointOutput:
+        """Mocks a read of 2023-01-07..2023-01-09 (input cursor 2023-01-09 minus a 2-day lookback), one async job per day."""
+        days = [datetime(2023, 1, 7), datetime(2023, 1, 8), datetime(2023, 1, 9)]
+        report_run_ids = ["1571860060019501", "1571860060019502", "1571860060019503"]
+        job_ids = ["1049937379601601", "1049937379601602", "1049937379601603"]
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {account_id: account_state, "time_increment": 1}).build()
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id in zip(days, report_run_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+        http_mocker.post(_job_status_request(report_run_ids).build(), _job_status_response(job_ids, account_id=account_id))
+        for job_id in job_ids:
+            http_mocker.get(
+                _get_insights_request(job_id).build(),
+                _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+            )
+
+        return self._read(
+            config()
+            .with_account_ids([account_id])
+            .with_start_date(datetime(2023, 1, 1))
+            .with_end_date(datetime(2023, 1, 9, 23, 59, 59))
+            .with_insights_lookback_window(2),
+            state=state,
+        )
+
+    @staticmethod
+    def _account_states(output: EntrypointOutput, account_id: str) -> List[Dict[str, any]]:
+        return [
+            AirbyteStreamStateSerializer.dump(message.state.stream).get("stream_state").get(account_id, {})
+            for message in output.state_messages
+        ]
+
+    @HttpMocker()
+    def test_given_state_within_lookback_when_read_then_checkpointed_cursor_never_moves_below_input_cursor(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        Re-reading the lookback window must not move the persisted cursor backwards. Every intermediate
+        checkpoint is what the platform keeps if the attempt is interrupted, so a checkpoint below the
+        input cursor makes the next attempt subtract the lookback again and re-read an ever wider window.
+        """
+        account_id = "123123123"
+
+        output = self._read_lookback_window_from_state(http_mocker, account_id, {_CURSOR_FIELD: "2023-01-09"})
+
+        assert len(output.records) == 3  # the lookback days are still re-read
+        assert [state.get(_CURSOR_FIELD) for state in self._account_states(output, account_id)] == [
+            "2023-01-09",
+            "2023-01-09",
+            "2023-01-09",
+        ]
+
+    @HttpMocker()
+    def test_given_completed_slices_older_than_cursor_in_state_when_read_then_they_are_dropped_from_state(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        account_id = "123123123"
+
+        output = self._read_lookback_window_from_state(
+            http_mocker, account_id, {_CURSOR_FIELD: "2023-01-09", "slices": ["2023-01-02", "2023-01-05"]}
+        )
+
+        assert len(output.records) == 3
+        assert self._account_states(output, account_id)[-1] == {_CURSOR_FIELD: "2023-01-09", "slices": []}
