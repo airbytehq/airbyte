@@ -73,8 +73,6 @@ def test_shared_metric_fields_have_consistent_types_across_report_streams(config
     types_by_field = {}
 
     for stream in catalog.streams:
-        if stream.name == "report_types":
-            continue
         primary_key_fields = {field for key in stream.source_defined_primary_key for field in key}
         for field, schema in stream.json_schema.get("properties", {}).items():
             if field == "date" or field in primary_key_fields:
