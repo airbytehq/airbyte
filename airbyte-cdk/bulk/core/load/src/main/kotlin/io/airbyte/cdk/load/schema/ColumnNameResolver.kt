@@ -13,6 +13,7 @@ class ColumnNameResolver(
     private val mapper: TableSchemaMapper,
 ) {
     private val log = KotlinLogging.logger {}
+
     /**
      * Creates column name mapping with handling for potential collisions using incremental
      * numbering, with advanced resolution for truncation cases.
@@ -132,6 +133,7 @@ class ColumnNameResolver(
 
     fun colsConflict(a: String, b: String): Boolean = mapper.colsConflict(a, b)
 
-    fun hasConflict(existingNames: Set<String>, candidate: String) =
-        existingNames.any { colsConflict(it, candidate) }
+    fun hasConflict(existingNames: Set<String>, candidate: String) = existingNames.any {
+        colsConflict(it, candidate)
+    }
 }

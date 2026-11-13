@@ -4,11 +4,15 @@
 
 from unittest.mock import Mock
 
+import freezegun
 import pytest
 import yaml
 from requests import Response
 
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
+
+from .conftest import read_from_stream
 
 
 @pytest.fixture
@@ -215,9 +219,10 @@ class TestCustomObjectAssociationStreamRefResolution:
         custom_requester = resolved_manifest["definitions"]["base_custom_object_association_stream"]["retriever"]["requester"]
         assert "error_handler" in custom_requester
 
-        # The custom error handler should be a DefaultErrorHandler (not the base's CustomErrorHandler)
+        # The custom error handler must keep HubspotErrorHandler so 401 handling stays credential-type aware
         custom_error_handler = custom_requester["error_handler"]
-        assert custom_error_handler["type"] == "DefaultErrorHandler"
+        assert custom_error_handler["type"] == "CustomErrorHandler"
+        assert custom_error_handler["class_name"].endswith("HubspotErrorHandler")
 
         # Verify it has the custom-object-specific 400 filter with a message about custom object names
         filter_400 = next((f for f in custom_error_handler["response_filters"] if 400 in f.get("http_codes", [])), None)
@@ -253,12 +258,22 @@ class TestCustomObjectAssociationStreamErrorHandler:
         assert filter_403["action"] == "FAIL"
         assert "permission" in filter_403["error_message"].lower() or "access denied" in filter_403["error_message"].lower()
 
-    def test_429_response_retries(self, resolved_manifest):
-        """HTTP 429 (rate limit) should be mapped to RETRY action."""
+    def test_429_response_is_rate_limited(self, resolved_manifest):
+        """HTTP 429 (rate limit) should be mapped to RATE_LIMITED action, matching the base error handler."""
         error_handler = self._get_error_handler(resolved_manifest)
         filter_429 = next((f for f in error_handler["response_filters"] if 429 in f.get("http_codes", [])), None)
         assert filter_429 is not None, "Expected a response filter for HTTP 429"
-        assert filter_429["action"] == "RETRY"
+        assert filter_429["action"] == "RATE_LIMITED"
+
+    def test_auth_filters_match_base_error_handler(self, resolved_manifest):
+        """401 and 530 must be handled the same way as the base error handler so auth behavior is preserved."""
+        error_handler = self._get_error_handler(resolved_manifest)
+        base_handler = resolved_manifest["definitions"]["base_error_handler"]
+        for code in (401, 530):
+            custom_filter = next((f for f in error_handler["response_filters"] if code in f.get("http_codes", [])), None)
+            base_filter = next((f for f in base_handler["response_filters"] if code in f.get("http_codes", [])), None)
+            assert custom_filter is not None, f"Expected a response filter for HTTP {code}"
+            assert custom_filter["action"] == base_filter["action"]
 
     def test_5xx_response_retries(self, resolved_manifest):
         """HTTP 502/503 should be mapped to RETRY action."""
@@ -373,70 +388,141 @@ class TestCustomObjectAssociationDynamicStreams:
 
 
 class TestCustomObjectAssociationCursorField:
-    """Tests that custom object association streams always use hs_lastmodifieddate."""
+    """Tests that custom object association streams use the same contacts-vs-other cursor conditional
+    as the standard association streams.
 
-    def test_custom_stream_always_uses_hs_lastmodifieddate(self, resolved_manifest):
-        """The custom object DynamicDeclarativeStream components_mapping should always set hs_lastmodifieddate
-        (not conditionally based on contacts like the standard association streams)."""
-        # Find the DynamicDeclarativeStream that uses base_custom_object_association_stream
-        dynamic_streams = resolved_manifest.get("dynamic_streams", [])
-        custom_dynamic = None
-        for ds in dynamic_streams:
-            # After resolution, we can't check $ref directly. Check if the components_resolver
-            # reads from custom_object_association_streams config pointer
-            resolver = ds.get("components_resolver", {})
-            stream_config = resolver.get("stream_config", {})
-            configs_pointer = stream_config.get("configs_pointer", [])
-            if "custom_object_association_streams" in configs_pointer:
-                custom_dynamic = ds
-                break
+    ``custom_object_association_streams`` explicitly accepts standard object names (including
+    ``contacts``) as ``from_object`` (see the connector spec). Because the ``contacts`` object exposes
+    its last-modified timestamp as ``lastmodifieddate`` (all other objects use ``hs_lastmodifieddate``),
+    the parent-stream cursor mappings must honor the same ``contacts`` conditional the standard
+    association resolver uses -- otherwise a ``from_object: contacts`` custom association stream would
+    filter/cursor on a property the contacts object does not use. This was hardcoded to
+    ``hs_lastmodifieddate`` when the streams were introduced in PR #71259.
+    """
 
+    # The three parent-stream cursor mappings that must match between the standard and custom
+    # resolvers, keyed by the trailing field-path segment that identifies each one.
+    _CURSOR_MAPPING_KEYS = ("cursor_filter_property_field", "cursor_field", "path")
+
+    _EXPECTED_CONDITIONAL = "{{ 'lastmodifieddate' if components_values['from_object'] == 'contacts' else 'hs_lastmodifieddate' }}"
+
+    @staticmethod
+    def _find_dynamic_stream(resolved_manifest, configs_pointer_key):
+        for ds in resolved_manifest.get("dynamic_streams", []):
+            # After resolution, we can't check $ref directly. Identify the stream by the config
+            # pointer its components_resolver reads from.
+            configs_pointer = ds.get("components_resolver", {}).get("stream_config", {}).get("configs_pointer", [])
+            if configs_pointer_key in configs_pointer:
+                return ds
+        return None
+
+    @classmethod
+    def _cursor_mappings(cls, dynamic_stream):
+        """Return the parent-stream cursor mappings keyed by their identifying field-path segment."""
+        result = {}
+        for mapping in dynamic_stream["components_resolver"]["components_mapping"]:
+            field_path = mapping.get("field_path", [])
+            # Only consider mappings that target the parent stream's cursor configuration.
+            if "stream" not in field_path:
+                continue
+            for key in cls._CURSOR_MAPPING_KEYS:
+                if key in field_path:
+                    result[key] = mapping
+        return result
+
+    def test_custom_stream_uses_contacts_conditional(self, resolved_manifest):
+        """The custom object resolver should set the parent-stream cursor via the contacts conditional,
+        NOT a hardcoded hs_lastmodifieddate."""
+        custom_dynamic = self._find_dynamic_stream(resolved_manifest, "custom_object_association_streams")
         assert custom_dynamic is not None, "Expected to find a DynamicDeclarativeStream for custom_object_association_streams"
 
-        # Check that cursor_field and cursor_filter_property_field are always hs_lastmodifieddate (no contacts conditional)
-        mappings = custom_dynamic["components_resolver"]["components_mapping"]
-        cursor_field_mapping = None
-        cursor_filter_mapping = None
-        for mapping in mappings:
-            field_path = mapping.get("field_path", [])
-            if "cursor_field" in field_path:
-                cursor_field_mapping = mapping
-            if "cursor_filter_property_field" in field_path:
-                cursor_filter_mapping = mapping
+        mappings = self._cursor_mappings(custom_dynamic)
+        for key in self._CURSOR_MAPPING_KEYS:
+            assert key in mappings, f"Expected a parent-stream mapping for '{key}'"
+            value = mappings[key]["value"]
+            assert value == self._EXPECTED_CONDITIONAL, f"Mapping for '{key}' should use the contacts conditional, got: {value}"
 
-        assert cursor_field_mapping is not None, "Expected a mapping for cursor_field"
-        assert cursor_filter_mapping is not None, "Expected a mapping for cursor_filter_property_field"
+    def test_custom_and_standard_cursor_mappings_match(self, resolved_manifest):
+        """The custom and standard resolvers must resolve the parent cursor fields identically, so
+        that a from_object of contacts is handled the same way in both."""
+        custom_dynamic = self._find_dynamic_stream(resolved_manifest, "custom_object_association_streams")
+        standard_dynamic = self._find_dynamic_stream(resolved_manifest, "association_streams")
+        assert custom_dynamic is not None and standard_dynamic is not None
 
-        # These should be hardcoded to hs_lastmodifieddate, NOT a Jinja conditional
-        assert cursor_field_mapping["value"] == "hs_lastmodifieddate"
-        assert cursor_filter_mapping["value"] == "hs_lastmodifieddate"
+        custom_mappings = self._cursor_mappings(custom_dynamic)
+        standard_mappings = self._cursor_mappings(standard_dynamic)
+        for key in self._CURSOR_MAPPING_KEYS:
+            assert (
+                custom_mappings[key]["value"] == standard_mappings[key]["value"]
+            ), f"Custom and standard resolvers disagree on the '{key}' cursor mapping"
 
     def test_standard_stream_has_contacts_conditional(self, resolved_manifest):
-        """In contrast, the standard association stream should have a conditional for contacts vs other objects."""
-        dynamic_streams = resolved_manifest.get("dynamic_streams", [])
-        standard_dynamic = None
-        for ds in dynamic_streams:
-            resolver = ds.get("components_resolver", {})
-            stream_config = resolver.get("stream_config", {})
-            configs_pointer = stream_config.get("configs_pointer", [])
-            if "association_streams" in configs_pointer:
-                standard_dynamic = ds
-                break
-
+        """The standard association stream should have a conditional for contacts vs other objects."""
+        standard_dynamic = self._find_dynamic_stream(resolved_manifest, "association_streams")
         assert standard_dynamic is not None, "Expected to find a DynamicDeclarativeStream for association_streams"
 
-        mappings = standard_dynamic["components_resolver"]["components_mapping"]
-        cursor_field_mapping = None
-        for mapping in mappings:
-            field_path = mapping.get("field_path", [])
-            if "cursor_field" in field_path:
-                cursor_field_mapping = mapping
-                break
-
+        cursor_field_mapping = self._cursor_mappings(standard_dynamic).get("cursor_field")
         assert cursor_field_mapping is not None
         # Standard streams use Jinja conditional for contacts
         assert "contacts" in cursor_field_mapping["value"]
         assert "lastmodifieddate" in cursor_field_mapping["value"]
+
+    @freezegun.freeze_time("2024-03-02T00:00:00Z")
+    @pytest.mark.parametrize(
+        "from_object, to_object, expected_cursor",
+        [
+            ("contacts", "p_custom", "lastmodifieddate"),
+            ("p_custom", "contacts", "hs_lastmodifieddate"),
+            ("deals", "p_custom", "hs_lastmodifieddate"),
+        ],
+        ids=["contacts_parent", "custom_parent_to_contacts", "deals_parent"],
+    )
+    def test_custom_association_read_uses_from_object_cursor(self, requests_mock, mock_config, from_object, to_object, expected_cursor):
+        """The parent search of a custom association stream filters on the last-modified property of its
+        from_object: lastmodifieddate for contacts, hs_lastmodifieddate for every other object."""
+        config = mock_config | {
+            "start_date": "2024-03-01T00:00:00Z",
+            "custom_object_association_streams": [{"from_object": from_object, "to_object": to_object}],
+        }
+        requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={})
+        parent_search = requests_mock.post(
+            f"https://api.hubapi.com/crm/v3/objects/{from_object}/search",
+            json={"results": [{"id": "123", "properties": {expected_cursor: "2024-03-01T12:00:00.000Z"}}]},
+        )
+        requests_mock.post(
+            f"https://api.hubapi.com/crm/v4/associations/{from_object}/{to_object}/batch/read",
+            json={
+                "results": [
+                    {
+                        "from": {"id": "123"},
+                        "to": [
+                            {
+                                "toObjectId": "456",
+                                "associationTypes": [{"typeId": 1, "category": "USER_DEFINED", "label": "test"}],
+                            }
+                        ],
+                    }
+                ]
+            },
+        )
+
+        output = read_from_stream(config, f"associations_{from_object}_{to_object}", SyncMode.full_refresh)
+
+        assert not output.errors
+        assert [record.record.data for record in output.records] == [
+            {
+                "from_id": "123",
+                "to_id": "456",
+                "association_type_id": 1,
+                "category": "USER_DEFINED",
+                "label": "test",
+            }
+        ]
+        # The frozen clock keeps the P30D-sliced parent to a single window, so there is exactly one search request.
+        assert parent_search.call_count == 1
+        request_body = parent_search.last_request.json()
+        assert [filter_["propertyName"] for filter_ in request_body["filters"][:2]] == [expected_cursor] * 2
+        assert request_body["properties"] == ["hs_object_id", expected_cursor]
 
 
 class TestCustomObjectAssociationExtractor:
@@ -495,3 +581,32 @@ class TestCustomObjectAssociationExtractor:
         assert records[0]["from_id"] == "789"
         assert records[0]["to_id"] == "101"
         assert records[0]["label"] == "Related"
+
+
+def test_custom_association_parent_search_400_reports_invalid_custom_object_config_error(requests_mock):
+    """A 400 from the parent `/crm/v3/objects/{from_object}/search` request (e.g. HubSpot cannot infer the object type
+    from a bare custom object name) must surface as a config_error naming the custom object identifier fields, not as
+    the generic credentials error."""
+    config = {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"},
+        "custom_object_association_streams": [{"from_object": "my_custom_object", "to_object": "deals"}],
+    }
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    search = requests_mock.post(
+        "https://api.hubapi.com/crm/v3/objects/my_custom_object/search",
+        json={"status": "error", "message": "Unable to infer object type from: my_custom_object"},
+        status_code=400,
+    )
+    associations = requests_mock.post("https://api.hubapi.com/crm/v4/associations/my_custom_object/deals/batch/read", json={"results": []})
+
+    output = read_from_stream(config, "associations_my_custom_object_deals", SyncMode.incremental, expecting_exception=True)
+
+    assert search.called
+    assert not associations.called
+    assert output.errors
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.config_error
+    assert "custom object" in error.message.lower()
+    assert "'from_object'" in error.message
+    assert "credentials" not in error.message.lower()
