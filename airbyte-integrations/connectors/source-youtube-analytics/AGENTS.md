@@ -62,3 +62,9 @@ The migrations in the manifest run in order. `ReportsStateMigration` converts pr
 The new parent value can only move the cursor backward relative to the file's actual `createTime`: the old value represents a data day or earlier timestamp, while the report file is generated later. That can cause a one-time re-listing, but cannot skip a report. Legacy values that cannot be parsed, such as `99999999` in `unit_tests/test_state_migration.py`, are dropped from the parent cursor, so the stream falls back to its configured start time. `integration_tests/abnormal_state.json` uses the parseable future date `20991231`, which migrates to a 2099 `createTime` so the future-state acceptance test reads no records. The migration tests are in `unit_tests/test_state_migration.py`; end-to-end cursor and correction coverage is in `unit_tests/mock_server/test_incremental_reports.py`.
 
 **Why this matters:** The migration order preserves both old state formats and per-partition cursors while moving incremental tracking to report creation time. Reordering or changing the conversions can cause unnecessary re-reads or make the source skip corrected report files.
+
+## 7. Connection Check Reads `report_types`, Not a Report Stream
+
+`check` reads the `report_types` stream (`GET /v1/reportTypes`). It does not list or create jobs. A report stream cannot serve as the check stream: it yields no slices until YouTube has generated a report file for its job. That happens for a new channel, for up to 48 hours after its jobs are created, and for a retired report type such as `channel_annotations_a1`. Before 2.1.0 the check read `channel_annotations_a1`, so new setups failed with `Cannot attempt to connect to stream ... - no stream slices were found`. `unit_tests/mock_server/test_check.py` covers this.
+
+**Why this matters:** If check goes back to a report stream, it can fail for valid credentials and can create YouTube reporting jobs during setup.
