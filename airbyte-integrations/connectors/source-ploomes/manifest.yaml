@@ -1,0 +1,453 @@
+version: 7.4.2
+
+type: DeclarativeSource
+
+description: >-
+  Ploomes CRM Source Connector (Declarative)
+
+
+  This connector provides native integration with the Ploomes CRM Public API,
+  enabling continuous ingestion of entities such as Users, Products, and other
+  CRM resources.
+
+
+  It is fully built using the Airbyte Connector Builder and implements:
+
+  - Pagination via $top and $skip
+
+  - Authentication using the User-Key header
+
+  - Incremental sync based on LastUpdateDate
+
+  - Automatic retry with exponential backoff
+
+  - Clean declarative schemas and reusable components
+
+
+  This connector is ideal for modern ELT pipelines, data lake ingestion,
+  business analytics workflows, and integrations with Power BI, Snowflake,
+  BigQuery, Databricks, and any destination supported by Airbyte.
+
+check:
+  type: CheckStream
+  stream_names:
+    - Users
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        api_token: "{{ config['api_key'] }}"
+        inject_into:
+          type: RequestOption
+          field_name: User-Key
+          inject_into: header
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 2
+            max_interval: 60
+            initial_interval: 5
+      request_parameters:
+        $filter: LastUpdateDate ge {{ config['start_datetime'] }}
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          inject_on_first_request: true
+
+streams:
+  - type: DeclarativeStream
+    name: Users
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: https://api2.ploomes.com/Users
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: User-Key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+              max_interval: 60
+              initial_interval: 5
+        request_parameters:
+          $filter: LastUpdateDate ge {{ config['start_datetime'] }}
+        request_options_provider:
+          type: RequestOptionsProvider
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - LastUpdateDate
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          Email:
+            type:
+              - string
+              - "null"
+          Phone:
+            type:
+              - string
+              - "null"
+          RoleId:
+            type:
+              - number
+              - "null"
+          Editable:
+            type:
+              - boolean
+              - "null"
+          Language:
+            type:
+              - string
+              - "null"
+          LastSeen:
+            type:
+              - string
+              - "null"
+          AccountId:
+            type:
+              - number
+              - "null"
+          AvatarUrl:
+            type:
+              - string
+              - "null"
+          CreatorId:
+            type:
+              - number
+              - "null"
+          ProfileId:
+            type:
+              - number
+              - "null"
+          Suspended:
+            type:
+              - boolean
+              - "null"
+          UpdaterId:
+            type:
+              - number
+              - "null"
+          ActiveSmtp:
+            type:
+              - boolean
+              - "null"
+          CreateDate:
+            type:
+              - string
+              - "null"
+          LanguageId:
+            type:
+              - number
+              - "null"
+          UpdateDate:
+            type:
+              - string
+              - "null"
+          Integration:
+            type:
+              - boolean
+              - "null"
+          AccountOwner:
+            type:
+              - boolean
+              - "null"
+          LastSeenRoute:
+            type:
+              - string
+              - "null"
+          ResetPassword:
+            type:
+              - boolean
+              - "null"
+          LastUpdateDate:
+            type: string
+          LastSeenPlatform:
+            type:
+              - string
+              - "null"
+          SSOResetPassword:
+            type:
+              - boolean
+              - "null"
+          NativeIntegration:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P30D
+      cursor_field: LastUpdateDate
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_datetime'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: PT0.001S
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: Products
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: $top
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: $skip
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: https://api2.ploomes.com/Products
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: User-Key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+              max_interval: 60
+              initial_interval: 5
+        request_parameters:
+          $filter: LastUpdateDate ge {{ config['start_datetime'] }}
+        request_options_provider:
+          type: RequestOptionsProvider
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - value
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - LastUpdateDate
+        properties:
+          Id:
+            type:
+              - number
+              - "null"
+          Code:
+            type:
+              - string
+              - "null"
+          Name:
+            type:
+              - string
+              - "null"
+          GroupId:
+            type:
+              - number
+              - "null"
+          Editable:
+            type:
+              - boolean
+              - "null"
+          FamilyId:
+            type:
+              - number
+              - "null"
+          ImageUrl:
+            type:
+              - string
+              - "null"
+          CreatorId:
+            type:
+              - number
+              - "null"
+          Deletable:
+            type:
+              - boolean
+              - "null"
+          Suspended:
+            type:
+              - boolean
+              - "null"
+          UnitPrice:
+            type:
+              - number
+              - "null"
+          UpdaterId:
+            type:
+              - number
+              - "null"
+          CreateDate:
+            type:
+              - string
+              - "null"
+          LastUpdateDate:
+            type: string
+          ImportationIdCreate:
+            type:
+              - string
+              - "null"
+          ImportationIdUpdate:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P30D
+      cursor_field: LastUpdateDate
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_datetime'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: PT0.001S
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_datetime
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_datetime:
+        type: string
+        description: "ISO8601, ex: 2023-01-01T00:00:00.000-03:00"
+        order: 1
+        title: Start datetime
+        default: "2024-01-01T00:00:00.000-03:00"
+    additionalProperties: true
+
+metadata:
+  assist:
+    openapiSpecUrl: https://public-api2.ploomes.com/
+  testedStreams:
+    Users:
+      isStale: false
+      hasRecords: true
+      streamHash: 607f78908bfab284e1d9eeb3cd281efac4c95a0c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Products:
+      isStale: false
+      hasRecords: true
+      streamHash: 54fd3722854223bcd88f32196bf8b0457af3ad07
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Base: true
+    Users: true
+    teste: true
+    Products: true
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-11-14T19:12:18.981574+00:00"
+      from_version: 7.4.2
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2025-11-14T19:12:18.981942+00:00"
+      from_version: 7.4.2
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-11-14T19:17:38.915243+00:00"
+      from_version: 7.4.2
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-11-14T19:19:09.508249+00:00"
+      from_version: 7.4.2
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-11-14T19:19:44.181599+00:00"
+      from_version: 7.4.2
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2025-11-14T19:19:44.181937+00:00"
+      from_version: 7.4.2
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-11-14T20:24:29.092160+00:00"
+      from_version: 7.4.2
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2025-11-14T20:24:29.092366+00:00"
+      from_version: 7.4.2
+
+dynamic_streams: []
