@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.component.TableSchema
 interface SchemaDumper {
     /**
      * for destinations that already have a TableSchemaEvolutionClient, this can be as simple as
+     *
      * ```kotlin
      * // figure out the table name as needed
      * val tableName = TableName(namespace ?: config.resolvedDatabase, name)

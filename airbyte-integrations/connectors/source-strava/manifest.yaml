@@ -87,6 +87,13 @@ definitions:
       refresh_token: "{{ config['refresh_token'] }}"
       token_refresh_endpoint: https://www.strava.com/oauth/token
       expires_in_name: expires_in
+      refresh_token_error_status_codes:
+        - 400
+        - 401
+      refresh_token_error_key: message
+      refresh_token_error_values:
+        - Bad Request
+        - Authorization Error
       refresh_token_updater:
         refresh_token_config_path:
           - refresh_token
@@ -94,9 +101,6 @@ definitions:
           - access_token
         token_expiry_date_config_path:
           - token_expiry_date
-      scopes:
-        - read_all
-        - activity:read_all
 
 streams:
   - $ref: "#/definitions/streams/athlete_stats"

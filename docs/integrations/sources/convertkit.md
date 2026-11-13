@@ -82,7 +82,7 @@ Each incremental sync re-reads the last hour before the saved cursor, so expect 
 
 ### Rate limits
 
-Kit limits API keys to 120 requests and OAuth access tokens to 600 requests over a rolling 60-second period. When Kit returns HTTP 429, Airbyte backs off and retries the request. Use OAuth if your syncs are slow because of rate limiting.
+Kit's [rate limits](https://developers.kit.com/api-reference/rate-limits) allow 120 requests per API key and 600 requests per OAuth access token in a 60-second period. When Kit returns HTTP 429, Airbyte backs off and retries the request. Use OAuth if your syncs are slow because of rate limiting.
 
 ### `purchases` requires OAuth
 
@@ -103,12 +103,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.3.7 | 2026-11-10 | [91329](https://github.com/airbytehq/airbyte/pull/91329) | Upgrade to source-declarative-manifest base image 7.47.0. |
+| 0.3.6 | 2026-11-04 | [90942](https://github.com/airbytehq/airbyte/pull/90942) | Simplify purchases error handling without changing authentication errors or retries. |
+| 0.3.5 | 2026-10-13 | [78649](https://github.com/airbytehq/airbyte/pull/78649) | Update dependencies |
 | 0.3.4 | 2026-10-12 | [88414](https://github.com/airbytehq/airbyte/pull/88414) | Mark `api_secret` as `airbyte_secret` and retitle it Legacy API Secret |
 | 0.3.3 | 2025-05-24 | [60414](https://github.com/airbytehq/airbyte/pull/60414) | Update dependencies |
-| 0.3.2 | 2025-05-10 | [59955](https://github.com/airbytehq/airbyte/pull/59955) | Update dependencies |
-| 0.3.1 | 2025-05-03 | [59410](https://github.com/airbytehq/airbyte/pull/59410) | Update dependencies |
-| 0.3.0 | 2025-04-24 | [58617](https://github.com/airbytehq/airbyte/pull/58617) | Update to Kit API v4, add OAuth support, add 8 additional streams, update schemas |
-| 0.2.23 | 2025-04-26 | [58849](https://github.com/airbytehq/airbyte/pull/58849) | Update dependencies |
+| 0.3.2 | 2025-05-11 | [59955](https://github.com/airbytehq/airbyte/pull/59955) | Update dependencies |
+| 0.3.1 | 2025-05-04 | [59410](https://github.com/airbytehq/airbyte/pull/59410) | Update dependencies |
+| 0.3.0 | 2025-04-28 | [58617](https://github.com/airbytehq/airbyte/pull/58617) | Update to Kit API v4, add OAuth support, add 8 additional streams, update schemas |
+| 0.2.23 | 2025-04-27 | [58849](https://github.com/airbytehq/airbyte/pull/58849) | Update dependencies |
 | 0.2.22 | 2025-04-19 | [58341](https://github.com/airbytehq/airbyte/pull/58341) | Update dependencies |
 | 0.2.21 | 2025-04-12 | [57808](https://github.com/airbytehq/airbyte/pull/57808) | Update dependencies |
 | 0.2.20 | 2025-04-05 | [57198](https://github.com/airbytehq/airbyte/pull/57198) | Update dependencies |

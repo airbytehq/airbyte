@@ -24,7 +24,7 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 class AvroRecordFactory(
     private val schema: Schema?,
     private val converter: JsonAvroConverter?,
-    private val recordPreprocessor: ((JsonNode) -> JsonNode?) = { it }
+    private val recordPreprocessor: ((JsonNode) -> JsonNode?) = { it },
 ) {
 
     companion object {
@@ -69,7 +69,7 @@ class AvroRecordFactory(
         id: UUID,
         generationId: Long,
         syncId: Long,
-        recordMessage: AirbyteRecordMessage
+        recordMessage: AirbyteRecordMessage,
     ): GenericData.Record {
         val jsonRecord = MAPPER.createObjectNode()
         jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, id.toString())
@@ -86,7 +86,7 @@ class AvroRecordFactory(
             jsonRecord.setAll<JsonNode>(preprocessed)
         } else if (preprocessed !is TextNode || preprocessed.asText() != "{}") {
             throw (IllegalArgumentException(
-                "found data field of type ${preprocessed?.javaClass} and length ${preprocessed?.asText()?.length} (value=${preprocessed?.asText()}"
+                "found data field of type ${preprocessed?.javaClass} and length ${preprocessed?.asText()?.length} (value=${preprocessed?.asText()}",
             ))
         }
 
