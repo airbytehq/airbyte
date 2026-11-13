@@ -37,6 +37,7 @@ redirects={{
     auth_refresh_token: "/platform/understanding-airbyte/database-data-catalog/config-database-organizations",
     auth_user: "/platform/understanding-airbyte/database-data-catalog/config-database-organizations",
     dataplane: "/platform/understanding-airbyte/database-data-catalog/config-database-organizations",
+    dataplane_diagnostic: "/platform/understanding-airbyte/database-data-catalog/config-database-organizations",
     dataplane_group: "/platform/understanding-airbyte/database-data-catalog/config-database-organizations",
     organization: "/platform/understanding-airbyte/database-data-catalog/config-database-organizations",
     organization_email_domain: "/platform/understanding-airbyte/database-data-catalog/config-database-organizations",
@@ -48,7 +49,6 @@ redirects={{
     user: "/platform/understanding-airbyte/database-data-catalog/config-database-organizations",
     user_invitation: "/platform/understanding-airbyte/database-data-catalog/config-database-organizations",
     workspace: "/platform/understanding-airbyte/database-data-catalog/config-database-organizations",
-    workspace_service_account: "/platform/understanding-airbyte/database-data-catalog/config-database-organizations",
     jobs: "/platform/understanding-airbyte/database-data-catalog/jobs-database",
     attempts: "/platform/understanding-airbyte/database-data-catalog/jobs-database",
     airbyte_metadata: "/platform/understanding-airbyte/database-data-catalog/jobs-database",
@@ -73,11 +73,11 @@ redirects={{
   [`workload`](/platform/understanding-airbyte/database-data-catalog/config-database-connections#workload), [`workload_label`](/platform/understanding-airbyte/database-data-catalog/config-database-connections#workload_label)
 - [Config Database: organizations, workspaces, and access](/platform/understanding-airbyte/database-data-catalog/config-database-organizations):
   [`airbyte_configs_migrations`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#airbyte_configs_migrations), [`application`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#application), [`auth_refresh_token`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#auth_refresh_token),
-  [`auth_user`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#auth_user), [`dataplane`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#dataplane), [`dataplane_group`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#dataplane_group),
+  [`auth_user`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#auth_user), [`dataplane`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#dataplane), [`dataplane_diagnostic`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#dataplane_diagnostic), [`dataplane_group`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#dataplane_group),
   [`organization`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#organization), [`organization_email_domain`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#organization_email_domain), [`organization_payment_config`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#organization_payment_config),
   [`permission`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#permission), [`scoped_configuration`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#scoped_configuration), [`secret_persistence_config`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#secret_persistence_config),
   [`sso_config`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#sso_config), [`user`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#user), [`user_invitation`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#user_invitation),
-  [`workspace`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#workspace), [`workspace_service_account`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#workspace_service_account)
+  [`workspace`](/platform/understanding-airbyte/database-data-catalog/config-database-organizations#workspace)
 
 ## Jobs Database
 

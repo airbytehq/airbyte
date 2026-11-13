@@ -87,12 +87,12 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 - [Campaign Values Reports](https://developers.klaviyo.com/en/v2026-01-15/reference/query_campaign_values) - Analytics stream for campaign performance metrics
 - [Email Templates](https://developers.klaviyo.com/en/v2026-01-15/reference/get_templates)
 - [Events](https://developers.klaviyo.com/en/v2026-01-15/reference/get_events)
-- [Events Detailed](https://developers.klaviyo.com/en/v2026-01-15/reference/get_event)
+- [Events Detailed](https://developers.klaviyo.com/en/v2026-01-15/reference/get_events)
 - [Flows](https://developers.klaviyo.com/en/v2026-01-15/reference/get_flows)
 - [Flow Series Reports](https://developers.klaviyo.com/en/v2026-01-15/reference/query_flow_series) - Analytics stream for automated flow performance over time
 - [GlobalExclusions](https://developers.klaviyo.com/en/v2026-01-15/reference/get_profiles)
 - [Lists](https://developers.klaviyo.com/en/v2026-01-15/reference/get_lists)
-- [Lists Detailed](https://developers.klaviyo.com/en/v2026-01-15/reference/get_lists)
+- [Lists Detailed](https://developers.klaviyo.com/en/v2026-01-15/reference/get_list)
 - [Metrics](https://developers.klaviyo.com/en/v2026-01-15/reference/get_metrics)
 - [Profiles](https://developers.klaviyo.com/en/v2026-01-15/reference/get_profiles)
 - [Segments](https://developers.klaviyo.com/en/v2026-01-15/reference/get_segments)
@@ -166,11 +166,11 @@ The connector waits at most 10 minutes for any single retry. When `Retry-After` 
 
 [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter rate limit issues that aren't retried successfully.
 
-The `Campaigns Detailed` stream contains fields `estimated_recipient_count` and `campaign_message` in addition to info from the `Campaigns` stream. Additional time is needed to fetch extra data.
+The `Campaigns Detailed` stream fetches `estimated_recipient_count` with an additional API request per campaign. If the campaign contains a related campaign-messages link, the connector follows it to populate `campaign_messages`.
 
-The `Lists Detailed` stream contains field `profile_count` in addition to info from the `Lists` stream. Additional time is needed to fetch extra data due to Klaviyo API [limitation](https://developers.klaviyo.com/en/reference/get_list).
+The `Lists Detailed` stream requests the `profile_count` field from the [Get List](https://developers.klaviyo.com/en/v2026-01-15/reference/get_list) endpoint with an additional API request per list.
 
-The `Events Detailed` stream contains field `name` for `metric` relationship - addition to [info](https://developers.klaviyo.com/en/reference/get_event).
+The `Events Detailed` stream adds the metric's `name` to each event's `relationships.metric.data` object.
 
 The `Profiles` stream can experience transient API errors under heavy load. To mitigate this, you can use the **Disable Fetching Predictive Analytics** setting to improve the success rate of syncs. This setting only affects the `predictive_analytics` field. Subscription and consent data on profile records is unaffected and is always fetched.
 
@@ -199,11 +199,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.5 | 2026-11-10 | [91622](https://github.com/airbytehq/airbyte/pull/91622) | Update dependencies |
 | 4.0.4 | 2026-11-03 | [90629](https://github.com/airbytehq/airbyte/pull/90629) | Update dependencies |
 | 4.0.3 | 2026-10-27 | [89977](https://github.com/airbytehq/airbyte/pull/89977) | Update dependencies |
 | 4.0.2 | 2026-10-20 | [89305](https://github.com/airbytehq/airbyte/pull/89305) | Update dependencies |
 | 4.0.1 | 2026-10-13 | [88714](https://github.com/airbytehq/airbyte/pull/88714) | Update dependencies |
-| 4.0.0 | 2026-10-07 | [85352](https://github.com/airbytehq/airbyte/pull/85352) | Upgrade to Klaviyo API revision `2026-01-15` ahead of the `2024-10-15` retirement. Syncs and destinations are not affected, and the connector auto-upgrades at the deadline; only downstream consumers of `campaigns` and `campaigns_detailed` need to move to new nested paths. In `campaigns` and `campaigns_detailed`, `attributes.send_strategy.options_static.datetime`/`is_local`/`send_past_recipients_immediately`, `options_throttled.datetime`/`throttle_percentage` and `options_sto.date` move to `attributes.send_strategy.datetime`, `.options.is_local`, `.options.send_past_recipients_immediately`, `.throttle_percentage` and `.date`. In `campaigns_detailed`, `campaign_messages[].attributes.channel`/`label`/`content`/`render_options` move to `campaign_messages[].attributes.definition.*`. SMS messages no longer carry a `label` (Klaviyo stopped generating one). Refresh the source schema to pick up the new fields. See the [migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-400) |
+| 4.0.0 | 2026-10-08 | [85352](https://github.com/airbytehq/airbyte/pull/85352) | Upgrade to Klaviyo API revision `2026-01-15`. Some nested fields in `campaigns` and `campaigns_detailed` move to new paths. See the [migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-400) |
 | 3.0.6 | 2026-10-06 | [87223](https://github.com/airbytehq/airbyte/pull/87223) | Update dependencies |
 | 3.0.5 | 2026-09-22 | [86678](https://github.com/airbytehq/airbyte/pull/86678) | Update dependencies |
 | 3.0.4 | 2026-09-15 | [86109](https://github.com/airbytehq/airbyte/pull/86109) | Update dependencies |

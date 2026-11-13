@@ -4,20 +4,21 @@ This page contains the setup guide and reference information for the Instatus so
 
 ## Prerequisites
 
-To set up Metabase you need:
-
-- `api_key` - Requests to Instatus API must provide an API token.
+To set up Instatus, you need an API key. Requests to the [Instatus API](https://instatus.com/help/api) use Bearer authentication.
 
 ## Setup guide
 
-### Step 1: Set up Instatus account
+### Step 1: Get your Instatus API key
 
-### Step 2: Generate an API key
+1. Sign in to your [Instatus dashboard](https://dashboard.instatus.com/).
+2. Go to **User settings** > **Developer settings**, or open the [Developer settings](https://dashboard.instatus.com/developer) page directly.
+3. Copy your API key.
 
-You can get your API key from [User settings](https://dashboard.instatus.com/developer)
-Make sure that you are an owner of the pages you want to sync because if you are not this data will be skipped.
+The connector discovers page IDs through the `status_pages` stream. Some page-level requests, including component and incident requests, ignore `401 Unauthorized` responses, so a successful sync doesn't guarantee that all page data was accessible.
 
 ### Step 2: Set up the Instatus connector in Airbyte
+
+Configure the Instatus source's **Rest API Key** field with the API key from Step 1.
 
 ## Supported sync modes
 
@@ -40,6 +41,11 @@ The Instatus source connector supports the following [sync modes](https://docs.a
 - [User](https://instatus.com/help/api/user-profile)
 - [Public data](https://instatus.com/help/api/public-data)
 
+## Limitations
+
+- **Pagination**: List requests don't paginate. For example, the [v1 incidents endpoint](https://instatus.com/help/api/incidents) defaults to 50 incidents per page. The connector reads only that initial response, so additional incidents and their `incident_updates` can be omitted.
+- **Rate limits**: Component and incident requests retry HTTP `429` responses using the `Retry-After` header.
+
 ## Tutorials
 
 ### Data type mapping
@@ -57,7 +63,7 @@ The Instatus source connector supports the following [sync modes](https://docs.a
 | :---------------- | :------------------- | :---- |
 | Full Refresh Sync | Yes                  |       |
 | Incremental Sync  | No                   |       |
-| SSL connection    | Yes                  |
+| SSL connection    | Yes                  |       |
 | Namespaces        | No                   |       |
 
 ## IP allow list
@@ -71,10 +77,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 0.2.20 | 2026-11-10 | [91571](https://github.com/airbytehq/airbyte/pull/91571) | Update dependencies |
 | 0.2.19 | 2026-11-03 | [90602](https://github.com/airbytehq/airbyte/pull/90602) | Update dependencies |
 | 0.2.18 | 2026-10-27 | [89961](https://github.com/airbytehq/airbyte/pull/89961) | Update dependencies |
 | 0.2.17 | 2026-10-20 | [78787](https://github.com/airbytehq/airbyte/pull/78787) | Update dependencies |
-| 0.2.16 | 2026-10-14 | [88959](https://github.com/airbytehq/airbyte/pull/88959) | Update to source-declarative-manifest 7.37.0 and CDK v7 for unit tests |
+| 0.2.16 | 2026-10-16 | [88959](https://github.com/airbytehq/airbyte/pull/88959) | Update to source-declarative-manifest 7.37.0 and CDK v7 for unit tests |
 | 0.2.15 | 2025-05-24 | [60617](https://github.com/airbytehq/airbyte/pull/60617) | Update dependencies |
 | 0.2.14 | 2025-05-10 | [59859](https://github.com/airbytehq/airbyte/pull/59859) | Update dependencies |
 | 0.2.13 | 2025-05-03 | [59233](https://github.com/airbytehq/airbyte/pull/59233) | Update dependencies |
