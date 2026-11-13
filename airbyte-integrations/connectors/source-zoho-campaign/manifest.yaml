@@ -30,12 +30,7 @@ definitions:
           request_parameters:
             resfmt: JSON
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 1800
+            $ref: "#/definitions/constant_backoff_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -75,12 +70,7 @@ definitions:
             resfmt: JSON
             listkey: "{{ stream_partition.mailinglist }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 1800
+            $ref: "#/definitions/constant_backoff_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -128,12 +118,7 @@ definitions:
             resfmt: JSON
             campaignkey: "{{ stream_partition.campaign }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 1800
+            $ref: "#/definitions/constant_backoff_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -197,12 +182,7 @@ definitions:
             resfmt: JSON
             campaignkey: "{{ stream_partition.campaign }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 1800
+            $ref: "#/definitions/constant_backoff_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -241,12 +221,7 @@ definitions:
           request_parameters:
             resfmt: JSON
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 1800
+            $ref: "#/definitions/constant_backoff_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -271,14 +246,7 @@ definitions:
           request_parameters:
             resfmt: JSON
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    error_message: "{{ response.code == 2401 }}"
-              - type: DefaultErrorHandler
+            type: DefaultErrorHandler
         record_selector:
           type: RecordSelector
           extractor:
@@ -316,12 +284,7 @@ definitions:
             resfmt: JSON
             listkey: "{{ stream_partition.list }}"
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 1800
+            $ref: "#/definitions/constant_backoff_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -345,12 +308,7 @@ definitions:
           request_parameters:
             resfmt: JSON
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 1800
+            $ref: "#/definitions/constant_backoff_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -377,12 +335,7 @@ definitions:
             campaignkey: "{{ stream_partition.campaign }}"
             campaigntype: abtesting
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 1800
+            $ref: "#/definitions/constant_backoff_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -415,12 +368,7 @@ definitions:
           request_parameters:
             resfmt: JSON
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 1800
+            $ref: "#/definitions/constant_backoff_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -441,6 +389,11 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/all_tags"
+  constant_backoff_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 1800
   base_requester:
     type: HttpRequester
     url_base: https://campaigns.zoho.{{ config["data_center"] }}/api/v1.1

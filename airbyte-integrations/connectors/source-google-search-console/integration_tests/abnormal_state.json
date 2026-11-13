@@ -4,194 +4,746 @@
     "stream": {
       "stream_state": {
         "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" },
-          "discover": { "date": "2050-08-28" },
-          "googleNews": { "date": "2050-08-28" }
+          "web": {
+            "date": "2050-08-28"
+          },
+          "news": {
+            "date": "2050-08-28"
+          },
+          "image": {
+            "date": "2050-08-28"
+          },
+          "video": {
+            "date": "2050-08-28"
+          },
+          "discover": {
+            "date": "2050-08-28"
+          },
+          "googleNews": {
+            "date": "2050-08-28"
+          }
         }
       },
-      "stream_descriptor": { "name": "search_analytics_by_date" }
+      "stream_descriptor": {
+        "name": "search_analytics_by_date"
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" },
-          "discover": { "date": "2050-08-28" },
-          "googleNews": { "date": "2050-08-28" }
-        }
+      "stream_descriptor": {
+        "name": "search_analytics_by_country"
       },
-      "stream_descriptor": { "name": "search_analytics_by_country" }
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "search_type": "web",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "news",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "image",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "video",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "discover",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "googleNews",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          }
+        ],
+        "lookback_window": 0
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" },
-          "googleNews": { "date": "2050-08-28" }
-        }
+      "stream_descriptor": {
+        "name": "search_analytics_by_device"
       },
-      "stream_descriptor": { "name": "search_analytics_by_device" }
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "search_type": "web",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "news",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "image",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "video",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "googleNews",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          }
+        ],
+        "lookback_window": 0
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" },
-          "discover": { "date": "2050-08-28" },
-          "googleNews": { "date": "2050-08-28" }
-        }
+      "stream_descriptor": {
+        "name": "search_analytics_by_page"
       },
-      "stream_descriptor": { "name": "search_analytics_by_page" }
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "search_type": "web",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "news",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "image",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "video",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "discover",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "googleNews",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          }
+        ],
+        "lookback_window": 0
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" }
-        }
+      "stream_descriptor": {
+        "name": "search_analytics_by_query"
       },
-      "stream_descriptor": { "name": "search_analytics_by_query" }
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "search_type": "web",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "news",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "image",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "video",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          }
+        ],
+        "lookback_window": 0
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" }
-        }
+      "stream_descriptor": {
+        "name": "search_analytics_all_fields"
       },
-      "stream_descriptor": { "name": "search_analytics_all_fields" }
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "search_type": "web",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "news",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "image",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "video",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          }
+        ],
+        "lookback_window": 0
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" }
-        }
+      "stream_descriptor": {
+        "name": "custom_dimensions"
       },
-      "stream_descriptor": { "name": "custom_dimensions" }
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "search_type": "web",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "news",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "image",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "video",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          }
+        ],
+        "lookback_window": 0
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" },
-          "googleNews": { "date": "2050-08-28" }
-        }
+      "stream_descriptor": {
+        "name": "search_analytics_site_report_by_page"
       },
-      "stream_descriptor": { "name": "search_analytics_site_report_by_page" }
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "search_type": "web",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "news",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "image",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "video",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "googleNews",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          }
+        ],
+        "lookback_window": 0
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" }
-        }
-      },
       "stream_descriptor": {
         "name": "search_analytics_keyword_site_report_by_page"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "TPF_QA"
+            },
+            "cursor": {
+              "date": "2050-08-01"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "TRANSLATED_RESULT"
+            },
+            "cursor": {
+              "date": "2050-07-30"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "EDU_Q_AND_A"
+            },
+            "cursor": {
+              "date": "2050-07-31"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "FORUMS"
+            },
+            "cursor": {
+              "date": "2050-08-01"
+            }
+          }
+        ],
+        "state": {
+          "date": "2050-08-01"
+        },
+        "lookback_window": 45
       }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" }
-        }
-      },
       "stream_descriptor": {
         "name": "search_analytics_keyword_site_report_by_site"
+      },
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "TPF_QA"
+            },
+            "cursor": {
+              "date": "2050-08-01"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "TRANSLATED_RESULT"
+            },
+            "cursor": {
+              "date": "2050-07-31"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "EDU_Q_AND_A"
+            },
+            "cursor": {
+              "date": "2050-08-01"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "FORUMS"
+            },
+            "cursor": {
+              "date": "2050-08-01"
+            }
+          }
+        ],
+        "state": {
+          "date": "2050-08-01"
+        },
+        "lookback_window": 45
       }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" }
-        }
+      "stream_descriptor": {
+        "name": "search_analytics_keyword_page_report"
       },
-      "stream_descriptor": { "name": "search_analytics_keyword_page_report" }
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "TPF_QA"
+            },
+            "cursor": {
+              "date": "2050-08-01"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "TRANSLATED_RESULT"
+            },
+            "cursor": {
+              "date": "2050-07-30"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "EDU_Q_AND_A"
+            },
+            "cursor": {
+              "date": "2050-07-31"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "search_type": "web",
+                "site_url": "sc-domain:airbyte.io"
+              },
+              "search_appearance": "FORUMS"
+            },
+            "cursor": {
+              "date": "2050-08-01"
+            }
+          }
+        ],
+        "state": {
+          "date": "2050-08-01"
+        },
+        "lookback_window": 46
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" },
-          "googleNews": { "date": "2050-08-28" }
-        }
+      "stream_descriptor": {
+        "name": "search_analytics_page_report"
       },
-      "stream_descriptor": { "name": "search_analytics_page_report" }
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "search_type": "web",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "news",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "image",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "video",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "googleNews",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          }
+        ],
+        "lookback_window": 0
+      }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "sc-domain:airbyte.io": {
-          "web": { "date": "2050-08-28" },
-          "news": { "date": "2050-08-28" },
-          "image": { "date": "2050-08-28" },
-          "video": { "date": "2050-08-28" }
-        }
+      "stream_descriptor": {
+        "name": "search_analytics_site_report_by_site"
       },
-      "stream_descriptor": { "name": "search_analytics_site_report_by_site" }
+      "stream_state": {
+        "use_global_cursor": false,
+        "states": [
+          {
+            "partition": {
+              "search_type": "web",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "news",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "image",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "video",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-08-28"
+            }
+          },
+          {
+            "partition": {
+              "search_type": "googleNews",
+              "site_url": "sc-domain:airbyte.io"
+            },
+            "cursor": {
+              "date": "2050-10-01"
+            }
+          }
+        ],
+        "lookback_window": 0
+      }
     }
   }
 ]
