@@ -142,20 +142,24 @@ def test_threads_read_preserves_per_channel_parent_cursors(requests_mock, token_
     token_config["start_date"] = "2021-01-01T00:00:00Z"
     token_config["end_date"] = "2021-07-24T20:00:00Z"
     cursors = {"airbyte-for-beginners": 1626984000.0, "good-reads": 1627070400.0}
-    state = StateBuilder().with_stream_state(
-        "threads",
-        {
-            "states": [],
-            "parent_state": {
-                "channel_messages": {
-                    "states": [
-                        {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": str(cursor)}}
-                        for channel, cursor in cursors.items()
-                    ]
-                }
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "threads",
+            {
+                "states": [],
+                "parent_state": {
+                    "channel_messages": {
+                        "states": [
+                            {"partition": {"channel": channel, "parent_slice": {}}, "cursor": {"float_ts": str(cursor)}}
+                            for channel, cursor in cursors.items()
+                        ]
+                    }
+                },
             },
-        },
-    ).build()
+        )
+        .build()
+    )
     requests_mock.get("https://slack.com/api/conversations.history", json={"ok": True, "messages": []})
     catalog = ConfiguredAirbyteCatalogSerializer.load(
         {
