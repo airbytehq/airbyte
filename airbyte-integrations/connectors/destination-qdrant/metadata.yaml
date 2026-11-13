@@ -22,7 +22,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 6eb1198a-6d38-43e5-aaaa-dccd8f71db2b
-  dockerImageTag: 0.1.42
+  dockerImageTag: 0.1.43-rc.1
   dockerRepository: airbyte/destination-qdrant
   githubIssueLabel: destination-qdrant
   icon: qdrant.svg
@@ -30,6 +30,9 @@ data:
   name: Qdrant
   releaseDate: 2023-09-22
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   documentationUrl: https://docs.airbyte.com/integrations/destinations/qdrant
   tags:
     - language:python
