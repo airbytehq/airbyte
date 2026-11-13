@@ -70,5 +70,9 @@ class ConfigBuilder:
         self._config["adset_statuses"] = statuses
         return self
 
+    def with_insights_lookback_window(self, days: int) -> ConfigBuilder:
+        self._config["insights_lookback_window"] = days
+        return self
+
     def build(self) -> MutableMapping[str, Any]:
         return self._config

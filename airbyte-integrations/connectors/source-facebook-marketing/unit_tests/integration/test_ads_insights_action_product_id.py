@@ -15,6 +15,7 @@ from source_facebook_marketing.streams.async_job import Status
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponse,
@@ -531,3 +532,53 @@ class TestIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert cursor_value_from_state_account_1 == expected_cursor_value
         assert cursor_value_from_state_account_2 == expected_cursor_value
+
+    @HttpMocker()
+    def test_given_saved_cursor_when_lookback_slices_complete_then_emitted_cursor_never_drops_below_saved_cursor(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """
+        Re-reading the lookback window must not move the persisted cursor backwards. If it did, an interrupted
+        attempt would persist `cursor - lookback` and the next attempt would subtract the lookback again,
+        widening the re-read window on every interruption.
+        """
+        account_id = "123123123"
+        saved_cursor = "2023-01-03"
+        day_1 = ab_datetime_parse("2023-01-01T00:00:00Z")
+        day_2 = ab_datetime_parse("2023-01-02T00:00:00Z")
+        day_3 = ab_datetime_parse("2023-01-03T00:00:00Z")
+        report_run_ids = ["1571860060019501", "1571860060019502", "1571860060019503"]
+        job_ids = ["1049937379601601", "1049937379601602", "1049937379601603"]
+
+        http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
+        http_mocker.get(
+            _update_api_throttle_limit_request().with_account_id(account_id).build(),
+            _update_api_throttle_limit_response(),
+        )
+        for day, report_run_id, job_id in zip([day_1, day_2, day_3], report_run_ids, job_ids):
+            http_mocker.post(
+                _job_start_request(since=day, until=day).with_account_id(account_id).build(),
+                _job_start_response(report_run_id),
+            )
+            http_mocker.get(
+                _get_insights_request(job_id).build(),
+                _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+            )
+        http_mocker.post(
+            _job_status_request(report_run_ids).build(),
+            _job_status_response(job_ids, account_id=account_id),
+        )
+
+        output = self._read(
+            config().with_account_ids([account_id]).with_start_date(day_1).with_end_date(day_3).with_insights_lookback_window(2),
+            state=StateBuilder().with_stream_state(_STREAM_NAME, {account_id: {_CURSOR_FIELD: saved_cursor}}).build(),
+        )
+
+        assert len(output.records) == 3
+        emitted_states = [
+            AirbyteStreamStateSerializer.dump(message.state.stream)["stream_state"][account_id] for message in output.state_messages
+        ]
+        assert emitted_states, "expected at least one state message"
+        emitted_cursors = [state[_CURSOR_FIELD] for state in emitted_states]
+        assert all(cursor >= saved_cursor for cursor in emitted_cursors), emitted_cursors
+        assert emitted_cursors[-1] == saved_cursor

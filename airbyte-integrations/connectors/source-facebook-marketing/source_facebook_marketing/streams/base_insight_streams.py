@@ -419,6 +419,12 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self._next_cursor_values[account_id] = ts_start
                 break
             self._completed_slices[account_id].remove(ts_start)
+            # The walk starts at `cursor - lookback`, so slices re-read inside the lookback window are older than the
+            # committed cursor. Never move the cursor backwards: if an attempt is interrupted, a lowered cursor would be
+            # persisted and the next attempt would subtract the lookback again, widening the re-read window each time.
+            committed_cursor = self._cursor_values.get(account_id) if self._cursor_values else None
+            if committed_cursor and ts_start <= committed_cursor:
+                continue
             if self._cursor_values:
                 self._cursor_values[account_id] = ts_start
             else:
