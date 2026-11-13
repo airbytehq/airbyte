@@ -280,7 +280,12 @@ streams:
         $ref: "#/definitions/record_selector"
         record_filter:
           type: RecordFilter
-          condition: '{{ record["type"] not in ["child_page", "child_database", "ai_block"] }}'
+          # The cursor comparison is spelled out here because the CDK does not hand the client-side incremental
+          # cursor to a record selector nested in a CustomRetriever. `stream_interval.start_time` is the stream's
+          # saved cursor minus the lookback window, or the start date on a first sync.
+          condition: >-
+            {{ record["type"] not in ["child_page", "child_database", "ai_block"]
+            and format_datetime(record["last_edited_time"], "%Y-%m-%dT%H:%M:%S.%fZ") >= stream_interval["start_time"] }}
       paginator:
         $ref: "#/definitions/request_parameter_paginator"
         $parameters:
