@@ -5,10 +5,13 @@
 
 import logging
 import urllib.parse
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Type, Union
+
+from orjson import orjson
 
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
+from airbyte_cdk.models import AirbyteMessageSerializer
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 
@@ -48,7 +51,7 @@ class JinaAiReaderConfigMigration:
         return config
 
     @classmethod
-    def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
+    def modify_and_save(cls, config_path: str, source: Union[Source, Type[Source]], config: Mapping[str, Any]) -> Mapping[str, Any]:
         # modify the config
         migrated_config = cls.modify(config)
         # save the config
@@ -61,17 +64,17 @@ class JinaAiReaderConfigMigration:
         # add the Airbyte Control Message to message repo
         cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
-        for message in cls.message_repository._message_queue:
-            print(message.json(exclude_unset=True))
+        for message in cls.message_repository.consume_queue():
+            print(orjson.dumps(AirbyteMessageSerializer.dump(message)).decode())
 
     @classmethod
-    def migrate(cls, args: List[str], source: Source) -> None:
+    def migrate(cls, args: List[str], source: Union[Source, Type[Source]]) -> None:
         """
         This method checks the input args, should the config be migrated,
         transform if necessary and emit the CONTROL message.
         """
         # get config path
-        config_path = AirbyteEntrypoint(source).extract_config(args)
+        config_path = AirbyteEntrypoint.extract_config(args)
         # proceed only if `--config` arg is provided
         if config_path:
             # read the existing config

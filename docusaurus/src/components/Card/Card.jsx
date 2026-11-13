@@ -2,6 +2,7 @@ import {
   faArrowRight,
   faBook,
   faCloud,
+  faCode,
   faDownload,
   faGear,
   faLightbulb,
@@ -10,6 +11,7 @@ import {
   faPuzzlePiece,
   faRobot,
   faRocket,
+  faWindowMaximize,
 } from "@fortawesome/free-solid-svg-icons";
 import { faPython } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -19,6 +21,7 @@ import { CloudIcon, EnterpriseIcon, OssIcon } from "./CustomIcons";
 const FA_ICONS = {
   "fa-book": faBook,
   "fa-cloud": faCloud,
+  "fa-code": faCode,
   "fa-download": faDownload,
   "fa-gear": faGear,
   "fa-lightbulb": faLightbulb,
@@ -28,6 +31,7 @@ const FA_ICONS = {
   "fa-python": faPython,
   "fa-robot": faRobot,
   "fa-rocket": faRocket,
+  "fa-window-maximize": faWindowMaximize,
 };
 
 const CUSTOM_ICONS = {

@@ -18,7 +18,7 @@ interface CdcTargetPosition<T> {
      *
      * @param changeEventWithMetadata change event from Debezium with extra calculated metadata
      * @return true if event position is equal or greater than target position, or if last snapshot
-     * event
+     *   event
      */
     fun reachedTargetPosition(changeEventWithMetadata: ChangeEventWithMetadata?): Boolean
 
@@ -26,7 +26,7 @@ interface CdcTargetPosition<T> {
      * Reads a position value (lsn) from a change event and compares it to target lsn
      *
      * @param positionFromHeartbeat is the position extracted out of a heartbeat event (if the
-     * connector supports heartbeat)
+     *   connector supports heartbeat)
      * @return true if heartbeat position is equal or greater than target position
      */
     fun reachedTargetPosition(positionFromHeartbeat: T): Boolean {
@@ -68,7 +68,7 @@ interface CdcTargetPosition<T> {
      * @param offsetA Offset to compare
      * @param offsetB Offset to compare
      * @return Returns `true` if both offsets are at the same position. Otherwise, it returns
-     * `false`
+     *   `false`
      */
     fun isSameOffset(offsetA: Map<String, String>, offsetB: Map<String, String>): Boolean {
         return false
